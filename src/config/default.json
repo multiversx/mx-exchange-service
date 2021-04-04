@@ -1,0 +1,15 @@
+{
+    "elrond": {
+        "elastic": "https://testnet-index.elrond.com",
+        "elrondApi": "https://testnet-api.elrond.com",
+        "gateway": "https://testnet-gateway.elrond.com",
+        "explorer": "https://testnet-explorer.elrond.com",
+        "chainID": "T",
+        "version": 1,
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqmc6lkxzn7cmj2c3ztczapds9ch2c4w9h0n4stl2uq7"
+    },
+    "caching": {
+        "networkConfig": 1,
+        "pairs": 1
+    }
+}

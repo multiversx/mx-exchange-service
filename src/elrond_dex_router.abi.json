@@ -1,0 +1,285 @@
+{
+    "name": "Router",
+    "endpoints": [
+        {
+            "name": "getAllPairsAddresses",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getAllPairsTokens",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<PairKey>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getAllPairs",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<PairContractData>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getPairCode",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "name": "getPairCodeReady",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "pause",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "resume",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "createPair",
+            "inputs": [
+                {
+                    "name": "token_a",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_b",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "issueLpToken",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                },
+                {
+                    "name": "tp_token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "tp_token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRoles",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setStakingInfo",
+            "inputs": [
+                {
+                    "name": "staking_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "staking_token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "upgradePair",
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setFeeOn",
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setFeeOff",
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "startPairCodeConstruction",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "endPairCodeConstruction",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "appendPairCode",
+            "inputs": [
+                {
+                    "name": "part",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getPair",
+            "inputs": [
+                {
+                    "name": "token_a",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_b",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getStakingAddress",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getStakingToken",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getLastErrorMessage",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "name": "getState",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "State"
+                }
+            ]
+        }
+    ],
+    "types": {
+        "PairContractData": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_a",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_b",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ]
+        },
+        "PairKey": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_a",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_b",
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        "State": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "Inactive",
+                    "discriminant": 0
+                },
+                {
+                    "name": "Active",
+                    "discriminant": 1
+                }
+            ]
+        }
+    }
+}
