@@ -1,5 +1,5 @@
 {
-  "name": "invoice-app",
+  "name": "dex-service",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -7,16 +7,14 @@
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "tsc --build",
-    "migration:run": "node ./node_modules/typeorm/cli.js migration:run",
-    "migrate": "run-s build && run-s migration:run",
-    "gen-migration": "run-s build && ts-node ./node_modules/typeorm/cli.js migration:generate -n",
+    "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "run-s migrate && node dist/src/main.js",
-    "start:dev": "nest start --watch",
+    "start": "nest start",
+    "start:dev": "npm run copy-env && nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "npm run copy-env && node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "copy-env": "cp .env.example .env",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -24,13 +22,13 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@elastic/elasticsearch": "^7.12.0",
     "@elrondnetwork/erdjs": "^4.0.3",
     "@nestjs/common": "^7.0.0",
     "@nestjs/config": "^0.6.3",
     "@nestjs/core": "^7.0.0",
     "@nestjs/graphql": "^7.3.7",
     "@nestjs/platform-express": "^7.0.0",
-    "@nestjs/typeorm": "^7.0.0",
     "@types/cache-manager": "^3.4.0",
     "apollo-server-express": "^2.14.2",
     "bignumber.js": "^9.0.1",
@@ -43,8 +41,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.5.4",
-    "tweetnacl": "^1.0.3",
-    "typeorm": "^0.2.24"
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.0.0",
