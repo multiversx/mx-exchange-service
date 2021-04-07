@@ -1,11 +1,14 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { DexService } from './dex.service';
-import { DexResolver, PairResolver } from './dex.resolver';
+import { DexResolver } from './dex.resolver';
+import { PairModule } from './pair/pair.module';
 import { CacheManagerModule } from '../services/cache-manager/cache-manager.module';
+import { RouterModule } from './router/router.module';
+
 
 @Module({
-  imports: [CacheManagerModule],
-  providers: [DexService, DexResolver, PairResolver],
+  imports: [CacheManagerModule, RouterModule, PairModule],
+  providers: [DexService, DexResolver],
   exports: [DexService]
 })
 export class DexModule { }

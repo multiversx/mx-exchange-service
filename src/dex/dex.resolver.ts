@@ -1,8 +1,8 @@
 import { DexService } from './dex.service';
-import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
+import { Resolver, Query, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
-import { PairModel, PairPriceModel, TransactionModel } from './dex.model';
-import { Transaction } from "@elrondnetwork/erdjs";
+import { TransactionModel } from './dex.model';
+
 
 @Resolver()
 export class DexResolver {
@@ -10,27 +10,6 @@ export class DexResolver {
     @Inject(DexService) private dexService: DexService,
   ) { }
 
-  @Query(returns => [PairModel])
-  async pairs(): Promise<PairModel[]> {
-    return await this.dexService.getAllPairs();
-  }
-
-  @Query(returns => TransactionModel)
-  async createPair(
-    @Args('token_a') token_a: string,
-    @Args('token_b') token_b: string
-  ): Promise<TransactionModel> {
-    return await this.dexService.createPair(token_a, token_b);
-  }
-
-  @Query(returns => TransactionModel)
-  async issueLPToken(
-    @Args('address') address: string,
-    @Args('lpTokenName') lpTokenName: string,
-    @Args('lpTokenTicker') lpTokenTicker: string
-  ): Promise<TransactionModel> {
-    return await this.dexService.issueLpToken(address, lpTokenName, lpTokenTicker);
-  }
 
   @Query(returns => TransactionModel)
   async addLiquidity(
@@ -41,6 +20,15 @@ export class DexResolver {
     @Args('amount1Min') amount1Min: number,
   ): Promise<TransactionModel> {
     return await this.dexService.addLiquidity(address, amount0, amount1, amount0Min, amount1Min);
+  }
+
+  @Query(returns => TransactionModel)
+  async esdtTransfer(
+    @Args('address') address: string,
+    @Args('token') token: string,
+    @Args('amount') amount: number,
+  ): Promise<TransactionModel> {
+    return await this.dexService.esdtTransfer(address, token, amount);
   }
 
   @Query(returns => TransactionModel)
@@ -75,27 +63,4 @@ export class DexResolver {
   ): Promise<TransactionModel> {
     return await this.dexService.swapTokensFixedOutput(address, tokenIn, amountInMax, tokenOut, amountOut);
   }
-}
-
-@Resolver(of => PairModel)
-export class PairResolver {
-  constructor(
-    @Inject(DexService) private dexService: DexService,
-  ) { }
-
-  @ResolveField()
-  async info(@Parent() pair: PairModel) {
-    const { address, token_a, token_b } = pair;
-    return this.dexService.getPairInfo(address);
-  }
-
-  @ResolveField()
-  async price(@Parent() pair: PairModel) {
-    const { address, token_a, token_b } = pair;
-    let price = new PairPriceModel();
-    price.tokena_price = await this.dexService.getAmountOut(address, token_a);
-    price.tokenb_price = await this.dexService.getAmountOut(address, token_b);
-    return price;
-  }
-
 }
