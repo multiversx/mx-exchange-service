@@ -13,7 +13,7 @@ export class PairResolver {
 
     @ResolveField()
     async info(@Parent() pair: PairModel) {
-        const { address, token_a, token_b } = pair;
+        const { address } = pair;
         return this.pairService.getPairInfo(address);
     }
 
