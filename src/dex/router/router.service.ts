@@ -48,7 +48,16 @@ export class RouterService {
     }
 
     async getDexFactory(): Promise<DexFactoryModel> {
-        return new DexFactoryModel();
+    async getPairCount(): Promise<number> {
+        const cachedData = await this.cacheManagerService.getPairCount();
+        if (!!cachedData) {
+            return cachedData.pairCount;
+        }
+
+        let pairCount = (await this.context.getPairsMetadata()).length;
+
+        this.cacheManagerService.setPairCount({ pairCount: pairCount });
+        return pairCount;
     }
     async getTotalTxCount(): Promise<number> {
         const cachedData = await this.cacheManagerService.getTotalTxCount();
