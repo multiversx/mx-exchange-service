@@ -52,6 +52,11 @@ export class RouterService {
     }
 
     async getDexFactory(): Promise<DexFactoryModel> {
+        let dexFactory = new DexFactoryModel();
+        dexFactory.address = elrondConfig.routerAddress;
+        return dexFactory;
+    }
+
     async getPairCount(): Promise<number> {
         const cachedData = await this.cacheManagerService.getPairCount();
         if (!!cachedData) {
