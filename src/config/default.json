@@ -10,7 +10,6 @@
     },
     "caching": {
         "networkConfig": 1,
-        "pairs": 1,
-        "txTotalCount": 1
+        "pairsMetadata": 10,
     }
 }

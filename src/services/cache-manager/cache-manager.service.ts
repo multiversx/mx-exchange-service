@@ -4,6 +4,7 @@ import { cacheConfig } from '../../config';
 
 const Keys = {
     networkConfig: () => 'networkConfig',
+    pairsMetadata: () => 'pairsMetadata',
     pairs: () => 'pairs',
 };
 
@@ -21,7 +22,14 @@ export class CacheManagerService {
         await this.set(Keys.networkConfig(), networkConfig, cacheConfig.networkConfig);
     }
 
-    async getAllPairs(): Promise<Record<string, any>> {
+    async getPairsMetadata(): Promise<Record<string, any>> {
+        return this.cacheManager.get(Keys.pairsMetadata());
+    }
+
+    async setPairsMetadata(pairs: Record<string, any>): Promise<void> {
+        await this.set(Keys.pairsMetadata(), pairs, cacheConfig.pairsMetadata);
+    }
+
         return this.cacheManager.get(Keys.pairs());
     }
 
