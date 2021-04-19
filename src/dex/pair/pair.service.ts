@@ -51,25 +51,24 @@ export class PairService {
         return pairPrice;
     }
 
-    async getAmountOut(address: string, tokenIn: string): Promise<string> {
+    async getAmountOut(pairAddress: string, tokenInId: string, amount: string): Promise<number> {
+        let token = await this.context.getTokenMetadata(tokenInId);
+        let tokenAmount = amount + 'e' + token.decimals.toString();
         let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_pair.abi.json"] });
         let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
-        let contract = new SmartContract({ address: new Address(address), abi: abi });
+        let contract = new SmartContract({ address: new Address(pairAddress), abi: abi });
 
-        let getAmoountOut = <Interaction>contract.methods.getAmountOut([
-            new BigUIntValue(new BigNumber(100)),
-            BytesValue.fromUTF8(tokenIn)
+        let getAmountOut = <Interaction>contract.methods.getAmountOut([
+            BytesValue.fromUTF8(tokenInId),
+            new BigUIntValue(new BigNumber(tokenAmount))
         ]);
 
         let queryResponse = await contract.runQuery(
             this.proxy,
-            getAmoountOut.buildQuery()
+            getAmountOut.buildQuery()
         );
 
-        let result = getAmoountOut.interpretQueryResponse(queryResponse);
-
-        return result.values[0].valueOf();
-
+        let result = getAmountOut.interpretQueryResponse(queryResponse);
+        return result.firstValue.valueOf();
     }
-
 }

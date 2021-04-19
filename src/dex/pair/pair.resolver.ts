@@ -36,5 +36,12 @@ export class PairResolver {
         return this.pairService.getToken(pair.secondToken);
     }
 
+    @Query(returns => Int!)
+    async getAmountOut(
+        @Args('pairAddress') pairAddress: string,
+        @Args('tokenInId') tokenInId: string,
+        @Args('amount') amount: string
+    ) {
+        return this.pairService.getAmountOut(pairAddress, tokenInId, amount);
     }
 }
