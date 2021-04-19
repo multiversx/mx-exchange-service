@@ -35,7 +35,15 @@ export class PairService {
         let queryResponse = await contract.runQuery(this.proxy, { func: new ContractFunction("getBasicInfo") });
         let result = getAllPairsInteraction.interpretQueryResponse(queryResponse);
 
-        return result.values[0].valueOf();
+    async getPairPrice(address: string): Promise<PairPriceModel> {
+        let pairsMetadata = await this.context.getPairsMetadata();
+        let pair = pairsMetadata.find(pair => pair.address === address);
+        let pairPrice = new PairPriceModel();
+
+        pairPrice.firstToken = await (await this.getAmountOut(pair.address, pair.firstToken, '1')).toString();
+        pairPrice.secondToken = await (await this.getAmountOut(pair.address, pair.secondToken, '1')).toString();
+
+        return pairPrice;
     }
 
     async getAmountOut(address: string, tokenIn: string): Promise<string> {

@@ -18,11 +18,8 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async price(@Parent() pair: PairModel) {
-        const { address, token_a, token_b } = pair;
-        let price = new PairPriceModel();
-        price.tokena_price = await this.pairService.getAmountOut(address, token_a);
-        price.tokenb_price = await this.pairService.getAmountOut(address, token_b);
-        return price;
+    async price(@Parent() parent: PairModel) {
+        return this.pairService.getPairPrice(parent.address);
+    }
     }
 }
