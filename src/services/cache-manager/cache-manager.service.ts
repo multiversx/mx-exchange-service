@@ -7,6 +7,7 @@ const Keys = {
     pairsMetadata: () => 'pairsMetadata',
     pairs: () => 'pairs',
     pairCount: () => 'pairCount',
+    totalTxCount: () => 'totalTxCount',
 };
 
 @Injectable()
@@ -44,6 +45,14 @@ export class CacheManagerService {
 
     async setPairCount(pairCount: Record<string, any>): Promise<void> {
         await this.set(Keys.pairCount(), pairCount, cacheConfig.pairCount);
+    }
+
+    async getTotalTxCount(): Promise<Record<string, any>> {
+        return this.cacheManager.get(Keys.totalTxCount());
+    }
+
+    async setTotalTxCount(totalTxCount: Record<string, any>): Promise<void> {
+        await this.set(Keys.totalTxCount(), totalTxCount, cacheConfig.txTotalCount);
     }
 
     private async set(key: string, value: any, ttl: number) {
