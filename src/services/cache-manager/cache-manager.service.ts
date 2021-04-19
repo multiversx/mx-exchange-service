@@ -33,10 +33,11 @@ export class CacheManagerService {
         await this.set(Keys.pairsMetadata(), pairs, cacheConfig.pairsMetadata);
     }
 
+    async getPairs(): Promise<Record<string, any>> {
         return this.cacheManager.get(Keys.pairs());
     }
 
-    async setAllPairs(pairs: Record<string, any>): Promise<void> {
+    async setPairs(pairs: Record<string, any>): Promise<void> {
         await this.set(Keys.pairs(), pairs, cacheConfig.pairs);
     }
 
