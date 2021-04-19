@@ -21,5 +21,20 @@ export class PairResolver {
     async price(@Parent() parent: PairModel) {
         return this.pairService.getPairPrice(parent.address);
     }
+
+    @ResolveField()
+    async firstToken(@Parent() parent: PairModel) {
+        let pairs = await this.context.getPairsMetadata();
+        let pair = pairs.find(pair => pair.address === parent.address);
+        return this.pairService.getToken(pair.firstToken);
+    }
+
+    @ResolveField()
+    async secondToken(@Parent() parent: PairModel) {
+        let pairs = await this.context.getPairsMetadata();
+        let pair = pairs.find(pair => pair.address === parent.address);
+        return this.pairService.getToken(pair.secondToken);
+    }
+
     }
 }

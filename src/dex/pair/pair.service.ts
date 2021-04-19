@@ -25,6 +25,11 @@ export class PairService {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
     }
 
+    async getToken(tokenID: string): Promise<TokenModel> {
+
+        return this.context.getTokenMetadata(tokenID);
+    }
+
     async getPairInfo(address: string): Promise<PairInfoModel> {
         let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_pair.abi.json"] });
         let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
