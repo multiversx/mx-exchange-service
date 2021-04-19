@@ -1,4 +1,3 @@
-import { PairModel, PairInfoModel, TransactionModel } from './dex.model';
 import { Injectable, Res } from '@nestjs/common';
 import { AbiRegistry, BigUIntValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
 import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
@@ -6,8 +5,8 @@ import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { elrondConfig } from '../config';
-import BigNumber from 'bignumber.js';
-
+import BigNumber from '@elrondnetwork/erdjs/node_modules/bignumber.js';
+import { TransactionModel } from './dex.model';
 
 @Injectable()
 export class DexService {
