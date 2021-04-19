@@ -28,23 +28,27 @@ export class RouterService {
         });
     }
 
-    async getAllPairs(): Promise<PairModel[]> {
+    async getAllPairs(offset: number, limit: number): Promise<PairModel[]> {
+        const cachedData = await this.cacheManagerService.getPairs();
+        if (!!cachedData) {
+            return cachedData.pairs.slice(offset, limit);
+        }
         let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_router.abi.json"] });
         let abi = new SmartContractAbi(abiRegistry, ["Router"]);
         let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
 
-        let getAllPairsInteraction = <Interaction>contract.methods.getAllPairs([]);
+        let getAllPairsAddressesInteraction = <Interaction>contract.methods.getAllPairsAddresses([]);
 
-        let queryResponse = await contract.runQuery(this.proxy, { func: new ContractFunction("getAllPairs") });
-        let result = getAllPairsInteraction.interpretQueryResponse(queryResponse);
+        let queryResponse = await contract.runQuery(this.proxy, getAllPairsAddressesInteraction.buildQuery());
+        let result = getAllPairsAddressesInteraction.interpretQueryResponse(queryResponse);
 
-        return result.values[0].valueOf().map(v => {
-            return {
-                token_a: v.token_a.toString(),
-                token_b: v.token_b.toString(),
-                address: v.address.toString(),
-            }
+        let pairs = result.firstValue.valueOf().map(v => {
+            let pair = new PairModel();
+            pair.address = v.toString();
+            return pair;
         });
+        this.cacheManagerService.setPairs({ pairs: pairs });
+        return pairs.slice(offset, limit);
     }
 
     async getDexFactory(): Promise<DexFactoryModel> {

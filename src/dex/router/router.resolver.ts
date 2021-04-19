@@ -27,9 +27,9 @@ export class RouterResolver {
         return await this.routerService.getTotalTxCount();
     }
 
-    @Query(returns => [PairModel])
-    async pairs(): Promise<PairModel[]> {
-        return await this.routerService.getAllPairs();
+    @Query((returns => [PairModel]))
+    async pairs(@Args() page: GetPairsArgs): Promise<PairModel[]> {
+        return await this.routerService.getAllPairs(page.offset, page.limit);
     }
 
     @Query(returns => TransactionModel)
