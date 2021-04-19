@@ -1,4 +1,6 @@
-import { PairModel, PairInfoModel, TransactionModel, DexFactoryModel } from '../dex.model';
+import { TransactionModel } from '../dex.model';
+import { PairModel } from '../models/pair.model';
+import { DexFactoryModel } from '../models/factory.model';
 import { Injectable, Res } from '@nestjs/common';
 import { AbiRegistry, BigUIntValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
 import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
@@ -8,7 +10,7 @@ import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } fro
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { ApiResponse, Client } from '@elastic/elasticsearch';
 import { elrondConfig } from '../../config';
-import { QueryResponse } from '@elrondnetwork/erdjs/out/smartcontracts/queryResponse';
+import { ContextService } from '../utils/context.service';
 
 
 @Injectable()
@@ -18,6 +20,7 @@ export class RouterService {
 
     constructor(
         private cacheManagerService: CacheManagerService,
+        private context: ContextService,
     ) {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
         this.elasticClient = new Client({
