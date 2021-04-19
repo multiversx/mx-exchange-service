@@ -35,10 +35,19 @@ export class PairService {
         let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
         let contract = new SmartContract({ address: new Address(address), abi: abi });
 
-        let getAllPairsInteraction = <Interaction>contract.methods.getBasicInfo([]);
+        let getAllPairsInteraction = <Interaction>contract.methods.getReservesAndTotalSupply([]);
 
-        let queryResponse = await contract.runQuery(this.proxy, { func: new ContractFunction("getBasicInfo") });
+        let queryResponse = await contract.runQuery(this.proxy, getAllPairsInteraction.buildQuery());
         let result = getAllPairsInteraction.interpretQueryResponse(queryResponse);
+
+
+        let pairInfo = result.values.map(v => v.valueOf())
+        return {
+            reserves0: pairInfo[0],
+            reserves1: pairInfo[1],
+            totalSupply: pairInfo[2]
+        };
+    }
 
     async getPairPrice(address: string): Promise<PairPriceModel> {
         let pairsMetadata = await this.context.getPairsMetadata();
