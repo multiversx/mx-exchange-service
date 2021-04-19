@@ -1,4 +1,3 @@
-import { PairModel, PairInfoModel, TransactionModel } from '../dex.model';
 import { Injectable, Res } from '@nestjs/common';
 import { AbiRegistry, BigUIntValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
 import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
