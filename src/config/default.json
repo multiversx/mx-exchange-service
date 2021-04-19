@@ -11,5 +11,6 @@
     "caching": {
         "networkConfig": 1,
         "pairsMetadata": 10,
+        "pairCount": 10,
     }
 }

@@ -6,6 +6,7 @@ const Keys = {
     networkConfig: () => 'networkConfig',
     pairsMetadata: () => 'pairsMetadata',
     pairs: () => 'pairs',
+    pairCount: () => 'pairCount',
 };
 
 @Injectable()
@@ -35,6 +36,14 @@ export class CacheManagerService {
 
     async setAllPairs(pairs: Record<string, any>): Promise<void> {
         await this.set(Keys.pairs(), pairs, cacheConfig.pairs);
+    }
+
+    async getPairCount(): Promise<Record<string, any>> {
+        return this.cacheManager.get(Keys.pairCount());
+    }
+
+    async setPairCount(pairCount: Record<string, any>): Promise<void> {
+        await this.set(Keys.pairCount(), pairCount, cacheConfig.pairCount);
     }
 
     private async set(key: string, value: any, ttl: number) {
