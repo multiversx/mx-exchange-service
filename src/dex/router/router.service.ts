@@ -59,33 +59,15 @@ export class RouterService {
         this.cacheManagerService.setPairCount({ pairCount: pairCount });
         return pairCount;
     }
+
     async getTotalTxCount(): Promise<number> {
         const cachedData = await this.cacheManagerService.getTotalTxCount();
         if (!!cachedData) {
+            return cachedData.totalTxCount;
         }
 
-        let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_router.abi.json"] });
-        let abi = new SmartContractAbi(abiRegistry, ["Router"]);
-        let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
-
-        let getAllPairsInteraction = <Interaction>contract.methods.getAllPairs([]);
-
-        let queryResponse = await contract.runQuery(
-            this.proxy,
-            getAllPairsInteraction.buildQuery()
-        );
-
-        let result = getAllPairsInteraction.interpretQueryResponse(queryResponse);
-
         let totalTxCount = 0;
-
-        let pairs = result.values[0].valueOf().map(v => {
-            return {
-                token_a: v.token_a.toString(),
-                token_b: v.token_b.toString(),
-                address: v.address.toString(),
-            }
-        });
+        let pairs = await this.context.getPairsMetadata();
 
         for (const pair of pairs) {
             const body = {
@@ -114,6 +96,7 @@ export class RouterService {
 
         }
 
+        this.cacheManagerService.setTotalTxCount({ totalTxCount: totalTxCount });
         return totalTxCount;
     }
 
