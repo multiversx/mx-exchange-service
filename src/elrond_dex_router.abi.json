@@ -12,21 +12,21 @@
             ]
         },
         {
-            "name": "getAllPairsTokens",
+            "name": "getAllPairTokens",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "variadic<PairKey>",
+                    "type": "variadic<PairTokens>",
                     "multi_result": true
                 }
             ]
         },
         {
-            "name": "getAllPairs",
+            "name": "getAllPairContractMetadata",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "variadic<PairContractData>",
+                    "type": "variadic<PairContractMetadata>",
                     "multi_result": true
                 }
             ]
@@ -73,12 +73,17 @@
             "name": "createPair",
             "inputs": [
                 {
-                    "name": "token_a",
+                    "name": "first_token_id",
                     "type": "TokenIdentifier"
                 },
                 {
-                    "name": "token_b",
+                    "name": "second_token_id",
                     "type": "TokenIdentifier"
+                },
+                {
+                    "name": "fee_precents",
+                    "type": "variadic<u64>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -94,7 +99,7 @@
             ],
             "inputs": [
                 {
-                    "name": "address",
+                    "name": "pair_address",
                     "type": "Address"
                 },
                 {
@@ -112,22 +117,8 @@
             "name": "setLocalRoles",
             "inputs": [
                 {
-                    "name": "address",
+                    "name": "pair_address",
                     "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setStakingInfo",
-            "inputs": [
-                {
-                    "name": "staking_address",
-                    "type": "Address"
-                },
-                {
-                    "name": "staking_token",
-                    "type": "TokenIdentifier"
                 }
             ],
             "outputs": []
@@ -148,6 +139,14 @@
                 {
                     "name": "pair_address",
                     "type": "Address"
+                },
+                {
+                    "name": "staking_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "staking_token",
+                    "type": "TokenIdentifier"
                 }
             ],
             "outputs": []
@@ -158,6 +157,14 @@
                 {
                     "name": "pair_address",
                     "type": "Address"
+                },
+                {
+                    "name": "staking_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "staking_token",
+                    "type": "TokenIdentifier"
                 }
             ],
             "outputs": []
@@ -186,35 +193,17 @@
             "name": "getPair",
             "inputs": [
                 {
-                    "name": "token_a",
+                    "name": "first_token_id",
                     "type": "TokenIdentifier"
                 },
                 {
-                    "name": "token_b",
+                    "name": "second_token_id",
                     "type": "TokenIdentifier"
                 }
             ],
             "outputs": [
                 {
                     "type": "Address"
-                }
-            ]
-        },
-        {
-            "name": "getStakingAddress",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
-            "name": "getStakingToken",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
                 }
             ]
         },
@@ -232,21 +221,30 @@
             "inputs": [],
             "outputs": [
                 {
-                    "type": "State"
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "getOwner",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
                 }
             ]
         }
     ],
     "types": {
-        "PairContractData": {
+        "PairContractMetadata": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "token_a",
+                    "name": "first_token_id",
                     "type": "TokenIdentifier"
                 },
                 {
-                    "name": "token_b",
+                    "name": "second_token_id",
                     "type": "TokenIdentifier"
                 },
                 {
@@ -255,29 +253,16 @@
                 }
             ]
         },
-        "PairKey": {
+        "PairTokens": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "token_a",
+                    "name": "first_token_id",
                     "type": "TokenIdentifier"
                 },
                 {
-                    "name": "token_b",
+                    "name": "second_token_id",
                     "type": "TokenIdentifier"
-                }
-            ]
-        },
-        "State": {
-            "type": "enum",
-            "variants": [
-                {
-                    "name": "Inactive",
-                    "discriminant": 0
-                },
-                {
-                    "name": "Active",
-                    "discriminant": 1
                 }
             ]
         }

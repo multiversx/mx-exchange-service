@@ -2,7 +2,7 @@
     "name": "Pair",
     "endpoints": [
         {
-            "name": "getTokenAName",
+            "name": "getFirstTokenId",
             "inputs": [],
             "outputs": [
                 {
@@ -11,7 +11,7 @@
             ]
         },
         {
-            "name": "getTokenBName",
+            "name": "getSecondTokenId",
             "inputs": [],
             "outputs": [
                 {
@@ -23,7 +23,7 @@
             "name": "getReserve",
             "inputs": [
                 {
-                    "name": "token",
+                    "name": "token_id",
                     "type": "TokenIdentifier"
                 }
             ],
@@ -43,68 +43,30 @@
             ]
         },
         {
-            "name": "quote",
-            "inputs": [
-                {
-                    "name": "amount_a",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "reserve_a",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "reserve_b",
-                    "type": "BigUint"
-                }
-            ],
+            "name": "getTotalFeePrecent",
+            "inputs": [],
             "outputs": [
                 {
-                    "type": "BigUint"
+                    "type": "u64"
                 }
             ]
         },
         {
-            "name": "getAmountOutNoFee",
-            "inputs": [
-                {
-                    "name": "amount_in",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "reserve_in",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "reserve_out",
-                    "type": "BigUint"
-                }
-            ],
+            "name": "getSpecialFeePrecent",
+            "inputs": [],
             "outputs": [
                 {
-                    "type": "BigUint"
+                    "type": "u64"
                 }
             ]
         },
         {
-            "name": "getAmountIn",
-            "inputs": [
-                {
-                    "name": "amount_out",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "reserve_in",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "reserve_out",
-                    "type": "BigUint"
-                }
-            ],
+            "name": "getWhitelistedAddresses",
+            "inputs": [],
             "outputs": [
                 {
-                    "type": "BigUint"
+                    "type": "variadic<Address>",
+                    "multi_result": true
                 }
             ]
         },
@@ -114,24 +76,6 @@
             "outputs": [
                 {
                     "type": "bool"
-                }
-            ]
-        },
-        {
-            "name": "getFeeToAddress",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
-            "name": "getFeeTokenIdentifier",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
                 }
             ]
         },
@@ -157,19 +101,19 @@
             "name": "addLiquidity",
             "inputs": [
                 {
-                    "name": "amount_a_desired",
+                    "name": "first_token_amount_desired",
                     "type": "BigUint"
                 },
                 {
-                    "name": "amount_b_desired",
+                    "name": "second_token_amount_desired",
                     "type": "BigUint"
                 },
                 {
-                    "name": "amount_a_min",
+                    "name": "first_token_amount_min",
                     "type": "BigUint"
                 },
                 {
-                    "name": "amount_b_min",
+                    "name": "second_token_amount_min",
                     "type": "BigUint"
                 }
             ],
@@ -187,12 +131,81 @@
             ],
             "inputs": [
                 {
-                    "name": "amount_a_min",
+                    "name": "first_token_amount_min",
                     "type": "BigUint"
                 },
                 {
-                    "name": "amount_b_min",
+                    "name": "second_token_amount_min",
                     "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "whitelist",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeWhitelist",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "addTrustedSwapPair",
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeTrustedSwapPair",
+            "inputs": [
+                {
+                    "name": "first_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "swapNoFeeAndForward",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "token_out",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "destination_address",
+                    "type": "Address"
                 }
             ],
             "outputs": []
@@ -232,7 +245,7 @@
             "outputs": []
         },
         {
-            "name": "set_fee_on",
+            "name": "setFeeOn",
             "inputs": [
                 {
                     "name": "enabled",
@@ -250,7 +263,7 @@
             "outputs": []
         },
         {
-            "name": "set_lp_token_identifier",
+            "name": "setLpTokenIdentifier",
             "inputs": [
                 {
                     "name": "token_identifier",
@@ -260,16 +273,7 @@
             "outputs": []
         },
         {
-            "name": "get_lp_token_identifier",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "get_tokens_for_given_position",
+            "name": "getTokensForGivenPosition",
             "inputs": [
                 {
                     "name": "liquidity",
@@ -278,19 +282,25 @@
             ],
             "outputs": [
                 {
-                    "type": "BigUint"
+                    "type": "TokenAmountPair"
                 },
                 {
-                    "type": "BigUint"
+                    "type": "TokenAmountPair"
                 }
             ]
         },
         {
-            "name": "getBasicInfo",
+            "name": "getReservesAndTotalSupply",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "PairData"
+                    "type": "BigUint"
+                },
+                {
+                    "type": "BigUint"
+                },
+                {
+                    "type": "BigUint"
                 }
             ]
         },
@@ -298,12 +308,48 @@
             "name": "getAmountOut",
             "inputs": [
                 {
+                    "name": "token_in",
+                    "type": "TokenIdentifier"
+                },
+                {
                     "name": "amount_in",
                     "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getAmountIn",
+            "inputs": [
+                {
+                    "name": "token_wanted",
+                    "type": "TokenIdentifier"
                 },
+                {
+                    "name": "amount_wanted",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getEquivalent",
+            "inputs": [
                 {
                     "name": "token_in",
                     "type": "TokenIdentifier"
+                },
+                {
+                    "name": "amount_in",
+                    "type": "BigUint"
                 }
             ],
             "outputs": [
@@ -320,13 +366,22 @@
                     "type": "Address"
                 },
                 {
-                    "name": "token_identifier",
+                    "name": "token_id",
                     "type": "TokenIdentifier"
                 }
             ],
             "outputs": [
                 {
                     "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getLpTokenIdentifier",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
                 }
             ]
         },
@@ -340,43 +395,35 @@
             ]
         },
         {
+            "name": "getRouterOwnerAddress",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
             "name": "getState",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "State"
+                    "type": "bool"
                 }
             ]
         }
     ],
     "types": {
-        "PairData": {
+        "TokenAmountPair": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "reserves_a",
-                    "type": "BigUint"
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
                 },
                 {
-                    "name": "reserves_b",
+                    "name": "amount",
                     "type": "BigUint"
-                },
-                {
-                    "name": "total_supply",
-                    "type": "BigUint"
-                }
-            ]
-        },
-        "State": {
-            "type": "enum",
-            "variants": [
-                {
-                    "name": "Inactive",
-                    "discriminant": 0
-                },
-                {
-                    "name": "Active",
-                    "discriminant": 1
                 }
             ]
         }
