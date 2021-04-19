@@ -8,6 +8,7 @@ const Keys = {
     pairs: () => 'pairs',
     pairCount: () => 'pairCount',
     totalTxCount: () => 'totalTxCount',
+    token: (tokenID: string) => `token.${tokenID}`,
 };
 
 @Injectable()
@@ -53,6 +54,14 @@ export class CacheManagerService {
 
     async setTotalTxCount(totalTxCount: Record<string, any>): Promise<void> {
         await this.set(Keys.totalTxCount(), totalTxCount, cacheConfig.txTotalCount);
+    }
+
+    async getToken(tokenID: string): Promise<Record<string, any>> {
+        return this.cacheManager.get(Keys.token(tokenID));
+    }
+
+    async setToken(tokenID: string, token: Record<string, any>): Promise<void> {
+        await this.set(Keys.token(tokenID), token, cacheConfig.token);
     }
 
     private async set(key: string, value: any, ttl: number) {
