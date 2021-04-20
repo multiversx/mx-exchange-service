@@ -10,4 +10,12 @@ export class StakingResolver {
     constructor(
         @Inject(StakingService) private stakingService: StakingService,
     ) { }
+
+    @Query(returns => TransactionModel)
+    async stake(
+        @Args('tokenID') tokenID: string,
+        @Args('amount') amount: string,
+    ): Promise<TransactionModel> {
+        return this.stakingService.stake(tokenID, amount);
+    }
 }
