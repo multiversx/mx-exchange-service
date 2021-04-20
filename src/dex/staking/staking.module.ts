@@ -9,4 +9,4 @@ import { ContextModule } from '../utils/context.module';
     providers: [StakingService, StakingResolver],
     exports: [StakingService]
 })
-export class RouterModule { }
+export class StakingModule { }
