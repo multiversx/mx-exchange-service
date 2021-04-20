@@ -8,6 +8,9 @@
         "version": 1,
         "routerAddress": "erd1qqqqqqqqqqqqqpgq4mw3xgjznarjep5m2zu8kt7qwfk0dajf0n4sg9hmsf"
     },
+    "farming": {
+        "LPT-1fd8e1": "erd1qqqqqqqqqqqqqpgqc8relmv973g34dytgd55p3hmaaljvka30n4s6n64q6"
+    },
     "caching": {
         "networkConfig": 1,
         "pairsMetadata": 10,
