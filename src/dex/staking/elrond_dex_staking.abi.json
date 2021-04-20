@@ -148,24 +148,12 @@
         },
         {
             "name": "setLocalRolesStakeToken",
-            "inputs": [
-                {
-                    "name": "roles",
-                    "type": "variadic<EsdtLocalRole>",
-                    "multi_arg": true
-                }
-            ],
+            "inputs": [],
             "outputs": []
         },
         {
             "name": "setLocalRolesUnstakeToken",
-            "inputs": [
-                {
-                    "name": "roles",
-                    "type": "variadic<EsdtLocalRole>",
-                    "multi_arg": true
-                }
-            ],
+            "inputs": [],
             "outputs": []
         },
         {
