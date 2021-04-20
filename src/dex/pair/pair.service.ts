@@ -5,7 +5,7 @@ import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
-import { elrondConfig } from '../../config';
+import { elrondConfig, abiConfig } from '../../config';
 import BigNumber from '@elrondnetwork/erdjs/node_modules/bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { TokenModel } from '../models/pair.model';
@@ -30,7 +30,7 @@ export class PairService {
     }
 
     async getPairInfo(address: string): Promise<PairInfoModel> {
-        let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_pair.abi.json"] });
+        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
         let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
         let contract = new SmartContract({ address: new Address(address), abi: abi });
 
@@ -62,7 +62,7 @@ export class PairService {
     async getAmountOut(pairAddress: string, tokenInId: string, amount: string): Promise<number> {
         let token = await this.context.getTokenMetadata(tokenInId);
         let tokenAmount = amount + 'e' + token.decimals.toString();
-        let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_pair.abi.json"] });
+        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
         let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
         let contract = new SmartContract({ address: new Address(pairAddress), abi: abi });
 

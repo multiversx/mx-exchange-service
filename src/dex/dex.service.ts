@@ -4,7 +4,7 @@ import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/b
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
-import { elrondConfig } from '../config';
+import { elrondConfig, abiConfig } from '../config';
 import BigNumber from '@elrondnetwork/erdjs/node_modules/bignumber.js';
 import { TransactionModel } from './dex.model';
 
@@ -19,7 +19,7 @@ export class DexService {
   }
 
   async addLiquidity(address: string, amount0: number, amount1: number, amount0Min: number, amount1Min: number): Promise<TransactionModel> {
-    let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_pair.abi.json"] });
+    let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
     let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
     let contract = new SmartContract({ address: new Address(address), abi: abi });
     let transaction = contract.call({
@@ -43,7 +43,7 @@ export class DexService {
   }
 
   async esdtTransfer(address: string, token: string, amount: number): Promise<TransactionModel> {
-    let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_pair.abi.json"] });
+    let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
     let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
     let contract = new SmartContract({ address: new Address(address), abi: abi });
     let transaction = contract.call({
@@ -68,7 +68,7 @@ export class DexService {
 
   async removeLiquidity(address: string, liqidity: number, tokenID: string, amount0Min: number, amount1Min: number): Promise<TransactionModel> {
 
-    let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_pair.abi.json"] });
+    let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
     let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
     let contract = new SmartContract({ address: new Address(address), abi: abi });
     let transaction = contract.call({
@@ -95,7 +95,7 @@ export class DexService {
 
   async swapTokensFixedInput(address: string, tokenIn: string, amountIn: number, tokenOut: string, amountOutMin: number): Promise<TransactionModel> {
 
-    let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_pair.abi.json"] });
+    let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
     let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
     let contract = new SmartContract({ address: new Address(address), abi: abi });
     let transaction = contract.call({
@@ -121,7 +121,7 @@ export class DexService {
 
   async swapTokensFixedOutput(address: string, tokenIn: string, amountInMax: number, tokenOut: string, amountOut: number): Promise<TransactionModel> {
 
-    let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_pair.abi.json"] });
+    let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
     let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
     let contract = new SmartContract({ address: new Address(address), abi: abi });
     let transaction = contract.call({

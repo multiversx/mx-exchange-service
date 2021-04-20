@@ -12,3 +12,5 @@ export const elrondConfig = config.get('elrond');
  * The values are in seconds
  */
 export const cacheConfig = config.get('caching');
+
+export const abiConfig = config.get('abi');

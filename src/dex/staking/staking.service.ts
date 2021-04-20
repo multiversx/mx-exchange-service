@@ -9,7 +9,7 @@ import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction
 import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { ApiResponse, Client } from '@elastic/elasticsearch';
-import { elrondConfig } from '../../config';
+import { elrondConfig, abiConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
-import { elrondConfig } from '../../config';
+import { elrondConfig, abiConfig } from '../../config';
 import { AbiRegistry } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
@@ -26,7 +26,7 @@ export class ContextService {
             return cachedData.pairsMetadata;
         }
 
-        let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_router.abi.json"] });
+        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
         let abi = new SmartContractAbi(abiRegistry, ["Router"]);
         let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
 

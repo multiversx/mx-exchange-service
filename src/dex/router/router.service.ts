@@ -9,7 +9,7 @@ import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction
 import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { ApiResponse, Client } from '@elastic/elasticsearch';
-import { elrondConfig } from '../../config';
+import { elrondConfig, abiConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 
 
@@ -33,7 +33,7 @@ export class RouterService {
         if (!!cachedData) {
             return cachedData.pairs.slice(offset, limit);
         }
-        let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_router.abi.json"] });
+        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
         let abi = new SmartContractAbi(abiRegistry, ["Router"]);
         let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
 
@@ -110,7 +110,7 @@ export class RouterService {
     }
 
     async createPair(token_a: string, token_b: string): Promise<TransactionModel> {
-        let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_router.abi.json"] });
+        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
         let abi = new SmartContractAbi(abiRegistry, ["Router"]);
         let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
         let transaction = contract.call({
@@ -132,7 +132,7 @@ export class RouterService {
     }
 
     async issueLpToken(address: string, lpTokenName: string, lpTokenTicker: string): Promise<TransactionModel> {
-        let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_router.abi.json"] });
+        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
         let abi = new SmartContractAbi(abiRegistry, ["Router"]);
         let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
         let transaction = contract.call({
@@ -155,7 +155,7 @@ export class RouterService {
     }
 
     async setLocalRoles(address: string): Promise<TransactionModel> {
-        let abiRegistry = await AbiRegistry.load({ files: ["./src/elrond_dex_router.abi.json"] });
+        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
         let abi = new SmartContractAbi(abiRegistry, ["Router"]);
         let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
         let transaction = contract.call({
