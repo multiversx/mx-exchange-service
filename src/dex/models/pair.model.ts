@@ -31,6 +31,9 @@ export class PairModel {
     secondToken: TokenModel;
 
     @Field()
+    liquidityPoolToken: TokenModel;
+
+    @Field()
     info: PairInfoModel;
 
     @Field()

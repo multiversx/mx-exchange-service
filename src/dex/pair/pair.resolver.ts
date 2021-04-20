@@ -12,17 +12,6 @@ export class PairResolver {
     ) { }
 
     @ResolveField()
-    async info(@Parent() pair: PairModel) {
-        const { address } = pair;
-        return this.pairService.getPairInfo(address);
-    }
-
-    @ResolveField()
-    async price(@Parent() parent: PairModel) {
-        return this.pairService.getPairPrice(parent.address);
-    }
-
-    @ResolveField()
     async firstToken(@Parent() parent: PairModel) {
         let pairs = await this.context.getPairsMetadata();
         let pair = pairs.find(pair => pair.address === parent.address);
@@ -34,6 +23,22 @@ export class PairResolver {
         let pairs = await this.context.getPairsMetadata();
         let pair = pairs.find(pair => pair.address === parent.address);
         return this.pairService.getToken(pair.secondToken);
+    }
+
+    @ResolveField()
+    async liquidityPoolToken(@Parent() parent: PairModel) {
+        return this.pairService.getLpToken(parent.address);
+    }
+
+    @ResolveField()
+    async info(@Parent() pair: PairModel) {
+        const { address } = pair;
+        return this.pairService.getPairInfo(address);
+    }
+
+    @ResolveField()
+    async price(@Parent() parent: PairModel) {
+        return this.pairService.getPairPrice(parent.address);
     }
 
     @Query(returns => Int!)
