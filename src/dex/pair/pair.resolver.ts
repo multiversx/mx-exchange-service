@@ -84,6 +84,14 @@ export class PairResolver {
         return this.pairService.getAmountOut(pairAddress, callerAddress, tokenID);
     }
 
+    @Query(returns => LiquidityPosition)
+    async getLiquidityPosition(
+        @Args('pairAddress') pairAddress: string,
+        @Args('liquidityAmount') liquidityAmount: string
+    ) {
+        return this.pairService.getLiquidityPosition(pairAddress, liquidityAmount);
+    }
+
     @Query(returns => TransactionModel)
     async addLiquidity(
         @Args('pairAddress') pairAddress: string,

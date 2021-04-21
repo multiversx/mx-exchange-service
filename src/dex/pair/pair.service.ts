@@ -174,6 +174,29 @@ export class PairService {
         return result.firstValue.valueOf();
     }
 
+    async getLiquidityPosition(pairAddress: string, amount: string): Promise<LiquidityPosition> {
+        let lpToken = await this.getLpToken(pairAddress);
+        let tokenAmount = amount + 'e' + lpToken.decimals.toString();
+
+        let contract = await this.getContract(pairAddress);
+
+        let getLiquidityPositionInteraction = <Interaction>contract.methods.getTokensForGivenPosition([
+            new BigUIntValue(new BigNumber(tokenAmount))
+        ]);
+
+        let queryResponse = await contract.runQuery(
+            this.proxy,
+            getLiquidityPositionInteraction.buildQuery()
+        );
+
+        let result = getLiquidityPositionInteraction.interpretQueryResponse(queryResponse);
+
+        return {
+            firstToken: result.values[0].valueOf().amount,
+            secondToken: result.values[1].valueOf().amount
+        };
+    }
+
         let addLiquidityInteraction = <Interaction>contract.methods.addLiquidity([
             new BigUIntValue(new BigNumber(amount0)),
             new BigUIntValue(new BigNumber(amount1)),
