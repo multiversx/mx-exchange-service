@@ -16,7 +16,7 @@ import * as redisStore from 'cache-manager-redis-store';
     GraphQLModule.forRoot({
       autoSchemaFile: 'schema.gql',
       buildSchemaOptions: {
-        numberScalarMode: 'integer'
+        numberScalarMode: 'float'
       }
     }),
     CacheModule.register({
