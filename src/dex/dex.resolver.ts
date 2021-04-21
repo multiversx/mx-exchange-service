@@ -10,18 +10,6 @@ export class DexResolver {
     @Inject(DexService) private dexService: DexService,
   ) { }
 
-
-  @Query(returns => TransactionModel)
-  async addLiquidity(
-    @Args('address') address: string,
-    @Args('amount0') amount0: number,
-    @Args('amount1') amount1: number,
-    @Args('amount0Min') amount0Min: number,
-    @Args('amount1Min') amount1Min: number,
-  ): Promise<TransactionModel> {
-    return await this.dexService.addLiquidity(address, amount0, amount1, amount0Min, amount1Min);
-  }
-
   @Query(returns => TransactionModel)
   async esdtTransfer(
     @Args('address') address: string,

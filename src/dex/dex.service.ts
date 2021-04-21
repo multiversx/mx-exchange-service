@@ -18,30 +18,6 @@ export class DexService {
     this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
   }
 
-  async addLiquidity(address: string, amount0: number, amount1: number, amount0Min: number, amount1Min: number): Promise<TransactionModel> {
-    let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
-    let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
-    let contract = new SmartContract({ address: new Address(address), abi: abi });
-    let transaction = contract.call({
-      func: new ContractFunction("addLiquidity"),
-      args: [
-        new BigUIntValue(new BigNumber(amount0)),
-        new BigUIntValue(new BigNumber(amount1)),
-        new BigUIntValue(new BigNumber(amount0Min)),
-        new BigUIntValue(new BigNumber(amount1Min)),
-      ],
-      gasLimit: new GasLimit(1400000000)
-    });
-
-    let transactionModel = transaction.toPlainObject();
-    return {
-      ...transactionModel,
-      options: transactionModel.options == undefined ? "" : transactionModel.options,
-      status: transactionModel.status == undefined ? "" : transactionModel.status,
-      signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-    };
-  }
-
   async esdtTransfer(address: string, token: string, amount: number): Promise<TransactionModel> {
     let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
     let abi = new SmartContractAbi(abiRegistry, ["Pair"]);

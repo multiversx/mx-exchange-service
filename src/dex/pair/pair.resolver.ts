@@ -4,6 +4,7 @@ import { Inject } from '@nestjs/common';
 import { PairModel } from '../models/pair.model';
 import { TransactionModel } from '../models/transaction.model';
 import { ContextService } from '../utils/context.service';
+import BigNumber from '@elrondnetwork/erdjs/node_modules/bignumber.js';
 
 @Resolver(of => PairModel)
 export class PairResolver {
@@ -42,12 +43,36 @@ export class PairResolver {
         return this.pairService.getPairPrice(parent.address);
     }
 
-    @Query(returns => Int!)
+    @ResolveField()
+    async state(@Parent() parent: PairModel) {
+        return this.pairService.getPairState(parent.address);
+    }
+
+    @Query(returns => String)
     async getAmountOut(
         @Args('pairAddress') pairAddress: string,
-        @Args('tokenInId') tokenInId: string,
+        @Args('tokenInID') tokenInID: string,
+        @Args('amount') amount: string
+    ) {
+        return this.pairService.getAmountOut(pairAddress, tokenInID, amount);
+    }
+
         @Args('amount') amount: string
     ) {
         return this.pairService.getAmountOut(pairAddress, tokenInId, amount);
+    }
+    @Query(returns => TransactionModel)
+    async addLiquidity(
+        @Args('pairAddress') pairAddress: string,
+        @Args('amount0') amount0: string,
+        @Args('amount1') amount1: string,
+        @Args('tolerance') tolerance: number,
+    ): Promise<TransactionModel> {
+        return await this.pairService.addLiquidity(
+            pairAddress,
+            new BigNumber(amount0),
+            new BigNumber(amount1),
+            tolerance
+        );
     }
 }

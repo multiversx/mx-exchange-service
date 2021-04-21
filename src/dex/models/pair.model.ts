@@ -38,4 +38,7 @@ export class PairModel {
 
     @Field()
     price: PairPriceModel;
+
+    @Field()
+    state: boolean;
 }

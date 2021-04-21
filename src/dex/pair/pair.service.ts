@@ -81,7 +81,22 @@ export class PairService {
         return pairPrice;
     }
 
-    async getAmountOut(address: string, tokenInId: string, amount: string): Promise<number> {
+    async getPairState(pairAddress: string): Promise<boolean> {
+        let contract = await this.getContract(pairAddress);
+
+        let getStateInteraction = <Interaction>contract.methods.getState([
+        ]);
+
+        let queryResponse = await contract.runQuery(
+            this.proxy,
+            getStateInteraction.buildQuery()
+        );
+
+        let result = getStateInteraction.interpretQueryResponse(queryResponse);
+        return result.firstValue.valueOf();
+    }
+
+    async getAmountOut(address: string, tokenInId: string, amount: string): Promise<string> {
         let token = await this.context.getTokenMetadata(tokenInId);
         let tokenAmount = amount + 'e' + token.decimals.toString();
 
@@ -100,4 +115,26 @@ export class PairService {
         let result = getAmountOut.interpretQueryResponse(queryResponse);
         return result.firstValue.valueOf();
     }
+    async addLiquidity(pairAddress: string, amount0: BigNumber, amount1: BigNumber, tolerance: number): Promise<TransactionModel> {
+        let contract = await this.getContract(pairAddress);
+        let amount0Min = amount0.multipliedBy(1 - tolerance);
+        let amount1Min = amount1.multipliedBy(1 - tolerance);
+        let addLiquidityInteraction = <Interaction>contract.methods.addLiquidity([
+            new BigUIntValue(new BigNumber(amount0)),
+            new BigUIntValue(new BigNumber(amount1)),
+            new BigUIntValue(new BigNumber(amount0Min)),
+            new BigUIntValue(new BigNumber(amount1Min)),
+        ]);
+        let transaction = addLiquidityInteraction.buildTransaction();
+        transaction.setGasLimit(new GasLimit(1400000000));
+
+        let transactionModel = transaction.toPlainObject();
+        return {
+            ...transactionModel,
+            options: transactionModel.options == undefined ? "" : transactionModel.options,
+            status: transactionModel.status == undefined ? "" : transactionModel.status,
+            signature: transactionModel.signature == undefined ? "" : transactionModel.signature
+        };
+    }
+
 }
