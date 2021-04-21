@@ -115,7 +115,27 @@ export class PairService {
         let result = getAmountOut.interpretQueryResponse(queryResponse);
         return result.firstValue.valueOf();
     }
-    async addLiquidity(pairAddress: string, amount0: BigNumber, amount1: BigNumber, tolerance: number): Promise<TransactionModel> {
+
+    async getAmountIn(address: string, tokenOutId: string, amount: string): Promise<string> {
+        let token = await this.context.getTokenMetadata(tokenOutId);
+        let tokenAmount = amount + 'e' + token.decimals.toString();
+
+        let contract = await this.getContract(address);
+
+        let getAmountInInteraction = <Interaction>contract.methods.getAmountIn([
+            BytesValue.fromUTF8(tokenOutId),
+            new BigUIntValue(new BigNumber(tokenAmount))
+        ]);
+
+        let queryResponse = await contract.runQuery(
+            this.proxy,
+            getAmountInInteraction.buildQuery()
+        );
+
+        let result = getAmountInInteraction.interpretQueryResponse(queryResponse);
+        return result.firstValue.valueOf();
+    }
+
         let contract = await this.getContract(pairAddress);
         let amount0Min = amount0.multipliedBy(1 - tolerance);
         let amount1Min = amount1.multipliedBy(1 - tolerance);
