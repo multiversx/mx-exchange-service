@@ -6,7 +6,7 @@ import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } fro
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { elrondConfig, abiConfig } from '../config';
 import BigNumber from '@elrondnetwork/erdjs/node_modules/bignumber.js';
-import { TransactionModel } from './dex.model';
+import { TransactionModel } from './models/transaction.model';
 
 @Injectable()
 export class DexService {

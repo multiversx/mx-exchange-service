@@ -1,7 +1,7 @@
 import { RouterService } from './router.service';
 import { Resolver, Query, ResolveField, Parent, Args, Int } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
-import { TransactionModel } from '../dex.model';
+import { TransactionModel } from '../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../models/pair.model';
 import { DexFactoryModel } from '../models/factory.model'
 

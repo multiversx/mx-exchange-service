@@ -1,4 +1,4 @@
-import { TransactionModel } from '../dex.model';
+import { TransactionModel } from '../models/transaction.model';
 import { PairModel } from '../models/pair.model';
 import { DexFactoryModel } from '../models/factory.model';
 import { Injectable, Res } from '@nestjs/common';

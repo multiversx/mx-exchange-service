@@ -1,7 +1,7 @@
 import { DexService } from './dex.service';
 import { Resolver, Query, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
-import { TransactionModel } from './dex.model';
+import { TransactionModel } from './models/transaction.model';
 
 
 @Resolver()

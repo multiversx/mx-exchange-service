@@ -9,6 +9,7 @@ import { elrondConfig, abiConfig } from '../../config';
 import { PairInfoModel } from '../models/pair-info.model';
 import { PairModel, TokenModel } from '../models/pair.model';
 import { PairPriceModel } from '../models/pair-price.model';
+import { TransactionModel } from '../models/transaction.model';
 import { ContextService } from '../utils/context.service';
 import BigNumber from '@elrondnetwork/erdjs/node_modules/bignumber.js';
 
