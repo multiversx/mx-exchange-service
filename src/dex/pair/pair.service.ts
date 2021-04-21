@@ -197,12 +197,25 @@ export class PairService {
         };
     }
 
+    async addLiquidity(pairAddress: string, amount0: string, amount1: string, tolerance: number): Promise<TransactionModel> {
+        let contract = await this.getContract(pairAddress);
+        let pairsMetadata = await this.context.getPairsMetadata();
+        let pair = pairsMetadata.find(pair => pair.address === pairAddress);
+        let token0 = await this.getToken(pair.firstToken);
+        let token1 = await this.getToken(pair.secondToken);
+        let amount0Denom = new BigNumber(amount0 + "e" + token0.decimals.toString());
+        let amount1Denom = new BigNumber(amount1 + "e" + token1.decimals.toString());
+
+        let amount0Min = amount0Denom.multipliedBy(1 - tolerance);
+        let amount1Min = amount1Denom.multipliedBy(1 - tolerance);
+
         let addLiquidityInteraction = <Interaction>contract.methods.addLiquidity([
-            new BigUIntValue(new BigNumber(amount0)),
-            new BigUIntValue(new BigNumber(amount1)),
-            new BigUIntValue(new BigNumber(amount0Min)),
-            new BigUIntValue(new BigNumber(amount1Min)),
+            new BigUIntValue(amount0Denom),
+            new BigUIntValue(amount1Denom),
+            new BigUIntValue(amount0Min),
+            new BigUIntValue(amount1Min),
         ]);
+
         let transaction = addLiquidityInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(1400000000));
 

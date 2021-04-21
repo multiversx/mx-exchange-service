@@ -101,8 +101,8 @@ export class PairResolver {
     ): Promise<TransactionModel> {
         return await this.pairService.addLiquidity(
             pairAddress,
-            new BigNumber(amount0),
-            new BigNumber(amount1),
+            amount0,
+            amount1,
             tolerance
         );
     }
