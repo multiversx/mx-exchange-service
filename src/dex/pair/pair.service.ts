@@ -136,6 +136,26 @@ export class PairService {
         return result.firstValue.valueOf();
     }
 
+    async getEquivalentForLiquidity(address: string, tokenInId: string, amount: string): Promise<string> {
+        let token = await this.context.getTokenMetadata(tokenInId);
+        let tokenAmount = amount + 'e' + token.decimals.toString();
+
+        let contract = await this.getContract(address);
+
+        let getEquivalentInteraction = <Interaction>contract.methods.getEquivalent([
+            BytesValue.fromUTF8(tokenInId),
+            new BigUIntValue(new BigNumber(tokenAmount))
+        ]);
+
+        let queryResponse = await contract.runQuery(
+            this.proxy,
+            getEquivalentInteraction.buildQuery()
+        );
+
+        let result = getEquivalentInteraction.interpretQueryResponse(queryResponse);
+        return result.firstValue.valueOf();
+    }
+
         let contract = await this.getContract(pairAddress);
         let amount0Min = amount0.multipliedBy(1 - tolerance);
         let amount1Min = amount1.multipliedBy(1 - tolerance);
