@@ -7,7 +7,7 @@ import { ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { elrondConfig, abiConfig } from '../../config';
 import { PairInfoModel } from '../models/pair-info.model';
-import { PairModel, TokenModel } from '../models/pair.model';
+import { LiquidityPosition, TokenModel } from '../models/pair.model';
 import { PairPriceModel } from '../models/pair-price.model';
 import { TransactionModel } from '../models/transaction.model';
 import { ContextService } from '../utils/context.service';

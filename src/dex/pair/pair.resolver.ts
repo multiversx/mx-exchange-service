@@ -1,10 +1,9 @@
 import { PairService } from './pair.service';
 import { Resolver, Query, ResolveField, Parent, Args, Int } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
-import { PairModel } from '../models/pair.model';
+import { LiquidityPosition, PairModel } from '../models/pair.model';
 import { TransactionModel } from '../models/transaction.model';
 import { ContextService } from '../utils/context.service';
-import BigNumber from '@elrondnetwork/erdjs/node_modules/bignumber.js';
 
 @Resolver(of => PairModel)
 export class PairResolver {
