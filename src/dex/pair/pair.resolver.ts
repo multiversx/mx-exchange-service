@@ -75,7 +75,15 @@ export class PairResolver {
         return this.pairService.getEquivalentForLiquidity(pairAddress, tokenInID, amount);
     }
 
+    @Query(returns => String)
+    async getTemporaryFunds(
+        @Args('pairAddress') pairAddress: string,
+        @Args('callerAddress') callerAddress: string,
+        @Args('tokenID') tokenID: string
+    ) {
+        return this.pairService.getAmountOut(pairAddress, callerAddress, tokenID);
     }
+
     @Query(returns => TransactionModel)
     async addLiquidity(
         @Args('pairAddress') pairAddress: string,

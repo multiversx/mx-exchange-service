@@ -156,9 +156,24 @@ export class PairService {
         return result.firstValue.valueOf();
     }
 
+    async getTemporaryFunds(pairAddress: string, callerAddress: string, tokenID: string): Promise<string> {
+
         let contract = await this.getContract(pairAddress);
-        let amount0Min = amount0.multipliedBy(1 - tolerance);
-        let amount1Min = amount1.multipliedBy(1 - tolerance);
+
+        let getTemporaryFundsInteraction = <Interaction>contract.methods.getTemporaryFunds([
+            new Address(callerAddress),
+            BytesValue.fromUTF8(tokenID)
+        ]);
+
+        let queryResponse = await contract.runQuery(
+            this.proxy,
+            getTemporaryFundsInteraction.buildQuery()
+        );
+
+        let result = getTemporaryFundsInteraction.interpretQueryResponse(queryResponse);
+        return result.firstValue.valueOf();
+    }
+
         let addLiquidityInteraction = <Interaction>contract.methods.addLiquidity([
             new BigUIntValue(new BigNumber(amount0)),
             new BigUIntValue(new BigNumber(amount1)),
