@@ -219,13 +219,7 @@ export class PairService {
         let transaction = addLiquidityInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(1400000000));
 
-        let transactionModel = transaction.toPlainObject();
-        return {
-            ...transactionModel,
-            options: transactionModel.options == undefined ? "" : transactionModel.options,
-            status: transactionModel.status == undefined ? "" : transactionModel.status,
-            signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-        };
+        return transaction.toPlainObject();
     }
 
 }
