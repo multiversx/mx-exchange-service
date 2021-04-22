@@ -29,8 +29,10 @@ export class TransactionModel {
   chainID: string;
   @Field()
   version: number;
-  @Field()
-  options: string;
-  @Field()
-  status: string;
+  @Field({ nullable: true })
+  options?: string;
+  @Field({ nullable: true })
+  status?: string;
+  @Field({ nullable: true })
+  signature?: string;
 }
