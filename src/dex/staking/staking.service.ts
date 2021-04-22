@@ -11,7 +11,7 @@ import { CacheManagerService } from 'src/services/cache-manager/cache-manager.se
 import { ApiResponse, Client } from '@elastic/elasticsearch';
 import { elrondConfig, abiConfig, farmingConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
-import BigNumber from '@elrondnetwork/erdjs/node_modules/bignumber.js';
+import { BigNumber } from 'bignumber.js';
 
 
 @Injectable()
@@ -29,14 +29,20 @@ export class StakingService {
         });
     }
 
-    async stake(tokenID: string, amount: string): Promise<TransactionModel> {
-        let token = await this.context.getTokenMetadata(tokenID);
-        let tokenAmount = amount + 'e' + token.decimals.toString();
-        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.staking] });
-        let abi = new SmartContractAbi(abiRegistry, ["Staking"]);
-        let contract = new SmartContract({ address: new Address(farmingConfig.get(tokenID)), abi: abi });
+    private async getContract(farmTokenID): Promise<SmartContract> {
+        const abiRegistry = await AbiRegistry.load({ files: [abiConfig.staking] });
+        const abi = new SmartContractAbi(abiRegistry, ["Staking"]);
+        const contract = new SmartContract({ address: new Address(farmingConfig.get(farmTokenID)), abi: abi });
+        return contract;
+    }
 
-        let transaction = contract.call({
+    async stake(tokenID: string, amount: string): Promise<TransactionModel> {
+        const contract = await this.getContract(tokenID);
+
+        const token = await this.context.getTokenMetadata(tokenID);
+        const tokenAmount = `${amount}e${token.decimals.toString()}`;
+
+        const transaction = contract.call({
             func: new ContractFunction("ESDTTransfer"),
             args: [
                 BytesValue.fromUTF8(tokenID),
@@ -47,12 +53,6 @@ export class StakingService {
             gasLimit: new GasLimit(1400000000)
         });
 
-        let transactionModel = transaction.toPlainObject();
-        return {
-            ...transactionModel,
-            options: transactionModel.options == undefined ? "" : transactionModel.options,
-            status: transactionModel.status == undefined ? "" : transactionModel.status,
-            signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-        };
+        return transaction.toPlainObject();
     }
 }
