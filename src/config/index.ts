@@ -14,3 +14,5 @@ export const elrondConfig = config.get('elrond');
 export const cacheConfig = config.get('caching');
 
 export const abiConfig = config.get('abi');
+
+export const farmingConfig = config.get('farming');

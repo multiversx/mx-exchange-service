@@ -2,14 +2,20 @@ import { StakingService } from './staking.service';
 import { Resolver, Query, ResolveField, Parent, Args, Int } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../dex.model';
-import { GetPairsArgs, PairModel } from '../models/pair.model';
-import { DexFactoryModel } from '../models/factory.model'
-import { ContextService } from '../utils/context.service';
+import { StakingModel } from '../models/staking.model';
 
 
-@Resolver(of => DexFactoryModel)
+@Resolver(of => StakingModel)
 export class StakingResolver {
     constructor(
         @Inject(StakingService) private stakingService: StakingService,
     ) { }
+
+    @Query(returns => TransactionModel)
+    async stake(
+        @Args('tokenID') tokenID: string,
+        @Args('amount') amount: string,
+    ): Promise<TransactionModel> {
+        return this.stakingService.stake(tokenID, amount);
+    }
 }
