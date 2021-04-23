@@ -1,7 +1,7 @@
 import { StakingService } from './staking.service';
 import { Resolver, Query, ResolveField, Parent, Args, Int } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
-import { TransactionModel } from '../dex.model';
+import { TransactionModel } from '../models/transaction.model';
 import { StakingModel } from '../models/staking.model';
 
 

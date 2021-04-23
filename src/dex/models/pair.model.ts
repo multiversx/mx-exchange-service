@@ -8,6 +8,15 @@ export class GetPairsArgs extends PaginationArgs {
 }
 
 @ObjectType()
+export class LiquidityPosition {
+    @Field()
+    firstToken: String;
+
+    @Field()
+    secondToken: String;
+}
+
+@ObjectType()
 export class TokenModel {
     @Field()
     token: string;
@@ -31,8 +40,14 @@ export class PairModel {
     secondToken: TokenModel;
 
     @Field()
+    liquidityPoolToken: TokenModel;
+
+    @Field()
     info: PairInfoModel;
 
     @Field()
     price: PairPriceModel;
+
+    @Field()
+    state: boolean;
 }

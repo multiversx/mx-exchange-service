@@ -5,8 +5,8 @@ import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { elrondConfig, abiConfig } from '../config';
-import BigNumber from '@elrondnetwork/erdjs/node_modules/bignumber.js';
-import { TransactionModel } from './dex.model';
+import { BigNumber } from 'bignumber.js';
+import { TransactionModel } from './models/transaction.model';
 
 @Injectable()
 export class DexService {
@@ -16,30 +16,6 @@ export class DexService {
     private cacheManagerService: CacheManagerService,
   ) {
     this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
-  }
-
-  async addLiquidity(address: string, amount0: number, amount1: number, amount0Min: number, amount1Min: number): Promise<TransactionModel> {
-    let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
-    let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
-    let contract = new SmartContract({ address: new Address(address), abi: abi });
-    let transaction = contract.call({
-      func: new ContractFunction("addLiquidity"),
-      args: [
-        new BigUIntValue(new BigNumber(amount0)),
-        new BigUIntValue(new BigNumber(amount1)),
-        new BigUIntValue(new BigNumber(amount0Min)),
-        new BigUIntValue(new BigNumber(amount1Min)),
-      ],
-      gasLimit: new GasLimit(1400000000)
-    });
-
-    let transactionModel = transaction.toPlainObject();
-    return {
-      ...transactionModel,
-      options: transactionModel.options == undefined ? "" : transactionModel.options,
-      status: transactionModel.status == undefined ? "" : transactionModel.status,
-      signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-    };
   }
 
   async esdtTransfer(address: string, token: string, amount: number): Promise<TransactionModel> {
@@ -57,13 +33,7 @@ export class DexService {
       gasLimit: new GasLimit(1400000000)
     });
 
-    let transactionModel = transaction.toPlainObject();
-    return {
-      ...transactionModel,
-      options: transactionModel.options == undefined ? "" : transactionModel.options,
-      status: transactionModel.status == undefined ? "" : transactionModel.status,
-      signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-    };
+    return transaction.toPlainObject();
   }
 
   async removeLiquidity(address: string, liqidity: number, tokenID: string, amount0Min: number, amount1Min: number): Promise<TransactionModel> {
@@ -84,13 +54,7 @@ export class DexService {
     });
 
 
-    let transactionModel = transaction.toPlainObject();
-    return {
-      ...transactionModel,
-      options: transactionModel.options == undefined ? "" : transactionModel.options,
-      status: transactionModel.status == undefined ? "" : transactionModel.status,
-      signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-    };
+    return transaction.toPlainObject();
   }
 
   async swapTokensFixedInput(address: string, tokenIn: string, amountIn: number, tokenOut: string, amountOutMin: number): Promise<TransactionModel> {
@@ -110,13 +74,7 @@ export class DexService {
       gasLimit: new GasLimit(1400000000)
     });
 
-    let transactionModel = transaction.toPlainObject();
-    return {
-      ...transactionModel,
-      options: transactionModel.options == undefined ? "" : transactionModel.options,
-      status: transactionModel.status == undefined ? "" : transactionModel.status,
-      signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-    };
+    return transaction.toPlainObject();
   }
 
   async swapTokensFixedOutput(address: string, tokenIn: string, amountInMax: number, tokenOut: string, amountOut: number): Promise<TransactionModel> {
@@ -136,12 +94,6 @@ export class DexService {
       gasLimit: new GasLimit(1400000000)
     });
 
-    let transactionModel = transaction.toPlainObject();
-    return {
-      ...transactionModel,
-      options: transactionModel.options == undefined ? "" : transactionModel.options,
-      status: transactionModel.status == undefined ? "" : transactionModel.status,
-      signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-    };
+    return transaction.toPlainObject();
   }
 }
