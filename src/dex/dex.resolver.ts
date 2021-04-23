@@ -14,7 +14,7 @@ export class DexResolver {
   async esdtTransfer(
     @Args('address') address: string,
     @Args('token') token: string,
-    @Args('amount') amount: number,
+    @Args('amount') amount: string,
   ): Promise<TransactionModel> {
     return await this.dexService.esdtTransfer(address, token, amount);
   }
