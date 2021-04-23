@@ -1,5 +1,5 @@
 import { Injectable, Res } from '@nestjs/common';
-import { AbiRegistry, BigUIntValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
+import { AbiRegistry, BigUIntValue } from "@elrondnetwork/erdjs";
 import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
@@ -7,6 +7,7 @@ import { CacheManagerService } from 'src/services/cache-manager/cache-manager.se
 import { elrondConfig, abiConfig } from '../config';
 import { BigNumber } from 'bignumber.js';
 import { TransactionModel } from './models/transaction.model';
+import { ContextService } from './utils/context.service';
 
 @Injectable()
 export class DexService {
@@ -14,19 +15,24 @@ export class DexService {
 
   constructor(
     private cacheManagerService: CacheManagerService,
+    private context: ContextService,
   ) {
     this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
   }
 
-  async esdtTransfer(address: string, token: string, amount: number): Promise<TransactionModel> {
+  async esdtTransfer(address: string, tokenID: string, amount: string): Promise<TransactionModel> {
     let abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
     let abi = new SmartContractAbi(abiRegistry, ["Pair"]);
     let contract = new SmartContract({ address: new Address(address), abi: abi });
+
+    const token = await this.context.getTokenMetadata(tokenID);
+    const amountToken = new BigNumber(`${amount}e${token.decimals.toString()}`);
+
     let transaction = contract.call({
       func: new ContractFunction("ESDTTransfer"),
       args: [
-        BytesValue.fromUTF8(token),
-        new BigUIntValue(new BigNumber(amount)),
+        BytesValue.fromUTF8(tokenID),
+        new BigUIntValue(new BigNumber(amountToken)),
         BytesValue.fromUTF8("acceptEsdtPayment"),
 
       ],
