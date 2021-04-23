@@ -33,7 +33,16 @@ export class PairService {
         return contract;
     }
 
-    async getToken(tokenID: string): Promise<TokenModel> {
+    async getPairToken(pairAddress: string, tokenPosition: string): Promise<TokenModel> {
+        const pairs = await this.context.getPairsMetadata();
+        const pair = pairs.find(pair => pair.address === pairAddress);
+        let tokenID: string;
+        if (tokenPosition === "firstToken") {
+            tokenID = pair?.firstToken;
+        }
+        else if (tokenPosition === "secondToken") {
+            tokenID = pair?.secondToken;
+        }
 
         return this.context.getTokenMetadata(tokenID);
     }
@@ -200,8 +209,8 @@ export class PairService {
         const contract = await this.getContract(pairAddress);
         const pairsMetadata = await this.context.getPairsMetadata();
         const pair = pairsMetadata.find(pair => pair.address === pairAddress);
-        const token0 = await this.getToken(pair.firstToken);
-        const token1 = await this.getToken(pair.secondToken);
+        const token0 = await this.context.getTokenMetadata(pair.firstToken);
+        const token1 = await this.context.getTokenMetadata(pair.secondToken);
         const amount0Denom = new BigNumber(`${amount0}e${token0.decimals.toString()}`);
         const amount1Denom = new BigNumber(`${amount1}e${token1.decimals.toString()}`);
 

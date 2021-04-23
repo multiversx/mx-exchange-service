@@ -14,16 +14,12 @@ export class PairResolver {
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel) {
-        let pairs = await this.context.getPairsMetadata();
-        let pair = pairs.find(pair => pair.address === parent.address);
-        return this.pairService.getToken(pair.firstToken);
+        return this.pairService.getPairToken(parent.address, this.firstToken.name);
     }
 
     @ResolveField()
     async secondToken(@Parent() parent: PairModel) {
-        let pairs = await this.context.getPairsMetadata();
-        let pair = pairs.find(pair => pair.address === parent.address);
-        return this.pairService.getToken(pair.secondToken);
+        return this.pairService.getPairToken(parent.address, this.secondToken.name);
     }
 
     @ResolveField()
