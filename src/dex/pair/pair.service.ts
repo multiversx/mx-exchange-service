@@ -224,7 +224,7 @@ export class PairService {
             new BigUIntValue(amount1Min),
         ]);
 
-        const transaction = addLiquidityInteraction.buildTransaction();
+        let transaction = addLiquidityInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(1000000));
 
         return transaction.toPlainObject();
