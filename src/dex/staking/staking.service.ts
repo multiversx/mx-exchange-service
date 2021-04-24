@@ -40,19 +40,13 @@ export class StakingService {
         const contract = await this.getContract(tokenID);
 
         const token = await this.context.getTokenMetadata(tokenID);
-        const tokenAmount = `${amount}e${token.decimals.toString()}`;
+        const amountDenom = new BigNumber(`${amount}e${token.decimals.toString()}`);
 
-        const transaction = contract.call({
-            func: new ContractFunction("ESDTTransfer"),
-            args: [
-                BytesValue.fromUTF8(tokenID),
-                new BigUIntValue(new BigNumber(tokenAmount)),
-                BytesValue.fromUTF8("stake"),
+        const args = [
+            BytesValue.fromUTF8(tokenID),
+            new BigUIntValue(amountDenom),
+        ];
 
-            ],
-            gasLimit: new GasLimit(1400000000)
-        });
-
-        return transaction.toPlainObject();
+        return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
     }
 }
