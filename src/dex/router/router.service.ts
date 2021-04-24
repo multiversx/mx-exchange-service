@@ -1,14 +1,14 @@
 import { TransactionModel } from '../models/transaction.model';
 import { PairModel } from '../models/pair.model';
-import { DexFactoryModel } from '../models/factory.model';
+import { FactoryModel } from '../models/factory.model';
 import { Injectable, Res } from '@nestjs/common';
 import { AbiRegistry, BigUIntValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
 import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
+import { ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
-import { ApiResponse, Client } from '@elastic/elasticsearch';
+import { Client } from '@elastic/elasticsearch';
 import { elrondConfig, abiConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 
@@ -28,15 +28,20 @@ export class RouterService {
         });
     }
 
+    private async getContract(): Promise<SmartContract> {
+        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
+        let abi = new SmartContractAbi(abiRegistry, ["Router"]);
+        let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
+
+        return contract;
+    }
+
     async getAllPairs(offset: number, limit: number): Promise<PairModel[]> {
         const cachedData = await this.cacheManagerService.getPairs();
         if (!!cachedData) {
             return cachedData.pairs.slice(offset, limit);
         }
-        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
-        let abi = new SmartContractAbi(abiRegistry, ["Router"]);
-        let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
-
+        const contract = await this.getContract();
         let getAllPairsAddressesInteraction = <Interaction>contract.methods.getAllPairsAddresses([]);
 
         let queryResponse = await contract.runQuery(this.proxy, getAllPairsAddressesInteraction.buildQuery());
@@ -51,8 +56,8 @@ export class RouterService {
         return pairs.slice(offset, limit);
     }
 
-    async getDexFactory(): Promise<DexFactoryModel> {
-        let dexFactory = new DexFactoryModel();
+    async getFactory(): Promise<FactoryModel> {
+        let dexFactory = new FactoryModel();
         dexFactory.address = elrondConfig.routerAddress;
         return dexFactory;
     }
@@ -109,69 +114,70 @@ export class RouterService {
         return totalTxCount;
     }
 
-    async createPair(token_a: string, token_b: string): Promise<TransactionModel> {
-        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
-        let abi = new SmartContractAbi(abiRegistry, ["Router"]);
-        let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
-        let transaction = contract.call({
-            func: new ContractFunction("createPair"),
-            args: [
-                BytesValue.fromUTF8(token_a),
-                BytesValue.fromUTF8(token_b)
-            ],
-            gasLimit: new GasLimit(1400000000)
-        });
+    async createPair(token0ID: string, token1ID: string): Promise<TransactionModel> {
+        const contract = await this.getContract();
 
-        let transactionModel = transaction.toPlainObject();
-        return {
-            ...transactionModel,
-            options: transactionModel.options == undefined ? "" : transactionModel.options,
-            status: transactionModel.status == undefined ? "" : transactionModel.status,
-            signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-        };
+        const createPairInteraction = <Interaction>contract.methods.createPair([
+            BytesValue.fromUTF8(token0ID),
+            BytesValue.fromUTF8(token1ID)
+        ]);
+
+        let transaction = createPairInteraction.buildTransaction();
+        transaction.setGasLimit(new GasLimit(50000000));
+        return transaction.toPlainObject();
     }
 
-    async issueLpToken(address: string, lpTokenName: string, lpTokenTicker: string): Promise<TransactionModel> {
-        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
-        let abi = new SmartContractAbi(abiRegistry, ["Router"]);
-        let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
-        let transaction = contract.call({
-            func: new ContractFunction("issueLpToken"),
-            args: [
-                BytesValue.fromHex(new Address(address).hex()),
-                BytesValue.fromUTF8(lpTokenName),
-                BytesValue.fromUTF8(lpTokenTicker)
-            ],
-            gasLimit: new GasLimit(1400000000)
-        });
-        console.log(transaction);
-        let transactionModel = transaction.toPlainObject();
-        return {
-            ...transactionModel,
-            options: transactionModel.options == undefined ? "" : transactionModel.options,
-            status: transactionModel.status == undefined ? "" : transactionModel.status,
-            signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-        };
+    async issueLpToken(pairAddress: string, lpTokenName: string, lpTokenTicker: string): Promise<TransactionModel> {
+        const contract = await this.getContract();
+        const issueLPTokenInteraction = <Interaction>contract.methods.issueLPToken([
+            BytesValue.fromHex(new Address(pairAddress).hex()),
+            BytesValue.fromUTF8(lpTokenName),
+            BytesValue.fromUTF8(lpTokenTicker)
+        ]);
+
+        let transaction = issueLPTokenInteraction.buildTransaction();
+        transaction.setGasLimit(new GasLimit(100000000));
+        return transaction.toPlainObject();
     }
 
-    async setLocalRoles(address: string): Promise<TransactionModel> {
-        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
-        let abi = new SmartContractAbi(abiRegistry, ["Router"]);
-        let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
-        let transaction = contract.call({
-            func: new ContractFunction("setLocalRoles"),
-            args: [
-                BytesValue.fromHex(new Address(address).hex()),
-            ],
-            gasLimit: new GasLimit(1400000000)
-        });
-        console.log(transaction);
-        let transactionModel = transaction.toPlainObject();
-        return {
-            ...transactionModel,
-            options: transactionModel.options == undefined ? "" : transactionModel.options,
-            status: transactionModel.status == undefined ? "" : transactionModel.status,
-            signature: transactionModel.signature == undefined ? "" : transactionModel.signature
-        };
+    async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
+        const contract = await this.getContract();
+        const setLocalRolesInteraction = <Interaction>contract.methods.setLocalRoles([
+            BytesValue.fromHex(new Address(pairAddress).hex()),
+        ]);
+
+        let transaction = setLocalRolesInteraction.buildTransaction();
+        transaction.setGasLimit(new GasLimit(25000000));
+        return transaction.toPlainObject();
+    }
+
+    async setState(address: string, enable: boolean): Promise<TransactionModel> {
+        const contract = await this.getContract();
+        const args = [BytesValue.fromHex(new Address(address).hex())]
+
+        const stateInteraction = enable ?
+            <Interaction>contract.methods.resume(args)
+            : <Interaction>contract.methods.pause(args);
+
+        let transaction = stateInteraction.buildTransaction();
+        transaction.setGasLimit(new GasLimit(1000000));
+        return transaction.toPlainObject();
+    }
+
+    async setFee(pairAddress: string, feeToAddress: string, feeTokenID: string, enable: boolean): Promise<TransactionModel> {
+        const contract = await this.getContract();
+        const args = [
+            BytesValue.fromHex(new Address(pairAddress).hex()),
+            BytesValue.fromHex(new Address(feeToAddress).hex()),
+            BytesValue.fromUTF8(feeTokenID)
+        ];
+
+        const setFeeInteraction = enable ?
+            <Interaction>contract.methods.setFeeOn([args])
+            : <Interaction>contract.methods.setFeeOff([args]);
+
+        let transaction = setFeeInteraction.buildTransaction();
+        transaction.setGasLimit(new GasLimit(1000000));
+        return transaction.toPlainObject();
     }
 }
