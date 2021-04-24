@@ -169,7 +169,7 @@ export class PairService {
         const contract = await this.getContract(pairAddress);
 
         const getTemporaryFundsInteraction = <Interaction>contract.methods.getTemporaryFunds([
-            new Address(callerAddress),
+            BytesValue.fromHex(new Address(callerAddress).hex()),
             BytesValue.fromUTF8(tokenID)
         ]);
 
@@ -227,6 +227,14 @@ export class PairService {
         let transaction = addLiquidityInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(1000000));
 
+        return transaction.toPlainObject();
+    }
+
+    async reclaimTemporaryFunds(pairAddress: string): Promise<TransactionModel> {
+        const contract = this.getContract(pairAddress);
+        const interaction = <Interaction>(await contract).methods.reclaimTemporaryFunds([]);
+        let transaction = interaction.buildTransaction();
+        transaction.setGasLimit(new GasLimit(1000000));
         return transaction.toPlainObject();
     }
 
