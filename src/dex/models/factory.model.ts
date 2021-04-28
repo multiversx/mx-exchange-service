@@ -1,7 +1,7 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
-export class DexFactoryModel {
+export class FactoryModel {
     @Field()
     address: string;
 

@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { elrondConfig, abiConfig } from '../../config';
-import { AbiRegistry } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
+import { AbiRegistry, TypedValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { ProxyProvider, Address, SmartContract, GasLimit, ApiProvider } from '@elrondnetwork/erdjs';
+import { ProxyProvider, Address, SmartContract, GasLimit, ApiProvider, ContractFunction } from '@elrondnetwork/erdjs';
 import { TokenModel } from '../models/pair.model';
+import { TransactionModel } from '../models/transaction.model';
 
 @Injectable()
 export class ContextService {
@@ -56,5 +57,13 @@ export class ContextService {
         let tokenMetadata = await this.apiFacade.getESDTToken(tokenID);
         this.cacheManagerService.setToken(tokenID, { token: tokenMetadata });
         return tokenMetadata;
+    }
+
+    async esdtTransfer(contract: SmartContract, args: TypedValue[], gasLimit: GasLimit): Promise<TransactionModel> {
+        return contract.call({
+            func: new ContractFunction("ESDTTransfer"),
+            args: args,
+            gasLimit: gasLimit
+        }).toPlainObject();
     }
 }

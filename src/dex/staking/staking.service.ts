@@ -1,14 +1,11 @@
 import { TransactionModel } from '../models/transaction.model';
-import { PairModel } from '../models/pair.model';
-import { DexFactoryModel } from '../models/factory.model';
 import { Injectable, Res } from '@nestjs/common';
 import { AbiRegistry, BigUIntValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
 import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
-import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { ContractFunction, ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
+import { ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
-import { ApiResponse, Client } from '@elastic/elasticsearch';
+import { Client } from '@elastic/elasticsearch';
 import { elrondConfig, abiConfig, farmingConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 import { BigNumber } from 'bignumber.js';
@@ -40,19 +37,13 @@ export class StakingService {
         const contract = await this.getContract(tokenID);
 
         const token = await this.context.getTokenMetadata(tokenID);
-        const tokenAmount = `${amount}e${token.decimals.toString()}`;
+        const amountDenom = new BigNumber(`${amount}e${token.decimals.toString()}`);
 
-        const transaction = contract.call({
-            func: new ContractFunction("ESDTTransfer"),
-            args: [
-                BytesValue.fromUTF8(tokenID),
-                new BigUIntValue(new BigNumber(tokenAmount)),
-                BytesValue.fromUTF8("stake"),
+        const args = [
+            BytesValue.fromUTF8(tokenID),
+            new BigUIntValue(amountDenom),
+        ];
 
-            ],
-            gasLimit: new GasLimit(1400000000)
-        });
-
-        return transaction.toPlainObject();
+        return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
     }
 }

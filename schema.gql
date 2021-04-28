@@ -2,18 +2,10 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type TransactionModel {
-  nonce: Int!
-  value: String!
-  sender: String!
-  receiver: String!
-  gasPrice: Int!
-  gasLimit: Int!
-  data: String!
-  chainID: String!
-  version: Int!
-  options: String!
-  status: String!
+type PairInfoModel {
+  reserves0: String!
+  reserves1: String!
+  totalSupply: String!
 }
 
 type PairPriceModel {
@@ -21,44 +13,68 @@ type PairPriceModel {
   secondToken: String!
 }
 
-type PairInfoModel {
-  reserves0: String!
-  reserves1: String!
-  totalSupply: String!
+type LiquidityPosition {
+  firstTokenAmount: String!
+  secondTokenAmount: String!
 }
 
 type TokenModel {
   token: String!
   name: String!
-  decimals: Int!
+  decimals: Float!
 }
 
 type PairModel {
   address: String!
   firstToken: TokenModel!
   secondToken: TokenModel!
+  liquidityPoolToken: TokenModel!
   info: PairInfoModel!
   price: PairPriceModel!
+  state: Boolean!
 }
 
-type DexFactoryModel {
+type FactoryModel {
   address: String!
-  pairCount: Int!
-  totalTxCount: Int!
-  totalVolume: Int!
-  totalLiquidity: Int!
+  pairCount: Float!
+  totalTxCount: Float!
+  totalVolume: Float!
+  totalLiquidity: Float!
+}
+
+type TransactionModel {
+  nonce: Float!
+  value: String!
+  sender: String!
+  receiver: String!
+  gasPrice: Float!
+  gasLimit: Float!
+  data: String!
+  chainID: String!
+  version: Float!
+  options: String
+  status: String
+  signature: String
 }
 
 type Query {
-  addLiquidity(amount1Min: Int!, amount0Min: Int!, amount1: Int!, amount0: Int!, address: String!): TransactionModel!
-  esdtTransfer(amount: Int!, token: String!, address: String!): TransactionModel!
-  removeLiquidity(amount1Min: Int!, amount0Min: Int!, tokenID: String!, liquidity: Int!, address: String!): TransactionModel!
-  swapTokensFixedInput(amountOutMin: Int!, tokenOut: String!, amountIn: Int!, tokenIn: String!, address: String!): TransactionModel!
-  swapTokensFixedOutput(amountOut: Int!, tokenOut: String!, amountInMax: Int!, tokenIn: String!, address: String!): TransactionModel!
-  dexFactory: DexFactoryModel!
+  factory: FactoryModel!
   pairs(offset: Int = 0, limit: Int = 10): [PairModel!]!
   createPair(token_b: String!, token_a: String!): TransactionModel!
   issueLPToken(lpTokenTicker: String!, lpTokenName: String!, address: String!): TransactionModel!
   setLocalRoles(address: String!): TransactionModel!
-  getAmountOut(amount: String!, tokenInId: String!, pairAddress: String!): Int!
+  setState(enable: Boolean!, address: String!): TransactionModel!
+  setFee(enable: Boolean!, feeTokenID: String!, feeToAddress: String!, pairAddress: String!): TransactionModel!
+  getAmountOut(amount: String!, tokenInID: String!, pairAddress: String!): String!
+  getAmountIn(amount: String!, tokenOutID: String!, pairAddress: String!): String!
+  getEquivalent(amount: String!, tokenInID: String!, pairAddress: String!): String!
+  getTemporaryFunds(tokenID: String!, callerAddress: String!, pairAddress: String!): String!
+  getLiquidityPosition(liquidityAmount: String!, pairAddress: String!): LiquidityPosition!
+  addLiquidity(tolerance: Float!, amount1: String!, amount0: String!, pairAddress: String!): TransactionModel!
+  reclaimTemporaryFunds(pairAddress: String!): TransactionModel!
+  removeLiquidity(tolerance: Float!, liquidityTokenID: String!, liquidity: String!, pairAddress: String!): TransactionModel!
+  swapTokensFixedInput(tolerance: Float!, amountOut: String!, tokenOutID: String!, amountIn: String!, tokenInID: String!, pairAddress: String!): TransactionModel!
+  swapTokensFixedOutput(tolerance: Float!, amountOut: String!, tokenOutID: String!, amountIn: String!, tokenInID: String!, pairAddress: String!): TransactionModel!
+  tokensTransfer(amount: String!, token: String!, pairAddress: String!): TransactionModel!
+  stake(amount: String!, tokenID: String!): TransactionModel!
 }

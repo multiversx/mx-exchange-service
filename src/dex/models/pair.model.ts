@@ -10,10 +10,10 @@ export class GetPairsArgs extends PaginationArgs {
 @ObjectType()
 export class LiquidityPosition {
     @Field()
-    firstToken: String;
+    firstTokenAmount: String;
 
     @Field()
-    secondToken: String;
+    secondTokenAmount: String;
 }
 
 @ObjectType()
