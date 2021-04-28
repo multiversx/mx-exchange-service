@@ -76,5 +76,5 @@ type Query {
   swapTokensFixedInput(tolerance: Float!, amountOut: String!, tokenOutID: String!, amountIn: String!, tokenInID: String!, pairAddress: String!): TransactionModel!
   swapTokensFixedOutput(tolerance: Float!, amountOut: String!, tokenOutID: String!, amountIn: String!, tokenInID: String!, pairAddress: String!): TransactionModel!
   tokensTransfer(amount: String!, token: String!, pairAddress: String!): TransactionModel!
-  stake(amount: String!, tokenID: String!): TransactionModel!
+  enterFarm(amount: String!, tokenID: String!): TransactionModel!
 }
