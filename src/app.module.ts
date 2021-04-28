@@ -9,19 +9,19 @@ import { PairModule } from './dex/pair/pair.module';
 import { StakingModule } from './dex/staking/staking.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true
-    }),
-    CacheManagerModule,
-    RouterModule,
-    PairModule,
-    StakingModule,
-    GraphQLModule.forRoot({
-      autoSchemaFile: 'schema.gql',
-    }),
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
+        CacheManagerModule,
+        RouterModule,
+        PairModule,
+        StakingModule,
+        GraphQLModule.forRoot({
+            autoSchemaFile: 'schema.gql',
+        }),
+    ],
+    controllers: [AppController],
+    providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

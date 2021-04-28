@@ -10,5 +10,4 @@ export class PairInfoModel {
 
     @Field()
     totalSupply: string;
-
 }

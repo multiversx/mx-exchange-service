@@ -1,51 +1,85 @@
 import { Injectable } from '@nestjs/common';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { elrondConfig, abiConfig } from '../../config';
-import { AbiRegistry, TypedValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
+import {
+    AbiRegistry,
+    TypedValue,
+} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { ProxyProvider, Address, SmartContract, GasLimit, ApiProvider, ContractFunction } from '@elrondnetwork/erdjs';
+import {
+    ProxyProvider,
+    Address,
+    SmartContract,
+    GasLimit,
+    ApiProvider,
+    ContractFunction,
+} from '@elrondnetwork/erdjs';
 import { TokenModel } from '../models/pair.model';
 import { TransactionModel } from '../models/transaction.model';
+
+interface PairMetadata {
+    address: string;
+    firstToken: string;
+    secondToken: string;
+}
 
 @Injectable()
 export class ContextService {
     private readonly proxy: ProxyProvider;
     private readonly apiFacade: ApiProvider;
 
-    constructor(
-        private cacheManagerService: CacheManagerService,
-    ) {
+    constructor(private cacheManagerService: CacheManagerService) {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
         this.apiFacade = new ApiProvider(elrondConfig.elrondApi, 60000);
-
     }
 
-    async getPairsMetadata() {
+    async getPairsMetadata(): Promise<PairMetadata[]> {
         const cachedData = await this.cacheManagerService.getPairsMetadata();
         if (!!cachedData) {
             return cachedData.pairsMetadata;
         }
 
-        let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
-        let abi = new SmartContractAbi(abiRegistry, ["Router"]);
-        let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
+        const abiRegistry = await AbiRegistry.load({
+            files: [abiConfig.router],
+        });
+        const abi = new SmartContractAbi(abiRegistry, ['Router']);
+        const contract = new SmartContract({
+            address: new Address(elrondConfig.routerAddress),
+            abi: abi,
+        });
 
-        let getAllPairsInteraction = <Interaction>contract.methods.getAllPairContractMetadata([]);
+        const getAllPairsInteraction: Interaction = contract.methods.getAllPairContractMetadata(
+            [],
+        );
 
-        let queryResponse = await contract.runQuery(this.proxy, getAllPairsInteraction.buildQuery());
-        let result = getAllPairsInteraction.interpretQueryResponse(queryResponse);
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            getAllPairsInteraction.buildQuery(),
+        );
+        const result = getAllPairsInteraction.interpretQueryResponse(
+            queryResponse,
+        );
 
-        let pairsMetadata = result.firstValue.valueOf().map(v => {
+        const pairsMetadata = result.firstValue.valueOf().map(v => {
             return {
                 firstToken: v.first_token_id.toString(),
                 secondToken: v.second_token_id.toString(),
-                address: v.address.toString()
-            }
+                address: v.address.toString(),
+            };
         });
-        this.cacheManagerService.setPairsMetadata({ pairsMetadata: pairsMetadata });
+        this.cacheManagerService.setPairsMetadata({
+            pairsMetadata: pairsMetadata,
+        });
 
         return pairsMetadata;
+    }
+
+    async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
+        const pairs = await this.getPairsMetadata();
+        const pair = pairs.find(pair => pair.address === pairAddress);
+
+        return pair;
     }
 
     async getTokenMetadata(tokenID: string): Promise<TokenModel> {
@@ -54,16 +88,22 @@ export class ContextService {
             return cachedData.token;
         }
 
-        let tokenMetadata = await this.apiFacade.getESDTToken(tokenID);
+        const tokenMetadata = await this.apiFacade.getESDTToken(tokenID);
         this.cacheManagerService.setToken(tokenID, { token: tokenMetadata });
         return tokenMetadata;
     }
 
-    async esdtTransfer(contract: SmartContract, args: TypedValue[], gasLimit: GasLimit): Promise<TransactionModel> {
-        return contract.call({
-            func: new ContractFunction("ESDTTransfer"),
-            args: args,
-            gasLimit: gasLimit
-        }).toPlainObject();
+    async esdtTransfer(
+        contract: SmartContract,
+        args: TypedValue[],
+        gasLimit: GasLimit,
+    ): Promise<TransactionModel> {
+        return contract
+            .call({
+                func: new ContractFunction('ESDTTransfer'),
+                args: args,
+                gasLimit: gasLimit,
+            })
+            .toPlainObject();
     }
 }

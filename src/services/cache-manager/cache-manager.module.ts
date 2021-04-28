@@ -5,9 +5,7 @@ import * as redisStore from 'cache-manager-redis-store';
 import { from } from 'rxjs';
 
 @Module({
-    providers: [
-        CacheManagerService
-    ],
+    providers: [CacheManagerService],
     imports: [
         CacheModule.register({
             ttl: 60 * 5,
@@ -18,9 +16,6 @@ import { from } from 'rxjs';
             prefix: process.env.REDIS_PREFIX,
         }),
     ],
-    exports: [
-        CacheManagerService
-    ],
+    exports: [CacheManagerService],
 })
-
-export class CacheManagerModule { }
+export class CacheManagerModule {}

@@ -2,16 +2,23 @@ import { TransactionModel } from '../models/transaction.model';
 import { PairModel } from '../models/pair.model';
 import { FactoryModel } from '../models/factory.model';
 import { Injectable, Res } from '@nestjs/common';
-import { AbiRegistry, BigUIntValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
-import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
+import {
+    AbiRegistry,
+    BigUIntValue,
+} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
+import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
+import {
+    ProxyProvider,
+    Address,
+    SmartContract,
+    GasLimit,
+} from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { Client } from '@elastic/elasticsearch';
 import { elrondConfig, abiConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
-
 
 @Injectable()
 export class RouterService {
@@ -30,8 +37,11 @@ export class RouterService {
 
     private async getContract(): Promise<SmartContract> {
         let abiRegistry = await AbiRegistry.load({ files: [abiConfig.router] });
-        let abi = new SmartContractAbi(abiRegistry, ["Router"]);
-        let contract = new SmartContract({ address: new Address(elrondConfig.routerAddress), abi: abi });
+        let abi = new SmartContractAbi(abiRegistry, ['Router']);
+        let contract = new SmartContract({
+            address: new Address(elrondConfig.routerAddress),
+            abi: abi,
+        });
 
         return contract;
     }
@@ -42,10 +52,17 @@ export class RouterService {
             return cachedData.pairs.slice(offset, limit);
         }
         const contract = await this.getContract();
-        let getAllPairsAddressesInteraction = <Interaction>contract.methods.getAllPairsAddresses([]);
+        let getAllPairsAddressesInteraction = <Interaction>(
+            contract.methods.getAllPairsAddresses([])
+        );
 
-        let queryResponse = await contract.runQuery(this.proxy, getAllPairsAddressesInteraction.buildQuery());
-        let result = getAllPairsAddressesInteraction.interpretQueryResponse(queryResponse);
+        let queryResponse = await contract.runQuery(
+            this.proxy,
+            getAllPairsAddressesInteraction.buildQuery(),
+        );
+        let result = getAllPairsAddressesInteraction.interpretQueryResponse(
+            queryResponse,
+        );
 
         let pairs = result.firstValue.valueOf().map(v => {
             let pair = new PairModel();
@@ -86,54 +103,66 @@ export class RouterService {
         for (const pair of pairs) {
             const body = {
                 size: 0,
-                'query': {
-                    'bool': {
-                        'must': [
+                query: {
+                    bool: {
+                        must: [
                             {
-                                'match': {
-                                    'receiver': pair.address
-                                }
-                            }
-                        ]
-                    }
-                }
-            }
+                                match: {
+                                    receiver: pair.address,
+                                },
+                            },
+                        ],
+                    },
+                },
+            };
 
             try {
                 const response = await this.elasticClient.search({
-                    body
+                    body,
                 });
                 totalTxCount += response.body.hits.total.value;
             } catch (e) {
                 console.log(e);
             }
-
         }
 
-        this.cacheManagerService.setTotalTxCount({ totalTxCount: totalTxCount });
+        this.cacheManagerService.setTotalTxCount({
+            totalTxCount: totalTxCount,
+        });
         return totalTxCount;
     }
 
-    async createPair(token0ID: string, token1ID: string): Promise<TransactionModel> {
+    async createPair(
+        token0ID: string,
+        token1ID: string,
+    ): Promise<TransactionModel> {
         const contract = await this.getContract();
 
-        const createPairInteraction = <Interaction>contract.methods.createPair([
-            BytesValue.fromUTF8(token0ID),
-            BytesValue.fromUTF8(token1ID)
-        ]);
+        const createPairInteraction = <Interaction>(
+            contract.methods.createPair([
+                BytesValue.fromUTF8(token0ID),
+                BytesValue.fromUTF8(token1ID),
+            ])
+        );
 
         let transaction = createPairInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(50000000));
         return transaction.toPlainObject();
     }
 
-    async issueLpToken(pairAddress: string, lpTokenName: string, lpTokenTicker: string): Promise<TransactionModel> {
+    async issueLpToken(
+        pairAddress: string,
+        lpTokenName: string,
+        lpTokenTicker: string,
+    ): Promise<TransactionModel> {
         const contract = await this.getContract();
-        const issueLPTokenInteraction = <Interaction>contract.methods.issueLPToken([
-            BytesValue.fromHex(new Address(pairAddress).hex()),
-            BytesValue.fromUTF8(lpTokenName),
-            BytesValue.fromUTF8(lpTokenTicker)
-        ]);
+        const issueLPTokenInteraction = <Interaction>(
+            contract.methods.issueLPToken([
+                BytesValue.fromHex(new Address(pairAddress).hex()),
+                BytesValue.fromUTF8(lpTokenName),
+                BytesValue.fromUTF8(lpTokenTicker),
+            ])
+        );
 
         let transaction = issueLPTokenInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(100000000));
@@ -142,21 +171,26 @@ export class RouterService {
 
     async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
         const contract = await this.getContract();
-        const setLocalRolesInteraction = <Interaction>contract.methods.setLocalRoles([
-            BytesValue.fromHex(new Address(pairAddress).hex()),
-        ]);
+        const setLocalRolesInteraction = <Interaction>(
+            contract.methods.setLocalRoles([
+                BytesValue.fromHex(new Address(pairAddress).hex()),
+            ])
+        );
 
         let transaction = setLocalRolesInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(25000000));
         return transaction.toPlainObject();
     }
 
-    async setState(address: string, enable: boolean): Promise<TransactionModel> {
+    async setState(
+        address: string,
+        enable: boolean,
+    ): Promise<TransactionModel> {
         const contract = await this.getContract();
-        const args = [BytesValue.fromHex(new Address(address).hex())]
+        const args = [BytesValue.fromHex(new Address(address).hex())];
 
-        const stateInteraction = enable ?
-            <Interaction>contract.methods.resume(args)
+        const stateInteraction = enable
+            ? <Interaction>contract.methods.resume(args)
             : <Interaction>contract.methods.pause(args);
 
         let transaction = stateInteraction.buildTransaction();
@@ -164,16 +198,21 @@ export class RouterService {
         return transaction.toPlainObject();
     }
 
-    async setFee(pairAddress: string, feeToAddress: string, feeTokenID: string, enable: boolean): Promise<TransactionModel> {
+    async setFee(
+        pairAddress: string,
+        feeToAddress: string,
+        feeTokenID: string,
+        enable: boolean,
+    ): Promise<TransactionModel> {
         const contract = await this.getContract();
         const args = [
             BytesValue.fromHex(new Address(pairAddress).hex()),
             BytesValue.fromHex(new Address(feeToAddress).hex()),
-            BytesValue.fromUTF8(feeTokenID)
+            BytesValue.fromUTF8(feeTokenID),
         ];
 
-        const setFeeInteraction = enable ?
-            <Interaction>contract.methods.setFeeOn([args])
+        const setFeeInteraction = enable
+            ? <Interaction>contract.methods.setFeeOn([args])
             : <Interaction>contract.methods.setFeeOff([args]);
 
         let transaction = setFeeInteraction.buildTransaction();
