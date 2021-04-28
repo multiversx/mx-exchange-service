@@ -1,18 +1,25 @@
 import { TransactionModel } from '../models/transaction.model';
 import { Injectable, Res } from '@nestjs/common';
-import { AbiRegistry, BigUIntValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem";
-import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
+import {
+    AbiRegistry,
+    BigUIntValue,
+} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
+import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
-import { ProxyProvider, Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
+import {
+    ProxyProvider,
+    Address,
+    SmartContract,
+    GasLimit,
+} from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
 import { Client } from '@elastic/elasticsearch';
 import { elrondConfig, abiConfig, farmingConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 import { BigNumber } from 'bignumber.js';
 
-
 @Injectable()
-export class StakingService {
+export class FarmService {
     private readonly proxy: ProxyProvider;
     private readonly elasticClient: Client;
 
@@ -27,17 +34,27 @@ export class StakingService {
     }
 
     private async getContract(farmTokenID): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({ files: [abiConfig.staking] });
-        const abi = new SmartContractAbi(abiRegistry, ["Staking"]);
-        const contract = new SmartContract({ address: new Address(farmingConfig.get(farmTokenID)), abi: abi });
+        const abiRegistry = await AbiRegistry.load({
+            files: [abiConfig.farm],
+        });
+        const abi = new SmartContractAbi(abiRegistry, ['Farm']);
+        const contract = new SmartContract({
+            address: new Address(farmingConfig.get(farmTokenID)),
+            abi: abi,
+        });
         return contract;
     }
 
-    async stake(tokenID: string, amount: string): Promise<TransactionModel> {
+    async enterFarm(
+        tokenID: string,
+        amount: string,
+    ): Promise<TransactionModel> {
         const contract = await this.getContract(tokenID);
 
         const token = await this.context.getTokenMetadata(tokenID);
-        const amountDenom = new BigNumber(`${amount}e${token.decimals.toString()}`);
+        const amountDenom = new BigNumber(
+            `${amount}e${token.decimals.toString()}`,
+        );
 
         const args = [
             BytesValue.fromUTF8(tokenID),

@@ -6,7 +6,7 @@ import { GraphQLModule } from '@nestjs/graphql';
 import { CacheManagerModule } from './services/cache-manager/cache-manager.module';
 import { RouterModule } from './dex/router/router.module';
 import { PairModule } from './dex/pair/pair.module';
-import { StakingModule } from './dex/staking/staking.module';
+import { FarmModule } from './dex/farm/farm.module';
 
 @Module({
     imports: [
@@ -16,7 +16,7 @@ import { StakingModule } from './dex/staking/staking.module';
         CacheManagerModule,
         RouterModule,
         PairModule,
-        StakingModule,
+        FarmModule,
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
         }),

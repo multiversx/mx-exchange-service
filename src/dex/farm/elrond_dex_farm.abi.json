@@ -1,14 +1,18 @@
 {
-    "name": "Staking",
+    "name": "Farm",
     "constructor": {
         "inputs": [
             {
-                "name": "staking_pool_token_id",
+                "name": "farming_pool_token_id",
                 "type": "TokenIdentifier"
             },
             {
                 "name": "router_address",
                 "type": "Address"
+            },
+            {
+                "name": "farm_with_lp_tokens",
+                "type": "bool"
             }
         ],
         "outputs": []
@@ -43,6 +47,42 @@
             "outputs": []
         },
         {
+            "name": "addTrustedPairAsOracle",
+            "inputs": [
+                {
+                    "name": "first_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeTrustedPairAsOracle",
+            "inputs": [
+                {
+                    "name": "first_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "addAcceptedPairAddressAndLpToken",
             "inputs": [
                 {
@@ -71,7 +111,7 @@
             "outputs": []
         },
         {
-            "name": "stake",
+            "name": "enterFarm",
             "payableInTokens": [
                 "*"
             ],
@@ -79,15 +119,7 @@
             "outputs": []
         },
         {
-            "name": "unstake",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "unbond",
+            "name": "exitFarm",
             "payableInTokens": [
                 "*"
             ],
@@ -113,7 +145,7 @@
             ]
         },
         {
-            "name": "issueStakeToken",
+            "name": "issueFarmToken",
             "payableInTokens": [
                 "EGLD"
             ],
@@ -130,34 +162,30 @@
             "outputs": []
         },
         {
-            "name": "issueUnstakeToken",
-            "payableInTokens": [
-                "EGLD"
-            ],
+            "name": "setLocalRolesFarmToken",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getFarmContribution",
             "inputs": [
                 {
-                    "name": "token_display_name",
-                    "type": "bytes"
+                    "name": "token_in",
+                    "type": "TokenIdentifier"
                 },
                 {
-                    "name": "token_ticker",
-                    "type": "bytes"
+                    "name": "amount_in",
+                    "type": "BigUint"
                 }
             ],
-            "outputs": []
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
         },
         {
-            "name": "setLocalRolesStakeToken",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "setLocalRolesUnstakeToken",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "getStakingPoolTokenIdAndAmounts",
+            "name": "getFarmingPoolTokenIdAndAmounts",
             "inputs": [],
             "outputs": [
                 {
@@ -166,35 +194,17 @@
             ]
         },
         {
-            "name": "getPairForLpToken",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
+            "name": "getAllAcceptedTokens",
+            "inputs": [],
             "outputs": [
                 {
-                    "type": "Address"
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_result": true
                 }
             ]
         },
         {
-            "name": "getLpTokenForPair",
-            "inputs": [
-                {
-                    "name": "pair_address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getStakingPoolTokenId",
+            "name": "getFarmingPoolTokenId",
             "inputs": [],
             "outputs": [
                 {
@@ -203,16 +213,7 @@
             ]
         },
         {
-            "name": "getStakeTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getUnstakeTokenId",
+            "name": "getFarmTokenId",
             "inputs": [],
             "outputs": [
                 {
