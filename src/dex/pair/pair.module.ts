@@ -7,6 +7,6 @@ import { ContextModule } from '../utils/context.module';
 @Module({
     imports: [CacheManagerModule, ContextModule],
     providers: [PairService, PairResolver],
-    exports: [PairService]
+    exports: [PairService],
 })
-export class PairModule { }
+export class PairModule {}
