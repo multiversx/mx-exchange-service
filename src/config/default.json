@@ -22,6 +22,6 @@
     "abi": {
         "router": "./src/dex/router/elrond_dex_router.abi.json",
         "pair": "./src/dex/pair/elrond_dex_pair.abi.json",
-        "staking": "./src/dex/staking/elrond_dex_staking.abi.json"
+        "farm": "./src/dex/farm/elrond_dex_farm.abi.json"
     }
 }

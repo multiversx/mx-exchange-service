@@ -5,7 +5,6 @@ import { ContextService } from './context.service';
 @Module({
     imports: [CacheManagerModule],
     providers: [ContextService],
-    exports: [ContextService]
+    exports: [ContextService],
 })
-
-export class ContextModule { }
+export class ContextModule {}

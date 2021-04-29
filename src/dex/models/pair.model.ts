@@ -4,16 +4,15 @@ import { PairInfoModel } from './pair-info.model';
 import { PairPriceModel } from './pair-price.model';
 
 @ArgsType()
-export class GetPairsArgs extends PaginationArgs {
-}
+export class GetPairsArgs extends PaginationArgs {}
 
 @ObjectType()
 export class LiquidityPosition {
     @Field()
-    firstTokenAmount: String;
+    firstTokenAmount: string;
 
     @Field()
-    secondTokenAmount: String;
+    secondTokenAmount: string;
 }
 
 @ObjectType()

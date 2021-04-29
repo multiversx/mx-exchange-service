@@ -7,6 +7,6 @@ import { ContextModule } from '../utils/context.module';
 @Module({
     imports: [CacheManagerModule, ContextModule],
     providers: [RouterService, RouterResolver],
-    exports: [RouterService]
+    exports: [RouterService],
 })
-export class RouterModule { }
+export class RouterModule {}

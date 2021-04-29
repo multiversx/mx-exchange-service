@@ -9,21 +9,25 @@ const Keys = {
     pairCount: () => 'pairCount',
     totalTxCount: () => 'totalTxCount',
     token: (tokenID: string) => `token.${tokenID}`,
-    lpToken: (address: string) => `lptoken.${address}`
+    lpToken: (address: string) => `lptoken.${address}`,
 };
 
 @Injectable()
 export class CacheManagerService {
     constructor(
-        @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache
-    ) { }
+        @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
+    ) {}
 
     async getNetworkConfig(): Promise<Record<string, any>> {
         return this.cacheManager.get(Keys.networkConfig());
     }
 
     async setNetworkConfig(networkConfig: Record<string, any>): Promise<void> {
-        await this.set(Keys.networkConfig(), networkConfig, cacheConfig.networkConfig);
+        await this.set(
+            Keys.networkConfig(),
+            networkConfig,
+            cacheConfig.networkConfig,
+        );
     }
 
     async getPairsMetadata(): Promise<Record<string, any>> {
@@ -55,7 +59,11 @@ export class CacheManagerService {
     }
 
     async setTotalTxCount(totalTxCount: Record<string, any>): Promise<void> {
-        await this.set(Keys.totalTxCount(), totalTxCount, cacheConfig.txTotalCount);
+        await this.set(
+            Keys.totalTxCount(),
+            totalTxCount,
+            cacheConfig.txTotalCount,
+        );
     }
 
     async getToken(tokenID: string): Promise<Record<string, any>> {
@@ -70,7 +78,10 @@ export class CacheManagerService {
         return this.cacheManager.get(Keys.lpToken(address));
     }
 
-    async setLpToken(address: string, token: Record<string, any>): Promise<void> {
+    async setLpToken(
+        address: string,
+        token: Record<string, any>,
+    ): Promise<void> {
         await this.set(Keys.lpToken(address), token, cacheConfig.token);
     }
 

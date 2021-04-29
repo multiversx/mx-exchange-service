@@ -1,16 +1,20 @@
 import { RouterService } from './router.service';
-import { Resolver, Query, ResolveField, Parent, Args, Int } from '@nestjs/graphql';
+import {
+    Resolver,
+    Query,
+    ResolveField,
+    Parent,
+    Args,
+    Int,
+} from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../models/pair.model';
-import { FactoryModel } from '../models/factory.model'
-
+import { FactoryModel } from '../models/factory.model';
 
 @Resolver(of => FactoryModel)
 export class RouterResolver {
-    constructor(
-        @Inject(RouterService) private routerService: RouterService,
-    ) { }
+    constructor(@Inject(RouterService) private routerService: RouterService) {}
 
     @Query(returns => FactoryModel)
     async factory() {
@@ -27,7 +31,7 @@ export class RouterResolver {
         return this.routerService.getTotalTxCount();
     }
 
-    @Query((returns => [PairModel]))
+    @Query(returns => [PairModel])
     async pairs(@Args() page: GetPairsArgs): Promise<PairModel[]> {
         return this.routerService.getAllPairs(page.offset, page.limit);
     }
@@ -35,7 +39,7 @@ export class RouterResolver {
     @Query(returns => TransactionModel)
     async createPair(
         @Args('token_a') token_a: string,
-        @Args('token_b') token_b: string
+        @Args('token_b') token_b: string,
     ): Promise<TransactionModel> {
         return this.routerService.createPair(token_a, token_b);
     }
@@ -44,9 +48,13 @@ export class RouterResolver {
     async issueLPToken(
         @Args('address') address: string,
         @Args('lpTokenName') lpTokenName: string,
-        @Args('lpTokenTicker') lpTokenTicker: string
+        @Args('lpTokenTicker') lpTokenTicker: string,
     ): Promise<TransactionModel> {
-        return this.routerService.issueLpToken(address, lpTokenName, lpTokenTicker);
+        return this.routerService.issueLpToken(
+            address,
+            lpTokenName,
+            lpTokenTicker,
+        );
     }
 
     @Query(returns => TransactionModel)
@@ -59,7 +67,7 @@ export class RouterResolver {
     @Query(returns => TransactionModel)
     async setState(
         @Args('address') address: string,
-        @Args('enable') enable: boolean
+        @Args('enable') enable: boolean,
     ): Promise<TransactionModel> {
         return this.routerService.setState(address, enable);
     }
@@ -69,9 +77,13 @@ export class RouterResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('feeToAddress') feeToAddress: string,
         @Args('feeTokenID') feeTokenID: string,
-        @Args('enable') enable: boolean
+        @Args('enable') enable: boolean,
     ): Promise<TransactionModel> {
-        return this.routerService.setFee(pairAddress, feeToAddress, feeTokenID, enable);
+        return this.routerService.setFee(
+            pairAddress,
+            feeToAddress,
+            feeTokenID,
+            enable,
+        );
     }
-
 }
