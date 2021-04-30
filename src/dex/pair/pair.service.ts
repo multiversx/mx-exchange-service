@@ -482,6 +482,7 @@ export class PairService {
         const args = [
             BytesValue.fromUTF8(tokenID),
             new BigUIntValue(amountDenom),
+            BytesValue.fromUTF8('acceptEsdtPayment'),
         ];
 
         return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
