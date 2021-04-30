@@ -485,6 +485,10 @@ export class PairService {
             BytesValue.fromUTF8('acceptEsdtPayment'),
         ];
 
-        return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
+        return this.context.esdtTransfer(
+            contract,
+            args,
+            new GasLimit(20000000),
+        );
     }
 }
