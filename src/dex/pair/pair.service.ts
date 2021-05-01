@@ -13,7 +13,7 @@ import {
     GasLimit,
 } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
-import { elrondConfig, abiConfig } from '../../config';
+import { elrondConfig, abiConfig, gasConfig } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TokenModel } from '../models/pair.model';
@@ -352,7 +352,7 @@ export class PairService {
         );
 
         const transaction = addLiquidityInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(1000000));
+        transaction.setGasLimit(new GasLimit(gasConfig.addLiquidity));
 
         return transaction.toPlainObject();
     }
@@ -365,7 +365,7 @@ export class PairService {
             [],
         );
         const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(1000000));
+        transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
         return transaction.toPlainObject();
     }
 
@@ -398,7 +398,11 @@ export class PairService {
             new BigUIntValue(amount1Min),
         ];
 
-        return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
+        return this.context.esdtTransfer(
+            contract,
+            args,
+            new GasLimit(gasConfig.removeLiquidity),
+        );
     }
 
     async swapTokensFixedInput(
@@ -423,7 +427,11 @@ export class PairService {
             new BigUIntValue(amountOutDenom.multipliedBy(1 - tolerance)),
         ];
 
-        return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
+        return this.context.esdtTransfer(
+            contract,
+            args,
+            new GasLimit(gasConfig.swapTokens),
+        );
     }
 
     async swapTokensFixedOutput(
@@ -448,7 +456,11 @@ export class PairService {
             new BigUIntValue(amountOutDenom),
         ];
 
-        return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
+        return this.context.esdtTransfer(
+            contract,
+            args,
+            new GasLimit(gasConfig.swapTokens),
+        );
     }
 
     async esdtTransfer(
@@ -468,7 +480,7 @@ export class PairService {
         return this.context.esdtTransfer(
             contract,
             args,
-            new GasLimit(20000000),
+            new GasLimit(gasConfig.esdtTransfer),
         );
     }
 }
