@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
+import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
 import { elrondConfig, abiConfig } from '../../config';
 import {
     AbiRegistry,
