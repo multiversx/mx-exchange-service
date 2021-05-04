@@ -13,7 +13,7 @@ import {
     GasLimit,
 } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
-import { elrondConfig, abiConfig } from '../../config';
+import { elrondConfig, abiConfig, gasConfig } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TokenModel } from '../models/pair.model';
@@ -110,15 +110,9 @@ export class PairService {
         );
 
         const pairInfo = result.values.map(v => v.valueOf());
-        const reserves0 = new BigNumber(pairInfo[0]).dividedBy(
-            new BigNumber(`10e${token0.decimals}`),
-        );
-        const reserves1 = new BigNumber(pairInfo[1]).dividedBy(
-            new BigNumber(`10e${token1.decimals}`),
-        );
-        const totalSupply = new BigNumber(pairInfo[2]).dividedBy(
-            new BigNumber(`10e${lpToken.decimals}`),
-        );
+        const reserves0 = this.context.fromBigNumber(pairInfo[0], token0);
+        const reserves1 = this.context.fromBigNumber(pairInfo[1], token1);
+        const totalSupply = this.context.fromBigNumber(pairInfo[2], lpToken);
 
         return {
             reserves0: reserves0.toString(),
@@ -171,11 +165,10 @@ export class PairService {
                 : pairMetadata.firstToken;
         const tokenIn = await this.context.getTokenMetadata(tokenInID);
         const tokenOut = await this.context.getTokenMetadata(tokenOutID);
-        const tokenAmount = `${amount}e${tokenIn.decimals.toString()}`;
 
         const getAmountOut = contract.methods.getAmountOut([
             BytesValue.fromUTF8(tokenInID),
-            new BigUIntValue(new BigNumber(tokenAmount)),
+            new BigUIntValue(this.context.toBigNumber(amount, tokenIn)),
         ]);
 
         const queryResponse = await contract.runQuery(
@@ -184,8 +177,9 @@ export class PairService {
         );
 
         const result = getAmountOut.interpretQueryResponse(queryResponse);
-        const amountOut = new BigNumber(result.firstValue.valueOf()).dividedBy(
-            `10e${tokenOut.decimals}`,
+        const amountOut = this.context.fromBigNumber(
+            result.firstValue.valueOf(),
+            tokenOut,
         );
         return amountOut.toString();
     }
@@ -203,12 +197,11 @@ export class PairService {
                 : pairMetadata.firstToken;
         const tokenIn = await this.context.getTokenMetadata(tokenInID);
         const tokenOut = await this.context.getTokenMetadata(tokenOutID);
-        const tokenAmount = `${amount}e${tokenOut.decimals.toString()}`;
 
         const getAmountInInteraction: Interaction = contract.methods.getAmountIn(
             [
                 BytesValue.fromUTF8(tokenOutID),
-                new BigUIntValue(new BigNumber(tokenAmount)),
+                new BigUIntValue(this.context.toBigNumber(amount, tokenOut)),
             ],
         );
 
@@ -220,8 +213,9 @@ export class PairService {
         const result = getAmountInInteraction.interpretQueryResponse(
             queryResponse,
         );
-        const amountIn = new BigNumber(result.firstValue.valueOf()).dividedBy(
-            `10e${tokenIn.decimals}`,
+        const amountIn = this.context.fromBigNumber(
+            result.firstValue.valueOf(),
+            tokenIn,
         );
         return amountIn.toString();
     }
@@ -239,12 +233,11 @@ export class PairService {
                 : pairMetadata.firstToken;
         const tokenIn = await this.context.getTokenMetadata(tokenInID);
         const tokenOut = await this.context.getTokenMetadata(tokenOutID);
-        const tokenAmount = `${amount}e${tokenIn.decimals.toString()}`;
 
         const getEquivalentInteraction: Interaction = contract.methods.getEquivalent(
             [
                 BytesValue.fromUTF8(tokenInID),
-                new BigUIntValue(new BigNumber(tokenAmount)),
+                new BigUIntValue(this.context.toBigNumber(amount, tokenIn)),
             ],
         );
 
@@ -256,10 +249,10 @@ export class PairService {
         const result = getEquivalentInteraction.interpretQueryResponse(
             queryResponse,
         );
-        const equivalentAmount = new BigNumber(
-            result.firstValue.valueOf(),
-        ).dividedBy(`10e${tokenOut.decimals}`);
-        return equivalentAmount.toString();
+
+        return this.context
+            .fromBigNumber(result.firstValue.valueOf(), tokenOut)
+            .toString();
     }
 
     async getTemporaryFunds(
@@ -268,6 +261,7 @@ export class PairService {
         tokenID: string,
     ): Promise<string> {
         const contract = await this.getContract(pairAddress);
+        const token = await this.context.getTokenMetadata(tokenID);
 
         const getTemporaryFundsInteraction: Interaction = contract.methods.getTemporaryFunds(
             [
@@ -284,7 +278,9 @@ export class PairService {
         const result = getTemporaryFundsInteraction.interpretQueryResponse(
             queryResponse,
         );
-        return result.firstValue.valueOf();
+        return this.context
+            .fromBigNumber(result.firstValue.valueOf(), token)
+            .toString();
     }
 
     async getLiquidityPosition(
@@ -300,10 +296,9 @@ export class PairService {
             pairMetadata.secondToken,
         );
         const lpToken = await this.getLpToken(pairAddress);
-        const tokenAmount = `${amount}e${lpToken.decimals.toString()}`;
 
         const getLiquidityPositionInteraction: Interaction = contract.methods.getTokensForGivenPosition(
-            [new BigUIntValue(new BigNumber(tokenAmount))],
+            [new BigUIntValue(this.context.toBigNumber(amount, lpToken))],
         );
 
         const queryResponse = await contract.runQuery(
@@ -315,12 +310,14 @@ export class PairService {
             queryResponse,
         );
 
-        const firstTokenAmount = new BigNumber(
+        const firstTokenAmount = this.context.fromBigNumber(
             result.values[0].valueOf().amount,
-        ).dividedBy(`10e${token0.decimals}`);
-        const secondTokenAmount = new BigNumber(
+            token0,
+        );
+        const secondTokenAmount = this.context.fromBigNumber(
             result.values[1].valueOf().amount,
-        ).dividedBy(`10e${token1.decimals}`);
+            token1,
+        );
 
         return {
             firstTokenAmount: firstTokenAmount.toString(),
@@ -339,12 +336,8 @@ export class PairService {
         const pair = pairsMetadata.find(pair => pair.address === pairAddress);
         const token0 = await this.context.getTokenMetadata(pair.firstToken);
         const token1 = await this.context.getTokenMetadata(pair.secondToken);
-        const amount0Denom = new BigNumber(
-            `${amount0}e${token0.decimals.toString()}`,
-        );
-        const amount1Denom = new BigNumber(
-            `${amount1}e${token1.decimals.toString()}`,
-        );
+        const amount0Denom = this.context.toBigNumber(amount0, token0);
+        const amount1Denom = this.context.toBigNumber(amount1, token1);
 
         const amount0Min = amount0Denom.multipliedBy(1 - tolerance);
         const amount1Min = amount1Denom.multipliedBy(1 - tolerance);
@@ -359,7 +352,7 @@ export class PairService {
         );
 
         const transaction = addLiquidityInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(1000000));
+        transaction.setGasLimit(new GasLimit(gasConfig.addLiquidity));
 
         return transaction.toPlainObject();
     }
@@ -372,7 +365,7 @@ export class PairService {
             [],
         );
         const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(1000000));
+        transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
         return transaction.toPlainObject();
     }
 
@@ -385,9 +378,7 @@ export class PairService {
         const contract = await this.getContract(pairAddress);
 
         const token = await this.context.getTokenMetadata(tokenID);
-        const liquidityDenom = new BigNumber(
-            `${liqidity}e${token.decimals.toString()}`,
-        );
+        const liquidityDenom = this.context.toBigNumber(liqidity, token);
         const liquidityPosition = await this.getLiquidityPosition(
             pairAddress,
             liqidity,
@@ -407,7 +398,11 @@ export class PairService {
             new BigUIntValue(amount1Min),
         ];
 
-        return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
+        return this.context.esdtTransfer(
+            contract,
+            args,
+            new GasLimit(gasConfig.removeLiquidity),
+        );
     }
 
     async swapTokensFixedInput(
@@ -422,12 +417,8 @@ export class PairService {
         const tokenIn = await this.context.getTokenMetadata(tokenInID);
         const tokenOut = await this.context.getTokenMetadata(tokenOutID);
 
-        const amountInDenom = new BigNumber(
-            `${amountIn}e${tokenIn.decimals.toString()}`,
-        );
-        const amountOutDenom = new BigNumber(
-            `${amountOut}e${tokenOut.decimals.toString()}`,
-        );
+        const amountInDenom = this.context.toBigNumber(amountIn, tokenIn);
+        const amountOutDenom = this.context.toBigNumber(amountOut, tokenOut);
         const args = [
             BytesValue.fromUTF8(tokenInID),
             new BigUIntValue(amountInDenom),
@@ -436,7 +427,11 @@ export class PairService {
             new BigUIntValue(amountOutDenom.multipliedBy(1 - tolerance)),
         ];
 
-        return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
+        return this.context.esdtTransfer(
+            contract,
+            args,
+            new GasLimit(gasConfig.swapTokens),
+        );
     }
 
     async swapTokensFixedOutput(
@@ -451,12 +446,8 @@ export class PairService {
         const tokenIn = await this.context.getTokenMetadata(tokenInID);
         const tokenOut = await this.context.getTokenMetadata(tokenOutID);
 
-        const amountInDenom = new BigNumber(
-            `${amountIn}e${tokenIn.decimals.toString()}`,
-        );
-        const amountOutDenom = new BigNumber(
-            `${amountOut}e${tokenOut.decimals.toString()}`,
-        );
+        const amountInDenom = this.context.toBigNumber(amountIn, tokenIn);
+        const amountOutDenom = this.context.toBigNumber(amountOut, tokenOut);
         const args = [
             BytesValue.fromUTF8(tokenInID),
             new BigUIntValue(amountInDenom.multipliedBy(1 + tolerance)),
@@ -465,7 +456,11 @@ export class PairService {
             new BigUIntValue(amountOutDenom),
         ];
 
-        return this.context.esdtTransfer(contract, args, new GasLimit(1000000));
+        return this.context.esdtTransfer(
+            contract,
+            args,
+            new GasLimit(gasConfig.swapTokens),
+        );
     }
 
     async esdtTransfer(
@@ -475,20 +470,17 @@ export class PairService {
     ): Promise<TransactionModel> {
         const contract = await this.getContract(pairAddress);
         const token = await this.context.getTokenMetadata(tokenID);
-        const amountDenom = new BigNumber(
-            `${amount}e${token.decimals.toString()}`,
-        );
 
         const args = [
             BytesValue.fromUTF8(tokenID),
-            new BigUIntValue(amountDenom),
+            new BigUIntValue(this.context.toBigNumber(amount, token)),
             BytesValue.fromUTF8('acceptEsdtPayment'),
         ];
 
         return this.context.esdtTransfer(
             contract,
             args,
-            new GasLimit(20000000),
+            new GasLimit(gasConfig.esdtTransfer),
         );
     }
 }

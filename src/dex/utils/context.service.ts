@@ -17,6 +17,7 @@ import {
 } from '@elrondnetwork/erdjs';
 import { TokenModel } from '../models/pair.model';
 import { TransactionModel } from '../models/transaction.model';
+import BigNumber from 'bignumber.js';
 
 interface PairMetadata {
     address: string;
@@ -105,5 +106,13 @@ export class ContextService {
                 gasLimit: gasLimit,
             })
             .toPlainObject();
+    }
+
+    public toBigNumber(value: string, token: TokenModel): BigNumber {
+        return new BigNumber(`${value}e+${token.decimals}`);
+    }
+
+    public fromBigNumber(value: string, token: TokenModel): BigNumber {
+        return new BigNumber(`${value}e-${token.decimals}`);
     }
 }
