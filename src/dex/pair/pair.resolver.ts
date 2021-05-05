@@ -10,14 +10,10 @@ import {
 import { Inject } from '@nestjs/common';
 import { LiquidityPosition, PairModel } from '../models/pair.model';
 import { TransactionModel } from '../models/transaction.model';
-import { ContextService } from '../utils/context.service';
 
 @Resolver(of => PairModel)
 export class PairResolver {
-    constructor(
-        @Inject(PairService) private pairService: PairService,
-        @Inject(ContextService) private context: ContextService,
-    ) {}
+    constructor(@Inject(PairService) private pairService: PairService) {}
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel) {
@@ -53,7 +49,7 @@ export class PairResolver {
 
     @ResolveField()
     async state(@Parent() parent: PairModel) {
-        return this.pairService.getPairState(parent.address);
+        return this.pairService.getState(parent.address);
     }
 
     @Query(returns => String)
