@@ -2,7 +2,6 @@ import { CacheModule, Module } from '@nestjs/common';
 import { CacheManagerService } from './cache-manager.service';
 
 import * as redisStore from 'cache-manager-redis-store';
-import { from } from 'rxjs';
 
 @Module({
     providers: [CacheManagerService],

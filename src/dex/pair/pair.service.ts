@@ -12,7 +12,7 @@ import {
     SmartContract,
     GasLimit,
 } from '@elrondnetwork/erdjs';
-import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
+import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
 import { elrondConfig, abiConfig, gasConfig } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';

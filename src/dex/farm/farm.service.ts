@@ -12,7 +12,7 @@ import {
     SmartContract,
     GasLimit,
 } from '@elrondnetwork/erdjs';
-import { CacheManagerService } from 'src/services/cache-manager/cache-manager.service';
+import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
 import { Client } from '@elastic/elasticsearch';
 import { elrondConfig, abiConfig, farmingConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
