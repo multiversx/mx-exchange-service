@@ -17,4 +17,4 @@ export const gasConfig = config.get('gas');
 
 export const abiConfig = config.get('abi');
 
-export const farmingConfig = config.get('farming');
+export const farmsConfig = config.get('farms');

@@ -37,6 +37,34 @@
             ]
         },
         {
+            "name": "setPerBlockRewardAmount",
+            "inputs": [
+                {
+                    "name": "per_block_amount",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getLastRewardEpoch",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getPerBlockRewardAmount",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
             "name": "pause",
             "inputs": [],
             "outputs": []
@@ -167,6 +195,49 @@
             "outputs": []
         },
         {
+            "name": "simulateEnterFarm",
+            "inputs": [
+                {
+                    "name": "token_in",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "amount_in",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "SftTokenAmountPair"
+                }
+            ]
+        },
+        {
+            "name": "simulateExitFarm",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "TokenAmountPair"
+                },
+                {
+                    "type": "TokenAmountPair"
+                }
+            ]
+        },
+        {
             "name": "getFarmContribution",
             "inputs": [
                 {
@@ -258,5 +329,36 @@
             ]
         }
     ],
-    "types": {}
+    "types": {
+        "SftTokenAmountPair": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "TokenAmountPair": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        }
+    }
 }

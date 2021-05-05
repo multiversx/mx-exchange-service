@@ -31,7 +31,7 @@ type PairModel {
   liquidityPoolToken: TokenModel!
   info: PairInfoModel!
   price: PairPriceModel!
-  state: Boolean!
+  state: String!
 }
 
 type FactoryModel {
@@ -57,6 +57,14 @@ type TransactionModel {
   signature: String
 }
 
+type FarmModel {
+  address: String!
+  farmedToken: TokenModel!
+  farmToken: TokenModel!
+  acceptedTokens: [TokenModel!]
+  state: String!
+}
+
 type Query {
   factory: FactoryModel!
   pairs(offset: Int = 0, limit: Int = 10): [PairModel!]!
@@ -76,5 +84,8 @@ type Query {
   swapTokensFixedInput(tolerance: Float!, amountOut: String!, tokenOutID: String!, amountIn: String!, tokenInID: String!, pairAddress: String!): TransactionModel!
   swapTokensFixedOutput(tolerance: Float!, amountOut: String!, tokenOutID: String!, amountIn: String!, tokenInID: String!, pairAddress: String!): TransactionModel!
   tokensTransfer(amount: String!, token: String!, pairAddress: String!): TransactionModel!
-  enterFarm(amount: String!, tokenID: String!): TransactionModel!
+  farms: [FarmModel!]!
+  getRewardsForPosition(amount: String!, farmTokenNonce: Float!, farmAddress: String!): String!
+  enterFarm(amount: String!, tokenInID: String!, farmAddress: String!): TransactionModel!
+  exitFarm(amount: String!, farmTokenNonce: Float!, farmTokenID: String!, sender: String!, farmAddress: String!): TransactionModel!
 }

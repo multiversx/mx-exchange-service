@@ -136,20 +136,9 @@ export class PairService {
         return pairPrice;
     }
 
-    async getPairState(pairAddress: string): Promise<boolean> {
+    async getState(pairAddress: string): Promise<string> {
         const contract = await this.getContract(pairAddress);
-
-        const getStateInteraction: Interaction = contract.methods.getState([]);
-
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            getStateInteraction.buildQuery(),
-        );
-
-        const result = getStateInteraction.interpretQueryResponse(
-            queryResponse,
-        );
-        return result.firstValue.valueOf();
+        return await this.context.getState(contract);
     }
 
     async getAmountOut(
