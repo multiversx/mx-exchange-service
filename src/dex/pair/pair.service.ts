@@ -328,8 +328,12 @@ export class PairService {
         const amount0Denom = this.context.toBigNumber(amount0, token0);
         const amount1Denom = this.context.toBigNumber(amount1, token1);
 
-        const amount0Min = amount0Denom.multipliedBy(1 - tolerance);
-        const amount1Min = amount1Denom.multipliedBy(1 - tolerance);
+        const amount0Min = amount0Denom
+            .multipliedBy(1 - tolerance)
+            .integerValue();
+        const amount1Min = amount1Denom
+            .multipliedBy(1 - tolerance)
+            .integerValue();
 
         const addLiquidityInteraction: Interaction = contract.methods.addLiquidity(
             [
@@ -374,10 +378,14 @@ export class PairService {
         );
         const amount0Min = new BigNumber(
             liquidityPosition.firstTokenAmount.toString(),
-        ).multipliedBy(1 - tolerance);
+        )
+            .multipliedBy(1 - tolerance)
+            .integerValue();
         const amount1Min = new BigNumber(
             liquidityPosition.secondTokenAmount.toString(),
-        ).multipliedBy(1 - tolerance);
+        )
+            .multipliedBy(1 - tolerance)
+            .integerValue();
 
         const args = [
             BytesValue.fromUTF8(tokenID),
@@ -408,12 +416,16 @@ export class PairService {
 
         const amountInDenom = this.context.toBigNumber(amountIn, tokenIn);
         const amountOutDenom = this.context.toBigNumber(amountOut, tokenOut);
+        const amountOutDenomMin = amountOutDenom
+            .multipliedBy(1 - tolerance)
+            .integerValue();
+
         const args = [
             BytesValue.fromUTF8(tokenInID),
             new BigUIntValue(amountInDenom),
             BytesValue.fromUTF8('swapTokensFixedInput'),
             BytesValue.fromUTF8(tokenOutID),
-            new BigUIntValue(amountOutDenom.multipliedBy(1 - tolerance)),
+            new BigUIntValue(amountOutDenomMin),
         ];
 
         return this.context.esdtTransfer(
@@ -437,10 +449,13 @@ export class PairService {
 
         const amountInDenom = this.context.toBigNumber(amountIn, tokenIn);
         const amountOutDenom = this.context.toBigNumber(amountOut, tokenOut);
+        const amountInDenomMax = amountInDenom
+            .multipliedBy(1 + tolerance)
+            .integerValue();
         const args = [
             BytesValue.fromUTF8(tokenInID),
-            new BigUIntValue(amountInDenom.multipliedBy(1 + tolerance)),
-            BytesValue.fromUTF8('swapTokensFixedInput'),
+            new BigUIntValue(amountInDenomMax),
+            BytesValue.fromUTF8('swapTokensFixedOutput'),
             BytesValue.fromUTF8(tokenOutID),
             new BigUIntValue(amountOutDenom),
         ];
