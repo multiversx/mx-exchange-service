@@ -6,20 +6,25 @@
         "explorer": "https://testnet-explorer.elrond.com",
         "chainID": "T",
         "version": 1,
-        "routerAddress": "erd1qqqqqqqqqqqqqpgq4mw3xgjznarjep5m2zu8kt7qwfk0dajf0n4sg9hmsf"
+        "routerAddress": "erd1qqqqqqqqqqqqqpgq4mw3xgjznarjep5m2zu8kt7qwfk0dajf0n4sg9hmsf",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgq4mw3xgjznarjep5m2zu8kt7qwfk0dajf0n4sg9hmsf"
     },
-    "farming": {
-        "LPT-1fd8e1": "erd1qqqqqqqqqqqqqpgqc8relmv973g34dytgd55p3hmaaljvka30n4s6n64q6"
-    },
+    "farms": [
+        {
+            "MEX-115f3c": "erd1qqqqqqqqqqqqqpgqmztpvzusd5aanc83grftuv086h7v26ek0n4su9gmsp"
+        }
+    ],
     "caching": {
         "networkConfig": 1,
         "pairsMetadata": 10,
         "pairs": 10,
         "txTotalCount": 10,
         "pairCount": 10,
-        "token": 10
+        "token": 10,
+        "default": 60
     },
     "gas": {
+        "default": 1000000,
         "esdtTransfer": 20000000,
         "reclaimTemporaryFunds": 20000000,
         "addLiquidity": 30000000,
@@ -34,6 +39,9 @@
     "abi": {
         "router": "./src/dex/router/elrond_dex_router.abi.json",
         "pair": "./src/dex/pair/elrond_dex_pair.abi.json",
-        "farm": "./src/dex/farm/elrond_dex_farm.abi.json"
+        "farm": "./src/dex/farm/elrond_dex_farm.abi.json",
+        "distribution": "./src/dex/distribution/sc_distribution_rs.abi.json",
+        "lockedRewards": "./src/dex/locked-rewards/sc-locked-rewards.abi.json",
+        "proxy": "./src/dex/utils/sc-proxy-dex.abi.json"
     }
 }

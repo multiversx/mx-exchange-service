@@ -94,6 +94,25 @@ export class ContextService {
         return tokenMetadata;
     }
 
+    async getState(contract: SmartContract): Promise<string> {
+        const interaction: Interaction = contract.methods.getState([]);
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const state = response.firstValue.valueOf();
+
+        switch (state) {
+            case false:
+                return 'Inactive';
+            case true:
+                return 'Active';
+            default:
+                return '';
+        }
+    }
+
     async esdtTransfer(
         contract: SmartContract,
         args: TypedValue[],
@@ -106,6 +125,20 @@ export class ContextService {
                 gasLimit: gasLimit,
             })
             .toPlainObject();
+    }
+
+    async nftTransfer(
+        contract: SmartContract,
+        args: TypedValue[],
+        gasLimit: GasLimit,
+    ): Promise<TransactionModel> {
+        const transaction = contract.call({
+            func: new ContractFunction('ESDTNFTTransfer'),
+            args: args,
+            gasLimit: gasLimit,
+        });
+
+        return transaction.toPlainObject();
     }
 
     public toBigNumber(value: string, token: TokenModel): BigNumber {
