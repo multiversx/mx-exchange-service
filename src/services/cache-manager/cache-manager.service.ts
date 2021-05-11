@@ -85,7 +85,11 @@ export class CacheManagerService {
         await this.set(Keys.lpToken(address), token, cacheConfig.token);
     }
 
-    private async set(key: string, value: any, ttl: number) {
+    async get(key: string): Promise<any> {
+        return this.cacheManager.get(key);
+    }
+
+    async set(key: string, value: any, ttl: number) {
         if (!value) {
             return;
         }

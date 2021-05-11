@@ -1,0 +1,430 @@
+{
+    "name": "ProxyDexImpl",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "asset_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "proxy_pair_params",
+                "type": "ProxyPairParams"
+            },
+            {
+                "name": "proxy_farm_params",
+                "type": "ProxyFarmParams"
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "setProxyPairParams",
+            "inputs": [
+                {
+                    "name": "proxy_params",
+                    "type": "ProxyPairParams"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "addPairToIntermediate",
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeIntermediatedPair",
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "acceptEsdtPaymentProxy",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "reclaimTemporaryFundsProxy",
+            "inputs": [
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "first_token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_nonce",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "addLiquidityProxy",
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "first_token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "first_token_amount_desired",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "first_token_amount_min",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "second_token_amount_desired",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_amount_min",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeLiquidityProxy",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token_amount_min",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_amount_min",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getTemporaryFunds",
+            "inputs": [
+                {
+                    "name": "caller",
+                    "type": "Address"
+                },
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getIntermediatedPairs",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getWrappedLpTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "setProxyFarmParams",
+            "inputs": [
+                {
+                    "name": "proxy_params",
+                    "type": "ProxyFarmParams"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "addFarmToIntermediate",
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeIntermediatedFarm",
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "enterFarmProxy",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "exitFarmProxy",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "claimRewardsProxy",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getIntermediatedFarms",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getWrappedFarmTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "addAcceptedLockedAssetTokenId",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeAcceptedLockedAssetTokenId",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getAcceptedLockedAssetsTokenIds",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "issueSftProxyPair",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "issueSftProxyFarm",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRoles",
+            "inputs": [
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "address",
+                    "type": "Address"
+                },
+                {
+                    "name": "roles",
+                    "type": "variadic<EsdtLocalRole>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        }
+    ],
+    "types": {
+        "ProxyFarmParams": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "simulate_enter_farm_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "simulate_exit_farm_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "claim_rewards_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "enter_farm_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "exit_farm_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "burn_tokens_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "mint_tokens_gas_limit",
+                    "type": "u64"
+                }
+            ]
+        },
+        "ProxyPairParams": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "add_liquidity_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "accept_esdt_payment_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "ask_for_lp_token_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "ask_for_tokens_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "remove_liquidity_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "burn_tokens_gas_limit",
+                    "type": "u64"
+                },
+                {
+                    "name": "mint_tokens_gas_limit",
+                    "type": "u64"
+                }
+            ]
+        }
+    }
+}
