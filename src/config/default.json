@@ -41,6 +41,7 @@
         "pair": "./src/dex/pair/elrond_dex_pair.abi.json",
         "farm": "./src/dex/farm/elrond_dex_farm.abi.json",
         "distribution": "./src/dex/distribution/sc_distribution_rs.abi.json",
+        "lockedRewards": "./src/dex/locked-rewards/sc-locked-rewards.abi.json",
         "proxy": "./src/dex/utils/sc-proxy-dex.abi.json"
     }
 }

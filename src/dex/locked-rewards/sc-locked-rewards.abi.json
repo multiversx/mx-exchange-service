@@ -1,0 +1,136 @@
+{
+    "name": "LockedRewardsImpl",
+    "constructor": {
+        "docs": [
+            "Epoch refers to duration in epochs, not a specific deadline"
+        ],
+        "inputs": [
+            {
+                "name": "mex_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "epoch_reward_percentage_pairs",
+                "type": "variadic<multi<u64,BigUint>>",
+                "multi_arg": true
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "issueNft",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRoles",
+            "inputs": [
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "address",
+                    "type": "Address"
+                },
+                {
+                    "name": "roles",
+                    "type": "variadic<EsdtLocalRole>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "addEpochReward",
+            "inputs": [
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "percentage",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeEpochReward",
+            "inputs": [
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "lockMexTokens",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "epochs_lock_time",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "unlockAssets",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getRewardPercentageForEpochsWaited",
+            "inputs": [
+                {
+                    "name": "epochs_waited",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "calculateInterest",
+            "inputs": [
+                {
+                    "name": "deposit_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "epochs_waited",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        }
+    ],
+    "types": {}
+}
