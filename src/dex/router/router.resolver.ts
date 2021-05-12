@@ -31,6 +31,11 @@ export class RouterResolver {
         return this.routerService.getTotalTxCount();
     }
 
+    @Query(returns => [String])
+    async pairAddresses(): Promise<string[]> {
+        return this.routerService.getAllPairsAddress();
+    }
+
     @Query(returns => [PairModel])
     async pairs(@Args() page: GetPairsArgs): Promise<PairModel[]> {
         return this.routerService.getAllPairs(page.offset, page.limit);
@@ -38,10 +43,10 @@ export class RouterResolver {
 
     @Query(returns => TransactionModel)
     async createPair(
-        @Args('token_a') token_a: string,
-        @Args('token_b') token_b: string,
+        @Args('firstTokenID') firstTokenID: string,
+        @Args('secondTokenID') secondTokenID: string,
     ): Promise<TransactionModel> {
-        return this.routerService.createPair(token_a, token_b);
+        return this.routerService.createPair(firstTokenID, secondTokenID);
     }
 
     @Query(returns => TransactionModel)
