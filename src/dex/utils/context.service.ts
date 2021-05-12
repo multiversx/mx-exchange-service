@@ -35,6 +35,42 @@ export class ContextService {
         this.apiFacade = new ApiProvider(elrondConfig.elrondApi, 60000);
     }
 
+    async getAllPairsAddress(): Promise<string[]> {
+        const cachedData = await this.cacheManagerService.getPairsAddress();
+        if (!!cachedData) {
+            return cachedData.pairsAddress;
+        }
+
+        const abiRegistry = await AbiRegistry.load({
+            files: [abiConfig.router],
+        });
+        const abi = new SmartContractAbi(abiRegistry, ['Router']);
+        const contract = new SmartContract({
+            address: new Address(elrondConfig.routerAddress),
+            abi: abi,
+        });
+
+        const interaction: Interaction = contract.methods.getAllPairsAddresses(
+            [],
+        );
+
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            interaction.buildQuery(),
+        );
+        const result = interaction.interpretQueryResponse(queryResponse);
+
+        const pairsAddress = result.firstValue.valueOf().map(pairAddress => {
+            return pairAddress.toString();
+        });
+
+        this.cacheManagerService.setPairsAddress({
+            pairsAddress: pairsAddress,
+        });
+
+        return pairsAddress;
+    }
+
     async getPairsMetadata(): Promise<PairMetadata[]> {
         const cachedData = await this.cacheManagerService.getPairsMetadata();
         if (!!cachedData) {
