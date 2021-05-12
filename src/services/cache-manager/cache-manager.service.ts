@@ -9,7 +9,16 @@ const Keys = {
     pairCount: () => 'pairCount',
     totalTxCount: () => 'totalTxCount',
     token: (tokenID: string) => `token.${tokenID}`,
-    lpToken: (address: string) => `lptoken.${address}`,
+};
+
+const FactoryKeys = {
+    pairsAddress: () => 'pairsAddress',
+};
+
+const PairKeys = {
+    firstTokenID: (pairAddress: string) => `${pairAddress}.firstTokenID`,
+    secondTokenID: (pairAddress: string) => `${pairAddress}.secondTokenID`,
+    lpTokenID: (pairAddress: string) => `${pairAddress}.lpTokenID`,
 };
 
 @Injectable()
@@ -18,15 +27,60 @@ export class CacheManagerService {
         @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
     ) {}
 
-    async getNetworkConfig(): Promise<Record<string, any>> {
-        return this.cacheManager.get(Keys.networkConfig());
+    async getPairsAddress(): Promise<Record<string, any>> {
+        return this.cacheManager.get(FactoryKeys.pairsAddress());
     }
 
-    async setNetworkConfig(networkConfig: Record<string, any>): Promise<void> {
+    async setPairsAddress(pairsAddress: Record<string, any>): Promise<void> {
+        return this.set(
+            FactoryKeys.pairsAddress(),
+            pairsAddress,
+            cacheConfig.default,
+        );
+    }
+
+    async getFirstTokenID(pairAddress: string): Promise<Record<string, any>> {
+        return this.cacheManager.get(PairKeys.firstTokenID(pairAddress));
+    }
+
+    async setFirstTokenID(
+        pairAddress: string,
+        firstTokenID: Record<string, any>,
+    ): Promise<void> {
+        return this.set(
+            PairKeys.firstTokenID(pairAddress),
+            firstTokenID,
+            cacheConfig.default,
+        );
+    }
+
+    async getSecondTokenID(pairAddress: string): Promise<Record<string, any>> {
+        return this.cacheManager.get(PairKeys.secondTokenID(pairAddress));
+    }
+
+    async setSecondTokenID(
+        pairAddress: string,
+        secondTokenID: Record<string, any>,
+    ): Promise<void> {
+        return this.set(
+            PairKeys.secondTokenID(pairAddress),
+            secondTokenID,
+            cacheConfig.default,
+        );
+    }
+
+    async getLpTokenID(pairAddress: string): Promise<Record<string, any>> {
+        return this.cacheManager.get(PairKeys.lpTokenID(pairAddress));
+    }
+
+    async setLpTokenID(
+        pairAddress: string,
+        tokenID: Record<string, any>,
+    ): Promise<void> {
         await this.set(
-            Keys.networkConfig(),
-            networkConfig,
-            cacheConfig.networkConfig,
+            PairKeys.lpTokenID(pairAddress),
+            tokenID,
+            cacheConfig.token,
         );
     }
 
@@ -72,17 +126,6 @@ export class CacheManagerService {
 
     async setToken(tokenID: string, token: Record<string, any>): Promise<void> {
         await this.set(Keys.token(tokenID), token, cacheConfig.token);
-    }
-
-    async getLpToken(address: string): Promise<Record<string, any>> {
-        return this.cacheManager.get(Keys.lpToken(address));
-    }
-
-    async setLpToken(
-        address: string,
-        token: Record<string, any>,
-    ): Promise<void> {
-        await this.set(Keys.lpToken(address), token, cacheConfig.token);
     }
 
     async get(key: string): Promise<any> {
