@@ -16,11 +16,24 @@ import {
 } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
 import { Client } from '@elastic/elasticsearch';
-import { elrondConfig, abiConfig, farmsConfig, gasConfig } from '../../config';
+import {
+    elrondConfig,
+    abiConfig,
+    farmsConfig,
+    gasConfig,
+    cacheConfig,
+} from '../../config';
 import { ContextService } from '../utils/context.service';
 import { BigNumber } from 'bignumber.js';
 import { TokenModel } from '../models/pair.model';
 import { FarmModel } from '../models/farm.model';
+
+const FarmKeys = {
+    farmedTokenID: (farmAddress: string) => `${farmAddress}.farmedTokenID`,
+    farmTokenID: (farmAddress: string) => `${farmAddress}.farmTokenID`,
+    acceptedTokensID: (farmAddress: string) =>
+        `${farmAddress}.acceptedTokensID`,
+};
 
 @Injectable()
 export class FarmService {
@@ -50,6 +63,15 @@ export class FarmService {
     }
 
     async getFarmedToken(farmAddress: string): Promise<TokenModel> {
+        const cachedData = await this.cacheManagerService.get(
+            FarmKeys.farmedTokenID(farmAddress),
+        );
+        if (!!cachedData) {
+            return await this.context.getTokenMetadata(
+                cachedData.farmedTokenID,
+            );
+        }
+
         const contract = await this.getContract(farmAddress);
         const interaction: Interaction = contract.methods.getFarmingPoolTokenId(
             [],
@@ -60,12 +82,24 @@ export class FarmService {
         );
         const response = interaction.interpretQueryResponse(queryResponse);
 
-        return await this.context.getTokenMetadata(
-            response.firstValue.valueOf(),
+        const farmedTokenID = response.firstValue.valueOf();
+        this.cacheManagerService.set(
+            FarmKeys.farmedTokenID(farmAddress),
+            { farmedTokenID: farmedTokenID },
+            cacheConfig.token,
         );
+
+        return await this.context.getTokenMetadata(farmedTokenID);
     }
 
     async getFarmToken(farmAddress: string): Promise<TokenModel> {
+        const cachedData = await this.cacheManagerService.get(
+            FarmKeys.farmTokenID(farmAddress),
+        );
+        if (!!cachedData) {
+            return await this.context.getTokenMetadata(cachedData.farmTokenID);
+        }
+
         const contract = await this.getContract(farmAddress);
         const interaction: Interaction = contract.methods.getFarmTokenId([]);
         const queryResponse = await contract.runQuery(
@@ -74,12 +108,31 @@ export class FarmService {
         );
         const response = interaction.interpretQueryResponse(queryResponse);
 
-        return await this.context.getTokenMetadata(
-            response.firstValue.valueOf(),
+        const farmTokenID = response.firstValue.valueOf();
+        this.cacheManagerService.set(
+            FarmKeys.farmTokenID(farmAddress),
+            { farmTokenID: farmTokenID },
+            cacheConfig.token,
         );
+
+        return await this.context.getTokenMetadata(farmTokenID);
     }
 
     async getAcceptedTokens(farmAddress: string): Promise<TokenModel[]> {
+        const cachedData = await this.cacheManagerService.get(
+            FarmKeys.acceptedTokensID(farmAddress),
+        );
+        if (!!cachedData) {
+            const acceptedTokens: TokenModel[] = [];
+            for (const tokenID of cachedData.acceptedTokensID) {
+                acceptedTokens.push(
+                    await this.context.getTokenMetadata(tokenID),
+                );
+            }
+
+            return acceptedTokens;
+        }
+
         const contract = await this.getContract(farmAddress);
         const interaction: Interaction = contract.methods.getAllAcceptedTokens(
             [],
@@ -89,11 +142,20 @@ export class FarmService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
+        const acceptedTokensID = response.values.map(acceptedTokenID =>
+            acceptedTokenID.valueOf(),
+        );
+        this.cacheManagerService.set(
+            FarmKeys.acceptedTokensID(farmAddress),
+            { acceptedTokensID: acceptedTokensID },
+            cacheConfig.token,
+        );
+
         const acceptedTokens: TokenModel[] = [];
-        for (const rawTokenID of response.values) {
-            const tokenID = rawTokenID.valueOf();
+        for (const tokenID of acceptedTokensID) {
             acceptedTokens.push(await this.context.getTokenMetadata(tokenID));
         }
+
         return acceptedTokens;
     }
 
