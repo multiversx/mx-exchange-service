@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import {
     AbiRegistry,
     BigUIntValue,
@@ -13,14 +14,27 @@ import {
     GasLimit,
 } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
-import { elrondConfig, abiConfig, gasConfig } from '../../config';
+import { elrondConfig, abiConfig, gasConfig, cacheConfig } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TokenModel } from '../models/pair.model';
-import { PairPriceModel } from '../models/pair-price.model';
 import { TransactionModel } from '../models/transaction.model';
 import { ContextService } from '../utils/context.service';
 import { RedlockService } from 'src/services';
+import {
+    quote,
+    getAmountOut,
+    getAmountIn,
+    getTokenForGivenPosition,
+} from './pair.utils';
+
+const PairKeys = {
+    reserves: (pairAddress: string, tokenID: string) =>
+        `${pairAddress}.${tokenID}.reserves`,
+    totalSupply: (pairAddress: string) => `${pairAddress}.totalSupply`,
+    temporaryFunds: (pairAddress: string, caller: string, tokenID: string) =>
+        `${pairAddress}.temporaryFunds.${caller}.${tokenID}`,
+};
 
 @Injectable()
 export class PairService {
@@ -45,28 +59,56 @@ export class PairService {
         return contract;
     }
 
-    async getPairToken(
-        pairAddress: string,
-        tokenPosition: string,
-    ): Promise<TokenModel> {
-        const pairs = await this.context.getPairsMetadata();
-        const pair = pairs.find(pair => pair.address === pairAddress);
-        let tokenID: string;
-        if (tokenPosition === 'firstToken') {
-            tokenID = pair?.firstToken;
-        } else if (tokenPosition === 'secondToken') {
-            tokenID = pair?.secondToken;
-        }
-
-        return this.context.getTokenMetadata(tokenID);
-    }
-
-    async getLpToken(pairAddress: string): Promise<TokenModel> {
-        const cachedData = await this.cacheManagerService.getLpToken(
+    private async getFirstTokenID(pairAddress: string): Promise<string> {
+        const cachedData = await this.cacheManagerService.getFirstTokenID(
             pairAddress,
         );
         if (!!cachedData) {
-            return cachedData.lpToken;
+            return cachedData.firstTokenID;
+        }
+
+        const contract = await this.getContract(pairAddress);
+        const interaction: Interaction = contract.methods.getFirstTokenId([]);
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const firstTokenID = response.firstValue.valueOf().toString();
+        this.cacheManagerService.setFirstTokenID(pairAddress, {
+            firstTokenID: firstTokenID,
+        });
+        return firstTokenID;
+    }
+
+    private async getSecondTokenID(pairAddress: string): Promise<string> {
+        const cachedData = await this.cacheManagerService.getSecondTokenID(
+            pairAddress,
+        );
+        if (!!cachedData) {
+            return cachedData.secondTokenID;
+        }
+
+        const contract = await this.getContract(pairAddress);
+        const interaction: Interaction = contract.methods.getSecondTokenId([]);
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const secondTokenID = response.firstValue.valueOf().toString();
+        this.cacheManagerService.setSecondTokenID(pairAddress, {
+            secondTokenID: secondTokenID,
+        });
+        return secondTokenID;
+    }
+
+    private async getLpTokenID(pairAddress: string): Promise<string> {
+        const cachedData = await this.cacheManagerService.getLpTokenID(
+            pairAddress,
+        );
+        if (!!cachedData) {
+            return cachedData.lpTokenID;
         }
 
         const contract = await this.getContract(pairAddress);
@@ -77,65 +119,165 @@ export class PairService {
             this.proxy,
             getLpTokenInteraction.buildQuery(),
         );
-        const result = getLpTokenInteraction.interpretQueryResponse(
+        const response = getLpTokenInteraction.interpretQueryResponse(
             queryResponse,
         );
-        const token = await this.context.getTokenMetadata(
-            result.firstValue.valueOf(),
-        );
 
-        this.cacheManagerService.setLpToken(pairAddress, { lpToken: token });
-        return token;
+        const lpTokenID = response.firstValue.valueOf().toString();
+        this.cacheManagerService.setLpTokenID(pairAddress, {
+            lpTokenID: lpTokenID,
+        });
+        return lpTokenID;
     }
 
-    async getPairInfo(pairAddress: string): Promise<PairInfoModel> {
-        const contract = await this.getContract(pairAddress);
-        const pairMetadata = await this.context.getPairMetadata(pairAddress);
-        const token0 = await this.context.getTokenMetadata(
-            pairMetadata.firstToken,
-        );
-        const token1 = await this.context.getTokenMetadata(
-            pairMetadata.secondToken,
-        );
-        const lpToken = await this.getLpToken(pairAddress);
+    async getPairToken(
+        pairAddress: string,
+        tokenPosition: string,
+    ): Promise<TokenModel> {
+        let tokenID: string;
+        if (tokenPosition === 'firstToken') {
+            tokenID = await this.getFirstTokenID(pairAddress);
+        } else if (tokenPosition === 'secondToken') {
+            tokenID = await this.getSecondTokenID(pairAddress);
+        }
 
-        const getAllPairsInteraction: Interaction = contract.methods.getReservesAndTotalSupply(
+        return this.context.getTokenMetadata(tokenID);
+    }
+
+    async getLpToken(pairAddress: string): Promise<TokenModel> {
+        const lpTokenID = await this.getLpTokenID(pairAddress);
+
+        return await this.context.getTokenMetadata(lpTokenID);
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async cachePairsInfo(): Promise<void> {
+        const pairsAddress = await this.context.getAllPairsAddress();
+        for (const pairAddress of pairsAddress) {
+            const resource = `${pairAddress}.pairInfo`;
+            const lockExpire = 40;
+            let lock;
+
+            try {
+                lock = await this.redlockService.lockTryOnce(
+                    resource,
+                    lockExpire,
+                );
+            } catch (e) {
+                return;
+            }
+            if (lock === 0) {
+                return;
+            }
+
+            this.getPairInfoMetadata(pairAddress);
+        }
+    }
+
+    async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
+        const contract = await this.getContract(pairAddress);
+
+        const interaction: Interaction = contract.methods.getReservesAndTotalSupply(
             [],
         );
 
         const queryResponse = await contract.runQuery(
             this.proxy,
-            getAllPairsInteraction.buildQuery(),
+            interaction.buildQuery(),
         );
-        const result = getAllPairsInteraction.interpretQueryResponse(
-            queryResponse,
+        const response = interaction.interpretQueryResponse(queryResponse);
+
+        const pairInfo = response.values.map(v => v.valueOf());
+
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+
+        this.cacheManagerService.set(
+            PairKeys.reserves(pairAddress, firstTokenID),
+            { reserves: pairInfo[0] },
+            cacheConfig.default,
+        );
+        this.cacheManagerService.set(
+            PairKeys.reserves(pairAddress, secondTokenID),
+            { reserves: pairInfo[1] },
+            cacheConfig.default,
+        );
+        this.cacheManagerService.set(
+            PairKeys.totalSupply(pairAddress),
+            { totalSupply: pairInfo[2] },
+            cacheConfig.default,
         );
 
-        const pairInfo = result.values.map(v => v.valueOf());
-        const reserves0 = this.context.fromBigNumber(pairInfo[0], token0);
-        const reserves1 = this.context.fromBigNumber(pairInfo[1], token1);
-        const totalSupply = this.context.fromBigNumber(pairInfo[2], lpToken);
+        return {
+            reserves0: pairInfo[0],
+            reserves1: pairInfo[1],
+            totalSupply: pairInfo[2],
+        };
+    }
+
+    async getPairInfo(pairAddress: string): Promise<PairInfoModel> {
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        const lpTokenID = await this.getLpTokenID(pairAddress);
+
+        const firstToken = await this.context.getTokenMetadata(firstTokenID);
+        const secondToken = await this.context.getTokenMetadata(secondTokenID);
+        const lpToken = await this.context.getTokenMetadata(lpTokenID);
+
+        const cachedFirstReserve = await this.cacheManagerService.get(
+            PairKeys.reserves(pairAddress, firstTokenID),
+        );
+        const cachedSecondReserve = await this.cacheManagerService.get(
+            PairKeys.reserves(pairAddress, secondTokenID),
+        );
+        const cachedTotalSupply = await this.cacheManagerService.get(
+            PairKeys.totalSupply(pairAddress),
+        );
+
+        if (
+            !!cachedFirstReserve &&
+            !!cachedSecondReserve &&
+            !!cachedTotalSupply
+        ) {
+            const reserves0 = this.context.fromBigNumber(
+                cachedFirstReserve.reserves,
+                firstToken,
+            );
+            const reserves1 = this.context.fromBigNumber(
+                cachedSecondReserve.reserves,
+                secondToken,
+            );
+            const totalSupply = this.context.fromBigNumber(
+                cachedTotalSupply.totalSupply,
+                lpToken,
+            );
+
+            return {
+                reserves0: reserves0.toString(),
+                reserves1: reserves1.toString(),
+                totalSupply: totalSupply.toString(),
+            };
+        }
+
+        const pairInfo = await this.getPairInfoMetadata(pairAddress);
+        const reserves0 = this.context.fromBigNumber(
+            pairInfo.reserves0,
+            firstToken,
+        );
+        const reserves1 = this.context.fromBigNumber(
+            pairInfo.reserves1,
+            secondToken,
+        );
+        const totalSupply = this.context.fromBigNumber(
+            pairInfo.totalSupply,
+            lpToken,
+        );
 
         return {
             reserves0: reserves0.toString(),
             reserves1: reserves1.toString(),
             totalSupply: totalSupply.toString(),
         };
-    }
-
-    async getPairPrice(address: string): Promise<PairPriceModel> {
-        const pairsMetadata = await this.context.getPairsMetadata();
-        const pair = pairsMetadata.find(pair => pair.address === address);
-        const pairPrice = new PairPriceModel();
-
-        pairPrice.firstToken = (
-            await this.getAmountOut(pair.address, pair.firstToken, '1')
-        ).toString();
-        pairPrice.secondToken = (
-            await this.getAmountOut(pair.address, pair.secondToken, '1')
-        ).toString();
-
-        return pairPrice;
     }
 
     async getState(pairAddress: string): Promise<string> {
@@ -148,31 +290,42 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const contract = await this.getContract(pairAddress);
-        const pairMetadata = await this.context.getPairMetadata(pairAddress);
-        const tokenOutID =
-            pairMetadata.firstToken === tokenInID
-                ? pairMetadata.secondToken
-                : pairMetadata.firstToken;
-        const tokenIn = await this.context.getTokenMetadata(tokenInID);
-        const tokenOut = await this.context.getTokenMetadata(tokenOutID);
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        const firstToken = await this.context.getTokenMetadata(firstTokenID);
+        const secondToken = await this.context.getTokenMetadata(secondTokenID);
+        const pairInfo = await this.getPairInfoMetadata(pairAddress);
 
-        const getAmountOut = contract.methods.getAmountOut([
-            BytesValue.fromUTF8(tokenInID),
-            new BigUIntValue(this.context.toBigNumber(amount, tokenIn)),
-        ]);
-
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            getAmountOut.buildQuery(),
-        );
-
-        const result = getAmountOut.interpretQueryResponse(queryResponse);
-        const amountOut = this.context.fromBigNumber(
-            result.firstValue.valueOf(),
-            tokenOut,
-        );
-        return amountOut.toString();
+        let amountDenom;
+        let amountOut: BigNumber;
+        switch (tokenInID) {
+            case firstTokenID:
+                amountDenom = this.context
+                    .toBigNumber(amount, firstToken)
+                    .toString();
+                amountOut = getAmountOut(
+                    amountDenom,
+                    pairInfo.reserves0,
+                    pairInfo.reserves1,
+                );
+                return this.context
+                    .fromBigNumber(amountOut.toString(), secondToken)
+                    .toString();
+            case secondTokenID:
+                amountDenom = this.context
+                    .toBigNumber(amount, secondToken)
+                    .toString();
+                amountOut = getAmountOut(
+                    amountDenom,
+                    pairInfo.reserves1,
+                    pairInfo.reserves0,
+                );
+                return this.context
+                    .fromBigNumber(amountOut.toString(), firstToken)
+                    .toString();
+            default:
+                return;
+        }
     }
 
     async getAmountIn(
@@ -180,35 +333,42 @@ export class PairService {
         tokenOutID: string,
         amount: string,
     ): Promise<string> {
-        const contract = await this.getContract(pairAddress);
-        const pairMetadata = await this.context.getPairMetadata(pairAddress);
-        const tokenInID =
-            pairMetadata.firstToken === tokenOutID
-                ? pairMetadata.secondToken
-                : pairMetadata.firstToken;
-        const tokenIn = await this.context.getTokenMetadata(tokenInID);
-        const tokenOut = await this.context.getTokenMetadata(tokenOutID);
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        const firstToken = await this.context.getTokenMetadata(firstTokenID);
+        const secondToken = await this.context.getTokenMetadata(secondTokenID);
+        const pairInfo = await this.getPairInfoMetadata(pairAddress);
 
-        const getAmountInInteraction: Interaction = contract.methods.getAmountIn(
-            [
-                BytesValue.fromUTF8(tokenOutID),
-                new BigUIntValue(this.context.toBigNumber(amount, tokenOut)),
-            ],
-        );
-
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            getAmountInInteraction.buildQuery(),
-        );
-
-        const result = getAmountInInteraction.interpretQueryResponse(
-            queryResponse,
-        );
-        const amountIn = this.context.fromBigNumber(
-            result.firstValue.valueOf(),
-            tokenIn,
-        );
-        return amountIn.toString();
+        let amountDenom;
+        let amountIn: BigNumber;
+        switch (tokenOutID) {
+            case firstTokenID:
+                amountDenom = this.context
+                    .toBigNumber(amount, firstToken)
+                    .toString();
+                amountIn = getAmountIn(
+                    amountDenom,
+                    pairInfo.reserves1,
+                    pairInfo.reserves0,
+                );
+                return this.context
+                    .fromBigNumber(amountIn.toString(), secondToken)
+                    .toString();
+            case secondTokenID:
+                amountDenom = this.context
+                    .toBigNumber(amount, secondToken)
+                    .toString();
+                amountIn = getAmountIn(
+                    amountDenom,
+                    pairInfo.reserves0,
+                    pairInfo.reserves1,
+                );
+                return this.context
+                    .fromBigNumber(amountIn.toString(), firstToken)
+                    .toString();
+            default:
+                return;
+        }
     }
 
     async getEquivalentForLiquidity(
@@ -216,34 +376,42 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const contract = await this.getContract(pairAddress);
-        const pairMetadata = await this.context.getPairMetadata(pairAddress);
-        const tokenOutID =
-            pairMetadata.firstToken === tokenInID
-                ? pairMetadata.secondToken
-                : pairMetadata.firstToken;
-        const tokenIn = await this.context.getTokenMetadata(tokenInID);
-        const tokenOut = await this.context.getTokenMetadata(tokenOutID);
-
-        const getEquivalentInteraction: Interaction = contract.methods.getEquivalent(
-            [
-                BytesValue.fromUTF8(tokenInID),
-                new BigUIntValue(this.context.toBigNumber(amount, tokenIn)),
-            ],
-        );
-
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            getEquivalentInteraction.buildQuery(),
-        );
-
-        const result = getEquivalentInteraction.interpretQueryResponse(
-            queryResponse,
-        );
-
-        return this.context
-            .fromBigNumber(result.firstValue.valueOf(), tokenOut)
-            .toString();
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        const pairInfo = await this.getPairInfoMetadata(pairAddress);
+        const firstToken = await this.context.getTokenMetadata(firstTokenID);
+        const secondToken = await this.context.getTokenMetadata(secondTokenID);
+        console.log(pairInfo.reserves0.toString());
+        let amountDenom;
+        let equivalentOutAmount: BigNumber;
+        switch (tokenInID) {
+            case firstTokenID:
+                amountDenom = this.context
+                    .toBigNumber(amount, firstToken)
+                    .toString();
+                equivalentOutAmount = quote(
+                    amountDenom,
+                    pairInfo.reserves0,
+                    pairInfo.reserves1,
+                );
+                return this.context
+                    .fromBigNumber(equivalentOutAmount.toString(), secondToken)
+                    .toString();
+            case secondTokenID:
+                amountDenom = this.context
+                    .toBigNumber(amount, secondToken)
+                    .toString();
+                equivalentOutAmount = quote(
+                    amountDenom,
+                    pairInfo.reserves1,
+                    pairInfo.reserves0,
+                );
+                return this.context
+                    .fromBigNumber(equivalentOutAmount.toString(), firstToken)
+                    .toString();
+            default:
+                return;
+        }
     }
 
     async getTemporaryFunds(
@@ -251,68 +419,73 @@ export class PairService {
         callerAddress: string,
         tokenID: string,
     ): Promise<string> {
-        const contract = await this.getContract(pairAddress);
         const token = await this.context.getTokenMetadata(tokenID);
 
-        const getTemporaryFundsInteraction: Interaction = contract.methods.getTemporaryFunds(
-            [
-                BytesValue.fromHex(new Address(callerAddress).hex()),
-                BytesValue.fromUTF8(tokenID),
-            ],
+        const cachedData = await this.cacheManagerService.get(
+            PairKeys.temporaryFunds(pairAddress, callerAddress, tokenID),
         );
+        if (!!cachedData) {
+            return this.context
+                .fromBigNumber(cachedData.temporaryFunds, token)
+                .toString();
+        }
+
+        const contract = await this.getContract(pairAddress);
+
+        const interaction: Interaction = contract.methods.getTemporaryFunds([
+            BytesValue.fromHex(new Address(callerAddress).hex()),
+            BytesValue.fromUTF8(tokenID),
+        ]);
 
         const queryResponse = await contract.runQuery(
             this.proxy,
-            getTemporaryFundsInteraction.buildQuery(),
+            interaction.buildQuery(),
         );
 
-        const result = getTemporaryFundsInteraction.interpretQueryResponse(
-            queryResponse,
+        const response = interaction.interpretQueryResponse(queryResponse);
+
+        const temporaryFunds = response.firstValue.valueOf();
+        this.cacheManagerService.set(
+            PairKeys.temporaryFunds(pairAddress, callerAddress, tokenID),
+            { temporaryFunds: temporaryFunds },
+            cacheConfig.default,
         );
-        return this.context
-            .fromBigNumber(result.firstValue.valueOf(), token)
-            .toString();
+
+        return this.context.fromBigNumber(temporaryFunds, token).toString();
     }
 
     async getLiquidityPosition(
         pairAddress: string,
         amount: string,
     ): Promise<LiquidityPosition> {
-        const contract = await this.getContract(pairAddress);
-        const pairMetadata = await this.context.getPairMetadata(pairAddress);
-        const token0 = await this.context.getTokenMetadata(
-            pairMetadata.firstToken,
-        );
-        const token1 = await this.context.getTokenMetadata(
-            pairMetadata.secondToken,
-        );
         const lpToken = await this.getLpToken(pairAddress);
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        const pairInfo = await this.getPairInfoMetadata(pairAddress);
+        const firstToken = await this.context.getTokenMetadata(firstTokenID);
+        const secondToken = await this.context.getTokenMetadata(secondTokenID);
 
-        const getLiquidityPositionInteraction: Interaction = contract.methods.getTokensForGivenPosition(
-            [new BigUIntValue(this.context.toBigNumber(amount, lpToken))],
+        const amountDenom = this.context
+            .toBigNumber(amount, lpToken)
+            .toString();
+        const firstTokenAmount = getTokenForGivenPosition(
+            amountDenom,
+            pairInfo.reserves0,
+            pairInfo.totalSupply,
         );
-
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            getLiquidityPositionInteraction.buildQuery(),
-        );
-
-        const result = getLiquidityPositionInteraction.interpretQueryResponse(
-            queryResponse,
-        );
-
-        const firstTokenAmount = this.context.fromBigNumber(
-            result.values[0].valueOf().amount,
-            token0,
-        );
-        const secondTokenAmount = this.context.fromBigNumber(
-            result.values[1].valueOf().amount,
-            token1,
+        const secondTokenAmount = getTokenForGivenPosition(
+            amountDenom,
+            pairInfo.reserves1,
+            pairInfo.totalSupply,
         );
 
         return {
-            firstTokenAmount: firstTokenAmount.toString(),
-            secondTokenAmount: secondTokenAmount.toString(),
+            firstTokenAmount: this.context
+                .fromBigNumber(firstTokenAmount.toString(), firstToken)
+                .toString(),
+            secondTokenAmount: this.context
+                .fromBigNumber(secondTokenAmount.toString(), secondToken)
+                .toString(),
         };
     }
 
@@ -322,13 +495,13 @@ export class PairService {
         amount1: string,
         tolerance: number,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract(pairAddress);
-        const pairsMetadata = await this.context.getPairsMetadata();
-        const pair = pairsMetadata.find(pair => pair.address === pairAddress);
-        const token0 = await this.context.getTokenMetadata(pair.firstToken);
-        const token1 = await this.context.getTokenMetadata(pair.secondToken);
-        const amount0Denom = this.context.toBigNumber(amount0, token0);
-        const amount1Denom = this.context.toBigNumber(amount1, token1);
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        const firstToken = await this.context.getTokenMetadata(firstTokenID);
+        const secondToken = await this.context.getTokenMetadata(secondTokenID);
+
+        const amount0Denom = this.context.toBigNumber(amount0, firstToken);
+        const amount1Denom = this.context.toBigNumber(amount1, secondToken);
 
         const amount0Min = amount0Denom
             .multipliedBy(1 - tolerance)
@@ -337,16 +510,15 @@ export class PairService {
             .multipliedBy(1 - tolerance)
             .integerValue();
 
-        const addLiquidityInteraction: Interaction = contract.methods.addLiquidity(
-            [
-                new BigUIntValue(amount0Denom),
-                new BigUIntValue(amount1Denom),
-                new BigUIntValue(amount0Min),
-                new BigUIntValue(amount1Min),
-            ],
-        );
+        const contract = await this.getContract(pairAddress);
+        const interaction: Interaction = contract.methods.addLiquidity([
+            new BigUIntValue(amount0Denom),
+            new BigUIntValue(amount1Denom),
+            new BigUIntValue(amount0Min),
+            new BigUIntValue(amount1Min),
+        ]);
 
-        const transaction = addLiquidityInteraction.buildTransaction();
+        const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.addLiquidity));
 
         return transaction.toPlainObject();
@@ -370,25 +542,30 @@ export class PairService {
         tokenID: string,
         tolerance: number,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract(pairAddress);
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
 
+        const firstToken = await this.context.getTokenMetadata(firstTokenID);
+        const secondToken = await this.context.getTokenMetadata(secondTokenID);
         const token = await this.context.getTokenMetadata(tokenID);
+
         const liquidityDenom = this.context.toBigNumber(liqidity, token);
+
         const liquidityPosition = await this.getLiquidityPosition(
             pairAddress,
             liqidity,
         );
-        const amount0Min = new BigNumber(
-            liquidityPosition.firstTokenAmount.toString(),
-        )
+
+        const amount0Min = this.context
+            .toBigNumber(liquidityPosition.firstTokenAmount, firstToken)
             .multipliedBy(1 - tolerance)
             .integerValue();
-        const amount1Min = new BigNumber(
-            liquidityPosition.secondTokenAmount.toString(),
-        )
+        const amount1Min = this.context
+            .toBigNumber(liquidityPosition.secondTokenAmount, secondToken)
             .multipliedBy(1 - tolerance)
             .integerValue();
 
+        const contract = await this.getContract(pairAddress);
         const args = [
             BytesValue.fromUTF8(tokenID),
             new BigUIntValue(liquidityDenom),
