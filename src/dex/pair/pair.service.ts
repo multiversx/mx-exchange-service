@@ -20,6 +20,7 @@ import { LiquidityPosition, TokenModel } from '../models/pair.model';
 import { PairPriceModel } from '../models/pair-price.model';
 import { TransactionModel } from '../models/transaction.model';
 import { ContextService } from '../utils/context.service';
+import { RedlockService } from 'src/services';
 
 @Injectable()
 export class PairService {
@@ -28,6 +29,7 @@ export class PairService {
     constructor(
         private cacheManagerService: CacheManagerService,
         private context: ContextService,
+        private redlockService: RedlockService,
     ) {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
     }
