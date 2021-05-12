@@ -154,6 +154,7 @@ export class FarmService {
         const args = [
             BytesValue.fromUTF8(tokenInID),
             new BigUIntValue(amountDenom),
+            BytesValue.fromUTF8('enterFarm'),
         ];
 
         return this.context.esdtTransfer(
