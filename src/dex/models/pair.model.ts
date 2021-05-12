@@ -45,8 +45,5 @@ export class PairModel {
     info: PairInfoModel;
 
     @Field()
-    price: PairPriceModel;
-
-    @Field()
     state: string;
 }

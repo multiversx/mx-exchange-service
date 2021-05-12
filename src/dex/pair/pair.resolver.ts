@@ -43,11 +43,6 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async price(@Parent() parent: PairModel) {
-        return this.pairService.getPairPrice(parent.address);
-    }
-
-    @ResolveField()
     async state(@Parent() parent: PairModel) {
         return this.pairService.getState(parent.address);
     }
