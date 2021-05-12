@@ -5,8 +5,7 @@ import {
     SmartContract,
     GasLimit,
 } from '@elrondnetwork/erdjs';
-import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
-import { elrondConfig, abiConfig, gasConfig, cacheConfig } from '../../config';
+import { elrondConfig, abiConfig, gasConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 import {
     CommunityDistributionModel,
@@ -18,25 +17,14 @@ import { AbiRegistry } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem'
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { TransactionModel } from '../models/transaction.model';
+import { CacheDistributionService } from 'src/services/cache-manager/cache-distribution.service';
 
 @Injectable()
 export class DistributionService {
     private readonly proxy: ProxyProvider;
-    private readonly CacheDistributionKeys = {
-        distributedTokenID: () => 'distributedTokenID',
-        lockedTokenID: () => 'lockedTokenID',
-        wrappedLpTokenID: () => 'wrappedLpTokenID',
-        wrappedFarmTokenID: () => 'wrappedFarmTokenID',
-        acceptedLockedTokensID: () => 'acceptedLockedTokensID',
-        intermediatedPairsAddresses: () => 'intermediatedPairsAddresses',
-        intermediatedFarmsAddresses: () => 'intermediatedFarmsAddresses',
-        epoch: () => 'epoch',
-        amount: () => 'amount',
-        milestones: () => 'milestones',
-    };
 
     constructor(
-        private cacheManagerService: CacheManagerService,
+        private cacheService: CacheDistributionService,
         private context: ContextService,
     ) {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
@@ -62,26 +50,9 @@ export class DistributionService {
     }
 
     async getDistributedToken(): Promise<TokenModel> {
-        let cachedData = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.distributedTokenID(),
-        );
+        const cachedData = await this.cacheService.getDistributedTokenID();
         if (!!cachedData) {
-            const distributedTokenID = cachedData.distributedTokenID;
-            cachedData = await this.cacheManagerService.getToken(
-                distributedTokenID,
-            );
-
-            if (!!cachedData) {
-                return cachedData.token;
-            }
-
-            const distributedToken = await this.context.getTokenMetadata(
-                distributedTokenID,
-            );
-            this.cacheManagerService.setToken(distributedTokenID, {
-                token: distributedToken,
-            });
-            return distributedToken;
+            return this.context.getTokenMetadata(cachedData.distributedTokenID);
         }
 
         const contract = await this.getContract();
@@ -95,42 +66,17 @@ export class DistributionService {
         const result = interaction.interpretQueryResponse(queryResponse);
         const distributedTokenID = result.firstValue.valueOf();
 
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.distributedTokenID(),
-            { distributedTokenID: distributedTokenID },
-            cacheConfig.default,
-        );
-
-        const distributedToken = await this.context.getTokenMetadata(
-            result.firstValue.valueOf(),
-        );
-
-        this.cacheManagerService.setToken(distributedTokenID, {
-            token: distributedToken,
+        this.cacheService.setDistributedTokenID({
+            distributedTokenID: distributedTokenID,
         });
 
-        return distributedToken;
+        return this.context.getTokenMetadata(distributedTokenID);
     }
 
     async getLockedToken(): Promise<TokenModel> {
-        let cachedData = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.lockedTokenID(),
-        );
+        const cachedData = await this.cacheService.getLockedTokenID();
         if (!!cachedData) {
-            const lockedTokenID = cachedData.lockedTokenID;
-            cachedData = await this.cacheManagerService.getToken(lockedTokenID);
-
-            if (!!cachedData) {
-                return cachedData.token;
-            }
-
-            const lockedToken = await this.context.getTokenMetadata(
-                lockedTokenID,
-            );
-            this.cacheManagerService.setToken(lockedTokenID, {
-                token: lockedToken,
-            });
-            return lockedToken;
+            return this.context.getTokenMetadata(cachedData.lockedTokenID);
         }
 
         const contract = await this.getContract();
@@ -142,42 +88,17 @@ export class DistributionService {
         const result = interaction.interpretQueryResponse(queryResponse);
 
         const lockedTokenID = result.firstValue.valueOf();
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.lockedTokenID(),
-            { lockedTokenID: lockedTokenID },
-            cacheConfig.default,
-        );
-
-        const lockedToken = await this.context.getTokenMetadata(lockedTokenID);
-
-        this.cacheManagerService.setToken(lockedTokenID, {
-            token: lockedToken,
+        this.cacheService.setLockedTokenID({
+            lockedTokenID: lockedTokenID,
         });
 
-        return lockedToken;
+        return this.context.getTokenMetadata(lockedTokenID);
     }
 
     async getwrappedLpToken(): Promise<TokenModel> {
-        let cachedData = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.wrappedLpTokenID(),
-        );
+        const cachedData = await this.cacheService.getWrappedLpTokenID();
         if (!!cachedData) {
-            const wrappedLpTokenID = cachedData.wrappedLpTokenID;
-            cachedData = await this.cacheManagerService.getToken(
-                wrappedLpTokenID,
-            );
-
-            if (!!cachedData) {
-                return cachedData.token;
-            }
-
-            const wrappedLpToken = await this.context.getTokenMetadata(
-                wrappedLpTokenID,
-            );
-            this.cacheManagerService.setToken(wrappedLpTokenID, {
-                token: wrappedLpToken,
-            });
-            return wrappedLpToken;
+            return this.context.getTokenMetadata(cachedData.wrappedLpTokenID);
         }
 
         const contract = await this.getContract();
@@ -190,42 +111,17 @@ export class DistributionService {
         );
         const result = interaction.interpretQueryResponse(queryResponse);
         const wrappedLpTokenID = result.firstValue.valueOf();
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.wrappedLpTokenID(),
-            { wrappedLpTokenID: wrappedLpTokenID },
-            cacheConfig.default,
-        );
-        const wrappedLpToken = await this.context.getTokenMetadata(
-            wrappedLpTokenID,
-        );
-        this.cacheManagerService.setToken(wrappedLpTokenID, {
-            token: wrappedLpToken,
+        this.cacheService.setWrappedLpTokenID({
+            wrappedLpTokenID: wrappedLpTokenID,
         });
 
-        return wrappedLpToken;
+        return this.context.getTokenMetadata(wrappedLpTokenID);
     }
 
     async getwrappedFarmToken(): Promise<TokenModel> {
-        let cachedData = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.wrappedFarmTokenID(),
-        );
+        const cachedData = await this.cacheService.getWrappedFarmTokenID();
         if (!!cachedData) {
-            const wrappedFarmTokenID = cachedData.wrappedFarmTokenID;
-            cachedData = await this.cacheManagerService.getToken(
-                wrappedFarmTokenID,
-            );
-
-            if (!!cachedData) {
-                return cachedData.token;
-            }
-
-            const wrappedFarmToken = await this.context.getTokenMetadata(
-                wrappedFarmTokenID,
-            );
-            this.cacheManagerService.setToken(wrappedFarmTokenID, {
-                token: wrappedFarmToken,
-            });
-            return wrappedFarmToken;
+            return this.context.getTokenMetadata(cachedData.wrappedFarmTokenID);
         }
 
         const contract = await this.getContract();
@@ -238,41 +134,22 @@ export class DistributionService {
         );
         const result = interaction.interpretQueryResponse(queryResponse);
         const wrappedFarmTokenID = result.firstValue.valueOf();
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.wrappedFarmTokenID(),
-            { wrappedFarmTokenID: wrappedFarmTokenID },
-            cacheConfig.default,
-        );
-
-        const wrappedFarmToken = await this.context.getTokenMetadata(
-            wrappedFarmTokenID,
-        );
-        this.cacheManagerService.setToken(wrappedFarmTokenID, {
-            token: wrappedFarmToken,
+        this.cacheService.setWrappedFarmTokenID({
+            wrappedFarmTokenID: wrappedFarmTokenID,
         });
-        return wrappedFarmToken;
+
+        return this.context.getTokenMetadata(wrappedFarmTokenID);
     }
 
     async getAcceptedLockedAssetsTokens(): Promise<TokenModel[]> {
-        let cachedData = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.acceptedLockedTokensID(),
-        );
+        const cachedData = await this.cacheService.getAcceptedLockedTokensID();
         if (!!cachedData) {
-            const acceptedLockedTokensID = cachedData.acceptedLockedTokensID;
             const acceptedLockedTokens: TokenModel[] = [];
-
-            for (const rawTokenID of acceptedLockedTokensID) {
-                const tokenID = rawTokenID.valueOf();
-                cachedData = await this.cacheManagerService.getToken(tokenID);
-                if (!!cachedData) {
-                    acceptedLockedTokens.push(cachedData.token);
-                } else {
-                    const token = await this.context.getTokenMetadata(tokenID);
-                    this.cacheManagerService.setToken(tokenID, {
-                        token: token,
-                    });
-                    acceptedLockedTokens.push(token);
-                }
+            for (const tokenID of cachedData.acceptedLockedTokensID) {
+                const token = await this.context.getTokenMetadata(
+                    tokenID.valueOf(),
+                );
+                acceptedLockedTokens.push(token);
             }
             return acceptedLockedTokens;
         }
@@ -286,26 +163,22 @@ export class DistributionService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.acceptedLockedTokensID(),
-            { acceptedLockedTokensID: response.values },
-            cacheConfig.default,
-        );
+        this.cacheService.setAcceptedLockedTokensID({
+            acceptedLockedTokensID: response.values,
+        });
 
         const acceptedLockedTokens: TokenModel[] = [];
-        for (const rawTokenID of response.values) {
-            const tokenID = rawTokenID.valueOf();
-            const token = await this.context.getTokenMetadata(tokenID);
-            this.cacheManagerService.setToken(tokenID, { token: token });
+        for (const tokenID of response.values) {
+            const token = await this.context.getTokenMetadata(
+                tokenID.valueOf(),
+            );
             acceptedLockedTokens.push(token);
         }
         return acceptedLockedTokens;
     }
 
     async getDistributionMilestones(): Promise<DistributionMilestoneModel[]> {
-        const cachedData = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.milestones(),
-        );
+        const cachedData = await this.cacheService.getMilestones();
         if (!!cachedData) {
             return cachedData.milestones;
         }
@@ -330,25 +203,15 @@ export class DistributionService {
             },
         );
 
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.milestones(),
-            { milestones: milestones },
-            cacheConfig.default,
-        );
+        this.cacheService.setMilestones({ milestones: milestones });
 
         return milestones;
     }
 
     async getCommunityDistribution(): Promise<CommunityDistributionModel> {
-        const cachedEpoch = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.epoch(),
-        );
-        const cachedAmount = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.amount(),
-        );
-        const cachedMilestones = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.milestones(),
-        );
+        const cachedEpoch = await this.cacheService.getEpoch();
+        const cachedAmount = await this.cacheService.getAmount();
+        const cachedMilestones = await this.cacheService.getMilestones();
 
         if (!!cachedEpoch && !!cachedAmount && !!cachedMilestones) {
             return {
@@ -372,16 +235,8 @@ export class DistributionService {
         const amount = result.values[1].valueOf();
         const milestones = await this.getDistributionMilestones();
 
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.epoch(),
-            { epoch: epoch },
-            cacheConfig.default,
-        );
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.amount(),
-            { amount: amount },
-            cacheConfig.default,
-        );
+        this.cacheService.setEpoch({ epoch: epoch });
+        this.cacheService.setAmount({ amount: amount });
 
         return {
             epoch: epoch,
@@ -391,9 +246,7 @@ export class DistributionService {
     }
 
     async getIntermediatedPairs(): Promise<string[]> {
-        const cachedData = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.intermediatedPairsAddresses(),
-        );
+        const cachedData = await this.cacheService.getIntermediatedPairsAddress();
         if (!!cachedData) {
             return cachedData.pairs;
         }
@@ -413,19 +266,15 @@ export class DistributionService {
             return pairAddress.valueOf();
         });
 
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.intermediatedPairsAddresses(),
-            { pairs: pairs },
-            cacheConfig.default,
-        );
+        this.cacheService.setIntermediatedPairsAddress({
+            pairs: pairs,
+        });
 
         return pairs;
     }
 
     async getIntermediatedFarms(): Promise<string[]> {
-        const cachedData = await this.cacheManagerService.get(
-            this.CacheDistributionKeys.intermediatedFarmsAddresses(),
-        );
+        const cachedData = await this.cacheService.getIntermediatedFarmsAddress();
         if (!!cachedData) {
             return cachedData.farms;
         }
@@ -445,11 +294,9 @@ export class DistributionService {
             return farmAddress.valueOf();
         });
 
-        this.cacheManagerService.set(
-            this.CacheDistributionKeys.intermediatedFarmsAddresses(),
-            { farms: farms },
-            cacheConfig.default,
-        );
+        this.cacheService.setIntermediatedFarmsAddress({
+            farms: farms,
+        });
 
         return farms;
     }
