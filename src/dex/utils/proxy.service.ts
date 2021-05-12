@@ -14,6 +14,17 @@ import { TransactionModel } from '../models/transaction.model';
 import BigNumber from 'bignumber.js';
 import { ContextService } from './context.service';
 import { PairService } from '../pair/pair.service';
+import {
+    AddLiquidityProxyArgs,
+    ReclaimTemporaryFundsProxyArgs,
+    RemoveLiquidityProxyArgs,
+    TokensTransferArgs,
+} from './dto/proxy-pair.args';
+import {
+    ClaimFarmRewardsProxyArgs,
+    EnterFarmProxyArgs,
+    ExitFarmProxyArgs,
+} from './dto/proxy-farm.args';
 
 @Injectable()
 export class ProxyService {
@@ -37,36 +48,29 @@ export class ProxyService {
     }
 
     async addLiquidityProxy(
-        pairAddress: string,
-        amount0: string,
-        amount1: string,
-        tolerance: number,
-        token0ID: string,
-        token1ID: string,
-        token0Nonce?: number,
-        token1Nonce?: number,
+        args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
         const contract = await this.getContract();
-        const token0 = await this.context.getTokenMetadata(token0ID);
-        const token1 = await this.context.getTokenMetadata(token1ID);
-        const amount0Denom = token0Nonce
-            ? new BigNumber(amount0)
-            : this.context.toBigNumber(amount0, token0);
-        const amount1Denom = token1Nonce
-            ? new BigNumber(amount1)
-            : this.context.toBigNumber(amount1, token1);
+        const token0 = await this.context.getTokenMetadata(args.token0ID);
+        const token1 = await this.context.getTokenMetadata(args.token1ID);
+        const amount0Denom = args.token0Nonce
+            ? new BigNumber(args.amount0)
+            : this.context.toBigNumber(args.amount0, token0);
+        const amount1Denom = args.token1Nonce
+            ? new BigNumber(args.amount1)
+            : this.context.toBigNumber(args.amount1, token1);
 
-        const amount0Min = amount0Denom.multipliedBy(1 - tolerance);
-        const amount1Min = amount1Denom.multipliedBy(1 - tolerance);
+        const amount0Min = amount0Denom.multipliedBy(1 - args.tolerance);
+        const amount1Min = amount1Denom.multipliedBy(1 - args.tolerance);
 
         const interaction: Interaction = contract.methods.addLiquidityProxy([
-            BytesValue.fromHex(new Address(pairAddress).hex()),
-            BytesValue.fromUTF8(token0ID),
-            new U32Value(token0Nonce ? token0Nonce : 0),
+            BytesValue.fromHex(new Address(args.pairAddress).hex()),
+            BytesValue.fromUTF8(args.token0ID),
+            new U32Value(args.token0Nonce ? args.token0Nonce : 0),
             new BigUIntValue(amount0Denom),
             new BigUIntValue(amount0Min),
-            BytesValue.fromUTF8(token1ID),
-            new U32Value(token1Nonce ? token1Nonce : 0),
+            BytesValue.fromUTF8(args.token1ID),
+            new U32Value(args.token1Nonce ? args.token1Nonce : 0),
             new BigUIntValue(amount1Denom),
             new BigUIntValue(amount1Min),
         ]);
@@ -78,102 +82,91 @@ export class ProxyService {
     }
 
     async removeLiquidityProxy(
-        sender: string,
-        pairAddress: string,
-        wrappedLpTokenID: string,
-        wrappedLpTokenNonce: number,
-        liqidity: string,
-        tolerance: number,
+        args: RemoveLiquidityProxyArgs,
     ): Promise<TransactionModel> {
         const contract = await this.getContract();
         const liquidityPosition = await this.pairService.getLiquidityPosition(
-            pairAddress,
-            liqidity,
+            args.pairAddress,
+            args.liqidity,
         );
         const amount0Min = new BigNumber(
             liquidityPosition.firstTokenAmount.toString(),
-        ).multipliedBy(1 - tolerance);
+        ).multipliedBy(1 - args.tolerance);
         const amount1Min = new BigNumber(
             liquidityPosition.secondTokenAmount.toString(),
-        ).multipliedBy(1 - tolerance);
+        ).multipliedBy(1 - args.tolerance);
 
-        const args = [
-            BytesValue.fromUTF8(wrappedLpTokenID),
-            new U32Value(wrappedLpTokenNonce),
-            new BigUIntValue(new BigNumber(liqidity)),
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.wrappedLpTokenID),
+            new U32Value(args.wrappedLpTokenNonce),
+            new BigUIntValue(new BigNumber(args.liqidity)),
             BytesValue.fromHex(contract.getAddress().hex()),
             BytesValue.fromUTF8('removeLiquidityProxy'),
-            BytesValue.fromHex(new Address(pairAddress).hex()),
+            BytesValue.fromHex(new Address(args.pairAddress).hex()),
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
         ];
 
         const transaction = await this.context.nftTransfer(
             contract,
-            args,
+            transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),
         );
 
-        transaction.receiver = sender;
+        transaction.receiver = args.sender;
 
         return transaction;
     }
 
     async esdtTransferProxy(
-        amount: string,
-        tokenID: string,
-        tokenNonce?: number,
-        sender?: string,
+        args: TokensTransferArgs,
     ): Promise<TransactionModel> {
         const contract = await this.getContract();
 
-        if (!tokenNonce) {
-            const token = await this.context.getTokenMetadata(tokenID);
-            const args = [
-                BytesValue.fromUTF8(tokenID),
-                new BigUIntValue(this.context.toBigNumber(amount, token)),
+        if (!args.tokenNonce) {
+            const token = await this.context.getTokenMetadata(args.tokenID);
+            const transactionArgs = [
+                BytesValue.fromUTF8(args.tokenID),
+                new BigUIntValue(this.context.toBigNumber(args.amount, token)),
                 BytesValue.fromUTF8('acceptEsdtPaymentProxy'),
             ];
 
             return this.context.esdtTransfer(
                 contract,
-                args,
+                transactionArgs,
                 new GasLimit(gasConfig.esdtTransfer),
             );
         }
 
-        const args = [
-            BytesValue.fromUTF8(tokenID),
-            new U32Value(tokenNonce),
-            new BigUIntValue(new BigNumber(amount)),
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.tokenID),
+            new U32Value(args.tokenNonce),
+            new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(contract.getAddress().hex()),
             BytesValue.fromUTF8('acceptEsdtPaymentProxy'),
         ];
 
         const transaction = await this.context.nftTransfer(
             contract,
-            args,
+            transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),
         );
 
-        transaction.receiver = sender;
+        transaction.receiver = args.sender;
 
         return transaction;
     }
 
     async reclaimTemporaryFundsProxy(
-        firstTokenID: string,
-        secondTokenID: string,
-        firstTokenNonce?: number,
-        secondTokenNonce?: number,
+        args: ReclaimTemporaryFundsProxyArgs,
     ): Promise<TransactionModel> {
         const contract = await this.getContract();
         const interaction: Interaction = contract.methods.reclaimTemporaryFundsProxy(
             [
-                BytesValue.fromUTF8(firstTokenID),
-                new U32Value(firstTokenNonce ? firstTokenNonce : 0),
-                BytesValue.fromUTF8(secondTokenID),
-                new U32Value(secondTokenNonce ? secondTokenNonce : 0),
+                BytesValue.fromUTF8(args.firstTokenID),
+                new U32Value(args.firstTokenNonce ? args.firstTokenNonce : 0),
+                BytesValue.fromUTF8(args.secondTokenID),
+                new U32Value(args.secondTokenNonce ? args.secondTokenNonce : 0),
             ],
         );
 
@@ -182,89 +175,73 @@ export class ProxyService {
         return transaction.toPlainObject();
     }
 
-    async enterFarmProxy(
-        sender: string,
-        farmAddress: string,
-        acceptedLockedTokenID: string,
-        acceptedLockedTokenNonce: number,
-        amount: string,
-    ): Promise<TransactionModel> {
+    async enterFarmProxy(args: EnterFarmProxyArgs): Promise<TransactionModel> {
         const contract = await this.getContract();
 
-        const args = [
-            BytesValue.fromUTF8(acceptedLockedTokenID),
-            new U32Value(acceptedLockedTokenNonce),
-            new BigUIntValue(new BigNumber(amount)),
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.acceptedLockedTokenID),
+            new U32Value(args.acceptedLockedTokenNonce),
+            new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(contract.getAddress().hex()),
             BytesValue.fromUTF8('enterFarmProxy'),
-            BytesValue.fromHex(new Address(farmAddress).hex()),
+            BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
         const transaction = await this.context.nftTransfer(
             contract,
-            args,
+            transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),
         );
 
-        transaction.receiver = sender;
+        transaction.receiver = args.sender;
 
         return transaction;
     }
 
-    async exitFarmProxy(
-        sender: string,
-        farmAddress: string,
-        wrappedFarmTokenID: string,
-        wrappedFarmTokenNonce: number,
-        amount: string,
-    ): Promise<TransactionModel> {
+    async exitFarmProxy(args: ExitFarmProxyArgs): Promise<TransactionModel> {
         const contract = await this.getContract();
 
-        const args = [
-            BytesValue.fromUTF8(wrappedFarmTokenID),
-            new U32Value(wrappedFarmTokenNonce),
-            new BigUIntValue(new BigNumber(amount)),
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.wrappedFarmTokenID),
+            new U32Value(args.wrappedFarmTokenNonce),
+            new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(contract.getAddress().hex()),
             BytesValue.fromUTF8('exitFarmProxy'),
-            BytesValue.fromHex(new Address(farmAddress).hex()),
+            BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
         const transaction = await this.context.nftTransfer(
             contract,
-            args,
+            transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),
         );
 
-        transaction.receiver = sender;
+        transaction.receiver = args.sender;
 
         return transaction;
     }
 
     async claimFarmRewardsProxy(
-        sender: string,
-        farmAddress: string,
-        wrappedFarmTokenID: string,
-        wrappedFarmTokenNonce: number,
-        amount: string,
+        args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
         const contract = await this.getContract();
 
-        const args = [
-            BytesValue.fromUTF8(wrappedFarmTokenID),
-            new U32Value(wrappedFarmTokenNonce),
-            new BigUIntValue(new BigNumber(amount)),
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.wrappedFarmTokenID),
+            new U32Value(args.wrappedFarmTokenNonce),
+            new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(contract.getAddress().hex()),
             BytesValue.fromUTF8('claimRewardsProxy'),
-            BytesValue.fromHex(new Address(farmAddress).hex()),
+            BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
         const transaction = await this.context.nftTransfer(
             contract,
-            args,
+            transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),
         );
 
-        transaction.receiver = sender;
+        transaction.receiver = args.sender;
 
         return transaction;
     }
