@@ -7,7 +7,7 @@ import {
     DistributionModel,
 } from '../models/distribution.model';
 import { TokenModel } from '../models/pair.model';
-import { ProxyService } from '../utils/proxy/proxy.service';
+import { ProxyFarmService } from '../utils/proxy/proxy-farm.service';
 import {
     AddLiquidityProxyArgs,
     ReclaimTemporaryFundsProxyArgs,
@@ -27,8 +27,8 @@ export class DistributionResolver {
         @Inject(DistributionService)
         private distributionService: DistributionService,
         @Inject(ProxyPairService) private proxyPairService: ProxyPairService,
-        @Inject(ProxyService)
-        private proxyService: ProxyService,
+        @Inject(ProxyFarmService)
+        private proxyFarmService: ProxyFarmService,
     ) {}
 
     @ResolveField()
@@ -113,20 +113,20 @@ export class DistributionResolver {
     async enterFarmProxy(
         @Args() args: EnterFarmProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.enterFarmProxy(args);
+        return this.proxyFarmService.enterFarmProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async exitFarmProxy(
         @Args() args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.exitFarmProxy(args);
+        return this.proxyFarmService.exitFarmProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async claimFarmRewardsProxy(
         @Args() args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.claimFarmRewardsProxy(args);
+        return this.proxyFarmService.claimFarmRewardsProxy(args);
     }
 }

@@ -19,7 +19,7 @@ import {
 } from './dto/proxy-farm.args';
 
 @Injectable()
-export class ProxyService {
+export class ProxyFarmService {
     constructor(private context: ContextService) {}
 
     private async getContract(): Promise<SmartContract> {
