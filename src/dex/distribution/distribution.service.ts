@@ -1,11 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import {
-    ProxyProvider,
-    Address,
-    SmartContract,
-    GasLimit,
-} from '@elrondnetwork/erdjs';
-import { elrondConfig, abiConfig, gasConfig } from '../../config';
+import { GasLimit } from '@elrondnetwork/erdjs';
+import { elrondConfig, gasConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 import {
     CommunityDistributionModel,
@@ -13,35 +8,18 @@ import {
     DistributionModel,
 } from '../models/distribution.model';
 import { TokenModel } from '../models/pair.model';
-import { AbiRegistry } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { TransactionModel } from '../models/transaction.model';
 import { CacheDistributionService } from 'src/services/cache-manager/cache-distribution.service';
+import { AbiDistributionService } from './abi-distribution.service';
 
 @Injectable()
 export class DistributionService {
-    private readonly proxy: ProxyProvider;
-
     constructor(
+        private abiService: AbiDistributionService,
         private cacheService: CacheDistributionService,
         private context: ContextService,
-    ) {
-        this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
-    }
-
-    async getContract(): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({
-            files: [abiConfig.distribution],
-        });
-        const abi = new SmartContractAbi(abiRegistry, ['EsdtDistribution']);
-        const contract = new SmartContract({
-            address: new Address(elrondConfig.distributionAddress),
-            abi: abi,
-        });
-
-        return contract;
-    }
+    ) {}
 
     async getDistributionInfo(): Promise<DistributionModel> {
         const distributionContract = new DistributionModel();
@@ -55,17 +33,7 @@ export class DistributionService {
             return this.context.getTokenMetadata(cachedData.distributedTokenID);
         }
 
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getDistributedTokenId(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const distributedTokenID = result.firstValue.valueOf();
-
+        const distributedTokenID = await this.abiService.getDistributedTokenID();
         this.cacheService.setDistributedTokenID({
             distributedTokenID: distributedTokenID,
         });
@@ -79,15 +47,7 @@ export class DistributionService {
             return this.context.getTokenMetadata(cachedData.lockedTokenID);
         }
 
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getLockedTokenId([]);
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-
-        const lockedTokenID = result.firstValue.valueOf();
+        const lockedTokenID = await this.abiService.getLockedTokenID();
         this.cacheService.setLockedTokenID({
             lockedTokenID: lockedTokenID,
         });
@@ -101,16 +61,7 @@ export class DistributionService {
             return this.context.getTokenMetadata(cachedData.wrappedLpTokenID);
         }
 
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getWrappedLpTokenId(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const wrappedLpTokenID = result.firstValue.valueOf();
+        const wrappedLpTokenID = await this.abiService.getWrappedLpTokenID();
         this.cacheService.setWrappedLpTokenID({
             wrappedLpTokenID: wrappedLpTokenID,
         });
@@ -124,16 +75,7 @@ export class DistributionService {
             return this.context.getTokenMetadata(cachedData.wrappedFarmTokenID);
         }
 
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getWrappedFarmTokenId(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const wrappedFarmTokenID = result.firstValue.valueOf();
+        const wrappedFarmTokenID = await this.abiService.getWrappedFarmTokenID();
         this.cacheService.setWrappedFarmTokenID({
             wrappedFarmTokenID: wrappedFarmTokenID,
         });
@@ -154,21 +96,13 @@ export class DistributionService {
             return acceptedLockedTokens;
         }
 
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getAcceptedLockedAssetsTokenIds(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
+        const acceptedLockedTokensID = await this.abiService.getAcceptedLockedTokensID();
         this.cacheService.setAcceptedLockedTokensID({
-            acceptedLockedTokensID: response.values,
+            acceptedLockedTokensID: acceptedLockedTokensID,
         });
 
         const acceptedLockedTokens: TokenModel[] = [];
-        for (const tokenID of response.values) {
+        for (const tokenID of acceptedLockedTokensID) {
             const token = await this.context.getTokenMetadata(
                 tokenID.valueOf(),
             );
@@ -183,25 +117,7 @@ export class DistributionService {
             return cachedData.milestones;
         }
 
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getLastCommunityDistributionUnlockMilestones(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-
-        const milestones: DistributionMilestoneModel[] = result.values.map(
-            rawMilestone => {
-                const milestone = rawMilestone.valueOf();
-                return {
-                    unlockEpoch: milestone.unlock_epoch,
-                    unlockPercentage: milestone.unlock_precent,
-                };
-            },
-        );
+        const milestones = await this.abiService.getDistributionMilestones();
 
         this.cacheService.setMilestones({ milestones: milestones });
 
@@ -220,19 +136,9 @@ export class DistributionService {
                 milestones: cachedMilestones.milestones,
             };
         }
-
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getLastCommunityDistributionAmountAndEpoch(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const epoch = result.values[0].valueOf();
-        const amount = result.values[1].valueOf();
+        const communityDistribution = await this.abiService.getCommunityDistribution();
+        const epoch = communityDistribution[0].valueOf();
+        const amount = communityDistribution[1].valueOf();
         const milestones = await this.getDistributionMilestones();
 
         this.cacheService.setEpoch({ epoch: epoch });
@@ -251,20 +157,7 @@ export class DistributionService {
             return cachedData.pairs;
         }
 
-        const contract = await this.getContract();
-
-        const interaction: Interaction = contract.methods.getIntermediatedPairs(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const pairs = result.values.map(pairAddress => {
-            return pairAddress.valueOf();
-        });
+        const pairs = await this.abiService.getIntermediatedPairsAddress();
 
         this.cacheService.setIntermediatedPairsAddress({
             pairs: pairs,
@@ -279,20 +172,7 @@ export class DistributionService {
             return cachedData.farms;
         }
 
-        const contract = await this.getContract();
-
-        const interaction: Interaction = contract.methods.getIntermediatedFarms(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const farms = result.values.map(farmAddress => {
-            return farmAddress.valueOf();
-        });
+        const farms = await this.abiService.getIntermediatedFarmsAddress();
 
         this.cacheService.setIntermediatedFarmsAddress({
             farms: farms,
@@ -302,7 +182,7 @@ export class DistributionService {
     }
 
     async claimAssets(): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await this.abiService.getContract();
         const interaction: Interaction = contract.methods.claimAssets([]);
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.default));
@@ -311,7 +191,7 @@ export class DistributionService {
     }
 
     async claimLockedAssets(): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await this.abiService.getContract();
         const interaction: Interaction = contract.methods.claimLockedAssets([]);
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.default));
