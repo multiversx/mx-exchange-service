@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
-import { elrondConfig, abiConfig, gasConfig } from '../../config';
+import { elrondConfig, abiConfig, gasConfig } from '../../../config';
 import {
     AbiRegistry,
     BigUIntValue,
@@ -10,26 +9,20 @@ import {
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
-import { TransactionModel } from '../models/transaction.model';
+import { TransactionModel } from '../../models/transaction.model';
 import BigNumber from 'bignumber.js';
-import { ContextService } from './context.service';
-import { PairService } from '../pair/pair.service';
+import { ContextService } from '../context.service';
+import { PairService } from '../../pair/pair.service';
 import {
     AddLiquidityProxyArgs,
     ReclaimTemporaryFundsProxyArgs,
     RemoveLiquidityProxyArgs,
     TokensTransferArgs,
 } from './dto/proxy-pair.args';
-import {
-    ClaimFarmRewardsProxyArgs,
-    EnterFarmProxyArgs,
-    ExitFarmProxyArgs,
-} from './dto/proxy-farm.args';
 
 @Injectable()
-export class ProxyService {
+export class ProxyPairService {
     constructor(
-        private cacheManagerService: CacheManagerService,
         private context: ContextService,
         private pairService: PairService,
     ) {}
@@ -173,76 +166,5 @@ export class ProxyService {
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
         return transaction.toPlainObject();
-    }
-
-    async enterFarmProxy(args: EnterFarmProxyArgs): Promise<TransactionModel> {
-        const contract = await this.getContract();
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.acceptedLockedTokenID),
-            new U32Value(args.acceptedLockedTokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('enterFarmProxy'),
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-        ];
-
-        const transaction = await this.context.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
-        );
-
-        transaction.receiver = args.sender;
-
-        return transaction;
-    }
-
-    async exitFarmProxy(args: ExitFarmProxyArgs): Promise<TransactionModel> {
-        const contract = await this.getContract();
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.wrappedFarmTokenID),
-            new U32Value(args.wrappedFarmTokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('exitFarmProxy'),
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-        ];
-
-        const transaction = await this.context.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
-        );
-
-        transaction.receiver = args.sender;
-
-        return transaction;
-    }
-
-    async claimFarmRewardsProxy(
-        args: ClaimFarmRewardsProxyArgs,
-    ): Promise<TransactionModel> {
-        const contract = await this.getContract();
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.wrappedFarmTokenID),
-            new U32Value(args.wrappedFarmTokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('claimRewardsProxy'),
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-        ];
-
-        const transaction = await this.context.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
-        );
-
-        transaction.receiver = args.sender;
-
-        return transaction;
     }
 }

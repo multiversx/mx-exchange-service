@@ -1,4 +1,4 @@
-import { Resolver, Query, ResolveField, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../models/transaction.model';
 import { DistributionService } from './distribution.service';
@@ -7,24 +7,26 @@ import {
     DistributionModel,
 } from '../models/distribution.model';
 import { TokenModel } from '../models/pair.model';
-import { ProxyService } from '../utils/proxy.service';
+import { ProxyService } from '../utils/proxy/proxy.service';
 import {
     AddLiquidityProxyArgs,
     ReclaimTemporaryFundsProxyArgs,
     RemoveLiquidityProxyArgs,
     TokensTransferArgs,
-} from '../utils/dto/proxy-pair.args';
+} from '../utils/proxy/dto/proxy-pair.args';
 import {
     ClaimFarmRewardsProxyArgs,
     EnterFarmProxyArgs,
     ExitFarmProxyArgs,
-} from '../utils/dto/proxy-farm.args';
+} from '../utils/proxy/dto/proxy-farm.args';
+import { ProxyPairService } from '../utils/proxy/proxy-pair.service';
 
 @Resolver(of => DistributionModel)
 export class DistributionResolver {
     constructor(
         @Inject(DistributionService)
         private distributionService: DistributionService,
+        @Inject(ProxyPairService) private proxyPairService: ProxyPairService,
         @Inject(ProxyService)
         private proxyService: ProxyService,
     ) {}
@@ -83,28 +85,28 @@ export class DistributionResolver {
     async tokensTransferProxy(
         @Args() args: TokensTransferArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.esdtTransferProxy(args);
+        return this.proxyPairService.esdtTransferProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async addLiquidityProxy(
         @Args() args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.addLiquidityProxy(args);
+        return this.proxyPairService.addLiquidityProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async reclaimTemporaryFundsProxy(
         @Args() args: ReclaimTemporaryFundsProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.reclaimTemporaryFundsProxy(args);
+        return this.proxyPairService.reclaimTemporaryFundsProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async removeLiquidityProxy(
         @Args() args: RemoveLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.removeLiquidityProxy(args);
+        return this.proxyPairService.removeLiquidityProxy(args);
     }
 
     @Query(returns => TransactionModel)

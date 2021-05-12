@@ -2,7 +2,6 @@ import { Resolver, Query, ResolveField, Args, Int } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../models/transaction.model';
 import { LockedRewardsService } from './locked-rewards.service';
-import { ProxyService } from '../utils/proxy.service';
 import {
     LockedRewardsModel,
     LockOptionModel,
