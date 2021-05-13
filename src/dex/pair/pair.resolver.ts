@@ -10,10 +10,15 @@ import {
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
 } from './dto/pair.args';
+import { TransactionPairService } from './transactions-pair.service';
 
 @Resolver(of => PairModel)
 export class PairResolver {
-    constructor(@Inject(PairService) private pairService: PairService) {}
+    constructor(
+        @Inject(PairService) private pairService: PairService,
+        @Inject(TransactionPairService)
+        private transactionService: TransactionPairService,
+    ) {}
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel) {
@@ -100,41 +105,41 @@ export class PairResolver {
     async addLiquidity(
         @Args() args: AddLiquidityArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.addLiquidity(args);
+        return this.transactionService.addLiquidity(args);
     }
 
     @Query(returns => TransactionModel)
     async reclaimTemporaryFunds(
         @Args('pairAddress') pairAddress: string,
     ): Promise<TransactionModel> {
-        return this.pairService.reclaimTemporaryFunds(pairAddress);
+        return this.transactionService.reclaimTemporaryFunds(pairAddress);
     }
 
     @Query(returns => TransactionModel)
     async removeLiquidity(
         @Args() args: RemoveLiquidityArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.removeLiquidity(args);
+        return this.transactionService.removeLiquidity(args);
     }
 
     @Query(returns => TransactionModel)
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.swapTokensFixedInput(args);
+        return this.transactionService.swapTokensFixedInput(args);
     }
 
     @Query(returns => TransactionModel)
     async swapTokensFixedOutput(
         @Args() args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.swapTokensFixedOutput(args);
+        return this.transactionService.swapTokensFixedOutput(args);
     }
 
     @Query(returns => TransactionModel)
     async tokensTransfer(
         @Args() args: ESDTTransferArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.esdtTransfer(args);
+        return this.transactionService.esdtTransfer(args);
     }
 }

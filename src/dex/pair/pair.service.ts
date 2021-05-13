@@ -1,23 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import {
-    AbiRegistry,
-    BigUIntValue,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
+import { AbiRegistry } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
-import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import {
-    ProxyProvider,
-    Address,
-    SmartContract,
-    GasLimit,
-} from '@elrondnetwork/erdjs';
-import { elrondConfig, abiConfig, gasConfig } from '../../config';
+import { ProxyProvider, Address, SmartContract } from '@elrondnetwork/erdjs';
+import { elrondConfig, abiConfig } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TokenModel } from '../models/pair.model';
-import { TransactionModel } from '../models/transaction.model';
 import { ContextService } from '../utils/context.service';
 import { RedlockService } from 'src/services';
 import {
@@ -28,13 +17,6 @@ import {
 } from './pair.utils';
 import { CachePairService } from 'src/services/cache-manager/cache-pair.service';
 import { AbiPairService } from './abi-pair.service';
-import {
-    AddLiquidityArgs,
-    ESDTTransferArgs,
-    RemoveLiquidityArgs,
-    SwapTokensFixedInputArgs,
-    SwapTokensFixedOutputArgs,
-} from './dto/pair.args';
 
 @Injectable()
 export class PairService {
@@ -414,165 +396,5 @@ export class PairService {
                 .fromBigNumber(secondTokenAmount.toString(), secondToken)
                 .toString(),
         };
-    }
-
-    async addLiquidity(args: AddLiquidityArgs): Promise<TransactionModel> {
-        const firstToken = await this.getFirstToken(args.pairAddress);
-        const secondToken = await this.getSecondToken(args.pairAddress);
-        const amount0Denom = this.context.toBigNumber(args.amount0, firstToken);
-        const amount1Denom = this.context.toBigNumber(
-            args.amount1,
-            secondToken,
-        );
-
-        const amount0Min = amount0Denom
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-        const amount1Min = amount1Denom
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-
-        const contract = await this.getContract(args.pairAddress);
-        const interaction: Interaction = contract.methods.addLiquidity([
-            new BigUIntValue(amount0Denom),
-            new BigUIntValue(amount1Denom),
-            new BigUIntValue(amount0Min),
-            new BigUIntValue(amount1Min),
-        ]);
-
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.addLiquidity));
-
-        return transaction.toPlainObject();
-    }
-
-    async reclaimTemporaryFunds(
-        pairAddress: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.getContract(pairAddress);
-        const interaction: Interaction = contract.methods.reclaimTemporaryFunds(
-            [],
-        );
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
-        return transaction.toPlainObject();
-    }
-
-    async removeLiquidity(
-        args: RemoveLiquidityArgs,
-    ): Promise<TransactionModel> {
-        const firstToken = await this.getFirstToken(args.pairAddress);
-        const secondToken = await this.getSecondToken(args.pairAddress);
-        const lpToken = await this.context.getTokenMetadata(
-            args.liquidityTokenID,
-        );
-        const liquidityDenom = this.context.toBigNumber(args.liqidity, lpToken);
-
-        const liquidityPosition = await this.getLiquidityPosition(
-            args.pairAddress,
-            args.liqidity,
-        );
-
-        const amount0Min = this.context
-            .toBigNumber(liquidityPosition.firstTokenAmount, firstToken)
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-        const amount1Min = this.context
-            .toBigNumber(liquidityPosition.secondTokenAmount, secondToken)
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-
-        const contract = await this.getContract(args.pairAddress);
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.liquidityTokenID),
-            new BigUIntValue(liquidityDenom),
-            BytesValue.fromUTF8('removeLiquidity'),
-            new BigUIntValue(amount0Min),
-            new BigUIntValue(amount1Min),
-        ];
-
-        return this.context.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.removeLiquidity),
-        );
-    }
-
-    async swapTokensFixedInput(
-        args: SwapTokensFixedInputArgs,
-    ): Promise<TransactionModel> {
-        const contract = await this.getContract(args.pairAddress);
-        const tokenIn = await this.context.getTokenMetadata(args.tokenInID);
-        const tokenOut = await this.context.getTokenMetadata(args.tokenOutID);
-
-        const amountInDenom = this.context.toBigNumber(args.amountIn, tokenIn);
-        const amountOutDenom = this.context.toBigNumber(
-            args.amountOut,
-            tokenOut,
-        );
-        const amountOutDenomMin = amountOutDenom
-            .multipliedBy(1 - args.tolerance)
-            .integerValue();
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(amountInDenom),
-            BytesValue.fromUTF8('swapTokensFixedInput'),
-            BytesValue.fromUTF8(args.tokenOutID),
-            new BigUIntValue(amountOutDenomMin),
-        ];
-
-        return this.context.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.swapTokens),
-        );
-    }
-
-    async swapTokensFixedOutput(
-        args: SwapTokensFixedOutputArgs,
-    ): Promise<TransactionModel> {
-        const contract = await this.getContract(args.pairAddress);
-        const tokenIn = await this.context.getTokenMetadata(args.tokenInID);
-        const tokenOut = await this.context.getTokenMetadata(args.tokenOutID);
-
-        const amountInDenom = this.context.toBigNumber(args.amountIn, tokenIn);
-        const amountOutDenom = this.context.toBigNumber(
-            args.amountOut,
-            tokenOut,
-        );
-        const amountInDenomMax = amountInDenom
-            .multipliedBy(1 + args.tolerance)
-            .integerValue();
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(amountInDenomMax),
-            BytesValue.fromUTF8('swapTokensFixedOutput'),
-            BytesValue.fromUTF8(args.tokenOutID),
-            new BigUIntValue(amountOutDenom),
-        ];
-
-        return this.context.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.swapTokens),
-        );
-    }
-
-    async esdtTransfer(args: ESDTTransferArgs): Promise<TransactionModel> {
-        const contract = await this.getContract(args.pairAddress);
-        const token = await this.context.getTokenMetadata(args.token);
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.token),
-            new BigUIntValue(this.context.toBigNumber(args.amount, token)),
-            BytesValue.fromUTF8('acceptEsdtPayment'),
-        ];
-
-        return this.context.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
-        );
     }
 }
