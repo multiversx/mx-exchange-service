@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { GasLimit } from '@elrondnetwork/erdjs';
+import { GasLimit, TypedValue } from '@elrondnetwork/erdjs';
 import { elrondConfig, gasConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 import {
@@ -83,24 +83,9 @@ export class DistributionService {
         return this.context.getTokenMetadata(wrappedFarmTokenID);
     }
 
-    async getAcceptedLockedAssetsTokens(): Promise<TokenModel[]> {
-        const cachedData = await this.cacheService.getAcceptedLockedTokensID();
-        if (!!cachedData) {
-            const acceptedLockedTokens: TokenModel[] = [];
-            for (const tokenID of cachedData.acceptedLockedTokensID) {
-                const token = await this.context.getTokenMetadata(
-                    tokenID.valueOf(),
-                );
-                acceptedLockedTokens.push(token);
-            }
-            return acceptedLockedTokens;
-        }
-
-        const acceptedLockedTokensID = await this.abiService.getAcceptedLockedTokensID();
-        this.cacheService.setAcceptedLockedTokensID({
-            acceptedLockedTokensID: acceptedLockedTokensID,
-        });
-
+    private async getAcceptedLockedTokensMap(
+        acceptedLockedTokensID: TypedValue[],
+    ): Promise<TokenModel[]> {
         const acceptedLockedTokens: TokenModel[] = [];
         for (const tokenID of acceptedLockedTokensID) {
             const token = await this.context.getTokenMetadata(
@@ -109,6 +94,22 @@ export class DistributionService {
             acceptedLockedTokens.push(token);
         }
         return acceptedLockedTokens;
+    }
+
+    async getAcceptedLockedAssetsTokens(): Promise<TokenModel[]> {
+        const cachedData = await this.cacheService.getAcceptedLockedTokensID();
+        if (!!cachedData) {
+            return this.getAcceptedLockedTokensMap(
+                cachedData.acceptedLockedTokensID,
+            );
+        }
+
+        const acceptedLockedTokensID = await this.abiService.getAcceptedLockedTokensID();
+        this.cacheService.setAcceptedLockedTokensID({
+            acceptedLockedTokensID: acceptedLockedTokensID,
+        });
+
+        return this.getAcceptedLockedTokensMap(acceptedLockedTokensID);
     }
 
     async getDistributionMilestones(): Promise<DistributionMilestoneModel[]> {
