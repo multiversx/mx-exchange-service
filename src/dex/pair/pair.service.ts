@@ -13,8 +13,7 @@ import {
     SmartContract,
     GasLimit,
 } from '@elrondnetwork/erdjs';
-import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
-import { elrondConfig, abiConfig, gasConfig, cacheConfig } from '../../config';
+import { elrondConfig, abiConfig, gasConfig } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TokenModel } from '../models/pair.model';
@@ -27,21 +26,14 @@ import {
     getAmountIn,
     getTokenForGivenPosition,
 } from './pair.utils';
-
-const PairKeys = {
-    reserves: (pairAddress: string, tokenID: string) =>
-        `${pairAddress}.${tokenID}.reserves`,
-    totalSupply: (pairAddress: string) => `${pairAddress}.totalSupply`,
-    temporaryFunds: (pairAddress: string, caller: string, tokenID: string) =>
-        `${pairAddress}.temporaryFunds.${caller}.${tokenID}`,
-};
+import { CachePairService } from 'src/services/cache-manager/cache-pair.service';
 
 @Injectable()
 export class PairService {
     private readonly proxy: ProxyProvider;
 
     constructor(
-        private cacheManagerService: CacheManagerService,
+        private cacheService: CachePairService,
         private context: ContextService,
         private redlockService: RedlockService,
     ) {
@@ -60,9 +52,7 @@ export class PairService {
     }
 
     private async getFirstTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheManagerService.getFirstTokenID(
-            pairAddress,
-        );
+        const cachedData = await this.cacheService.getFirstTokenID(pairAddress);
         if (!!cachedData) {
             return cachedData.firstTokenID;
         }
@@ -75,14 +65,14 @@ export class PairService {
         );
         const response = interaction.interpretQueryResponse(queryResponse);
         const firstTokenID = response.firstValue.valueOf().toString();
-        this.cacheManagerService.setFirstTokenID(pairAddress, {
+        this.cacheService.setFirstTokenID(pairAddress, {
             firstTokenID: firstTokenID,
         });
         return firstTokenID;
     }
 
     private async getSecondTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheManagerService.getSecondTokenID(
+        const cachedData = await this.cacheService.getSecondTokenID(
             pairAddress,
         );
         if (!!cachedData) {
@@ -97,16 +87,14 @@ export class PairService {
         );
         const response = interaction.interpretQueryResponse(queryResponse);
         const secondTokenID = response.firstValue.valueOf().toString();
-        this.cacheManagerService.setSecondTokenID(pairAddress, {
+        this.cacheService.setSecondTokenID(pairAddress, {
             secondTokenID: secondTokenID,
         });
         return secondTokenID;
     }
 
     private async getLpTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheManagerService.getLpTokenID(
-            pairAddress,
-        );
+        const cachedData = await this.cacheService.getLpTokenID(pairAddress);
         if (!!cachedData) {
             return cachedData.lpTokenID;
         }
@@ -124,7 +112,7 @@ export class PairService {
         );
 
         const lpTokenID = response.firstValue.valueOf().toString();
-        this.cacheManagerService.setLpTokenID(pairAddress, {
+        this.cacheService.setLpTokenID(pairAddress, {
             lpTokenID: lpTokenID,
         });
         return lpTokenID;
@@ -192,21 +180,15 @@ export class PairService {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
         const secondTokenID = await this.getSecondTokenID(pairAddress);
 
-        this.cacheManagerService.set(
-            PairKeys.reserves(pairAddress, firstTokenID),
-            { reserves: pairInfo[0] },
-            cacheConfig.default,
-        );
-        this.cacheManagerService.set(
-            PairKeys.reserves(pairAddress, secondTokenID),
-            { reserves: pairInfo[1] },
-            cacheConfig.default,
-        );
-        this.cacheManagerService.set(
-            PairKeys.totalSupply(pairAddress),
-            { totalSupply: pairInfo[2] },
-            cacheConfig.default,
-        );
+        this.cacheService.setReserves(pairAddress, firstTokenID, {
+            reserves: pairInfo[0],
+        });
+        this.cacheService.setReserves(pairAddress, secondTokenID, {
+            reserves: pairInfo[1],
+        });
+        this.cacheService.setTotalSupply(pairAddress, {
+            totalSupply: pairInfo[2],
+        });
 
         return {
             reserves0: pairInfo[0],
@@ -224,14 +206,16 @@ export class PairService {
         const secondToken = await this.context.getTokenMetadata(secondTokenID);
         const lpToken = await this.context.getTokenMetadata(lpTokenID);
 
-        const cachedFirstReserve = await this.cacheManagerService.get(
-            PairKeys.reserves(pairAddress, firstTokenID),
+        const cachedFirstReserve = await this.cacheService.getReserves(
+            pairAddress,
+            firstTokenID,
         );
-        const cachedSecondReserve = await this.cacheManagerService.get(
-            PairKeys.reserves(pairAddress, secondTokenID),
+        const cachedSecondReserve = await this.cacheService.getReserves(
+            pairAddress,
+            secondTokenID,
         );
-        const cachedTotalSupply = await this.cacheManagerService.get(
-            PairKeys.totalSupply(pairAddress),
+        const cachedTotalSupply = await this.cacheService.getTotalSupply(
+            pairAddress,
         );
 
         if (
@@ -421,8 +405,10 @@ export class PairService {
     ): Promise<string> {
         const token = await this.context.getTokenMetadata(tokenID);
 
-        const cachedData = await this.cacheManagerService.get(
-            PairKeys.temporaryFunds(pairAddress, callerAddress, tokenID),
+        const cachedData = await this.cacheService.getTemporaryFunds(
+            pairAddress,
+            callerAddress,
+            tokenID,
         );
         if (!!cachedData) {
             return this.context
@@ -445,10 +431,11 @@ export class PairService {
         const response = interaction.interpretQueryResponse(queryResponse);
 
         const temporaryFunds = response.firstValue.valueOf();
-        this.cacheManagerService.set(
-            PairKeys.temporaryFunds(pairAddress, callerAddress, tokenID),
+        this.cacheService.setTemporaryFunds(
+            pairAddress,
+            callerAddress,
+            tokenID,
             { temporaryFunds: temporaryFunds },
-            cacheConfig.default,
         );
 
         return this.context.fromBigNumber(temporaryFunds, token).toString();

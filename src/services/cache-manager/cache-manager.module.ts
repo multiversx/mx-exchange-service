@@ -3,9 +3,14 @@ import { CacheManagerService } from './cache-manager.service';
 
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheDistributionService } from './cache-distribution.service';
+import { CachePairService } from './cache-pair.service';
 
 @Module({
-    providers: [CacheManagerService, CacheDistributionService],
+    providers: [
+        CacheManagerService,
+        CachePairService,
+        CacheDistributionService,
+    ],
     imports: [
         CacheModule.register({
             ttl: 60 * 5,
@@ -16,6 +21,6 @@ import { CacheDistributionService } from './cache-distribution.service';
             prefix: process.env.REDIS_PREFIX,
         }),
     ],
-    exports: [CacheManagerService, CacheDistributionService],
+    exports: [CacheManagerService, CachePairService, CacheDistributionService],
 })
 export class CacheManagerModule {}
