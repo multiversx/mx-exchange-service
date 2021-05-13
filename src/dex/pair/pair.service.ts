@@ -28,6 +28,13 @@ import {
 } from './pair.utils';
 import { CachePairService } from 'src/services/cache-manager/cache-pair.service';
 import { AbiPairService } from './abi-pair.service';
+import {
+    AddLiquidityArgs,
+    ESDTTransferArgs,
+    RemoveLiquidityArgs,
+    SwapTokensFixedInputArgs,
+    SwapTokensFixedOutputArgs,
+} from './dto/pair.args';
 
 @Injectable()
 export class PairService {
@@ -409,25 +416,23 @@ export class PairService {
         };
     }
 
-    async addLiquidity(
-        pairAddress: string,
-        amount0: string,
-        amount1: string,
-        tolerance: number,
-    ): Promise<TransactionModel> {
-        const firstToken = await this.getFirstToken(pairAddress);
-        const secondToken = await this.getSecondToken(pairAddress);
-        const amount0Denom = this.context.toBigNumber(amount0, firstToken);
-        const amount1Denom = this.context.toBigNumber(amount1, secondToken);
+    async addLiquidity(args: AddLiquidityArgs): Promise<TransactionModel> {
+        const firstToken = await this.getFirstToken(args.pairAddress);
+        const secondToken = await this.getSecondToken(args.pairAddress);
+        const amount0Denom = this.context.toBigNumber(args.amount0, firstToken);
+        const amount1Denom = this.context.toBigNumber(
+            args.amount1,
+            secondToken,
+        );
 
         const amount0Min = amount0Denom
-            .multipliedBy(1 - tolerance)
+            .multipliedBy(1 - args.tolerance)
             .integerValue();
         const amount1Min = amount1Denom
-            .multipliedBy(1 - tolerance)
+            .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const contract = await this.getContract(pairAddress);
+        const contract = await this.getContract(args.pairAddress);
         const interaction: Interaction = contract.methods.addLiquidity([
             new BigUIntValue(amount0Denom),
             new BigUIntValue(amount1Denom),
@@ -454,33 +459,32 @@ export class PairService {
     }
 
     async removeLiquidity(
-        pairAddress: string,
-        liqidity: string,
-        tokenID: string,
-        tolerance: number,
+        args: RemoveLiquidityArgs,
     ): Promise<TransactionModel> {
-        const firstToken = await this.getFirstToken(pairAddress);
-        const secondToken = await this.getSecondToken(pairAddress);
-        const lpToken = await this.context.getTokenMetadata(tokenID);
-        const liquidityDenom = this.context.toBigNumber(liqidity, lpToken);
+        const firstToken = await this.getFirstToken(args.pairAddress);
+        const secondToken = await this.getSecondToken(args.pairAddress);
+        const lpToken = await this.context.getTokenMetadata(
+            args.liquidityTokenID,
+        );
+        const liquidityDenom = this.context.toBigNumber(args.liqidity, lpToken);
 
         const liquidityPosition = await this.getLiquidityPosition(
-            pairAddress,
-            liqidity,
+            args.pairAddress,
+            args.liqidity,
         );
 
         const amount0Min = this.context
             .toBigNumber(liquidityPosition.firstTokenAmount, firstToken)
-            .multipliedBy(1 - tolerance)
+            .multipliedBy(1 - args.tolerance)
             .integerValue();
         const amount1Min = this.context
             .toBigNumber(liquidityPosition.secondTokenAmount, secondToken)
-            .multipliedBy(1 - tolerance)
+            .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const contract = await this.getContract(pairAddress);
-        const args = [
-            BytesValue.fromUTF8(tokenID),
+        const contract = await this.getContract(args.pairAddress);
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.liquidityTokenID),
             new BigUIntValue(liquidityDenom),
             BytesValue.fromUTF8('removeLiquidity'),
             new BigUIntValue(amount0Min),
@@ -489,93 +493,85 @@ export class PairService {
 
         return this.context.esdtTransfer(
             contract,
-            args,
+            transactionArgs,
             new GasLimit(gasConfig.removeLiquidity),
         );
     }
 
     async swapTokensFixedInput(
-        pairAddress: string,
-        tokenInID: string,
-        amountIn: string,
-        tokenOutID: string,
-        amountOut: string,
-        tolerance: number,
+        args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract(pairAddress);
-        const tokenIn = await this.context.getTokenMetadata(tokenInID);
-        const tokenOut = await this.context.getTokenMetadata(tokenOutID);
+        const contract = await this.getContract(args.pairAddress);
+        const tokenIn = await this.context.getTokenMetadata(args.tokenInID);
+        const tokenOut = await this.context.getTokenMetadata(args.tokenOutID);
 
-        const amountInDenom = this.context.toBigNumber(amountIn, tokenIn);
-        const amountOutDenom = this.context.toBigNumber(amountOut, tokenOut);
+        const amountInDenom = this.context.toBigNumber(args.amountIn, tokenIn);
+        const amountOutDenom = this.context.toBigNumber(
+            args.amountOut,
+            tokenOut,
+        );
         const amountOutDenomMin = amountOutDenom
-            .multipliedBy(1 - tolerance)
+            .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const args = [
-            BytesValue.fromUTF8(tokenInID),
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.tokenInID),
             new BigUIntValue(amountInDenom),
             BytesValue.fromUTF8('swapTokensFixedInput'),
-            BytesValue.fromUTF8(tokenOutID),
+            BytesValue.fromUTF8(args.tokenOutID),
             new BigUIntValue(amountOutDenomMin),
         ];
 
         return this.context.esdtTransfer(
             contract,
-            args,
+            transactionArgs,
             new GasLimit(gasConfig.swapTokens),
         );
     }
 
     async swapTokensFixedOutput(
-        pairAddress: string,
-        tokenInID: string,
-        amountIn: string,
-        tokenOutID: string,
-        amountOut: string,
-        tolerance: number,
+        args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract(pairAddress);
-        const tokenIn = await this.context.getTokenMetadata(tokenInID);
-        const tokenOut = await this.context.getTokenMetadata(tokenOutID);
+        const contract = await this.getContract(args.pairAddress);
+        const tokenIn = await this.context.getTokenMetadata(args.tokenInID);
+        const tokenOut = await this.context.getTokenMetadata(args.tokenOutID);
 
-        const amountInDenom = this.context.toBigNumber(amountIn, tokenIn);
-        const amountOutDenom = this.context.toBigNumber(amountOut, tokenOut);
+        const amountInDenom = this.context.toBigNumber(args.amountIn, tokenIn);
+        const amountOutDenom = this.context.toBigNumber(
+            args.amountOut,
+            tokenOut,
+        );
         const amountInDenomMax = amountInDenom
-            .multipliedBy(1 + tolerance)
+            .multipliedBy(1 + args.tolerance)
             .integerValue();
-        const args = [
-            BytesValue.fromUTF8(tokenInID),
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.tokenInID),
             new BigUIntValue(amountInDenomMax),
             BytesValue.fromUTF8('swapTokensFixedOutput'),
-            BytesValue.fromUTF8(tokenOutID),
+            BytesValue.fromUTF8(args.tokenOutID),
             new BigUIntValue(amountOutDenom),
         ];
 
         return this.context.esdtTransfer(
             contract,
-            args,
+            transactionArgs,
             new GasLimit(gasConfig.swapTokens),
         );
     }
 
-    async esdtTransfer(
-        pairAddress: string,
-        tokenID: string,
-        amount: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.getContract(pairAddress);
-        const token = await this.context.getTokenMetadata(tokenID);
+    async esdtTransfer(args: ESDTTransferArgs): Promise<TransactionModel> {
+        const contract = await this.getContract(args.pairAddress);
+        const token = await this.context.getTokenMetadata(args.token);
 
-        const args = [
-            BytesValue.fromUTF8(tokenID),
-            new BigUIntValue(this.context.toBigNumber(amount, token)),
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.token),
+            new BigUIntValue(this.context.toBigNumber(args.amount, token)),
             BytesValue.fromUTF8('acceptEsdtPayment'),
         ];
 
         return this.context.esdtTransfer(
             contract,
-            args,
+            transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),
         );
     }
