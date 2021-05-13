@@ -17,18 +17,12 @@ export class PairResolver {
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel) {
-        return this.pairService.getPairToken(
-            parent.address,
-            this.firstToken.name,
-        );
+        return this.pairService.getFirstToken(parent.address);
     }
 
     @ResolveField()
     async secondToken(@Parent() parent: PairModel) {
-        return this.pairService.getPairToken(
-            parent.address,
-            this.secondToken.name,
-        );
+        return this.pairService.getSecondToken(parent.address);
     }
 
     @ResolveField()
