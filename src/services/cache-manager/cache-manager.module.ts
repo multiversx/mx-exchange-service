@@ -2,9 +2,10 @@ import { CacheModule, Module } from '@nestjs/common';
 import { CacheManagerService } from './cache-manager.service';
 
 import * as redisStore from 'cache-manager-redis-store';
+import { CacheDistributionService } from './cache-distribution.service';
 
 @Module({
-    providers: [CacheManagerService],
+    providers: [CacheManagerService, CacheDistributionService],
     imports: [
         CacheModule.register({
             ttl: 60 * 5,
@@ -15,6 +16,6 @@ import * as redisStore from 'cache-manager-redis-store';
             prefix: process.env.REDIS_PREFIX,
         }),
     ],
-    exports: [CacheManagerService],
+    exports: [CacheManagerService, CacheDistributionService],
 })
 export class CacheManagerModule {}
