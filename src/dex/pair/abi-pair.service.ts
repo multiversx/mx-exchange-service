@@ -13,7 +13,10 @@ export class AbiPairService {
     private readonly proxy: ProxyProvider;
 
     constructor(private context: ContextService) {
-        this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
+        this.proxy = new ProxyProvider(
+            elrondConfig.gateway,
+            elrondConfig.proxyTimeout,
+        );
     }
 
     async getContract(address: string): Promise<SmartContract> {
