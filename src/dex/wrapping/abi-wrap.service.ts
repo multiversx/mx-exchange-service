@@ -10,7 +10,10 @@ export class AbiWrapService {
     private readonly proxy: ProxyProvider;
 
     constructor() {
-        this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
+        this.proxy = new ProxyProvider(
+            elrondConfig.gateway,
+            elrondConfig.proxyTimeout,
+        );
     }
 
     async getContract(): Promise<SmartContract> {
