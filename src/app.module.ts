@@ -7,6 +7,7 @@ import { PairModule } from './dex/pair/pair.module';
 import { FarmModule } from './dex/farm/farm.module';
 import { DistributionModule } from './dex/distribution/distribution.module';
 import { LockedRewardsModule } from './dex/locked-rewards/locked-rewards.module';
+import { WrappingModule } from './dex/wrapping/wrap.module';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import { LockedRewardsModule } from './dex/locked-rewards/locked-rewards.module'
         FarmModule,
         DistributionModule,
         LockedRewardsModule,
+        WrappingModule,
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
         }),
