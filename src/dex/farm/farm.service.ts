@@ -61,7 +61,7 @@ export class FarmService {
         const response = interaction.interpretQueryResponse(queryResponse);
 
         return await this.context.getTokenMetadata(
-            response.firstValue.valueOf(),
+            response.firstValue.valueOf().toString(),
         );
     }
 
@@ -75,7 +75,7 @@ export class FarmService {
         const response = interaction.interpretQueryResponse(queryResponse);
 
         return await this.context.getTokenMetadata(
-            response.firstValue.valueOf(),
+            response.firstValue.valueOf().toString(),
         );
     }
 
@@ -91,7 +91,7 @@ export class FarmService {
         const response = interaction.interpretQueryResponse(queryResponse);
         const acceptedTokens: TokenModel[] = [];
         for (const rawTokenID of response.values) {
-            const tokenID = rawTokenID.valueOf();
+            const tokenID = rawTokenID.valueOf().toString();
             acceptedTokens.push(await this.context.getTokenMetadata(tokenID));
         }
         return acceptedTokens;
