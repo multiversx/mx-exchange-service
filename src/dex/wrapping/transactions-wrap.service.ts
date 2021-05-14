@@ -24,7 +24,7 @@ export class TransactionsWrapService {
         const contract = await this.abiService.getContract();
         const interaction: Interaction = contract.methods.wrapEgld([]);
         const transaction = interaction.buildTransaction();
-        transaction.setValue(Balance.egld(amount));
+        transaction.setValue(new Balance(amount));
         transaction.setGasLimit(new GasLimit(gasConfig.default));
 
         return transaction.toPlainObject();
