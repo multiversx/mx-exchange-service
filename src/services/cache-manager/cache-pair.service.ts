@@ -28,7 +28,7 @@ export class CachePairService {
         return this.cacheManagerService.set(
             Keys.firstTokenID(pairAddress),
             firstTokenID,
-            cacheConfig.default,
+            cacheConfig.token,
         );
     }
 
@@ -43,7 +43,7 @@ export class CachePairService {
         return this.cacheManagerService.set(
             Keys.secondTokenID(pairAddress),
             secondTokenID,
-            cacheConfig.default,
+            cacheConfig.token,
         );
     }
 
