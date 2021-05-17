@@ -26,7 +26,7 @@ export class CacheManagerService {
     }
 
     async setPairsAddress(pairsAddress: Record<string, any>): Promise<void> {
-        return this.set(
+        await this.set(
             FactoryKeys.pairsAddress(),
             pairsAddress,
             cacheConfig.default,
