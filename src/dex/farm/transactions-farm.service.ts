@@ -36,7 +36,7 @@ export class TransactionsFarmService {
             BytesValue.fromUTF8('enterFarm'),
         ];
 
-        return this.context.esdtTransfer(
+        return await this.context.esdtTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),
@@ -44,11 +44,11 @@ export class TransactionsFarmService {
     }
 
     async exitFarm(args: ExitFarmArgs): Promise<TransactionModel> {
-        return this.SftFarmInteraction(args, 'exitFarm');
+        return await this.SftFarmInteraction(args, 'exitFarm');
     }
 
     async claimRewards(args: ClaimRewardsArgs): Promise<TransactionModel> {
-        return this.SftFarmInteraction(args, 'claimRewards');
+        return await this.SftFarmInteraction(args, 'claimRewards');
     }
 
     private async SftFarmInteraction(

@@ -27,17 +27,17 @@ export class FarmService {
 
     async getFarmedToken(farmAddress: string): Promise<TokenModel> {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
-        return this.context.getTokenMetadata(farmedTokenID);
+        return await this.context.getTokenMetadata(farmedTokenID);
     }
 
     async getFarmToken(farmAddress: string): Promise<TokenModel> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
-        return this.context.getTokenMetadata(farmTokenID);
+        return await this.context.getTokenMetadata(farmTokenID);
     }
 
     async getAcceptedToken(farmAddress: string): Promise<TokenModel> {
         const acceptedTokenID = await this.getAcceptedTokenID(farmAddress);
-        return this.context.getTokenMetadata(acceptedTokenID);
+        return await this.context.getTokenMetadata(acceptedTokenID);
     }
 
     async getState(farmAddress: string): Promise<string> {

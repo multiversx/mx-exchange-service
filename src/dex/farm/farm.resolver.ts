@@ -21,50 +21,50 @@ export class FarmResolver {
 
     @ResolveField()
     async farmedToken(@Parent() parent: FarmModel) {
-        return this.farmService.getFarmedToken(parent.address);
+        return await this.farmService.getFarmedToken(parent.address);
     }
 
     @ResolveField()
     async farmToken(@Parent() parent: FarmModel) {
-        return this.farmService.getFarmToken(parent.address);
+        return await this.farmService.getFarmToken(parent.address);
     }
 
     @ResolveField()
     async acceptedToken(@Parent() parent: FarmModel) {
-        return this.farmService.getAcceptedToken(parent.address);
+        return await this.farmService.getAcceptedToken(parent.address);
     }
 
     @ResolveField()
     async state(@Parent() parent: FarmModel) {
-        return this.farmService.getState(parent.address);
+        return await this.farmService.getState(parent.address);
     }
 
     @Query(returns => [FarmModel])
     async farms(): Promise<FarmModel[]> {
-        return this.farmService.getFarms();
+        return await this.farmService.getFarms();
     }
 
     @Query(returns => String)
     async getRewardsForPosition(
         @Args() args: CalculateRewardsArgs,
     ): Promise<string> {
-        return this.farmService.getRewardsForPosition(args);
+        return await this.farmService.getRewardsForPosition(args);
     }
 
     @Query(returns => TransactionModel)
     async enterFarm(@Args() args: EnterFarmArgs): Promise<TransactionModel> {
-        return this.transactionsService.enterFarm(args);
+        return await this.transactionsService.enterFarm(args);
     }
 
     @Query(returns => TransactionModel)
     async exitFarm(@Args() args: ExitFarmArgs): Promise<TransactionModel> {
-        return this.transactionsService.exitFarm(args);
+        return await this.transactionsService.exitFarm(args);
     }
 
     @Query(returns => TransactionModel)
     async claimRewards(
         @Args() args: ClaimRewardsArgs,
     ): Promise<TransactionModel> {
-        return this.transactionsService.claimRewards(args);
+        return await this.transactionsService.claimRewards(args);
     }
 }
