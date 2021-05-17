@@ -31,60 +31,6 @@ export class PairService {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
     }
 
-    private async getContract(address: string): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
-        const abi = new SmartContractAbi(abiRegistry, ['Pair']);
-        const contract = new SmartContract({
-            address: new Address(address),
-            abi: abi,
-        });
-
-        return contract;
-    }
-
-    private async getFirstTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getFirstTokenID(pairAddress);
-        if (!!cachedData) {
-            return cachedData.firstTokenID;
-        }
-
-        const firstTokenID = await this.abiService.getFirstTokenID(pairAddress);
-        this.cacheService.setFirstTokenID(pairAddress, {
-            firstTokenID: firstTokenID,
-        });
-        return firstTokenID;
-    }
-
-    private async getSecondTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getSecondTokenID(
-            pairAddress,
-        );
-        if (!!cachedData) {
-            return cachedData.secondTokenID;
-        }
-
-        const secondTokenID = await this.abiService.getSecondTokenID(
-            pairAddress,
-        );
-        this.cacheService.setSecondTokenID(pairAddress, {
-            secondTokenID: secondTokenID,
-        });
-        return secondTokenID;
-    }
-
-    private async getLpTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getLpTokenID(pairAddress);
-        if (!!cachedData) {
-            return cachedData.lpTokenID;
-        }
-
-        const lpTokenID = await this.abiService.getLpTokenID(pairAddress);
-        this.cacheService.setLpTokenID(pairAddress, {
-            lpTokenID: lpTokenID,
-        });
-        return lpTokenID;
-    }
-
     async getFirstToken(pairAddress: string): Promise<TokenModel> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
         return this.context.getTokenMetadata(firstTokenID);
@@ -143,34 +89,6 @@ export class PairService {
         return pairInfo;
     }
 
-    private async pairInfoDenom(
-        pairAddress: string,
-        pairInfo: PairInfoModel,
-    ): Promise<PairInfoModel> {
-        const firstToken = await this.getFirstToken(pairAddress);
-        const secondToken = await this.getSecondToken(pairAddress);
-        const lpToken = await this.getLpToken(pairAddress);
-
-        const reserves0 = this.context.fromBigNumber(
-            pairInfo.reserves0,
-            firstToken,
-        );
-        const reserves1 = this.context.fromBigNumber(
-            pairInfo.reserves1,
-            secondToken,
-        );
-        const totalSupply = this.context.fromBigNumber(
-            pairInfo.totalSupply,
-            lpToken,
-        );
-
-        return {
-            reserves0: reserves0.toString(),
-            reserves1: reserves1.toString(),
-            totalSupply: totalSupply.toString(),
-        };
-    }
-
     async getPairInfo(pairAddress: string): Promise<PairInfoModel> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
         const secondTokenID = await this.getSecondTokenID(pairAddress);
@@ -205,7 +123,7 @@ export class PairService {
     }
 
     async getState(pairAddress: string): Promise<string> {
-        const contract = await this.getContract(pairAddress);
+        const contract = await this.abiService.getContract(pairAddress);
         return await this.context.getState(contract);
     }
 
@@ -395,6 +313,77 @@ export class PairService {
             secondTokenAmount: this.context
                 .fromBigNumber(secondTokenAmount.toString(), secondToken)
                 .toString(),
+        };
+    }
+
+    private async getFirstTokenID(pairAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getFirstTokenID(pairAddress);
+        if (!!cachedData) {
+            return cachedData.firstTokenID;
+        }
+
+        const firstTokenID = await this.abiService.getFirstTokenID(pairAddress);
+        this.cacheService.setFirstTokenID(pairAddress, {
+            firstTokenID: firstTokenID,
+        });
+        return firstTokenID;
+    }
+
+    private async getSecondTokenID(pairAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getSecondTokenID(
+            pairAddress,
+        );
+        if (!!cachedData) {
+            return cachedData.secondTokenID;
+        }
+
+        const secondTokenID = await this.abiService.getSecondTokenID(
+            pairAddress,
+        );
+        this.cacheService.setSecondTokenID(pairAddress, {
+            secondTokenID: secondTokenID,
+        });
+        return secondTokenID;
+    }
+
+    private async getLpTokenID(pairAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getLpTokenID(pairAddress);
+        if (!!cachedData) {
+            return cachedData.lpTokenID;
+        }
+
+        const lpTokenID = await this.abiService.getLpTokenID(pairAddress);
+        this.cacheService.setLpTokenID(pairAddress, {
+            lpTokenID: lpTokenID,
+        });
+        return lpTokenID;
+    }
+
+    private async pairInfoDenom(
+        pairAddress: string,
+        pairInfo: PairInfoModel,
+    ): Promise<PairInfoModel> {
+        const firstToken = await this.getFirstToken(pairAddress);
+        const secondToken = await this.getSecondToken(pairAddress);
+        const lpToken = await this.getLpToken(pairAddress);
+
+        const reserves0 = this.context.fromBigNumber(
+            pairInfo.reserves0,
+            firstToken,
+        );
+        const reserves1 = this.context.fromBigNumber(
+            pairInfo.reserves1,
+            secondToken,
+        );
+        const totalSupply = this.context.fromBigNumber(
+            pairInfo.totalSupply,
+            lpToken,
+        );
+
+        return {
+            reserves0: reserves0.toString(),
+            reserves1: reserves1.toString(),
+            totalSupply: totalSupply.toString(),
         };
     }
 }
