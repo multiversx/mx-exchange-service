@@ -1,4 +1,4 @@
-import { Resolver, Query, ResolveField, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../models/transaction.model';
 import { DistributionService } from './distribution.service';
@@ -7,15 +7,28 @@ import {
     DistributionModel,
 } from '../models/distribution.model';
 import { TokenModel } from '../models/pair.model';
-import { ProxyService } from '../utils/proxy.service';
+import { ProxyFarmService } from '../utils/proxy/proxy-farm.service';
+import {
+    AddLiquidityProxyArgs,
+    ReclaimTemporaryFundsProxyArgs,
+    RemoveLiquidityProxyArgs,
+    TokensTransferArgs,
+} from '../utils/proxy/dto/proxy-pair.args';
+import {
+    ClaimFarmRewardsProxyArgs,
+    EnterFarmProxyArgs,
+    ExitFarmProxyArgs,
+} from '../utils/proxy/dto/proxy-farm.args';
+import { ProxyPairService } from '../utils/proxy/proxy-pair.service';
 
 @Resolver(of => DistributionModel)
 export class DistributionResolver {
     constructor(
         @Inject(DistributionService)
         private distributionService: DistributionService,
-        @Inject(ProxyService)
-        private proxyService: ProxyService,
+        @Inject(ProxyPairService) private proxyPairService: ProxyPairService,
+        @Inject(ProxyFarmService)
+        private proxyFarmService: ProxyFarmService,
     ) {}
 
     @ResolveField()
@@ -70,133 +83,50 @@ export class DistributionResolver {
 
     @Query(returns => TransactionModel)
     async tokensTransferProxy(
-        @Args('amount') amount: string,
-        @Args('tokenID') tokenID: string,
-        @Args('tokenNonce', { nullable: true, type: () => Int })
-        tokenNonce?: number,
-        @Args('sender', { nullable: true }) sender?: string,
+        @Args() args: TokensTransferArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.esdtTransferProxy(
-            amount,
-            tokenID,
-            tokenNonce,
-            sender,
-        );
+        return this.proxyPairService.esdtTransferProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async addLiquidityProxy(
-        @Args('pairAddress') pairAddress: string,
-        @Args('amount0') amount0: string,
-        @Args('amount1') amount1: string,
-        @Args('tolerance') tolerance: number,
-        @Args('token0ID') token0ID: string,
-        @Args('token1ID') token1ID: string,
-        @Args('token0Nonce', { nullable: true, type: () => Int })
-        token0Nonce?: number,
-        @Args('token1Nonce', { nullable: true, type: () => Int })
-        token1Nonce?: number,
+        @Args() args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.addLiquidityProxy(
-            pairAddress,
-            amount0,
-            amount1,
-            tolerance,
-            token0ID,
-            token1ID,
-            token0Nonce,
-            token1Nonce,
-        );
+        return this.proxyPairService.addLiquidityProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async reclaimTemporaryFundsProxy(
-        @Args('firstTokenID') firstTokenID: string,
-        @Args('secondTokenID') secondTokenID: string,
-        @Args('firstTokenNonce', { nullable: true, type: () => Int })
-        firstTokenNonce?: number,
-        @Args('secondTokenNonce', { nullable: true, type: () => Int })
-        secondTokenNonce?: number,
+        @Args() args: ReclaimTemporaryFundsProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.reclaimTemporaryFundsProxy(
-            firstTokenID,
-            secondTokenID,
-            firstTokenNonce,
-            secondTokenNonce,
-        );
+        return this.proxyPairService.reclaimTemporaryFundsProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async removeLiquidityProxy(
-        @Args('sender') sender: string,
-        @Args('pairAddress') pairAddress: string,
-        @Args('wrappedLpTokenID') wrappedLpTokenID: string,
-        @Args('wrappedLpTokenNonce', { type: () => Int })
-        wrappedLpTokenNonce: number,
-        @Args('liquidity') liqidity: string,
-        @Args('tolerance') tolerance: number,
+        @Args() args: RemoveLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.removeLiquidityProxy(
-            sender,
-            pairAddress,
-            wrappedLpTokenID,
-            wrappedLpTokenNonce,
-            liqidity,
-            tolerance,
-        );
+        return this.proxyPairService.removeLiquidityProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async enterFarmProxy(
-        @Args('sender') sender: string,
-        @Args('farmAddress') farmAddress: string,
-        @Args('acceptedLockedTokenID') acceptedLockedTokenID: string,
-        @Args('acceptedLockedTokenNonce', { type: () => Int })
-        acceptedLockedTokenNonce: number,
-        @Args('amount') amount: string,
+        @Args() args: EnterFarmProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.enterFarmProxy(
-            sender,
-            farmAddress,
-            acceptedLockedTokenID,
-            acceptedLockedTokenNonce,
-            amount,
-        );
+        return this.proxyFarmService.enterFarmProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async exitFarmProxy(
-        @Args('sender') sender: string,
-        @Args('farmAddress') farmAddress: string,
-        @Args('wrappedFarmTokenID') wrappedFarmTokenID: string,
-        @Args('wrappedFarmTokenNonce', { type: () => Int })
-        wrappedFarmTokenNonce: number,
-        @Args('amount') amount: string,
+        @Args() args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.exitFarmProxy(
-            sender,
-            farmAddress,
-            wrappedFarmTokenID,
-            wrappedFarmTokenNonce,
-            amount,
-        );
+        return this.proxyFarmService.exitFarmProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async claimFarmRewardsProxy(
-        @Args('sender') sender: string,
-        @Args('farmAddress') farmAddress: string,
-        @Args('wrappedFarmTokenID') wrappedFarmTokenID: string,
-        @Args('wrappedFarmTokenNonce', { type: () => Int })
-        wrappedFarmTokenNonce: number,
-        @Args('amount') amount: string,
+        @Args() args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyService.claimFarmRewardsProxy(
-            sender,
-            farmAddress,
-            wrappedFarmTokenID,
-            wrappedFarmTokenNonce,
-            amount,
-        );
+        return this.proxyFarmService.claimFarmRewardsProxy(args);
     }
 }

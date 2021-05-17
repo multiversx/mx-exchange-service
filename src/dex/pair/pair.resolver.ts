@@ -1,34 +1,33 @@
 import { PairService } from './pair.service';
-import {
-    Resolver,
-    Query,
-    ResolveField,
-    Parent,
-    Args,
-    Int,
-} from '@nestjs/graphql';
+import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { LiquidityPosition, PairModel } from '../models/pair.model';
 import { TransactionModel } from '../models/transaction.model';
+import {
+    AddLiquidityArgs,
+    ESDTTransferArgs,
+    RemoveLiquidityArgs,
+    SwapTokensFixedInputArgs,
+    SwapTokensFixedOutputArgs,
+} from './dto/pair.args';
+import { TransactionPairService } from './transactions-pair.service';
 
 @Resolver(of => PairModel)
 export class PairResolver {
-    constructor(@Inject(PairService) private pairService: PairService) {}
+    constructor(
+        @Inject(PairService) private pairService: PairService,
+        @Inject(TransactionPairService)
+        private transactionService: TransactionPairService,
+    ) {}
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel) {
-        return this.pairService.getPairToken(
-            parent.address,
-            this.firstToken.name,
-        );
+        return this.pairService.getFirstToken(parent.address);
     }
 
     @ResolveField()
     async secondToken(@Parent() parent: PairModel) {
-        return this.pairService.getPairToken(
-            parent.address,
-            this.secondToken.name,
-        );
+        return this.pairService.getSecondToken(parent.address);
     }
 
     @ResolveField()
@@ -104,85 +103,43 @@ export class PairResolver {
 
     @Query(returns => TransactionModel)
     async addLiquidity(
-        @Args('pairAddress') pairAddress: string,
-        @Args('amount0') amount0: string,
-        @Args('amount1') amount1: string,
-        @Args('tolerance') tolerance: number,
+        @Args() args: AddLiquidityArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.addLiquidity(
-            pairAddress,
-            amount0,
-            amount1,
-            tolerance,
-        );
+        return this.transactionService.addLiquidity(args);
     }
 
     @Query(returns => TransactionModel)
     async reclaimTemporaryFunds(
         @Args('pairAddress') pairAddress: string,
     ): Promise<TransactionModel> {
-        return this.pairService.reclaimTemporaryFunds(pairAddress);
+        return this.transactionService.reclaimTemporaryFunds(pairAddress);
     }
 
     @Query(returns => TransactionModel)
     async removeLiquidity(
-        @Args('pairAddress') pairAddress: string,
-        @Args('liquidity') liqidity: string,
-        @Args('liquidityTokenID') liquidityTokenID: string,
-        @Args('tolerance') tolerance: number,
+        @Args() args: RemoveLiquidityArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.removeLiquidity(
-            pairAddress,
-            liqidity,
-            liquidityTokenID,
-            tolerance,
-        );
+        return this.transactionService.removeLiquidity(args);
     }
 
     @Query(returns => TransactionModel)
     async swapTokensFixedInput(
-        @Args('pairAddress') pairAddress: string,
-        @Args('tokenInID') tokenInID: string,
-        @Args('amountIn') amountIn: string,
-        @Args('tokenOutID') tokenOutID: string,
-        @Args('amountOut') amountOut: string,
-        @Args('tolerance') tolerance: number,
+        @Args() args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.swapTokensFixedInput(
-            pairAddress,
-            tokenInID,
-            amountIn,
-            tokenOutID,
-            amountOut,
-            tolerance,
-        );
+        return this.transactionService.swapTokensFixedInput(args);
     }
 
     @Query(returns => TransactionModel)
     async swapTokensFixedOutput(
-        @Args('pairAddress') pairAddress: string,
-        @Args('tokenInID') tokenInID: string,
-        @Args('amountIn') amountIn: string,
-        @Args('tokenOutID') tokenOutID: string,
-        @Args('amountOut') amountOut: string,
-        @Args('tolerance') tolerance: number,
+        @Args() args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.swapTokensFixedOutput(
-            pairAddress,
-            tokenInID,
-            amountIn,
-            tokenOutID,
-            amountOut,
-            tolerance,
-        );
+        return this.transactionService.swapTokensFixedOutput(args);
     }
 
     @Query(returns => TransactionModel)
     async tokensTransfer(
-        @Args('pairAddress') pairAddress: string,
-        @Args('token') token: string,
-        @Args('amount') amount: string,
+        @Args() args: ESDTTransferArgs,
     ): Promise<TransactionModel> {
-        return this.pairService.esdtTransfer(pairAddress, token, amount);
+        return this.transactionService.esdtTransfer(args);
     }
 }

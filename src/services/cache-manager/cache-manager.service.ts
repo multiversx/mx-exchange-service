@@ -15,12 +15,6 @@ const FactoryKeys = {
     pairsAddress: () => 'pairsAddress',
 };
 
-const PairKeys = {
-    firstTokenID: (pairAddress: string) => `${pairAddress}.firstTokenID`,
-    secondTokenID: (pairAddress: string) => `${pairAddress}.secondTokenID`,
-    lpTokenID: (pairAddress: string) => `${pairAddress}.lpTokenID`,
-};
-
 @Injectable()
 export class CacheManagerService {
     constructor(
@@ -32,55 +26,10 @@ export class CacheManagerService {
     }
 
     async setPairsAddress(pairsAddress: Record<string, any>): Promise<void> {
-        return this.set(
+        await this.set(
             FactoryKeys.pairsAddress(),
             pairsAddress,
             cacheConfig.default,
-        );
-    }
-
-    async getFirstTokenID(pairAddress: string): Promise<Record<string, any>> {
-        return this.cacheManager.get(PairKeys.firstTokenID(pairAddress));
-    }
-
-    async setFirstTokenID(
-        pairAddress: string,
-        firstTokenID: Record<string, any>,
-    ): Promise<void> {
-        return this.set(
-            PairKeys.firstTokenID(pairAddress),
-            firstTokenID,
-            cacheConfig.default,
-        );
-    }
-
-    async getSecondTokenID(pairAddress: string): Promise<Record<string, any>> {
-        return this.cacheManager.get(PairKeys.secondTokenID(pairAddress));
-    }
-
-    async setSecondTokenID(
-        pairAddress: string,
-        secondTokenID: Record<string, any>,
-    ): Promise<void> {
-        return this.set(
-            PairKeys.secondTokenID(pairAddress),
-            secondTokenID,
-            cacheConfig.default,
-        );
-    }
-
-    async getLpTokenID(pairAddress: string): Promise<Record<string, any>> {
-        return this.cacheManager.get(PairKeys.lpTokenID(pairAddress));
-    }
-
-    async setLpTokenID(
-        pairAddress: string,
-        tokenID: Record<string, any>,
-    ): Promise<void> {
-        await this.set(
-            PairKeys.lpTokenID(pairAddress),
-            tokenID,
-            cacheConfig.token,
         );
     }
 
@@ -89,7 +38,11 @@ export class CacheManagerService {
     }
 
     async setPairsMetadata(pairs: Record<string, any>): Promise<void> {
-        await this.set(Keys.pairsMetadata(), pairs, cacheConfig.pairsMetadata);
+        await this.cacheManager.set(
+            Keys.pairsMetadata(),
+            pairs,
+            cacheConfig.pairsMetadata,
+        );
     }
 
     async getPairs(): Promise<Record<string, any>> {

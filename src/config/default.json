@@ -6,8 +6,10 @@
         "explorer": "https://testnet-explorer.elrond.com",
         "chainID": "T",
         "version": 1,
+        "proxyTimeout": 60000,
         "routerAddress": "erd1qqqqqqqqqqqqqpgq4mw3xgjznarjep5m2zu8kt7qwfk0dajf0n4sg9hmsf",
-        "distributionAddress": "erd1qqqqqqqqqqqqqpgq4mw3xgjznarjep5m2zu8kt7qwfk0dajf0n4sg9hmsf"
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgq4mw3xgjznarjep5m2zu8kt7qwfk0dajf0n4sg9hmsf",
+        "wrappingAddress": "erd1qqqqqqqqqqqqqpgqa7hv0nahgsl8tz0psat46x0tchm0wuyc0n4s6q28ad"
     },
     "farms": [
         {
@@ -42,6 +44,7 @@
         "farm": "./src/dex/farm/elrond_dex_farm.abi.json",
         "distribution": "./src/dex/distribution/sc_distribution_rs.abi.json",
         "lockedRewards": "./src/dex/locked-rewards/sc-locked-rewards.abi.json",
-        "proxy": "./src/dex/utils/sc-proxy-dex.abi.json"
+        "proxy": "./src/dex/utils/sc-proxy-dex.abi.json",
+        "wrap": "./src/dex/wrapping/egld-esdt-swap.abi.json"
     }
 }
