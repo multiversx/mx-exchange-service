@@ -33,12 +33,12 @@ export class PairService {
 
     async getFirstToken(pairAddress: string): Promise<TokenModel> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
-        return this.context.getTokenMetadata(firstTokenID);
+        return await this.context.getTokenMetadata(firstTokenID);
     }
 
     async getSecondToken(pairAddress: string): Promise<TokenModel> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return this.context.getTokenMetadata(secondTokenID);
+        return await this.context.getTokenMetadata(secondTokenID);
     }
 
     async getLpToken(pairAddress: string): Promise<TokenModel> {
@@ -67,7 +67,7 @@ export class PairService {
                 return;
             }
 
-            this.getPairInfoMetadata(pairAddress);
+            await this.getPairInfoMetadata(pairAddress);
         }
     }
 
@@ -119,7 +119,7 @@ export class PairService {
         }
 
         const pairInfo = await this.getPairInfoMetadata(pairAddress);
-        return this.pairInfoDenom(pairAddress, pairInfo);
+        return await this.pairInfoDenom(pairAddress, pairInfo);
     }
 
     async getState(pairAddress: string): Promise<string> {
