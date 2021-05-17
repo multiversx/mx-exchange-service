@@ -5,11 +5,13 @@ import * as redisStore from 'cache-manager-redis-store';
 import { CacheDistributionService } from './cache-distribution.service';
 import { CachePairService } from './cache-pair.service';
 import { CacheWrapService } from './cache-wrapping.service';
+import { CacheFarmService } from './cache-farm.service';
 
 @Module({
     providers: [
         CacheManagerService,
         CachePairService,
+        CacheFarmService,
         CacheDistributionService,
         CacheWrapService,
     ],
@@ -26,6 +28,7 @@ import { CacheWrapService } from './cache-wrapping.service';
     exports: [
         CacheManagerService,
         CachePairService,
+        CacheFarmService,
         CacheWrapService,
         CacheDistributionService,
     ],
