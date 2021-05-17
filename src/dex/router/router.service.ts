@@ -45,37 +45,25 @@ export class RouterService {
         return contract;
     }
 
-    async getAllPairs(offset: number, limit: number): Promise<PairModel[]> {
-        const cachedData = await this.cacheManagerService.getPairs();
-        if (!!cachedData) {
-            return cachedData.pairs.slice(offset, limit);
-        }
-        const contract = await this.getContract();
-        const getAllPairsAddressesInteraction: Interaction = contract.methods.getAllPairsAddresses(
-            [],
-        );
-
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            getAllPairsAddressesInteraction.buildQuery(),
-        );
-        const result = getAllPairsAddressesInteraction.interpretQueryResponse(
-            queryResponse,
-        );
-
-        const pairs = result.firstValue.valueOf().map(v => {
-            const pair = new PairModel();
-            pair.address = v.toString();
-            return pair;
-        });
-        this.cacheManagerService.setPairs({ pairs: pairs });
-        return pairs.slice(offset, limit);
-    }
-
     async getFactory(): Promise<FactoryModel> {
         const dexFactory = new FactoryModel();
         dexFactory.address = elrondConfig.routerAddress;
         return dexFactory;
+    }
+
+    async getAllPairsAddress(): Promise<string[]> {
+        return await this.context.getAllPairsAddress();
+    }
+
+    async getAllPairs(offset: number, limit: number): Promise<PairModel[]> {
+        const pairsAddress = await this.context.getAllPairsAddress();
+        const pairs = pairsAddress.map(pairAddress => {
+            const pair = new PairModel();
+            pair.address = pairAddress;
+            return pair;
+        });
+
+        return pairs.slice(offset, limit);
     }
 
     async getPairCount(): Promise<number> {

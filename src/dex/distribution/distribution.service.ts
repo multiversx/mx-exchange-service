@@ -89,7 +89,7 @@ export class DistributionService {
         const acceptedLockedTokens: TokenModel[] = [];
         for (const tokenID of acceptedLockedTokensID) {
             const token = await this.context.getTokenMetadata(
-                tokenID.valueOf(),
+                tokenID.valueOf().toString(),
             );
             acceptedLockedTokens.push(token);
         }

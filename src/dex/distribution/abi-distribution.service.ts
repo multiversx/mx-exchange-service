@@ -40,7 +40,7 @@ export class AbiDistributionService {
             interaction.buildQuery(),
         );
         const result = interaction.interpretQueryResponse(queryResponse);
-        const distributedTokenID = result.firstValue.valueOf();
+        const distributedTokenID = result.firstValue.valueOf().toString();
 
         return distributedTokenID;
     }
@@ -54,7 +54,7 @@ export class AbiDistributionService {
         );
         const result = interaction.interpretQueryResponse(queryResponse);
 
-        const lockedTokenID = result.firstValue.valueOf();
+        const lockedTokenID = result.firstValue.valueOf().toString();
 
         return lockedTokenID;
     }
@@ -69,7 +69,7 @@ export class AbiDistributionService {
             interaction.buildQuery(),
         );
         const result = interaction.interpretQueryResponse(queryResponse);
-        const wrappedLpTokenID = result.firstValue.valueOf();
+        const wrappedLpTokenID = result.firstValue.valueOf().toString();
 
         return wrappedLpTokenID;
     }
@@ -84,7 +84,7 @@ export class AbiDistributionService {
             interaction.buildQuery(),
         );
         const result = interaction.interpretQueryResponse(queryResponse);
-        const wrappedFarmTokenID = result.firstValue.valueOf();
+        const wrappedFarmTokenID = result.firstValue.valueOf().toString();
 
         return wrappedFarmTokenID;
     }

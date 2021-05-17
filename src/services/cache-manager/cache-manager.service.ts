@@ -9,7 +9,10 @@ const Keys = {
     pairCount: () => 'pairCount',
     totalTxCount: () => 'totalTxCount',
     token: (tokenID: string) => `token.${tokenID}`,
-    lpToken: (address: string) => `lptoken.${address}`,
+};
+
+const FactoryKeys = {
+    pairsAddress: () => 'pairsAddress',
 };
 
 @Injectable()
@@ -18,15 +21,15 @@ export class CacheManagerService {
         @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
     ) {}
 
-    async getNetworkConfig(): Promise<Record<string, any>> {
-        return this.cacheManager.get(Keys.networkConfig());
+    async getPairsAddress(): Promise<Record<string, any>> {
+        return this.cacheManager.get(FactoryKeys.pairsAddress());
     }
 
-    async setNetworkConfig(networkConfig: Record<string, any>): Promise<void> {
+    async setPairsAddress(pairsAddress: Record<string, any>): Promise<void> {
         await this.set(
-            Keys.networkConfig(),
-            networkConfig,
-            cacheConfig.networkConfig,
+            FactoryKeys.pairsAddress(),
+            pairsAddress,
+            cacheConfig.default,
         );
     }
 
@@ -35,7 +38,11 @@ export class CacheManagerService {
     }
 
     async setPairsMetadata(pairs: Record<string, any>): Promise<void> {
-        await this.set(Keys.pairsMetadata(), pairs, cacheConfig.pairsMetadata);
+        await this.cacheManager.set(
+            Keys.pairsMetadata(),
+            pairs,
+            cacheConfig.pairsMetadata,
+        );
     }
 
     async getPairs(): Promise<Record<string, any>> {
@@ -72,17 +79,6 @@ export class CacheManagerService {
 
     async setToken(tokenID: string, token: Record<string, any>): Promise<void> {
         await this.set(Keys.token(tokenID), token, cacheConfig.token);
-    }
-
-    async getLpToken(address: string): Promise<Record<string, any>> {
-        return this.cacheManager.get(Keys.lpToken(address));
-    }
-
-    async setLpToken(
-        address: string,
-        token: Record<string, any>,
-    ): Promise<void> {
-        await this.set(Keys.lpToken(address), token, cacheConfig.token);
     }
 
     async get(key: string): Promise<any> {

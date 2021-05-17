@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { GraphQLModule } from '@nestjs/graphql';
 import { CacheManagerModule } from './services/cache-manager/cache-manager.module';
 import { RouterModule } from './dex/router/router.module';
@@ -14,6 +15,7 @@ import { WrappingModule } from './dex/wrapping/wrap.module';
         ConfigModule.forRoot({
             isGlobal: true,
         }),
+        ScheduleModule.forRoot(),
         CacheManagerModule,
         RouterModule,
         PairModule,
