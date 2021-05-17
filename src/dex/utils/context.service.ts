@@ -138,15 +138,7 @@ export class ContextService {
         );
         const response = interaction.interpretQueryResponse(queryResponse);
         const state = response.firstValue.valueOf();
-
-        switch (state) {
-            case false:
-                return 'Inactive';
-            case true:
-                return 'Active';
-            default:
-                return '';
-        }
+        return state;
     }
 
     async esdtTransfer(
