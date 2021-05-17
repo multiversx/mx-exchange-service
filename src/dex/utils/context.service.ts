@@ -178,10 +178,14 @@ export class ContextService {
     }
 
     public toBigNumber(value: string, token: TokenModel): BigNumber {
-        return new BigNumber(`${value}e+${token.decimals}`);
+        const bigNumber = new BigNumber(value);
+        const exponent = new BigNumber(`1e+${token.decimals}`);
+        return bigNumber.multipliedBy(exponent);
     }
 
     public fromBigNumber(value: string, token: TokenModel): BigNumber {
-        return new BigNumber(`${value}e-${token.decimals}`);
+        const bigNumber = new BigNumber(value);
+        const exponent = new BigNumber(`1e-${token.decimals}`);
+        return bigNumber.multipliedBy(exponent);
     }
 }
