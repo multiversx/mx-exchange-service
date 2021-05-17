@@ -33,100 +33,100 @@ export class DistributionResolver {
 
     @ResolveField()
     async distributedToken(): Promise<TokenModel> {
-        return this.distributionService.getDistributedToken();
+        return await this.distributionService.getDistributedToken();
     }
 
     @ResolveField()
     async lockedToken(): Promise<TokenModel> {
-        return this.distributionService.getLockedToken();
+        return await this.distributionService.getLockedToken();
     }
 
     @ResolveField()
     async wrappedLpToken(): Promise<TokenModel> {
-        return this.distributionService.getwrappedLpToken();
+        return await this.distributionService.getwrappedLpToken();
     }
 
     @ResolveField()
     async wrappedFarmToken(): Promise<TokenModel> {
-        return this.distributionService.getwrappedFarmToken();
+        return await this.distributionService.getwrappedFarmToken();
     }
 
     @ResolveField()
     async acceptedLockedTokens(): Promise<TokenModel[]> {
-        return this.distributionService.getAcceptedLockedAssetsTokens();
+        return await this.distributionService.getAcceptedLockedAssetsTokens();
     }
 
     @ResolveField()
     async intermediatedPairs(): Promise<string[]> {
-        return this.distributionService.getIntermediatedPairs();
+        return await this.distributionService.getIntermediatedPairs();
     }
 
     @ResolveField()
     async communityDistribution(): Promise<CommunityDistributionModel> {
-        return this.distributionService.getCommunityDistribution();
+        return await this.distributionService.getCommunityDistribution();
     }
 
     @Query(returns => DistributionModel)
     async distribution(): Promise<DistributionModel> {
-        return this.distributionService.getDistributionInfo();
+        return await this.distributionService.getDistributionInfo();
     }
 
     @Query(returns => TransactionModel)
     async claimAssets(): Promise<TransactionModel> {
-        return this.distributionService.claimAssets();
+        return await this.distributionService.claimAssets();
     }
 
     @Query(returns => TransactionModel)
     async claimLockedAssets(): Promise<TransactionModel> {
-        return this.distributionService.claimLockedAssets();
+        return await this.distributionService.claimLockedAssets();
     }
 
     @Query(returns => TransactionModel)
     async tokensTransferProxy(
         @Args() args: TokensTransferArgs,
     ): Promise<TransactionModel> {
-        return this.proxyPairService.esdtTransferProxy(args);
+        return await this.proxyPairService.esdtTransferProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async addLiquidityProxy(
         @Args() args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyPairService.addLiquidityProxy(args);
+        return await this.proxyPairService.addLiquidityProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async reclaimTemporaryFundsProxy(
         @Args() args: ReclaimTemporaryFundsProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyPairService.reclaimTemporaryFundsProxy(args);
+        return await this.proxyPairService.reclaimTemporaryFundsProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async removeLiquidityProxy(
         @Args() args: RemoveLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyPairService.removeLiquidityProxy(args);
+        return await this.proxyPairService.removeLiquidityProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async enterFarmProxy(
         @Args() args: EnterFarmProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyFarmService.enterFarmProxy(args);
+        return await this.proxyFarmService.enterFarmProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async exitFarmProxy(
         @Args() args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyFarmService.exitFarmProxy(args);
+        return await this.proxyFarmService.exitFarmProxy(args);
     }
 
     @Query(returns => TransactionModel)
     async claimFarmRewardsProxy(
         @Args() args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        return this.proxyFarmService.claimFarmRewardsProxy(args);
+        return await this.proxyFarmService.claimFarmRewardsProxy(args);
     }
 }

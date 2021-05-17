@@ -30,7 +30,9 @@ export class DistributionService {
     async getDistributedToken(): Promise<TokenModel> {
         const cachedData = await this.cacheService.getDistributedTokenID();
         if (!!cachedData) {
-            return this.context.getTokenMetadata(cachedData.distributedTokenID);
+            return await this.context.getTokenMetadata(
+                cachedData.distributedTokenID,
+            );
         }
 
         const distributedTokenID = await this.abiService.getDistributedTokenID();
@@ -38,13 +40,15 @@ export class DistributionService {
             distributedTokenID: distributedTokenID,
         });
 
-        return this.context.getTokenMetadata(distributedTokenID);
+        return await this.context.getTokenMetadata(distributedTokenID);
     }
 
     async getLockedToken(): Promise<TokenModel> {
         const cachedData = await this.cacheService.getLockedTokenID();
         if (!!cachedData) {
-            return this.context.getTokenMetadata(cachedData.lockedTokenID);
+            return await this.context.getTokenMetadata(
+                cachedData.lockedTokenID,
+            );
         }
 
         const lockedTokenID = await this.abiService.getLockedTokenID();
@@ -52,13 +56,15 @@ export class DistributionService {
             lockedTokenID: lockedTokenID,
         });
 
-        return this.context.getTokenMetadata(lockedTokenID);
+        return await this.context.getTokenMetadata(lockedTokenID);
     }
 
     async getwrappedLpToken(): Promise<TokenModel> {
         const cachedData = await this.cacheService.getWrappedLpTokenID();
         if (!!cachedData) {
-            return this.context.getTokenMetadata(cachedData.wrappedLpTokenID);
+            return await this.context.getTokenMetadata(
+                cachedData.wrappedLpTokenID,
+            );
         }
 
         const wrappedLpTokenID = await this.abiService.getWrappedLpTokenID();
@@ -66,7 +72,7 @@ export class DistributionService {
             wrappedLpTokenID: wrappedLpTokenID,
         });
 
-        return this.context.getTokenMetadata(wrappedLpTokenID);
+        return await this.context.getTokenMetadata(wrappedLpTokenID);
     }
 
     async getwrappedFarmToken(): Promise<TokenModel> {
@@ -109,7 +115,7 @@ export class DistributionService {
             acceptedLockedTokensID: acceptedLockedTokensID,
         });
 
-        return this.getAcceptedLockedTokensMap(acceptedLockedTokensID);
+        return await this.getAcceptedLockedTokensMap(acceptedLockedTokensID);
     }
 
     async getDistributionMilestones(): Promise<DistributionMilestoneModel[]> {
