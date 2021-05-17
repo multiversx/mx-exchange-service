@@ -3,11 +3,21 @@ import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../models/transaction.model';
 import { FarmModel } from '../models/farm.model';
-import { TokenModel } from '../models/pair.model';
+import { TransactionsFarmService } from './transactions-farm.service';
+import {
+    CalculateRewardsArgs,
+    ClaimRewardsArgs,
+    EnterFarmArgs,
+    ExitFarmArgs,
+} from './dto/farm.args';
 
 @Resolver(of => FarmModel)
 export class FarmResolver {
-    constructor(@Inject(FarmService) private farmService: FarmService) {}
+    constructor(
+        @Inject(FarmService) private farmService: FarmService,
+        @Inject(TransactionsFarmService)
+        private transactionsService: TransactionsFarmService,
+    ) {}
 
     @ResolveField()
     async farmedToken(@Parent() parent: FarmModel) {
@@ -19,9 +29,9 @@ export class FarmResolver {
         return this.farmService.getFarmToken(parent.address);
     }
 
-    @ResolveField(returns => [TokenModel])
-    async acceptedTokens(@Parent() parent: FarmModel) {
-        return this.farmService.getAcceptedTokens(parent.address);
+    @ResolveField()
+    async acceptedToken(@Parent() parent: FarmModel) {
+        return this.farmService.getAcceptedToken(parent.address);
     }
 
     @ResolveField()
@@ -36,40 +46,25 @@ export class FarmResolver {
 
     @Query(returns => String)
     async getRewardsForPosition(
-        @Args('farmAddress') farmAddress: string,
-        @Args('farmTokenNonce') farmTokenNonce: number,
-        @Args('amount') amount: string,
+        @Args() args: CalculateRewardsArgs,
     ): Promise<string> {
-        return this.farmService.getRewardsForPosition(
-            farmAddress,
-            farmTokenNonce,
-            amount,
-        );
+        return this.farmService.getRewardsForPosition(args);
     }
 
     @Query(returns => TransactionModel)
-    async enterFarm(
-        @Args('farmAddress') farmAddress: string,
-        @Args('tokenInID') tokenInID: string,
-        @Args('amount') amount: string,
-    ): Promise<TransactionModel> {
-        return this.farmService.enterFarm(farmAddress, tokenInID, amount);
+    async enterFarm(@Args() args: EnterFarmArgs): Promise<TransactionModel> {
+        return this.transactionsService.enterFarm(args);
     }
 
     @Query(returns => TransactionModel)
-    async exitFarm(
-        @Args('farmAddress') farmAddress: string,
-        @Args('sender') sender: string,
-        @Args('farmTokenID') farmTokenID: string,
-        @Args('farmTokenNonce') farmTokenNonce: number,
-        @Args('amount') amount: string,
+    async exitFarm(@Args() args: ExitFarmArgs): Promise<TransactionModel> {
+        return this.transactionsService.exitFarm(args);
+    }
+
+    @Query(returns => TransactionModel)
+    async claimRewards(
+        @Args() args: ClaimRewardsArgs,
     ): Promise<TransactionModel> {
-        return this.farmService.exitFarm(
-            farmAddress,
-            sender,
-            farmTokenID,
-            farmTokenNonce,
-            amount,
-        );
+        return this.transactionsService.claimRewards(args);
     }
 }
