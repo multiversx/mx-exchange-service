@@ -7,184 +7,13 @@
                 "type": "TokenIdentifier"
             },
             {
-                "name": "locked_token_id",
-                "type": "TokenIdentifier"
-            },
-            {
-                "name": "wrapped_lp_token_id",
-                "type": "TokenIdentifier"
+                "name": "locked_asset_factory_address",
+                "type": "Address"
             }
         ],
         "outputs": []
     },
     "endpoints": [
-        {
-            "name": "getDistributedTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "unlockAssets",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "getLockedTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "addPairToIntermediate",
-            "inputs": [
-                {
-                    "name": "pair_address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "acceptEsdtPaymentProxy",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "pair_address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "reclaimTemporaryFundsProxy",
-            "inputs": [
-                {
-                    "name": "first_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "first_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "second_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "second_token_nonce",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "addLiquidityProxy",
-            "inputs": [
-                {
-                    "name": "pair_address",
-                    "type": "Address"
-                },
-                {
-                    "name": "first_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "first_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "first_token_amount_min",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "second_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "second_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "second_token_amount_min",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "removeLiquidityProxy",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "pair_address",
-                    "type": "Address"
-                },
-                {
-                    "name": "first_token_amount_min",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "second_token_amount_min",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "getTemporaryFunds",
-            "inputs": [
-                {
-                    "name": "caller",
-                    "type": "Address"
-                },
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "token_nonce",
-                    "type": "u64"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getIntermediatedPairs",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<Address>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getWrappedLpTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
         {
             "name": "startGlobalOperation",
             "inputs": [],
@@ -354,7 +183,7 @@
                     "type": "u64"
                 },
                 {
-                    "name": "unlock_precent",
+                    "name": "unlock_percent",
                     "type": "u8"
                 }
             ]

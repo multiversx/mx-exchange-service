@@ -28,26 +28,5 @@ export class DistributionModel {
     address: string;
 
     @Field()
-    distributedToken: TokenModel;
-
-    @Field()
-    lockedToken: TokenModel;
-
-    @Field()
-    wrappedLpToken: TokenModel;
-
-    @Field()
-    wrappedFarmToken: TokenModel;
-
-    @Field(type => [TokenModel])
-    acceptedLockedTokens: TokenModel[];
-
-    @Field(type => [String])
-    intermediatedPairs: string[];
-
-    @Field(type => [String])
-    intermediatedFarms: string[];
-
-    @Field()
     communityDistribution: CommunityDistributionModel;
 }
