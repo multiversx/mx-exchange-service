@@ -1,84 +1,35 @@
 {
     "name": "Pair",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "first_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "second_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "router_address",
+                "type": "Address"
+            },
+            {
+                "name": "router_owner_address",
+                "type": "Address"
+            },
+            {
+                "name": "total_fee_percent",
+                "type": "u64"
+            },
+            {
+                "name": "special_fee_percent",
+                "type": "u64"
+            }
+        ],
+        "outputs": []
+    },
     "endpoints": [
-        {
-            "name": "getFirstTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getSecondTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getReserve",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getTotalSupply",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getTotalFeePrecent",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getSpecialFeePrecent",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getWhitelistedAddresses",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<Address>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getFeeState",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "bool"
-                }
-            ]
-        },
         {
             "name": "pause",
             "inputs": [],
@@ -87,6 +38,16 @@
         {
             "name": "resume",
             "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "setState",
+            "inputs": [
+                {
+                    "name": "state",
+                    "type": "State"
+                }
+            ],
             "outputs": []
         },
         {
@@ -117,7 +78,17 @@
                     "type": "BigUint"
                 }
             ],
-            "outputs": []
+            "outputs": [
+                {
+                    "type": "TokenAmountPair"
+                },
+                {
+                    "type": "TokenAmountPair"
+                },
+                {
+                    "type": "TokenAmountPair"
+                }
+            ]
         },
         {
             "name": "reclaimTemporaryFunds",
@@ -139,59 +110,14 @@
                     "type": "BigUint"
                 }
             ],
-            "outputs": []
-        },
-        {
-            "name": "whitelist",
-            "inputs": [
+            "outputs": [
                 {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "removeWhitelist",
-            "inputs": [
-                {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "addTrustedSwapPair",
-            "inputs": [
-                {
-                    "name": "pair_address",
-                    "type": "Address"
+                    "type": "TokenAmountPair"
                 },
                 {
-                    "name": "first_token",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "second_token",
-                    "type": "TokenIdentifier"
+                    "type": "TokenAmountPair"
                 }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "removeTrustedSwapPair",
-            "inputs": [
-                {
-                    "name": "first_token",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "second_token",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": []
+            ]
         },
         {
             "name": "swapNoFeeAndForward",
@@ -245,6 +171,16 @@
             "outputs": []
         },
         {
+            "name": "setLpTokenIdentifier",
+            "inputs": [
+                {
+                    "name": "token_identifier",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "setFeeOn",
             "inputs": [
                 {
@@ -257,16 +193,6 @@
                 },
                 {
                     "name": "fee_token",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setLpTokenIdentifier",
-            "inputs": [
-                {
-                    "name": "token_identifier",
                     "type": "TokenIdentifier"
                 }
             ],
@@ -359,6 +285,15 @@
             ]
         },
         {
+            "name": "getLpTokenIdentifier",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
             "name": "getTemporaryFunds",
             "inputs": [
                 {
@@ -377,11 +312,150 @@
             ]
         },
         {
-            "name": "getLpTokenIdentifier",
+            "name": "getTotalFeePercent",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getSpecialFee",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getWhitelistedAddresses",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getFeeState",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "whitelist",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeWhitelist",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "addTrustedSwapPair",
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeTrustedSwapPair",
+            "inputs": [
+                {
+                    "name": "first_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "set_fee_on",
+            "inputs": [
+                {
+                    "name": "enabled",
+                    "type": "bool"
+                },
+                {
+                    "name": "fee_to_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "fee_token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getFirstTokenId",
             "inputs": [],
             "outputs": [
                 {
                     "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getSecondTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getReserve",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getTotalSupply",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },
@@ -408,12 +482,29 @@
             "inputs": [],
             "outputs": [
                 {
-                    "type": "bool"
+                    "type": "State"
                 }
             ]
         }
     ],
     "types": {
+        "State": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "Inactive",
+                    "discriminant": 0
+                },
+                {
+                    "name": "Active",
+                    "discriminant": 1
+                },
+                {
+                    "name": "ActiveNoSwaps",
+                    "discriminant": 2
+                }
+            ]
+        },
         "TokenAmountPair": {
             "type": "struct",
             "fields": [

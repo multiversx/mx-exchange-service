@@ -22,28 +22,28 @@ export class PairResolver {
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel) {
-        return this.pairService.getFirstToken(parent.address);
+        return await this.pairService.getFirstToken(parent.address);
     }
 
     @ResolveField()
     async secondToken(@Parent() parent: PairModel) {
-        return this.pairService.getSecondToken(parent.address);
+        return await this.pairService.getSecondToken(parent.address);
     }
 
     @ResolveField()
     async liquidityPoolToken(@Parent() parent: PairModel) {
-        return this.pairService.getLpToken(parent.address);
+        return await this.pairService.getLpToken(parent.address);
     }
 
     @ResolveField()
     async info(@Parent() pair: PairModel) {
         const { address } = pair;
-        return this.pairService.getPairInfo(address);
+        return await this.pairService.getPairInfo(address);
     }
 
     @ResolveField()
     async state(@Parent() parent: PairModel) {
-        return this.pairService.getState(parent.address);
+        return await this.pairService.getState(parent.address);
     }
 
     @Query(returns => String)
@@ -52,7 +52,11 @@ export class PairResolver {
         @Args('tokenInID') tokenInID: string,
         @Args('amount') amount: string,
     ) {
-        return this.pairService.getAmountOut(pairAddress, tokenInID, amount);
+        return await this.pairService.getAmountOut(
+            pairAddress,
+            tokenInID,
+            amount,
+        );
     }
 
     @Query(returns => String)
@@ -61,7 +65,11 @@ export class PairResolver {
         @Args('tokenOutID') tokenOutID: string,
         @Args('amount') amount: string,
     ) {
-        return this.pairService.getAmountIn(pairAddress, tokenOutID, amount);
+        return await this.pairService.getAmountIn(
+            pairAddress,
+            tokenOutID,
+            amount,
+        );
     }
 
     @Query(returns => String)
@@ -70,7 +78,7 @@ export class PairResolver {
         @Args('tokenInID') tokenInID: string,
         @Args('amount') amount: string,
     ) {
-        return this.pairService.getEquivalentForLiquidity(
+        return await this.pairService.getEquivalentForLiquidity(
             pairAddress,
             tokenInID,
             amount,
@@ -83,7 +91,7 @@ export class PairResolver {
         @Args('callerAddress') callerAddress: string,
         @Args('tokenID') tokenID: string,
     ) {
-        return this.pairService.getTemporaryFunds(
+        return await this.pairService.getTemporaryFunds(
             pairAddress,
             callerAddress,
             tokenID,
@@ -95,7 +103,7 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('liquidityAmount') liquidityAmount: string,
     ) {
-        return this.pairService.getLiquidityPosition(
+        return await this.pairService.getLiquidityPosition(
             pairAddress,
             liquidityAmount,
         );
@@ -105,41 +113,41 @@ export class PairResolver {
     async addLiquidity(
         @Args() args: AddLiquidityArgs,
     ): Promise<TransactionModel> {
-        return this.transactionService.addLiquidity(args);
+        return await this.transactionService.addLiquidity(args);
     }
 
     @Query(returns => TransactionModel)
     async reclaimTemporaryFunds(
         @Args('pairAddress') pairAddress: string,
     ): Promise<TransactionModel> {
-        return this.transactionService.reclaimTemporaryFunds(pairAddress);
+        return await this.transactionService.reclaimTemporaryFunds(pairAddress);
     }
 
     @Query(returns => TransactionModel)
     async removeLiquidity(
         @Args() args: RemoveLiquidityArgs,
     ): Promise<TransactionModel> {
-        return this.transactionService.removeLiquidity(args);
+        return await this.transactionService.removeLiquidity(args);
     }
 
     @Query(returns => TransactionModel)
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel> {
-        return this.transactionService.swapTokensFixedInput(args);
+        return await this.transactionService.swapTokensFixedInput(args);
     }
 
     @Query(returns => TransactionModel)
     async swapTokensFixedOutput(
         @Args() args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel> {
-        return this.transactionService.swapTokensFixedOutput(args);
+        return await this.transactionService.swapTokensFixedOutput(args);
     }
 
     @Query(returns => TransactionModel)
     async tokensTransfer(
         @Args() args: ESDTTransferArgs,
     ): Promise<TransactionModel> {
-        return this.transactionService.esdtTransfer(args);
+        return await this.transactionService.esdtTransfer(args);
     }
 }

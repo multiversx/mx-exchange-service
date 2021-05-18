@@ -55,7 +55,7 @@ type FarmModel {
   address: String!
   farmedToken: TokenModel!
   farmToken: TokenModel!
-  acceptedTokens: [TokenModel!]
+  acceptedToken: TokenModel!
   state: String!
 }
 
@@ -119,9 +119,10 @@ type Query {
   swapTokensFixedOutput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): TransactionModel!
   tokensTransfer(pairAddress: String!, token: String!, amount: String!): TransactionModel!
   farms: [FarmModel!]!
-  getRewardsForPosition(amount: String!, farmTokenNonce: Float!, farmAddress: String!): String!
-  enterFarm(amount: String!, tokenInID: String!, farmAddress: String!): TransactionModel!
-  exitFarm(amount: String!, farmTokenNonce: Float!, farmTokenID: String!, sender: String!, farmAddress: String!): TransactionModel!
+  getRewardsForPosition(farmAddress: String!, liquidity: String!, attributes: String!): String!
+  enterFarm(farmAddress: String!, tokenInID: String!, amount: String!): TransactionModel!
+  exitFarm(farmAddress: String!, sender: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
+  claimRewards(farmAddress: String!, sender: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
   distribution: DistributionModel!
   claimAssets: TransactionModel!
   claimLockedAssets: TransactionModel!

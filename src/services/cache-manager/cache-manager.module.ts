@@ -8,11 +8,13 @@ import { CacheWrapService } from './cache-wrapping.service';
 import { CacheProxyService } from './cache-proxy.service';
 import { CacheProxyPairService } from './cache-proxy-pair.service';
 import { CacheProxyFarmService } from './cache-proxy-farm.service';
+import { CacheFarmService } from './cache-farm.service';
 
 @Module({
     providers: [
         CacheManagerService,
         CachePairService,
+        CacheFarmService,
         CacheDistributionService,
         CacheWrapService,
         CacheProxyService,
@@ -32,6 +34,7 @@ import { CacheProxyFarmService } from './cache-proxy-farm.service';
     exports: [
         CacheManagerService,
         CachePairService,
+        CacheFarmService,
         CacheWrapService,
         CacheDistributionService,
         CacheProxyService,
