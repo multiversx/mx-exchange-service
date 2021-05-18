@@ -9,7 +9,7 @@
         "proxyTimeout": 60000,
         "routerAddress": "erd1qqqqqqqqqqqqqpgq3ptwtt8uvltaepq8kcjr8vxv22d8rw0a0n4seq3x2r",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqezwr9ln7lf6f9xq8ht62yhclpusscem20n4sj2v99g",
-        "proxyAddress": "erd1qqqqqqqqqqqqqpgqe50qczp84jdlefhahxfgj3dqlkuafu0q0n4s0pgjmh",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqe50qczp84jdlefhahxfgj3dqlkuafu0q0n4s0pgjmh",
         "wrappingAddress": "erd1qqqqqqqqqqqqqpgqa7hv0nahgsl8tz0psat46x0tchm0wuyc0n4s6q28ad"
     },
     "farms": [
