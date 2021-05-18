@@ -8,11 +8,6 @@ type PairInfoModel {
   totalSupply: String!
 }
 
-type PairPriceModel {
-  firstToken: String!
-  secondToken: String!
-}
-
 type LiquidityPosition {
   firstTokenAmount: String!
   secondTokenAmount: String!
@@ -30,7 +25,6 @@ type PairModel {
   secondToken: TokenModel!
   liquidityPoolToken: TokenModel!
   info: PairInfoModel!
-  price: PairPriceModel!
   state: String!
 }
 
@@ -61,14 +55,52 @@ type FarmModel {
   address: String!
   farmedToken: TokenModel!
   farmToken: TokenModel!
-  acceptedTokens: [TokenModel!]
+  acceptedToken: TokenModel!
   state: String!
+}
+
+type DistributionMilestoneModel {
+  unlockEpoch: Float!
+  unlockPercentage: Float!
+}
+
+type CommunityDistributionModel {
+  epoch: Float!
+  amount: String!
+  milestones: [DistributionMilestoneModel!]!
+}
+
+type DistributionModel {
+  address: String!
+  distributedToken: TokenModel!
+  lockedToken: TokenModel!
+  wrappedLpToken: TokenModel!
+  wrappedFarmToken: TokenModel!
+  acceptedLockedTokens: [TokenModel!]!
+  intermediatedPairs: [String!]!
+  intermediatedFarms: [String!]!
+  communityDistribution: CommunityDistributionModel!
+}
+
+type LockOptionModel {
+  epochs: Int!
+  interest: Float!
+}
+
+type LockedRewardsModel {
+  lockOptions: [LockOptionModel!]!
+}
+
+type WrapModel {
+  address: String!
+  wrappedToken: TokenModel!
 }
 
 type Query {
   factory: FactoryModel!
+  pairAddresses: [String!]!
   pairs(offset: Int = 0, limit: Int = 10): [PairModel!]!
-  createPair(token_b: String!, token_a: String!): TransactionModel!
+  createPair(secondTokenID: String!, firstTokenID: String!): TransactionModel!
   issueLPToken(lpTokenTicker: String!, lpTokenName: String!, address: String!): TransactionModel!
   setLocalRoles(address: String!): TransactionModel!
   setState(enable: Boolean!, address: String!): TransactionModel!
@@ -78,14 +110,31 @@ type Query {
   getEquivalent(amount: String!, tokenInID: String!, pairAddress: String!): String!
   getTemporaryFunds(tokenID: String!, callerAddress: String!, pairAddress: String!): String!
   getLiquidityPosition(liquidityAmount: String!, pairAddress: String!): LiquidityPosition!
-  addLiquidity(tolerance: Float!, amount1: String!, amount0: String!, pairAddress: String!): TransactionModel!
+  addLiquidity(pairAddress: String!, amount0: String!, amount1: String!, tolerance: Float!): TransactionModel!
   reclaimTemporaryFunds(pairAddress: String!): TransactionModel!
-  removeLiquidity(tolerance: Float!, liquidityTokenID: String!, liquidity: String!, pairAddress: String!): TransactionModel!
-  swapTokensFixedInput(tolerance: Float!, amountOut: String!, tokenOutID: String!, amountIn: String!, tokenInID: String!, pairAddress: String!): TransactionModel!
-  swapTokensFixedOutput(tolerance: Float!, amountOut: String!, tokenOutID: String!, amountIn: String!, tokenInID: String!, pairAddress: String!): TransactionModel!
-  tokensTransfer(amount: String!, token: String!, pairAddress: String!): TransactionModel!
+  removeLiquidity(pairAddress: String!, liqidity: String!, liquidityTokenID: String!, tolerance: Float!): TransactionModel!
+  swapTokensFixedInput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): TransactionModel!
+  swapTokensFixedOutput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): TransactionModel!
+  tokensTransfer(pairAddress: String!, token: String!, amount: String!): TransactionModel!
   farms: [FarmModel!]!
-  getRewardsForPosition(amount: String!, farmTokenNonce: Float!, farmAddress: String!): String!
-  enterFarm(amount: String!, tokenInID: String!, farmAddress: String!): TransactionModel!
-  exitFarm(amount: String!, farmTokenNonce: Float!, farmTokenID: String!, sender: String!, farmAddress: String!): TransactionModel!
+  getRewardsForPosition(farmAddress: String!, liquidity: String!, attributes: String!): String!
+  enterFarm(farmAddress: String!, tokenInID: String!, amount: String!): TransactionModel!
+  exitFarm(farmAddress: String!, sender: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
+  claimRewards(farmAddress: String!, sender: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
+  distribution: DistributionModel!
+  claimAssets: TransactionModel!
+  claimLockedAssets: TransactionModel!
+  tokensTransferProxy(amount: String!, tokenID: String!, tokenNonce: Int, sender: String): TransactionModel!
+  addLiquidityProxy(pairAddress: String!, amount0: String!, amount1: String!, tolerance: Float!, token0ID: String!, token1ID: String!, token0Nonce: Int, token1Nonce: Int): TransactionModel!
+  reclaimTemporaryFundsProxy(firstTokenID: String!, secondTokenID: String!, firstTokenNonce: Int, secondTokenNonce: Int): TransactionModel!
+  removeLiquidityProxy(sender: String!, pairAddress: String!, wrappedLpTokenID: String!, wrappedLpTokenNonce: Int!, liqidity: String!, tolerance: Float!): TransactionModel!
+  enterFarmProxy(sender: String!, farmAddress: String!, acceptedLockedTokenID: String!, acceptedLockedTokenNonce: Int!, amount: String!): TransactionModel!
+  exitFarmProxy(sender: String!, farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
+  claimFarmRewardsProxy(sender: String!, farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
+  lockedRewards: LockedRewardsModel!
+  lockRewardsTokens(epochs: Int!, amount: String!, tokenID: String!): TransactionModel!
+  unlockRewardsTokens(amount: String!, lockTokenNonce: Int!, lockTokenID: String!, sender: String!): TransactionModel!
+  wrappingInfo: WrapModel!
+  wrapEgld(amount: String!): TransactionModel!
+  unwrapEgld(amount: String!): TransactionModel!
 }

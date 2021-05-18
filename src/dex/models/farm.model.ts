@@ -12,8 +12,8 @@ export class FarmModel {
     @Field()
     farmToken: TokenModel;
 
-    @Field(type => [TokenModel], { nullable: true })
-    acceptedTokens?: TokenModel[];
+    @Field()
+    acceptedToken: TokenModel;
 
     @Field()
     state: string;

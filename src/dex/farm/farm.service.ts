@@ -1,194 +1,115 @@
-import { TransactionModel } from '../models/transaction.model';
 import { Injectable } from '@nestjs/common';
 import {
-    AbiRegistry,
     BigUIntValue,
     U32Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
-import {
-    ProxyProvider,
-    Address,
-    SmartContract,
-    GasLimit,
-    Interaction,
-} from '@elrondnetwork/erdjs';
-import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
-import { Client } from '@elastic/elasticsearch';
-import { elrondConfig, abiConfig, farmsConfig, gasConfig } from '../../config';
+import { ProxyProvider, Interaction } from '@elrondnetwork/erdjs';
+import { elrondConfig, farmsConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 import { BigNumber } from 'bignumber.js';
 import { TokenModel } from '../models/pair.model';
 import { FarmModel } from '../models/farm.model';
+import { CacheFarmService } from 'src/services/cache-manager/cache-farm.service';
+import { AbiFarmService } from './abi-farm.service';
+import { CalculateRewardsArgs } from './dto/farm.args';
 
 @Injectable()
 export class FarmService {
     private readonly proxy: ProxyProvider;
-    private readonly elasticClient: Client;
 
     constructor(
-        private cacheManagerService: CacheManagerService,
+        private abiService: AbiFarmService,
+        private cacheService: CacheFarmService,
         private context: ContextService,
     ) {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
-        this.elasticClient = new Client({
-            node: elrondConfig.elastic + '/transactions',
-        });
-    }
-
-    private async getContract(farmAddress: string): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({
-            files: [abiConfig.farm],
-        });
-        const abi = new SmartContractAbi(abiRegistry, ['Farm']);
-        const contract = new SmartContract({
-            address: new Address(farmAddress),
-            abi: abi,
-        });
-        return contract;
     }
 
     async getFarmedToken(farmAddress: string): Promise<TokenModel> {
-        const contract = await this.getContract(farmAddress);
-        const interaction: Interaction = contract.methods.getFarmingPoolTokenId(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
-
-        return await this.context.getTokenMetadata(
-            response.firstValue.valueOf().toString(),
-        );
+        const farmedTokenID = await this.getFarmedTokenID(farmAddress);
+        return await this.context.getTokenMetadata(farmedTokenID);
     }
 
     async getFarmToken(farmAddress: string): Promise<TokenModel> {
-        const contract = await this.getContract(farmAddress);
-        const interaction: Interaction = contract.methods.getFarmTokenId([]);
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
-
-        return await this.context.getTokenMetadata(
-            response.firstValue.valueOf().toString(),
-        );
+        const farmTokenID = await this.getFarmTokenID(farmAddress);
+        return await this.context.getTokenMetadata(farmTokenID);
     }
 
-    async getAcceptedTokens(farmAddress: string): Promise<TokenModel[]> {
-        const contract = await this.getContract(farmAddress);
-        const interaction: Interaction = contract.methods.getAllAcceptedTokens(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
-        const acceptedTokens: TokenModel[] = [];
-        for (const rawTokenID of response.values) {
-            const tokenID = rawTokenID.valueOf().toString();
-            acceptedTokens.push(await this.context.getTokenMetadata(tokenID));
-        }
-        return acceptedTokens;
+    async getAcceptedToken(farmAddress: string): Promise<TokenModel> {
+        const acceptedTokenID = await this.getAcceptedTokenID(farmAddress);
+        return await this.context.getTokenMetadata(acceptedTokenID);
     }
 
     async getState(farmAddress: string): Promise<string> {
-        const contract = await this.getContract(farmAddress);
+        const contract = await this.abiService.getContract(farmAddress);
         return await this.context.getState(contract);
     }
 
     async getFarms(): Promise<FarmModel[]> {
         const farms: Array<FarmModel> = [];
-        for (const farmConfig of farmsConfig) {
-            const key = Object.keys(farmConfig)[0];
-            const farmAddress = farmConfig[key];
+        for (const farmsAddress of farmsConfig) {
             const farm = new FarmModel();
-            farm.address = farmAddress;
+            farm.address = farmsAddress;
             farms.push(farm);
         }
 
         return farms;
     }
 
-    async getRewardsForPosition(
-        farmAddress: string,
-        farmTokenNonce: number,
-        amount: string,
-    ): Promise<string> {
-        const contract = await this.getContract(farmAddress);
-        const farmedToken = await this.getFarmedToken(farmAddress);
+    async getRewardsForPosition(args: CalculateRewardsArgs): Promise<string> {
+        const farmedToken = await this.getFarmedToken(args.farmAddress);
 
-        const interaction: Interaction = contract.methods.calculateRewardsForGivenPosition(
-            [
-                new U32Value(farmTokenNonce),
-                new BigUIntValue(new BigNumber(amount)),
-            ],
+        const rewards = await this.abiService.calculateRewardsForGivenPosition(
+            args,
         );
 
-        const qeryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(qeryResponse);
-
-        return this.context
-            .fromBigNumber(response.firstValue.valueOf(), farmedToken)
-            .toString();
+        return this.context.fromBigNumber(rewards, farmedToken).toString();
     }
 
-    async enterFarm(
-        farmAddress: string,
-        tokenInID: string,
-        amount: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.getContract(farmAddress);
-
-        const tokenIn = await this.context.getTokenMetadata(tokenInID);
-        const amountDenom = this.context.toBigNumber(amount, tokenIn);
-
-        const args = [
-            BytesValue.fromUTF8(tokenInID),
-            new BigUIntValue(amountDenom),
-            BytesValue.fromUTF8('enterFarm'),
-        ];
-
-        return this.context.esdtTransfer(
-            contract,
-            args,
-            new GasLimit(gasConfig.esdtTransfer),
+    private async getFarmedTokenID(farmAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getFarmedTokenID(
+            farmAddress,
         );
+        if (!!cachedData) {
+            return cachedData.farmedTokenID;
+        }
+
+        const farmedTokenID = await this.abiService.getFarmedTokenID(
+            farmAddress,
+        );
+        this.cacheService.setFarmedTokenID(farmAddress, {
+            farmedTokenID: farmedTokenID,
+        });
+        return farmedTokenID;
     }
 
-    async exitFarm(
-        farmAddress: string,
-        sender: string,
-        farmTokenID: string,
-        farmTokenNonce: number,
-        amount: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.getContract(farmAddress);
+    private async getFarmTokenID(farmAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getFarmTokenID(farmAddress);
+        if (!!cachedData) {
+            return cachedData.farmTokenID;
+        }
 
-        const args = [
-            BytesValue.fromUTF8(farmTokenID),
-            new U32Value(farmTokenNonce),
-            new BigUIntValue(new BigNumber(amount)),
-            BytesValue.fromHex(new Address(farmAddress).hex()),
-            BytesValue.fromUTF8('exitFarm'),
-        ];
+        const farmTokenID = await this.abiService.getFarmTokenID(farmAddress);
+        this.cacheService.setFarmTokenID(farmAddress, {
+            farmTokenID: farmTokenID,
+        });
+        return farmTokenID;
+    }
 
-        const transaction = await this.context.nftTransfer(
-            contract,
-            args,
-            new GasLimit(gasConfig.esdtTransfer),
+    private async getAcceptedTokenID(farmAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getAcceptedTokenID(
+            farmAddress,
         );
+        if (!!cachedData) {
+            return cachedData.acceptedTokenID;
+        }
 
-        transaction.receiver = sender;
-
-        return transaction;
+        const acceptedTokenID = await this.abiService.getAcceptedTokenID(
+            farmAddress,
+        );
+        this.cacheService.setAcceptedTokenID(farmAddress, {
+            acceptedTokenID: acceptedTokenID,
+        });
+        return acceptedTokenID;
     }
 }

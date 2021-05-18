@@ -3,21 +3,145 @@
     "constructor": {
         "inputs": [
             {
-                "name": "farming_pool_token_id",
-                "type": "TokenIdentifier"
-            },
-            {
                 "name": "router_address",
                 "type": "Address"
             },
             {
-                "name": "farm_with_lp_tokens",
-                "type": "bool"
+                "name": "reward_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "farming_token_id",
+                "type": "TokenIdentifier"
             }
         ],
         "outputs": []
     },
     "endpoints": [
+        {
+            "name": "pause",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "resume",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "enterFarm",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "SftTokenAmountPair"
+                }
+            ]
+        },
+        {
+            "name": "exitFarm",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenAmountPair"
+                },
+                {
+                    "type": "TokenAmountPair"
+                }
+            ]
+        },
+        {
+            "name": "claimRewards",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "SftTokenAmountPair"
+                },
+                {
+                    "type": "TokenAmountPair"
+                }
+            ]
+        },
+        {
+            "name": "acceptFee",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "calculateRewardsForGivenPosition",
+            "inputs": [
+                {
+                    "name": "liquidity",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "attributes_raw",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "decodeAttributes",
+            "inputs": [
+                {
+                    "name": "attributes_raw",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<bytes>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "issueFarmToken",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRolesFarmToken",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getFarmTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
         {
             "name": "getTotalSupply",
             "inputs": [],
@@ -65,234 +189,6 @@
             ]
         },
         {
-            "name": "pause",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "resume",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "addTrustedPairAsOracle",
-            "inputs": [
-                {
-                    "name": "first_token",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "second_token",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "removeTrustedPairAsOracle",
-            "inputs": [
-                {
-                    "name": "first_token",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "second_token",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "addAcceptedPairAddressAndLpToken",
-            "inputs": [
-                {
-                    "name": "address",
-                    "type": "Address"
-                },
-                {
-                    "name": "token",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "removeAcceptedPairAddressAndLpToken",
-            "inputs": [
-                {
-                    "name": "address",
-                    "type": "Address"
-                },
-                {
-                    "name": "token",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "enterFarm",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "exitFarm",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "calculateRewardsForGivenPosition",
-            "inputs": [
-                {
-                    "name": "token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "liquidity",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "issueFarmToken",
-            "payableInTokens": [
-                "EGLD"
-            ],
-            "inputs": [
-                {
-                    "name": "token_display_name",
-                    "type": "bytes"
-                },
-                {
-                    "name": "token_ticker",
-                    "type": "bytes"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setLocalRolesFarmToken",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "simulateEnterFarm",
-            "inputs": [
-                {
-                    "name": "token_in",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "amount_in",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "SftTokenAmountPair"
-                }
-            ]
-        },
-        {
-            "name": "simulateExitFarm",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "amount",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "TokenAmountPair"
-                },
-                {
-                    "type": "TokenAmountPair"
-                }
-            ]
-        },
-        {
-            "name": "getFarmContribution",
-            "inputs": [
-                {
-                    "name": "token_in",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "amount_in",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getFarmingPoolTokenIdAndAmounts",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "tuple<TokenIdentifier,tuple<BigUint,BigUint>>"
-                }
-            ]
-        },
-        {
-            "name": "getAllAcceptedTokens",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<TokenIdentifier>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getFarmingPoolTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getFarmTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
             "name": "getLastErrorMessage",
             "inputs": [],
             "outputs": [
@@ -315,7 +211,7 @@
             "inputs": [],
             "outputs": [
                 {
-                    "type": "bool"
+                    "type": "State"
                 }
             ]
         },
@@ -325,6 +221,24 @@
             "outputs": [
                 {
                     "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getFarmingTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getRewardTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
                 }
             ]
         }
@@ -344,6 +258,19 @@
                 {
                     "name": "amount",
                     "type": "BigUint"
+                }
+            ]
+        },
+        "State": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "Inactive",
+                    "discriminant": 0
+                },
+                {
+                    "name": "Active",
+                    "discriminant": 1
                 }
             ]
         },
