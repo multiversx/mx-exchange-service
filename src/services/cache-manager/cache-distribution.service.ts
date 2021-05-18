@@ -4,7 +4,6 @@ import { cacheConfig } from '../../config';
 
 const Keys = {
     distributedTokenID: () => 'distributedTokenID',
-    lockedTokenID: () => 'lockedTokenID',
     epoch: () => 'epoch',
     amount: () => 'amount',
     milestones: () => 'milestones',
@@ -24,18 +23,6 @@ export class CacheDistributionService {
         await this.cacheManagerService.set(
             Keys.distributedTokenID(),
             distributedTokenID,
-            cacheConfig.token,
-        );
-    }
-
-    async getLockedTokenID(): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.lockedTokenID());
-    }
-
-    async setLockedTokenID(lockedTokenID: Record<string, any>): Promise<void> {
-        await this.cacheManagerService.set(
-            Keys.lockedTokenID(),
-            lockedTokenID,
             cacheConfig.token,
         );
     }

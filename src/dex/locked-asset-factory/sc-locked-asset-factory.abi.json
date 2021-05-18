@@ -1,0 +1,149 @@
+{
+    "name": "LockedAssetFactory",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "asset_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "default_unlock_period",
+                "type": "variadic<UnlockMilestone>",
+                "multi_arg": true
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "whitelist",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeWhitelist",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "createAndForward",
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "createAndForwardCustomSchedule",
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "address",
+                    "type": "Address"
+                },
+                {
+                    "name": "schedule",
+                    "type": "variadic<UnlockMilestone>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "unlockAssets",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "issueNft",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRoles",
+            "inputs": [
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "address",
+                    "type": "Address"
+                },
+                {
+                    "name": "roles",
+                    "type": "variadic<EsdtLocalRole>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getLockedTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "cleanupUnusedTokens",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        }
+    ],
+    "types": {
+        "UnlockMilestone": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "unlock_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "unlock_percent",
+                    "type": "u8"
+                }
+            ]
+        }
+    }
+}

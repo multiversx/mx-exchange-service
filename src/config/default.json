@@ -10,6 +10,7 @@
         "routerAddress": "erd1qqqqqqqqqqqqqpgq3ptwtt8uvltaepq8kcjr8vxv22d8rw0a0n4seq3x2r",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqezwr9ln7lf6f9xq8ht62yhclpusscem20n4sj2v99g",
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqe50qczp84jdlefhahxfgj3dqlkuafu0q0n4s0pgjmh",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq5jz83n3ay53e69vgl7vhd7ffg3lheyh40n4spnjeky",
         "wrappingAddress": "erd1qqqqqqqqqqqqqpgqa7hv0nahgsl8tz0psat46x0tchm0wuyc0n4s6q28ad"
     },
     "farms": [
@@ -43,7 +44,7 @@
         "pair": "./src/dex/pair/elrond_dex_pair.abi.json",
         "farm": "./src/dex/farm/elrond_dex_farm.abi.json",
         "distribution": "./src/dex/distribution/sc_distribution_rs.abi.json",
-        "lockedRewards": "./src/dex/locked-rewards/sc-locked-rewards.abi.json",
+        "lockedAssetFactory": "./src/dex/locked-asset-factory/sc-locked-asset-factory.abi.json",
         "proxy": "./src/dex/proxy/sc-proxy-dex.abi.json",
         "wrap": "./src/dex/wrapping/egld-esdt-swap.abi.json"
     }
