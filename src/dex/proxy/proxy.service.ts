@@ -16,7 +16,7 @@ export class ProxyService {
 
     async getProxyInfo(): Promise<ProxyModel> {
         const proxy = new ProxyModel();
-        proxy.address = elrondConfig.proxyAddress;
+        proxy.address = elrondConfig.proxyDexAddress;
         return proxy;
     }
 

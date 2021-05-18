@@ -12,7 +12,7 @@ export async function getContract() {
     });
     const abi = new SmartContractAbi(abiRegistry, ['ProxyDexImpl']);
     const contract = new SmartContract({
-        address: new Address(elrondConfig.proxyAddress),
+        address: new Address(elrondConfig.proxyDexAddress),
         abi: abi,
     });
 
