@@ -5,6 +5,9 @@ import * as redisStore from 'cache-manager-redis-store';
 import { CacheDistributionService } from './cache-distribution.service';
 import { CachePairService } from './cache-pair.service';
 import { CacheWrapService } from './cache-wrapping.service';
+import { CacheProxyService } from './cache-proxy.service';
+import { CacheProxyPairService } from './cache-proxy-pair.service';
+import { CacheProxyFarmService } from './cache-proxy-farm.service';
 
 @Module({
     providers: [
@@ -12,6 +15,9 @@ import { CacheWrapService } from './cache-wrapping.service';
         CachePairService,
         CacheDistributionService,
         CacheWrapService,
+        CacheProxyService,
+        CacheProxyPairService,
+        CacheProxyFarmService,
     ],
     imports: [
         CacheModule.register({
@@ -28,6 +34,9 @@ import { CacheWrapService } from './cache-wrapping.service';
         CachePairService,
         CacheWrapService,
         CacheDistributionService,
+        CacheProxyService,
+        CacheProxyPairService,
+        CacheProxyFarmService,
     ],
 })
 export class CacheManagerModule {}

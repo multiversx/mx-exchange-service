@@ -5,11 +5,6 @@ import { cacheConfig } from '../../config';
 const Keys = {
     distributedTokenID: () => 'distributedTokenID',
     lockedTokenID: () => 'lockedTokenID',
-    wrappedLpTokenID: () => 'wrappedLpTokenID',
-    wrappedFarmTokenID: () => 'wrappedFarmTokenID',
-    acceptedLockedTokensID: () => 'acceptedLockedTokensID',
-    intermediatedPairsAddress: () => 'intermediatedPairsAddresses',
-    intermediatedFarmsAddress: () => 'intermediatedFarmsAddresses',
     epoch: () => 'epoch',
     amount: () => 'amount',
     milestones: () => 'milestones',
@@ -45,48 +40,6 @@ export class CacheDistributionService {
         );
     }
 
-    async getWrappedLpTokenID(): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.wrappedLpTokenID());
-    }
-
-    async setWrappedLpTokenID(
-        wrappedLpTokenID: Record<string, any>,
-    ): Promise<void> {
-        await this.cacheManagerService.set(
-            Keys.wrappedLpTokenID(),
-            wrappedLpTokenID,
-            cacheConfig.token,
-        );
-    }
-
-    async getWrappedFarmTokenID(): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.wrappedFarmTokenID());
-    }
-
-    async setWrappedFarmTokenID(
-        wrappedFarmTokenID: Record<string, any>,
-    ): Promise<void> {
-        await this.cacheManagerService.set(
-            Keys.wrappedFarmTokenID(),
-            wrappedFarmTokenID,
-            cacheConfig.token,
-        );
-    }
-
-    async getAcceptedLockedTokensID(): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.acceptedLockedTokensID());
-    }
-
-    async setAcceptedLockedTokensID(
-        acceptedLockedTokensID: Record<string, any>,
-    ): Promise<void> {
-        await this.cacheManagerService.set(
-            Keys.acceptedLockedTokensID(),
-            acceptedLockedTokensID,
-            cacheConfig.tokens,
-        );
-    }
-
     async getMilestones(): Promise<Record<string, any>> {
         return this.cacheManagerService.get(Keys.milestones());
     }
@@ -119,34 +72,6 @@ export class CacheDistributionService {
         await this.cacheManagerService.set(
             Keys.amount(),
             amount,
-            cacheConfig.default,
-        );
-    }
-
-    async getIntermediatedPairsAddress(): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.intermediatedPairsAddress());
-    }
-
-    async setIntermediatedPairsAddress(
-        intermediatedPairsAddress: Record<string, any>,
-    ): Promise<void> {
-        await this.cacheManagerService.set(
-            Keys.intermediatedPairsAddress(),
-            intermediatedPairsAddress,
-            cacheConfig.default,
-        );
-    }
-
-    async getIntermediatedFarmsAddress(): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.intermediatedFarmsAddress());
-    }
-
-    async setIntermediatedFarmsAddress(
-        intermediatedFarmsAddress: Record<string, any>,
-    ): Promise<void> {
-        await this.cacheManagerService.set(
-            Keys.intermediatedFarmsAddress(),
-            intermediatedFarmsAddress,
             cacheConfig.default,
         );
     }
