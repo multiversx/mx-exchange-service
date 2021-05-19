@@ -86,11 +86,14 @@ export class TransactionPairService {
         const lpToken = await this.context.getTokenMetadata(
             args.liquidityTokenID,
         );
-        const liquidityDenom = this.context.toBigNumber(args.liqidity, lpToken);
+        const liquidityDenom = this.context.toBigNumber(
+            args.liquidity,
+            lpToken,
+        );
 
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             args.pairAddress,
-            args.liqidity,
+            args.liquidity,
         );
 
         const amount0Min = this.context
