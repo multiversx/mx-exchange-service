@@ -41,9 +41,9 @@ export class FarmResolver {
 
     @Query(returns => FarmTokenAttributesModel)
     async farmTokenAttributes(
-        @Args('attributes') attribtes: string,
+        @Args('attributes') attributes: string,
     ): Promise<FarmTokenAttributesModel> {
-        return await this.farmService.decodeFarmTokenAttributes(attribtes);
+        return await this.farmService.decodeFarmTokenAttributes(attributes);
     }
 
     @Query(returns => [FarmModel])
