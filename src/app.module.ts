@@ -9,6 +9,7 @@ import { FarmModule } from './dex/farm/farm.module';
 import { DistributionModule } from './dex/distribution/distribution.module';
 import { WrappingModule } from './dex/wrapping/wrap.module';
 import { ProxyModule } from './dex/proxy/proxy.module';
+import { LockedAssetModule } from './dex/locked-asset-factory/locked-asset.module';
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { ProxyModule } from './dex/proxy/proxy.module';
         FarmModule,
         DistributionModule,
         ProxyModule,
+        LockedAssetModule,
         WrappingModule,
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
