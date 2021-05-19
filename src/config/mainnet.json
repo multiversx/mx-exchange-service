@@ -1,0 +1,42 @@
+{
+    "elrond": {
+        "elastic": "https://index.elrond.com",
+        "elrondApi": "https://api.elrond.com",
+        "gateway": "https://gateway.elrond.com",
+        "explorer": "https://explorer.elrond.com",
+        "chainID": "1",
+        "version": 1,
+        "proxyTimeout": 60000,
+        "routerAddress": "erd1qqqqqqqqqqqqqpgq3ptwtt8uvltaepq8kcjr8vxv22d8rw0a0n4seq3x2r",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqezwr9ln7lf6f9xq8ht62yhclpusscem20n4sj2v99g",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqe50qczp84jdlefhahxfgj3dqlkuafu0q0n4s0pgjmh",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq5jz83n3ay53e69vgl7vhd7ffg3lheyh40n4spnjeky",
+        "wrappingAddress": "erd1qqqqqqqqqqqqqpgqa7hv0nahgsl8tz0psat46x0tchm0wuyc0n4s6q28ad"
+    },
+    "farms": [
+        "erd1qqqqqqqqqqqqqpgqf6sv2d3a0jwcxdlwuk7jlap88ca788yg0n4smqq56j",
+        "erd1qqqqqqqqqqqqqpgqm88hzvc63fhgsvewd8pl6nspeuh2jcv80n4slqc45h"
+    ],
+    "caching": {
+        "networkConfig": 1,
+        "pairsMetadata": 10,
+        "pairs": 10,
+        "txTotalCount": 10,
+        "pairCount": 10,
+        "token": 30,
+        "default": 20
+    },
+    "gas": {
+        "default": 1000000,
+        "esdtTransfer": 20000000,
+        "reclaimTemporaryFunds": 20000000,
+        "addLiquidity": 30000000,
+        "removeLiquidity": 25000000,
+        "swapTokens": 100000000,
+        "createPair": 1400000000,
+        "issueToken": 200000000,
+        "setLocalRoles": 200000000,
+        "setState": 200000000,
+        "setFee": 200000000
+    }
+}
