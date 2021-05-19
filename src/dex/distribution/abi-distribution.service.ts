@@ -14,7 +14,10 @@ export class AbiDistributionService {
     private readonly proxy: ProxyProvider;
 
     constructor() {
-        this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
+        this.proxy = new ProxyProvider(
+            elrondConfig.gateway,
+            elrondConfig.proxyTimeout,
+        );
     }
 
     async getContract(): Promise<SmartContract> {
@@ -30,79 +33,6 @@ export class AbiDistributionService {
         return contract;
     }
 
-    async getDistributedTokenID(): Promise<string> {
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getDistributedTokenId(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const distributedTokenID = result.firstValue.valueOf().toString();
-
-        return distributedTokenID;
-    }
-
-    async getLockedTokenID(): Promise<string> {
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getLockedTokenId([]);
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-
-        const lockedTokenID = result.firstValue.valueOf().toString();
-
-        return lockedTokenID;
-    }
-
-    async getWrappedLpTokenID(): Promise<string> {
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getWrappedLpTokenId(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const wrappedLpTokenID = result.firstValue.valueOf().toString();
-
-        return wrappedLpTokenID;
-    }
-
-    async getWrappedFarmTokenID(): Promise<string> {
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getWrappedFarmTokenId(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const wrappedFarmTokenID = result.firstValue.valueOf().toString();
-
-        return wrappedFarmTokenID;
-    }
-
-    async getAcceptedLockedTokensID(): Promise<TypedValue[]> {
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getAcceptedLockedAssetsTokenIds(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
-
-        return response.values;
-    }
-
     async getDistributionMilestones(): Promise<DistributionMilestoneModel[]> {
         const contract = await this.getContract();
         const interaction: Interaction = contract.methods.getLastCommunityDistributionUnlockMilestones(
@@ -112,17 +42,15 @@ export class AbiDistributionService {
             this.proxy,
             interaction.buildQuery(),
         );
-        const result = interaction.interpretQueryResponse(queryResponse);
+        const response = interaction.interpretQueryResponse(queryResponse);
 
-        const milestones: DistributionMilestoneModel[] = result.values.map(
-            rawMilestone => {
-                const milestone = rawMilestone.valueOf();
-                return {
-                    unlockEpoch: milestone.unlock_epoch,
-                    unlockPercentage: milestone.unlock_precent,
-                };
-            },
-        );
+        const rawMilestones: any[] = response.firstValue.valueOf();
+        const milestones = rawMilestones.map(rawMilestone => {
+            return {
+                unlockEpoch: rawMilestone.unlock_epoch.toString(),
+                unlockPercentage: rawMilestone.unlock_percent.toString(),
+            };
+        });
 
         return milestones;
     }
@@ -140,43 +68,5 @@ export class AbiDistributionService {
         const result = interaction.interpretQueryResponse(queryResponse);
 
         return result.values;
-    }
-
-    async getIntermediatedPairsAddress(): Promise<string[]> {
-        const contract = await this.getContract();
-
-        const interaction: Interaction = contract.methods.getIntermediatedPairs(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const pairs = result.values.map(pairAddress => {
-            return pairAddress.valueOf();
-        });
-
-        return pairs;
-    }
-
-    async getIntermediatedFarmsAddress(): Promise<string[]> {
-        const contract = await this.getContract();
-
-        const interaction: Interaction = contract.methods.getIntermediatedFarms(
-            [],
-        );
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-
-        const result = interaction.interpretQueryResponse(queryResponse);
-        const farms = result.values.map(farmAddress => {
-            return farmAddress.valueOf();
-        });
-
-        return farms;
     }
 }

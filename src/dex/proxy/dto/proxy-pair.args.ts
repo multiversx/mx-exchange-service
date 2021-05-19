@@ -32,7 +32,7 @@ export class RemoveLiquidityProxyArgs {
     @Field() wrappedLpTokenID: string;
     @Field(type => Int)
     wrappedLpTokenNonce: number;
-    @Field() liqidity: string;
+    @Field() liquidity: string;
     @Field() tolerance: number;
 }
 

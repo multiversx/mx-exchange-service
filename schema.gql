@@ -72,14 +72,16 @@ type CommunityDistributionModel {
 
 type DistributionModel {
   address: String!
-  distributedToken: TokenModel!
-  lockedToken: TokenModel!
+  communityDistribution: CommunityDistributionModel!
+}
+
+type ProxyModel {
+  address: String!
   wrappedLpToken: TokenModel!
   wrappedFarmToken: TokenModel!
   acceptedLockedTokens: [TokenModel!]!
   intermediatedPairs: [String!]!
   intermediatedFarms: [String!]!
-  communityDistribution: CommunityDistributionModel!
 }
 
 type LockOptionModel {
@@ -124,16 +126,17 @@ type Query {
   distribution: DistributionModel!
   claimAssets: TransactionModel!
   claimLockedAssets: TransactionModel!
-  tokensTransferProxy(amount: String!, tokenID: String!, tokenNonce: Int, sender: String): TransactionModel!
-  addLiquidityProxy(pairAddress: String!, amount0: String!, amount1: String!, tolerance: Float!, token0ID: String!, token1ID: String!, token0Nonce: Int, token1Nonce: Int): TransactionModel!
-  reclaimTemporaryFundsProxy(firstTokenID: String!, secondTokenID: String!, firstTokenNonce: Int, secondTokenNonce: Int): TransactionModel!
-  removeLiquidityProxy(sender: String!, pairAddress: String!, wrappedLpTokenID: String!, wrappedLpTokenNonce: Int!, liqidity: String!, tolerance: Float!): TransactionModel!
-  enterFarmProxy(sender: String!, farmAddress: String!, acceptedLockedTokenID: String!, acceptedLockedTokenNonce: Int!, amount: String!): TransactionModel!
-  exitFarmProxy(sender: String!, farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
-  claimFarmRewardsProxy(sender: String!, farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
   lockedRewards: LockedRewardsModel!
   lockRewardsTokens(epochs: Int!, amount: String!, tokenID: String!): TransactionModel!
   unlockRewardsTokens(amount: String!, lockTokenNonce: Int!, lockTokenID: String!, sender: String!): TransactionModel!
+  proxy: ProxyModel!
+  tokensTransferProxy(amount: String!, tokenID: String!, tokenNonce: Int, sender: String): TransactionModel!
+  addLiquidityProxy(pairAddress: String!, amount0: String!, amount1: String!, tolerance: Float!, token0ID: String!, token1ID: String!, token0Nonce: Int, token1Nonce: Int): TransactionModel!
+  reclaimTemporaryFundsProxy(firstTokenID: String!, secondTokenID: String!, firstTokenNonce: Int, secondTokenNonce: Int): TransactionModel!
+  removeLiquidityProxy(sender: String!, pairAddress: String!, wrappedLpTokenID: String!, wrappedLpTokenNonce: Int!, liquidity: String!, tolerance: Float!): TransactionModel!
+  enterFarmProxy(sender: String!, farmAddress: String!, acceptedLockedTokenID: String!, acceptedLockedTokenNonce: Int!, amount: String!): TransactionModel!
+  exitFarmProxy(sender: String!, farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
+  claimFarmRewardsProxy(sender: String!, farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
   wrappingInfo: WrapModel!
   wrapEgld(amount: String!): TransactionModel!
   unwrapEgld(amount: String!): TransactionModel!
