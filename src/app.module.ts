@@ -7,8 +7,8 @@ import { RouterModule } from './dex/router/router.module';
 import { PairModule } from './dex/pair/pair.module';
 import { FarmModule } from './dex/farm/farm.module';
 import { DistributionModule } from './dex/distribution/distribution.module';
-import { LockedRewardsModule } from './dex/locked-rewards/locked-rewards.module';
 import { WrappingModule } from './dex/wrapping/wrap.module';
+import { ProxyModule } from './dex/proxy/proxy.module';
 
 @Module({
     imports: [
@@ -21,7 +21,7 @@ import { WrappingModule } from './dex/wrapping/wrap.module';
         PairModule,
         FarmModule,
         DistributionModule,
-        LockedRewardsModule,
+        ProxyModule,
         WrappingModule,
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',

@@ -1,49 +1,35 @@
 import { Injectable } from '@nestjs/common';
-import { elrondConfig, abiConfig, gasConfig } from '../../../config';
+import { gasConfig } from '../../../config';
 import {
-    AbiRegistry,
     BigUIntValue,
     BytesValue,
     U32Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { Address, SmartContract, GasLimit } from '@elrondnetwork/erdjs';
+import { Address, GasLimit } from '@elrondnetwork/erdjs';
 import { TransactionModel } from '../../models/transaction.model';
 import BigNumber from 'bignumber.js';
-import { ContextService } from '../context.service';
+import { ContextService } from '../../utils/context.service';
 import { PairService } from '../../pair/pair.service';
 import {
     AddLiquidityProxyArgs,
     ReclaimTemporaryFundsProxyArgs,
     RemoveLiquidityProxyArgs,
     TokensTransferArgs,
-} from './dto/proxy-pair.args';
+} from '../dto/proxy-pair.args';
+import { getContract } from '../utils';
 
 @Injectable()
-export class ProxyPairService {
+export class TransactionsProxyPairService {
     constructor(
-        private context: ContextService,
         private pairService: PairService,
+        private context: ContextService,
     ) {}
-
-    private async getContract(): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({
-            files: [abiConfig.distribution],
-        });
-        const abi = new SmartContractAbi(abiRegistry, ['ProxyDexImpl']);
-        const contract = new SmartContract({
-            address: new Address(elrondConfig.distributionAddress),
-            abi: abi,
-        });
-
-        return contract;
-    }
 
     async addLiquidityProxy(
         args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await getContract();
         const token0 = await this.context.getTokenMetadata(args.token0ID);
         const token1 = await this.context.getTokenMetadata(args.token1ID);
         const amount0Denom = args.token0Nonce
@@ -77,10 +63,10 @@ export class ProxyPairService {
     async removeLiquidityProxy(
         args: RemoveLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await getContract();
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             args.pairAddress,
-            args.liqidity,
+            args.liquidity,
         );
         const amount0Min = new BigNumber(
             liquidityPosition.firstTokenAmount.toString(),
@@ -92,7 +78,7 @@ export class ProxyPairService {
         const transactionArgs = [
             BytesValue.fromUTF8(args.wrappedLpTokenID),
             new U32Value(args.wrappedLpTokenNonce),
-            new BigUIntValue(new BigNumber(args.liqidity)),
+            new BigUIntValue(new BigNumber(args.liquidity)),
             BytesValue.fromHex(contract.getAddress().hex()),
             BytesValue.fromUTF8('removeLiquidityProxy'),
             BytesValue.fromHex(new Address(args.pairAddress).hex()),
@@ -114,7 +100,7 @@ export class ProxyPairService {
     async esdtTransferProxy(
         args: TokensTransferArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await getContract();
 
         if (!args.tokenNonce) {
             const token = await this.context.getTokenMetadata(args.tokenID);
@@ -153,7 +139,7 @@ export class ProxyPairService {
     async reclaimTemporaryFundsProxy(
         args: ReclaimTemporaryFundsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await getContract();
         const interaction: Interaction = contract.methods.reclaimTemporaryFundsProxy(
             [
                 BytesValue.fromUTF8(args.firstTokenID),

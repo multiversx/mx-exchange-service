@@ -19,6 +19,89 @@
     },
     "endpoints": [
         {
+            "name": "issueSftProxyPair",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "issueSftProxyFarm",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRoles",
+            "inputs": [
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "address",
+                    "type": "Address"
+                },
+                {
+                    "name": "roles",
+                    "type": "variadic<EsdtLocalRole>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "addAcceptedLockedAssetTokenId",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeAcceptedLockedAssetTokenId",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getAcceptedLockedAssetsTokenIds",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
             "name": "setProxyPairParams",
             "inputs": [
                 {
@@ -274,103 +357,12 @@
                     "type": "TokenIdentifier"
                 }
             ]
-        },
-        {
-            "name": "addAcceptedLockedAssetTokenId",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "removeAcceptedLockedAssetTokenId",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "getAcceptedLockedAssetsTokenIds",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<TokenIdentifier>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "issueSftProxyPair",
-            "payableInTokens": [
-                "EGLD"
-            ],
-            "inputs": [
-                {
-                    "name": "token_display_name",
-                    "type": "bytes"
-                },
-                {
-                    "name": "token_ticker",
-                    "type": "bytes"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "issueSftProxyFarm",
-            "payableInTokens": [
-                "EGLD"
-            ],
-            "inputs": [
-                {
-                    "name": "token_display_name",
-                    "type": "bytes"
-                },
-                {
-                    "name": "token_ticker",
-                    "type": "bytes"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setLocalRoles",
-            "inputs": [
-                {
-                    "name": "token",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "address",
-                    "type": "Address"
-                },
-                {
-                    "name": "roles",
-                    "type": "variadic<EsdtLocalRole>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
         }
     ],
     "types": {
         "ProxyFarmParams": {
             "type": "struct",
             "fields": [
-                {
-                    "name": "simulate_enter_farm_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "simulate_exit_farm_gas_limit",
-                    "type": "u64"
-                },
                 {
                     "name": "claim_rewards_gas_limit",
                     "type": "u64"
@@ -406,10 +398,6 @@
                 },
                 {
                     "name": "ask_for_lp_token_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "ask_for_tokens_gas_limit",
                     "type": "u64"
                 },
                 {

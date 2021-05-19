@@ -8,6 +8,7 @@ export class EnterFarmProxyArgs {
     @Field(type => Int)
     acceptedLockedTokenNonce: number;
     @Field() amount: string;
+    @Field({ nullable: true }) lockRewards: boolean;
 }
 
 @ArgsType()
