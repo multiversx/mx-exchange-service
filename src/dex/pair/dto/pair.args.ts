@@ -17,7 +17,7 @@ export class RemoveLiquidityArgs {
     @Field()
     pairAddress: string;
     @Field()
-    liqidity: string;
+    liquidity: string;
     @Field()
     liquidityTokenID: string;
     @Field()
