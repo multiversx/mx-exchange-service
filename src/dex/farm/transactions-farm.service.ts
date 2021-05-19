@@ -30,10 +30,14 @@ export class TransactionsFarmService {
         const tokenIn = await this.context.getTokenMetadata(args.tokenInID);
         const amountDenom = this.context.toBigNumber(args.amount, tokenIn);
 
+        const method = args.lockRewards
+            ? 'enterFarmAndLockRewards'
+            : 'enterFarm';
+
         const transactionArgs = [
             BytesValue.fromUTF8(args.tokenInID),
             new BigUIntValue(amountDenom),
-            BytesValue.fromUTF8('enterFarm'),
+            BytesValue.fromUTF8(method),
         ];
 
         return await this.context.esdtTransfer(

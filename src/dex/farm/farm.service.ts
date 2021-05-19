@@ -1,14 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import {
+    BigUIntType,
     BigUIntValue,
+    BooleanType,
+    StructFieldDefinition,
+    StructType,
     U32Value,
+    U64Type,
+    U8Type,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { ProxyProvider, Interaction } from '@elrondnetwork/erdjs';
+import { ProxyProvider, Interaction, BinaryCodec } from '@elrondnetwork/erdjs';
 import { elrondConfig, farmsConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
 import { BigNumber } from 'bignumber.js';
 import { TokenModel } from '../models/pair.model';
-import { FarmModel } from '../models/farm.model';
+import { FarmModel, FarmTokenAttributesModel } from '../models/farm.model';
 import { CacheFarmService } from 'src/services/cache-manager/cache-farm.service';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
@@ -64,6 +70,46 @@ export class FarmService {
         );
 
         return this.context.fromBigNumber(rewards, farmedToken).toString();
+    }
+
+    async decodeFarmTokenAttributes(
+        attributes: string,
+    ): Promise<FarmTokenAttributesModel> {
+        const attributesBuffer = Buffer.from(attributes, 'base64');
+        const codec = new BinaryCodec();
+
+        const structType = new StructType('FarmTokenAttributes', [
+            new StructFieldDefinition(
+                'totalEnteringAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'totalLiquidityAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition('enteringEpoch', '', new U64Type()),
+            new StructFieldDefinition('liquidityMultiplier', '', new U8Type()),
+            new StructFieldDefinition(
+                'withLockedRewards',
+                '',
+                new BooleanType(),
+            ),
+        ]);
+
+        const [decoded, decodedLength] = codec.decodeNested(
+            attributesBuffer,
+            structType,
+        );
+        const decodedAttributes = decoded.valueOf();
+        return {
+            totalEnteringAmount: decodedAttributes.totalEnteringAmount.toString(),
+            totalLiquidityAmount: decodedAttributes.totalLiquidityAmount.toString(),
+            enteringEpoch: decodedAttributes.enteringEpoch,
+            liquidityMultiplier: decodedAttributes.liquidityMultiplier,
+            lockedRewards: decodedAttributes.withLockedRewards,
+        };
     }
 
     private async getFarmedTokenID(farmAddress: string): Promise<string> {
