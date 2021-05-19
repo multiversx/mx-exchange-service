@@ -14,7 +14,11 @@ import {
     ExitFarmProxyArgs,
 } from './dto/proxy-farm.args';
 import { ProxyPairService } from './proxy-pair/proxy-pair.service';
-import { ProxyModel } from '../models/proxy.model';
+import {
+    ProxyModel,
+    WrappedFarmTokenAttributesModel,
+    WrappedLpTokenAttributesModel,
+} from '../models/proxy.model';
 import { ProxyFarmService } from './proxy-farm/proxy-farm.service';
 import { TransactionsProxyPairService } from './proxy-pair/proxy-pair-transactions.service';
 import { TransactionsProxyFarmService } from './proxy-farm/proxy-farm-transactions.service';
@@ -115,6 +119,22 @@ export class ProxyResolver {
     ): Promise<TransactionModel> {
         return await this.transactionsProxyFarmService.claimFarmRewardsProxy(
             args,
+        );
+    }
+
+    @Query(returns => WrappedLpTokenAttributesModel)
+    async wrappedLpTokenAttributes(
+        @Args('attributes') attributes: string,
+    ): Promise<WrappedLpTokenAttributesModel> {
+        return await this.proxyService.getWrappedLpTokenAttributes(attributes);
+    }
+
+    @Query(returns => WrappedLpTokenAttributesModel)
+    async wrappedFarmTokenAttributes(
+        @Args('attributes') attributes: string,
+    ): Promise<WrappedFarmTokenAttributesModel> {
+        return await this.proxyService.getWrappedFarmTokenAttributes(
+            attributes,
         );
     }
 }
