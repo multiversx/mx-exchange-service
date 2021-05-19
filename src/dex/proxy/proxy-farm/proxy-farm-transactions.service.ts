@@ -23,13 +23,16 @@ export class TransactionsProxyFarmService {
 
     async enterFarmProxy(args: EnterFarmProxyArgs): Promise<TransactionModel> {
         const contract = await getContract();
+        const method = args.lockRewards
+            ? 'enterFarmAndLockRewardsProxy'
+            : 'enterFarmProxy';
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.acceptedLockedTokenID),
             new U32Value(args.acceptedLockedTokenNonce),
             new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('enterFarmProxy'),
+            BytesValue.fromUTF8(method),
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
