@@ -18,6 +18,8 @@ export class EnterFarmArgs {
     tokenInID: string;
     @Field()
     amount: string;
+    @Field({ nullable: true })
+    lockRewards: boolean;
 }
 
 @ArgsType()

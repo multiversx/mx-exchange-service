@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { TokenModel } from './pair.model';
 
 @ObjectType()
@@ -17,4 +17,18 @@ export class FarmModel {
 
     @Field()
     state: string;
+}
+
+@ObjectType()
+export class FarmTokenAttributesModel {
+    @Field()
+    totalEnteringAmount: string;
+    @Field()
+    totalLiquidityAmount: string;
+    @Field(type => Int)
+    enteringEpoch: number;
+    @Field(type => Int)
+    liquidityMultiplier: number;
+    @Field()
+    lockedRewards: boolean;
 }
