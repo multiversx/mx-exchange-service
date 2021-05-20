@@ -43,7 +43,7 @@ export class AbiProxyFarmService {
 
         const result = interaction.interpretQueryResponse(queryResponse);
         const farms = result.values.map(farmAddress => {
-            return farmAddress.valueOf();
+            return farmAddress.valueOf().toString();
         });
 
         return farms;
