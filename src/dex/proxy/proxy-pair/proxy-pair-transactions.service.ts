@@ -108,6 +108,7 @@ export class TransactionsProxyPairService {
                 BytesValue.fromUTF8(args.tokenID),
                 new BigUIntValue(this.context.toBigNumber(args.amount, token)),
                 BytesValue.fromUTF8('acceptEsdtPaymentProxy'),
+                BytesValue.fromHex(new Address(args.pairAddress).hex()),
             ];
 
             return this.context.esdtTransfer(
@@ -123,6 +124,7 @@ export class TransactionsProxyPairService {
             new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(contract.getAddress().hex()),
             BytesValue.fromUTF8('acceptEsdtPaymentProxy'),
+            BytesValue.fromHex(new Address(args.pairAddress).hex()),
         ];
 
         const transaction = await this.context.nftTransfer(
