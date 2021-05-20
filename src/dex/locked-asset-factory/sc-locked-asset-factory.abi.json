@@ -47,7 +47,11 @@
                     "type": "Address"
                 }
             ],
-            "outputs": []
+            "outputs": [
+                {
+                    "type": "GenericEsdtAmountPair"
+                }
+            ]
         },
         {
             "name": "createAndForwardCustomSchedule",
@@ -132,6 +136,52 @@
         }
     ],
     "types": {
+        "EsdtLocalRole": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "None",
+                    "discriminant": 0
+                },
+                {
+                    "name": "Mint",
+                    "discriminant": 1
+                },
+                {
+                    "name": "Burn",
+                    "discriminant": 2
+                },
+                {
+                    "name": "NftCreate",
+                    "discriminant": 3
+                },
+                {
+                    "name": "NftAddQuantity",
+                    "discriminant": 4
+                },
+                {
+                    "name": "NftBurn",
+                    "discriminant": 5
+                }
+            ]
+        },
+        "GenericEsdtAmountPair": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
         "UnlockMilestone": {
             "type": "struct",
             "fields": [
