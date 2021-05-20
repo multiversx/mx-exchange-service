@@ -314,6 +314,19 @@
             "outputs": []
         },
         {
+            "name": "enterFarmAndLockRewardsProxy",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "exitFarmProxy",
             "payableInTokens": [
                 "*"
@@ -360,6 +373,35 @@
         }
     ],
     "types": {
+        "EsdtLocalRole": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "None",
+                    "discriminant": 0
+                },
+                {
+                    "name": "Mint",
+                    "discriminant": 1
+                },
+                {
+                    "name": "Burn",
+                    "discriminant": 2
+                },
+                {
+                    "name": "NftCreate",
+                    "discriminant": 3
+                },
+                {
+                    "name": "NftAddQuantity",
+                    "discriminant": 4
+                },
+                {
+                    "name": "NftBurn",
+                    "discriminant": 5
+                }
+            ]
+        },
         "ProxyFarmParams": {
             "type": "struct",
             "fields": [
