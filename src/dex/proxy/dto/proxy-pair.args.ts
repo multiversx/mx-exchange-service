@@ -3,6 +3,8 @@ import { Field, ArgsType, Int } from '@nestjs/graphql';
 @ArgsType()
 export class TokensTransferArgs {
     @Field()
+    pairAddress: string;
+    @Field()
     amount: string;
     @Field()
     tokenID: string;
