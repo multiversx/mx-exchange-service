@@ -55,7 +55,7 @@ export class TransactionsProxyPairService {
         ]);
 
         const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.addLiquidity));
+        transaction.setGasLimit(new GasLimit(gasConfig.addLiquidityProxy));
 
         return transaction.toPlainObject();
     }
