@@ -43,7 +43,7 @@ export class TransactionsFarmService {
         return await this.context.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.enterFarm),
         );
     }
 
@@ -72,7 +72,7 @@ export class TransactionsFarmService {
         const transaction = await this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.exitFarm),
         );
 
         transaction.receiver = args.sender;
