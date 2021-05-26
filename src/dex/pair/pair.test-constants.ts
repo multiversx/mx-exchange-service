@@ -111,6 +111,34 @@ export class ContextServiceMock {
         return pairsMap;
     }
 
+    async getPath(input: string, output: string): Promise<string[]> {
+        const path: string[] = [input];
+        const queue: string[] = [];
+        const visited = new Map<string, boolean>();
+        visited.set(input, true);
+        queue.push(input);
+
+        const pairsMap = await this.getPairsMap();
+        pairsMap.forEach((value, key, map) => visited.set(key, false));
+
+        while (queue.length !== 0) {
+            const node = queue.shift();
+            for (const [key, value] of pairsMap.get(node)) {
+                if (key === output) {
+                    path.push(output);
+                    return path;
+                }
+                if (!visited.get(key)) {
+                    visited.set(key, true);
+                    queue.push(key);
+                    path.push(key);
+                }
+            }
+        }
+
+        return path;
+    }
+
     public toBigNumber(value: string, token: TokenModel): BigNumber {
         const bigNumber = new BigNumber(value);
         const exponent = new BigNumber(`1e+${token.decimals}`);

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ProxyProvider, Address, SmartContract } from '@elrondnetwork/erdjs';
-import { elrondConfig, abiConfig } from '../../config';
+import { ProxyProvider } from '@elrondnetwork/erdjs';
+import { elrondConfig, tokensPriceData } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TokenModel } from '../models/pair.model';
@@ -79,8 +79,10 @@ export class PairService {
         pairAddress: string,
         tokenID: string,
     ): Promise<string> {
-        if (tokenID === 'WEGLD-ccae2d') {
-            return (await this.priceFeed.getTokenPrice('egld')).toString();
+        if (tokensPriceData.has(tokenID)) {
+            return (
+                await this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID))
+            ).toString();
         }
 
         const firstTokenID = await this.getFirstTokenID(pairAddress);
@@ -92,9 +94,11 @@ export class PairService {
         switch (tokenID) {
             case firstTokenID:
                 tokenPrice = await this.getFirstTokenPrice(pairAddress);
-                if (secondTokenID === 'WEGLD-ccae2d') {
+                if (tokensPriceData.has(secondTokenID)) {
                     const usdPrice = (
-                        await this.priceFeed.getTokenPrice('egld')
+                        await this.priceFeed.getTokenPrice(
+                            tokensPriceData.get(secondTokenID),
+                        )
                     ).toString();
                     const tokenPriceUSD = new BigNumber(tokenPrice)
                         .multipliedBy(usdPrice)
@@ -110,9 +114,11 @@ export class PairService {
 
             case secondTokenID:
                 tokenPrice = await this.getSecondTokenPrice(pairAddress);
-                if (firstTokenID === 'WEGLD-ccae2d') {
+                if (tokensPriceData.has(firstTokenID)) {
                     const usdPrice = (
-                        await this.priceFeed.getTokenPrice('egld')
+                        await this.priceFeed.getTokenPrice(
+                            tokensPriceData.get(firstTokenID),
+                        )
                     ).toString();
                     const tokenPriceUSD = new BigNumber(tokenPrice)
                         .multipliedBy(usdPrice)

@@ -18,3 +18,5 @@ export const gasConfig = config.get('gas');
 export const abiConfig = config.get('abi');
 
 export const farmsConfig = config.get('farms');
+
+export const tokensPriceData = config.get('priceFeeds');
