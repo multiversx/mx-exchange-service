@@ -36,6 +36,26 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async firstTokenPrice(@Parent() parent: PairModel) {
+        return await this.pairService.getFirstTokenPrice(parent.address);
+    }
+
+    @ResolveField()
+    async firstTokenPriceUSD(@Parent() parent: PairModel) {
+        return await this.pairService.getFirstTokenPriceUSD(parent.address);
+    }
+
+    @ResolveField()
+    async secondTokenPriceUSD(@Parent() parent: PairModel) {
+        return await this.pairService.getSecondTokenPriceUSD(parent.address);
+    }
+
+    @ResolveField()
+    async secondTokenPrice(@Parent() parent: PairModel) {
+        return await this.pairService.getSecondTokenPrice(parent.address);
+    }
+
+    @ResolveField()
     async info(@Parent() pair: PairModel) {
         const { address } = pair;
         return await this.pairService.getPairInfo(address);

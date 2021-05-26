@@ -6,9 +6,15 @@ import { ContextModule } from '../utils/context.module';
 import { ServicesModule } from 'src/services';
 import { AbiPairService } from './abi-pair.service';
 import { TransactionPairService } from './transactions-pair.service';
+import { PriceFeedModule } from 'src/services/price-feed/price-feed.module';
 
 @Module({
-    imports: [CacheManagerModule, ContextModule, ServicesModule],
+    imports: [
+        CacheManagerModule,
+        ContextModule,
+        ServicesModule,
+        PriceFeedModule,
+    ],
     providers: [
         PairService,
         AbiPairService,

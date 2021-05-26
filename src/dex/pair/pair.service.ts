@@ -1,22 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { AbiRegistry } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { ProxyProvider, Address, SmartContract } from '@elrondnetwork/erdjs';
 import { elrondConfig, abiConfig } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TokenModel } from '../models/pair.model';
 import { ContextService } from '../utils/context.service';
-import { RedlockService } from 'src/services';
+import { RedlockService } from '../../services';
 import {
     quote,
     getAmountOut,
     getAmountIn,
     getTokenForGivenPosition,
 } from './pair.utils';
-import { CachePairService } from 'src/services/cache-manager/cache-pair.service';
+import { CachePairService } from '../../services/cache-manager/cache-pair.service';
 import { AbiPairService } from './abi-pair.service';
+import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 
 @Injectable()
 export class PairService {
@@ -27,6 +26,7 @@ export class PairService {
         private cacheService: CachePairService,
         private context: ContextService,
         private redlockService: RedlockService,
+        private priceFeed: PriceFeedService,
     ) {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
     }
@@ -45,6 +45,89 @@ export class PairService {
         const lpTokenID = await this.getLpTokenID(pairAddress);
 
         return await this.context.getTokenMetadata(lpTokenID);
+    }
+
+    async getFirstTokenPrice(pairAddress: string): Promise<string> {
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        return await this.getEquivalentForLiquidity(
+            pairAddress,
+            firstTokenID,
+            '1',
+        );
+    }
+
+    async getSecondTokenPrice(pairAddress: string): Promise<string> {
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        return await this.getEquivalentForLiquidity(
+            pairAddress,
+            secondTokenID,
+            '1',
+        );
+    }
+
+    async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        return await this.getTokenPriceUSD(pairAddress, firstTokenID);
+    }
+
+    async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        return await this.getTokenPriceUSD(pairAddress, secondTokenID);
+    }
+
+    async getTokenPriceUSD(
+        pairAddress: string,
+        tokenID: string,
+    ): Promise<string> {
+        if (tokenID === 'WEGLD-ccae2d') {
+            return (await this.priceFeed.getTokenPrice('egld')).toString();
+        }
+
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        let tokenPrice: string;
+        let tokenPriceUSD;
+        let usdPrice;
+
+        switch (tokenID) {
+            case firstTokenID:
+                tokenPrice = await this.getFirstTokenPrice(pairAddress);
+                if (secondTokenID === 'WEGLD-ccae2d') {
+                    const usdPrice = (
+                        await this.priceFeed.getTokenPrice('egld')
+                    ).toString();
+                    const tokenPriceUSD = new BigNumber(tokenPrice)
+                        .multipliedBy(usdPrice)
+                        .toString();
+                    return tokenPriceUSD;
+                }
+
+                usdPrice = await this.getPriceUSDByPath(tokenID);
+                tokenPriceUSD = new BigNumber(tokenPrice)
+                    .multipliedBy(usdPrice)
+                    .toString();
+                return tokenPriceUSD;
+
+            case secondTokenID:
+                tokenPrice = await this.getSecondTokenPrice(pairAddress);
+                if (firstTokenID === 'WEGLD-ccae2d') {
+                    const usdPrice = (
+                        await this.priceFeed.getTokenPrice('egld')
+                    ).toString();
+                    const tokenPriceUSD = new BigNumber(tokenPrice)
+                        .multipliedBy(usdPrice)
+                        .toString();
+                    return tokenPriceUSD;
+                }
+
+                usdPrice = await this.getPriceUSDByPath(tokenID);
+                tokenPriceUSD = new BigNumber(tokenPrice)
+                    .multipliedBy(usdPrice)
+                    .toString();
+                return tokenPriceUSD;
+        }
+
+        return '';
     }
 
     @Cron(CronExpression.EVERY_MINUTE)
@@ -385,5 +468,12 @@ export class PairService {
             reserves1: reserves1.toString(),
             totalSupply: totalSupply.toString(),
         };
+    }
+
+    private async getPriceUSDByPath(tokenID: string): Promise<string> {
+        const path = await this.context.getPath(tokenID, 'WEGLD-ccae2d');
+        const pair = await this.context.getPairByTokens(path[0], path[1]);
+        const usdPrice = await this.getTokenPriceUSD(pair.address, path[1]);
+        return usdPrice;
     }
 }
