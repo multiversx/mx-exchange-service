@@ -1,7 +1,6 @@
 import { ObjectType, Field, ArgsType } from '@nestjs/graphql';
 import { PaginationArgs } from '../dex.model';
 import { PairInfoModel } from './pair-info.model';
-import { PairPriceModel } from './pair-price.model';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -37,6 +36,18 @@ export class PairModel {
 
     @Field()
     secondToken: TokenModel;
+
+    @Field()
+    firstTokenPrice: string;
+
+    @Field()
+    firstTokenPriceUSD: string;
+
+    @Field()
+    secondTokenPrice: string;
+
+    @Field()
+    secondTokenPriceUSD: string;
 
     @Field()
     liquidityPoolToken: TokenModel;
