@@ -129,7 +129,7 @@ export class ProxyResolver {
         return await this.proxyService.getWrappedLpTokenAttributes(attributes);
     }
 
-    @Query(returns => WrappedLpTokenAttributesModel)
+    @Query(returns => WrappedFarmTokenAttributesModel)
     async wrappedFarmTokenAttributes(
         @Args('attributes') attributes: string,
     ): Promise<WrappedFarmTokenAttributesModel> {
