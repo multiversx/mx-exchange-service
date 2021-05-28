@@ -64,7 +64,7 @@ export class AbiFarmService {
         return farmTokenID;
     }
 
-    async getAcceptedTokenID(farmAddress: string): Promise<string> {
+    async getFarmingTokenID(farmAddress: string): Promise<string> {
         const contract = await this.getContract(farmAddress);
         const interaction: Interaction = contract.methods.getFarmingTokenId([]);
         const queryResponse = await contract.runQuery(
@@ -73,8 +73,50 @@ export class AbiFarmService {
         );
         const response = interaction.interpretQueryResponse(queryResponse);
 
-        const acceptedTokenID = response.firstValue.valueOf().toString();
-        return acceptedTokenID;
+        const farmingTokenID = response.firstValue.valueOf().toString();
+        return farmingTokenID;
+    }
+
+    async getFarmTokenSupply(farmAddress: string): Promise<string> {
+        const contract = await this.getContract(farmAddress);
+        const interaction: Interaction = contract.methods.getFarmTokenSupply(
+            [],
+        );
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const farmTokenSupply = response.firstValue.valueOf().toString();
+        return farmTokenSupply;
+    }
+
+    async getFarmingTokenReserve(farmAddress: string): Promise<string> {
+        const contract = await this.getContract(farmAddress);
+        const interaction: Interaction = contract.methods.getFarmingTokenReserve(
+            [],
+        );
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const farmingTokenReserve = response.firstValue.valueOf().toString();
+        return farmingTokenReserve;
+    }
+
+    async getRewardsPerBlock(farmAddress: string): Promise<string> {
+        const contract = await this.getContract(farmAddress);
+        const interaction: Interaction = contract.methods.getPerBlockRewardAmount(
+            [],
+        );
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const rewardsPerBlock = response.firstValue.valueOf().toString();
+        return rewardsPerBlock;
     }
 
     async calculateRewardsForGivenPosition(

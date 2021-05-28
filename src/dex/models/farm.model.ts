@@ -6,14 +6,17 @@ export class FarmModel {
     @Field()
     address: string;
 
-    @Field(() => TokenModel)
+    @Field()
     farmedToken: TokenModel;
 
     @Field()
     farmToken: TokenModel;
 
     @Field()
-    acceptedToken: TokenModel;
+    farmingToken: TokenModel;
+
+    @Field()
+    perBlockRewards: string;
 
     @Field()
     state: string;
