@@ -15,9 +15,9 @@ export class AbiProxyService {
         );
     }
 
-    async getAcceptedLockedTokensID(): Promise<string[]> {
+    async getLockedAssetTokenID(): Promise<string> {
         const contract = await getContract();
-        const interaction: Interaction = contract.methods.getAcceptedLockedAssetsTokenIds(
+        const interaction: Interaction = contract.methods.getLockedAssetTokenId(
             [],
         );
         const queryResponse = await contract.runQuery(
@@ -25,9 +25,7 @@ export class AbiProxyService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        const acceptedLockedTokens = response.values.map(token =>
-            token.valueOf().toString(),
-        );
-        return acceptedLockedTokens;
+        const lockedAssetTokenID = response.firstValue.valueOf().toString();
+        return lockedAssetTokenID;
     }
 }

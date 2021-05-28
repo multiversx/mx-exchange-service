@@ -7,6 +7,10 @@
                 "type": "TokenIdentifier"
             },
             {
+                "name": "locked_asset_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
                 "name": "proxy_pair_params",
                 "type": "ProxyPairParams"
             },
@@ -72,32 +76,19 @@
             "outputs": []
         },
         {
-            "name": "addAcceptedLockedAssetTokenId",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
+            "name": "acceptPay",
+            "payableInTokens": [
+                "*"
             ],
+            "inputs": [],
             "outputs": []
         },
         {
-            "name": "removeAcceptedLockedAssetTokenId",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "getAcceptedLockedAssetsTokenIds",
+            "name": "getLockedAssetTokenId",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "variadic<TokenIdentifier>",
-                    "multi_result": true
+                    "type": "TokenIdentifier"
                 }
             ]
         },
