@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ProxyProvider, Address, SmartContract } from '@elrondnetwork/erdjs';
-import { elrondConfig, abiConfig } from '../../config';
+import { elrondConfig, abiConfig, scAddress } from '../../config';
 import { AbiRegistry } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
@@ -22,7 +22,7 @@ export class AbiWrapService {
         });
         const abi = new SmartContractAbi(abiRegistry, ['EgldEsdtSwap']);
         const contract = new SmartContract({
-            address: new Address(elrondConfig.wrappingAddress),
+            address: new Address(scAddress.wrappingAddress),
             abi: abi,
         });
 

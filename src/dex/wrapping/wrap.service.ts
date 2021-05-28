@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { elrondConfig } from 'src/config';
+import { scAddress } from 'src/config';
 import { CacheWrapService } from 'src/services/cache-manager/cache-wrapping.service';
 import { TokenModel } from '../models/pair.model';
 import { WrapModel } from '../models/wrapping.model';
@@ -16,7 +16,7 @@ export class WrapService {
 
     async getWrappingInfo(): Promise<WrapModel> {
         const wrappingInfo = new WrapModel();
-        wrappingInfo.address = elrondConfig.wrappingAddress;
+        wrappingInfo.address = scAddress.wrappingAddress;
         return wrappingInfo;
     }
 
