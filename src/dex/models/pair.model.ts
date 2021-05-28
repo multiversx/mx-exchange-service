@@ -53,6 +53,9 @@ export class PairModel {
     liquidityPoolToken: TokenModel;
 
     @Field()
+    liquidityPoolTokenPriceUSD: string;
+
+    @Field()
     info: PairInfoModel;
 
     @Field()

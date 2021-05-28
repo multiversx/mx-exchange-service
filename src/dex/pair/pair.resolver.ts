@@ -56,6 +56,11 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async liquidityPoolTokenPriceUSD(@Parent() parent: PairModel) {
+        return await this.pairService.getLpTokenPriceUSD(parent.address);
+    }
+
+    @ResolveField()
     async info(@Parent() pair: PairModel) {
         const { address } = pair;
         return await this.pairService.getPairInfo(address);
