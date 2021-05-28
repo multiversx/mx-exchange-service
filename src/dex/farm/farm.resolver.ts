@@ -30,8 +30,8 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async acceptedToken(@Parent() parent: FarmModel) {
-        return await this.farmService.getAcceptedToken(parent.address);
+    async farmingToken(@Parent() parent: FarmModel) {
+        return await this.farmService.getFarmingToken(parent.address);
     }
 
     @ResolveField()

@@ -1,21 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import {
     BigUIntType,
-    BigUIntValue,
     BooleanType,
     StructFieldDefinition,
     StructType,
-    U32Value,
     U64Type,
     U8Type,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { ProxyProvider, Interaction, BinaryCodec } from '@elrondnetwork/erdjs';
+import { ProxyProvider, BinaryCodec } from '@elrondnetwork/erdjs';
 import { elrondConfig, farmsConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
-import { BigNumber } from 'bignumber.js';
 import { TokenModel } from '../models/pair.model';
 import { FarmModel, FarmTokenAttributesModel } from '../models/farm.model';
-import { CacheFarmService } from 'src/services/cache-manager/cache-farm.service';
+import { CacheFarmService } from '../../services/cache-manager/cache-farm.service';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
 
@@ -41,9 +38,59 @@ export class FarmService {
         return await this.context.getTokenMetadata(farmTokenID);
     }
 
-    async getAcceptedToken(farmAddress: string): Promise<TokenModel> {
-        const acceptedTokenID = await this.getAcceptedTokenID(farmAddress);
-        return await this.context.getTokenMetadata(acceptedTokenID);
+    async getFarmingToken(farmAddress: string): Promise<TokenModel> {
+        const farmingTokenID = await this.getFarmingTokenID(farmAddress);
+        return await this.context.getTokenMetadata(farmingTokenID);
+    }
+
+    async getFarmTokenSupply(farmAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getFarmTokenSupply(
+            farmAddress,
+        );
+        if (!!cachedData) {
+            return cachedData.farmTokenSupply;
+        }
+
+        const farmTokenSupply = await this.abiService.getFarmTokenSupply(
+            farmAddress,
+        );
+        this.cacheService.setFarmTokenSupply(farmAddress, {
+            farmTokenSupply: farmTokenSupply,
+        });
+        return farmTokenSupply;
+    }
+
+    async getFarmingTokenReserve(farmAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getFarmingTokenReserve(
+            farmAddress,
+        );
+        if (!!cachedData) {
+            return cachedData.farmingTokenReserve;
+        }
+
+        const farmingTokenReserve = await this.abiService.getFarmingTokenReserve(
+            farmAddress,
+        );
+        this.cacheService.setFarmTokenSupply(farmAddress, {
+            farmingTokenReserve: farmingTokenReserve,
+        });
+        return farmingTokenReserve;
+    }
+
+    async getRewardsPerBlock(farmAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getRewardsPerBlock(
+            farmAddress,
+        );
+        if (!!cachedData) {
+            return cachedData.rewardsPerBlock;
+        }
+        const rewardsPerBlock = await this.abiService.getRewardsPerBlock(
+            farmAddress,
+        );
+        this.cacheService.setRewardsPerBlock(farmAddress, {
+            rewardsPerBlock: rewardsPerBlock,
+        });
+        return rewardsPerBlock;
     }
 
     async getState(farmAddress: string): Promise<string> {
@@ -112,7 +159,7 @@ export class FarmService {
         };
     }
 
-    private async getFarmedTokenID(farmAddress: string): Promise<string> {
+    async getFarmedTokenID(farmAddress: string): Promise<string> {
         const cachedData = await this.cacheService.getFarmedTokenID(
             farmAddress,
         );
@@ -129,7 +176,7 @@ export class FarmService {
         return farmedTokenID;
     }
 
-    private async getFarmTokenID(farmAddress: string): Promise<string> {
+    async getFarmTokenID(farmAddress: string): Promise<string> {
         const cachedData = await this.cacheService.getFarmTokenID(farmAddress);
         if (!!cachedData) {
             return cachedData.farmTokenID;
@@ -142,20 +189,20 @@ export class FarmService {
         return farmTokenID;
     }
 
-    private async getAcceptedTokenID(farmAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getAcceptedTokenID(
+    async getFarmingTokenID(farmAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getFarmingTokenID(
             farmAddress,
         );
         if (!!cachedData) {
-            return cachedData.acceptedTokenID;
+            return cachedData.farmingTokenID;
         }
 
-        const acceptedTokenID = await this.abiService.getAcceptedTokenID(
+        const farmingTokenID = await this.abiService.getFarmingTokenID(
             farmAddress,
         );
-        this.cacheService.setAcceptedTokenID(farmAddress, {
-            acceptedTokenID: acceptedTokenID,
+        this.cacheService.setFarmingTokenID(farmAddress, {
+            farmingTokenID: farmingTokenID,
         });
-        return acceptedTokenID;
+        return farmingTokenID;
     }
 }
