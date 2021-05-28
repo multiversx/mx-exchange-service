@@ -14,7 +14,7 @@ import {
 } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
 import { Client } from '@elastic/elasticsearch';
-import { elrondConfig, abiConfig } from '../../config';
+import { elrondConfig, abiConfig, scAddress } from '../../config';
 import { ContextService } from '../utils/context.service';
 
 @Injectable()
@@ -38,7 +38,7 @@ export class RouterService {
         });
         const abi = new SmartContractAbi(abiRegistry, ['Router']);
         const contract = new SmartContract({
-            address: new Address(elrondConfig.routerAddress),
+            address: new Address(scAddress.routerAddress),
             abi: abi,
         });
 
@@ -47,7 +47,7 @@ export class RouterService {
 
     async getFactory(): Promise<FactoryModel> {
         const dexFactory = new FactoryModel();
-        dexFactory.address = elrondConfig.routerAddress;
+        dexFactory.address = scAddress.routerAddress;
         return dexFactory;
     }
 
