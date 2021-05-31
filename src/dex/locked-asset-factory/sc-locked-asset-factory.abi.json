@@ -45,6 +45,15 @@
                 {
                     "name": "address",
                     "type": "Address"
+                },
+                {
+                    "name": "start_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -77,7 +86,13 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": []
         },
         {
@@ -117,6 +132,16 @@
             "outputs": []
         },
         {
+            "name": "set_transfer_exec_gas_limit",
+            "inputs": [
+                {
+                    "name": "gas_limit",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "getLockedTokenId",
             "inputs": [],
             "outputs": [
@@ -126,11 +151,29 @@
             ]
         },
         {
-            "name": "cleanupUnusedTokens",
-            "inputs": [],
+            "name": "invalidateCache",
+            "inputs": [
+                {
+                    "name": "min_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "max_nonce",
+                    "type": "u64"
+                }
+            ],
             "outputs": [
                 {
                     "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getCacheSize",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
                 }
             ]
         }

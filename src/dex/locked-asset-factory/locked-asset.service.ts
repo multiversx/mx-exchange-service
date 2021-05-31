@@ -4,7 +4,7 @@ import { TokenModel } from '../models/pair.model';
 import { CacheLockedAssetService } from 'src/services/cache-manager/cache-locked-asset.service';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
 import { LockedAssetModel } from '../models/locked-asset.model';
-import { elrondConfig } from 'src/config';
+import { scAddress } from 'src/config';
 
 @Injectable()
 export class LockedAssetService {
@@ -16,7 +16,7 @@ export class LockedAssetService {
 
     async getLockedAssetInfo(): Promise<LockedAssetModel> {
         const lockedAssetInfo = new LockedAssetModel();
-        lockedAssetInfo.address = elrondConfig.lockedAssetAddress;
+        lockedAssetInfo.address = scAddress.lockedAssetAddress;
         return lockedAssetInfo;
     }
 
