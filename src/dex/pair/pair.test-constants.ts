@@ -10,22 +10,22 @@ interface PairMetadata {
 
 const pairsMetadata = [
     {
-        firstToken: 'WEGLD-ccae2d',
-        secondToken: 'MEX-115f3c',
+        firstToken: 'WEGLD-b57a79',
+        secondToken: 'MEX-53c38d',
         address: 'pair_address_1',
     },
     {
-        firstToken: 'WEGLD-ccae2d',
+        firstToken: 'WEGLD-b57a79',
         secondToken: 'BUSD-f66742',
         address: 'pair_address_2',
     },
     {
-        firstToken: 'MEX-115f3c',
+        firstToken: 'MEX-53c38d',
         secondToken: 'BUSD-f66742',
         address: 'pair_address_3',
     },
     {
-        firstToken: 'MEX-115f3c',
+        firstToken: 'MEX-53c38d',
         secondToken: 'SPT-f66742',
         address: 'pair_address_4',
     },

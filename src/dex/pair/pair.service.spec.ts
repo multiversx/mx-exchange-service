@@ -63,8 +63,8 @@ describe('PairService', () => {
     it('should get first token', async () => {
         const firstToken = await service.getFirstToken('pair_address_1');
         expect(firstToken).toEqual({
-            token: 'WEGLD-ccae2d',
-            name: 'WEGLD-ccae2d',
+            token: 'WEGLD-b57a79',
+            name: 'WEGLD-b57a79',
             decimals: 18,
         });
     });
@@ -72,7 +72,7 @@ describe('PairService', () => {
     it('should get simple token price in USD', async () => {
         const tokenPriceUSD = await service.getTokenPriceUSD(
             'pair_address_1',
-            'MEX-115f3c',
+            'MEX-53c38d',
         );
         expect(tokenPriceUSD).toEqual('100');
     });
