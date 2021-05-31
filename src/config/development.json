@@ -2,10 +2,10 @@
     "caching": {
         "networkConfig": 1,
         "pairsMetadata": 10,
-        "pairs": 60,
-        "txTotalCount": 60,
-        "pairCount": 60,
-        "token": 600,
+        "pairs": 10,
+        "txTotalCount": 10,
+        "pairCount": 10,
+        "token": 300,
         "default": 20
     }
 }
