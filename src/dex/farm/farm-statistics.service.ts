@@ -14,10 +14,6 @@ export class FarmStatisticsService {
     ) {}
 
     async computeFarmAPR(farmAddress: string): Promise<string> {
-        const farmingTokenID = await this.farmService.getFarmingTokenID(
-            farmAddress,
-        );
-
         const farmedTokenID = await this.farmService.getFarmedTokenID(
             farmAddress,
         );
@@ -39,6 +35,47 @@ export class FarmStatisticsService {
 
         const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
         const farmingTokenReserveBig = new BigNumber(farmingTokenReserve);
+
+        const farmingTokenPriceUSD = await this.getFarmingTokenPriceUSD(
+            farmAddress,
+        );
+
+        const farmingTokenValue = new BigNumber(farmingTokenPriceUSD).dividedBy(
+            new BigNumber(farmedTokenPriceUSD),
+        );
+        const unlockedFarmingTokens = farmingTokenReserveBig
+            .multipliedBy(2)
+            .minus(farmTokenSupplyBig);
+        const unlockedFarmingTokensValue = unlockedFarmingTokens.multipliedBy(
+            farmingTokenValue,
+        );
+
+        // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
+        const blocksPerYear = (365 * 24 * 60 * 60) / 6;
+        const totalRewardsPerYear = new BigNumber(rewardsPerBlock).multipliedBy(
+            blocksPerYear,
+        );
+
+        const unlockedFarmingTokensRewards = totalRewardsPerYear
+            .multipliedBy(unlockedFarmingTokens)
+            .dividedBy(farmTokenSupplyBig);
+        const farmAPR = unlockedFarmingTokensRewards.dividedBy(
+            unlockedFarmingTokensValue,
+        );
+
+        return farmAPR.toString();
+    }
+
+    private async getFarmingTokenPriceUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        const farmingTokenID = await this.farmService.getFarmingTokenID(
+            farmAddress,
+        );
+
+        const farmedTokenID = await this.farmService.getFarmedTokenID(
+            farmAddress,
+        );
 
         let farmingTokenPriceUSD;
         switch (farmingTokenID) {
@@ -64,30 +101,6 @@ export class FarmStatisticsService {
                 }
                 break;
         }
-
-        const farmingTokenValue = new BigNumber(farmingTokenPriceUSD).dividedBy(
-            new BigNumber(farmedTokenPriceUSD),
-        );
-        const unlockedFarmingTokens = farmingTokenReserveBig
-            .multipliedBy(2)
-            .minus(farmTokenSupplyBig);
-        const unlockedFarmingTokensValue = unlockedFarmingTokens.multipliedBy(
-            farmingTokenValue,
-        );
-
-        // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
-        const blocksPerYear = (365 * 24 * 60 * 60) / 6;
-        const totalRewardsPerYear = new BigNumber(rewardsPerBlock).multipliedBy(
-            blocksPerYear,
-        );
-
-        const totalrewardsForUnlockedFarmingTokens = totalRewardsPerYear
-            .multipliedBy(unlockedFarmingTokens)
-            .dividedBy(farmTokenSupplyBig);
-        const farmAPR = totalrewardsForUnlockedFarmingTokens.dividedBy(
-            unlockedFarmingTokensValue,
-        );
-
-        return farmAPR.toString();
+        return farmingTokenPriceUSD;
     }
 }
