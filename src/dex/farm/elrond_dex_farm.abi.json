@@ -13,6 +13,14 @@
             {
                 "name": "farming_token_id",
                 "type": "TokenIdentifier"
+            },
+            {
+                "name": "locked_asset_factory_address",
+                "type": "Address"
+            },
+            {
+                "name": "division_safety_constant",
+                "type": "BigUint"
             }
         ],
         "outputs": []
@@ -36,7 +44,19 @@
             "inputs": [],
             "outputs": [
                 {
-                    "type": "SftTokenAmountPair"
+                    "type": "GenericEsdtAmountPair"
+                }
+            ]
+        },
+        {
+            "name": "enterFarmAndLockRewards",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "GenericEsdtAmountPair"
                 }
             ]
         },
@@ -48,10 +68,10 @@
             "inputs": [],
             "outputs": [
                 {
-                    "type": "TokenAmountPair"
+                    "type": "FftTokenAmountPair"
                 },
                 {
-                    "type": "TokenAmountPair"
+                    "type": "GenericEsdtAmountPair"
                 }
             ]
         },
@@ -63,10 +83,10 @@
             "inputs": [],
             "outputs": [
                 {
-                    "type": "SftTokenAmountPair"
+                    "type": "GenericEsdtAmountPair"
                 },
                 {
-                    "type": "TokenAmountPair"
+                    "type": "GenericEsdtAmountPair"
                 }
             ]
         },
@@ -82,7 +102,7 @@
             "name": "calculateRewardsForGivenPosition",
             "inputs": [
                 {
-                    "name": "liquidity",
+                    "name": "amount",
                     "type": "BigUint"
                 },
                 {
@@ -93,21 +113,6 @@
             "outputs": [
                 {
                     "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "decodeAttributes",
-            "inputs": [
-                {
-                    "name": "attributes_raw",
-                    "type": "bytes"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "variadic<bytes>",
-                    "multi_result": true
                 }
             ]
         },
@@ -134,59 +139,92 @@
             "outputs": []
         },
         {
-            "name": "getFarmTokenId",
+            "name": "start_produce_rewards",
             "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
+            "outputs": []
         },
         {
-            "name": "getTotalSupply",
+            "name": "end_produce_rewards",
             "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getVirtualReserves",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
+            "outputs": []
         },
         {
             "name": "setPerBlockRewardAmount",
             "inputs": [
                 {
                     "name": "per_block_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getRewardPerShare",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getRewardReserve",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "set_penalty_percent",
+            "inputs": [
+                {
+                    "name": "percent",
+                    "type": "u8"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "set_locked_rewards_apr_multiplier",
+            "inputs": [
+                {
+                    "name": "muliplier",
+                    "type": "u8"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "set_burn_tokens_gas_limit",
+            "inputs": [
+                {
+                    "name": "limit",
                     "type": "u64"
                 }
             ],
             "outputs": []
         },
         {
-            "name": "getLastRewardEpoch",
-            "inputs": [],
-            "outputs": [
+            "name": "set_mint_tokens_gas_limit",
+            "inputs": [
                 {
+                    "name": "limit",
                     "type": "u64"
                 }
-            ]
+            ],
+            "outputs": []
         },
         {
-            "name": "getPerBlockRewardAmount",
-            "inputs": [],
-            "outputs": [
+            "name": "set_minimum_farming_epochs",
+            "inputs": [
                 {
-                    "type": "u64"
+                    "name": "epochs",
+                    "type": "u8"
                 }
-            ]
+            ],
+            "outputs": []
         },
         {
             "name": "getLastErrorMessage",
@@ -241,10 +279,113 @@
                     "type": "TokenIdentifier"
                 }
             ]
+        },
+        {
+            "name": "getLockedAssetFactoryAddress",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getPenaltyPercent",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "getLockedRewardAprMuliplier",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "getBurnTokensGasLimit",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getMintTokensGasLimit",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getMinimumFarmingEpoch",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "getPerBlockRewardAmount",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getLastRewardEpoch",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getFarmTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getFarmTokenSupply",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
         }
     ],
     "types": {
-        "SftTokenAmountPair": {
+        "FftTokenAmountPair": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "GenericEsdtAmountPair": {
             "type": "struct",
             "fields": [
                 {
@@ -271,19 +412,6 @@
                 {
                     "name": "Active",
                     "discriminant": 1
-                }
-            ]
-        },
-        "TokenAmountPair": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "amount",
-                    "type": "BigUint"
                 }
             ]
         }

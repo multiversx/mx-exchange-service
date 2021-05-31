@@ -5,7 +5,11 @@ import { CacheManagerService } from './cache-manager.service';
 const Keys = {
     farmedTokenID: (farmAddress: string) => `${farmAddress}.farmedTokenID`,
     farmTokenID: (farmAddress: string) => `${farmAddress}.farmTokenID`,
-    acceptedTokenID: (farmAddress: string) => `${farmAddress}.acceptedTokenID`,
+    farmingTokenID: (farmAddress: string) => `${farmAddress}.farmingTokenID`,
+    farmTokenSupply: (farmAddress: string) => `${farmAddress}.farmTokenSupply`,
+    farmingTokenReserve: (farmAddress: string) =>
+        `${farmAddress}.farmingTokenReserve`,
+    rewardsPerBlock: (farmAddress: string) => `${farmAddress}.rewardsPerBlock`,
 };
 
 @Injectable()
@@ -42,20 +46,71 @@ export class CacheFarmService {
         );
     }
 
-    async getAcceptedTokenID(
-        farmAddress: string,
-    ): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.acceptedTokenID(farmAddress));
+    async getFarmingTokenID(farmAddress: string): Promise<Record<string, any>> {
+        return this.cacheManagerService.get(Keys.farmingTokenID(farmAddress));
     }
 
-    async setAcceptedTokenID(
+    async setFarmingTokenID(
         farmAddress: string,
-        acceptedTokenID: Record<string, any>,
+        farmingTokenID: Record<string, any>,
     ): Promise<void> {
         await this.cacheManagerService.set(
-            Keys.acceptedTokenID(farmAddress),
-            acceptedTokenID,
+            Keys.farmingTokenID(farmAddress),
+            farmingTokenID,
             cacheConfig.token,
+        );
+    }
+
+    async getFarmTokenSupply(
+        farmAddress: string,
+    ): Promise<Record<string, any>> {
+        return this.cacheManagerService.get(Keys.farmTokenSupply(farmAddress));
+    }
+
+    async setFarmTokenSupply(
+        farmAddress: string,
+        farmTokenSupply: Record<string, any>,
+    ): Promise<void> {
+        await this.cacheManagerService.set(
+            Keys.farmTokenSupply(farmAddress),
+            farmTokenSupply,
+            cacheConfig.default,
+        );
+    }
+
+    async getFarmingTokenReserve(
+        farmAddress: string,
+    ): Promise<Record<string, any>> {
+        return this.cacheManagerService.get(
+            Keys.farmingTokenReserve(farmAddress),
+        );
+    }
+
+    async setFarmingTokenReserve(
+        farmAddress: string,
+        farmingTokenReserve: Record<string, any>,
+    ): Promise<void> {
+        await this.cacheManagerService.set(
+            Keys.farmingTokenReserve(farmAddress),
+            farmingTokenReserve,
+            cacheConfig.default,
+        );
+    }
+
+    async getRewardsPerBlock(
+        farmAddress: string,
+    ): Promise<Record<string, any>> {
+        return this.cacheManagerService.get(Keys.rewardsPerBlock(farmAddress));
+    }
+
+    async setRewardsPerBlock(
+        farmAddress: string,
+        rewardsPerBlock: Record<string, any>,
+    ): Promise<void> {
+        await this.cacheManagerService.set(
+            Keys.rewardsPerBlock(farmAddress),
+            rewardsPerBlock,
+            cacheConfig.default,
         );
     }
 }
