@@ -71,7 +71,7 @@ export class FarmService {
         const farmingTokenReserve = await this.abiService.getFarmingTokenReserve(
             farmAddress,
         );
-        this.cacheService.setFarmTokenSupply(farmAddress, {
+        this.cacheService.setFarmingTokenReserve(farmAddress, {
             farmingTokenReserve: farmingTokenReserve,
         });
         return farmingTokenReserve;
