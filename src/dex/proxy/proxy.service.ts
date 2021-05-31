@@ -28,6 +28,23 @@ export class ProxyService {
         return proxy;
     }
 
+    async getDistributedToken(): Promise<TokenModel> {
+        const cachedData = await this.cacheService.getDistributedTokenID();
+        if (!!cachedData) {
+            return await this.context.getTokenMetadata(
+                cachedData.distributedTokenID,
+            );
+        }
+
+        const distributedTokenID = await this.abiService.getDistributedTokenID();
+
+        this.cacheService.setDistributedTokenID({
+            distributedTokenID: distributedTokenID,
+        });
+
+        return await this.context.getTokenMetadata(distributedTokenID);
+    }
+
     async getlockedAssetToken(): Promise<TokenModel> {
         const cachedData = await this.cacheService.getLockedAssetTokenID();
         if (!!cachedData) {
