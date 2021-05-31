@@ -41,13 +41,8 @@
             "outputs": []
         },
         {
-            "name": "setState",
-            "inputs": [
-                {
-                    "name": "state",
-                    "type": "State"
-                }
-            ],
+            "name": "setStateActiveNoSwaps",
+            "inputs": [],
             "outputs": []
         },
         {
@@ -76,23 +71,34 @@
                 {
                     "name": "second_token_amount_min",
                     "type": "BigUint"
+                },
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
                 {
-                    "type": "TokenAmountPair"
+                    "type": "FftTokenAmountPair"
                 },
                 {
-                    "type": "TokenAmountPair"
+                    "type": "FftTokenAmountPair"
                 },
                 {
-                    "type": "TokenAmountPair"
+                    "type": "FftTokenAmountPair"
                 }
             ]
         },
         {
             "name": "reclaimTemporaryFunds",
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": []
         },
         {
@@ -108,14 +114,19 @@
                 {
                     "name": "second_token_amount_min",
                     "type": "BigUint"
+                },
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
                 {
-                    "type": "TokenAmountPair"
+                    "type": "FftTokenAmountPair"
                 },
                 {
-                    "type": "TokenAmountPair"
+                    "type": "FftTokenAmountPair"
                 }
             ]
         },
@@ -149,6 +160,11 @@
                 {
                     "name": "amount_out_min",
                     "type": "BigUint"
+                },
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
                 }
             ],
             "outputs": []
@@ -166,6 +182,11 @@
                 {
                     "name": "amount_out",
                     "type": "BigUint"
+                },
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
                 }
             ],
             "outputs": []
@@ -208,10 +229,10 @@
             ],
             "outputs": [
                 {
-                    "type": "TokenAmountPair"
+                    "type": "FftTokenAmountPair"
                 },
                 {
-                    "type": "TokenAmountPair"
+                    "type": "FftTokenAmountPair"
                 }
             ]
         },
@@ -401,24 +422,6 @@
             "outputs": []
         },
         {
-            "name": "set_fee_on",
-            "inputs": [
-                {
-                    "name": "enabled",
-                    "type": "bool"
-                },
-                {
-                    "name": "fee_to_address",
-                    "type": "Address"
-                },
-                {
-                    "name": "fee_token",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": []
-        },
-        {
             "name": "getFirstTokenId",
             "inputs": [],
             "outputs": [
@@ -485,9 +488,32 @@
                     "type": "State"
                 }
             ]
+        },
+        {
+            "name": "set_transfer_exec_gas_limit",
+            "inputs": [
+                {
+                    "name": "gas_limit",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
         }
     ],
     "types": {
+        "FftTokenAmountPair": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
         "State": {
             "type": "enum",
             "variants": [
@@ -502,19 +528,6 @@
                 {
                     "name": "ActiveNoSwaps",
                     "discriminant": 2
-                }
-            ]
-        },
-        "TokenAmountPair": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "amount",
-                    "type": "BigUint"
                 }
             ]
         }

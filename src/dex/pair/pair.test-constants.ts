@@ -56,6 +56,10 @@ export class AbiPairServiceMock {
         return secondTokenID;
     }
 
+    async getLpTokenID(pairAddress: string): Promise<string> {
+        return 'LPT-1111';
+    }
+
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         return {
             reserves0: '100000000000000000000',
@@ -175,6 +179,17 @@ export class CachePairServiceMock {
         return;
     }
 
+    async getLpTokenID(pairAddress: string): Promise<Record<string, any>> {
+        return;
+    }
+
+    async setLpTokenID(
+        pairAddress: string,
+        tokenID: Record<string, any>,
+    ): Promise<void> {
+        return;
+    }
+
     async getReserves(
         pairAddress: string,
         tokenID: string,
@@ -206,6 +221,6 @@ export class RedlockServiceMock {}
 
 export class PriceFeedServiceMock {
     async getTokenPrice(token: string): Promise<number> {
-        return 100.39776421449149;
+        return 100;
     }
 }

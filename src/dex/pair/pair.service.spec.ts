@@ -74,7 +74,7 @@ describe('PairService', () => {
             'pair_address_1',
             'MEX-115f3c',
         );
-        expect(tokenPriceUSD).toEqual('100.39776421449149');
+        expect(tokenPriceUSD).toEqual('100');
     });
 
     it('should get token price in USD from simple path', async () => {
@@ -82,7 +82,7 @@ describe('PairService', () => {
             'pair_address_3',
             'BUSD-f66742',
         );
-        expect(tokenPriceUSD).toEqual('100.39776421449149');
+        expect(tokenPriceUSD).toEqual('100');
     });
 
     it('should get token price in USD from multiple path', async () => {
@@ -90,6 +90,31 @@ describe('PairService', () => {
             'pair_address_4',
             'SPT-f66742',
         );
-        expect(tokenPriceUSD).toEqual('100.39776421449149');
+        expect(tokenPriceUSD).toEqual('100');
+    });
+
+    it('should get liquidity position from pair', async () => {
+        const liquidityPosition = await service.getLiquidityPosition(
+            'pair_address_1',
+            '1',
+        );
+        expect(liquidityPosition).toEqual({
+            firstTokenAmount: '1',
+            secondTokenAmount: '1',
+        });
+    });
+
+    it('should get lpToken Price from pair', async () => {
+        const lpTokenPrice = await service.getLpTokenSecondTokenEquivalent(
+            'pair_address_1',
+        );
+        expect(lpTokenPrice).toEqual('2');
+    });
+
+    it('should get lpToken Price in USD from pair', async () => {
+        const lpTokenPriceUSD = await service.getLpTokenPriceUSD(
+            'pair_address_1',
+        );
+        expect(lpTokenPriceUSD).toEqual('200');
     });
 });

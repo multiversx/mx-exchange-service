@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ProxyProvider } from '@elrondnetwork/erdjs';
-import { elrondConfig, tokensPriceData } from '../../config';
+import { tokensPriceData } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TokenModel } from '../models/pair.model';
@@ -19,17 +18,13 @@ import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 
 @Injectable()
 export class PairService {
-    private readonly proxy: ProxyProvider;
-
     constructor(
         private abiService: AbiPairService,
         private cacheService: CachePairService,
         private context: ContextService,
         private redlockService: RedlockService,
         private priceFeed: PriceFeedService,
-    ) {
-        this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
-    }
+    ) {}
 
     async getFirstToken(pairAddress: string): Promise<TokenModel> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
@@ -73,6 +68,34 @@ export class PairService {
     async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
         return await this.getTokenPriceUSD(pairAddress, secondTokenID);
+    }
+
+    async getLpTokenSecondTokenEquivalent(
+        pairAddress: string,
+    ): Promise<string> {
+        const lpTokenPosition = await this.getLiquidityPosition(
+            pairAddress,
+            '1',
+        );
+        const lpTokenFirstAmountPrice = await this.getFirstTokenPrice(
+            pairAddress,
+        );
+        const lpTokenPrice = new BigNumber(lpTokenFirstAmountPrice)
+            .multipliedBy(new BigNumber(lpTokenPosition.firstTokenAmount))
+            .plus(new BigNumber(lpTokenPosition.secondTokenAmount));
+        return lpTokenPrice.toString();
+    }
+
+    async getLpTokenPriceUSD(pairAddress: string): Promise<string> {
+        const lpTokenEquivalent = await this.getLpTokenSecondTokenEquivalent(
+            pairAddress,
+        );
+        const secondTokenPriceUSD = await this.getSecondTokenPriceUSD(
+            pairAddress,
+        );
+        return new BigNumber(lpTokenEquivalent)
+            .multipliedBy(secondTokenPriceUSD)
+            .toString();
     }
 
     async getTokenPriceUSD(

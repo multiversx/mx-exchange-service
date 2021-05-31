@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
-import { elrondConfig, abiConfig } from '../../config';
+import { elrondConfig, abiConfig, scAddress } from '../../config';
 import {
     AbiRegistry,
     TypedValue,
@@ -52,7 +52,7 @@ export class ContextService {
         });
         const abi = new SmartContractAbi(abiRegistry, ['Router']);
         const contract = new SmartContract({
-            address: new Address(elrondConfig.routerAddress),
+            address: new Address(scAddress.routerAddress),
             abi: abi,
         });
 
@@ -88,7 +88,7 @@ export class ContextService {
         });
         const abi = new SmartContractAbi(abiRegistry, ['Router']);
         const contract = new SmartContract({
-            address: new Address(elrondConfig.routerAddress),
+            address: new Address(scAddress.routerAddress),
             abi: abi,
         });
 

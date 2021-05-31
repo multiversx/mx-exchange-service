@@ -1,54 +1,10 @@
 {
     "name": "Router",
+    "constructor": {
+        "inputs": [],
+        "outputs": []
+    },
     "endpoints": [
-        {
-            "name": "getAllPairsAddresses",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<Address>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getAllPairTokens",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<PairTokens>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getAllPairContractMetadata",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<PairContractMetadata>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getPairCode",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "bytes"
-                }
-            ]
-        },
-        {
-            "name": "getPairCodeReady",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "bool"
-                }
-            ]
-        },
         {
             "name": "pause",
             "inputs": [
@@ -81,7 +37,7 @@
                     "type": "TokenIdentifier"
                 },
                 {
-                    "name": "fee_precents",
+                    "name": "fee_percents",
                     "type": "variadic<u64>",
                     "multi_arg": true
                 }
@@ -124,11 +80,20 @@
             "outputs": []
         },
         {
-            "name": "upgradePair",
+            "name": "setLocalRolesOwner",
             "inputs": [
                 {
-                    "name": "pair_address",
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "address",
                     "type": "Address"
+                },
+                {
+                    "name": "roles",
+                    "type": "variadic<EsdtLocalRole>",
+                    "multi_arg": true
                 }
             ],
             "outputs": []
@@ -141,11 +106,11 @@
                     "type": "Address"
                 },
                 {
-                    "name": "staking_address",
+                    "name": "fee_to_address",
                     "type": "Address"
                 },
                 {
-                    "name": "staking_token",
+                    "name": "fee_token",
                     "type": "TokenIdentifier"
                 }
             ],
@@ -159,11 +124,11 @@
                     "type": "Address"
                 },
                 {
-                    "name": "staking_address",
+                    "name": "fee_to_address",
                     "type": "Address"
                 },
                 {
-                    "name": "staking_token",
+                    "name": "fee_token",
                     "type": "TokenIdentifier"
                 }
             ],
@@ -208,6 +173,16 @@
             ]
         },
         {
+            "name": "setPairCreationEnabled",
+            "inputs": [
+                {
+                    "name": "enabled",
+                    "type": "bool"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "getLastErrorMessage",
             "inputs": [],
             "outputs": [
@@ -233,9 +208,105 @@
                     "type": "Address"
                 }
             ]
+        },
+        {
+            "name": "getAllPairsAddresses",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getAllPairTokens",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<PairTokens>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getAllPairContractMetadata",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<PairContractMetadata>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "clearPairTemporaryOwnerStorage",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "setTemporaryOwnerPeriod",
+            "inputs": [
+                {
+                    "name": "period_blocks",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getPairCode",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bytes"
+                }
+            ]
+        },
+        {
+            "name": "getPairCodeReady",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
         }
     ],
     "types": {
+        "EsdtLocalRole": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "None",
+                    "discriminant": 0
+                },
+                {
+                    "name": "Mint",
+                    "discriminant": 1
+                },
+                {
+                    "name": "Burn",
+                    "discriminant": 2
+                },
+                {
+                    "name": "NftCreate",
+                    "discriminant": 3
+                },
+                {
+                    "name": "NftAddQuantity",
+                    "discriminant": 4
+                },
+                {
+                    "name": "NftBurn",
+                    "discriminant": 5
+                }
+            ]
+        },
         "PairContractMetadata": {
             "type": "struct",
             "fields": [
