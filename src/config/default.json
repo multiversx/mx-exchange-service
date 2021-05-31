@@ -41,7 +41,7 @@
         "reclaimTemporaryFunds": 20000000,
         "addLiquidity": 30000000,
         "removeLiquidity": 25000000,
-        "swapTokens": 100000000,
+        "swapTokens": 65000000,
         "createPair": 1400000000,
         "issueToken": 200000000,
         "setLocalRoles": 200000000,
@@ -49,7 +49,8 @@
         "setFee": 200000000,
         "addLiquidityProxy": 200000000,
         "enterFarm": 100000000,
-        "exitFarm": 50000000
+        "exitFarm": 50000000,
+        "wrapeGLD": 8000000
     },
     "abi": {
         "router": "./src/dex/router/elrond_dex_router.abi.json",
