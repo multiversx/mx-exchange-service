@@ -12,8 +12,8 @@ export class ProxyModel {
     @Field()
     wrappedFarmToken: TokenModel;
 
-    @Field(type => [TokenModel])
-    acceptedLockedTokens: TokenModel[];
+    @Field(type => TokenModel)
+    lockedAssetToken: TokenModel;
 
     @Field(type => [String])
     intermediatedPairs: string[];

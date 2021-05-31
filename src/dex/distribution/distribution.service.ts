@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { elrondConfig } from '../../config';
+import { scAddress } from '../../config';
 import {
     CommunityDistributionModel,
     DistributionMilestoneModel,
@@ -17,7 +17,7 @@ export class DistributionService {
 
     async getDistributionInfo(): Promise<DistributionModel> {
         const distributionContract = new DistributionModel();
-        distributionContract.address = elrondConfig.distributionAddress;
+        distributionContract.address = scAddress.distributionAddress;
         return distributionContract;
     }
 

@@ -3,23 +3,23 @@ import { CacheManagerService } from '../../services/cache-manager/cache-manager.
 import { cacheConfig } from '../../config';
 
 const Keys = {
-    acceptedLockedTokensID: () => 'acceptedLockedTokensID',
+    lockedAssetTokenID: () => 'lockedAssetTokenID',
 };
 
 @Injectable()
 export class CacheProxyService {
     constructor(private cacheManagerService: CacheManagerService) {}
 
-    async getAcceptedLockedTokensID(): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.acceptedLockedTokensID());
+    async getLockedAssetTokenID(): Promise<Record<string, any>> {
+        return this.cacheManagerService.get(Keys.lockedAssetTokenID());
     }
 
-    async setAcceptedLockedTokensID(
-        acceptedLockedTokensID: Record<string, any>,
+    async setLockedAssetTokenID(
+        lockedAssetTokenID: Record<string, any>,
     ): Promise<void> {
         await this.cacheManagerService.set(
-            Keys.acceptedLockedTokensID(),
-            acceptedLockedTokensID,
+            Keys.lockedAssetTokenID(),
+            lockedAssetTokenID,
             cacheConfig.tokens,
         );
     }

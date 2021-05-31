@@ -10,7 +10,7 @@ import {
     TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
-import { abiConfig, elrondConfig } from 'src/config';
+import { abiConfig, scAddress } from 'src/config';
 
 export async function getContract() {
     const abiRegistry = await AbiRegistry.load({
@@ -18,7 +18,7 @@ export async function getContract() {
     });
     const abi = new SmartContractAbi(abiRegistry, ['ProxyDexImpl']);
     const contract = new SmartContract({
-        address: new Address(elrondConfig.proxyDexAddress),
+        address: new Address(scAddress.proxyDexAddress),
         abi: abi,
     });
 

@@ -8,7 +8,7 @@ import {
     WrappedFarmTokenAttributesModel,
     WrappedLpTokenAttributesModel,
 } from '../models/proxy.model';
-import { elrondConfig } from 'src/config';
+import { scAddress } from 'src/config';
 import {
     decodeWrappedFarmTokenAttributes,
     decodeWrappedLPTokenAttributes,
@@ -24,36 +24,25 @@ export class ProxyService {
 
     async getProxyInfo(): Promise<ProxyModel> {
         const proxy = new ProxyModel();
-        proxy.address = elrondConfig.proxyDexAddress;
+        proxy.address = scAddress.proxyDexAddress;
         return proxy;
     }
 
-    private async getAcceptedLockedTokensMap(
-        acceptedLockedTokensID: string[],
-    ): Promise<TokenModel[]> {
-        const acceptedLockedTokens: TokenModel[] = [];
-        for (const tokenID of acceptedLockedTokensID) {
-            const token = await this.context.getTokenMetadata(tokenID);
-            acceptedLockedTokens.push(token);
-        }
-        return acceptedLockedTokens;
-    }
-
-    async getAcceptedLockedAssetsTokens(): Promise<TokenModel[]> {
-        const cachedData = await this.cacheService.getAcceptedLockedTokensID();
+    async getlockedAssetToken(): Promise<TokenModel> {
+        const cachedData = await this.cacheService.getLockedAssetTokenID();
         if (!!cachedData) {
-            return this.getAcceptedLockedTokensMap(
-                cachedData.acceptedLockedTokensID,
+            return await this.context.getTokenMetadata(
+                cachedData.lockedAssetTokenID,
             );
         }
 
-        const acceptedLockedTokensID = await this.abiService.getAcceptedLockedTokensID();
+        const lockedAssetTokenID = await this.abiService.getLockedAssetTokenID();
 
-        this.cacheService.setAcceptedLockedTokensID({
-            acceptedLockedTokensID: acceptedLockedTokensID,
+        this.cacheService.setLockedAssetTokenID({
+            lockedAssetTokenID: lockedAssetTokenID,
         });
 
-        return await this.getAcceptedLockedTokensMap(acceptedLockedTokensID);
+        return await this.context.getTokenMetadata(lockedAssetTokenID);
     }
 
     async getWrappedLpTokenAttributes(

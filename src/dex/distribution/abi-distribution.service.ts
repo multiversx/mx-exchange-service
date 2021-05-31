@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ProxyProvider, Address, SmartContract } from '@elrondnetwork/erdjs';
-import { elrondConfig, abiConfig } from '../../config';
+import { elrondConfig, abiConfig, scAddress } from '../../config';
 import { DistributionMilestoneModel } from '../models/distribution.model';
 import {
     AbiRegistry,
@@ -26,7 +26,7 @@ export class AbiDistributionService {
         });
         const abi = new SmartContractAbi(abiRegistry, ['EsdtDistribution']);
         const contract = new SmartContract({
-            address: new Address(elrondConfig.distributionAddress),
+            address: new Address(scAddress.distributionAddress),
             abi: abi,
         });
 
