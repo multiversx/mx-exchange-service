@@ -10,6 +10,7 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
 } from './dto/farm.args';
+import { FarmStatisticsService } from './farm-statistics.service';
 
 @Resolver(of => FarmModel)
 export class FarmResolver {
@@ -17,6 +18,7 @@ export class FarmResolver {
         @Inject(FarmService) private farmService: FarmService,
         @Inject(TransactionsFarmService)
         private transactionsService: TransactionsFarmService,
+        private statisticsService: FarmStatisticsService,
     ) {}
 
     @ResolveField()
@@ -32,6 +34,26 @@ export class FarmResolver {
     @ResolveField()
     async farmingToken(@Parent() parent: FarmModel) {
         return await this.farmService.getFarmingToken(parent.address);
+    }
+
+    @ResolveField()
+    async perBlockRewards(@Parent() parent: FarmModel) {
+        return await this.farmService.getRewardsPerBlock(parent.address);
+    }
+
+    @ResolveField()
+    async farmTokenSupply(@Parent() parent: FarmModel) {
+        return await this.farmService.getFarmTokenSupply(parent.address);
+    }
+
+    @ResolveField()
+    async farmingTokenReserve(@Parent() parent: FarmModel) {
+        return await this.farmService.getFarmingTokenReserve(parent.address);
+    }
+
+    @ResolveField()
+    async APR(@Parent() parent: FarmModel) {
+        return await this.statisticsService.computeFarmAPR(parent.address);
     }
 
     @ResolveField()

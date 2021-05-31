@@ -41,7 +41,13 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
                 {
                     "type": "GenericEsdtAmountPair"
@@ -53,7 +59,13 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
                 {
                     "type": "GenericEsdtAmountPair"
@@ -65,7 +77,13 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
                 {
                     "type": "FftTokenAmountPair"
@@ -80,7 +98,13 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
                 {
                     "type": "GenericEsdtAmountPair"
@@ -137,6 +161,15 @@
             "name": "setLocalRolesFarmToken",
             "inputs": [],
             "outputs": []
+        },
+        {
+            "name": "getFarmingTokenReserve",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
         },
         {
             "name": "start_produce_rewards",
@@ -197,31 +230,21 @@
             "outputs": []
         },
         {
-            "name": "set_burn_tokens_gas_limit",
-            "inputs": [
-                {
-                    "name": "limit",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "set_mint_tokens_gas_limit",
-            "inputs": [
-                {
-                    "name": "limit",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
             "name": "set_minimum_farming_epochs",
             "inputs": [
                 {
                     "name": "epochs",
                     "type": "u8"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "set_transfer_exec_gas_limit",
+            "inputs": [
+                {
+                    "name": "gas_limit",
+                    "type": "u64"
                 }
             ],
             "outputs": []
@@ -304,24 +327,6 @@
             "outputs": [
                 {
                     "type": "u8"
-                }
-            ]
-        },
-        {
-            "name": "getBurnTokensGasLimit",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getMintTokensGasLimit",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
                 }
             ]
         },

@@ -5,13 +5,16 @@ import { CacheManagerModule } from '../../services/cache-manager/cache-manager.m
 import { ContextModule } from '../utils/context.module';
 import { AbiFarmService } from './abi-farm.service';
 import { TransactionsFarmService } from './transactions-farm.service';
+import { FarmStatisticsService } from './farm-statistics.service';
+import { PairModule } from '../pair/pair.module';
 
 @Module({
-    imports: [CacheManagerModule, ContextModule],
+    imports: [CacheManagerModule, ContextModule, PairModule],
     providers: [
         FarmService,
         AbiFarmService,
         TransactionsFarmService,
+        FarmStatisticsService,
         FarmResolver,
     ],
     exports: [FarmService],
