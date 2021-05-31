@@ -19,6 +19,15 @@ export class FarmModel {
     perBlockRewards: string;
 
     @Field()
+    farmTokenSupply: string;
+
+    @Field()
+    farmingTokenReserve: string;
+
+    @Field()
+    APR: string;
+
+    @Field()
     state: string;
 }
 
