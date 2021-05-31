@@ -9,14 +9,6 @@
             {
                 "name": "locked_asset_token_id",
                 "type": "TokenIdentifier"
-            },
-            {
-                "name": "proxy_pair_params",
-                "type": "ProxyPairParams"
-            },
-            {
-                "name": "proxy_farm_params",
-                "type": "ProxyFarmParams"
             }
         ],
         "outputs": []
@@ -84,7 +76,7 @@
             "outputs": []
         },
         {
-            "name": "getLockedAssetTokenId",
+            "name": "getDistributedTokenId",
             "inputs": [],
             "outputs": [
                 {
@@ -93,14 +85,13 @@
             ]
         },
         {
-            "name": "setProxyPairParams",
-            "inputs": [
+            "name": "getLockedAssetTokenId",
+            "inputs": [],
+            "outputs": [
                 {
-                    "name": "proxy_params",
-                    "type": "ProxyPairParams"
+                    "type": "TokenIdentifier"
                 }
-            ],
-            "outputs": []
+            ]
         },
         {
             "name": "addPairToIntermediate",
@@ -224,21 +215,14 @@
             "name": "getTemporaryFunds",
             "inputs": [
                 {
-                    "name": "caller",
+                    "name": "address",
                     "type": "Address"
-                },
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "token_nonce",
-                    "type": "u64"
                 }
             ],
             "outputs": [
                 {
-                    "type": "BigUint"
+                    "type": "variadic<GenericEsdtAmountPair>",
+                    "multi_result": true
                 }
             ]
         },
@@ -260,16 +244,6 @@
                     "type": "TokenIdentifier"
                 }
             ]
-        },
-        {
-            "name": "setProxyFarmParams",
-            "inputs": [
-                {
-                    "name": "proxy_params",
-                    "type": "ProxyFarmParams"
-                }
-            ],
-            "outputs": []
         },
         {
             "name": "addFarmToIntermediate",
@@ -393,57 +367,20 @@
                 }
             ]
         },
-        "ProxyFarmParams": {
+        "GenericEsdtAmountPair": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "claim_rewards_gas_limit",
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
                     "type": "u64"
                 },
                 {
-                    "name": "enter_farm_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "exit_farm_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "burn_tokens_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "mint_tokens_gas_limit",
-                    "type": "u64"
-                }
-            ]
-        },
-        "ProxyPairParams": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "add_liquidity_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "accept_esdt_payment_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "ask_for_lp_token_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "remove_liquidity_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "burn_tokens_gas_limit",
-                    "type": "u64"
-                },
-                {
-                    "name": "mint_tokens_gas_limit",
-                    "type": "u64"
+                    "name": "amount",
+                    "type": "BigUint"
                 }
             ]
         }
