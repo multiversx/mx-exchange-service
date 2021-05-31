@@ -1,0 +1,11 @@
+{
+    "caching": {
+        "networkConfig": 1,
+        "pairsMetadata": 10,
+        "pairs": 10,
+        "txTotalCount": 10,
+        "pairCount": 10,
+        "token": 300,
+        "default": 20
+    }
+}
