@@ -35,7 +35,7 @@ export class FarmService {
 
     async getFarmToken(farmAddress: string): Promise<TokenModel> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
-        return await this.context.getTokenMetadata(farmTokenID);
+        return await this.context.getNFTTokenMetadata(farmTokenID);
     }
 
     async getFarmingToken(farmAddress: string): Promise<TokenModel> {

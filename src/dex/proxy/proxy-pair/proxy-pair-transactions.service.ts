@@ -30,8 +30,12 @@ export class TransactionsProxyPairService {
         args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
         const contract = await getContract();
-        const token0 = await this.context.getTokenMetadata(args.token0ID);
-        const token1 = await this.context.getTokenMetadata(args.token1ID);
+        const token0 = args.token0Nonce
+            ? await this.context.getNFTTokenMetadata(args.token0ID)
+            : await this.context.getTokenMetadata(args.token0ID);
+        const token1 = args.token1Nonce
+            ? await this.context.getNFTTokenMetadata(args.token1ID)
+            : await this.context.getTokenMetadata(args.token1ID);
         const amount0Denom = args.token0Nonce
             ? new BigNumber(args.amount0)
             : this.context.toBigNumber(args.amount0, token0);

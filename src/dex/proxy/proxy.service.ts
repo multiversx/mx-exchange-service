@@ -48,7 +48,7 @@ export class ProxyService {
     async getlockedAssetToken(): Promise<TokenModel> {
         const cachedData = await this.cacheService.getLockedAssetTokenID();
         if (!!cachedData) {
-            return await this.context.getTokenMetadata(
+            return await this.context.getNFTTokenMetadata(
                 cachedData.lockedAssetTokenID,
             );
         }
@@ -59,7 +59,7 @@ export class ProxyService {
             lockedAssetTokenID: lockedAssetTokenID,
         });
 
-        return await this.context.getTokenMetadata(lockedAssetTokenID);
+        return await this.context.getNFTTokenMetadata(lockedAssetTokenID);
     }
 
     async getWrappedLpTokenAttributes(
