@@ -203,6 +203,11 @@ export class ContextService {
         return tokenMetadata;
     }
 
+    async getNFTTokenMetadata(tokenID: string): Promise<TokenModel> {
+        const nftTokenMetadata = await this.apiFacade.getNFTToken(tokenID);
+        return nftTokenMetadata;
+    }
+
     async getState(contract: SmartContract): Promise<string> {
         const interaction: Interaction = contract.methods.getState([]);
         const queryResponse = await contract.runQuery(
