@@ -227,11 +227,11 @@ export class PairService {
                 reserves1: cachedSecondReserve.reserves,
                 totalSupply: cachedTotalSupply.totalSupply,
             };
-            return this.pairInfoDenom(pairAddress, pairInfo);
+            return pairInfo;
         }
 
         const pairInfo = await this.getPairInfoMetadata(pairAddress);
-        return await this.pairInfoDenom(pairAddress, pairInfo);
+        return pairInfo;
     }
 
     async getState(pairAddress: string): Promise<string> {
