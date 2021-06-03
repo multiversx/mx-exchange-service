@@ -43,21 +43,27 @@ export class PairService {
     }
 
     async getFirstTokenPrice(pairAddress: string): Promise<string> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-        return await this.getEquivalentForLiquidity(
+        const firstToken = await this.getFirstToken(pairAddress);
+        const firstTokenPrice = await this.getEquivalentForLiquidity(
             pairAddress,
-            firstTokenID,
-            '1',
+            firstToken.token,
+            new BigNumber(`1e${firstToken.decimals}`).toString(),
         );
+        return new BigNumber(firstTokenPrice)
+            .multipliedBy(`1e-${firstToken.decimals}`)
+            .toString();
     }
 
     async getSecondTokenPrice(pairAddress: string): Promise<string> {
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return await this.getEquivalentForLiquidity(
+        const secondToken = await this.getSecondToken(pairAddress);
+        const secondTokenPrice = await this.getEquivalentForLiquidity(
             pairAddress,
-            secondTokenID,
-            '1',
+            secondToken.token,
+            new BigNumber(`1e${secondToken.decimals}`).toString(),
         );
+        return new BigNumber(secondTokenPrice)
+            .multipliedBy(`1e-${secondToken.decimals}`)
+            .toString();
     }
 
     async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
@@ -73,17 +79,19 @@ export class PairService {
     async getLpTokenSecondTokenEquivalent(
         pairAddress: string,
     ): Promise<string> {
+        const secondToken = await this.getSecondToken(pairAddress);
+        const lpToken = await this.getLpToken(pairAddress);
         const lpTokenPosition = await this.getLiquidityPosition(
             pairAddress,
-            '1',
+            new BigNumber(`1e${lpToken.decimals}`).toString(),
         );
-        const lpTokenFirstAmountPrice = await this.getFirstTokenPrice(
-            pairAddress,
-        );
-        const lpTokenPrice = new BigNumber(lpTokenFirstAmountPrice)
+        const firstTokenPrice = await this.getFirstTokenPrice(pairAddress);
+        const lpTokenPrice = new BigNumber(firstTokenPrice)
             .multipliedBy(new BigNumber(lpTokenPosition.firstTokenAmount))
             .plus(new BigNumber(lpTokenPosition.secondTokenAmount));
-        return lpTokenPrice.toString();
+        return lpTokenPrice
+            .multipliedBy(`1e-${secondToken.decimals}`)
+            .toString();
     }
 
     async getLpTokenPriceUSD(pairAddress: string): Promise<string> {
