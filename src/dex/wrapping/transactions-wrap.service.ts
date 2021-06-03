@@ -11,6 +11,7 @@ import { TransactionModel } from '../models/transaction.model';
 import { AbiWrapService } from './abi-wrap.service';
 import { gasConfig } from 'src/config';
 import { WrapService } from './wrap.service';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class TransactionsWrapService {
@@ -37,9 +38,7 @@ export class TransactionsWrapService {
 
         const args = [
             BytesValue.fromUTF8(wrappedEgldToken.token),
-            new BigUIntValue(
-                this.context.toBigNumber(amount, wrappedEgldToken),
-            ),
+            new BigUIntValue(new BigNumber(amount)),
             BytesValue.fromUTF8('unwrapEgld'),
         ];
 

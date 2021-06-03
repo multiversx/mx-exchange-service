@@ -246,16 +246,4 @@ export class ContextService {
 
         return transaction.toPlainObject();
     }
-
-    public toBigNumber(value: string, token: TokenModel): BigNumber {
-        const bigNumber = new BigNumber(value);
-        const exponent = new BigNumber(`1e+${token.decimals}`);
-        return bigNumber.multipliedBy(exponent);
-    }
-
-    public fromBigNumber(value: string, token: TokenModel): BigNumber {
-        const bigNumber = new BigNumber(value);
-        const exponent = new BigNumber(`1e-${token.decimals}`);
-        return bigNumber.multipliedBy(exponent);
-    }
 }

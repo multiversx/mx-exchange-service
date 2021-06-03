@@ -27,16 +27,13 @@ export class TransactionsFarmService {
     async enterFarm(args: EnterFarmArgs): Promise<TransactionModel> {
         const contract = await this.abiService.getContract(args.farmAddress);
 
-        const tokenIn = await this.context.getTokenMetadata(args.tokenInID);
-        const amountDenom = this.context.toBigNumber(args.amount, tokenIn);
-
         const method = args.lockRewards
             ? 'enterFarmAndLockRewards'
             : 'enterFarm';
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(amountDenom),
+            new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromUTF8(method),
         ];
 

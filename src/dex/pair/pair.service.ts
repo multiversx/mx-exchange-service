@@ -244,37 +244,23 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const firstToken = await this.getFirstToken(pairAddress);
-        const secondToken = await this.getSecondToken(pairAddress);
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
         const pairInfo = await this.getPairInfoMetadata(pairAddress);
 
-        let amountDenom;
-        let amountOut: BigNumber;
         switch (tokenInID) {
-            case firstToken.token:
-                amountDenom = this.context
-                    .toBigNumber(amount, firstToken)
-                    .toString();
-                amountOut = getAmountOut(
-                    amountDenom,
+            case firstTokenID:
+                return getAmountOut(
+                    amount,
                     pairInfo.reserves0,
                     pairInfo.reserves1,
-                );
-                return this.context
-                    .fromBigNumber(amountOut.toString(), secondToken)
-                    .toString();
-            case secondToken.token:
-                amountDenom = this.context
-                    .toBigNumber(amount, secondToken)
-                    .toString();
-                amountOut = getAmountOut(
-                    amountDenom,
+                ).toString();
+            case secondTokenID:
+                return getAmountOut(
+                    amount,
                     pairInfo.reserves1,
                     pairInfo.reserves0,
-                );
-                return this.context
-                    .fromBigNumber(amountOut.toString(), firstToken)
-                    .toString();
+                ).toString();
             default:
                 return;
         }
@@ -285,37 +271,23 @@ export class PairService {
         tokenOutID: string,
         amount: string,
     ): Promise<string> {
-        const firstToken = await this.getFirstToken(pairAddress);
-        const secondToken = await this.getSecondToken(pairAddress);
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
         const pairInfo = await this.getPairInfoMetadata(pairAddress);
 
-        let amountDenom;
-        let amountIn: BigNumber;
         switch (tokenOutID) {
-            case firstToken.token:
-                amountDenom = this.context
-                    .toBigNumber(amount, firstToken)
-                    .toString();
-                amountIn = getAmountIn(
-                    amountDenom,
+            case firstTokenID:
+                return getAmountIn(
+                    amount,
                     pairInfo.reserves1,
                     pairInfo.reserves0,
-                );
-                return this.context
-                    .fromBigNumber(amountIn.toString(), secondToken)
-                    .toString();
-            case secondToken.token:
-                amountDenom = this.context
-                    .toBigNumber(amount, secondToken)
-                    .toString();
-                amountIn = getAmountIn(
-                    amountDenom,
+                ).toString();
+            case secondTokenID:
+                return getAmountIn(
+                    amount,
                     pairInfo.reserves0,
                     pairInfo.reserves1,
-                );
-                return this.context
-                    .fromBigNumber(amountIn.toString(), firstToken)
-                    .toString();
+                ).toString();
             default:
                 return;
         }
@@ -326,37 +298,23 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const firstToken = await this.getFirstToken(pairAddress);
-        const secondToken = await this.getSecondToken(pairAddress);
-        const pairInfo = await this.getPairInfoMetadata(pairAddress);
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        const pairInfo = await this.getPairInfo(pairAddress);
 
-        let amountDenom;
-        let equivalentOutAmount: BigNumber;
         switch (tokenInID) {
-            case firstToken.token:
-                amountDenom = this.context
-                    .toBigNumber(amount, firstToken)
-                    .toString();
-                equivalentOutAmount = quote(
-                    amountDenom,
+            case firstTokenID:
+                return quote(
+                    amount,
                     pairInfo.reserves0,
                     pairInfo.reserves1,
-                );
-                return this.context
-                    .fromBigNumber(equivalentOutAmount.toString(), secondToken)
-                    .toString();
-            case secondToken.token:
-                amountDenom = this.context
-                    .toBigNumber(amount, secondToken)
-                    .toString();
-                equivalentOutAmount = quote(
-                    amountDenom,
+                ).toString();
+            case secondTokenID:
+                return quote(
+                    amount,
                     pairInfo.reserves1,
                     pairInfo.reserves0,
-                );
-                return this.context
-                    .fromBigNumber(equivalentOutAmount.toString(), firstToken)
-                    .toString();
+                ).toString();
             default:
                 return;
         }
@@ -367,17 +325,13 @@ export class PairService {
         callerAddress: string,
         tokenID: string,
     ): Promise<string> {
-        const token = await this.context.getTokenMetadata(tokenID);
-
         const cachedData = await this.cacheService.getTemporaryFunds(
             pairAddress,
             callerAddress,
             tokenID,
         );
         if (!!cachedData) {
-            return this.context
-                .fromBigNumber(cachedData.temporaryFunds, token)
-                .toString();
+            return cachedData.temporaryFunds;
         }
 
         const temporaryFunds = await this.abiService.getTemporaryFunds(
@@ -392,39 +346,29 @@ export class PairService {
             { temporaryFunds: temporaryFunds },
         );
 
-        return this.context.fromBigNumber(temporaryFunds, token).toString();
+        return temporaryFunds;
     }
 
     async getLiquidityPosition(
         pairAddress: string,
         amount: string,
     ): Promise<LiquidityPosition> {
-        const firstToken = await this.getFirstToken(pairAddress);
-        const secondToken = await this.getSecondToken(pairAddress);
-        const lpToken = await this.getLpToken(pairAddress);
         const pairInfo = await this.getPairInfoMetadata(pairAddress);
 
-        const amountDenom = this.context
-            .toBigNumber(amount, lpToken)
-            .toString();
         const firstTokenAmount = getTokenForGivenPosition(
-            amountDenom,
+            amount,
             pairInfo.reserves0,
             pairInfo.totalSupply,
         );
         const secondTokenAmount = getTokenForGivenPosition(
-            amountDenom,
+            amount,
             pairInfo.reserves1,
             pairInfo.totalSupply,
         );
 
         return {
-            firstTokenAmount: this.context
-                .fromBigNumber(firstTokenAmount.toString(), firstToken)
-                .toString(),
-            secondTokenAmount: this.context
-                .fromBigNumber(secondTokenAmount.toString(), secondToken)
-                .toString(),
+            firstTokenAmount: firstTokenAmount.toString(),
+            secondTokenAmount: secondTokenAmount.toString(),
         };
     }
 
@@ -469,34 +413,6 @@ export class PairService {
             lpTokenID: lpTokenID,
         });
         return lpTokenID;
-    }
-
-    private async pairInfoDenom(
-        pairAddress: string,
-        pairInfo: PairInfoModel,
-    ): Promise<PairInfoModel> {
-        const firstToken = await this.getFirstToken(pairAddress);
-        const secondToken = await this.getSecondToken(pairAddress);
-        const lpToken = await this.getLpToken(pairAddress);
-
-        const reserves0 = this.context.fromBigNumber(
-            pairInfo.reserves0,
-            firstToken,
-        );
-        const reserves1 = this.context.fromBigNumber(
-            pairInfo.reserves1,
-            secondToken,
-        );
-        const totalSupply = this.context.fromBigNumber(
-            pairInfo.totalSupply,
-            lpToken,
-        );
-
-        return {
-            reserves0: reserves0.toString(),
-            reserves1: reserves1.toString(),
-            totalSupply: totalSupply.toString(),
-        };
     }
 
     private async getPriceUSDByPath(tokenID: string): Promise<string> {
