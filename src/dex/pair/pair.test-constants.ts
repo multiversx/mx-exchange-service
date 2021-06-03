@@ -1,4 +1,3 @@
-import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { TokenModel } from '../models/pair.model';
 
@@ -141,18 +140,6 @@ export class ContextServiceMock {
         }
 
         return path;
-    }
-
-    public toBigNumber(value: string, token: TokenModel): BigNumber {
-        const bigNumber = new BigNumber(value);
-        const exponent = new BigNumber(`1e+${token.decimals}`);
-        return bigNumber.multipliedBy(exponent);
-    }
-
-    public fromBigNumber(value: string, token: TokenModel): BigNumber {
-        const bigNumber = new BigNumber(value);
-        const exponent = new BigNumber(`1e-${token.decimals}`);
-        return bigNumber.multipliedBy(exponent);
     }
 }
 
