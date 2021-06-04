@@ -32,8 +32,6 @@ export class WrappedLpTokenAttributesModel {
     @Field()
     lpTokenTotalAmount: string;
     @Field()
-    lockedAssetsTokenID: string;
-    @Field()
     lockedAssetsInvested: string;
     @Field(type => Int)
     lockedAssetsNonce: number;
