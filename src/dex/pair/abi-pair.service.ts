@@ -92,7 +92,6 @@ export class AbiPairService {
             reserves1: response.values[1].valueOf().toString(),
             totalSupply: response.values[2].valueOf().toString(),
         };
-        console.log(pairInfo);
         return pairInfo;
     }
 

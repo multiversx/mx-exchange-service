@@ -76,7 +76,7 @@
             "outputs": []
         },
         {
-            "name": "getDistributedTokenId",
+            "name": "getAssetTokenId",
             "inputs": [],
             "outputs": [
                 {

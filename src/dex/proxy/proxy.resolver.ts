@@ -48,8 +48,8 @@ export class ProxyResolver {
     }
 
     @ResolveField()
-    async distributedToken(): Promise<TokenModel> {
-        return await this.proxyService.getDistributedToken();
+    async assetToken(): Promise<TokenModel> {
+        return await this.proxyService.getAssetToken();
     }
 
     @ResolveField()

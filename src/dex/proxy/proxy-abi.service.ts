@@ -15,18 +15,16 @@ export class AbiProxyService {
         );
     }
 
-    async getDistributedTokenID(): Promise<string> {
+    async getAssetTokenID(): Promise<string> {
         const contract = await getContract();
-        const interaction: Interaction = contract.methods.getDistributedTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methods.getAssetTokenId([]);
         const queryResponse = await contract.runQuery(
             this.proxy,
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        const distributedTokenID = response.firstValue.valueOf().toString();
-        return distributedTokenID;
+        const assetTokenID = response.firstValue.valueOf().toString();
+        return assetTokenID;
     }
 
     async getLockedAssetTokenID(): Promise<string> {

@@ -3,7 +3,7 @@ import { CacheManagerService } from '../../services/cache-manager/cache-manager.
 import { cacheConfig } from '../../config';
 
 const Keys = {
-    distributedTokenID: () => 'distributedTokenID',
+    assetTokenID: () => 'assetTokenID',
     lockedAssetTokenID: () => 'lockedAssetTokenID',
 };
 
@@ -11,15 +11,15 @@ const Keys = {
 export class CacheProxyService {
     constructor(private cacheManagerService: CacheManagerService) {}
 
-    async getDistributedTokenID(): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.distributedTokenID());
+    async getAssetTokenID(): Promise<Record<string, any>> {
+        return this.cacheManagerService.get(Keys.assetTokenID());
     }
 
-    async setDistributedTokenID(
+    async setAssetTokenID(
         distributedTokenID: Record<string, any>,
     ): Promise<void> {
         return this.cacheManagerService.set(
-            Keys.distributedTokenID(),
+            Keys.assetTokenID(),
             distributedTokenID,
             cacheConfig.tokens,
         );
