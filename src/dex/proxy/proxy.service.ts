@@ -31,9 +31,7 @@ export class ProxyService {
     async getAssetToken(): Promise<TokenModel> {
         const cachedData = await this.cacheService.getAssetTokenID();
         if (!!cachedData) {
-            return await this.context.getTokenMetadata(
-                cachedData.distributedTokenID,
-            );
+            return await this.context.getTokenMetadata(cachedData.assetTokenID);
         }
 
         const assetTokenID = await this.abiService.getAssetTokenID();
