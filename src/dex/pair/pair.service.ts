@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { tokensPriceData } from '../../config';
+import { tokenProviderUSD, tokensPriceData } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition } from '../models/pair.model';
@@ -437,7 +437,7 @@ export class PairService {
     }
 
     async getPriceUSDByPath(tokenID: string): Promise<string> {
-        const path = await this.context.getPath(tokenID, 'WEGLD-ccae2d');
+        const path = await this.context.getPath(tokenID, tokenProviderUSD);
         if (path.length === 1) {
             return '0';
         }

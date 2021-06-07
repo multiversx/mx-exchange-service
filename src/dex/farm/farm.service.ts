@@ -8,7 +8,7 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { ProxyProvider, BinaryCodec } from '@elrondnetwork/erdjs';
-import { elrondConfig, farmsConfig } from '../../config';
+import { elrondConfig, farmsConfig, scAddress } from '../../config';
 import { ContextService } from '../utils/context.service';
 import { TokenModel } from '../models/esdtToken.model';
 import { FarmModel, FarmTokenAttributesModel } from '../models/farm.model';
