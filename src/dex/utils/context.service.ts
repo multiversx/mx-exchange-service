@@ -15,9 +15,9 @@ import {
     ApiProvider,
     ContractFunction,
 } from '@elrondnetwork/erdjs';
-import { TokenModel } from '../models/pair.model';
+import { TokenModel } from '../models/esdtToken.model';
 import { TransactionModel } from '../models/transaction.model';
-import BigNumber from 'bignumber.js';
+import { NFTTokenModel } from '../models/nftToken.model';
 
 interface PairMetadata {
     address: string;
@@ -197,7 +197,7 @@ export class ContextService {
         return tokenMetadata;
     }
 
-    async getNFTTokenMetadata(tokenID: string): Promise<TokenModel> {
+    async getNFTTokenMetadata(tokenID: string): Promise<NFTTokenModel> {
         const nftTokenMetadata = await this.apiFacade.getNFTToken(tokenID);
         return nftTokenMetadata;
     }

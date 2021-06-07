@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { tokensPriceData } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
-import { LiquidityPosition, TokenModel } from '../models/pair.model';
+import { LiquidityPosition } from '../models/pair.model';
 import { ContextService } from '../utils/context.service';
 import { RedlockService } from '../../services';
 import {
@@ -15,6 +15,7 @@ import {
 import { CachePairService } from '../../services/cache-manager/cache-pair.service';
 import { AbiPairService } from './abi-pair.service';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
+import { TokenModel } from '../models/esdtToken.model';
 
 @Injectable()
 export class PairService {
