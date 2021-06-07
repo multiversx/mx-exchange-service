@@ -104,13 +104,23 @@ export class FarmService {
 
     async getFarms(): Promise<FarmModel[]> {
         const farms: Array<FarmModel> = [];
-        for (const farmsAddress of farmsConfig) {
+        for (const farmAddress of farmsConfig) {
             const farm = new FarmModel();
-            farm.address = farmsAddress;
+            farm.address = farmAddress;
             farms.push(farm);
         }
 
         return farms;
+    }
+
+    async getFarmAddressByFarmTokenID(tokenID: string): Promise<string | null> {
+        for (const farmAddress of farmsConfig) {
+            const farmTokenID = await this.getFarmTokenID(farmAddress);
+            if (farmTokenID === tokenID) {
+                return farmAddress;
+            }
+        }
+        return null;
     }
 
     async getRewardsForPosition(args: CalculateRewardsArgs): Promise<string> {
@@ -127,18 +137,9 @@ export class FarmService {
         const codec = new BinaryCodec();
 
         const structType = new StructType('FarmTokenAttributes', [
-            new StructFieldDefinition(
-                'totalEnteringAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'totalLiquidityAmount',
-                '',
-                new BigUIntType(),
-            ),
+            new StructFieldDefinition('rewardPerShare', '', new BigUIntType()),
             new StructFieldDefinition('enteringEpoch', '', new U64Type()),
-            new StructFieldDefinition('liquidityMultiplier', '', new U8Type()),
+            new StructFieldDefinition('aprMultiplier', '', new U8Type()),
             new StructFieldDefinition(
                 'withLockedRewards',
                 '',
@@ -152,10 +153,9 @@ export class FarmService {
         );
         const decodedAttributes = decoded.valueOf();
         return {
-            totalEnteringAmount: decodedAttributes.totalEnteringAmount.toString(),
-            totalLiquidityAmount: decodedAttributes.totalLiquidityAmount.toString(),
+            rewardPerShare: decodedAttributes.rewardPerShare.toString(),
             enteringEpoch: decodedAttributes.enteringEpoch,
-            liquidityMultiplier: decodedAttributes.liquidityMultiplier,
+            aprMultiplier: decodedAttributes.aprMultiplier,
             lockedRewards: decodedAttributes.withLockedRewards,
         };
     }
