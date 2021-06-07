@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ContextService } from '../utils/context.service';
-import { TokenModel } from '../models/pair.model';
 import { CacheLockedAssetService } from 'src/services/cache-manager/cache-locked-asset.service';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
 import { LockedAssetModel } from '../models/locked-asset.model';
 import { scAddress } from 'src/config';
+import { NFTTokenModel } from '../models/nftToken.model';
 
 @Injectable()
 export class LockedAssetService {
@@ -20,7 +20,7 @@ export class LockedAssetService {
         return lockedAssetInfo;
     }
 
-    async getLockedToken(): Promise<TokenModel> {
+    async getLockedToken(): Promise<NFTTokenModel> {
         const lockedTokenID = await this.getLockedTokenID();
         return await this.context.getNFTTokenMetadata(lockedTokenID);
     }
