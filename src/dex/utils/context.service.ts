@@ -41,21 +41,23 @@ export class ContextService {
         );
     }
 
+    private async getContract(): Promise<SmartContract> {
+        const abiRegistry = await AbiRegistry.load({
+            files: [abiConfig.router],
+        });
+        const abi = new SmartContractAbi(abiRegistry, ['Router']);
+        return new SmartContract({
+            address: new Address(scAddress.routerAddress),
+            abi: abi,
+        });
+    }
+
     async getAllPairsAddress(): Promise<string[]> {
         const cachedData = await this.cacheManagerService.getPairsAddress();
         if (!!cachedData) {
             return cachedData.pairsAddress;
         }
-
-        const abiRegistry = await AbiRegistry.load({
-            files: [abiConfig.router],
-        });
-        const abi = new SmartContractAbi(abiRegistry, ['Router']);
-        const contract = new SmartContract({
-            address: new Address(scAddress.routerAddress),
-            abi: abi,
-        });
-
+        const contract = await this.getContract();
         const interaction: Interaction = contract.methods.getAllPairsAddresses(
             [],
         );
@@ -83,15 +85,7 @@ export class ContextService {
             return cachedData.pairsMetadata;
         }
 
-        const abiRegistry = await AbiRegistry.load({
-            files: [abiConfig.router],
-        });
-        const abi = new SmartContractAbi(abiRegistry, ['Router']);
-        const contract = new SmartContract({
-            address: new Address(scAddress.routerAddress),
-            abi: abi,
-        });
-
+        const contract = await this.getContract();
         const getAllPairsInteraction: Interaction = contract.methods.getAllPairContractMetadata(
             [],
         );
