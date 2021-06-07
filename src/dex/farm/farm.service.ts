@@ -101,13 +101,23 @@ export class FarmService {
 
     async getFarms(): Promise<FarmModel[]> {
         const farms: Array<FarmModel> = [];
-        for (const farmsAddress of farmsConfig) {
+        for (const farmAddress of farmsConfig) {
             const farm = new FarmModel();
-            farm.address = farmsAddress;
+            farm.address = farmAddress;
             farms.push(farm);
         }
 
         return farms;
+    }
+
+    async getFarmAddressByFarmTokenID(tokenID: string): Promise<string | null> {
+        for (const farmAddress of farmsConfig) {
+            const farmTokenID = await this.getFarmTokenID(farmAddress);
+            if (farmTokenID === tokenID) {
+                return farmAddress;
+            }
+        }
+        return null;
     }
 
     async getRewardsForPosition(args: CalculateRewardsArgs): Promise<string> {
