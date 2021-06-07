@@ -17,6 +17,7 @@ import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
 import BigNumber from 'bignumber.js';
 import { NFTTokenModel } from '../models/nftToken.model';
+import { PairService } from '../pair/pair.service';
 
 @Injectable()
 export class FarmService {
@@ -26,6 +27,7 @@ export class FarmService {
         private abiService: AbiFarmService,
         private cacheService: CacheFarmService,
         private context: ContextService,
+        private pairService: PairService,
     ) {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
     }
@@ -203,5 +205,20 @@ export class FarmService {
             farmingTokenID: farmingTokenID,
         });
         return farmingTokenID;
+    }
+
+    async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
+        const farmingTokenID = await this.getFarmingTokenID(farmAddress);
+        if (scAddress.has(farmingTokenID)) {
+            const pairAddress = scAddress.get(farmingTokenID);
+            return await this.pairService.getTokenPriceUSD(
+                pairAddress,
+                farmingTokenID,
+            );
+        }
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingTokenID,
+        );
+        return await this.pairService.getLpTokenPriceUSD(pairAddress);
     }
 }

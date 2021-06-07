@@ -14,6 +14,9 @@ export class FarmModel {
     farmToken: NFTTokenModel;
 
     @Field()
+    farmTokenPriceUSD: string;
+
+    @Field()
     farmingToken: TokenModel;
 
     @Field()
