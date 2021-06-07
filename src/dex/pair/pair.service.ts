@@ -27,6 +27,49 @@ export class PairService {
         private priceFeed: PriceFeedService,
     ) {}
 
+    async getFirstTokenID(pairAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getFirstTokenID(pairAddress);
+        if (!!cachedData) {
+            return cachedData.firstTokenID;
+        }
+
+        const firstTokenID = await this.abiService.getFirstTokenID(pairAddress);
+        this.cacheService.setFirstTokenID(pairAddress, {
+            firstTokenID: firstTokenID,
+        });
+        return firstTokenID;
+    }
+
+    async getSecondTokenID(pairAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getSecondTokenID(
+            pairAddress,
+        );
+        if (!!cachedData) {
+            return cachedData.secondTokenID;
+        }
+
+        const secondTokenID = await this.abiService.getSecondTokenID(
+            pairAddress,
+        );
+        this.cacheService.setSecondTokenID(pairAddress, {
+            secondTokenID: secondTokenID,
+        });
+        return secondTokenID;
+    }
+
+    async getLpTokenID(pairAddress: string): Promise<string> {
+        const cachedData = await this.cacheService.getLpTokenID(pairAddress);
+        if (!!cachedData) {
+            return cachedData.lpTokenID;
+        }
+
+        const lpTokenID = await this.abiService.getLpTokenID(pairAddress);
+        this.cacheService.setLpTokenID(pairAddress, {
+            lpTokenID: lpTokenID,
+        });
+        return lpTokenID;
+    }
+
     async getFirstToken(pairAddress: string): Promise<TokenModel> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
         return await this.context.getTokenMetadata(firstTokenID);
@@ -168,7 +211,7 @@ export class PairService {
         return '';
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async cachePairsInfo(): Promise<void> {
         const pairsAddress = await this.context.getAllPairsAddress();
         for (const pairAddress of pairsAddress) {
@@ -381,53 +424,30 @@ export class PairService {
         };
     }
 
-    private async getFirstTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getFirstTokenID(pairAddress);
-        if (!!cachedData) {
-            return cachedData.firstTokenID;
-        }
-
-        const firstTokenID = await this.abiService.getFirstTokenID(pairAddress);
-        this.cacheService.setFirstTokenID(pairAddress, {
-            firstTokenID: firstTokenID,
-        });
-        return firstTokenID;
-    }
-
-    private async getSecondTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getSecondTokenID(
-            pairAddress,
-        );
-        if (!!cachedData) {
-            return cachedData.secondTokenID;
-        }
-
-        const secondTokenID = await this.abiService.getSecondTokenID(
-            pairAddress,
-        );
-        this.cacheService.setSecondTokenID(pairAddress, {
-            secondTokenID: secondTokenID,
-        });
-        return secondTokenID;
-    }
-
-    private async getLpTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getLpTokenID(pairAddress);
-        if (!!cachedData) {
-            return cachedData.lpTokenID;
-        }
-
-        const lpTokenID = await this.abiService.getLpTokenID(pairAddress);
-        this.cacheService.setLpTokenID(pairAddress, {
-            lpTokenID: lpTokenID,
-        });
-        return lpTokenID;
-    }
-
-    private async getPriceUSDByPath(tokenID: string): Promise<string> {
+    async getPriceUSDByPath(tokenID: string): Promise<string> {
         const path = await this.context.getPath(tokenID, 'WEGLD-ccae2d');
+        if (path.length === 1) {
+            return '0';
+        }
         const pair = await this.context.getPairByTokens(path[0], path[1]);
-        const usdPrice = await this.getTokenPriceUSD(pair.address, path[1]);
-        return usdPrice;
+        const firstTokenPrice = await this.getTokenPrice(pair.address, path[0]);
+        const secondTokenPriceUSD = await this.getTokenPriceUSD(
+            pair.address,
+            path[1],
+        );
+        return new BigNumber(firstTokenPrice)
+            .multipliedBy(secondTokenPriceUSD)
+            .toString();
+    }
+
+    async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
+        const pairsAddress = await this.context.getAllPairsAddress();
+        const promises = pairsAddress.map(async pairAddress => {
+            const lpTokenID = await this.getLpTokenID(pairAddress);
+            return { lpTokenID: lpTokenID, pairAddress: pairAddress };
+        });
+        const pairs = await Promise.all(promises);
+        const pair = pairs.find(pair => pair.lpTokenID === tokenID);
+        return pair?.pairAddress;
     }
 }
