@@ -1,4 +1,4 @@
-import { TokenModel } from '../models/pair.model';
+import { TokenModel } from '../models/esdtToken.model';
 
 interface PairMetadata {
     address: string;
@@ -74,9 +74,21 @@ export class ContextServiceMock {
 export class PairServiceMock {
     async getLpToken(pairAddress: string): Promise<TokenModel> {
         return {
-            name: 'LiquidityPoolToken',
             token: 'LPT-1111',
+            name: 'LiquidityPoolToken',
+            type: 'FungibleESDT',
+            owner: 'user_address_1',
+            minted: '0',
+            burnt: '0',
             decimals: 18,
+            isPaused: false,
+            canUpgrade: true,
+            canMint: true,
+            canBurn: true,
+            canChangeOwner: true,
+            canPause: true,
+            canFreeze: true,
+            canWipe: true,
         };
     }
 
