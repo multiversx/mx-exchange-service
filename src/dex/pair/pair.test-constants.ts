@@ -1,5 +1,5 @@
 import { PairInfoModel } from '../models/pair-info.model';
-import { TokenModel } from '../models/pair.model';
+import { TokenModel } from '../models/esdtToken.model';
 
 interface PairMetadata {
     address: string;
@@ -71,9 +71,21 @@ export class AbiPairServiceMock {
 export class ContextServiceMock {
     async getTokenMetadata(tokenID: string): Promise<TokenModel> {
         return {
-            name: tokenID,
             token: tokenID,
+            name: tokenID,
+            type: 'FungibleESDT',
+            owner: 'user_address_1',
+            minted: '0',
+            burnt: '0',
             decimals: 18,
+            isPaused: false,
+            canUpgrade: true,
+            canMint: true,
+            canBurn: true,
+            canChangeOwner: true,
+            canPause: true,
+            canFreeze: true,
+            canWipe: true,
         };
     }
 

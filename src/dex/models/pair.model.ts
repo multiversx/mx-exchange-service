@@ -1,5 +1,6 @@
 import { ObjectType, Field, ArgsType } from '@nestjs/graphql';
 import { PaginationArgs } from '../dex.model';
+import { TokenModel } from './esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 
 @ArgsType()
@@ -12,18 +13,6 @@ export class LiquidityPosition {
 
     @Field()
     secondTokenAmount: string;
-}
-
-@ObjectType()
-export class TokenModel {
-    @Field()
-    token: string;
-
-    @Field()
-    name: string;
-
-    @Field()
-    decimals: number;
 }
 
 @ObjectType()
