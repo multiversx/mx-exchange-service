@@ -15,6 +15,7 @@ import {
 } from './dto/proxy-farm.args';
 import { ProxyPairService } from './proxy-pair/proxy-pair.service';
 import {
+    GenericEsdtAmountPair,
     ProxyModel,
     WrappedFarmTokenAttributesModel,
     WrappedLpTokenAttributesModel,
@@ -87,6 +88,13 @@ export class ProxyResolver {
         return await this.transactionsProxyPairService.addLiquidityProxy(args);
     }
 
+    @Query(returns => [GenericEsdtAmountPair])
+    async getTemporaryFundsProxy(
+        @Args('userAddress') userAddress: string,
+    ): Promise<GenericEsdtAmountPair[]> {
+        return this.proxyPairService.getTemporaryFundsProxy(userAddress);
+    }
+
     @Query(returns => TransactionModel)
     async reclaimTemporaryFundsProxy(
         @Args() args: ReclaimTemporaryFundsProxyArgs,
@@ -128,19 +136,23 @@ export class ProxyResolver {
         );
     }
 
-    @Query(returns => WrappedLpTokenAttributesModel)
+    @Query(returns => [WrappedLpTokenAttributesModel])
     async wrappedLpTokenAttributes(
-        @Args('attributes') attributes: string,
-    ): Promise<WrappedLpTokenAttributesModel> {
-        return await this.proxyService.getWrappedLpTokenAttributes(attributes);
+        @Args({ name: 'batchAttributes', type: () => [String] })
+        batchAttributes: string[],
+    ): Promise<WrappedLpTokenAttributesModel[]> {
+        return await this.proxyService.getWrappedLpTokenAttributes(
+            batchAttributes,
+        );
     }
 
-    @Query(returns => WrappedFarmTokenAttributesModel)
+    @Query(returns => [WrappedFarmTokenAttributesModel])
     async wrappedFarmTokenAttributes(
-        @Args('attributes') attributes: string,
-    ): Promise<WrappedFarmTokenAttributesModel> {
+        @Args({ name: 'batchAttributes', type: () => [String] })
+        batchAttributes: string[],
+    ): Promise<WrappedFarmTokenAttributesModel[]> {
         return await this.proxyService.getWrappedFarmTokenAttributes(
-            attributes,
+            batchAttributes,
         );
     }
 }

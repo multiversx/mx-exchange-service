@@ -29,6 +29,8 @@ export class ProxyModel {
 @ObjectType()
 export class WrappedLpTokenAttributesModel {
     @Field()
+    attributes: string;
+    @Field()
     lpTokenID: string;
     @Field()
     lpTokenTotalAmount: string;
@@ -41,6 +43,8 @@ export class WrappedLpTokenAttributesModel {
 @ObjectType()
 export class WrappedFarmTokenAttributesModel {
     @Field()
+    attributes: string;
+    @Field()
     farmTokenID: string;
     @Field(type => Int)
     farmTokenNonce: number;
@@ -48,4 +52,14 @@ export class WrappedFarmTokenAttributesModel {
     farmedTokenID: string;
     @Field(type => Int)
     farmedTokenNonce: number;
+}
+
+@ObjectType()
+export class GenericEsdtAmountPair {
+    @Field()
+    tokenID: string;
+    @Field()
+    tokenNonce: string;
+    @Field()
+    amount: string;
 }

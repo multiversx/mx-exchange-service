@@ -62,28 +62,38 @@ export class ProxyService {
     }
 
     async getWrappedLpTokenAttributes(
-        attributes: string,
-    ): Promise<WrappedLpTokenAttributesModel> {
-        const decodedAttributes = decodeWrappedLPTokenAttributes(attributes);
+        batchAttributes: string[],
+    ): Promise<WrappedLpTokenAttributesModel[]> {
+        return batchAttributes.map(attributes => {
+            const decodedAttributes = decodeWrappedLPTokenAttributes(
+                attributes,
+            );
 
-        return {
-            lpTokenID: decodedAttributes.lpTokenID.toString(),
-            lpTokenTotalAmount: decodedAttributes.lpTokenTotalAmount.toString(),
-            lockedAssetsInvested: decodedAttributes.lockedAssetsInvested.toString(),
-            lockedAssetsNonce: decodedAttributes.lockedAssetsNonce.toString(),
-        };
+            return {
+                attributes: attributes,
+                lpTokenID: decodedAttributes.lpTokenID.toString(),
+                lpTokenTotalAmount: decodedAttributes.lpTokenTotalAmount.toString(),
+                lockedAssetsInvested: decodedAttributes.lockedAssetsInvested.toString(),
+                lockedAssetsNonce: decodedAttributes.lockedAssetsNonce.toString(),
+            };
+        });
     }
 
     async getWrappedFarmTokenAttributes(
-        attributes: string,
-    ): Promise<WrappedFarmTokenAttributesModel> {
-        const decodedAttributes = decodeWrappedFarmTokenAttributes(attributes);
+        batchAttributes: string[],
+    ): Promise<WrappedFarmTokenAttributesModel[]> {
+        return batchAttributes.map(attributes => {
+            const decodedAttributes = decodeWrappedFarmTokenAttributes(
+                attributes,
+            );
 
-        return {
-            farmTokenID: decodedAttributes.farmTokenID.toString(),
-            farmTokenNonce: decodedAttributes.farmTokenNonce.toString(),
-            farmedTokenID: decodedAttributes.farmedTokenID.toString(),
-            farmedTokenNonce: decodedAttributes.farmedTokenNonce.toString(),
-        };
+            return {
+                attributes: attributes,
+                farmTokenID: decodedAttributes.farmTokenID.toString(),
+                farmTokenNonce: decodedAttributes.farmTokenNonce.toString(),
+                farmedTokenID: decodedAttributes.farmedTokenID.toString(),
+                farmedTokenNonce: decodedAttributes.farmedTokenNonce.toString(),
+            };
+        });
     }
 }
