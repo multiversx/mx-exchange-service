@@ -15,7 +15,7 @@ export class ProxyPairService {
     async getwrappedLpToken(): Promise<TokenModel> {
         const cachedData = await this.cacheService.getWrappedLpTokenID();
         if (!!cachedData) {
-            return await this.context.getTokenMetadata(
+            return await this.context.getNFTTokenMetadata(
                 cachedData.wrappedLpTokenID,
             );
         }
@@ -25,7 +25,7 @@ export class ProxyPairService {
             wrappedLpTokenID: wrappedLpTokenID,
         });
 
-        return await this.context.getTokenMetadata(wrappedLpTokenID);
+        return await this.context.getNFTTokenMetadata(wrappedLpTokenID);
     }
 
     async getIntermediatedPairs(): Promise<string[]> {

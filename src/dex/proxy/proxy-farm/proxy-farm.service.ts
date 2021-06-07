@@ -15,7 +15,9 @@ export class ProxyFarmService {
     async getwrappedFarmToken(): Promise<TokenModel> {
         const cachedData = await this.cacheService.getWrappedFarmTokenID();
         if (!!cachedData) {
-            return this.context.getTokenMetadata(cachedData.wrappedFarmTokenID);
+            return this.context.getNFTTokenMetadata(
+                cachedData.wrappedFarmTokenID,
+            );
         }
 
         const wrappedFarmTokenID = await this.abiService.getWrappedFarmTokenID();
@@ -23,7 +25,7 @@ export class ProxyFarmService {
             wrappedFarmTokenID: wrappedFarmTokenID,
         });
 
-        return this.context.getTokenMetadata(wrappedFarmTokenID);
+        return this.context.getNFTTokenMetadata(wrappedFarmTokenID);
     }
 
     async getIntermediatedFarms(): Promise<string[]> {

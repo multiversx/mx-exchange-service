@@ -32,11 +32,6 @@ export function decodeWrappedLPTokenAttributes(attributes: string) {
         new StructFieldDefinition('lpTokenID', '', new TokenIdentifierType()),
         new StructFieldDefinition('lpTokenTotalAmount', '', new BigUIntType()),
         new StructFieldDefinition(
-            'lockedAssetsTokenID',
-            '',
-            new TokenIdentifierType(),
-        ),
-        new StructFieldDefinition(
             'lockedAssetsInvested',
             '',
             new BigUIntType(),

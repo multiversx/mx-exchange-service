@@ -203,6 +203,11 @@ export class ContextService {
         return tokenMetadata;
     }
 
+    async getNFTTokenMetadata(tokenID: string): Promise<TokenModel> {
+        const nftTokenMetadata = await this.apiFacade.getNFTToken(tokenID);
+        return nftTokenMetadata;
+    }
+
     async getState(contract: SmartContract): Promise<string> {
         const interaction: Interaction = contract.methods.getState([]);
         const queryResponse = await contract.runQuery(
@@ -240,17 +245,5 @@ export class ContextService {
         });
 
         return transaction.toPlainObject();
-    }
-
-    public toBigNumber(value: string, token: TokenModel): BigNumber {
-        const bigNumber = new BigNumber(value);
-        const exponent = new BigNumber(`1e+${token.decimals}`);
-        return bigNumber.multipliedBy(exponent);
-    }
-
-    public fromBigNumber(value: string, token: TokenModel): BigNumber {
-        const bigNumber = new BigNumber(value);
-        const exponent = new BigNumber(`1e-${token.decimals}`);
-        return bigNumber.multipliedBy(exponent);
     }
 }

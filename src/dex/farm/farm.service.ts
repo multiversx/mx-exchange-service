@@ -15,6 +15,7 @@ import { FarmModel, FarmTokenAttributesModel } from '../models/farm.model';
 import { CacheFarmService } from '../../services/cache-manager/cache-farm.service';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class FarmService {
@@ -35,7 +36,7 @@ export class FarmService {
 
     async getFarmToken(farmAddress: string): Promise<TokenModel> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
-        return await this.context.getTokenMetadata(farmTokenID);
+        return await this.context.getNFTTokenMetadata(farmTokenID);
     }
 
     async getFarmingToken(farmAddress: string): Promise<TokenModel> {
@@ -110,13 +111,10 @@ export class FarmService {
     }
 
     async getRewardsForPosition(args: CalculateRewardsArgs): Promise<string> {
-        const farmedToken = await this.getFarmedToken(args.farmAddress);
-
         const rewards = await this.abiService.calculateRewardsForGivenPosition(
             args,
         );
-
-        return this.context.fromBigNumber(rewards, farmedToken).toString();
+        return new BigNumber(rewards).toString();
     }
 
     async decodeFarmTokenAttributes(

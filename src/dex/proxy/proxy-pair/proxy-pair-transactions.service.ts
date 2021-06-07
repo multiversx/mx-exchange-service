@@ -30,27 +30,21 @@ export class TransactionsProxyPairService {
         args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
         const contract = await getContract();
-        const token0 = await this.context.getTokenMetadata(args.token0ID);
-        const token1 = await this.context.getTokenMetadata(args.token1ID);
-        const amount0Denom = args.token0Nonce
-            ? new BigNumber(args.amount0)
-            : this.context.toBigNumber(args.amount0, token0);
-        const amount1Denom = args.token1Nonce
-            ? new BigNumber(args.amount1)
-            : this.context.toBigNumber(args.amount1, token1);
+        const amount0 = new BigNumber(args.amount0);
+        const amount1 = new BigNumber(args.amount1);
 
-        const amount0Min = amount0Denom.multipliedBy(1 - args.tolerance);
-        const amount1Min = amount1Denom.multipliedBy(1 - args.tolerance);
+        const amount0Min = amount0.multipliedBy(1 - args.tolerance);
+        const amount1Min = amount1.multipliedBy(1 - args.tolerance);
 
         const interaction: Interaction = contract.methods.addLiquidityProxy([
             BytesValue.fromHex(new Address(args.pairAddress).hex()),
             BytesValue.fromUTF8(args.token0ID),
             new U32Value(args.token0Nonce ? args.token0Nonce : 0),
-            new BigUIntValue(amount0Denom),
+            new BigUIntValue(amount0),
             new BigUIntValue(amount0Min),
             BytesValue.fromUTF8(args.token1ID),
             new U32Value(args.token1Nonce ? args.token1Nonce : 0),
-            new BigUIntValue(amount1Denom),
+            new BigUIntValue(amount1),
             new BigUIntValue(amount1Min),
         ]);
 
@@ -103,10 +97,9 @@ export class TransactionsProxyPairService {
         const contract = await getContract();
 
         if (!args.tokenNonce) {
-            const token = await this.context.getTokenMetadata(args.tokenID);
             const transactionArgs = [
                 BytesValue.fromUTF8(args.tokenID),
-                new BigUIntValue(this.context.toBigNumber(args.amount, token)),
+                new BigUIntValue(new BigNumber(args.amount)),
                 BytesValue.fromUTF8('acceptEsdtPaymentProxy'),
                 BytesValue.fromHex(new Address(args.pairAddress).hex()),
             ];

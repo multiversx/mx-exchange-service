@@ -13,7 +13,7 @@ export class ProxyModel {
     wrappedFarmToken: TokenModel;
 
     @Field()
-    distributedToken: TokenModel;
+    assetToken: TokenModel;
 
     @Field(type => TokenModel)
     lockedAssetToken: TokenModel;
@@ -31,8 +31,6 @@ export class WrappedLpTokenAttributesModel {
     lpTokenID: string;
     @Field()
     lpTokenTotalAmount: string;
-    @Field()
-    lockedAssetsTokenID: string;
     @Field()
     lockedAssetsInvested: string;
     @Field(type => Int)

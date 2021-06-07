@@ -15,6 +15,7 @@ import {
     SwapTokensFixedOutputArgs,
 } from './dto/pair.args';
 import { PairService } from './pair.service';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class TransactionPairService {
@@ -29,29 +30,20 @@ export class TransactionPairService {
     }
 
     async addLiquidity(args: AddLiquidityArgs): Promise<TransactionModel> {
-        const firstToken = await this.pairService.getFirstToken(
-            args.pairAddress,
-        );
-        const secondToken = await this.pairService.getSecondToken(
-            args.pairAddress,
-        );
-        const amount0Denom = this.context.toBigNumber(args.amount0, firstToken);
-        const amount1Denom = this.context.toBigNumber(
-            args.amount1,
-            secondToken,
-        );
+        const amount0 = new BigNumber(args.amount0);
+        const amount1 = new BigNumber(args.amount1);
 
-        const amount0Min = amount0Denom
+        const amount0Min = amount0
             .multipliedBy(1 - args.tolerance)
             .integerValue();
-        const amount1Min = amount1Denom
+        const amount1Min = amount1
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
         const contract = await this.abiService.getContract(args.pairAddress);
         const interaction: Interaction = contract.methods.addLiquidity([
-            new BigUIntValue(amount0Denom),
-            new BigUIntValue(amount1Denom),
+            new BigUIntValue(amount0),
+            new BigUIntValue(amount1),
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
         ]);
@@ -77,38 +69,22 @@ export class TransactionPairService {
     async removeLiquidity(
         args: RemoveLiquidityArgs,
     ): Promise<TransactionModel> {
-        const firstToken = await this.pairService.getFirstToken(
-            args.pairAddress,
-        );
-        const secondToken = await this.pairService.getSecondToken(
-            args.pairAddress,
-        );
-        const lpToken = await this.context.getTokenMetadata(
-            args.liquidityTokenID,
-        );
-        const liquidityDenom = this.context.toBigNumber(
-            args.liquidity,
-            lpToken,
-        );
-
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             args.pairAddress,
             args.liquidity,
         );
 
-        const amount0Min = this.context
-            .toBigNumber(liquidityPosition.firstTokenAmount, firstToken)
+        const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
             .multipliedBy(1 - args.tolerance)
             .integerValue();
-        const amount1Min = this.context
-            .toBigNumber(liquidityPosition.secondTokenAmount, secondToken)
+        const amount1Min = new BigNumber(liquidityPosition.secondTokenAmount)
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
         const contract = await this.abiService.getContract(args.pairAddress);
         const transactionArgs = [
             BytesValue.fromUTF8(args.liquidityTokenID),
-            new BigUIntValue(liquidityDenom),
+            new BigUIntValue(new BigNumber(args.liquidity)),
             BytesValue.fromUTF8('removeLiquidity'),
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
@@ -125,24 +101,19 @@ export class TransactionPairService {
         args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel> {
         const contract = await this.abiService.getContract(args.pairAddress);
-        const tokenIn = await this.context.getTokenMetadata(args.tokenInID);
-        const tokenOut = await this.context.getTokenMetadata(args.tokenOutID);
 
-        const amountInDenom = this.context.toBigNumber(args.amountIn, tokenIn);
-        const amountOutDenom = this.context.toBigNumber(
-            args.amountOut,
-            tokenOut,
-        );
-        const amountOutDenomMin = amountOutDenom
+        const amountIn = new BigNumber(args.amountIn);
+        const amountOut = new BigNumber(args.amountOut);
+        const amountOutMin = amountOut
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(amountInDenom),
+            new BigUIntValue(amountIn),
             BytesValue.fromUTF8('swapTokensFixedInput'),
             BytesValue.fromUTF8(args.tokenOutID),
-            new BigUIntValue(amountOutDenomMin),
+            new BigUIntValue(amountOutMin),
         ];
 
         return await this.context.esdtTransfer(
@@ -156,23 +127,18 @@ export class TransactionPairService {
         args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel> {
         const contract = await this.abiService.getContract(args.pairAddress);
-        const tokenIn = await this.context.getTokenMetadata(args.tokenInID);
-        const tokenOut = await this.context.getTokenMetadata(args.tokenOutID);
 
-        const amountInDenom = this.context.toBigNumber(args.amountIn, tokenIn);
-        const amountOutDenom = this.context.toBigNumber(
-            args.amountOut,
-            tokenOut,
-        );
-        const amountInDenomMax = amountInDenom
+        const amountIn = new BigNumber(args.amountIn);
+        const amountOut = new BigNumber(args.amountOut);
+        const amountInMax = amountIn
             .multipliedBy(1 + args.tolerance)
             .integerValue();
         const transactionArgs = [
             BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(amountInDenomMax),
+            new BigUIntValue(amountInMax),
             BytesValue.fromUTF8('swapTokensFixedOutput'),
             BytesValue.fromUTF8(args.tokenOutID),
-            new BigUIntValue(amountOutDenom),
+            new BigUIntValue(amountOut),
         ];
 
         return await this.context.esdtTransfer(
@@ -184,11 +150,10 @@ export class TransactionPairService {
 
     async esdtTransfer(args: ESDTTransferArgs): Promise<TransactionModel> {
         const contract = await this.abiService.getContract(args.pairAddress);
-        const token = await this.context.getTokenMetadata(args.token);
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.token),
-            new BigUIntValue(this.context.toBigNumber(args.amount, token)),
+            new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromUTF8('acceptEsdtPayment'),
         ];
 

@@ -88,11 +88,10 @@ export class AbiPairService {
         const response = interaction.interpretQueryResponse(queryResponse);
 
         const pairInfo = {
-            reserves0: response.values[0].valueOf(),
-            reserves1: response.values[1].valueOf(),
-            totalSupply: response.values[2].valueOf(),
+            reserves0: response.values[0].valueOf().toString(),
+            reserves1: response.values[1].valueOf().toString(),
+            totalSupply: response.values[2].valueOf().toString(),
         };
-
         return pairInfo;
     }
 
@@ -115,7 +114,7 @@ export class AbiPairService {
 
         const response = interaction.interpretQueryResponse(queryResponse);
 
-        const temporaryFunds = response.firstValue.valueOf();
+        const temporaryFunds = response.firstValue.valueOf().toString();
 
         return temporaryFunds;
     }

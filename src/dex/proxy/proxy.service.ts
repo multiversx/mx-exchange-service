@@ -28,27 +28,25 @@ export class ProxyService {
         return proxy;
     }
 
-    async getDistributedToken(): Promise<TokenModel> {
-        const cachedData = await this.cacheService.getDistributedTokenID();
+    async getAssetToken(): Promise<TokenModel> {
+        const cachedData = await this.cacheService.getAssetTokenID();
         if (!!cachedData) {
-            return await this.context.getTokenMetadata(
-                cachedData.distributedTokenID,
-            );
+            return await this.context.getTokenMetadata(cachedData.assetTokenID);
         }
 
-        const distributedTokenID = await this.abiService.getDistributedTokenID();
+        const assetTokenID = await this.abiService.getAssetTokenID();
 
-        this.cacheService.setDistributedTokenID({
-            distributedTokenID: distributedTokenID,
+        this.cacheService.setAssetTokenID({
+            assetTokenID: assetTokenID,
         });
 
-        return await this.context.getTokenMetadata(distributedTokenID);
+        return await this.context.getTokenMetadata(assetTokenID);
     }
 
     async getlockedAssetToken(): Promise<TokenModel> {
         const cachedData = await this.cacheService.getLockedAssetTokenID();
         if (!!cachedData) {
-            return await this.context.getTokenMetadata(
+            return await this.context.getNFTTokenMetadata(
                 cachedData.lockedAssetTokenID,
             );
         }
@@ -59,7 +57,7 @@ export class ProxyService {
             lockedAssetTokenID: lockedAssetTokenID,
         });
 
-        return await this.context.getTokenMetadata(lockedAssetTokenID);
+        return await this.context.getNFTTokenMetadata(lockedAssetTokenID);
     }
 
     async getWrappedLpTokenAttributes(
@@ -70,7 +68,6 @@ export class ProxyService {
         return {
             lpTokenID: decodedAttributes.lpTokenID.toString(),
             lpTokenTotalAmount: decodedAttributes.lpTokenTotalAmount.toString(),
-            lockedAssetsTokenID: decodedAttributes.lockedAssetsTokenID.toString(),
             lockedAssetsInvested: decodedAttributes.lockedAssetsInvested.toString(),
             lockedAssetsNonce: decodedAttributes.lockedAssetsNonce.toString(),
         };

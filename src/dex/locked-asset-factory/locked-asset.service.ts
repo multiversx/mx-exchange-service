@@ -22,7 +22,7 @@ export class LockedAssetService {
 
     async getLockedToken(): Promise<TokenModel> {
         const lockedTokenID = await this.getLockedTokenID();
-        return await this.context.getTokenMetadata(lockedTokenID);
+        return await this.context.getNFTTokenMetadata(lockedTokenID);
     }
 
     private async getLockedTokenID(): Promise<string> {

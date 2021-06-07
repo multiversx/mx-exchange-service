@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import BigNumber from 'bignumber.js';
 import { elrondConfig } from '../../config';
 
 @Injectable()
@@ -12,9 +13,9 @@ export class PriceFeedService {
         this.timeoutLimit = elrondConfig.timeoutLimit;
     }
 
-    async getTokenPrice(tokenName: string): Promise<number> {
+    async getTokenPrice(tokenName: string): Promise<BigNumber> {
         const response = await this.doGet(`latest/quotes/${tokenName}/price`);
-        return response;
+        return new BigNumber(response);
     }
 
     private async doGet(resourceUrl: string): Promise<any> {
