@@ -29,6 +29,8 @@ export class ProxyModel {
 @ObjectType()
 export class WrappedLpTokenAttributesModel {
     @Field()
+    attributes: string;
+    @Field()
     lpTokenID: string;
     @Field()
     lpTokenTotalAmount: string;
@@ -40,6 +42,8 @@ export class WrappedLpTokenAttributesModel {
 
 @ObjectType()
 export class WrappedFarmTokenAttributesModel {
+    @Field()
+    attributes: string;
     @Field()
     farmTokenID: string;
     @Field(type => Int)

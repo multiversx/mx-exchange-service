@@ -128,19 +128,23 @@ export class ProxyResolver {
         );
     }
 
-    @Query(returns => WrappedLpTokenAttributesModel)
+    @Query(returns => [WrappedLpTokenAttributesModel])
     async wrappedLpTokenAttributes(
-        @Args('attributes') attributes: string,
-    ): Promise<WrappedLpTokenAttributesModel> {
-        return await this.proxyService.getWrappedLpTokenAttributes(attributes);
+        @Args({ name: 'batchAttributes', type: () => [String] })
+        batchAttributes: string[],
+    ): Promise<WrappedLpTokenAttributesModel[]> {
+        return await this.proxyService.getWrappedLpTokenAttributes(
+            batchAttributes,
+        );
     }
 
-    @Query(returns => WrappedFarmTokenAttributesModel)
+    @Query(returns => [WrappedFarmTokenAttributesModel])
     async wrappedFarmTokenAttributes(
-        @Args('attributes') attributes: string,
-    ): Promise<WrappedFarmTokenAttributesModel> {
+        @Args({ name: 'batchAttributes', type: () => [String] })
+        batchAttributes: string[],
+    ): Promise<WrappedFarmTokenAttributesModel[]> {
         return await this.proxyService.getWrappedFarmTokenAttributes(
-            attributes,
+            batchAttributes,
         );
     }
 }
