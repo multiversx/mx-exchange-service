@@ -150,6 +150,18 @@ export class PairService {
             .toString();
     }
 
+    async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
+        const firstTokenID = await this.getFirstTokenID(pairAddress);
+        const secondTokenID = await this.getSecondTokenID(pairAddress);
+
+        switch (tokenID) {
+            case firstTokenID:
+                return await this.getFirstTokenPrice(pairAddress);
+            case secondTokenID:
+                return await this.getSecondTokenPrice(pairAddress);
+        }
+    }
+
     async getTokenPriceUSD(
         pairAddress: string,
         tokenID: string,
