@@ -8,14 +8,16 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { ProxyProvider, BinaryCodec } from '@elrondnetwork/erdjs';
-import { elrondConfig, farmsConfig } from '../../config';
+import { elrondConfig, farmsConfig, scAddress } from '../../config';
 import { ContextService } from '../utils/context.service';
-import { TokenModel } from '../models/pair.model';
+import { TokenModel } from '../models/esdtToken.model';
 import { FarmModel, FarmTokenAttributesModel } from '../models/farm.model';
 import { CacheFarmService } from '../../services/cache-manager/cache-farm.service';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
 import BigNumber from 'bignumber.js';
+import { NFTTokenModel } from '../models/nftToken.model';
+import { PairService } from '../pair/pair.service';
 
 @Injectable()
 export class FarmService {
@@ -25,6 +27,7 @@ export class FarmService {
         private abiService: AbiFarmService,
         private cacheService: CacheFarmService,
         private context: ContextService,
+        private pairService: PairService,
     ) {
         this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
     }
@@ -34,7 +37,7 @@ export class FarmService {
         return await this.context.getTokenMetadata(farmedTokenID);
     }
 
-    async getFarmToken(farmAddress: string): Promise<TokenModel> {
+    async getFarmToken(farmAddress: string): Promise<NFTTokenModel> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
         return await this.context.getNFTTokenMetadata(farmTokenID);
     }
@@ -202,5 +205,20 @@ export class FarmService {
             farmingTokenID: farmingTokenID,
         });
         return farmingTokenID;
+    }
+
+    async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
+        const farmingTokenID = await this.getFarmingTokenID(farmAddress);
+        if (scAddress.has(farmingTokenID)) {
+            const pairAddress = scAddress.get(farmingTokenID);
+            return await this.pairService.getTokenPriceUSD(
+                pairAddress,
+                farmingTokenID,
+            );
+        }
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingTokenID,
+        );
+        return await this.pairService.getLpTokenPriceUSD(pairAddress);
     }
 }

@@ -18,6 +18,7 @@
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqhpu9gztn7tmznxc46q46uk6f23ttnern0n4sar7l79",
         "wrappingAddress": "erd1qqqqqqqqqqqqqpgq4axqc749vuqr27snr8d8qgvlmz44chsr0n4sm4a72g"
     },
+    "tokenProviderUSD": "WEGLD-b57a79",
     "priceFeeds": {
         "WEGLD-b57a79": "egld"
     },

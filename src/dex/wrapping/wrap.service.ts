@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { scAddress } from 'src/config';
 import { CacheWrapService } from 'src/services/cache-manager/cache-wrapping.service';
-import { TokenModel } from '../models/pair.model';
+import { TokenModel } from '../models/esdtToken.model';
 import { WrapModel } from '../models/wrapping.model';
 import { ContextService } from '../utils/context.service';
 import { AbiWrapService } from './abi-wrap.service';

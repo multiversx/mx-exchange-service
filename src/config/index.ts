@@ -21,4 +21,6 @@ export const abiConfig = config.get('abi');
 
 export const farmsConfig = config.get('farms');
 
+export const tokenProviderUSD = config.get('tokenProviderUSD');
+
 export const tokensPriceData = config.get('priceFeeds');

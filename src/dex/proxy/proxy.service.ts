@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ContextService } from '../utils/context.service';
-import { TokenModel } from 'src/dex/models/pair.model';
+import { TokenModel } from 'src/dex/models/esdtToken.model';
 import { AbiProxyService } from './proxy-abi.service';
 import { CacheProxyService } from 'src/services/cache-manager/cache-proxy.service';
 import {
@@ -13,6 +13,7 @@ import {
     decodeWrappedFarmTokenAttributes,
     decodeWrappedLPTokenAttributes,
 } from './utils';
+import { NFTTokenModel } from '../models/nftToken.model';
 
 @Injectable()
 export class ProxyService {
@@ -43,7 +44,7 @@ export class ProxyService {
         return await this.context.getTokenMetadata(assetTokenID);
     }
 
-    async getlockedAssetToken(): Promise<TokenModel> {
+    async getlockedAssetToken(): Promise<NFTTokenModel> {
         const cachedData = await this.cacheService.getLockedAssetTokenID();
         if (!!cachedData) {
             return await this.context.getNFTTokenMetadata(

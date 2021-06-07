@@ -1,5 +1,6 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { TokenModel } from './pair.model';
+import { TokenModel } from './esdtToken.model';
+import { NFTTokenModel } from './nftToken.model';
 
 @ObjectType()
 export class FarmTokenAttributesModel {
@@ -22,7 +23,10 @@ export class FarmModel {
     farmedToken: TokenModel;
 
     @Field()
-    farmToken: TokenModel;
+    farmToken: NFTTokenModel;
+
+    @Field()
+    farmTokenPriceUSD: string;
 
     @Field()
     farmingToken: TokenModel;
