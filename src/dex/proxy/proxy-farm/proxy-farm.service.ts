@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TokenModel } from 'src/dex/models/pair.model';
+import { NFTTokenModel } from 'src/dex/models/nftToken.model';
 import { CacheProxyFarmService } from 'src/services/cache-manager/cache-proxy-farm.service';
 import { ContextService } from '../../utils/context.service';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
@@ -12,7 +12,7 @@ export class ProxyFarmService {
         private context: ContextService,
     ) {}
 
-    async getwrappedFarmToken(): Promise<TokenModel> {
+    async getwrappedFarmToken(): Promise<NFTTokenModel> {
         const cachedData = await this.cacheService.getWrappedFarmTokenID();
         if (!!cachedData) {
             return this.context.getNFTTokenMetadata(
