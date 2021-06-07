@@ -10,12 +10,13 @@ import {
 import { ProxyProvider, BinaryCodec } from '@elrondnetwork/erdjs';
 import { elrondConfig, farmsConfig } from '../../config';
 import { ContextService } from '../utils/context.service';
-import { TokenModel } from '../models/pair.model';
+import { TokenModel } from '../models/esdtToken.model';
 import { FarmModel, FarmTokenAttributesModel } from '../models/farm.model';
 import { CacheFarmService } from '../../services/cache-manager/cache-farm.service';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
 import BigNumber from 'bignumber.js';
+import { NFTTokenModel } from '../models/nftToken.model';
 
 @Injectable()
 export class FarmService {
@@ -34,7 +35,7 @@ export class FarmService {
         return await this.context.getTokenMetadata(farmedTokenID);
     }
 
-    async getFarmToken(farmAddress: string): Promise<TokenModel> {
+    async getFarmToken(farmAddress: string): Promise<NFTTokenModel> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
         return await this.context.getNFTTokenMetadata(farmTokenID);
     }
