@@ -3,6 +3,7 @@ import { ContextService } from '../../utils/context.service';
 import { AbiProxyPairService } from './proxy-pair-abi.service';
 import { CacheProxyPairService } from 'src/services/cache-manager/cache-proxy-pair.service';
 import { NFTTokenModel } from 'src/dex/models/nftToken.model';
+import { GenericEsdtAmountPair } from 'src/dex/models/proxy.model';
 
 @Injectable()
 export class ProxyPairService {
@@ -41,5 +42,11 @@ export class ProxyPairService {
         });
 
         return pairs;
+    }
+
+    async getTemporaryFundsProxy(
+        userAddress: string,
+    ): Promise<GenericEsdtAmountPair[]> {
+        return await this.abiService.getTemporaryFundsProxy(userAddress);
     }
 }

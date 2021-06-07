@@ -15,6 +15,7 @@ import {
 } from './dto/proxy-farm.args';
 import { ProxyPairService } from './proxy-pair/proxy-pair.service';
 import {
+    GenericEsdtAmountPair,
     ProxyModel,
     WrappedFarmTokenAttributesModel,
     WrappedLpTokenAttributesModel,
@@ -85,6 +86,13 @@ export class ProxyResolver {
         @Args() args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
         return await this.transactionsProxyPairService.addLiquidityProxy(args);
+    }
+
+    @Query(returns => [GenericEsdtAmountPair])
+    async getTemporaryFundsProxy(
+        @Args('userAddress') userAddress: string,
+    ): Promise<GenericEsdtAmountPair[]> {
+        return this.proxyPairService.getTemporaryFundsProxy(userAddress);
     }
 
     @Query(returns => TransactionModel)

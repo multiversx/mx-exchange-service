@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ProxyProvider } from '@elrondnetwork/erdjs';
+import { Address, BytesValue, ProxyProvider } from '@elrondnetwork/erdjs';
 import { elrondConfig } from '../../../config';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { getContract } from '../utils';
+import { GenericEsdtAmountPair } from 'src/dex/models/proxy.model';
 
 @Injectable()
 export class AbiProxyPairService {
@@ -47,5 +48,30 @@ export class AbiProxyPairService {
         });
 
         return pairs;
+    }
+
+    async getTemporaryFundsProxy(
+        userAddress: string,
+    ): Promise<GenericEsdtAmountPair[]> {
+        const contract = await getContract();
+
+        const interaction: Interaction = contract.methods.getTemporaryFunds([
+            BytesValue.fromHex(new Address(userAddress).hex()),
+        ]);
+
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            interaction.buildQuery(),
+        );
+        const result = interaction.interpretQueryResponse(queryResponse);
+
+        return result.firstValue.valueOf().map(value => {
+            const temporaryFunds = value.valueOf();
+            return {
+                tokenID: temporaryFunds.token_id.toString(),
+                tokenNonce: temporaryFunds.token_nonce.toString(),
+                amount: temporaryFunds.amount.toString(),
+            };
+        });
     }
 }

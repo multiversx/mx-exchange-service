@@ -53,3 +53,13 @@ export class WrappedFarmTokenAttributesModel {
     @Field(type => Int)
     farmedTokenNonce: number;
 }
+
+@ObjectType()
+export class GenericEsdtAmountPair {
+    @Field()
+    tokenID: string;
+    @Field()
+    tokenNonce: string;
+    @Field()
+    amount: string;
+}
