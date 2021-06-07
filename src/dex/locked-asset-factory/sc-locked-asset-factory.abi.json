@@ -63,36 +63,11 @@
             ]
         },
         {
-            "name": "createAndForwardCustomSchedule",
-            "inputs": [
-                {
-                    "name": "amount",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "address",
-                    "type": "Address"
-                },
-                {
-                    "name": "schedule",
-                    "type": "variadic<UnlockMilestone>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
-        },
-        {
             "name": "unlockAssets",
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
+            "inputs": [],
             "outputs": []
         },
         {
@@ -132,6 +107,43 @@
             "outputs": []
         },
         {
+            "name": "getInitEpoch",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getWhitelistedContracts",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getDefaultUnlockPeriod",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "List<UnlockMilestone>"
+                }
+            ]
+        },
+        {
+            "name": "getAssetTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
             "name": "set_transfer_exec_gas_limit",
             "inputs": [
                 {
@@ -142,7 +154,7 @@
             "outputs": []
         },
         {
-            "name": "getLockedTokenId",
+            "name": "getLockedAssetTokenId",
             "inputs": [],
             "outputs": [
                 {
@@ -151,20 +163,16 @@
             ]
         },
         {
-            "name": "invalidateCache",
+            "name": "getUnlockScheduleForSFTNonce",
             "inputs": [
                 {
-                    "name": "min_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "max_nonce",
+                    "name": "nonce",
                     "type": "u64"
                 }
             ],
             "outputs": [
                 {
-                    "type": "u64"
+                    "type": "Option<UnlockSchedule>"
                 }
             ]
         },
@@ -235,6 +243,15 @@
                 {
                     "name": "unlock_percent",
                     "type": "u8"
+                }
+            ]
+        },
+        "UnlockSchedule": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "unlock_milestones",
+                    "type": "List<UnlockMilestone>"
                 }
             ]
         }

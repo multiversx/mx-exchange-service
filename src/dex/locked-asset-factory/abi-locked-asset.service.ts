@@ -31,7 +31,9 @@ export class AbiLockedAssetService {
 
     async getLockedTokenID(): Promise<string> {
         const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getLockedTokenId([]);
+        const interaction: Interaction = contract.methods.getLockedAssetTokenId(
+            [],
+        );
         const queryResponse = await contract.runQuery(
             this.proxy,
             interaction.buildQuery(),
