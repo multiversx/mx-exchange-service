@@ -28,11 +28,6 @@ export class DistributionResolver {
     }
 
     @Query(returns => TransactionModel)
-    async claimAssets(): Promise<TransactionModel> {
-        return await this.transactionsService.claimAssets();
-    }
-
-    @Query(returns => TransactionModel)
     async claimLockedAssets(): Promise<TransactionModel> {
         return await this.transactionsService.claimLockedAssets();
     }

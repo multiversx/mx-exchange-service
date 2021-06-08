@@ -9,15 +9,6 @@ import { AbiDistributionService } from './abi-distribution.service';
 export class TransactionsDistributionService {
     constructor(private abiService: AbiDistributionService) {}
 
-    async claimAssets(): Promise<TransactionModel> {
-        const contract = await this.abiService.getContract();
-        const interaction: Interaction = contract.methods.claimAssets([]);
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.default));
-
-        return transaction.toPlainObject();
-    }
-
     async claimLockedAssets(): Promise<TransactionModel> {
         const contract = await this.abiService.getContract();
         const interaction: Interaction = contract.methods.claimLockedAssets([]);
