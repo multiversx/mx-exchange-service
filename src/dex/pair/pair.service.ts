@@ -16,6 +16,7 @@ import { CachePairService } from '../../services/cache-manager/cache-pair.servic
 import { AbiPairService } from './abi-pair.service';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { TokenModel } from '../models/esdtToken.model';
+import { GenericEsdtAmountPair } from '../models/proxy.model';
 
 @Injectable()
 export class PairService {
@@ -388,7 +389,7 @@ export class PairService {
         pairAddress: string,
         callerAddress: string,
         tokenID: string,
-    ): Promise<string> {
+    ): Promise<GenericEsdtAmountPair> {
         const cachedData = await this.cacheService.getTemporaryFunds(
             pairAddress,
             callerAddress,
@@ -410,7 +411,11 @@ export class PairService {
             { temporaryFunds: temporaryFunds },
         );
 
-        return temporaryFunds;
+        return {
+            tokenID: tokenID,
+            tokenNonce: '0',
+            amount: temporaryFunds,
+        };
     }
 
     async getLiquidityPosition(
