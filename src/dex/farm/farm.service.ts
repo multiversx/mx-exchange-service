@@ -29,7 +29,7 @@ export class FarmService {
         private context: ContextService,
         private pairService: PairService,
     ) {
-        this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
+        this.proxy = new ProxyProvider(elrondConfig.elrondApi, 60000);
     }
 
     async getFarmedToken(farmAddress: string): Promise<TokenModel> {

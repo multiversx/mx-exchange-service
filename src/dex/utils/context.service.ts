@@ -32,7 +32,7 @@ export class ContextService {
 
     constructor(private cacheManagerService: CacheManagerService) {
         this.proxy = new ProxyProvider(
-            elrondConfig.gateway,
+            elrondConfig.elrondApi,
             elrondConfig.proxyTimeout,
         );
         this.apiFacade = new ApiProvider(

@@ -15,7 +15,7 @@ export class AbiDistributionService {
 
     constructor() {
         this.proxy = new ProxyProvider(
-            elrondConfig.gateway,
+            elrondConfig.elrondApi,
             elrondConfig.proxyTimeout,
         );
     }

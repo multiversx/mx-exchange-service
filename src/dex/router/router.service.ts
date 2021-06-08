@@ -26,7 +26,7 @@ export class RouterService {
         private cacheManagerService: CacheManagerService,
         private context: ContextService,
     ) {
-        this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
+        this.proxy = new ProxyProvider(elrondConfig.elrondApi, 60000);
         this.elasticClient = new Client({
             node: elrondConfig.elastic + '/transactions',
         });

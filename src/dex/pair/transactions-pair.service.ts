@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { BigUIntValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { ProxyProvider, GasLimit } from '@elrondnetwork/erdjs';
-import { elrondConfig, gasConfig } from '../../config';
+import { GasLimit } from '@elrondnetwork/erdjs';
+import { gasConfig } from '../../config';
 import { TransactionModel } from '../models/transaction.model';
 import { ContextService } from '../utils/context.service';
 import { AbiPairService } from './abi-pair.service';
@@ -19,15 +19,11 @@ import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class TransactionPairService {
-    private readonly proxy: ProxyProvider;
-
     constructor(
         private abiService: AbiPairService,
         private pairService: PairService,
         private context: ContextService,
-    ) {
-        this.proxy = new ProxyProvider(elrondConfig.gateway, 60000);
-    }
+    ) {}
 
     async addLiquidity(args: AddLiquidityArgs): Promise<TransactionModel> {
         const amount0 = new BigNumber(args.amount0);
