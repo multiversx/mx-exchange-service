@@ -6,7 +6,6 @@ const Keys = {
     distributedTokenID: () => 'distributedTokenID',
     epoch: () => 'epoch',
     amount: () => 'amount',
-    milestones: () => 'milestones',
 };
 
 @Injectable()
@@ -24,18 +23,6 @@ export class CacheDistributionService {
             Keys.distributedTokenID(),
             distributedTokenID,
             cacheConfig.token,
-        );
-    }
-
-    async getMilestones(): Promise<Record<string, any>> {
-        return this.cacheManagerService.get(Keys.milestones());
-    }
-
-    async setMilestones(milestones: Record<string, any>): Promise<void> {
-        await this.cacheManagerService.set(
-            Keys.milestones(),
-            milestones,
-            cacheConfig.default,
         );
     }
 

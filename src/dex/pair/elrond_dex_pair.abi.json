@@ -422,6 +422,26 @@
             "outputs": []
         },
         {
+            "name": "getFeeDestinations",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<tuple<Address,TokenIdentifier>>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getTrustedSwapPairs",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<tuple<TokenPair,Address>>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
             "name": "getFirstTokenId",
             "inputs": [],
             "outputs": [
@@ -490,7 +510,35 @@
             ]
         },
         {
+            "name": "getExternSwapGasLimit",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getTranferExecGasLimit",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
             "name": "set_transfer_exec_gas_limit",
+            "inputs": [
+                {
+                    "name": "gas_limit",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "set_extern_swap_gas_limit",
             "inputs": [
                 {
                     "name": "gas_limit",
@@ -528,6 +576,19 @@
                 {
                     "name": "ActiveNoSwaps",
                     "discriminant": 2
+                }
+            ]
+        },
+        "TokenPair": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "first_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token",
+                    "type": "TokenIdentifier"
                 }
             ]
         }

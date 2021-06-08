@@ -11,6 +11,7 @@ import {
     SwapTokensFixedOutputArgs,
 } from './dto/pair.args';
 import { TransactionPairService } from './transactions-pair.service';
+import { GenericEsdtAmountPair } from '../models/proxy.model';
 
 @Resolver(of => PairModel)
 export class PairResolver {
@@ -110,7 +111,7 @@ export class PairResolver {
         );
     }
 
-    @Query(returns => String)
+    @Query(returns => GenericEsdtAmountPair)
     async getTemporaryFunds(
         @Args('pairAddress') pairAddress: string,
         @Args('callerAddress') callerAddress: string,

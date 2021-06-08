@@ -17,7 +17,7 @@ import {
 import { TokenModel } from '../models/esdtToken.model';
 import { TransactionModel } from '../models/transaction.model';
 import { NFTTokenModel } from '../models/nftToken.model';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 
 interface PairMetadata {
     address: string;

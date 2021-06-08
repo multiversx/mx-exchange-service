@@ -1,5 +1,5 @@
 {
-    "name": "EsdtDistribution",
+    "name": "Distribution",
     "constructor": {
         "inputs": [
             {
@@ -34,26 +34,6 @@
                 {
                     "name": "spread_epoch",
                     "type": "u64"
-                },
-                {
-                    "name": "unlock_milestones",
-                    "type": "variadic<UnlockMilestone>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setPerUserDistributedAssets",
-            "inputs": [
-                {
-                    "name": "spread_epoch",
-                    "type": "u64"
-                },
-                {
-                    "name": "user_assets",
-                    "type": "variadic<multi<Address,BigUint>>",
-                    "multi_arg": true
                 }
             ],
             "outputs": []
@@ -66,21 +46,12 @@
                     "type": "u64"
                 },
                 {
-                    "name": "user_assets",
+                    "name": "user_locked_assets",
                     "type": "variadic<multi<Address,BigUint>>",
                     "multi_arg": true
                 }
             ],
             "outputs": []
-        },
-        {
-            "name": "claimAssets",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
         },
         {
             "name": "claimLockedAssets",
@@ -124,20 +95,6 @@
             ]
         },
         {
-            "name": "calculateAssets",
-            "inputs": [
-                {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
             "name": "calculateLockedAssets",
             "inputs": [
                 {
@@ -164,29 +121,14 @@
             ]
         },
         {
-            "name": "getLastCommunityDistributionUnlockMilestones",
+            "name": "getAssetTokenId",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "variadic<UnlockMilestone>",
-                    "multi_result": true
+                    "type": "TokenIdentifier"
                 }
             ]
         }
     ],
-    "types": {
-        "UnlockMilestone": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "unlock_epoch",
-                    "type": "u64"
-                },
-                {
-                    "name": "unlock_percent",
-                    "type": "u8"
-                }
-            ]
-        }
-    }
+    "types": {}
 }
