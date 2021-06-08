@@ -11,6 +11,7 @@ import { ContextService } from '../utils/context.service';
 import { UserService } from './user.service';
 import {
     ContextServiceMock,
+    ElrondApiServiceMock,
     FarmServiceMock,
     PairServiceMock,
     PriceFeedServiceMock,
@@ -18,9 +19,15 @@ import {
     ProxyPairServiceMock,
     ProxyServiceMock,
 } from './user.test-mocks';
+import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 
 describe('UserService', () => {
     let service: UserService;
+
+    const ElrondApiServiceProvider = {
+        provide: ElrondApiService,
+        useClass: ElrondApiServiceMock,
+    };
 
     const FarmServiceProvider = {
         provide: FarmService,
@@ -60,6 +67,7 @@ describe('UserService', () => {
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
+                ElrondApiServiceProvider,
                 ContextServiceProvider,
                 PairServiceProvider,
                 PriceFeedServiceProvider,
@@ -80,31 +88,6 @@ describe('UserService', () => {
     });
 
     it('should get user esdt tokens', async () => {
-        const esdtTokens = [
-            {
-                token: 'MEX-53c38d',
-                name: 'MaiarExchangeToken',
-                type: 'FungibleESDT',
-                owner:
-                    'erd1x39tc3q3nn72ecjnmcz7x0qp09kp97t080x99dgyhx7zh95j0n4szskhlv',
-                minted: '101000000000000000000000',
-                burnt: '0',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-                balance: '1000000000000000000',
-                identifier: null,
-            },
-        ];
-        const response = { data: esdtTokens };
-        jest.spyOn(axios, 'get').mockResolvedValue(response);
-
         expect(await service.getAllEsdtTokens('user_address_1')).toEqual([
             {
                 token: 'MEX-53c38d',
@@ -131,38 +114,6 @@ describe('UserService', () => {
     });
 
     it('should get user nfts tokens', async () => {
-        const esdtTokens = [
-            {
-                token: 'FMT-1234',
-                name: 'FarmToken',
-                type: 'SemiFungibleESDT',
-                owner: 'farm_address_1',
-                minted: '0',
-                burnt: '0',
-                decimals: 0,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: false,
-                canBurn: false,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-                balance: '1000000000000000000',
-                identifier: 'FMT-1234-01',
-                canAddSpecialRoles: true,
-                canTransferNFTCreateRole: false,
-                NFTCreateStopped: false,
-                wiped: '0',
-                attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
-                creator: 'farm_address_1',
-                nonce: 1,
-                royalties: '0',
-            },
-        ];
-        const response = { data: esdtTokens };
-        jest.spyOn(axios, 'get').mockResolvedValue(response);
-
         expect(await service.getAllNFTTokens('user_address_1')).toEqual([
             {
                 token: 'FMT-1234',

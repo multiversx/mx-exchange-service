@@ -1,5 +1,6 @@
 import { TokenModel } from '../models/esdtToken.model';
 import { FarmTokenAttributesModel } from '../models/farm.model';
+import { NFTTokenModel } from '../models/nftToken.model';
 
 const pairsMetadata = [
     {
@@ -33,6 +34,65 @@ const farmMetadata = {
     farmingTokenReserve: '600000',
     rewardsPerBlock: '1',
 };
+
+export class ElrondApiServiceMock {
+    async getTokensForUser(address: string): Promise<TokenModel[]> {
+        return [
+            {
+                token: 'MEX-53c38d',
+                name: 'MaiarExchangeToken',
+                type: 'FungibleESDT',
+                owner:
+                    'erd1x39tc3q3nn72ecjnmcz7x0qp09kp97t080x99dgyhx7zh95j0n4szskhlv',
+                minted: '101000000000000000000000',
+                burnt: '0',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+                balance: '1000000000000000000',
+                identifier: null,
+            },
+        ];
+    }
+
+    async getNftsForUser(address: string): Promise<NFTTokenModel[]> {
+        return [
+            {
+                token: 'FMT-1234',
+                name: 'FarmToken',
+                type: 'SemiFungibleESDT',
+                owner: 'farm_address_1',
+                minted: '0',
+                burnt: '0',
+                decimals: 0,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: false,
+                canBurn: false,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+                balance: '1000000000000000000',
+                identifier: 'FMT-1234-01',
+                canAddSpecialRoles: true,
+                canTransferNFTCreateRole: false,
+                NFTCreateStopped: false,
+                wiped: '0',
+                attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
+                creator: 'farm_address_1',
+                nonce: 1,
+                royalties: '0',
+            },
+        ];
+    }
+}
 
 export class ContextServiceMock {
     async getAllPairsAddress(): Promise<string[]> {
@@ -81,6 +141,7 @@ export class FarmServiceMock {
         attributes: string,
     ): Promise<FarmTokenAttributesModel> {
         return {
+            attributes: attributes,
             enteringEpoch: 1,
             aprMultiplier: 1,
             lockedRewards: false,

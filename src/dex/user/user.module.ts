@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { PriceFeedModule } from 'src/services/price-feed/price-feed.module';
 import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 import { FarmModule } from '../farm/farm.module';
@@ -12,6 +13,7 @@ import { UserService } from './user.service';
 
 @Module({
     imports: [
+        ElrondCommunicationModule,
         CacheManagerModule,
         ContextModule,
         PairModule,
