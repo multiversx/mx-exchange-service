@@ -13,7 +13,7 @@ import {
 import { abiConfig, scAddress } from '../../config';
 import { WrappedFarmTokenAttributesModel } from '../models/proxy.model';
 
-function d2h(d: number): string {
+function decimalToHex(d: number): string {
     const h = d.toString(16);
     return h.length % 2 ? '0' + h : h;
 }
@@ -72,9 +72,9 @@ export function decodeWrappedFarmTokenAttributes(attributes: string) {
         structType,
     );
     const decodedAttributes: WrappedFarmTokenAttributesModel = decoded.valueOf();
-    const farmTokenIdentifier = `${decodedAttributes.farmTokenID}-${d2h(
-        decodedAttributes.farmTokenNonce,
-    )}`;
+    const farmTokenIdentifier = `${
+        decodedAttributes.farmTokenID
+    }-${decimalToHex(decodedAttributes.farmTokenNonce)}`;
 
     return {
         ...decodedAttributes,
