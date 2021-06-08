@@ -137,21 +137,19 @@ export class ContextService {
         return;
     }
 
-    async getPairsMap(): Promise<Map<string, Map<string, number>>> {
+    async getPairsMap(): Promise<Map<string, string[]>> {
         const pairsMetadata = await this.getPairsMetadata();
-        const pairsMap = new Map<string, Map<string, number>>();
+        const pairsMap = new Map<string, string[]>();
         pairsMetadata.forEach(pair => {
             if (pairsMap.has(pair.firstToken)) {
-                pairsMap.get(pair.firstToken).set(pair.secondToken, 1);
+                pairsMap.get(pair.firstToken).push(pair.secondToken);
             } else {
-                pairsMap.set(pair.firstToken, new Map());
-                pairsMap.get(pair.firstToken).set(pair.secondToken, 1);
+                pairsMap.set(pair.firstToken, [pair.secondToken]);
             }
             if (pairsMap.has(pair.secondToken)) {
-                pairsMap.get(pair.secondToken).set(pair.firstToken, 1);
+                pairsMap.get(pair.secondToken).push(pair.firstToken);
             } else {
-                pairsMap.set(pair.secondToken, new Map());
-                pairsMap.get(pair.secondToken).set(pair.firstToken, 1);
+                pairsMap.set(pair.secondToken, [pair.firstToken]);
             }
         });
 
@@ -168,14 +166,14 @@ export class ContextService {
         const pairsMap = await this.getPairsMap();
         pairsMap.forEach((value, key, map) => visited.set(key, false));
 
-        while (queue.length !== 0) {
+        while (queue.length > 0) {
             const node = queue.shift();
-            for (const [key, value] of pairsMap.get(node)) {
+            for (const key of pairsMap.get(node) ?? []) {
                 if (key === output) {
                     path.push(output);
                     return path;
                 }
-                if (!visited.get(key)) {
+                if (visited.get(key) === false) {
                     visited.set(key, true);
                     queue.push(key);
                     path.push(key);
