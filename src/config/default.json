@@ -29,11 +29,12 @@
     ],
     "caching": {
         "networkConfig": 1,
-        "pairsMetadata": 10,
-        "pairs": 10,
+        "pairsMetadata": 100,
+        "pairs": 100,
         "txTotalCount": 10,
         "pairCount": 10,
-        "token": 30,
+        "token": 300,
+        "userTokens": 3,
         "default": 20
     },
     "gas": {

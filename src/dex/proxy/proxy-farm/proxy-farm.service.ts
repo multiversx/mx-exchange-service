@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { NFTTokenModel } from 'src/dex/models/nftToken.model';
-import { CacheProxyFarmService } from 'src/services/cache-manager/cache-proxy-farm.service';
+import { CacheProxyFarmService } from '../../../services/cache-manager/cache-proxy-farm.service';
 import { ContextService } from '../../utils/context.service';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
 

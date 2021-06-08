@@ -65,7 +65,19 @@ describe('PairService', () => {
         expect(firstToken).toEqual({
             token: 'WEGLD-b57a79',
             name: 'WEGLD-b57a79',
+            type: 'FungibleESDT',
+            owner: 'user_address_1',
+            minted: '0',
+            burnt: '0',
             decimals: 18,
+            isPaused: false,
+            canUpgrade: true,
+            canMint: true,
+            canBurn: true,
+            canChangeOwner: true,
+            canPause: true,
+            canFreeze: true,
+            canWipe: true,
         });
     });
 

@@ -10,6 +10,7 @@ import { CacheProxyPairService } from './cache-proxy-pair.service';
 import { CacheProxyFarmService } from './cache-proxy-farm.service';
 import { CacheFarmService } from './cache-farm.service';
 import { CacheLockedAssetService } from './cache-locked-asset.service';
+import { CacheUserService } from './cache-user.service';
 
 @Module({
     providers: [
@@ -22,6 +23,7 @@ import { CacheLockedAssetService } from './cache-locked-asset.service';
         CacheProxyPairService,
         CacheProxyFarmService,
         CacheLockedAssetService,
+        CacheUserService,
     ],
     imports: [
         CacheModule.register({
@@ -29,7 +31,6 @@ import { CacheLockedAssetService } from './cache-locked-asset.service';
             store: redisStore,
             host: process.env.REDIS_URL,
             port: process.env.REDIS_PORT,
-            password: process.env.REDIS_PASSWORD,
             prefix: process.env.REDIS_PREFIX,
         }),
     ],
@@ -43,6 +44,7 @@ import { CacheLockedAssetService } from './cache-locked-asset.service';
         CacheProxyPairService,
         CacheProxyFarmService,
         CacheLockedAssetService,
+        CacheUserService,
     ],
 })
 export class CacheManagerModule {}

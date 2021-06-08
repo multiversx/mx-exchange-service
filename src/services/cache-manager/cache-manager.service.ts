@@ -29,7 +29,7 @@ export class CacheManagerService {
         await this.set(
             FactoryKeys.pairsAddress(),
             pairsAddress,
-            cacheConfig.default,
+            cacheConfig.pairsMetadata,
         );
     }
 
@@ -43,14 +43,6 @@ export class CacheManagerService {
             pairs,
             cacheConfig.pairsMetadata,
         );
-    }
-
-    async getPairs(): Promise<Record<string, any>> {
-        return this.cacheManager.get(Keys.pairs());
-    }
-
-    async setPairs(pairs: Record<string, any>): Promise<void> {
-        await this.set(Keys.pairs(), pairs, cacheConfig.pairs);
     }
 
     async getPairCount(): Promise<Record<string, any>> {

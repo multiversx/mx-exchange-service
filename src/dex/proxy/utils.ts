@@ -10,7 +10,13 @@ import {
     TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
-import { abiConfig, scAddress } from 'src/config';
+import { abiConfig, scAddress } from '../../config';
+import { WrappedFarmTokenAttributesModel } from '../models/proxy.model';
+
+function decimalToHex(d: number): string {
+    const h = d.toString(16);
+    return h.length % 2 ? '0' + h : h;
+}
 
 export async function getContract() {
     const abiRegistry = await AbiRegistry.load({
@@ -65,6 +71,13 @@ export function decodeWrappedFarmTokenAttributes(attributes: string) {
         attributesBuffer,
         structType,
     );
+    const decodedAttributes: WrappedFarmTokenAttributesModel = decoded.valueOf();
+    const farmTokenIdentifier = `${
+        decodedAttributes.farmTokenID
+    }-${decimalToHex(decodedAttributes.farmTokenNonce)}`;
 
-    return decoded.valueOf();
+    return {
+        ...decodedAttributes,
+        farmTokenIdentifier: farmTokenIdentifier,
+    };
 }

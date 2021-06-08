@@ -49,6 +49,8 @@ export class WrappedFarmTokenAttributesModel {
     @Field(type => Int)
     farmTokenNonce: number;
     @Field()
+    farmTokenIdentifier: string;
+    @Field()
     farmedTokenID: string;
     @Field(type => Int)
     farmedTokenNonce: number;

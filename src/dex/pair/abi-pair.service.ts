@@ -14,7 +14,7 @@ export class AbiPairService {
 
     constructor(private context: ContextService) {
         this.proxy = new ProxyProvider(
-            elrondConfig.gateway,
+            elrondConfig.elrondApi,
             elrondConfig.proxyTimeout,
         );
     }

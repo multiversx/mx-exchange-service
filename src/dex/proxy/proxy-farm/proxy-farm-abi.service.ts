@@ -10,7 +10,7 @@ export class AbiProxyFarmService {
 
     constructor() {
         this.proxy = new ProxyProvider(
-            elrondConfig.gateway,
+            elrondConfig.elrondApi,
             elrondConfig.proxyTimeout,
         );
     }
