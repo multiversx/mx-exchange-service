@@ -15,12 +15,13 @@ import {
     UserTokenModel,
 } from '../models/user.model';
 import BigNumber from 'bignumber.js';
+import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import { TokenModel } from '../models/esdtToken.model';
 
 @Injectable()
 export class UserService {
-    private url: string;
-    private timeoutLimit: number;
     constructor(
+        private apiService: ElrondApiService,
         private cacheService: CacheUserService,
         private pairService: PairService,
         private priceFeed: PriceFeedService,
@@ -28,10 +29,7 @@ export class UserService {
         private proxyPairService: ProxyPairService,
         private proxyFarmService: ProxyFarmService,
         private farmService: FarmService,
-    ) {
-        this.url = elrondConfig.elrondApi;
-        this.timeoutLimit = elrondConfig.proxyTimeout;
-    }
+    ) {}
 
     getUser(userAddress: string): UserModel {
         const user = new UserModel();
@@ -45,20 +43,20 @@ export class UserService {
             return cachedData.esdtTokens;
         }
 
-        const url = `${this.url}/accounts/${userAddress}/tokens`;
-        const response = await axios.get(url, { timeout: this.timeoutLimit });
-        const userTokens: UserTokenModel[] = response.data;
+        const userTokens: TokenModel[] = await this.apiService.getTokensForUser(
+            userAddress,
+        );
         const promises = userTokens.map(async token => {
             const tokenPriceUSD = await this.getEsdtTokenPriceUSD(token.token);
             const denominator = new BigNumber(`1e-${token.decimals}`);
-            token.value = new BigNumber(token.balance)
+            const value = new BigNumber(token.balance)
                 .multipliedBy(denominator)
                 .multipliedBy(new BigNumber(tokenPriceUSD))
                 .toString();
-            return token;
+            return { ...token, value: value };
         });
 
-        const esdtTokens = await Promise.all(promises);
+        const esdtTokens: UserTokenModel[] = await Promise.all(promises);
         this.cacheService.setESDTTokens(userAddress, {
             esdtTokens: esdtTokens,
         });
@@ -71,14 +69,14 @@ export class UserService {
             return cachedData.nftTokens;
         }
 
-        const url = `${this.url}/accounts/${userAddress}/nfts`;
-        const response = await axios.get(url, { timeout: this.timeoutLimit });
-        const userNFTs: UserNFTTokenModel[] = response.data;
+        const userNFTs: NFTTokenModel[] = await this.apiService.getNftsForUser(
+            userAddress,
+        );
         const promises = userNFTs.map(async nftToken => {
-            nftToken.value = await this.getNFTTokenValueUSD(nftToken);
-            return nftToken;
+            const value = await this.getNFTTokenValueUSD(nftToken);
+            return { ...nftToken, value: value };
         });
-        const nftTokens = await Promise.all(promises);
+        const nftTokens: UserNFTTokenModel[] = await Promise.all(promises);
         this.cacheService.setNFTTokens(userAddress, { nftTokens: nftTokens });
         return nftTokens;
     }
@@ -157,7 +155,7 @@ export class UserService {
                 decodedWFMTAttributes[0].farmTokenID,
             );
             if (farmAddress) {
-                const farmToken = await this.getAddressNFTToken(
+                const farmToken = await this.apiService.getNftByTokenIdentifier(
                     scAddress.proxyDexAddress,
                     decodedWFMTAttributes[0].farmTokenIdentifier,
                 );
@@ -185,14 +183,5 @@ export class UserService {
             .dividedBy(decodedFarmAttributes.aprMultiplier)
             .multipliedBy(denominator)
             .multipliedBy(new BigNumber(tokenPriceUSD));
-    }
-
-    private async getAddressNFTToken(
-        address: string,
-        tokenID: string,
-    ): Promise<NFTTokenModel> {
-        const url = `${this.url}/accounts/${address}/nfts/${tokenID}`;
-        const response = await axios.get(url, { timeout: this.timeoutLimit });
-        return response.data;
     }
 }

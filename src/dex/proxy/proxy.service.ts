@@ -14,13 +14,17 @@ import {
     decodeWrappedLPTokenAttributes,
 } from './utils';
 import { NFTTokenModel } from '../models/nftToken.model';
+import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import { FarmService } from '../farm/farm.service';
 
 @Injectable()
 export class ProxyService {
     constructor(
+        private apiService: ElrondApiService,
         private abiService: AbiProxyService,
         private cacheService: CacheProxyService,
         private context: ContextService,
+        private farmService: FarmService,
     ) {}
 
     async getProxyInfo(): Promise<ProxyModel> {
@@ -82,9 +86,17 @@ export class ProxyService {
     async getWrappedFarmTokenAttributes(
         batchAttributes: string[],
     ): Promise<WrappedFarmTokenAttributesModel[]> {
-        return batchAttributes.map(attributes => {
+        const promises = batchAttributes.map(async attributes => {
             const decodedAttributes = decodeWrappedFarmTokenAttributes(
                 attributes,
+            );
+
+            const farmToken = await this.apiService.getNftByTokenIdentifier(
+                scAddress.proxyDexAddress,
+                decodedAttributes.farmTokenIdentifier,
+            );
+            const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
+                farmToken.attributes,
             );
 
             return {
@@ -92,9 +104,12 @@ export class ProxyService {
                 farmTokenID: decodedAttributes.farmTokenID.toString(),
                 farmTokenNonce: decodedAttributes.farmTokenNonce,
                 farmTokenIdentifier: decodedAttributes.farmTokenIdentifier,
+                farmTokenAttributes: decodedFarmAttributes,
                 farmedTokenID: decodedAttributes.farmedTokenID.toString(),
                 farmedTokenNonce: decodedAttributes.farmedTokenNonce,
             };
         });
+
+        return Promise.all(promises);
     }
 }

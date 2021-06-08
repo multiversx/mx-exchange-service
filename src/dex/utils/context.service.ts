@@ -12,12 +12,12 @@ import {
     Address,
     SmartContract,
     GasLimit,
-    ApiProvider,
     ContractFunction,
 } from '@elrondnetwork/erdjs';
 import { TokenModel } from '../models/esdtToken.model';
 import { TransactionModel } from '../models/transaction.model';
 import { NFTTokenModel } from '../models/nftToken.model';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 
 interface PairMetadata {
     address: string;
@@ -28,14 +28,12 @@ interface PairMetadata {
 @Injectable()
 export class ContextService {
     private readonly proxy: ProxyProvider;
-    private readonly apiFacade: ApiProvider;
 
-    constructor(private cacheManagerService: CacheManagerService) {
+    constructor(
+        private apiService: ElrondApiService,
+        private cacheManagerService: CacheManagerService,
+    ) {
         this.proxy = new ProxyProvider(
-            elrondConfig.elrondApi,
-            elrondConfig.proxyTimeout,
-        );
-        this.apiFacade = new ApiProvider(
             elrondConfig.elrondApi,
             elrondConfig.proxyTimeout,
         );
@@ -190,13 +188,17 @@ export class ContextService {
             return cachedData.token;
         }
 
-        const tokenMetadata = await this.apiFacade.getESDTToken(tokenID);
+        const tokenMetadata = await this.apiService
+            .getService()
+            .getESDTToken(tokenID);
         this.cacheManagerService.setToken(tokenID, { token: tokenMetadata });
         return tokenMetadata;
     }
 
     async getNFTTokenMetadata(tokenID: string): Promise<NFTTokenModel> {
-        const nftTokenMetadata = await this.apiFacade.getNFTToken(tokenID);
+        const nftTokenMetadata = await this.apiService
+            .getService()
+            .getNFTToken(tokenID);
         return nftTokenMetadata;
     }
 

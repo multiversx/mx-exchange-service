@@ -5,6 +5,8 @@ import { NFTTokenModel } from './nftToken.model';
 @ObjectType()
 export class FarmTokenAttributesModel {
     @Field()
+    attributes: string;
+    @Field()
     rewardPerShare: string;
     @Field(type => Int)
     enteringEpoch: number;
