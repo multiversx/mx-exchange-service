@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ContextService } from '../utils/context.service';
-import { TokenModel } from 'src/dex/models/esdtToken.model';
+import { TokenModel } from '../models/esdtToken.model';
 import { AbiProxyService } from './proxy-abi.service';
-import { CacheProxyService } from 'src/services/cache-manager/cache-proxy.service';
+import { CacheProxyService } from '../../services/cache-manager/cache-proxy.service';
 import {
     ProxyModel,
     WrappedFarmTokenAttributesModel,
     WrappedLpTokenAttributesModel,
 } from '../models/proxy.model';
-import { scAddress } from 'src/config';
+import { scAddress } from '../../config';
 import {
     decodeWrappedFarmTokenAttributes,
     decodeWrappedLPTokenAttributes,
@@ -90,9 +90,10 @@ export class ProxyService {
             return {
                 attributes: attributes,
                 farmTokenID: decodedAttributes.farmTokenID.toString(),
-                farmTokenNonce: decodedAttributes.farmTokenNonce.toString(),
+                farmTokenNonce: decodedAttributes.farmTokenNonce,
+                farmTokenIdentifier: decodedAttributes.farmTokenIdentifier,
                 farmedTokenID: decodedAttributes.farmedTokenID.toString(),
-                farmedTokenNonce: decodedAttributes.farmedTokenNonce.toString(),
+                farmedTokenNonce: decodedAttributes.farmedTokenNonce,
             };
         });
     }
