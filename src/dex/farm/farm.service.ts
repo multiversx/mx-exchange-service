@@ -153,6 +153,7 @@ export class FarmService {
         );
         const decodedAttributes = decoded.valueOf();
         return {
+            attributes: attributes,
             rewardPerShare: decodedAttributes.rewardPerShare.toString(),
             enteringEpoch: decodedAttributes.enteringEpoch,
             aprMultiplier: decodedAttributes.aprMultiplier,
