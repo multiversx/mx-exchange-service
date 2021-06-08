@@ -18,6 +18,5 @@ export class TokenModel {
     @Field() canFreeze: boolean;
     @Field() canWipe: boolean;
     @Field({ nullable: true }) balance?: string;
-    @Field({ nullable: true }) tokenIdentifier?: string;
-    @Field({ nullable: true }) price?: string;
+    @Field({ nullable: true }) identifier?: string;
 }
