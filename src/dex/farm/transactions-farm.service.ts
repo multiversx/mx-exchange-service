@@ -40,7 +40,7 @@ export class TransactionsFarmService {
         return await this.context.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.enterFarm),
+            new GasLimit(gasConfig.esdtTransfer),
         );
     }
 

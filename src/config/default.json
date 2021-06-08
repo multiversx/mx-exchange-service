@@ -11,8 +11,8 @@
         "timeoutLimit": 10000
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgq9s7ft5fj72zyt8qn8yd24xcl8rxu9v4m0n4sjlh528",
-        "MEX-53c38d": "erd1qqqqqqqqqqqqqpgq0mymutxyfj9zgrgp9rwht990rmxhua9g0n4spkywfc",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgq8409qgvck6rwt9k4pcprs858w3nf2rw00n4s6rjqnr",
+        "MEX-53c38d": "erd1qqqqqqqqqqqqqpgqte84w4yeq8xz9cc8e9xjculm47hdm7mk0n4st4uv43",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqc8relmv973g34dytgd55p3hmaaljvka30n4s6n64q6",
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqdhtgx8pvmjtzkdpykjl570dll33sasze0n4sy76g6e",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqhpu9gztn7tmznxc46q46uk6f23ttnern0n4sar7l79",
@@ -42,7 +42,7 @@
         "esdtTransfer": 50000000,
         "reclaimTemporaryFunds": 20000000,
         "addLiquidity": 30000000,
-        "removeLiquidity": 25000000,
+        "removeLiquidity": 50000000,
         "swapTokens": 65000000,
         "createPair": 1400000000,
         "issueToken": 200000000,
@@ -50,8 +50,10 @@
         "setState": 200000000,
         "setFee": 200000000,
         "addLiquidityProxy": 200000000,
+        "removeLiquidityProxy": 200000000,
         "enterFarm": 100000000,
         "exitFarm": 50000000,
+        "exitFarmProxy": 200000000,
         "wrapeGLD": 8000000
     },
     "abi": {

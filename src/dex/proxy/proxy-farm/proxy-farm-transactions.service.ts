@@ -39,7 +39,7 @@ export class TransactionsProxyFarmService {
         const transaction = await this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.enterFarm),
         );
 
         transaction.receiver = args.sender;
@@ -62,7 +62,7 @@ export class TransactionsProxyFarmService {
         const transaction = await this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.exitFarmProxy),
         );
 
         transaction.receiver = args.sender;
@@ -87,7 +87,7 @@ export class TransactionsProxyFarmService {
         const transaction = await this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.exitFarmProxy),
         );
 
         transaction.receiver = args.sender;
