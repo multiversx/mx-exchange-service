@@ -3,6 +3,7 @@ import { ProxyProvider, Address, SmartContract } from '@elrondnetwork/erdjs';
 import { elrondConfig, abiConfig, scAddress } from '../../config';
 import {
     AbiRegistry,
+    BytesValue,
     TypedValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
@@ -45,5 +46,20 @@ export class AbiDistributionService {
         const result = interaction.interpretQueryResponse(queryResponse);
 
         return result.values;
+    }
+
+    async getDistributedLockedAssets(userAddress: string): Promise<string> {
+        const contract = await this.getContract();
+        const interaction: Interaction = contract.methods.calculateLockedAssets(
+            [BytesValue.fromHex(new Address(userAddress).hex())],
+        );
+        const queryResponse = await contract.runQuery(
+            this.proxy,
+            interaction.buildQuery(),
+        );
+
+        const result = interaction.interpretQueryResponse(queryResponse);
+
+        return result.firstValue.valueOf().toString();
     }
 }

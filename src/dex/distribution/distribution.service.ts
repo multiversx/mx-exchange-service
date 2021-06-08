@@ -23,9 +23,8 @@ export class DistributionService {
     async getCommunityDistribution(): Promise<CommunityDistributionModel> {
         const cachedEpoch = await this.cacheService.getEpoch();
         const cachedAmount = await this.cacheService.getAmount();
-        const cachedMilestones = await this.cacheService.getMilestones();
 
-        if (!!cachedEpoch && !!cachedAmount && !!cachedMilestones) {
+        if (!!cachedEpoch && !!cachedAmount) {
             return {
                 epoch: cachedEpoch.epoch,
                 amount: cachedAmount.amount,
@@ -42,5 +41,12 @@ export class DistributionService {
             epoch: epoch,
             amount: amount,
         };
+    }
+
+    async getDistributedLockedAssets(userAddress: string): Promise<string> {
+        const distributedLockedAssets = await this.abiService.getDistributedLockedAssets(
+            userAddress,
+        );
+        return distributedLockedAssets;
     }
 }
