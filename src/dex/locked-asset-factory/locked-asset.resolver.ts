@@ -2,7 +2,10 @@ import { Resolver, Query, ResolveField, Args, Int } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../models/transaction.model';
 import { LockedAssetService } from './locked-asset.service';
-import { LockedAssetModel } from '../models/locked-asset.model';
+import {
+    LockedAssetModel,
+    UnlockMileStoneModel,
+} from '../models/locked-asset.model';
 import { UnlockAssetsArs } from './dto/locked-asset.args';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
 import { NFTTokenModel } from '../models/nftToken.model';
@@ -19,6 +22,11 @@ export class LockedAssetResolver {
     @ResolveField()
     async lockedToken(): Promise<NFTTokenModel> {
         return await this.lockedAssetService.getLockedToken();
+    }
+
+    @ResolveField()
+    async unlockMilestones(): Promise<UnlockMileStoneModel[]> {
+        return await this.lockedAssetService.getDefaultUnlockPeriod();
     }
 
     @Query(returns => LockedAssetModel)
