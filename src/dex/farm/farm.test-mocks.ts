@@ -8,22 +8,22 @@ interface PairMetadata {
 
 const pairsMetadata = [
     {
-        firstToken: 'WEGLD-ccae2d',
-        secondToken: 'MEX-53c38d',
+        firstToken: 'WXEGLD-da3f24',
+        secondToken: 'MEX-531623',
         address: 'pair_address_1',
     },
     {
-        firstToken: 'WEGLD-ccae2d',
+        firstToken: 'WXEGLD-da3f24',
         secondToken: 'BUSD-f66742',
         address: 'pair_address_2',
     },
     {
-        firstToken: 'MEX-53c38d',
+        firstToken: 'MEX-531623',
         secondToken: 'BUSD-f66742',
         address: 'pair_address_3',
     },
     {
-        firstToken: 'MEX-53c38d',
+        firstToken: 'MEX-531623',
         secondToken: 'SPT-f66742',
         address: 'pair_address_4',
     },
@@ -31,7 +31,7 @@ const pairsMetadata = [
 
 const farmMetadata = {
     address: 'farm_address_1',
-    farmedTokenID: 'MEX-53c38d',
+    farmedTokenID: 'MEX-531623',
     farmTokenID: 'FMT-1234',
     farmingTokenID: 'LPT-1111',
     farmTotalSupply: '1000000',

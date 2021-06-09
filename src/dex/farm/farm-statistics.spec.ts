@@ -9,7 +9,7 @@ import {
     PairServiceMock,
 } from './farm.test-mocks';
 
-describe('PairService', () => {
+describe('FarmStatisticsService', () => {
     let service: FarmStatisticsService;
 
     const FarmServiceProvider = {
