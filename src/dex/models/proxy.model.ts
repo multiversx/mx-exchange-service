@@ -67,4 +67,6 @@ export class GenericEsdtAmountPair {
     tokenNonce: string;
     @Field()
     amount: string;
+    @Field({ nullable: true })
+    pairAddress: string;
 }

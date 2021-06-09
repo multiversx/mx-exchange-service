@@ -386,36 +386,85 @@ export class PairService {
     }
 
     async getTemporaryFunds(
-        pairAddress: string,
         callerAddress: string,
-        tokenID: string,
-    ): Promise<GenericEsdtAmountPair> {
-        const cachedData = await this.cacheService.getTemporaryFunds(
-            pairAddress,
-            callerAddress,
-            tokenID,
-        );
-        if (!!cachedData) {
-            return cachedData.temporaryFunds;
-        }
+    ): Promise<GenericEsdtAmountPair[][]> {
+        const pairsMetadata = await this.context.getPairsMetadata();
 
-        const temporaryFunds = await this.abiService.getTemporaryFunds(
-            pairAddress,
-            callerAddress,
-            tokenID,
-        );
-        this.cacheService.setTemporaryFunds(
-            pairAddress,
-            callerAddress,
-            tokenID,
-            { temporaryFunds: temporaryFunds },
-        );
+        const promises = pairsMetadata.map(async pairMetadata => {
+            const cachedFirstTokenData = await this.cacheService.getTemporaryFunds(
+                pairMetadata.address,
+                callerAddress,
+                pairMetadata.firstToken,
+            );
 
-        return {
-            tokenID: tokenID,
-            tokenNonce: '0',
-            amount: temporaryFunds,
-        };
+            const cachedSecondTokenData = await this.cacheService.getTemporaryFunds(
+                pairMetadata.address,
+                callerAddress,
+                pairMetadata.secondToken,
+            );
+
+            if (!!cachedFirstTokenData && !!cachedSecondTokenData) {
+                const temporaryFunds: GenericEsdtAmountPair[] = [
+                    {
+                        tokenID: pairMetadata.firstToken,
+                        tokenNonce: '0',
+                        amount: cachedFirstTokenData.temporaryFunds,
+                        pairAddress: pairMetadata.address,
+                    },
+                    {
+                        tokenID: pairMetadata.secondToken,
+                        tokenNonce: '0',
+                        amount: cachedSecondTokenData.temporaryFunds,
+                        pairAddress: pairMetadata.address,
+                    },
+                ];
+                return temporaryFunds;
+            }
+
+            const temporaryFundsFirstToken = await this.abiService.getTemporaryFunds(
+                pairMetadata.address,
+                callerAddress,
+                pairMetadata.firstToken,
+            );
+            const temporaryFundsSecondToken = await this.abiService.getTemporaryFunds(
+                pairMetadata.address,
+                callerAddress,
+                pairMetadata.secondToken,
+            );
+
+            this.cacheService.setTemporaryFunds(
+                pairMetadata.address,
+                callerAddress,
+                pairMetadata.firstToken,
+                { temporaryFunds: temporaryFundsFirstToken },
+            );
+            this.cacheService.setTemporaryFunds(
+                pairMetadata.address,
+                callerAddress,
+                pairMetadata.secondToken,
+                { temporaryFunds: temporaryFundsSecondToken },
+            );
+
+            const temporaryFunds: GenericEsdtAmountPair[] = [
+                {
+                    tokenID: pairMetadata.firstToken,
+                    tokenNonce: '0',
+                    amount: temporaryFundsFirstToken,
+                    pairAddress: pairMetadata.address,
+                },
+                {
+                    tokenID: pairMetadata.secondToken,
+                    tokenNonce: '0',
+                    amount: temporaryFundsSecondToken,
+                    pairAddress: pairMetadata.address,
+                },
+            ];
+            return temporaryFunds;
+        });
+
+        const allTemporaryFunds = Promise.all(promises);
+
+        return allTemporaryFunds;
     }
 
     async getLiquidityPosition(

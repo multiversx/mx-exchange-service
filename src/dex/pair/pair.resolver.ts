@@ -111,17 +111,9 @@ export class PairResolver {
         );
     }
 
-    @Query(returns => GenericEsdtAmountPair)
-    async getTemporaryFunds(
-        @Args('pairAddress') pairAddress: string,
-        @Args('callerAddress') callerAddress: string,
-        @Args('tokenID') tokenID: string,
-    ) {
-        return await this.pairService.getTemporaryFunds(
-            pairAddress,
-            callerAddress,
-            tokenID,
-        );
+    @Query(returns => [[GenericEsdtAmountPair]])
+    async getTemporaryFunds(@Args('callerAddress') callerAddress: string) {
+        return await this.pairService.getTemporaryFunds(callerAddress);
     }
 
     @Query(returns => LiquidityPosition)
