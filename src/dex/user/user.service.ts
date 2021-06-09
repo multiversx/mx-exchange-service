@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
-import { elrondConfig, scAddress, tokensPriceData } from '../../config';
+import { scAddress, tokensPriceData } from '../../config';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { FarmService } from '../farm/farm.service';
 import { NFTTokenModel } from '../models/nftToken.model';
@@ -82,7 +81,7 @@ export class UserService {
     }
 
     private async getEsdtTokenPriceUSD(tokenID: string): Promise<string> {
-        if (tokenID === 'WEGLD-b57a79') {
+        if (tokensPriceData.has(tokenID)) {
             return (
                 await this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID))
             ).toString();

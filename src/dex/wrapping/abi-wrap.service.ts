@@ -31,7 +31,7 @@ export class AbiWrapService {
 
     async getWrappedEgldTokenID(): Promise<string> {
         const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getWrappedEgldTokenIdentifier(
+        const interaction: Interaction = contract.methods.getWrappedEgldTokenId(
             [],
         );
         const queryResponse = await contract.runQuery(

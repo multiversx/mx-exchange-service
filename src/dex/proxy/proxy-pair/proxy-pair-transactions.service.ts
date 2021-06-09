@@ -83,7 +83,7 @@ export class TransactionsProxyPairService {
         const transaction = await this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.removeLiquidityProxy),
         );
 
         transaction.receiver = args.sender;

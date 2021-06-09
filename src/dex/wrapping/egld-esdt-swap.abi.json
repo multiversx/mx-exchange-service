@@ -1,51 +1,15 @@
 {
     "name": "EgldEsdtSwap",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "wrapped_egld_token_id",
+                "type": "TokenIdentifier"
+            }
+        ],
+        "outputs": []
+    },
     "endpoints": [
-        {
-            "name": "issueWrappedEgld",
-            "payableInTokens": [
-                "EGLD"
-            ],
-            "inputs": [
-                {
-                    "name": "token_display_name",
-                    "type": "bytes"
-                },
-                {
-                    "name": "token_ticker",
-                    "type": "bytes"
-                },
-                {
-                    "name": "initial_supply",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "docs": [
-                "Address to set role for. Defaults to own address"
-            ],
-            "name": "setLocalMintRole",
-            "inputs": [
-                {
-                    "name": "opt_address",
-                    "type": "optional<Address>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "mintWrappedEgld",
-            "inputs": [
-                {
-                    "name": "amount",
-                    "type": "BigUint"
-                }
-            ],
-            "outputs": []
-        },
         {
             "name": "wrapEgld",
             "payableInTokens": [
@@ -72,16 +36,7 @@
             ]
         },
         {
-            "name": "getWrappedEgldRemaining",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getWrappedEgldTokenIdentifier",
+            "name": "getWrappedEgldTokenId",
             "inputs": [],
             "outputs": [
                 {
