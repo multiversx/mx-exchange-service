@@ -26,7 +26,7 @@ export class TransactionsWrapService {
         const interaction: Interaction = contract.methods.wrapEgld([]);
         const transaction = interaction.buildTransaction();
         transaction.setValue(new Balance(amount));
-        transaction.setGasLimit(new GasLimit(gasConfig.default));
+        transaction.setGasLimit(new GasLimit(gasConfig.wrapeGLD));
 
         return transaction.toPlainObject();
     }
@@ -45,7 +45,7 @@ export class TransactionsWrapService {
         return this.context.esdtTransfer(
             contract,
             args,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.wrapeGLD),
         );
     }
 }

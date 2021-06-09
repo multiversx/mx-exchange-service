@@ -43,7 +43,7 @@
         "reclaimTemporaryFunds": 20000000,
         "addLiquidity": 30000000,
         "removeLiquidity": 50000000,
-        "swapTokens": 65000000,
+        "swapTokens": 100000000,
         "createPair": 1400000000,
         "issueToken": 200000000,
         "setLocalRoles": 200000000,
