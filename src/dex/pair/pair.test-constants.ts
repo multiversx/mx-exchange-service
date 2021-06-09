@@ -9,22 +9,22 @@ interface PairMetadata {
 
 const pairsMetadata = [
     {
-        firstToken: 'WEGLD-b57a79',
-        secondToken: 'MEX-53c38d',
+        firstToken: 'WXEGLD-da3f24',
+        secondToken: 'MEX-531623',
         address: 'pair_address_1',
     },
     {
-        firstToken: 'WEGLD-b57a79',
+        firstToken: 'WXEGLD-da3f24',
         secondToken: 'BUSD-f66742',
         address: 'pair_address_2',
     },
     {
-        firstToken: 'MEX-53c38d',
+        firstToken: 'MEX-531623',
         secondToken: 'BUSD-f66742',
         address: 'pair_address_3',
     },
     {
-        firstToken: 'MEX-53c38d',
+        firstToken: 'MEX-531623',
         secondToken: 'SPT-f66742',
         address: 'pair_address_4',
     },
@@ -66,9 +66,21 @@ export class AbiPairServiceMock {
             totalSupply: '100000000000000000000',
         };
     }
+
+    async getTemporaryFunds(
+        pairAddress: string,
+        callerAddress: string,
+        tokenID: string,
+    ): Promise<string> {
+        return '100';
+    }
 }
 
 export class ContextServiceMock {
+    async getPairsMetadata(): Promise<PairMetadata[]> {
+        return pairsMetadata;
+    }
+
     async getTokenMetadata(tokenID: string): Promise<TokenModel> {
         return {
             token: tokenID,
@@ -212,6 +224,22 @@ export class CachePairServiceMock {
         pairAddress: string,
         tokenID: Record<string, any>,
     ): Promise<void> {
+        return;
+    }
+
+    async getTemporaryFunds(
+        pairAddress: string,
+        callerAddress: string,
+        tokenID: string,
+    ) {
+        return;
+    }
+
+    async setTemporaryFunds(
+        pairAddress: string,
+        callerAddress: string,
+        tokenID: Record<string, any>,
+    ) {
         return;
     }
 }
