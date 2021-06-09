@@ -11,21 +11,21 @@
         "timeoutLimit": 10000
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgq8409qgvck6rwt9k4pcprs858w3nf2rw00n4s6rjqnr",
-        "MEX-53c38d": "erd1qqqqqqqqqqqqqpgqte84w4yeq8xz9cc8e9xjculm47hdm7mk0n4st4uv43",
-        "distributionAddress": "erd1qqqqqqqqqqqqqpgqc8relmv973g34dytgd55p3hmaaljvka30n4s6n64q6",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqdhtgx8pvmjtzkdpykjl570dll33sasze0n4sy76g6e",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqhpu9gztn7tmznxc46q46uk6f23ttnern0n4sar7l79",
-        "wrappingAddress": "erd1qqqqqqqqqqqqqpgq4axqc749vuqr27snr8d8qgvlmz44chsr0n4sm4a72g"
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqmc6lkxzn7cmj2c3ztczapds9ch2c4w9h0n4stl2uq7",
+        "MEX-531623": "erd1qqqqqqqqqqqqqpgqx0xh8fgpr5kjh9n7s53m7qllw42m5t7u0n4suz39xc",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqjnzs5rtnryc4dxsajfqg2e8wq5mkjhaw0n4sj3u4gr",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqaay956lvtchydr40tnwmtsmgaz7d83c20n4s4rgv56",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqpfekajgprpwzfqfctzqfqe5j2n38t3ev0n4shhyhy5",
+        "wrappingAddress": "erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp"
     },
-    "tokenProviderUSD": "WEGLD-b57a79",
+    "tokenProviderUSD": "WXEGLD-da3f24",
     "priceFeeds": {
-        "WEGLD-b57a79": "egld"
+        "WXEGLD-da3f24": "egld"
     },
     "farms": [
-        "erd1qqqqqqqqqqqqqpgqaay956lvtchydr40tnwmtsmgaz7d83c20n4s4rgv56",
-        "erd1qqqqqqqqqqqqqpgq78y09lw93f3udvsplshdv2vk957l5vl70n4splrad2",
-        "erd1qqqqqqqqqqqqqpgqu6s4e5mndgf37psxw9mdlmjavp2er3f00n4snwyk3q"
+        "erd1qqqqqqqqqqqqqpgqwe7relwdmhg52ra4d9t72nt5hk0qhjrd0n4spy0wnx",
+        "erd1qqqqqqqqqqqqqpgqfau7c39mzvmjkkkfmxtdwjgjparkgfmz0n4sfe8er6",
+        "erd1qqqqqqqqqqqqqpgqhpu9gztn7tmznxc46q46uk6f23ttnern0n4sar7l79"
     ],
     "caching": {
         "networkConfig": 1,
