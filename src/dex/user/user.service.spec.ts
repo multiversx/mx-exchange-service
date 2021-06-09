@@ -90,7 +90,7 @@ describe('UserService', () => {
     it('should get user esdt tokens', async () => {
         expect(await service.getAllEsdtTokens('user_address_1')).toEqual([
             {
-                token: 'MEX-53c38d',
+                token: 'MEX-531623',
                 name: 'MaiarExchangeToken',
                 type: 'FungibleESDT',
                 owner:

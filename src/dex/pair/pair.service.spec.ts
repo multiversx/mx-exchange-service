@@ -63,8 +63,8 @@ describe('PairService', () => {
     it('should get first token', async () => {
         const firstToken = await service.getFirstToken('pair_address_1');
         expect(firstToken).toEqual({
-            token: 'WEGLD-b57a79',
-            name: 'WEGLD-b57a79',
+            token: 'WXEGLD-da3f24',
+            name: 'WXEGLD-da3f24',
             type: 'FungibleESDT',
             owner: 'user_address_1',
             minted: '0',
@@ -81,10 +81,74 @@ describe('PairService', () => {
         });
     });
 
+    it('should get all temporary funds for user', async () => {
+        const allTemporaryFunds = await service.getTemporaryFunds(
+            'user_address_1',
+        );
+        expect(allTemporaryFunds).toEqual([
+            [
+                {
+                    tokenID: 'WXEGLD-da3f24',
+                    tokenNonce: '0',
+                    amount: '100',
+                    pairAddress: 'pair_address_1',
+                },
+                {
+                    tokenID: 'MEX-531623',
+                    tokenNonce: '0',
+                    amount: '100',
+                    pairAddress: 'pair_address_1',
+                },
+            ],
+            [
+                {
+                    tokenID: 'WXEGLD-da3f24',
+                    tokenNonce: '0',
+                    amount: '100',
+                    pairAddress: 'pair_address_2',
+                },
+                {
+                    tokenID: 'BUSD-f66742',
+                    tokenNonce: '0',
+                    amount: '100',
+                    pairAddress: 'pair_address_2',
+                },
+            ],
+            [
+                {
+                    tokenID: 'MEX-531623',
+                    tokenNonce: '0',
+                    amount: '100',
+                    pairAddress: 'pair_address_3',
+                },
+                {
+                    tokenID: 'BUSD-f66742',
+                    tokenNonce: '0',
+                    amount: '100',
+                    pairAddress: 'pair_address_3',
+                },
+            ],
+            [
+                {
+                    tokenID: 'MEX-531623',
+                    tokenNonce: '0',
+                    amount: '100',
+                    pairAddress: 'pair_address_4',
+                },
+                {
+                    tokenID: 'SPT-f66742',
+                    tokenNonce: '0',
+                    amount: '100',
+                    pairAddress: 'pair_address_4',
+                },
+            ],
+        ]);
+    });
+
     it('should get simple token price in USD', async () => {
         const tokenPriceUSD = await service.getTokenPriceUSD(
             'pair_address_1',
-            'MEX-53c38d',
+            'MEX-531623',
         );
         expect(tokenPriceUSD).toEqual('100');
     });
@@ -102,7 +166,7 @@ describe('PairService', () => {
             'pair_address_4',
             'SPT-f66742',
         );
-        expect(tokenPriceUSD).toEqual('100');
+        expect(tokenPriceUSD).toEqual('0.01');
     });
 
     it('should get liquidity position from pair', async () => {
