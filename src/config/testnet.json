@@ -6,6 +6,7 @@
         "txTotalCount": 60,
         "pairCount": 60,
         "token": 600,
+        "userTokens": 3,
         "default": 20
     }
 }
