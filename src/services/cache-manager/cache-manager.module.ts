@@ -32,6 +32,7 @@ import { CacheUserService } from './cache-user.service';
             host: process.env.REDIS_URL,
             port: process.env.REDIS_PORT,
             prefix: process.env.REDIS_PREFIX,
+            password: process.env.REDIS_PASSWORD,
         }),
     ],
     exports: [
