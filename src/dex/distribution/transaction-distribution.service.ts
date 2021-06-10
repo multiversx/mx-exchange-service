@@ -13,7 +13,7 @@ export class TransactionsDistributionService {
         const contract = await this.abiService.getContract();
         const interaction: Interaction = contract.methods.claimLockedAssets([]);
         const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.default));
+        transaction.setGasLimit(new GasLimit(gasConfig.claimLockedAssets));
 
         return transaction.toPlainObject();
     }
