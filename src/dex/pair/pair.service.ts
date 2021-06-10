@@ -227,7 +227,7 @@ export class PairService {
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cachePairsInfo(): Promise<void> {
         const pairsAddress = await this.context.getAllPairsAddress();
-        for (const pairAddress of pairsAddress) {
+        const promises = pairsAddress.map(async pairAddress => {
             const resource = `${pairAddress}.pairInfo`;
             const lockExpire = 40;
             let lock;
@@ -244,8 +244,9 @@ export class PairService {
                 return;
             }
 
-            await this.getPairInfoMetadata(pairAddress);
-        }
+            return this.getPairInfoMetadata(pairAddress);
+        });
+        Promise.all(promises);
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
