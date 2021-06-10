@@ -138,48 +138,47 @@ export class ContextService {
     async getPairsMap(): Promise<Map<string, string[]>> {
         const pairsMetadata = await this.getPairsMetadata();
         const pairsMap = new Map<string, string[]>();
+        for (const pairMetadata of pairsMetadata) {
+            pairsMap.set(pairMetadata.firstToken, []);
+            pairsMap.set(pairMetadata.secondToken, []);
+        }
+
         pairsMetadata.forEach(pair => {
-            if (pairsMap.has(pair.firstToken)) {
-                pairsMap.get(pair.firstToken).push(pair.secondToken);
-            } else {
-                pairsMap.set(pair.firstToken, [pair.secondToken]);
-            }
-            if (pairsMap.has(pair.secondToken)) {
-                pairsMap.get(pair.secondToken).push(pair.firstToken);
-            } else {
-                pairsMap.set(pair.secondToken, [pair.firstToken]);
-            }
+            pairsMap.get(pair.firstToken).push(pair.secondToken);
+            pairsMap.get(pair.secondToken).push(pair.firstToken);
         });
 
         return pairsMap;
     }
 
     async getPath(input: string, output: string): Promise<string[]> {
-        const path: string[] = [input];
-        const queue: string[] = [];
+        const path = [input];
+        const queue = [input];
         const visited = new Map<string, boolean>();
-        visited.set(input, true);
-        queue.push(input);
 
         const pairsMap = await this.getPairsMap();
-        pairsMap.forEach((value, key, map) => visited.set(key, false));
+        for (const key of pairsMap.keys()) {
+            visited.set(key, false);
+        }
 
+        visited.set(input, true);
         while (queue.length > 0) {
             const node = queue.shift();
-            for (const key of pairsMap.get(node) ?? []) {
-                if (key === output) {
+            for (const value of pairsMap.get(node)) {
+                if (value === output) {
                     path.push(output);
                     return path;
                 }
-                if (visited.get(key) === false) {
-                    visited.set(key, true);
-                    queue.push(key);
-                    path.push(key);
+
+                if (!visited.get(value)) {
+                    visited.set(value, true);
+                    queue.push(value);
+                    path.push(value);
                 }
             }
         }
 
-        return path;
+        return [];
     }
 
     async getTokenMetadata(tokenID: string): Promise<TokenModel> {
