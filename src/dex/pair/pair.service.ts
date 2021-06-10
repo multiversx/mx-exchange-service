@@ -491,8 +491,12 @@ export class PairService {
     }
 
     async getPriceUSDByPath(tokenID: string): Promise<string> {
+        if (!tokensPriceData.has(tokenProviderUSD)) {
+            return '0';
+        }
+
         const path = await this.context.getPath(tokenID, tokenProviderUSD);
-        if (path.length === 1) {
+        if (path.length === 0) {
             return '0';
         }
         const pair = await this.context.getPairByTokens(path[0], path[1]);
