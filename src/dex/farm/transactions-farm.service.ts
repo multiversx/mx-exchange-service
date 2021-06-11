@@ -37,7 +37,7 @@ export class TransactionsFarmService {
             BytesValue.fromUTF8(method),
         ];
 
-        return await this.context.esdtTransfer(
+        return this.context.esdtTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),
@@ -66,7 +66,7 @@ export class TransactionsFarmService {
             BytesValue.fromUTF8(method),
         ];
 
-        const transaction = await this.context.nftTransfer(
+        const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.exitFarm),

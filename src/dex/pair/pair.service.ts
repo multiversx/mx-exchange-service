@@ -73,18 +73,18 @@ export class PairService {
 
     async getFirstToken(pairAddress: string): Promise<TokenModel> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
-        return await this.context.getTokenMetadata(firstTokenID);
+        return this.context.getTokenMetadata(firstTokenID);
     }
 
     async getSecondToken(pairAddress: string): Promise<TokenModel> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return await this.context.getTokenMetadata(secondTokenID);
+        return this.context.getTokenMetadata(secondTokenID);
     }
 
     async getLpToken(pairAddress: string): Promise<TokenModel> {
         const lpTokenID = await this.getLpTokenID(pairAddress);
 
-        return await this.context.getTokenMetadata(lpTokenID);
+        return this.context.getTokenMetadata(lpTokenID);
     }
 
     async getFirstTokenPrice(pairAddress: string): Promise<string> {

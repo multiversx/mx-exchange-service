@@ -212,11 +212,11 @@ export class ContextService {
         return state;
     }
 
-    async esdtTransfer(
+    esdtTransfer(
         contract: SmartContract,
         args: TypedValue[],
         gasLimit: GasLimit,
-    ): Promise<TransactionModel> {
+    ): TransactionModel {
         return contract
             .call({
                 func: new ContractFunction('ESDTTransfer'),
@@ -226,11 +226,11 @@ export class ContextService {
             .toPlainObject();
     }
 
-    async nftTransfer(
+    nftTransfer(
         contract: SmartContract,
         args: TypedValue[],
         gasLimit: GasLimit,
-    ): Promise<TransactionModel> {
+    ): TransactionModel {
         const transaction = contract.call({
             func: new ContractFunction('ESDTNFTTransfer'),
             args: args,
