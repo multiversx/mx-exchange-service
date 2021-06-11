@@ -229,7 +229,7 @@ export class PairService {
         const pairsAddress = await this.context.getAllPairsAddress();
         const promises = pairsAddress.map(async pairAddress => {
             const resource = `${pairAddress}.pairInfo`;
-            const lockExpire = 40;
+            const lockExpire = 20;
             let lock;
 
             try {
@@ -246,7 +246,7 @@ export class PairService {
 
             return this.getPairInfoMetadata(pairAddress);
         });
-        Promise.all(promises);
+        await Promise.all(promises);
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
