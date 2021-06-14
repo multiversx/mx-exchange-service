@@ -126,7 +126,10 @@ export class FarmService {
         return new BigNumber(rewards).toString();
     }
 
-    decodeFarmTokenAttributes(attributes: string): FarmTokenAttributesModel {
+    decodeFarmTokenAttributes(
+        identifier: string,
+        attributes: string,
+    ): FarmTokenAttributesModel {
         const attributesBuffer = Buffer.from(attributes, 'base64');
         const codec = new BinaryCodec();
 
@@ -147,6 +150,7 @@ export class FarmService {
         );
         const decodedAttributes = decoded.valueOf();
         return {
+            identifier: identifier,
             attributes: attributes,
             rewardPerShare: decodedAttributes.rewardPerShare.toString(),
             enteringEpoch: decodedAttributes.enteringEpoch,

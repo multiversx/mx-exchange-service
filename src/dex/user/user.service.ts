@@ -171,6 +171,7 @@ export class UserService {
         farmToken: NFTTokenModel,
     ): Promise<BigNumber> {
         const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
+            farmToken.identifier,
             farmToken.attributes,
         );
         const tokenPriceUSD = await this.farmService.getFarmTokenPriceUSD(
