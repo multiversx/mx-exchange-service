@@ -20,7 +20,8 @@
     },
     "tokenProviderUSD": "WXEGLD-da3f24",
     "priceFeeds": {
-        "WXEGLD-da3f24": "egld"
+        "WXEGLD-da3f24": "egld",
+        "BUSD-2e8fee": "busd"
     },
     "farms": [
         "erd1qqqqqqqqqqqqqpgqwe7relwdmhg52ra4d9t72nt5hk0qhjrd0n4spy0wnx",
@@ -35,6 +36,7 @@
         "pairCount": 10,
         "token": 300,
         "userTokens": 3,
+        "priceFeed": 30,
         "default": 20
     },
     "gas": {

@@ -9,6 +9,7 @@ const Keys = {
     pairCount: () => 'pairCount',
     totalTxCount: () => 'totalTxCount',
     token: (tokenID: string) => `token.${tokenID}`,
+    priceFeed: (tokenID: string) => `priceFeed.${tokenID}`,
 };
 
 const FactoryKeys = {
@@ -71,6 +72,21 @@ export class CacheManagerService {
 
     async setToken(tokenID: string, token: Record<string, any>): Promise<void> {
         await this.set(Keys.token(tokenID), token, cacheConfig.token);
+    }
+
+    async getPriceFeed(tokenID: string): Promise<Record<string, any>> {
+        return this.get(Keys.priceFeed(tokenID));
+    }
+
+    async setPriceFeed(
+        tokenID: string,
+        priceFeed: Record<string, any>,
+    ): Promise<void> {
+        await this.set(
+            Keys.priceFeed(tokenID),
+            priceFeed,
+            cacheConfig.priceFeed,
+        );
     }
 
     async get(key: string): Promise<any> {

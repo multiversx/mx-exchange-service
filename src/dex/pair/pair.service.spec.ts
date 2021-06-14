@@ -108,7 +108,7 @@ describe('PairService', () => {
                     pairAddress: 'pair_address_2',
                 },
                 {
-                    tokenID: 'BUSD-f66742',
+                    tokenID: 'BUSD-2e8fee',
                     tokenNonce: '0',
                     amount: '100',
                     pairAddress: 'pair_address_2',
@@ -122,7 +122,7 @@ describe('PairService', () => {
                     pairAddress: 'pair_address_3',
                 },
                 {
-                    tokenID: 'BUSD-f66742',
+                    tokenID: 'BUSD-2e8fee',
                     tokenNonce: '0',
                     amount: '100',
                     pairAddress: 'pair_address_3',
@@ -156,7 +156,7 @@ describe('PairService', () => {
     it('should get token price in USD from simple path', async () => {
         const tokenPriceUSD = await service.getTokenPriceUSD(
             'pair_address_3',
-            'BUSD-f66742',
+            'BUSD-2e8fee',
         );
         expect(tokenPriceUSD).toEqual('100');
     });

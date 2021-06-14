@@ -30,7 +30,7 @@ export class TransactionsLockedAssetService {
             BytesValue.fromUTF8('unlockAssets'),
         ];
 
-        const transaction = await this.context.nftTransfer(
+        const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),

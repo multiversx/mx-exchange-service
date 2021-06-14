@@ -112,7 +112,7 @@ export class TransactionPairService {
             new BigUIntValue(amountOutMin),
         ];
 
-        return await this.context.esdtTransfer(
+        return this.context.esdtTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.swapTokens),
@@ -137,7 +137,7 @@ export class TransactionPairService {
             new BigUIntValue(amountOut),
         ];
 
-        return await this.context.esdtTransfer(
+        return this.context.esdtTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.swapTokens),
@@ -153,7 +153,7 @@ export class TransactionPairService {
             BytesValue.fromUTF8('acceptEsdtPayment'),
         ];
 
-        return await this.context.esdtTransfer(
+        return this.context.esdtTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),

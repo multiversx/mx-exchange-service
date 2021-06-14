@@ -15,12 +15,12 @@ const pairsMetadata = [
     },
     {
         firstToken: 'WXEGLD-da3f24',
-        secondToken: 'BUSD-f66742',
+        secondToken: 'BUSD-2e8fee',
         address: 'pair_address_2',
     },
     {
         firstToken: 'MEX-531623',
-        secondToken: 'BUSD-f66742',
+        secondToken: 'BUSD-2e8fee',
         address: 'pair_address_3',
     },
     {
@@ -118,52 +118,49 @@ export class ContextServiceMock {
         return;
     }
 
-    async getPairsMap(): Promise<Map<string, Map<string, number>>> {
-        const pairsMap = new Map<string, Map<string, number>>();
-        pairsMetadata.forEach(pair => {
-            if (pairsMap.has(pair.firstToken)) {
-                pairsMap.get(pair.firstToken).set(pair.secondToken, 1);
-            } else {
-                pairsMap.set(pair.firstToken, new Map());
-                pairsMap.get(pair.firstToken).set(pair.secondToken, 1);
-            }
-            if (pairsMap.has(pair.secondToken)) {
-                pairsMap.get(pair.secondToken).set(pair.firstToken, 1);
-            } else {
-                pairsMap.set(pair.secondToken, new Map());
-                pairsMap.get(pair.secondToken).set(pair.firstToken, 1);
-            }
-        });
+    async getPairsMap(): Promise<Map<string, string[]>> {
+        const pairsMap: Map<string, string[]> = new Map();
+        pairsMap.set('WXEGLD-da3f24', ['MEX-531623', 'BUSD-2e8fee']);
+        pairsMap.set('MEX-531623', [
+            'WXEGLD-da3f24',
+            'BUSD-2e8fee',
+            'SPT-f66742',
+        ]);
+        pairsMap.set('BUSD-2e8fee', ['WXEGLD-da3f24', 'MEX-531623']);
+        pairsMap.set('SPT-f66742', ['MEX-531623']);
 
         return pairsMap;
     }
 
     async getPath(input: string, output: string): Promise<string[]> {
-        const path: string[] = [input];
-        const queue: string[] = [];
+        const path = [input];
+        const queue = [input];
         const visited = new Map<string, boolean>();
-        visited.set(input, true);
-        queue.push(input);
 
         const pairsMap = await this.getPairsMap();
-        pairsMap.forEach((value, key, map) => visited.set(key, false));
 
-        while (queue.length !== 0) {
+        for (const key of pairsMap.keys()) {
+            visited.set(key, false);
+        }
+
+        visited.set(input, true);
+        while (queue.length > 0) {
             const node = queue.shift();
-            for (const [key, value] of pairsMap.get(node)) {
-                if (key === output) {
+            for (const value of pairsMap.get(node)) {
+                if (value === output) {
                     path.push(output);
                     return path;
                 }
-                if (!visited.get(key)) {
-                    visited.set(key, true);
-                    queue.push(key);
-                    path.push(key);
+
+                if (!visited.get(value)) {
+                    visited.set(value, true);
+                    queue.push(value);
+                    path.push(value);
                 }
             }
         }
 
-        return path;
+        return [];
     }
 }
 
