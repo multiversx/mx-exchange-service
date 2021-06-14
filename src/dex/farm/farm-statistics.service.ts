@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { scAddress } from '../../config';
-import { ContextService } from '../utils/context.service';
 import { FarmService } from './farm.service';
 import BigNumber from 'bignumber.js';
 import { PairService } from '../pair/pair.service';
@@ -9,7 +8,6 @@ import { PairService } from '../pair/pair.service';
 export class FarmStatisticsService {
     constructor(
         private farmService: FarmService,
-        private context: ContextService,
         private pairService: PairService,
     ) {}
 
@@ -17,28 +15,26 @@ export class FarmStatisticsService {
         const farmedTokenID = await this.farmService.getFarmedTokenID(
             farmAddress,
         );
-        const farmedTokenPriceUSD = await this.pairService.getTokenPriceUSD(
-            scAddress.get(farmedTokenID),
-            farmedTokenID,
-        );
 
-        const farmTokenSupply = await this.farmService.getFarmTokenSupply(
-            farmAddress,
-        );
-        const farmingTokenReserve = await this.farmService.getFarmingTokenReserve(
-            farmAddress,
-        );
-
-        const rewardsPerBlock = await this.farmService.getRewardsPerBlock(
-            farmAddress,
-        );
+        const [
+            farmedTokenPriceUSD,
+            farmingTokenPriceUSD,
+            farmTokenSupply,
+            farmingTokenReserve,
+            rewardsPerBlock,
+        ] = await Promise.all([
+            this.pairService.getTokenPriceUSD(
+                scAddress.get(farmedTokenID),
+                farmedTokenID,
+            ),
+            this.getFarmingTokenPriceUSD(farmAddress),
+            this.farmService.getFarmTokenSupply(farmAddress),
+            this.farmService.getFarmingTokenReserve(farmAddress),
+            this.farmService.getRewardsPerBlock(farmAddress),
+        ]);
 
         const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
         const farmingTokenReserveBig = new BigNumber(farmingTokenReserve);
-
-        const farmingTokenPriceUSD = await this.getFarmingTokenPriceUSD(
-            farmAddress,
-        );
 
         const farmingTokenValue = new BigNumber(farmingTokenPriceUSD).dividedBy(
             new BigNumber(farmedTokenPriceUSD),
@@ -72,35 +68,17 @@ export class FarmStatisticsService {
         const farmingTokenID = await this.farmService.getFarmingTokenID(
             farmAddress,
         );
-
-        const farmedTokenID = await this.farmService.getFarmedTokenID(
-            farmAddress,
-        );
-
-        let farmingTokenPriceUSD;
-        switch (farmingTokenID) {
-            case farmedTokenID:
-                const pairAddress = scAddress.get(farmedTokenID);
-                farmingTokenPriceUSD = await this.pairService.getTokenPriceUSD(
-                    pairAddress,
-                    farmedTokenID,
-                );
-                break;
-            default:
-                const pairsAddress = await this.context.getAllPairsAddress();
-                for (const pairAddress of pairsAddress) {
-                    const lpToken = await this.pairService.getLpToken(
-                        pairAddress,
-                    );
-                    if (lpToken.token === farmingTokenID) {
-                        farmingTokenPriceUSD = await this.pairService.getLpTokenPriceUSD(
-                            pairAddress,
-                        );
-                        break;
-                    }
-                }
-                break;
+        if (scAddress.has(farmingTokenID)) {
+            const pairAddress = scAddress.get(farmingTokenID);
+            return await this.pairService.getTokenPriceUSD(
+                pairAddress,
+                farmingTokenID,
+            );
         }
-        return farmingTokenPriceUSD;
+
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingTokenID,
+        );
+        return this.pairService.getLpTokenPriceUSD(pairAddress);
     }
 }

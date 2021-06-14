@@ -37,6 +37,7 @@
         "token": 300,
         "userTokens": 3,
         "priceFeed": 30,
+        "reserves": 30,
         "default": 20
     },
     "gas": {

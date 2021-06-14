@@ -21,30 +21,26 @@ import { PairService } from '../pair/pair.service';
 
 @Injectable()
 export class FarmService {
-    private readonly proxy: ProxyProvider;
-
     constructor(
         private abiService: AbiFarmService,
         private cacheService: CacheFarmService,
         private context: ContextService,
         private pairService: PairService,
-    ) {
-        this.proxy = new ProxyProvider(elrondConfig.elrondApi, 60000);
-    }
+    ) {}
 
     async getFarmedToken(farmAddress: string): Promise<TokenModel> {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
-        return await this.context.getTokenMetadata(farmedTokenID);
+        return this.context.getTokenMetadata(farmedTokenID);
     }
 
     async getFarmToken(farmAddress: string): Promise<NFTTokenModel> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
-        return await this.context.getNFTTokenMetadata(farmTokenID);
+        return this.context.getNFTTokenMetadata(farmTokenID);
     }
 
     async getFarmingToken(farmAddress: string): Promise<TokenModel> {
         const farmingTokenID = await this.getFarmingTokenID(farmAddress);
-        return await this.context.getTokenMetadata(farmingTokenID);
+        return this.context.getTokenMetadata(farmingTokenID);
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
@@ -102,7 +98,7 @@ export class FarmService {
         return await this.context.getState(contract);
     }
 
-    async getFarms(): Promise<FarmModel[]> {
+    getFarms(): FarmModel[] {
         const farms: Array<FarmModel> = [];
         for (const farmAddress of farmsConfig) {
             const farm = new FarmModel();
@@ -130,9 +126,7 @@ export class FarmService {
         return new BigNumber(rewards).toString();
     }
 
-    async decodeFarmTokenAttributes(
-        attributes: string,
-    ): Promise<FarmTokenAttributesModel> {
+    decodeFarmTokenAttributes(attributes: string): FarmTokenAttributesModel {
         const attributesBuffer = Buffer.from(attributes, 'base64');
         const codec = new BinaryCodec();
 
@@ -217,9 +211,10 @@ export class FarmService {
                 farmingTokenID,
             );
         }
+
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             farmingTokenID,
         );
-        return await this.pairService.getLpTokenPriceUSD(pairAddress);
+        return this.pairService.getLpTokenPriceUSD(pairAddress);
     }
 }
