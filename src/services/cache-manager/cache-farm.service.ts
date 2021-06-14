@@ -74,7 +74,7 @@ export class CacheFarmService {
         await this.cacheManagerService.set(
             Keys.farmTokenSupply(farmAddress),
             farmTokenSupply,
-            cacheConfig.default,
+            cacheConfig.reserves,
         );
     }
 
@@ -93,7 +93,7 @@ export class CacheFarmService {
         await this.cacheManagerService.set(
             Keys.farmingTokenReserve(farmAddress),
             farmingTokenReserve,
-            cacheConfig.default,
+            cacheConfig.reserves,
         );
     }
 
@@ -110,7 +110,7 @@ export class CacheFarmService {
         await this.cacheManagerService.set(
             Keys.rewardsPerBlock(farmAddress),
             rewardsPerBlock,
-            cacheConfig.default,
+            cacheConfig.reserves,
         );
     }
 }
