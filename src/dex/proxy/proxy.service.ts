@@ -16,6 +16,7 @@ import {
 import { NFTTokenModel } from '../models/nftToken.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { FarmService } from '../farm/farm.service';
+import { DecodeAttributesArgs } from './dto/proxy.args';
 
 @Injectable()
 export class ProxyService {
@@ -65,16 +66,17 @@ export class ProxyService {
         return await this.context.getNFTTokenMetadata(lockedAssetTokenID);
     }
 
-    async getWrappedLpTokenAttributes(
-        batchAttributes: string[],
-    ): Promise<WrappedLpTokenAttributesModel[]> {
-        return batchAttributes.map(attributes => {
+    getWrappedLpTokenAttributes(
+        args: DecodeAttributesArgs,
+    ): WrappedLpTokenAttributesModel[] {
+        return args.batchAttributes.map(arg => {
             const decodedAttributes = decodeWrappedLPTokenAttributes(
-                attributes,
+                arg.attributes,
             );
 
             return {
-                attributes: attributes,
+                identifier: arg.identifier,
+                attributes: arg.attributes,
                 lpTokenID: decodedAttributes.lpTokenID.toString(),
                 lpTokenTotalAmount: decodedAttributes.lpTokenTotalAmount.toString(),
                 lockedAssetsInvested: decodedAttributes.lockedAssetsInvested.toString(),
@@ -84,11 +86,11 @@ export class ProxyService {
     }
 
     async getWrappedFarmTokenAttributes(
-        batchAttributes: string[],
+        args: DecodeAttributesArgs,
     ): Promise<WrappedFarmTokenAttributesModel[]> {
-        const promises = batchAttributes.map(async attributes => {
+        const promises = args.batchAttributes.map(async arg => {
             const decodedAttributes = decodeWrappedFarmTokenAttributes(
-                attributes,
+                arg.attributes,
             );
 
             const farmToken = await this.apiService.getNftByTokenIdentifier(
@@ -96,11 +98,13 @@ export class ProxyService {
                 decodedAttributes.farmTokenIdentifier,
             );
             const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
+                decodedAttributes.farmTokenIdentifier,
                 farmToken.attributes,
             );
 
             return {
-                attributes: attributes,
+                identifier: arg.identifier,
+                attributes: arg.attributes,
                 farmTokenID: decodedAttributes.farmTokenID.toString(),
                 farmTokenNonce: decodedAttributes.farmTokenNonce,
                 farmTokenIdentifier: decodedAttributes.farmTokenIdentifier,

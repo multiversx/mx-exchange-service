@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { tokenProviderUSD, tokensPriceData } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
-import { LiquidityPosition } from '../models/pair.model';
+import { LiquidityPosition, TemporaryFundsModel } from '../models/pair.model';
 import { ContextService } from '../utils/context.service';
 import { RedlockService } from '../../services';
 import {
@@ -16,7 +16,6 @@ import { CachePairService } from '../../services/cache-manager/cache-pair.servic
 import { AbiPairService } from './abi-pair.service';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { TokenModel } from '../models/esdtToken.model';
-import { GenericEsdtAmountPair } from '../models/proxy.model';
 
 @Injectable()
 export class PairService {
@@ -395,82 +394,56 @@ export class PairService {
 
     async getTemporaryFunds(
         callerAddress: string,
-    ): Promise<GenericEsdtAmountPair[][]> {
+    ): Promise<TemporaryFundsModel[]> {
         const pairsMetadata = await this.context.getPairsMetadata();
 
-        const promises = pairsMetadata.map(async pairMetadata => {
-            const cachedFirstTokenData = await this.cacheService.getTemporaryFunds(
-                pairMetadata.address,
-                callerAddress,
-                pairMetadata.firstToken,
-            );
+        const temporaryFunds: TemporaryFundsModel[] = [];
 
-            const cachedSecondTokenData = await this.cacheService.getTemporaryFunds(
-                pairMetadata.address,
-                callerAddress,
-                pairMetadata.secondToken,
-            );
+        for (const pairMetadata of pairsMetadata) {
+            const [
+                firstToken,
+                secondToken,
+                temporaryFundsFirstToken,
+                temporaryFundsSecondToken,
+            ] = await Promise.all([
+                this.getFirstToken(pairMetadata.address),
+                this.getSecondToken(pairMetadata.address),
+                this.abiService.getTemporaryFunds(
+                    pairMetadata.address,
+                    callerAddress,
+                    pairMetadata.firstToken,
+                ),
+                this.abiService.getTemporaryFunds(
+                    pairMetadata.address,
+                    callerAddress,
+                    pairMetadata.secondToken,
+                ),
+            ]);
 
-            if (!!cachedFirstTokenData && !!cachedSecondTokenData) {
-                const temporaryFunds: GenericEsdtAmountPair[] = [
-                    {
-                        tokenID: pairMetadata.firstToken,
-                        tokenNonce: '0',
-                        amount: cachedFirstTokenData.temporaryFunds,
-                        pairAddress: pairMetadata.address,
-                    },
-                    {
-                        tokenID: pairMetadata.secondToken,
-                        tokenNonce: '0',
-                        amount: cachedSecondTokenData.temporaryFunds,
-                        pairAddress: pairMetadata.address,
-                    },
-                ];
-                return temporaryFunds;
+            if (
+                temporaryFundsFirstToken === '0' &&
+                temporaryFundsSecondToken === '0'
+            ) {
+                continue;
             }
 
-            const temporaryFundsFirstToken = await this.abiService.getTemporaryFunds(
-                pairMetadata.address,
-                callerAddress,
-                pairMetadata.firstToken,
-            );
-            const temporaryFundsSecondToken = await this.abiService.getTemporaryFunds(
-                pairMetadata.address,
-                callerAddress,
-                pairMetadata.secondToken,
-            );
+            const temporaryFundsPair = new TemporaryFundsModel();
+            temporaryFundsPair.pairAddress = pairMetadata.address;
 
-            this.cacheService.setTemporaryFunds(
-                pairMetadata.address,
-                callerAddress,
-                pairMetadata.firstToken,
-                { temporaryFunds: temporaryFundsFirstToken },
-            );
-            this.cacheService.setTemporaryFunds(
-                pairMetadata.address,
-                callerAddress,
-                pairMetadata.secondToken,
-                { temporaryFunds: temporaryFundsSecondToken },
-            );
+            if (temporaryFundsFirstToken !== '0') {
+                temporaryFundsPair.firstToken = firstToken;
+                temporaryFundsPair.firstAmount = temporaryFundsFirstToken;
+            }
 
-            const temporaryFunds: GenericEsdtAmountPair[] = [
-                {
-                    tokenID: pairMetadata.firstToken,
-                    tokenNonce: '0',
-                    amount: temporaryFundsFirstToken,
-                    pairAddress: pairMetadata.address,
-                },
-                {
-                    tokenID: pairMetadata.secondToken,
-                    tokenNonce: '0',
-                    amount: temporaryFundsSecondToken,
-                    pairAddress: pairMetadata.address,
-                },
-            ];
-            return temporaryFunds;
-        });
+            if (temporaryFundsSecondToken !== '0') {
+                temporaryFundsPair.secondToken = secondToken;
+                temporaryFundsPair.secondAmount = temporaryFundsSecondToken;
+            }
 
-        return Promise.all(promises);
+            temporaryFunds.push(temporaryFundsPair);
+        }
+
+        return temporaryFunds;
     }
 
     async getLiquidityPosition(

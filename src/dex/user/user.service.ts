@@ -126,7 +126,14 @@ export class UserService {
         const wrappedLpToken = await this.proxyPairService.getwrappedLpToken();
         if (nftToken.token === wrappedLpToken.token) {
             const decodedWLPTAttributes = await this.proxyService.getWrappedLpTokenAttributes(
-                [nftToken.attributes],
+                {
+                    batchAttributes: [
+                        {
+                            identifier: nftToken.identifier,
+                            attributes: nftToken.attributes,
+                        },
+                    ],
+                },
             );
             const pairAddress = await this.pairService.getPairAddressByLpTokenID(
                 decodedWLPTAttributes[0].lpTokenID,
@@ -148,7 +155,14 @@ export class UserService {
         const wrappedFarmToken = await this.proxyFarmService.getwrappedFarmToken();
         if (nftToken.token === wrappedFarmToken.token) {
             const decodedWFMTAttributes = await this.proxyService.getWrappedFarmTokenAttributes(
-                [nftToken.attributes],
+                {
+                    batchAttributes: [
+                        {
+                            identifier: nftToken.identifier,
+                            attributes: nftToken.attributes,
+                        },
+                    ],
+                },
             );
             const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
                 decodedWFMTAttributes[0].farmTokenID,
@@ -171,6 +185,7 @@ export class UserService {
         farmToken: NFTTokenModel,
     ): Promise<BigNumber> {
         const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
+            farmToken.identifier,
             farmToken.attributes,
         );
         const tokenPriceUSD = await this.farmService.getFarmTokenPriceUSD(

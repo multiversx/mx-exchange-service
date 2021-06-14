@@ -1,7 +1,11 @@
 import { PairService } from './pair.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
-import { LiquidityPosition, PairModel } from '../models/pair.model';
+import {
+    LiquidityPosition,
+    PairModel,
+    TemporaryFundsModel,
+} from '../models/pair.model';
 import { TransactionModel } from '../models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -11,7 +15,6 @@ import {
     SwapTokensFixedOutputArgs,
 } from './dto/pair.args';
 import { TransactionPairService } from './transactions-pair.service';
-import { GenericEsdtAmountPair } from '../models/proxy.model';
 
 @Resolver(of => PairModel)
 export class PairResolver {
@@ -111,7 +114,7 @@ export class PairResolver {
         );
     }
 
-    @Query(returns => [[GenericEsdtAmountPair]])
+    @Query(returns => [TemporaryFundsModel])
     async getTemporaryFunds(@Args('callerAddress') callerAddress: string) {
         return await this.pairService.getTemporaryFunds(callerAddress);
     }
