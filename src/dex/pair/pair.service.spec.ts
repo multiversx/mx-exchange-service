@@ -85,64 +85,45 @@ describe('PairService', () => {
         const allTemporaryFunds = await service.getTemporaryFunds(
             'user_address_1',
         );
-        expect(allTemporaryFunds).toEqual([
-            [
-                {
-                    tokenID: 'WXEGLD-da3f24',
-                    tokenNonce: '0',
-                    amount: '100',
-                    pairAddress: 'pair_address_1',
-                },
-                {
-                    tokenID: 'MEX-531623',
-                    tokenNonce: '0',
-                    amount: '100',
-                    pairAddress: 'pair_address_1',
-                },
-            ],
-            [
-                {
-                    tokenID: 'WXEGLD-da3f24',
-                    tokenNonce: '0',
-                    amount: '100',
-                    pairAddress: 'pair_address_2',
-                },
-                {
-                    tokenID: 'BUSD-2e8fee',
-                    tokenNonce: '0',
-                    amount: '100',
-                    pairAddress: 'pair_address_2',
-                },
-            ],
-            [
-                {
-                    tokenID: 'MEX-531623',
-                    tokenNonce: '0',
-                    amount: '100',
-                    pairAddress: 'pair_address_3',
-                },
-                {
-                    tokenID: 'BUSD-2e8fee',
-                    tokenNonce: '0',
-                    amount: '100',
-                    pairAddress: 'pair_address_3',
-                },
-            ],
-            [
-                {
-                    tokenID: 'MEX-531623',
-                    tokenNonce: '0',
-                    amount: '100',
-                    pairAddress: 'pair_address_4',
-                },
-                {
-                    tokenID: 'SPT-f66742',
-                    tokenNonce: '0',
-                    amount: '100',
-                    pairAddress: 'pair_address_4',
-                },
-            ],
-        ]);
+        expect(allTemporaryFunds[0]).toEqual({
+            pairAddress: 'pair_address_1',
+            firstToken: {
+                token: 'WXEGLD-da3f24',
+                name: 'WXEGLD-da3f24',
+                type: 'FungibleESDT',
+                owner: 'user_address_1',
+                minted: '0',
+                burnt: '0',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+            },
+            firstAmount: '100',
+            secondToken: {
+                token: 'MEX-531623',
+                name: 'MEX-531623',
+                type: 'FungibleESDT',
+                owner: 'user_address_1',
+                minted: '0',
+                burnt: '0',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+            },
+            secondAmount: '100',
+        });
     });
 
     it('should get simple token price in USD', async () => {
@@ -166,7 +147,7 @@ describe('PairService', () => {
             'pair_address_4',
             'SPT-f66742',
         );
-        expect(tokenPriceUSD).toEqual('0.01');
+        expect(tokenPriceUSD).toEqual('100');
     });
 
     it('should get liquidity position from pair', async () => {

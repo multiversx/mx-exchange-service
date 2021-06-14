@@ -1,4 +1,4 @@
-import { ObjectType, Field, ArgsType } from '@nestjs/graphql';
+import { ObjectType, Field, ArgsType, Int } from '@nestjs/graphql';
 import { PaginationArgs } from '../dex.model';
 import { TokenModel } from './esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
@@ -49,4 +49,18 @@ export class PairModel {
 
     @Field()
     state: string;
+}
+
+@ObjectType()
+export class TemporaryFundsModel {
+    @Field()
+    pairAddress: string;
+    @Field(type => TokenModel, { nullable: true })
+    firstToken?: TokenModel;
+    @Field({ nullable: true })
+    firstAmount?: string;
+    @Field(type => TokenModel, { nullable: true })
+    secondToken?: TokenModel;
+    @Field({ nullable: true })
+    secondAmount?: string;
 }
