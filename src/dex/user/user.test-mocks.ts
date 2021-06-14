@@ -138,9 +138,11 @@ export class FarmServiceMock {
     }
 
     async decodeFarmTokenAttributes(
+        identifier: string,
         attributes: string,
     ): Promise<FarmTokenAttributesModel> {
         return {
+            identifier: identifier,
             attributes: attributes,
             enteringEpoch: 1,
             aprMultiplier: 1,
