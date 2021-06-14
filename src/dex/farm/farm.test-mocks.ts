@@ -48,6 +48,10 @@ export class FarmServiceMock {
         return farmMetadata.farmedTokenID;
     }
 
+    async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
+        return '200';
+    }
+
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
         return farmMetadata.farmTotalSupply;
     }
@@ -72,26 +76,6 @@ export class ContextServiceMock {
 }
 
 export class PairServiceMock {
-    async getLpToken(pairAddress: string): Promise<TokenModel> {
-        return {
-            token: 'LPT-1111',
-            name: 'LiquidityPoolToken',
-            type: 'FungibleESDT',
-            owner: 'user_address_1',
-            minted: '0',
-            burnt: '0',
-            decimals: 18,
-            isPaused: false,
-            canUpgrade: true,
-            canMint: true,
-            canBurn: true,
-            canChangeOwner: true,
-            canPause: true,
-            canFreeze: true,
-            canWipe: true,
-        };
-    }
-
     async getTokenPriceUSD(
         pairAddress: string,
         tokenID: string,
@@ -101,5 +85,9 @@ export class PairServiceMock {
 
     async getLpTokenPriceUSD(pairAddress): Promise<string> {
         return '200';
+    }
+
+    async getPairAddressByLpTokenID(tokenID: string): Promise<string> {
+        return 'pair_address_1';
     }
 }
