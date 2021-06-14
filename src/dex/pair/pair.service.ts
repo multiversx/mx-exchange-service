@@ -73,18 +73,18 @@ export class PairService {
 
     async getFirstToken(pairAddress: string): Promise<TokenModel> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
-        return await this.context.getTokenMetadata(firstTokenID);
+        return this.context.getTokenMetadata(firstTokenID);
     }
 
     async getSecondToken(pairAddress: string): Promise<TokenModel> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return await this.context.getTokenMetadata(secondTokenID);
+        return this.context.getTokenMetadata(secondTokenID);
     }
 
     async getLpToken(pairAddress: string): Promise<TokenModel> {
         const lpTokenID = await this.getLpTokenID(pairAddress);
 
-        return await this.context.getTokenMetadata(lpTokenID);
+        return this.context.getTokenMetadata(lpTokenID);
     }
 
     async getFirstTokenPrice(pairAddress: string): Promise<string> {
@@ -227,9 +227,9 @@ export class PairService {
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cachePairsInfo(): Promise<void> {
         const pairsAddress = await this.context.getAllPairsAddress();
-        for (const pairAddress of pairsAddress) {
+        const promises = pairsAddress.map(async pairAddress => {
             const resource = `${pairAddress}.pairInfo`;
-            const lockExpire = 40;
+            const lockExpire = 20;
             let lock;
 
             try {
@@ -244,14 +244,17 @@ export class PairService {
                 return;
             }
 
-            await this.getPairInfoMetadata(pairAddress);
-        }
+            return this.getPairInfoMetadata(pairAddress);
+        });
+        await Promise.all(promises);
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        const pairInfo = await this.abiService.getPairInfoMetadata(pairAddress);
+        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+            this.getFirstTokenID(pairAddress),
+            this.getSecondTokenID(pairAddress),
+            this.abiService.getPairInfoMetadata(pairAddress),
+        ]);
 
         this.cacheService.setReserves(pairAddress, firstTokenID, {
             reserves: pairInfo.reserves0,
@@ -267,20 +270,20 @@ export class PairService {
     }
 
     async getPairInfo(pairAddress: string): Promise<PairInfoModel> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
+        const [firstTokenID, secondTokenID] = await Promise.all([
+            this.getFirstTokenID(pairAddress),
+            this.getSecondTokenID(pairAddress),
+        ]);
 
-        const cachedFirstReserve = await this.cacheService.getReserves(
-            pairAddress,
-            firstTokenID,
-        );
-        const cachedSecondReserve = await this.cacheService.getReserves(
-            pairAddress,
-            secondTokenID,
-        );
-        const cachedTotalSupply = await this.cacheService.getTotalSupply(
-            pairAddress,
-        );
+        const [
+            cachedFirstReserve,
+            cachedSecondReserve,
+            cachedTotalSupply,
+        ] = await Promise.all([
+            this.cacheService.getReserves(pairAddress, firstTokenID),
+            this.cacheService.getReserves(pairAddress, secondTokenID),
+            this.cacheService.getTotalSupply(pairAddress),
+        ]);
 
         if (
             !!cachedFirstReserve &&
@@ -295,13 +298,12 @@ export class PairService {
             return pairInfo;
         }
 
-        const pairInfo = await this.getPairInfoMetadata(pairAddress);
-        return pairInfo;
+        return this.getPairInfoMetadata(pairAddress);
     }
 
     async getState(pairAddress: string): Promise<string> {
         const contract = await this.abiService.getContract(pairAddress);
-        return await this.context.getState(contract);
+        return this.context.getState(contract);
     }
 
     async getAmountOut(
@@ -309,9 +311,11 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        const pairInfo = await this.getPairInfoMetadata(pairAddress);
+        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+            this.getFirstTokenID(pairAddress),
+            this.getSecondTokenID(pairAddress),
+            this.abiService.getPairInfoMetadata(pairAddress),
+        ]);
 
         switch (tokenInID) {
             case firstTokenID:
@@ -336,9 +340,11 @@ export class PairService {
         tokenOutID: string,
         amount: string,
     ): Promise<string> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        const pairInfo = await this.getPairInfoMetadata(pairAddress);
+        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+            this.getFirstTokenID(pairAddress),
+            this.getSecondTokenID(pairAddress),
+            this.abiService.getPairInfoMetadata(pairAddress),
+        ]);
 
         switch (tokenOutID) {
             case firstTokenID:
@@ -363,9 +369,11 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        const pairInfo = await this.getPairInfo(pairAddress);
+        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+            this.getFirstTokenID(pairAddress),
+            this.getSecondTokenID(pairAddress),
+            this.abiService.getPairInfoMetadata(pairAddress),
+        ]);
 
         switch (tokenInID) {
             case firstTokenID:
@@ -462,9 +470,7 @@ export class PairService {
             return temporaryFunds;
         });
 
-        const allTemporaryFunds = Promise.all(promises);
-
-        return allTemporaryFunds;
+        return Promise.all(promises);
     }
 
     async getLiquidityPosition(
@@ -491,8 +497,12 @@ export class PairService {
     }
 
     async getPriceUSDByPath(tokenID: string): Promise<string> {
+        if (!tokensPriceData.has(tokenProviderUSD)) {
+            return '0';
+        }
+
         const path = await this.context.getPath(tokenID, tokenProviderUSD);
-        if (path.length === 1) {
+        if (path.length === 0) {
             return '0';
         }
         const pair = await this.context.getPairByTokens(path[0], path[1]);

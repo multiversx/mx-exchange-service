@@ -36,7 +36,7 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
-        const transaction = await this.context.nftTransfer(
+        const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.enterFarm),
@@ -59,7 +59,7 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
-        const transaction = await this.context.nftTransfer(
+        const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.exitFarmProxy),
@@ -84,7 +84,7 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
-        const transaction = await this.context.nftTransfer(
+        const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.exitFarmProxy),

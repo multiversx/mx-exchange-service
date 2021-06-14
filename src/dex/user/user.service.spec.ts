@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import axios from 'axios';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 import { FarmService } from '../farm/farm.service';

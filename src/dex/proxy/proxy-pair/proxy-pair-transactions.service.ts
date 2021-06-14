@@ -80,7 +80,7 @@ export class TransactionsProxyPairService {
             new BigUIntValue(amount1Min),
         ];
 
-        const transaction = await this.context.nftTransfer(
+        const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.removeLiquidityProxy),
@@ -120,7 +120,7 @@ export class TransactionsProxyPairService {
             BytesValue.fromHex(new Address(args.pairAddress).hex()),
         ];
 
-        const transaction = await this.context.nftTransfer(
+        const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.esdtTransfer),
