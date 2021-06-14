@@ -43,7 +43,7 @@
     "gas": {
         "default": 50000000,
         "esdtTransfer": 50000000,
-        "reclaimTemporaryFunds": 20000000,
+        "reclaimTemporaryFunds": 50000000,
         "addLiquidity": 30000000,
         "removeLiquidity": 50000000,
         "swapTokens": 100000000,
