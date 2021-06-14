@@ -25,6 +25,7 @@ import { TransactionsProxyPairService } from './proxy-pair/proxy-pair-transactio
 import { TransactionsProxyFarmService } from './proxy-farm/proxy-farm-transactions.service';
 import { ProxyService } from './proxy.service';
 import { NFTTokenModel } from '../models/nftToken.model';
+import { DecodeAttributesArgs } from './dto/proxy.args';
 
 @Resolver(of => ProxyModel)
 export class ProxyResolver {
@@ -138,21 +139,16 @@ export class ProxyResolver {
 
     @Query(returns => [WrappedLpTokenAttributesModel])
     async wrappedLpTokenAttributes(
-        @Args({ name: 'batchAttributes', type: () => [String] })
-        batchAttributes: string[],
+        @Args('args') args: DecodeAttributesArgs,
     ): Promise<WrappedLpTokenAttributesModel[]> {
-        return await this.proxyService.getWrappedLpTokenAttributes(
-            batchAttributes,
-        );
+        return this.proxyService.getWrappedLpTokenAttributes(args);
     }
 
     @Query(returns => [WrappedFarmTokenAttributesModel])
     async wrappedFarmTokenAttributes(
-        @Args({ name: 'batchAttributes', type: () => [String] })
-        batchAttributes: string[],
+        @Args('args')
+        args: DecodeAttributesArgs,
     ): Promise<WrappedFarmTokenAttributesModel[]> {
-        return await this.proxyService.getWrappedFarmTokenAttributes(
-            batchAttributes,
-        );
+        return await this.proxyService.getWrappedFarmTokenAttributes(args);
     }
 }
