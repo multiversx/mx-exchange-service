@@ -63,8 +63,8 @@ describe('PairService', () => {
     it('should get first token', async () => {
         const firstToken = await service.getFirstToken('pair_address_1');
         expect(firstToken).toEqual({
-            token: 'WXEGLD-da3f24',
-            name: 'WXEGLD-da3f24',
+            token: 'WEGLD-b9cba1',
+            name: 'WEGLD-b9cba1',
             type: 'FungibleESDT',
             owner: 'user_address_1',
             minted: '0',
@@ -88,8 +88,8 @@ describe('PairService', () => {
         expect(allTemporaryFunds[0]).toEqual({
             pairAddress: 'pair_address_1',
             firstToken: {
-                token: 'WXEGLD-da3f24',
-                name: 'WXEGLD-da3f24',
+                token: 'WEGLD-b9cba1',
+                name: 'WEGLD-b9cba1',
                 type: 'FungibleESDT',
                 owner: 'user_address_1',
                 minted: '0',
@@ -106,8 +106,8 @@ describe('PairService', () => {
             },
             firstAmount: '100',
             secondToken: {
-                token: 'MEX-531623',
-                name: 'MEX-531623',
+                token: 'MEX-bd9937',
+                name: 'MEX-bd9937',
                 type: 'FungibleESDT',
                 owner: 'user_address_1',
                 minted: '0',
@@ -129,7 +129,7 @@ describe('PairService', () => {
     it('should get simple token price in USD', async () => {
         const tokenPriceUSD = await service.getTokenPriceUSD(
             'pair_address_1',
-            'MEX-531623',
+            'MEX-bd9937',
         );
         expect(tokenPriceUSD).toEqual('100');
     });
@@ -137,7 +137,7 @@ describe('PairService', () => {
     it('should get token price in USD from simple path', async () => {
         const tokenPriceUSD = await service.getTokenPriceUSD(
             'pair_address_3',
-            'BUSD-2e8fee',
+            'BUSD-fd5ddb',
         );
         expect(tokenPriceUSD).toEqual('100');
     });
@@ -147,7 +147,7 @@ describe('PairService', () => {
             'pair_address_4',
             'SPT-f66742',
         );
-        expect(tokenPriceUSD).toEqual('100');
+        expect(tokenPriceUSD).toEqual('16.66666666666666665');
     });
 
     it('should get liquidity position from pair', async () => {

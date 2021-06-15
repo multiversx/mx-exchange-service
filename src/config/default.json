@@ -1,32 +1,32 @@
 {
     "elrond": {
-        "elastic": "https://testnet-index.elrond.com",
-        "elrondApi": "https://testnet-beta-api.elrond.com",
+        "elastic": "https://devnet-index.elrond.com",
+        "elrondApi": "https://devnet-beta-api.elrond.com",
         "elrondData": "https://data.elrond.com",
-        "gateway": "https://testnet-gateway.elrond.com",
-        "explorer": "https://testnet-explorer.elrond.com",
-        "chainID": "T",
+        "gateway": "https://devnet-gateway.elrond.com",
+        "explorer": "https://devnet-explorer.elrond.com",
+        "chainID": "D",
         "version": 1,
         "proxyTimeout": 60000,
         "timeoutLimit": 10000
     },
     "scAddress": {
         "routerAddress": "erd1qqqqqqqqqqqqqpgqmc6lkxzn7cmj2c3ztczapds9ch2c4w9h0n4stl2uq7",
-        "MEX-531623": "erd1qqqqqqqqqqqqqpgqx0xh8fgpr5kjh9n7s53m7qllw42m5t7u0n4suz39xc",
-        "distributionAddress": "erd1qqqqqqqqqqqqqpgqjnzs5rtnryc4dxsajfqg2e8wq5mkjhaw0n4sj3u4gr",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqaay956lvtchydr40tnwmtsmgaz7d83c20n4s4rgv56",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqpfekajgprpwzfqfctzqfqe5j2n38t3ev0n4shhyhy5",
-        "wrappingAddress": "erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp"
+        "MEX-bd9937": "erd1qqqqqqqqqqqqqpgqx0xh8fgpr5kjh9n7s53m7qllw42m5t7u0n4suz39xc",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqh906k5w8wewfp86y6crf8yw444jzzzsj0n4svpx5kk",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgq9mhj2d9zu5fq2krqd6ew3emqf0ppjut60n4sw592nz",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq9s7ft5fj72zyt8qn8yd24xcl8rxu9v4m0n4sjlh528",
+        "wrappingAddress": "erd1qqqqqqqqqqqqqpgqhpy2hy6p0pvw6z5l3w3ykrf9aj5r5s3n0n4s6vk5dw"
     },
-    "tokenProviderUSD": "WXEGLD-da3f24",
+    "tokenProviderUSD": "WEGLD-b9cba1",
     "priceFeeds": {
-        "WXEGLD-da3f24": "egld",
-        "BUSD-2e8fee": "busd"
+        "WEGLD-b9cba1": "egld",
+        "BUSD-fd5ddb": "busd"
     },
     "farms": [
-        "erd1qqqqqqqqqqqqqpgqwe7relwdmhg52ra4d9t72nt5hk0qhjrd0n4spy0wnx",
-        "erd1qqqqqqqqqqqqqpgqfau7c39mzvmjkkkfmxtdwjgjparkgfmz0n4sfe8er6",
-        "erd1qqqqqqqqqqqqqpgqhpu9gztn7tmznxc46q46uk6f23ttnern0n4sar7l79"
+        "erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z",
+        "erd1qqqqqqqqqqqqqpgq2l97gw2j4wnlem4y2rx7dudqlssjtwpu0n4sd0u3w2",
+        "erd1qqqqqqqqqqqqqpgqpyuhxu2qvwm6udztx7hccwkzsrj4mt2r0n4swyh8pp"
     ],
     "caching": {
         "networkConfig": 1,
