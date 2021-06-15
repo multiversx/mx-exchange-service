@@ -43,7 +43,7 @@ export class AbiProxyPairService {
         );
 
         const result = interaction.interpretQueryResponse(queryResponse);
-        const pairs = result.values.map(pairAddress => {
+        const pairs = result.firstValue.valueOf().map(pairAddress => {
             return pairAddress.valueOf().toString();
         });
 
