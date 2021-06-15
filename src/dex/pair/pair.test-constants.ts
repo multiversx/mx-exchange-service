@@ -9,22 +9,22 @@ interface PairMetadata {
 
 const pairsMetadata = [
     {
-        firstToken: 'WXEGLD-da3f24',
-        secondToken: 'MEX-531623',
+        firstToken: 'WEGLD-b9cba1',
+        secondToken: 'MEX-bd9937',
         address: 'pair_address_1',
     },
     {
-        firstToken: 'WXEGLD-da3f24',
-        secondToken: 'BUSD-2e8fee',
+        firstToken: 'WEGLD-b9cba1',
+        secondToken: 'BUSD-fd5ddb',
         address: 'pair_address_2',
     },
     {
-        firstToken: 'MEX-531623',
-        secondToken: 'BUSD-2e8fee',
+        firstToken: 'MEX-bd9937',
+        secondToken: 'BUSD-fd5ddb',
         address: 'pair_address_3',
     },
     {
-        firstToken: 'MEX-531623',
+        firstToken: 'MEX-bd9937',
         secondToken: 'SPT-f66742',
         address: 'pair_address_4',
     },
@@ -60,9 +60,16 @@ export class AbiPairServiceMock {
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
+        if (pairAddress === 'pair_address_4') {
+            return {
+                reserves0: '100000000000000000000',
+                reserves1: '300000000000000000000',
+                totalSupply: '100000000000000000000',
+            };
+        }
         return {
             reserves0: '100000000000000000000',
-            reserves1: '100000000000000000000',
+            reserves1: '200000000000000000000',
             totalSupply: '100000000000000000000',
         };
     }
@@ -120,14 +127,14 @@ export class ContextServiceMock {
 
     async getPairsMap(): Promise<Map<string, string[]>> {
         const pairsMap: Map<string, string[]> = new Map();
-        pairsMap.set('WXEGLD-da3f24', ['MEX-531623', 'BUSD-2e8fee']);
-        pairsMap.set('MEX-531623', [
-            'WXEGLD-da3f24',
-            'BUSD-2e8fee',
+        pairsMap.set('WEGLD-b9cba1', ['MEX-bd9937', 'BUSD-fd5ddb']);
+        pairsMap.set('MEX-bd9937', [
+            'WEGLD-b9cba1',
+            'BUSD-fd5ddb',
             'SPT-f66742',
         ]);
-        pairsMap.set('BUSD-2e8fee', ['WXEGLD-da3f24', 'MEX-531623']);
-        pairsMap.set('SPT-f66742', ['MEX-531623']);
+        pairsMap.set('BUSD-fd5ddb', ['WEGLD-b9cba1', 'MEX-bd9937']);
+        pairsMap.set('SPT-f66742', ['MEX-bd9937']);
 
         return pairsMap;
     }
