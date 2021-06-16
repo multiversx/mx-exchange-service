@@ -182,18 +182,16 @@ export class PairService {
             case firstTokenID:
                 tokenPrice = await this.getFirstTokenPrice(pairAddress);
                 if (tokensPriceData.has(secondTokenID)) {
-                    const usdPrice = (
-                        await this.priceFeed.getTokenPrice(
-                            tokensPriceData.get(secondTokenID),
-                        )
-                    ).toString();
+                    const usdPrice = await this.priceFeed.getTokenPrice(
+                        tokensPriceData.get(secondTokenID),
+                    );
                     const tokenPriceUSD = new BigNumber(tokenPrice)
                         .multipliedBy(usdPrice)
                         .toString();
                     return tokenPriceUSD;
                 }
 
-                usdPrice = await this.getPriceUSDByPath(tokenID);
+                usdPrice = await this.getPriceUSDByPath(secondTokenID);
                 tokenPriceUSD = new BigNumber(tokenPrice)
                     .multipliedBy(usdPrice)
                     .toString();
@@ -202,18 +200,15 @@ export class PairService {
             case secondTokenID:
                 tokenPrice = await this.getSecondTokenPrice(pairAddress);
                 if (tokensPriceData.has(firstTokenID)) {
-                    const usdPrice = (
-                        await this.priceFeed.getTokenPrice(
-                            tokensPriceData.get(firstTokenID),
-                        )
-                    ).toString();
+                    const usdPrice = await this.priceFeed.getTokenPrice(
+                        tokensPriceData.get(firstTokenID),
+                    );
                     const tokenPriceUSD = new BigNumber(tokenPrice)
                         .multipliedBy(usdPrice)
                         .toString();
                     return tokenPriceUSD;
                 }
-
-                usdPrice = await this.getPriceUSDByPath(tokenID);
+                usdPrice = await this.getPriceUSDByPath(firstTokenID);
                 tokenPriceUSD = new BigNumber(tokenPrice)
                     .multipliedBy(usdPrice)
                     .toString();
