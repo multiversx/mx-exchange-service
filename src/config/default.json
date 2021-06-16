@@ -1,15 +1,72 @@
 {
     "elrond": {
-        "elastic": "https://testnet-index.elrond.com",
-        "elrondApi": "https://testnet-api.elrond.com",
-        "gateway": "https://testnet-gateway.elrond.com",
-        "explorer": "https://testnet-explorer.elrond.com",
-        "chainID": "T",
+        "elastic": "https://devnet-index.elrond.com",
+        "elrondApi": "https://devnet-beta-api.elrond.com",
+        "elrondData": "https://data.elrond.com",
+        "gateway": "https://devnet-gateway.elrond.com",
+        "explorer": "https://devnet-explorer.elrond.com",
+        "chainID": "D",
         "version": 1,
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqmc6lkxzn7cmj2c3ztczapds9ch2c4w9h0n4stl2uq7"
+        "proxyTimeout": 60000,
+        "timeoutLimit": 10000
     },
+    "scAddress": {
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqmc6lkxzn7cmj2c3ztczapds9ch2c4w9h0n4stl2uq7",
+        "MEX-bd9937": "erd1qqqqqqqqqqqqqpgqx0xh8fgpr5kjh9n7s53m7qllw42m5t7u0n4suz39xc",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqh906k5w8wewfp86y6crf8yw444jzzzsj0n4svpx5kk",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgq9mhj2d9zu5fq2krqd6ew3emqf0ppjut60n4sw592nz",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq9s7ft5fj72zyt8qn8yd24xcl8rxu9v4m0n4sjlh528",
+        "wrappingAddress": "erd1qqqqqqqqqqqqqpgqhpy2hy6p0pvw6z5l3w3ykrf9aj5r5s3n0n4s6vk5dw"
+    },
+    "tokenProviderUSD": "WEGLD-b9cba1",
+    "priceFeeds": {
+        "WEGLD-b9cba1": "egld",
+        "BUSD-fd5ddb": "busd"
+    },
+    "farms": [
+        "erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z",
+        "erd1qqqqqqqqqqqqqpgq2l97gw2j4wnlem4y2rx7dudqlssjtwpu0n4sd0u3w2",
+        "erd1qqqqqqqqqqqqqpgqpyuhxu2qvwm6udztx7hccwkzsrj4mt2r0n4swyh8pp"
+    ],
     "caching": {
         "networkConfig": 1,
-        "pairs": 1
+        "pairsMetadata": 100,
+        "pairs": 100,
+        "txTotalCount": 10,
+        "pairCount": 10,
+        "token": 300,
+        "userTokens": 3,
+        "priceFeed": 30,
+        "reserves": 30,
+        "default": 20
+    },
+    "gas": {
+        "default": 50000000,
+        "esdtTransfer": 50000000,
+        "reclaimTemporaryFunds": 50000000,
+        "addLiquidity": 30000000,
+        "removeLiquidity": 50000000,
+        "swapTokens": 100000000,
+        "createPair": 1400000000,
+        "issueToken": 200000000,
+        "setLocalRoles": 200000000,
+        "setState": 200000000,
+        "setFee": 200000000,
+        "addLiquidityProxy": 200000000,
+        "removeLiquidityProxy": 200000000,
+        "enterFarm": 100000000,
+        "exitFarm": 50000000,
+        "exitFarmProxy": 200000000,
+        "wrapeGLD": 8000000,
+        "claimLockedAssets": 100000000
+    },
+    "abi": {
+        "router": "./src/dex/router/elrond_dex_router.abi.json",
+        "pair": "./src/dex/pair/elrond_dex_pair.abi.json",
+        "farm": "./src/dex/farm/elrond_dex_farm.abi.json",
+        "distribution": "./src/dex/distribution/sc_distribution_rs.abi.json",
+        "lockedAssetFactory": "./src/dex/locked-asset-factory/sc-locked-asset-factory.abi.json",
+        "proxy": "./src/dex/proxy/sc-proxy-dex.abi.json",
+        "wrap": "./src/dex/wrapping/egld-esdt-swap.abi.json"
     }
 }

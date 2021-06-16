@@ -12,3 +12,15 @@ export const elrondConfig = config.get('elrond');
  * The values are in seconds
  */
 export const cacheConfig = config.get('caching');
+
+export const scAddress = config.get('scAddress');
+
+export const gasConfig = config.get('gas');
+
+export const abiConfig = config.get('abi');
+
+export const farmsConfig = config.get('farms');
+
+export const tokenProviderUSD = config.get('tokenProviderUSD');
+
+export const tokensPriceData = config.get('priceFeeds');

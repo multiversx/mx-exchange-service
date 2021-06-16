@@ -1,35 +1,35 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ScheduleModule } from '@nestjs/schedule';
 import { GraphQLModule } from '@nestjs/graphql';
-import { DexModule } from './dex/dex.module';
-import * as redisStore from 'cache-manager-redis-store';
+import { CacheManagerModule } from './services/cache-manager/cache-manager.module';
+import { RouterModule } from './dex/router/router.module';
+import { PairModule } from './dex/pair/pair.module';
+import { FarmModule } from './dex/farm/farm.module';
+import { DistributionModule } from './dex/distribution/distribution.module';
+import { WrappingModule } from './dex/wrapping/wrap.module';
+import { ProxyModule } from './dex/proxy/proxy.module';
+import { LockedAssetModule } from './dex/locked-asset-factory/locked-asset.module';
+import { UserModule } from './dex/user/user.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true
-    }),
-    ConfigModule,
-    DexModule,
-    GraphQLModule.forRoot({
-      autoSchemaFile: 'schema.gql',
-      buildSchemaOptions: {
-        numberScalarMode: 'integer'
-      }
-    }),
-    CacheModule.register({
-      ttl: 1800, // cache for 30 minutes,
-      store: redisStore,
-      host: process.env.REDIS_URL,
-      port: process.env.REDIS_PORT,
-      db: process.env.REDIS_DB,
-      password: process.env.REDIS_PASSWORD,
-      prefix: process.env.REDIS_PREFIX,
-    }),
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+    imports: [
+        ConfigModule.forRoot({
+            isGlobal: true,
+        }),
+        ScheduleModule.forRoot(),
+        CacheManagerModule,
+        RouterModule,
+        PairModule,
+        FarmModule,
+        DistributionModule,
+        ProxyModule,
+        LockedAssetModule,
+        WrappingModule,
+        UserModule,
+        GraphQLModule.forRoot({
+            autoSchemaFile: 'schema.gql',
+        }),
+    ],
 })
-export class AppModule { }
+export class AppModule {}
