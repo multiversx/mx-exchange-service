@@ -131,7 +131,7 @@ describe('PairService', () => {
             'pair_address_1',
             'MEX-bd9937',
         );
-        expect(tokenPriceUSD).toEqual('100');
+        expect(tokenPriceUSD).toEqual('50');
     });
 
     it('should get token price in USD from simple path', async () => {
@@ -157,7 +157,7 @@ describe('PairService', () => {
         );
         expect(liquidityPosition).toEqual({
             firstTokenAmount: '1',
-            secondTokenAmount: '1',
+            secondTokenAmount: '2',
         });
     });
 
@@ -165,7 +165,7 @@ describe('PairService', () => {
         const lpTokenPrice = await service.getLpTokenSecondTokenEquivalent(
             'pair_address_1',
         );
-        expect(lpTokenPrice).toEqual('2');
+        expect(lpTokenPrice).toEqual('4');
     });
 
     it('should get lpToken Price in USD from pair', async () => {
