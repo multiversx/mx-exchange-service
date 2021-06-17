@@ -1,8 +1,8 @@
 import { ApiProvider } from '@elrondnetwork/erdjs';
 import { elrondConfig } from '../../config';
 import { Injectable } from '@nestjs/common';
-import { TokenModel } from 'src/dex/models/esdtToken.model';
-import { NFTTokenModel } from 'src/dex/models/nftToken.model';
+import { TokenModel } from '../../models/esdtToken.model';
+import { NFTTokenModel } from '../../models/nftToken.model';
 
 @Injectable()
 export class ElrondApiService {
