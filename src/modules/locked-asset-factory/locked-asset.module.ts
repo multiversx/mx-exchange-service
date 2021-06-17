@@ -6,9 +6,15 @@ import { LockedAssetService } from './locked-asset.service';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
 import { ContextModule } from '../../services/context/context.module';
+import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 
 @Module({
-    imports: [CacheManagerModule, ContextModule, ProxyModule],
+    imports: [
+        ElrondCommunicationModule,
+        CacheManagerModule,
+        ContextModule,
+        ProxyModule,
+    ],
     providers: [
         AbiLockedAssetService,
         TransactionsLockedAssetService,

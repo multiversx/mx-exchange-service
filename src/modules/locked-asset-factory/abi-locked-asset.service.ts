@@ -1,42 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { ProxyProvider, Address, SmartContract } from '@elrondnetwork/erdjs';
-import { elrondConfig, abiConfig, scAddress } from '../../config';
-import { AbiRegistry } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { UnlockMileStoneModel } from '../../models/locked-asset.model';
+import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class AbiLockedAssetService {
-    private readonly proxy: ProxyProvider;
-
-    constructor() {
-        this.proxy = new ProxyProvider(
-            elrondConfig.elrondApi,
-            elrondConfig.proxyTimeout,
-        );
-    }
-
-    async getContract(): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({
-            files: [abiConfig.lockedAssetFactory],
-        });
-        const abi = new SmartContractAbi(abiRegistry, ['LockedAssetFactory']);
-        const contract = new SmartContract({
-            address: new Address(scAddress.lockedAssetAddress),
-            abi: abi,
-        });
-
-        return contract;
-    }
+    constructor(private readonly elrondProxy: ElrondProxyService) {}
 
     async getLockedTokenID(): Promise<string> {
-        const contract = await this.getContract();
+        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction = contract.methods.getLockedAssetTokenId(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const result = interaction.interpretQueryResponse(queryResponse);
@@ -47,12 +24,12 @@ export class AbiLockedAssetService {
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
-        const contract = await this.getContract();
+        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction = contract.methods.getDefaultUnlockPeriod(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const result = interaction.interpretQueryResponse(queryResponse);
