@@ -94,8 +94,7 @@ export class FarmService {
     }
 
     async getState(farmAddress: string): Promise<string> {
-        const contract = await this.abiService.getContract(farmAddress);
-        return await this.context.getState(contract);
+        return this.abiService.getState(farmAddress);
     }
 
     getFarms(): FarmModel[] {

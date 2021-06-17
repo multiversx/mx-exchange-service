@@ -1,48 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import {
-    AbiRegistry,
     BigUIntValue,
     BytesValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
-import {
-    ProxyProvider,
-    Address,
-    SmartContract,
-    Interaction,
-} from '@elrondnetwork/erdjs';
-import { elrondConfig, abiConfig } from '../../config';
+import { Interaction } from '@elrondnetwork/erdjs';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from './dto/farm.args';
+import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class AbiFarmService {
-    private readonly proxy: ProxyProvider;
-
-    constructor() {
-        this.proxy = new ProxyProvider(
-            elrondConfig.elrondApi,
-            elrondConfig.proxyTimeout,
-        );
-    }
-
-    async getContract(farmAddress: string): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({
-            files: [abiConfig.farm],
-        });
-        const abi = new SmartContractAbi(abiRegistry, ['Farm']);
-        const contract = new SmartContract({
-            address: new Address(farmAddress),
-            abi: abi,
-        });
-        return contract;
-    }
+    constructor(private readonly elrondProxy: ElrondProxyService) {}
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        const contract = await this.getContract(farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
         const interaction: Interaction = contract.methods.getRewardTokenId([]);
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -52,10 +28,12 @@ export class AbiFarmService {
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
-        const contract = await this.getContract(farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
         const interaction: Interaction = contract.methods.getFarmTokenId([]);
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -65,10 +43,12 @@ export class AbiFarmService {
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        const contract = await this.getContract(farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
         const interaction: Interaction = contract.methods.getFarmingTokenId([]);
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -78,12 +58,14 @@ export class AbiFarmService {
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
-        const contract = await this.getContract(farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
         const interaction: Interaction = contract.methods.getFarmTokenSupply(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -92,12 +74,14 @@ export class AbiFarmService {
     }
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
-        const contract = await this.getContract(farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
         const interaction: Interaction = contract.methods.getFarmingTokenReserve(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -106,12 +90,14 @@ export class AbiFarmService {
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
-        const contract = await this.getContract(farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
         const interaction: Interaction = contract.methods.getPerBlockRewardAmount(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -122,7 +108,9 @@ export class AbiFarmService {
     async calculateRewardsForGivenPosition(
         args: CalculateRewardsArgs,
     ): Promise<string> {
-        const contract = await this.getContract(args.farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
+        );
         const interaction: Interaction = contract.methods.calculateRewardsForGivenPosition(
             [
                 new BigUIntValue(new BigNumber(args.liquidity)),
@@ -132,12 +120,26 @@ export class AbiFarmService {
             ],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
         const rewards = response.firstValue.valueOf().toString();
 
         return rewards;
+    }
+
+    async getState(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getState([]);
+        const queryResponse = await contract.runQuery(
+            this.elrondProxy.getService(),
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const state = response.firstValue.valueOf();
+        return state;
     }
 }

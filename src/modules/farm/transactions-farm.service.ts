@@ -8,7 +8,6 @@ import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/b
 import { Address, GasLimit } from '@elrondnetwork/erdjs';
 import { gasConfig } from '../../config';
 import { BigNumber } from 'bignumber.js';
-import { AbiFarmService } from './abi-farm.service';
 import {
     ClaimRewardsArgs,
     EnterFarmArgs,
@@ -16,16 +15,19 @@ import {
     SftFarmInteractionArgs,
 } from './dto/farm.args';
 import { ContextService } from '../../services/context/context.service';
+import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class TransactionsFarmService {
     constructor(
-        private abiService: AbiFarmService,
-        private context: ContextService,
+        private readonly elrondProxy: ElrondProxyService,
+        private readonly context: ContextService,
     ) {}
 
     async enterFarm(args: EnterFarmArgs): Promise<TransactionModel> {
-        const contract = await this.abiService.getContract(args.farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
+        );
 
         const method = args.lockRewards
             ? 'enterFarmAndLockRewards'
@@ -56,7 +58,9 @@ export class TransactionsFarmService {
         args: SftFarmInteractionArgs,
         method: string,
     ): Promise<TransactionModel> {
-        const contract = await this.abiService.getContract(args.farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
+        );
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.farmTokenID),

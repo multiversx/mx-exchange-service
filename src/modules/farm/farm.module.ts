@@ -7,9 +7,15 @@ import { TransactionsFarmService } from './transactions-farm.service';
 import { FarmStatisticsService } from './farm-statistics.service';
 import { PairModule } from '../pair/pair.module';
 import { ContextModule } from '../../services/context/context.module';
+import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 
 @Module({
-    imports: [CacheManagerModule, ContextModule, PairModule],
+    imports: [
+        ElrondCommunicationModule,
+        CacheManagerModule,
+        ContextModule,
+        PairModule,
+    ],
     providers: [
         FarmService,
         AbiFarmService,
