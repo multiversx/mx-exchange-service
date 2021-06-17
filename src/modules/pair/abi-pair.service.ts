@@ -1,39 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { AbiRegistry } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { ProxyProvider, Address, SmartContract } from '@elrondnetwork/erdjs';
-import { elrondConfig, abiConfig } from '../../config';
+import { Address } from '@elrondnetwork/erdjs';
 import { PairInfoModel } from '../../models/pair-info.model';
+import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class AbiPairService {
-    private readonly proxy: ProxyProvider;
-
-    constructor() {
-        this.proxy = new ProxyProvider(
-            elrondConfig.elrondApi,
-            elrondConfig.proxyTimeout,
-        );
-    }
-
-    async getContract(address: string): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({ files: [abiConfig.pair] });
-        const abi = new SmartContractAbi(abiRegistry, ['Pair']);
-        const contract = new SmartContract({
-            address: new Address(address),
-            abi: abi,
-        });
-
-        return contract;
-    }
+    constructor(private readonly elrondProxy: ElrondProxyService) {}
 
     async getFirstTokenID(pairAddress: string): Promise<string> {
-        const contract = await this.getContract(pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
         const interaction: Interaction = contract.methods.getFirstTokenId([]);
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -43,10 +25,12 @@ export class AbiPairService {
     }
 
     async getSecondTokenID(pairAddress: string): Promise<string> {
-        const contract = await this.getContract(pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
         const interaction: Interaction = contract.methods.getSecondTokenId([]);
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -56,12 +40,14 @@ export class AbiPairService {
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {
-        const contract = await this.getContract(pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
         const getLpTokenInteraction: Interaction = contract.methods.getLpTokenIdentifier(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             getLpTokenInteraction.buildQuery(),
         );
         const response = getLpTokenInteraction.interpretQueryResponse(
@@ -74,14 +60,16 @@ export class AbiPairService {
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        const contract = await this.getContract(pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
 
         const interaction: Interaction = contract.methods.getReservesAndTotalSupply(
             [],
         );
 
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -99,7 +87,9 @@ export class AbiPairService {
         callerAddress: string,
         tokenID: string,
     ): Promise<string> {
-        const contract = await this.getContract(pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
 
         const interaction: Interaction = contract.methods.getTemporaryFunds([
             BytesValue.fromHex(new Address(callerAddress).hex()),
@@ -107,7 +97,7 @@ export class AbiPairService {
         ]);
 
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
 
@@ -116,5 +106,19 @@ export class AbiPairService {
         const temporaryFunds = response.firstValue.valueOf().toString();
 
         return temporaryFunds;
+    }
+
+    async getState(pairAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getState([]);
+        const queryResponse = await contract.runQuery(
+            this.elrondProxy.getService(),
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const state = response.firstValue.valueOf();
+        return state;
     }
 }

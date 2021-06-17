@@ -271,8 +271,7 @@ export class PairService {
     }
 
     async getState(pairAddress: string): Promise<string> {
-        const contract = await this.abiService.getContract(pairAddress);
-        return this.context.getState(contract);
+        return this.abiService.getState(pairAddress);
     }
 
     async getAmountOut(
