@@ -68,5 +68,8 @@
         "lockedAssetFactory": "./src/dex/locked-asset-factory/sc-locked-asset-factory.abi.json",
         "proxy": "./src/dex/proxy/sc-proxy-dex.abi.json",
         "wrap": "./src/dex/wrapping/egld-esdt-swap.abi.json"
+    },
+    "cron": {
+        "cacheWarmer": true
     }
 }

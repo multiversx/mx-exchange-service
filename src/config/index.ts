@@ -24,3 +24,5 @@ export const farmsConfig = config.get('farms');
 export const tokenProviderUSD = config.get('tokenProviderUSD');
 
 export const tokensPriceData = config.get('priceFeeds');
+
+export const cronConfig = config.get('cron');
