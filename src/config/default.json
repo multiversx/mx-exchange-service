@@ -61,13 +61,13 @@
         "claimLockedAssets": 100000000
     },
     "abi": {
-        "router": "./src/dex/router/elrond_dex_router.abi.json",
-        "pair": "./src/dex/pair/elrond_dex_pair.abi.json",
-        "farm": "./src/dex/farm/elrond_dex_farm.abi.json",
-        "distribution": "./src/dex/distribution/sc_distribution_rs.abi.json",
-        "lockedAssetFactory": "./src/dex/locked-asset-factory/sc-locked-asset-factory.abi.json",
-        "proxy": "./src/dex/proxy/sc-proxy-dex.abi.json",
-        "wrap": "./src/dex/wrapping/egld-esdt-swap.abi.json"
+        "router": "./src/abis/elrond_dex_router.abi.json",
+        "pair": "./src/abis/elrond_dex_pair.abi.json",
+        "farm": "./src/abis/elrond_dex_farm.abi.json",
+        "distribution": "./src/abis/sc_distribution_rs.abi.json",
+        "lockedAssetFactory": "./src/abis/sc-locked-asset-factory.abi.json",
+        "proxy": "./src/abis/sc-proxy-dex.abi.json",
+        "wrap": "./src/abis/egld-esdt-swap.abi.json"
     },
     "cron": {
         "cacheWarmer": true

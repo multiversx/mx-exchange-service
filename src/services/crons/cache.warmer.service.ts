@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PairService } from 'src/dex/pair/pair.service';
+import { PairService } from '../../modules/pair/pair.service';
 import { PriceFeedService } from '../price-feed/price-feed.service';
 import { tokensPriceData } from '../../config';
 import { RedlockService } from '../redlock';
-import { ContextService } from 'src/dex/utils/context.service';
+import { ContextService } from '../context/context.service';
 
 @Injectable()
 export class CacheWarmerService {
