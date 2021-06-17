@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { tokenProviderUSD, tokensPriceData } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TemporaryFundsModel } from '../models/pair.model';
 import { ContextService } from '../utils/context.service';
-import { RedlockService } from '../../services';
 import {
     quote,
     getAmountOut,
@@ -23,7 +21,6 @@ export class PairService {
         private abiService: AbiPairService,
         private cacheService: CachePairService,
         private context: ContextService,
-        private redlockService: RedlockService,
         private priceFeed: PriceFeedService,
     ) {}
 
@@ -216,31 +213,6 @@ export class PairService {
         }
 
         return '';
-    }
-
-    @Cron(CronExpression.EVERY_30_SECONDS)
-    async cachePairsInfo(): Promise<void> {
-        const pairsAddress = await this.context.getAllPairsAddress();
-        const promises = pairsAddress.map(async pairAddress => {
-            const resource = `${pairAddress}.pairInfo`;
-            const lockExpire = 20;
-            let lock;
-
-            try {
-                lock = await this.redlockService.lockTryOnce(
-                    resource,
-                    lockExpire,
-                );
-            } catch (e) {
-                return;
-            }
-            if (lock === 0) {
-                return;
-            }
-
-            return this.getPairInfoMetadata(pairAddress);
-        });
-        await Promise.all(promises);
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
