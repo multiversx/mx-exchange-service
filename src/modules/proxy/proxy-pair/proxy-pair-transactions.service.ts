@@ -16,20 +16,21 @@ import {
     RemoveLiquidityProxyArgs,
     TokensTransferArgs,
 } from '../dto/proxy-pair.args';
-import { getContract } from '../utils';
 import { ContextService } from '../../../services/context/context.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class TransactionsProxyPairService {
     constructor(
-        private pairService: PairService,
-        private context: ContextService,
+        private readonly elrondProxy: ElrondProxyService,
+        private readonly pairService: PairService,
+        private readonly context: ContextService,
     ) {}
 
     async addLiquidityProxy(
         args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
         const amount0 = new BigNumber(args.amount0);
         const amount1 = new BigNumber(args.amount1);
 
@@ -57,7 +58,7 @@ export class TransactionsProxyPairService {
     async removeLiquidityProxy(
         args: RemoveLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             args.pairAddress,
             args.liquidity,
@@ -94,7 +95,7 @@ export class TransactionsProxyPairService {
     async esdtTransferProxy(
         args: TokensTransferArgs,
     ): Promise<TransactionModel> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
 
         if (!args.tokenNonce) {
             const transactionArgs = [
@@ -134,7 +135,7 @@ export class TransactionsProxyPairService {
     async reclaimTemporaryFundsProxy(
         args: ReclaimTemporaryFundsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
         const interaction: Interaction = contract.methods.reclaimTemporaryFundsProxy(
             [
                 BytesValue.fromUTF8(args.firstTokenID),

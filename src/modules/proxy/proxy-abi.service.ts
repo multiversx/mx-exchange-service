@@ -1,25 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { ProxyProvider } from '@elrondnetwork/erdjs';
-import { elrondConfig } from '../../config';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { getContract } from './utils';
+import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class AbiProxyService {
-    private readonly proxy: ProxyProvider;
-
-    constructor() {
-        this.proxy = new ProxyProvider(
-            elrondConfig.elrondApi,
-            elrondConfig.proxyTimeout,
-        );
-    }
+    constructor(private readonly elrondProxy: ElrondProxyService) {}
 
     async getAssetTokenID(): Promise<string> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
         const interaction: Interaction = contract.methods.getAssetTokenId([]);
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
@@ -28,12 +19,12 @@ export class AbiProxyService {
     }
 
     async getLockedAssetTokenID(): Promise<string> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
         const interaction: Interaction = contract.methods.getLockedAssetTokenId(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
