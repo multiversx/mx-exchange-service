@@ -12,7 +12,7 @@ async function bootstrap() {
 
     if (cronConfig.cacheWarmer) {
         const processorApp = await NestFactory.create(CacheWarmerModule);
-        await processorApp.listen(6001);
+        await processorApp.listen(process.env.CRON_PORT);
     }
 }
 bootstrap();
