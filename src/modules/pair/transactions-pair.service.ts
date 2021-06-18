@@ -3,7 +3,7 @@ import { BigUIntValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { GasLimit } from '@elrondnetwork/erdjs';
-import { gasConfig } from '../../config';
+import { elrondConfig, gasConfig } from '../../config';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -49,7 +49,10 @@ export class TransactionPairService {
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.addLiquidity));
 
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async reclaimTemporaryFunds(
@@ -63,7 +66,10 @@ export class TransactionPairService {
         );
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async removeLiquidity(

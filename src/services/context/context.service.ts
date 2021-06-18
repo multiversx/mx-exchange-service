@@ -206,13 +206,15 @@ export class ContextService {
         args: TypedValue[],
         gasLimit: GasLimit,
     ): TransactionModel {
-        return contract
-            .call({
-                func: new ContractFunction('ESDTTransfer'),
-                args: args,
-                gasLimit: gasLimit,
-            })
-            .toPlainObject();
+        const transaction = contract.call({
+            func: new ContractFunction('ESDTTransfer'),
+            args: args,
+            gasLimit: gasLimit,
+        });
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     nftTransfer(
@@ -226,6 +228,9 @@ export class ContextService {
             gasLimit: gasLimit,
         });
 
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 }

@@ -7,7 +7,7 @@ import {
     BigUIntValue,
 } from '@elrondnetwork/erdjs';
 import { TransactionModel } from '../../models/transaction.model';
-import { gasConfig } from 'src/config';
+import { elrondConfig, gasConfig } from 'src/config';
 import { WrapService } from './wrap.service';
 import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
@@ -28,7 +28,10 @@ export class TransactionsWrapService {
         transaction.setValue(new Balance(amount));
         transaction.setGasLimit(new GasLimit(gasConfig.wrapeGLD));
 
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async unwrapEgld(amount: string): Promise<TransactionModel> {
