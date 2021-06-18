@@ -71,7 +71,7 @@ export class ElrondProxyService {
         );
     }
 
-    private async getSmartContract(
+    async getSmartContract(
         contractAddress: string,
         contractAbiPath: string,
         contractInterface: string,

@@ -1,11 +1,5 @@
 import { TokenModel } from '../../models/esdtToken.model';
 
-interface PairMetadata {
-    address: string;
-    firstToken: string;
-    secondToken: string;
-}
-
 const pairsMetadata = [
     {
         firstToken: 'WEGLD-b9cba1',
@@ -48,8 +42,24 @@ export class FarmServiceMock {
         return farmMetadata.farmedTokenID;
     }
 
-    async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
-        return '200';
+    async getFarmingToken(farmAddress: string): Promise<TokenModel> {
+        return {
+            token: 'LPT-1111',
+            name: 'LiquidityPoolToken',
+            type: 'FungibleESDT',
+            owner: 'user_address_1',
+            minted: '0',
+            burnt: '0',
+            decimals: 0,
+            isPaused: false,
+            canUpgrade: true,
+            canMint: true,
+            canBurn: true,
+            canChangeOwner: true,
+            canPause: true,
+            canFreeze: true,
+            canWipe: true,
+        };
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
@@ -62,6 +72,14 @@ export class FarmServiceMock {
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
         return farmMetadata.rewardsPerBlock;
+    }
+
+    async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
+        return '200';
+    }
+
+    async getFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
+        return '200';
     }
 }
 

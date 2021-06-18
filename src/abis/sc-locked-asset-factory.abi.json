@@ -71,7 +71,7 @@
             "outputs": []
         },
         {
-            "name": "issueNft",
+            "name": "issueLockedAssetToken",
             "payableInTokens": [
                 "EGLD"
             ],
@@ -88,12 +88,8 @@
             "outputs": []
         },
         {
-            "name": "setLocalRoles",
+            "name": "setLocalRolesLockedAssetToken",
             "inputs": [
-                {
-                    "name": "token",
-                    "type": "TokenIdentifier"
-                },
                 {
                     "name": "address",
                     "type": "Address"
@@ -105,6 +101,15 @@
                 }
             ],
             "outputs": []
+        },
+        {
+            "name": "getLastErrorMessage",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bytes"
+                }
+            ]
         },
         {
             "name": "getInitEpoch",
@@ -135,15 +140,6 @@
             ]
         },
         {
-            "name": "getAssetTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
             "name": "set_transfer_exec_gas_limit",
             "inputs": [
                 {
@@ -154,7 +150,25 @@
             "outputs": []
         },
         {
+            "name": "getTransferExecGasLimit",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
             "name": "getLockedAssetTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getAssetTokenId",
             "inputs": [],
             "outputs": [
                 {
@@ -182,6 +196,54 @@
             "outputs": [
                 {
                     "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getGeneratedTokenAmountList",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getBurnedTokenAmountList",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getGeneratedTokenAmount",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getBurnedTokenAmount",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         }
