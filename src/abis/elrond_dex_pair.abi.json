@@ -442,6 +442,15 @@
             ]
         },
         {
+            "name": "getTotalSupply",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
             "name": "getFirstTokenId",
             "inputs": [],
             "outputs": [
@@ -467,15 +476,6 @@
                     "type": "TokenIdentifier"
                 }
             ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getTotalSupply",
-            "inputs": [],
             "outputs": [
                 {
                     "type": "BigUint"
@@ -546,6 +546,54 @@
                 }
             ],
             "outputs": []
+        },
+        {
+            "name": "getGeneratedTokenAmountList",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getBurnedTokenAmountList",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getGeneratedTokenAmount",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getBurnedTokenAmount",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
         }
     ],
     "types": {
