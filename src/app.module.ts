@@ -10,6 +10,7 @@ import { WrappingModule } from './modules/wrapping/wrap.module';
 import { ProxyModule } from './modules/proxy/proxy.module';
 import { LockedAssetModule } from './modules/locked-asset-factory/locked-asset.module';
 import { UserModule } from './modules/user/user.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { UserModule } from './modules/user/user.module';
         LockedAssetModule,
         WrappingModule,
         UserModule,
+        AnalyticsModule,
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
         }),
