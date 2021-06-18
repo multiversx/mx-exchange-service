@@ -8,19 +8,19 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { TransactionModel } from '../../models/transaction.model';
 import { BigNumber } from 'bignumber.js';
-import { AbiLockedAssetService } from './abi-locked-asset.service';
 import { UnlockAssetsArs } from './dto/locked-asset.args';
 import { ContextService } from '../../services/context/context.service';
+import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class TransactionsLockedAssetService {
     constructor(
-        private abiService: AbiLockedAssetService,
-        private context: ContextService,
+        private readonly elrondProxy: ElrondProxyService,
+        private readonly context: ContextService,
     ) {}
 
     async unlockAssets(args: UnlockAssetsArs): Promise<TransactionModel> {
-        const contract = await this.abiService.getContract();
+        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.lockedTokenID),

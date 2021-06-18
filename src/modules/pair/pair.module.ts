@@ -6,9 +6,15 @@ import { AbiPairService } from './abi-pair.service';
 import { TransactionPairService } from './transactions-pair.service';
 import { PriceFeedModule } from 'src/services/price-feed/price-feed.module';
 import { ContextModule } from '../../services/context/context.module';
+import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 
 @Module({
-    imports: [CacheManagerModule, ContextModule, PriceFeedModule],
+    imports: [
+        ElrondCommunicationModule,
+        CacheManagerModule,
+        ContextModule,
+        PriceFeedModule,
+    ],
     providers: [
         PairService,
         AbiPairService,

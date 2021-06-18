@@ -1,28 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { Address, BytesValue, ProxyProvider } from '@elrondnetwork/erdjs';
-import { elrondConfig } from '../../../config';
+import { Address, BytesValue } from '@elrondnetwork/erdjs';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { getContract } from '../utils';
 import { GenericEsdtAmountPair } from '../../../models/proxy.model';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class AbiProxyPairService {
-    private readonly proxy: ProxyProvider;
-
-    constructor() {
-        this.proxy = new ProxyProvider(
-            elrondConfig.elrondApi,
-            elrondConfig.proxyTimeout,
-        );
-    }
+    constructor(private readonly elrondProxy: ElrondProxyService) {}
 
     async getWrappedLpTokenID(): Promise<string> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
         const interaction: Interaction = contract.methods.getWrappedLpTokenId(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const result = interaction.interpretQueryResponse(queryResponse);
@@ -32,13 +24,13 @@ export class AbiProxyPairService {
     }
 
     async getIntermediatedPairsAddress(): Promise<string[]> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
 
         const interaction: Interaction = contract.methods.getIntermediatedPairs(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
 
@@ -53,14 +45,14 @@ export class AbiProxyPairService {
     async getTemporaryFundsProxy(
         userAddress: string,
     ): Promise<GenericEsdtAmountPair[]> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
 
         const interaction: Interaction = contract.methods.getTemporaryFunds([
             BytesValue.fromHex(new Address(userAddress).hex()),
         ]);
 
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const result = interaction.interpretQueryResponse(queryResponse);

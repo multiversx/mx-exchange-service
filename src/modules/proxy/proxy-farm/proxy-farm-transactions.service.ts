@@ -14,15 +14,18 @@ import {
     EnterFarmProxyArgs,
     ExitFarmProxyArgs,
 } from '../dto/proxy-farm.args';
-import { getContract } from '../utils';
 import { ContextService } from '../../../services/context/context.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class TransactionsProxyFarmService {
-    constructor(private context: ContextService) {}
+    constructor(
+        private readonly elrondProxy: ElrondProxyService,
+        private readonly context: ContextService,
+    ) {}
 
     async enterFarmProxy(args: EnterFarmProxyArgs): Promise<TransactionModel> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
         const method = args.lockRewards
             ? 'enterFarmAndLockRewardsProxy'
             : 'enterFarmProxy';
@@ -48,7 +51,7 @@ export class TransactionsProxyFarmService {
     }
 
     async exitFarmProxy(args: ExitFarmProxyArgs): Promise<TransactionModel> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.wrappedFarmTokenID),
@@ -73,7 +76,7 @@ export class TransactionsProxyFarmService {
     async claimFarmRewardsProxy(
         args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.wrappedFarmTokenID),

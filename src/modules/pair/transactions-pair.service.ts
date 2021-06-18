@@ -5,7 +5,6 @@ import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction
 import { GasLimit } from '@elrondnetwork/erdjs';
 import { gasConfig } from '../../config';
 import { TransactionModel } from '../../models/transaction.model';
-import { AbiPairService } from './abi-pair.service';
 import {
     AddLiquidityArgs,
     ESDTTransferArgs,
@@ -16,13 +15,14 @@ import {
 import { PairService } from './pair.service';
 import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
+import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class TransactionPairService {
     constructor(
-        private abiService: AbiPairService,
-        private pairService: PairService,
-        private context: ContextService,
+        private readonly elrondProxy: ElrondProxyService,
+        private readonly pairService: PairService,
+        private readonly context: ContextService,
     ) {}
 
     async addLiquidity(args: AddLiquidityArgs): Promise<TransactionModel> {
@@ -36,7 +36,9 @@ export class TransactionPairService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const contract = await this.abiService.getContract(args.pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
         const interaction: Interaction = contract.methods.addLiquidity([
             new BigUIntValue(amount0),
             new BigUIntValue(amount1),
@@ -53,7 +55,9 @@ export class TransactionPairService {
     async reclaimTemporaryFunds(
         pairAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.abiService.getContract(pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
         const interaction: Interaction = contract.methods.reclaimTemporaryFunds(
             [],
         );
@@ -77,7 +81,9 @@ export class TransactionPairService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const contract = await this.abiService.getContract(args.pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
         const transactionArgs = [
             BytesValue.fromUTF8(args.liquidityTokenID),
             new BigUIntValue(new BigNumber(args.liquidity)),
@@ -96,7 +102,9 @@ export class TransactionPairService {
     async swapTokensFixedInput(
         args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.abiService.getContract(args.pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
 
         const amountIn = new BigNumber(args.amountIn);
         const amountOut = new BigNumber(args.amountOut);
@@ -122,7 +130,9 @@ export class TransactionPairService {
     async swapTokensFixedOutput(
         args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.abiService.getContract(args.pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
 
         const amountIn = new BigNumber(args.amountIn);
         const amountOut = new BigNumber(args.amountOut);
@@ -145,7 +155,9 @@ export class TransactionPairService {
     }
 
     async esdtTransfer(args: ESDTTransferArgs): Promise<TransactionModel> {
-        const contract = await this.abiService.getContract(args.pairAddress);
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.token),

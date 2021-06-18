@@ -1,27 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { ProxyProvider } from '@elrondnetwork/erdjs';
-import { elrondConfig } from '../../../config';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { getContract } from '../utils';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class AbiProxyFarmService {
-    private readonly proxy: ProxyProvider;
-
-    constructor() {
-        this.proxy = new ProxyProvider(
-            elrondConfig.elrondApi,
-            elrondConfig.proxyTimeout,
-        );
-    }
+    constructor(private readonly elrondProxy: ElrondProxyService) {}
 
     async getWrappedFarmTokenID(): Promise<string> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
         const interaction: Interaction = contract.methods.getWrappedFarmTokenId(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const result = interaction.interpretQueryResponse(queryResponse);
@@ -31,13 +22,13 @@ export class AbiProxyFarmService {
     }
 
     async getIntermediatedFarmsAddress(): Promise<string[]> {
-        const contract = await getContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
 
         const interaction: Interaction = contract.methods.getIntermediatedFarms(
             [],
         );
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
 

@@ -201,17 +201,6 @@ export class ContextService {
         return nftTokenMetadata;
     }
 
-    async getState(contract: SmartContract): Promise<string> {
-        const interaction: Interaction = contract.methods.getState([]);
-        const queryResponse = await contract.runQuery(
-            this.proxy,
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
-        const state = response.firstValue.valueOf();
-        return state;
-    }
-
     esdtTransfer(
         contract: SmartContract,
         args: TypedValue[],

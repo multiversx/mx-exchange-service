@@ -2,47 +2,27 @@ import { TransactionModel } from '../../models/transaction.model';
 import { PairModel } from '../../models/pair.model';
 import { FactoryModel } from '../../models/factory.model';
 import { Injectable } from '@nestjs/common';
-import { AbiRegistry } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import {
-    ProxyProvider,
-    Address,
-    SmartContract,
-    GasLimit,
-} from '@elrondnetwork/erdjs';
+import { Address, GasLimit } from '@elrondnetwork/erdjs';
 import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
 import { Client } from '@elastic/elasticsearch';
-import { elrondConfig, abiConfig, scAddress } from '../../config';
+import { elrondConfig, scAddress } from '../../config';
 import { ContextService } from '../../services/context/context.service';
+import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class RouterService {
-    private readonly proxy: ProxyProvider;
     private readonly elasticClient: Client;
 
     constructor(
-        private cacheManagerService: CacheManagerService,
-        private context: ContextService,
+        private readonly elrondProxy: ElrondProxyService,
+        private readonly cacheManagerService: CacheManagerService,
+        private readonly context: ContextService,
     ) {
-        this.proxy = new ProxyProvider(elrondConfig.elrondApi, 60000);
         this.elasticClient = new Client({
             node: elrondConfig.elastic + '/transactions',
         });
-    }
-
-    private async getContract(): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({
-            files: [abiConfig.router],
-        });
-        const abi = new SmartContractAbi(abiRegistry, ['Router']);
-        const contract = new SmartContract({
-            address: new Address(scAddress.routerAddress),
-            abi: abi,
-        });
-
-        return contract;
     }
 
     async getFactory(): Promise<FactoryModel> {
@@ -123,7 +103,7 @@ export class RouterService {
         token0ID: string,
         token1ID: string,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await this.elrondProxy.getRouterSmartContract();
 
         const createPairInteraction: Interaction = contract.methods.createPair([
             BytesValue.fromUTF8(token0ID),
@@ -140,7 +120,7 @@ export class RouterService {
         lpTokenName: string,
         lpTokenTicker: string,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await this.elrondProxy.getRouterSmartContract();
         const issueLPTokenInteraction: Interaction = contract.methods.issueLPToken(
             [
                 BytesValue.fromHex(new Address(pairAddress).hex()),
@@ -155,7 +135,7 @@ export class RouterService {
     }
 
     async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await this.elrondProxy.getRouterSmartContract();
         const setLocalRolesInteraction: Interaction = contract.methods.setLocalRoles(
             [BytesValue.fromHex(new Address(pairAddress).hex())],
         );
@@ -169,7 +149,7 @@ export class RouterService {
         address: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await this.elrondProxy.getRouterSmartContract();
         const args = [BytesValue.fromHex(new Address(address).hex())];
 
         const stateInteraction: Interaction = enable
@@ -187,7 +167,7 @@ export class RouterService {
         feeTokenID: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract();
+        const contract = await this.elrondProxy.getRouterSmartContract();
         const args = [
             BytesValue.fromHex(new Address(pairAddress).hex()),
             BytesValue.fromHex(new Address(feeToAddress).hex()),
