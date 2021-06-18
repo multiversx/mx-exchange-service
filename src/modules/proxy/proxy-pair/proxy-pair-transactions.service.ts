@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { gasConfig } from '../../../config';
+import { elrondConfig, gasConfig } from '../../../config';
 import {
     BigUIntValue,
     BytesValue,
@@ -52,7 +52,10 @@ export class TransactionsProxyPairService {
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.addLiquidityProxy));
 
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async removeLiquidityProxy(
@@ -147,6 +150,9 @@ export class TransactionsProxyPairService {
 
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 }

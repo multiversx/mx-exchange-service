@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GasLimit } from '@elrondnetwork/erdjs';
-import { gasConfig } from '../../config';
+import { elrondConfig, gasConfig } from '../../config';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { TransactionModel } from '../../models/transaction.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
@@ -15,6 +15,9 @@ export class TransactionsDistributionService {
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.claimLockedAssets));
 
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 }
