@@ -21,7 +21,8 @@ export class AnalyticsService {
     ) {}
 
     async getTokenPriceUSD(tokenID: string): Promise<string> {
-        return this.pairService.getPriceUSDByPath(tokenID);
+        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(tokenID);
+        return tokenPriceUSD.toFixed();
     }
 
     async getLockedValueUSDFarms(): Promise<string> {
