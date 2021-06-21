@@ -27,7 +27,7 @@ export class FarmStatisticsService {
                 scAddress.get(farmedTokenID),
                 farmedTokenID,
             ),
-            this.getFarmingTokenPriceUSD(farmAddress),
+            this.farmService.getFarmingTokenPriceUSD(farmAddress),
             this.farmService.getFarmTokenSupply(farmAddress),
             this.farmService.getFarmingTokenReserve(farmAddress),
             this.farmService.getRewardsPerBlock(farmAddress),
@@ -60,26 +60,5 @@ export class FarmStatisticsService {
         );
 
         return farmAPR.toFixed();
-    }
-
-    private async getFarmingTokenPriceUSD(
-        farmAddress: string,
-    ): Promise<string> {
-        const farmingTokenID = await this.farmService.getFarmingTokenID(
-            farmAddress,
-        );
-        if (scAddress.has(farmingTokenID)) {
-            const pairAddress = scAddress.get(farmingTokenID);
-            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
-                pairAddress,
-                farmingTokenID,
-            );
-            return tokenPriceUSD.toFixed();
-        }
-
-        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            farmingTokenID,
-        );
-        return this.pairService.getLpTokenPriceUSD(pairAddress);
     }
 }
