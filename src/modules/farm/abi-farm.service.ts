@@ -57,7 +57,7 @@ export class AbiFarmService {
         return farmingTokenID;
     }
 
-    async getFarmTokenSupply(farmAddress: string): Promise<string> {
+    async getFarmTokenSupply(farmAddress: string): Promise<BigNumber> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
@@ -69,11 +69,11 @@ export class AbiFarmService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        const farmTokenSupply = response.firstValue.valueOf().toString();
+        const farmTokenSupply = response.firstValue.valueOf();
         return farmTokenSupply;
     }
 
-    async getFarmingTokenReserve(farmAddress: string): Promise<string> {
+    async getFarmingTokenReserve(farmAddress: string): Promise<BigNumber> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
@@ -85,11 +85,11 @@ export class AbiFarmService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        const farmingTokenReserve = response.firstValue.valueOf().toString();
+        const farmingTokenReserve = response.firstValue.valueOf();
         return farmingTokenReserve;
     }
 
-    async getRewardsPerBlock(farmAddress: string): Promise<string> {
+    async getRewardsPerBlock(farmAddress: string): Promise<BigNumber> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
@@ -101,13 +101,13 @@ export class AbiFarmService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        const rewardsPerBlock = response.firstValue.valueOf().toString();
+        const rewardsPerBlock = response.firstValue.valueOf();
         return rewardsPerBlock;
     }
 
     async calculateRewardsForGivenPosition(
         args: CalculateRewardsArgs,
-    ): Promise<string> {
+    ): Promise<BigNumber> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
@@ -124,7 +124,7 @@ export class AbiFarmService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        const rewards = response.firstValue.valueOf().toString();
+        const rewards = response.firstValue.valueOf();
 
         return rewards;
     }

@@ -6,6 +6,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class AbiDistributionService {
@@ -26,7 +27,7 @@ export class AbiDistributionService {
         return result.values;
     }
 
-    async getDistributedLockedAssets(userAddress: string): Promise<string> {
+    async getDistributedLockedAssets(userAddress: string): Promise<BigNumber> {
         const contract = await this.elrondProxy.getDistributionSmartContract();
         const interaction: Interaction = contract.methods.calculateLockedAssets(
             [BytesValue.fromHex(new Address(userAddress).hex())],
@@ -38,6 +39,6 @@ export class AbiDistributionService {
 
         const result = interaction.interpretQueryResponse(queryResponse);
 
-        return result.firstValue.valueOf().toString();
+        return result.firstValue.valueOf();
     }
 }

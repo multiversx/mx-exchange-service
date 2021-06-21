@@ -47,6 +47,6 @@ export class DistributionService {
         const distributedLockedAssets = await this.abiService.getDistributedLockedAssets(
             userAddress,
         );
-        return distributedLockedAssets;
+        return distributedLockedAssets.toFixed();
     }
 }

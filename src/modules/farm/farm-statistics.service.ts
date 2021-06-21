@@ -59,7 +59,7 @@ export class FarmStatisticsService {
             unlockedFarmingTokensValue,
         );
 
-        return farmAPR.toString();
+        return farmAPR.toFixed();
     }
 
     private async getFarmingTokenPriceUSD(
@@ -70,10 +70,11 @@ export class FarmStatisticsService {
         );
         if (scAddress.has(farmingTokenID)) {
             const pairAddress = scAddress.get(farmingTokenID);
-            return await this.pairService.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
                 pairAddress,
                 farmingTokenID,
             );
+            return tokenPriceUSD.toFixed();
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(

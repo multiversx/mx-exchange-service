@@ -4,6 +4,7 @@ import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction
 import { Address } from '@elrondnetwork/erdjs';
 import { PairInfoModel } from '../../models/pair-info.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class AbiPairService {
@@ -75,9 +76,9 @@ export class AbiPairService {
         const response = interaction.interpretQueryResponse(queryResponse);
 
         const pairInfo = {
-            reserves0: response.values[0].valueOf().toString(),
-            reserves1: response.values[1].valueOf().toString(),
-            totalSupply: response.values[2].valueOf().toString(),
+            reserves0: response.values[0].valueOf().toFixed(),
+            reserves1: response.values[1].valueOf().toFixed(),
+            totalSupply: response.values[2].valueOf().toFixed(),
         };
         return pairInfo;
     }
@@ -86,7 +87,7 @@ export class AbiPairService {
         pairAddress: string,
         callerAddress: string,
         tokenID: string,
-    ): Promise<string> {
+    ): Promise<BigNumber> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
@@ -103,7 +104,7 @@ export class AbiPairService {
 
         const response = interaction.interpretQueryResponse(queryResponse);
 
-        const temporaryFunds = response.firstValue.valueOf().toString();
+        const temporaryFunds = response.firstValue.valueOf();
 
         return temporaryFunds;
     }

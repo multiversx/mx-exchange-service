@@ -1,5 +1,6 @@
 import { PairInfoModel } from '../../models/pair-info.model';
 import { TokenModel } from '../../models/esdtToken.model';
+import BigNumber from 'bignumber.js';
 
 interface PairMetadata {
     address: string;
@@ -78,8 +79,8 @@ export class AbiPairServiceMock {
         pairAddress: string,
         callerAddress: string,
         tokenID: string,
-    ): Promise<string> {
-        return '100';
+    ): Promise<BigNumber> {
+        return new BigNumber(100);
     }
 }
 

@@ -17,7 +17,7 @@ export class PriceFeedService {
     async getTokenPrice(tokenName: string): Promise<BigNumber> {
         const cachedData = await this.cacheService.getPriceFeed(tokenName);
         if (!!cachedData) {
-            return cachedData.priceFeed;
+            return new BigNumber(cachedData.priceFeed);
         }
         const response = await this.doGet(`latest/quotes/${tokenName}/price`);
         this.cacheService.setPriceFeed(tokenName, {
@@ -35,7 +35,7 @@ export class PriceFeedService {
             const payload = response.data;
             return payload;
         } catch (error) {
-            console.log(error);
+            console.log({ priceFeed: error });
         }
     }
 }

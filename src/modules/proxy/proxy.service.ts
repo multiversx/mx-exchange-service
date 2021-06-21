@@ -78,8 +78,8 @@ export class ProxyService {
                 identifier: arg.identifier,
                 attributes: arg.attributes,
                 lpTokenID: decodedAttributes.lpTokenID.toString(),
-                lpTokenTotalAmount: decodedAttributes.lpTokenTotalAmount.toString(),
-                lockedAssetsInvested: decodedAttributes.lockedAssetsInvested.toString(),
+                lpTokenTotalAmount: decodedAttributes.lpTokenTotalAmount.toFixed(),
+                lockedAssetsInvested: decodedAttributes.lockedAssetsInvested.toFixed(),
                 lockedAssetsNonce: decodedAttributes.lockedAssetsNonce.toString(),
             };
         });
