@@ -91,11 +91,11 @@ export class PairService {
         const firstTokenPrice = await this.getEquivalentForLiquidity(
             pairAddress,
             firstToken.token,
-            new BigNumber(`1e${firstToken.decimals}`).toString(),
+            new BigNumber(`1e${firstToken.decimals}`).toFixed(),
         );
         return new BigNumber(firstTokenPrice)
             .multipliedBy(`1e-${firstToken.decimals}`)
-            .toString();
+            .toFixed();
     }
 
     async getSecondTokenPrice(pairAddress: string): Promise<string> {
@@ -103,21 +103,29 @@ export class PairService {
         const secondTokenPrice = await this.getEquivalentForLiquidity(
             pairAddress,
             secondToken.token,
-            new BigNumber(`1e${secondToken.decimals}`).toString(),
+            new BigNumber(`1e${secondToken.decimals}`).toFixed(),
         );
         return new BigNumber(secondTokenPrice)
             .multipliedBy(`1e-${secondToken.decimals}`)
-            .toString();
+            .toFixed();
     }
 
     async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
-        return await this.getTokenPriceUSD(pairAddress, firstTokenID);
+        const tokenPriceUSD = await this.getTokenPriceUSD(
+            pairAddress,
+            firstTokenID,
+        );
+        return tokenPriceUSD.toFixed();
     }
 
     async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return await this.getTokenPriceUSD(pairAddress, secondTokenID);
+        const tokenPriceUSD = await this.getTokenPriceUSD(
+            pairAddress,
+            secondTokenID,
+        );
+        return tokenPriceUSD.toFixed();
     }
 
     async getLpTokenSecondTokenEquivalent(
@@ -127,7 +135,7 @@ export class PairService {
         const lpToken = await this.getLpToken(pairAddress);
         const lpTokenPosition = await this.getLiquidityPosition(
             pairAddress,
-            new BigNumber(`1e${lpToken.decimals}`).toString(),
+            new BigNumber(`1e${lpToken.decimals}`).toFixed(),
         );
         const firstTokenPrice = await this.getFirstTokenPrice(pairAddress);
         const lpTokenPrice = new BigNumber(firstTokenPrice)
@@ -135,7 +143,7 @@ export class PairService {
             .plus(new BigNumber(lpTokenPosition.secondTokenAmount));
         return lpTokenPrice
             .multipliedBy(`1e-${secondToken.decimals}`)
-            .toString();
+            .toFixed();
     }
 
     async getLpTokenPriceUSD(pairAddress: string): Promise<string> {
@@ -147,7 +155,7 @@ export class PairService {
         );
         return new BigNumber(lpTokenEquivalent)
             .multipliedBy(secondTokenPriceUSD)
-            .toString();
+            .toFixed();
     }
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -165,18 +173,16 @@ export class PairService {
     async getTokenPriceUSD(
         pairAddress: string,
         tokenID: string,
-    ): Promise<string> {
+    ): Promise<BigNumber> {
         if (tokensPriceData.has(tokenID)) {
-            return (
-                await this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID))
-            ).toString();
+            return this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID));
         }
 
         const firstTokenID = await this.getFirstTokenID(pairAddress);
         const secondTokenID = await this.getSecondTokenID(pairAddress);
         let tokenPrice: string;
-        let tokenPriceUSD;
-        let usdPrice;
+        let tokenPriceUSD: BigNumber;
+        let usdPrice: BigNumber;
 
         switch (tokenID) {
             case firstTokenID:
@@ -185,16 +191,16 @@ export class PairService {
                     const usdPrice = await this.priceFeed.getTokenPrice(
                         tokensPriceData.get(secondTokenID),
                     );
-                    const tokenPriceUSD = new BigNumber(tokenPrice)
-                        .multipliedBy(usdPrice)
-                        .toString();
+                    tokenPriceUSD = new BigNumber(tokenPrice).multipliedBy(
+                        usdPrice,
+                    );
                     return tokenPriceUSD;
                 }
 
                 usdPrice = await this.getPriceUSDByPath(secondTokenID);
-                tokenPriceUSD = new BigNumber(tokenPrice)
-                    .multipliedBy(usdPrice)
-                    .toString();
+                tokenPriceUSD = new BigNumber(tokenPrice).multipliedBy(
+                    usdPrice,
+                );
                 return tokenPriceUSD;
 
             case secondTokenID:
@@ -203,19 +209,19 @@ export class PairService {
                     const usdPrice = await this.priceFeed.getTokenPrice(
                         tokensPriceData.get(firstTokenID),
                     );
-                    const tokenPriceUSD = new BigNumber(tokenPrice)
-                        .multipliedBy(usdPrice)
-                        .toString();
+                    tokenPriceUSD = new BigNumber(tokenPrice).multipliedBy(
+                        usdPrice,
+                    );
                     return tokenPriceUSD;
                 }
                 usdPrice = await this.getPriceUSDByPath(firstTokenID);
-                tokenPriceUSD = new BigNumber(tokenPrice)
-                    .multipliedBy(usdPrice)
-                    .toString();
+                tokenPriceUSD = new BigNumber(tokenPrice).multipliedBy(
+                    usdPrice,
+                );
                 return tokenPriceUSD;
         }
 
-        return '';
+        return new BigNumber(0);
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
@@ -291,15 +297,15 @@ export class PairService {
                     amount,
                     pairInfo.reserves0,
                     pairInfo.reserves1,
-                ).toString();
+                ).toFixed();
             case secondTokenID:
                 return getAmountOut(
                     amount,
                     pairInfo.reserves1,
                     pairInfo.reserves0,
-                ).toString();
+                ).toFixed();
             default:
-                return;
+                return new BigNumber(0).toFixed();
         }
     }
 
@@ -320,15 +326,15 @@ export class PairService {
                     amount,
                     pairInfo.reserves1,
                     pairInfo.reserves0,
-                ).toString();
+                ).toFixed();
             case secondTokenID:
                 return getAmountIn(
                     amount,
                     pairInfo.reserves0,
                     pairInfo.reserves1,
-                ).toString();
+                ).toFixed();
             default:
-                return;
+                return new BigNumber(0).toFixed();
         }
     }
 
@@ -349,15 +355,15 @@ export class PairService {
                     amount,
                     pairInfo.reserves0,
                     pairInfo.reserves1,
-                ).toString();
+                ).toFixed();
             case secondTokenID:
                 return quote(
                     amount,
                     pairInfo.reserves1,
                     pairInfo.reserves0,
-                ).toString();
+                ).toFixed();
             default:
-                return;
+                return new BigNumber(0).toFixed();
         }
     }
 
@@ -390,8 +396,8 @@ export class PairService {
             ]);
 
             if (
-                temporaryFundsFirstToken === '0' &&
-                temporaryFundsSecondToken === '0'
+                temporaryFundsFirstToken.isZero() &&
+                temporaryFundsSecondToken.isZero()
             ) {
                 continue;
             }
@@ -399,14 +405,14 @@ export class PairService {
             const temporaryFundsPair = new TemporaryFundsModel();
             temporaryFundsPair.pairAddress = pairMetadata.address;
 
-            if (temporaryFundsFirstToken !== '0') {
+            if (!temporaryFundsFirstToken.isZero()) {
                 temporaryFundsPair.firstToken = firstToken;
-                temporaryFundsPair.firstAmount = temporaryFundsFirstToken;
+                temporaryFundsPair.firstAmount = temporaryFundsFirstToken.toFixed();
             }
 
-            if (temporaryFundsSecondToken !== '0') {
+            if (!temporaryFundsSecondToken.isZero()) {
                 temporaryFundsPair.secondToken = secondToken;
-                temporaryFundsPair.secondAmount = temporaryFundsSecondToken;
+                temporaryFundsPair.secondAmount = temporaryFundsSecondToken.toFixed();
             }
 
             temporaryFunds.push(temporaryFundsPair);
@@ -433,19 +439,19 @@ export class PairService {
         );
 
         return {
-            firstTokenAmount: firstTokenAmount.toString(),
-            secondTokenAmount: secondTokenAmount.toString(),
+            firstTokenAmount: firstTokenAmount.toFixed(),
+            secondTokenAmount: secondTokenAmount.toFixed(),
         };
     }
 
-    async getPriceUSDByPath(tokenID: string): Promise<string> {
+    async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
         if (!tokensPriceData.has(tokenProviderUSD)) {
-            return '0';
+            return new BigNumber(0);
         }
 
         const path = await this.context.getPath(tokenID, tokenProviderUSD);
         if (path.length === 0) {
-            return '0';
+            return new BigNumber(0);
         }
         const pair = await this.context.getPairByTokens(path[0], path[1]);
         const firstTokenPrice = await this.getTokenPrice(pair.address, path[0]);
@@ -453,9 +459,7 @@ export class PairService {
             pair.address,
             path[1],
         );
-        return new BigNumber(firstTokenPrice)
-            .multipliedBy(secondTokenPriceUSD)
-            .toString();
+        return new BigNumber(firstTokenPrice).multipliedBy(secondTokenPriceUSD);
     }
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {

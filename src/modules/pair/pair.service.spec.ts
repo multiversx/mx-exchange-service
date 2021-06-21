@@ -131,7 +131,7 @@ describe('PairService', () => {
             'pair_address_1',
             'MEX-bd9937',
         );
-        expect(tokenPriceUSD).toEqual('50');
+        expect(tokenPriceUSD.toFixed()).toEqual('50');
     });
 
     it('should get token price in USD from simple path', async () => {
@@ -139,7 +139,7 @@ describe('PairService', () => {
             'pair_address_3',
             'BUSD-fd5ddb',
         );
-        expect(tokenPriceUSD).toEqual('100');
+        expect(tokenPriceUSD.toFixed()).toEqual('100');
     });
 
     it('should get token price in USD from multiple path', async () => {
@@ -147,7 +147,7 @@ describe('PairService', () => {
             'pair_address_4',
             'SPT-f66742',
         );
-        expect(tokenPriceUSD).toEqual('16.66666666666666665');
+        expect(tokenPriceUSD.toFixed()).toEqual('16.66666666666666665');
     });
 
     it('should get liquidity position from pair', async () => {

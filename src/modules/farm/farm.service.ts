@@ -57,7 +57,7 @@ export class FarmService {
         this.cacheService.setFarmTokenSupply(farmAddress, {
             farmTokenSupply: farmTokenSupply,
         });
-        return farmTokenSupply;
+        return farmTokenSupply.toFixed();
     }
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
@@ -74,7 +74,7 @@ export class FarmService {
         this.cacheService.setFarmingTokenReserve(farmAddress, {
             farmingTokenReserve: farmingTokenReserve,
         });
-        return farmingTokenReserve;
+        return farmingTokenReserve.toFixed();
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
@@ -90,7 +90,7 @@ export class FarmService {
         this.cacheService.setRewardsPerBlock(farmAddress, {
             rewardsPerBlock: rewardsPerBlock,
         });
-        return rewardsPerBlock;
+        return rewardsPerBlock.toFixed();
     }
 
     async getState(farmAddress: string): Promise<string> {
@@ -213,10 +213,11 @@ export class FarmService {
         const farmingTokenID = await this.getFarmingTokenID(farmAddress);
         if (scAddress.has(farmingTokenID)) {
             const pairAddress = scAddress.get(farmingTokenID);
-            return await this.pairService.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
                 pairAddress,
                 farmingTokenID,
             );
+            return tokenPriceUSD.toFixed();
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(

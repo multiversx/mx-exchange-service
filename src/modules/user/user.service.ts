@@ -51,7 +51,7 @@ export class UserService {
             const value = new BigNumber(token.balance)
                 .multipliedBy(denominator)
                 .multipliedBy(new BigNumber(tokenPriceUSD))
-                .toString();
+                .toFixed();
             return { ...token, value: value };
         });
 
@@ -84,7 +84,7 @@ export class UserService {
         if (tokensPriceData.has(tokenID)) {
             return (
                 await this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID))
-            ).toString();
+            ).toFixed();
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
@@ -93,8 +93,8 @@ export class UserService {
         if (pairAddress) {
             return await this.pairService.getLpTokenPriceUSD(pairAddress);
         }
-
-        return await this.pairService.getPriceUSDByPath(tokenID);
+        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(tokenID);
+        return tokenPriceUSD.toFixed();
     }
 
     private async getNFTTokenValueUSD(
@@ -106,7 +106,7 @@ export class UserService {
         if (farmAddress) {
             return (
                 await this.computeFarmTokenValue(farmAddress, nftToken)
-            ).toString();
+            ).toFixed();
         }
 
         const lockedMEXID = await this.proxyService.getlockedAssetToken();
@@ -120,7 +120,7 @@ export class UserService {
             return new BigNumber(nftToken.balance)
                 .multipliedBy(denominator)
                 .multipliedBy(new BigNumber(tokenPriceUSD))
-                .toString();
+                .toFixed();
         }
 
         const wrappedLpToken = await this.proxyPairService.getwrappedLpToken();
@@ -148,7 +148,7 @@ export class UserService {
                 return new BigNumber(nftToken.balance)
                     .multipliedBy(denominator)
                     .multipliedBy(new BigNumber(tokenPriceUSD))
-                    .toString();
+                    .toFixed();
             }
         }
 
@@ -174,7 +174,7 @@ export class UserService {
                 );
                 return (
                     await this.computeFarmTokenValue(farmAddress, farmToken)
-                ).toString();
+                ).toFixed();
             }
         }
         return '0';

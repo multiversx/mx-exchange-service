@@ -62,7 +62,7 @@ export class AbiProxyPairService {
             return {
                 tokenID: temporaryFunds.token_id.toString(),
                 tokenNonce: temporaryFunds.token_nonce.toString(),
-                amount: temporaryFunds.amount.toString(),
+                amount: temporaryFunds.amount.toFixed(),
             };
         });
     }

@@ -59,6 +59,6 @@ export class FarmStatisticsService {
             unlockedFarmingTokensValue,
         );
 
-        return farmAPR.toString();
+        return farmAPR.toFixed();
     }
 }
