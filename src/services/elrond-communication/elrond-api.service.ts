@@ -8,7 +8,10 @@ import { NFTTokenModel } from '../../models/nftToken.model';
 export class ElrondApiService {
     private apiProvider: ApiProvider;
     constructor() {
-        this.apiProvider = new ApiProvider(elrondConfig.elrondApi, 20000);
+        this.apiProvider = new ApiProvider(
+            elrondConfig.elrondApi,
+            elrondConfig.proxyTimeout,
+        );
     }
 
     getService(): ApiProvider {
@@ -35,6 +38,27 @@ export class ElrondApiService {
     ): Promise<NFTTokenModel> {
         return await this.getService().doGetGeneric(
             `accounts/${address}/nfts/${nftIdentifier}`,
+            response => response,
+        );
+    }
+
+    async getCurrentNonce(shardId: number): Promise<any> {
+        return this.getService().doGetGeneric(
+            `network/status/${shardId}`,
+            response => response,
+        );
+    }
+
+    async getHyperblockByNonce(nonce: number): Promise<any> {
+        return this.getService().doGetGeneric(
+            `hyperblock/by-nonce/${nonce}`,
+            response => response,
+        );
+    }
+
+    async getTransaction(hash: string, withResults = false): Promise<any> {
+        return this.getService().doGetGeneric(
+            `transaction/${hash}?withResults=${withResults}`,
             response => response,
         );
     }
