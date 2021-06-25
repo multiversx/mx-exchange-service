@@ -10,7 +10,11 @@ import {
 import { BinaryCodec } from '@elrondnetwork/erdjs';
 import { farmsConfig, scAddress } from '../../config';
 import { TokenModel } from '../../models/esdtToken.model';
-import { FarmModel, FarmTokenAttributesModel } from '../../models/farm.model';
+import {
+    FarmModel,
+    FarmTokenAttributesModel,
+    RewardsModel,
+} from '../../models/farm.model';
 import { CacheFarmService } from '../../services/cache-manager/cache-farm.service';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
@@ -118,11 +122,20 @@ export class FarmService {
         return null;
     }
 
-    async getRewardsForPosition(args: CalculateRewardsArgs): Promise<string> {
+    async getRewardsForPosition(
+        args: CalculateRewardsArgs,
+    ): Promise<RewardsModel> {
         const rewards = await this.abiService.calculateRewardsForGivenPosition(
             args,
         );
-        return new BigNumber(rewards).toString();
+        const decodedAttributes = this.decodeFarmTokenAttributes(
+            args.identifier,
+            args.attributes,
+        );
+        return {
+            decodedAttributes: decodedAttributes,
+            rewards: rewards.toFixed(),
+        };
     }
 
     decodeFarmTokenAttributes(
