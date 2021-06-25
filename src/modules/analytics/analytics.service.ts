@@ -17,7 +17,7 @@ import {
     FactoryTradingModel,
     PairTradingModel,
     TradingInfoModel,
-} from 'src/models/analytics.model';
+} from '../../models/analytics.model';
 
 export interface TradingInfoType {
     volumeUSD: BigNumber;

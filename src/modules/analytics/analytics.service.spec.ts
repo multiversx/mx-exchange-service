@@ -12,10 +12,17 @@ import {
 } from '../farm/farm.test-mocks';
 import { PairService } from '../pair/pair.service';
 import { AnalyticsService } from './analytics.service';
+import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
+import { HyperblockService } from '../../services/transactions/hyperblock.service';
+import { ShardTransaction } from '../../services/transactions/entities/shard.transaction';
+import { TransactionModule } from '../../services/transactions/transaction.module';
+import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
 
 describe('FarmStatisticsService', () => {
     let service: AnalyticsService;
     let elrondProxy: ElrondProxyService;
+    let transactionCollector: TransactionCollectorService;
+    let pairService: PairService;
 
     const FarmServiceProvider = {
         provide: FarmService,
@@ -34,17 +41,26 @@ describe('FarmStatisticsService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [ElrondCommunicationModule],
+            imports: [
+                ElrondCommunicationModule,
+                CacheManagerModule,
+                TransactionModule,
+            ],
             providers: [
                 ContextServiceProvider,
                 FarmServiceProvider,
                 PairServiceProvider,
                 AnalyticsService,
+                HyperblockService,
             ],
         }).compile();
 
         service = module.get<AnalyticsService>(AnalyticsService);
         elrondProxy = module.get<ElrondProxyService>(ElrondProxyService);
+        transactionCollector = module.get<TransactionCollectorService>(
+            TransactionCollectorService,
+        );
+        pairService = module.get<PairService>(PairService);
     });
 
     it('should be defined', () => {
@@ -69,5 +85,80 @@ describe('FarmStatisticsService', () => {
 
         const totalMexSupply = await service.getTotalTokenSupply('MEX-bd9937');
         expect(totalMexSupply).toEqual('810');
+    });
+
+    it('should get trading volumes', async () => {
+        jest.spyOn(pairService, 'getFirstTokenPriceUSD').mockImplementation(
+            async () => '100',
+        );
+        jest.spyOn(pairService, 'getSecondTokenPriceUSD').mockImplementation(
+            async () => '0.1',
+        );
+        jest.spyOn(
+            transactionCollector,
+            'getNewTransactions',
+        ).mockImplementation(async () => {
+            const newTransactions = [];
+
+            const pairsAddress = [
+                'erd1qqqqqqqqqqqqqpgqx0xh8fgpr5kjh9n7s53m7qllw42m5t7u0n4suz39xc',
+                'erd1qqqqqqqqqqqqqpgqlsepv678hp2sv30wcslwqh9s09m9kqaa0n4smta0sj',
+            ];
+
+            for (let index = 0; index < 10; index++) {
+                const transaction = new ShardTransaction();
+                transaction.data =
+                    'RVNEVFRyYW5zZmVyQDU3NTg0NTQ3NGM0NDJkNjQ2MTMzNjYzMjM0QDBkZTBiNmIzYTc2NDAwMDBANzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NEA0ZDQ1NTgyZDM1MzMzMTM2MzIzM0AwMTUxYjZmNjAxZTYzMGRlMzY=';
+                transaction.sender = '';
+                transaction.receiver = pairsAddress[0];
+                transaction.sourceShard = 0;
+                transaction.destinationShard = 1;
+                transaction.hash = '';
+                transaction.nonce = 0;
+                transaction.status = '';
+                transaction.value = 0;
+                newTransactions.push(transaction);
+            }
+
+            for (let index = 0; index < 10; index++) {
+                const transaction = new ShardTransaction();
+                transaction.data =
+                    'RVNEVFRyYW5zZmVyQDU3NTg0NTQ3NGM0NDJkNjQ2MTMzNjYzMjM0QDBkZTBiNmIzYTc2NDAwMDBANzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NEA0ZDQ1NTgyZDM1MzMzMTM2MzIzM0AwMTUxYjZmNjAxZTYzMGRlMzY=';
+                transaction.sender = '';
+                transaction.receiver = pairsAddress[1];
+                transaction.sourceShard = 0;
+                transaction.destinationShard = 1;
+                transaction.hash = '';
+                transaction.nonce = 0;
+                transaction.status = '';
+                transaction.value = 0;
+                newTransactions.push(transaction);
+            }
+
+            return newTransactions;
+        });
+
+        const tradingVolumes = await service.getTradingInfo();
+
+        expect(tradingVolumes).toEqual({
+            factory: {
+                totalVolumesUSD: '1001',
+                totalFeesUSD: '30.03',
+            },
+            pairs: [
+                {
+                    pairAddress:
+                        'erd1qqqqqqqqqqqqqpgqx0xh8fgpr5kjh9n7s53m7qllw42m5t7u0n4suz39xc',
+                    volumesUSD: '500.5',
+                    feesUSD: '15.015',
+                },
+                {
+                    pairAddress:
+                        'erd1qqqqqqqqqqqqqpgqlsepv678hp2sv30wcslwqh9s09m9kqaa0n4smta0sj',
+                    volumesUSD: '500.5',
+                    feesUSD: '15.015',
+                },
+            ],
+        });
     });
 });
