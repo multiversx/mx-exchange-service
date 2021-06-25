@@ -10,6 +10,7 @@ export class PairTradingModel {
     feesUSD: string;
 }
 
+@ObjectType()
 export class FactoryTradingModel {
     @Field()
     totalVolumesUSD: string;
