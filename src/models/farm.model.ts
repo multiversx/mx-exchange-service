@@ -19,6 +19,14 @@ export class FarmTokenAttributesModel {
 }
 
 @ObjectType()
+export class RewardsModel {
+    @Field(type => FarmTokenAttributesModel)
+    decodedAttributes: FarmTokenAttributesModel;
+    @Field()
+    rewards: string;
+}
+
+@ObjectType()
 export class FarmModel {
     @Field()
     address: string;
