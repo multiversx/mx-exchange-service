@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PairModule } from '../modules/pair/pair.module';
@@ -13,6 +13,7 @@ import { ServicesModule } from './services.module';
         ConfigModule.forRoot({
             isGlobal: true,
         }),
+        HttpModule,
         PriceFeedModule,
         PairModule,
         ServicesModule,
