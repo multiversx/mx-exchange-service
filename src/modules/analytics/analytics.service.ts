@@ -10,6 +10,19 @@ import { ElrondProxyService } from '../../services/elrond-communication/elrond-p
 import { farmsConfig } from '../../config';
 import { FarmService } from '../farm/farm.service';
 import { PairService } from '../pair/pair.service';
+import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
+import { TransactionInterpreterService } from '../../services/transactions/transaction.interpreter.service';
+import { TransactionMappingService } from '../../services/transactions/transaction.mapping.service';
+import {
+    FactoryTradingModel,
+    PairTradingModel,
+    TradingInfoModel,
+} from 'src/models/analytics.model';
+
+export interface TradingInfoType {
+    volumeUSD: BigNumber;
+    feesUSD: BigNumber;
+}
 
 @Injectable()
 export class AnalyticsService {
@@ -18,6 +31,9 @@ export class AnalyticsService {
         private readonly context: ContextService,
         private readonly farmService: FarmService,
         private readonly pairService: PairService,
+        private readonly transactionCollector: TransactionCollectorService,
+        private readonly transactionInterpreter: TransactionInterpreterService,
+        private readonly transactionMapping: TransactionMappingService,
     ) {}
 
     async getTokenPriceUSD(tokenID: string): Promise<string> {
@@ -162,5 +178,72 @@ export class AnalyticsService {
         }
 
         return burnedMex;
+    }
+
+    async getTradingInfo(): Promise<TradingInfoModel> {
+        const transactions = await this.transactionCollector.getNewTransactions();
+        const esdtTransferTransactions = this.transactionInterpreter.getESDTTransferTransactions(
+            transactions,
+        );
+        const swapTransactions = this.transactionInterpreter.getSwapTransactions(
+            esdtTransferTransactions,
+        );
+
+        const promises = swapTransactions.map(swapTransaction => {
+            return this.transactionMapping.handleSwap(swapTransaction);
+        });
+
+        const rawTradingInfos = await Promise.all(promises);
+
+        const factoryTradingInfo = new FactoryTradingModel();
+        factoryTradingInfo.totalVolumesUSD = new BigNumber(0).toFixed();
+        factoryTradingInfo.totalFeesUSD = new BigNumber(0).toFixed();
+
+        const pairsTradingInfoMap = new Map<string, TradingInfoType>();
+        for (const rawTradingInfo of rawTradingInfos) {
+            factoryTradingInfo.totalFeesUSD = new BigNumber(
+                factoryTradingInfo.totalFeesUSD,
+            )
+                .plus(rawTradingInfo.feesUSD)
+                .toFixed();
+            factoryTradingInfo.totalVolumesUSD = new BigNumber(
+                factoryTradingInfo.totalVolumesUSD,
+            )
+                .plus(rawTradingInfo.volumeUSD)
+                .toFixed();
+
+            if (!pairsTradingInfoMap.has(rawTradingInfo.pairAddress)) {
+                pairsTradingInfoMap.set(rawTradingInfo.pairAddress, {
+                    volumeUSD: rawTradingInfo.volumeUSD,
+                    feesUSD: rawTradingInfo.feesUSD,
+                });
+            } else {
+                const pairTransactionVolume = pairsTradingInfoMap.get(
+                    rawTradingInfo.pairAddress,
+                );
+                pairsTradingInfoMap.set(rawTradingInfo.pairAddress, {
+                    volumeUSD: pairTransactionVolume.volumeUSD.plus(
+                        rawTradingInfo.volumeUSD,
+                    ),
+                    feesUSD: pairTransactionVolume.feesUSD.plus(
+                        rawTradingInfo.feesUSD,
+                    ),
+                });
+            }
+        }
+
+        const pairsTradingInfos: PairTradingModel[] = [];
+        pairsTradingInfoMap.forEach((value, key) => {
+            pairsTradingInfos.push({
+                pairAddress: key,
+                volumesUSD: value.volumeUSD.toFixed(),
+                feesUSD: value.feesUSD.toFixed(),
+            });
+        });
+
+        return {
+            factory: factoryTradingInfo,
+            pairs: pairsTradingInfos,
+        };
     }
 }

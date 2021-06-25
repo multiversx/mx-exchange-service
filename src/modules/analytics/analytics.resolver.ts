@@ -1,6 +1,6 @@
 import { Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
-import { AnalyticsModel } from 'src/models/analytics.model';
+import { AnalyticsModel, TradingInfoModel } from 'src/models/analytics.model';
 import { AnalyticsService } from './analytics.service';
 
 @Resolver(of => AnalyticsModel)
@@ -27,5 +27,10 @@ export class AnalyticsResolver {
         @Args('days', { type: () => Int }) days: number,
     ) {
         return this.analyticsService.getTotalAgregatedRewards(days);
+    }
+
+    @Query(returns => TradingInfoModel)
+    async tradingInfo(): Promise<TradingInfoModel> {
+        return this.analyticsService.getTradingInfo();
     }
 }
