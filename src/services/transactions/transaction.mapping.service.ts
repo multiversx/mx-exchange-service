@@ -9,14 +9,14 @@ export class TransactionMappingService {
 
     async handleSwap(transaction: ESDTTransferTransaction): Promise<any> {
         const pairAddress = transaction.receiver;
-        const amount0 = transaction.getDataESDTAmount();
-        const amount1 = new BigNumber(`0x${transaction.getDataArgs()[1]}`);
+        const firstTokenAmount = transaction.getDataESDTAmount();
+        const secoundTokenAmount = new BigNumber(`0x${transaction.getDataArgs()[1]}`);
 
         const [
-            token0,
-            token1,
-            token0PriceUSD,
-            token1PriceUSD,
+            firstToken,
+            secondToken,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
         ] = await Promise.all([
             this.pairService.getFirstToken(pairAddress),
             this.pairService.getSecondToken(pairAddress),
@@ -24,17 +24,17 @@ export class TransactionMappingService {
             this.pairService.getSecondTokenPriceUSD(pairAddress),
         ]);
 
-        const amount0Denom = amount0.multipliedBy(
-            new BigNumber(`1e-${token0.decimals}`),
+        const firstTokenAmountDenom = firstTokenAmount.multipliedBy(
+            new BigNumber(`1e-${firstToken.decimals}`),
         );
-        const amount1Denom = amount1.multipliedBy(
-            new BigNumber(`1e-${token1.decimals}`),
+        const secondTokenAmountDenom = secoundTokenAmount.multipliedBy(
+            new BigNumber(`1e-${secondToken.decimals}`),
         );
 
-        const amount0USD = new BigNumber(token0PriceUSD).times(amount0Denom);
-        const amount1USD = new BigNumber(token1PriceUSD).times(amount1Denom);
-        const amountTotalUSD = amount0USD
-            .plus(amount1USD)
+        const firstTokenAmountUSD = new BigNumber(firstTokenPriceUSD).times(firstTokenAmountDenom);
+        const secondtokenAmountUSD = new BigNumber(secondTokenPriceUSD).times(secondTokenAmountDenom);
+        const amountTotalUSD = firstTokenAmountUSD
+            .plus(secondtokenAmountUSD)
             .div(new BigNumber(2));
         const feesUSD = amountTotalUSD
             .times(new BigNumber(300))
