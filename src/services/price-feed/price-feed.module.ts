@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { CacheManagerModule } from '../cache-manager/cache-manager.module';
 import { ServicesModule } from '../services.module';
 import { PriceFeedService } from './price-feed.service';
 
 @Module({
-    imports: [ServicesModule, CacheManagerModule],
+    imports: [HttpModule, ServicesModule, CacheManagerModule],
     providers: [PriceFeedService],
     exports: [PriceFeedService],
 })

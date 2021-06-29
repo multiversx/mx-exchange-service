@@ -70,6 +70,7 @@
         "wrap": "./src/abis/egld-esdt-swap.abi.json"
     },
     "cron": {
+        "transactionCollectorMaxHyperblocks": 10,
         "cacheWarmer": true
     }
 }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { CacheManagerModule } from './services/cache-manager/cache-manager.module';
@@ -17,6 +17,12 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         ConfigModule.forRoot({
             isGlobal: true,
         }),
+        GraphQLModule.forRoot({
+            autoSchemaFile: 'schema.gql',
+            playground: true,
+            debug: true,
+        }),
+        HttpModule,
         CacheManagerModule,
         RouterModule,
         PairModule,
@@ -27,9 +33,6 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         WrappingModule,
         UserModule,
         AnalyticsModule,
-        GraphQLModule.forRoot({
-            autoSchemaFile: 'schema.gql',
-        }),
     ],
 })
 export class AppModule {}

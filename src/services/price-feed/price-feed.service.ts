@@ -1,5 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import axios from 'axios';
+import { HttpService, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { elrondConfig } from '../../config';
 import { CacheManagerService } from '../cache-manager/cache-manager.service';
@@ -7,11 +6,12 @@ import { CacheManagerService } from '../cache-manager/cache-manager.service';
 @Injectable()
 export class PriceFeedService {
     private readonly priceFeedUrl: string;
-    private readonly timeoutLimit: number;
 
-    constructor(private cacheService: CacheManagerService) {
+    constructor(
+        private readonly httpService: HttpService,
+        private readonly cacheService: CacheManagerService,
+    ) {
         this.priceFeedUrl = elrondConfig.elrondData;
-        this.timeoutLimit = elrondConfig.timeoutLimit;
     }
 
     async getTokenPrice(tokenName: string): Promise<BigNumber> {
@@ -19,23 +19,14 @@ export class PriceFeedService {
         if (!!cachedData) {
             return new BigNumber(cachedData.priceFeed);
         }
-        const response = await this.doGet(`latest/quotes/${tokenName}/price`);
-        this.cacheService.setPriceFeed(tokenName, {
-            priceFeed: new BigNumber(response),
-        });
-        return new BigNumber(response);
-    }
+        const response = await this.httpService
+            .get(`${this.priceFeedUrl}/latest/quotes/${tokenName}/price`)
+            .toPromise();
 
-    private async doGet(resourceUrl: string): Promise<any> {
-        try {
-            const url = `${this.priceFeedUrl}/${resourceUrl}`;
-            const response = await axios.get(url, {
-                timeout: this.timeoutLimit,
-            });
-            const payload = response.data;
-            return payload;
-        } catch (error) {
-            console.log({ priceFeed: error });
-        }
+        this.cacheService.setPriceFeed(tokenName, {
+            priceFeed: new BigNumber(response.data),
+        });
+
+        return new BigNumber(response.data);
     }
 }

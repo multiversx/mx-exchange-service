@@ -10,6 +10,7 @@ const Keys = {
     totalTxCount: () => 'totalTxCount',
     token: (tokenID: string) => `token.${tokenID}`,
     priceFeed: (tokenID: string) => `priceFeed.${tokenID}`,
+    lastProcessedNonce: () => 'lastProcessedNonce',
 };
 
 const FactoryKeys = {
@@ -86,6 +87,20 @@ export class CacheManagerService {
             Keys.priceFeed(tokenID),
             priceFeed,
             cacheConfig.priceFeed,
+        );
+    }
+
+    async getLastProcessedNonce(): Promise<Record<string, any>> {
+        return this.get(Keys.lastProcessedNonce());
+    }
+
+    async setLastProcessedNonce(
+        lastProcessedNonce: Record<string, any>,
+    ): Promise<void> {
+        await this.set(
+            Keys.lastProcessedNonce(),
+            lastProcessedNonce,
+            Number.MAX_SAFE_INTEGER,
         );
     }
 
