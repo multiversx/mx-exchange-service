@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { cronConfig } from 'src/config';
+import { cronConfig } from '../../config';
 import { ShardTransaction } from './entities/shard.transaction';
 import { HyperblockService } from './hyperblock.service';
 
