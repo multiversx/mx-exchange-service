@@ -53,8 +53,15 @@ if (!!process.env.LOG_FILE) {
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
             playground: true,
-            debug: true,
+            formatError: (error: GraphQLError) => {
+                const graphQLFormattedError: GraphQLFormattedError = {
+                  message:
+                    error.extensions?.exception?.response?.message || error.message,
+                };
+                return graphQLFormattedError;
+              },
         }),
+
         HttpModule,
         CacheManagerModule,
         RouterModule,
