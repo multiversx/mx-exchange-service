@@ -3,15 +3,26 @@ import { elrondConfig } from '../../config';
 import { Injectable } from '@nestjs/common';
 import { TokenModel } from '../../models/esdtToken.model';
 import { NFTTokenModel } from '../../models/nftToken.model';
+import Agent, { HttpsAgent } from 'agentkeepalive';
 
 @Injectable()
 export class ElrondApiService {
     private apiProvider: ApiProvider;
     constructor() {
-        this.apiProvider = new ApiProvider(
-            elrondConfig.elrondApi,
-            elrondConfig.proxyTimeout,
-        );
+        const keepAliveOptions = {
+            maxSockets: elrondConfig.keepAliveMaxSockets,
+            maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+            timeout: elrondConfig.keepAliveTimeout,
+            freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+        };
+        const httpAgent = new Agent(keepAliveOptions);
+        const httpsAgent = new HttpsAgent(keepAliveOptions);
+
+        this.apiProvider = new ApiProvider(elrondConfig.elrondApi, {
+            timeout: elrondConfig.proxyTimeout,
+            httpAgent: elrondConfig.keepAlive ? httpAgent : null,
+            httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+        });
     }
 
     getService(): ApiProvider {
