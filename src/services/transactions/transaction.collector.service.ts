@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { cronConfig } from '../../config';
 import { ShardTransaction } from './entities/shard.transaction';
 import { HyperblockService } from './hyperblock.service';
 
@@ -25,9 +26,8 @@ export class TransactionCollectorService {
             await this.hyperblockService.setLastProcessedNonce(currentNonce);
         }
 
-        // max 10 nonces at once to avoid overload
-        if (currentNonce > lastProcessedNonce + 10) {
-            currentNonce = lastProcessedNonce + 10;
+        if (currentNonce > lastProcessedNonce + cronConfig.transactionCollectorMaxHyperblocks) {
+            currentNonce = lastProcessedNonce + cronConfig.transactionCollectorMaxHyperblocks;
         }
 
         let allTransactions: ShardTransaction[] = [];

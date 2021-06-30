@@ -7,6 +7,8 @@ export class CalculateRewardsArgs {
     @Field()
     liquidity: string;
     @Field()
+    identifier: string;
+    @Field()
     attributes: string;
 }
 

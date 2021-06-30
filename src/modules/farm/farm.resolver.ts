@@ -2,7 +2,11 @@ import { FarmService } from './farm.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { FarmModel, FarmTokenAttributesModel } from '../../models/farm.model';
+import {
+    FarmModel,
+    FarmTokenAttributesModel,
+    RewardsModel,
+} from '../../models/farm.model';
 import { TransactionsFarmService } from './transactions-farm.service';
 import {
     CalculateRewardsArgs,
@@ -82,10 +86,10 @@ export class FarmResolver {
         return this.farmService.getFarms();
     }
 
-    @Query(returns => String)
+    @Query(returns => RewardsModel)
     async getRewardsForPosition(
         @Args() args: CalculateRewardsArgs,
-    ): Promise<string> {
+    ): Promise<RewardsModel> {
         return await this.farmService.getRewardsForPosition(args);
     }
 

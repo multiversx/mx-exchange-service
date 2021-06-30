@@ -1,6 +1,11 @@
 import BigNumber from 'bignumber.js';
 import { GenericTransaction } from './generic.transaction';
 
+enum TransferFunctionType {
+    SWAP_FIXED_INPUT = 'swapTokensFixedInput',
+    SWAP_FIXED_OUTPUT = 'swapTokensFixedOutput',
+}
+
 export class ESDTTransferTransaction extends GenericTransaction {
     private dataESDTIdentifier: string | undefined;
     private dataESDTAmount: BigNumber | undefined;
@@ -51,5 +56,18 @@ export class ESDTTransferTransaction extends GenericTransaction {
             }
         }
         return this.dataEndpointArgs;
+    }
+
+    public isSwapTransaction(): boolean {
+        if (
+            (this.getDataEndpointName() &&
+                this.getDataEndpointName() ===
+                    TransferFunctionType.SWAP_FIXED_INPUT) ||
+            this.getDataEndpointName() ===
+                TransferFunctionType.SWAP_FIXED_OUTPUT
+        ) {
+            return true;
+        }
+        return false;
     }
 }

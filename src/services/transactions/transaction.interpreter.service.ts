@@ -6,11 +6,6 @@ enum TransactionType {
     ESDT_TRANSFER = 'ESDTTransfer',
 }
 
-enum TransferFunctionType {
-    SWAP_FIXED_INPUT = 'swapTokensFixedInput',
-    SWAP_FIXED_OUTPUT = 'swapTokensFixedOutput',
-}
-
 @Injectable()
 export class TransactionInterpreterService {
     getESDTTransferTransactions(
@@ -42,13 +37,7 @@ export class TransactionInterpreterService {
         const swapTransactions: ESDTTransferTransaction[] = [];
 
         for (const transaction of transactions) {
-            if (
-                (transaction.getDataEndpointName() &&
-                    transaction.getDataEndpointName() ===
-                        TransferFunctionType.SWAP_FIXED_INPUT) ||
-                transaction.getDataEndpointName() ===
-                    TransferFunctionType.SWAP_FIXED_OUTPUT
-            ) {
+            if (transaction.isSwapTransaction()) {
                 swapTransactions.push(transaction);
             }
         }
