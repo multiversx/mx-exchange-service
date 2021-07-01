@@ -1,7 +1,7 @@
 import { Field, InterfaceType } from '@nestjs/graphql';
 
 @InterfaceType()
-export abstract class IToken {
+export abstract class BaseToken {
     @Field() token: string;
     @Field() name: string;
     @Field() type: string;

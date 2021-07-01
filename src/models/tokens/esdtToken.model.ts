@@ -1,10 +1,10 @@
 import { ObjectType } from '@nestjs/graphql';
-import { IToken } from '../interfaces/token.interface';
+import { BaseToken } from '../interfaces/token.interface';
 
 @ObjectType({
-    implements: () => [IToken],
+    implements: () => [BaseToken],
 })
-export class EsdtToken implements IToken {
+export class EsdtToken implements BaseToken {
     token: string;
     name: string;
     type: string;

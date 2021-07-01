@@ -1,9 +1,9 @@
 import { Field, InterfaceType } from '@nestjs/graphql';
 import { WrappedFarmTokenAttributesModel } from '../proxy.model';
-import { INftToken } from './nftToken.interface';
+import { BaseNftToken } from './nftToken.interface';
 
 @InterfaceType()
-export abstract class ILockedFarmToken extends INftToken {
+export abstract class LockedFarmToken extends BaseNftToken {
     @Field(type => WrappedFarmTokenAttributesModel)
     decodedAttributes: WrappedFarmTokenAttributesModel;
 }

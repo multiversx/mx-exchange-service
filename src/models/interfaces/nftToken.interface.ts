@@ -1,8 +1,8 @@
 import { Field, Int, InterfaceType } from '@nestjs/graphql';
-import { IToken } from './token.interface';
+import { BaseToken } from './token.interface';
 
 @InterfaceType()
-export abstract class INftToken extends IToken {
+export abstract class BaseNftToken extends BaseToken {
     @Field() canAddSpecialRoles: boolean;
     @Field() canTransferNFTCreateRole: boolean;
     @Field() NFTCreateStopped: boolean;
