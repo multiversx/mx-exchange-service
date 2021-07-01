@@ -56,8 +56,18 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async farmedTokenPriceUSD(@Parent() parent: FarmModel) {
+        return await this.farmService.getFarmedTokenPriceUSD(parent.address);
+    }
+
+    @ResolveField()
     async farmTokenPriceUSD(@Parent() parent: FarmModel) {
         return await this.farmService.getFarmTokenPriceUSD(parent.address);
+    }
+
+    @ResolveField()
+    async farmingTokenPriceUSD(@Parent() parent: FarmModel) {
+        return await this.farmService.getFarmingTokenPriceUSD(parent.address);
     }
 
     @ResolveField()

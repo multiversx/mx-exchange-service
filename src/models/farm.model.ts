@@ -35,6 +35,9 @@ export class FarmModel {
     farmedToken: EsdtToken;
 
     @Field()
+    farmedTokenPriceUSD: string;
+
+    @Field()
     farmToken: NftToken;
 
     @Field()
@@ -42,6 +45,9 @@ export class FarmModel {
 
     @Field()
     farmingToken: EsdtToken;
+
+    @Field()
+    farmingTokenPriceUSD: string;
 
     @Field()
     perBlockRewards: string;

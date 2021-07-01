@@ -217,6 +217,23 @@ export class FarmService {
         return farmingTokenID;
     }
 
+    async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
+        const farmedTokenID = await this.getFarmedTokenID(farmAddress);
+        if (scAddress.has(farmedTokenID)) {
+            const pairAddress = scAddress.get(farmedTokenID);
+            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
+                pairAddress,
+                farmedTokenID,
+            );
+            return tokenPriceUSD.toFixed();
+        }
+
+        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
+            farmedTokenID,
+        );
+        return tokenPriceUSD.toFixed();
+    }
+
     async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
         return this.getFarmingTokenPriceUSD(farmAddress);
     }
