@@ -1,6 +1,6 @@
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { FarmTokenAttributesModel } from '../../models/farm.model';
-import { NFTTokenModel } from '../../models/nftToken.model';
+import { NftToken } from '../../models/tokens/nftToken.model';
 
 const pairsMetadata = [
     {
@@ -36,7 +36,7 @@ const farmMetadata = {
 };
 
 export class ElrondApiServiceMock {
-    async getTokensForUser(address: string): Promise<TokenModel[]> {
+    async getTokensForUser(address: string): Promise<EsdtToken[]> {
         return [
             {
                 token: 'MEX-bd9937',
@@ -61,7 +61,7 @@ export class ElrondApiServiceMock {
         ];
     }
 
-    async getNftsForUser(address: string): Promise<NFTTokenModel[]> {
+    async getNftsForUser(address: string): Promise<NftToken[]> {
         return [
             {
                 token: 'FMT-1234',
@@ -113,7 +113,7 @@ export class FarmServiceMock {
         return farmMetadata.farmedTokenID;
     }
 
-    async getFarmingToken(farmAddress: string): Promise<TokenModel> {
+    async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         return {
             token: 'LPT-1111',
             name: 'LiquidityPoolToken',
@@ -157,7 +157,7 @@ export class FarmServiceMock {
 }
 
 export class PairServiceMock {
-    async getLpToken(pairAddress: string): Promise<TokenModel> {
+    async getLpToken(pairAddress: string): Promise<EsdtToken> {
         return {
             token: 'LPT-1111',
             name: 'LiquidityPoolToken',

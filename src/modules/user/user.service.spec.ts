@@ -87,7 +87,13 @@ describe('UserService', () => {
     });
 
     it('should get user esdt tokens', async () => {
-        expect(await service.getAllEsdtTokens('user_address_1')).toEqual([
+        expect(
+            await service.getAllEsdtTokens({
+                address: 'user_address_1',
+                offset: 0,
+                limit: 10,
+            }),
+        ).toEqual([
             {
                 token: 'MEX-bd9937',
                 name: 'MaiarExchangeToken',
@@ -107,13 +113,19 @@ describe('UserService', () => {
                 canWipe: true,
                 balance: '1000000000000000000',
                 identifier: null,
-                value: '200',
+                valueUSD: '200',
             },
         ]);
     });
 
     it('should get user nfts tokens', async () => {
-        expect(await service.getAllNFTTokens('user_address_1')).toEqual([
+        expect(
+            await service.getAllNftTokens({
+                address: 'user_address_1',
+                offset: 0,
+                limit: 10,
+            }),
+        ).toEqual([
             {
                 token: 'FMT-1234',
                 name: 'FarmToken',
@@ -121,7 +133,7 @@ describe('UserService', () => {
                 owner: 'farm_address_1',
                 minted: '0',
                 burnt: '0',
-                decimals: 0,
+                decimals: 18,
                 isPaused: false,
                 canUpgrade: true,
                 canMint: false,
@@ -140,7 +152,15 @@ describe('UserService', () => {
                 creator: 'farm_address_1',
                 nonce: 1,
                 royalties: '0',
-                value: '200',
+                valueUSD: '200',
+                decodedAttributes: {
+                    aprMultiplier: 1,
+                    attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
+                    enteringEpoch: 1,
+                    identifier: 'FMT-1234-01',
+                    lockedRewards: false,
+                    rewardPerShare: '3000',
+                },
             },
         ]);
     });
