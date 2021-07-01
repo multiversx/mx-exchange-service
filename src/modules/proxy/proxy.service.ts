@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { TokenModel } from '../../models/esdtToken.model';
 import { AbiProxyService } from './proxy-abi.service';
 import { CacheProxyService } from '../../services/cache-manager/cache-proxy.service';
 import {
@@ -12,11 +11,12 @@ import {
     decodeWrappedFarmTokenAttributes,
     decodeWrappedLPTokenAttributes,
 } from './utils';
-import { NFTTokenModel } from '../../models/nftToken.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { FarmService } from '../farm/farm.service';
 import { DecodeAttributesArgs } from './dto/proxy.args';
 import { ContextService } from '../../services/context/context.service';
+import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { NftToken } from 'src/models/tokens/nftToken.model';
 
 @Injectable()
 export class ProxyService {
@@ -34,7 +34,7 @@ export class ProxyService {
         return proxy;
     }
 
-    async getAssetToken(): Promise<TokenModel> {
+    async getAssetToken(): Promise<EsdtToken> {
         const cachedData = await this.cacheService.getAssetTokenID();
         if (!!cachedData) {
             return await this.context.getTokenMetadata(cachedData.assetTokenID);
@@ -49,10 +49,10 @@ export class ProxyService {
         return await this.context.getTokenMetadata(assetTokenID);
     }
 
-    async getlockedAssetToken(): Promise<NFTTokenModel> {
+    async getlockedAssetToken(): Promise<NftToken> {
         const cachedData = await this.cacheService.getLockedAssetTokenID();
         if (!!cachedData) {
-            return await this.context.getNFTTokenMetadata(
+            return await this.context.getNftTokenMetadata(
                 cachedData.lockedAssetTokenID,
             );
         }
@@ -63,7 +63,7 @@ export class ProxyService {
             lockedAssetTokenID: lockedAssetTokenID,
         });
 
-        return await this.context.getNFTTokenMetadata(lockedAssetTokenID);
+        return await this.context.getNftTokenMetadata(lockedAssetTokenID);
     }
 
     getWrappedLpTokenAttributes(

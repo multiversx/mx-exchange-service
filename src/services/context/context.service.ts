@@ -14,9 +14,9 @@ import {
     GasLimit,
     ContractFunction,
 } from '@elrondnetwork/erdjs';
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { TransactionModel } from '../../models/transaction.model';
-import { NFTTokenModel } from '../../models/nftToken.model';
+import { NftToken } from '../../models/tokens/nftToken.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 
 interface PairMetadata {
@@ -181,7 +181,7 @@ export class ContextService {
         return [];
     }
 
-    async getTokenMetadata(tokenID: string): Promise<TokenModel> {
+    async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
         const cachedData = await this.cacheManagerService.getToken(tokenID);
         if (!!cachedData) {
             return cachedData.token;
@@ -194,7 +194,7 @@ export class ContextService {
         return tokenMetadata;
     }
 
-    async getNFTTokenMetadata(tokenID: string): Promise<NFTTokenModel> {
+    async getNftTokenMetadata(tokenID: string): Promise<NftToken> {
         const nftTokenMetadata = await this.apiService
             .getService()
             .getNFTToken(tokenID);
