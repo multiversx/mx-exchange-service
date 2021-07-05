@@ -8,6 +8,7 @@ import { FarmStatisticsService } from './farm-statistics.service';
 import { PairModule } from '../pair/pair.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
+import { TokenMergingModule } from 'src/modules/token-merging/token.merging.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { ElrondCommunicationModule } from '../../services/elrond-communication/e
         CacheManagerModule,
         ContextModule,
         PairModule,
+        TokenMergingModule,
     ],
     providers: [
         FarmService,

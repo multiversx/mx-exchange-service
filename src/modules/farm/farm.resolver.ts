@@ -15,14 +15,24 @@ import {
     ExitFarmArgs,
 } from './dto/farm.args';
 import { FarmStatisticsService } from './farm-statistics.service';
+import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
+import { TokenMergingService } from '../token-merging/token.merging.service';
+import {
+    DepositTokenArgs,
+    SmartContractType,
+} from '../token-merging/dto/token.merging.args';
 
 @Resolver(of => FarmModel)
 export class FarmResolver {
     constructor(
-        @Inject(FarmService) private farmService: FarmService,
+        @Inject(FarmService) private readonly farmService: FarmService,
         @Inject(TransactionsFarmService)
-        private transactionsService: TransactionsFarmService,
-        private statisticsService: FarmStatisticsService,
+        private readonly transactionsService: TransactionsFarmService,
+        @Inject(TokenMergingTransactionsService)
+        private readonly mergeTokensTransactions: TokenMergingTransactionsService,
+        @Inject(TokenMergingService)
+        private readonly mergeTokensService: TokenMergingService,
+        private readonly statisticsService: FarmStatisticsService,
     ) {}
 
     @ResolveField()
@@ -73,6 +83,22 @@ export class FarmResolver {
     @ResolveField()
     async APR(@Parent() parent: FarmModel) {
         return await this.statisticsService.computeFarmAPR(parent.address);
+    }
+
+    @ResolveField()
+    async nftDepositMaxLen(@Parent() parent: FarmModel) {
+        return await this.mergeTokensService.getNftDepositMaxLen({
+            smartContractType: SmartContractType.FARM,
+            address: parent.address,
+        });
+    }
+
+    @ResolveField(type => [String])
+    async nftDepositAcceptedTokenIDs(@Parent() parent: FarmModel) {
+        return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
+            smartContractType: SmartContractType.FARM,
+            address: parent.address,
+        });
     }
 
     @ResolveField()

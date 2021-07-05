@@ -25,10 +25,10 @@ import { ContextService } from '../../services/context/context.service';
 @Injectable()
 export class FarmService {
     constructor(
-        private abiService: AbiFarmService,
-        private cacheService: CacheFarmService,
-        private context: ContextService,
-        private pairService: PairService,
+        private readonly abiService: AbiFarmService,
+        private readonly cacheService: CacheFarmService,
+        private readonly context: ContextService,
+        private readonly pairService: PairService,
     ) {}
 
     async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
