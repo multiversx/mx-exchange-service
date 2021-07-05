@@ -12,6 +12,7 @@ import {
     CalculateRewardsArgs,
     ClaimRewardsArgs,
     EnterFarmArgs,
+    EnterFarmBatchArgs,
     ExitFarmArgs,
 } from './dto/farm.args';
 import { FarmStatisticsService } from './farm-statistics.service';
@@ -132,6 +133,31 @@ export class FarmResolver {
     @Query(returns => TransactionModel)
     async enterFarm(@Args() args: EnterFarmArgs): Promise<TransactionModel> {
         return await this.transactionsService.enterFarm(args);
+    }
+
+    @Query(returns => [TransactionModel])
+    async enterFarmBatch(
+        @Args() enterFarmBatchArgs: EnterFarmBatchArgs,
+    ): Promise<TransactionModel[]> {
+        const depositTokenArgs: DepositTokenArgs = {
+            smartContractType: SmartContractType.FARM,
+            address: enterFarmBatchArgs.farmAddress,
+            tokenID: enterFarmBatchArgs.farmTokenID,
+            tokenNonce: enterFarmBatchArgs.farmTokenNonce,
+            amount: enterFarmBatchArgs.amount,
+            sender: enterFarmBatchArgs.sender,
+        };
+        const enterFarmArgs: EnterFarmArgs = {
+            tokenInID: enterFarmBatchArgs.tokenInID,
+            farmAddress: enterFarmBatchArgs.farmAddress,
+            amount: enterFarmBatchArgs.amountIn,
+            lockRewards: enterFarmBatchArgs.lockRewards,
+        };
+
+        return await Promise.all([
+            this.mergeTokensTransactions.depositToken(depositTokenArgs),
+            this.transactionsService.enterFarm(enterFarmArgs),
+        ]);
     }
 
     @Query(returns => TransactionModel)

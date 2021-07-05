@@ -47,11 +47,11 @@ export class TransactionsFarmService {
     }
 
     async exitFarm(args: ExitFarmArgs): Promise<TransactionModel> {
-        return await this.SftFarmInteraction(args, 'exitFarm');
+        return this.SftFarmInteraction(args, 'exitFarm');
     }
 
     async claimRewards(args: ClaimRewardsArgs): Promise<TransactionModel> {
-        return await this.SftFarmInteraction(args, 'claimRewards');
+        return this.SftFarmInteraction(args, 'claimRewards');
     }
 
     private async SftFarmInteraction(
