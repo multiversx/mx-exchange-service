@@ -15,7 +15,7 @@ import {
 import { CachePairService } from '../../services/cache-manager/cache-pair.service';
 import { AbiPairService } from './abi-pair.service';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { ContextService } from '../../services/context/context.service';
 
 @Injectable()
@@ -70,17 +70,17 @@ export class PairService {
         return lpTokenID;
     }
 
-    async getFirstToken(pairAddress: string): Promise<TokenModel> {
+    async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
         return this.context.getTokenMetadata(firstTokenID);
     }
 
-    async getSecondToken(pairAddress: string): Promise<TokenModel> {
+    async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
         return this.context.getTokenMetadata(secondTokenID);
     }
 
-    async getLpToken(pairAddress: string): Promise<TokenModel> {
+    async getLpToken(pairAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.getLpTokenID(pairAddress);
 
         return this.context.getTokenMetadata(lpTokenID);

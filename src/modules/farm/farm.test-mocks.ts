@@ -1,4 +1,4 @@
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 
 const pairsMetadata = [
     {
@@ -42,7 +42,7 @@ export class FarmServiceMock {
         return farmMetadata.farmedTokenID;
     }
 
-    async getFarmingToken(farmAddress: string): Promise<TokenModel> {
+    async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         return {
             token: 'LPT-1111',
             name: 'LiquidityPoolToken',

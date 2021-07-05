@@ -6,7 +6,7 @@ import {
     UnlockMileStoneModel,
 } from '../../models/locked-asset.model';
 import { scAddress } from 'src/config';
-import { NFTTokenModel } from '../../models/nftToken.model';
+import { NftToken } from '../../models/tokens/nftToken.model';
 import { ContextService } from '../../services/context/context.service';
 
 @Injectable()
@@ -23,9 +23,9 @@ export class LockedAssetService {
         return lockedAssetInfo;
     }
 
-    async getLockedToken(): Promise<NFTTokenModel> {
+    async getLockedToken(): Promise<NftToken> {
         const lockedTokenID = await this.getLockedTokenID();
-        return await this.context.getNFTTokenMetadata(lockedTokenID);
+        return await this.context.getNftTokenMetadata(lockedTokenID);
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {

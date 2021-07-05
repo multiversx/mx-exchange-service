@@ -1,5 +1,5 @@
 import { PairInfoModel } from '../../models/pair-info.model';
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import BigNumber from 'bignumber.js';
 
 interface PairMetadata {
@@ -89,7 +89,7 @@ export class ContextServiceMock {
         return pairsMetadata;
     }
 
-    async getTokenMetadata(tokenID: string): Promise<TokenModel> {
+    async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
         return {
             token: tokenID,
             name: tokenID,

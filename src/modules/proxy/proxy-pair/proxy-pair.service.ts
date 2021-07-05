@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { AbiProxyPairService } from './proxy-pair-abi.service';
 import { CacheProxyPairService } from '../../../services/cache-manager/cache-proxy-pair.service';
-import { NFTTokenModel } from '../../../models/nftToken.model';
 import { GenericEsdtAmountPair } from '../../../models/proxy.model';
 import { ContextService } from '../../../services/context/context.service';
+import { NftToken } from 'src/models/tokens/nftToken.model';
 
 @Injectable()
 export class ProxyPairService {
@@ -13,10 +13,10 @@ export class ProxyPairService {
         private context: ContextService,
     ) {}
 
-    async getwrappedLpToken(): Promise<NFTTokenModel> {
+    async getwrappedLpToken(): Promise<NftToken> {
         const cachedData = await this.cacheService.getWrappedLpTokenID();
         if (!!cachedData) {
-            return await this.context.getNFTTokenMetadata(
+            return await this.context.getNftTokenMetadata(
                 cachedData.wrappedLpTokenID,
             );
         }
@@ -26,7 +26,7 @@ export class ProxyPairService {
             wrappedLpTokenID: wrappedLpTokenID,
         });
 
-        return await this.context.getNFTTokenMetadata(wrappedLpTokenID);
+        return await this.context.getNftTokenMetadata(wrappedLpTokenID);
     }
 
     async getIntermediatedPairs(): Promise<string[]> {

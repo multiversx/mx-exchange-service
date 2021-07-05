@@ -1,6 +1,6 @@
 import { ObjectType, Field, ArgsType } from '@nestjs/graphql';
 import { PaginationArgs } from '../modules/dex.model';
-import { TokenModel } from './esdtToken.model';
+import { EsdtToken } from './tokens/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 
 @ArgsType()
@@ -21,10 +21,10 @@ export class PairModel {
     address: string;
 
     @Field()
-    firstToken: TokenModel;
+    firstToken: EsdtToken;
 
     @Field()
-    secondToken: TokenModel;
+    secondToken: EsdtToken;
 
     @Field()
     firstTokenPrice: string;
@@ -39,7 +39,7 @@ export class PairModel {
     secondTokenPriceUSD: string;
 
     @Field()
-    liquidityPoolToken: TokenModel;
+    liquidityPoolToken: EsdtToken;
 
     @Field()
     liquidityPoolTokenPriceUSD: string;
@@ -55,12 +55,12 @@ export class PairModel {
 export class TemporaryFundsModel {
     @Field()
     pairAddress: string;
-    @Field(type => TokenModel, { nullable: true })
-    firstToken?: TokenModel;
+    @Field(type => EsdtToken, { nullable: true })
+    firstToken?: EsdtToken;
     @Field({ nullable: true })
     firstAmount?: string;
-    @Field(type => TokenModel, { nullable: true })
-    secondToken?: TokenModel;
+    @Field(type => EsdtToken, { nullable: true })
+    secondToken?: EsdtToken;
     @Field({ nullable: true })
     secondAmount?: string;
 }

@@ -1,7 +1,7 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, InterfaceType } from '@nestjs/graphql';
 
-@ObjectType()
-export class TokenModel {
+@InterfaceType()
+export abstract class BaseToken {
     @Field() token: string;
     @Field() name: string;
     @Field() type: string;

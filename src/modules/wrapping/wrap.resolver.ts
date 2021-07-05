@@ -1,7 +1,7 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { WrapModel } from '../../models/wrapping.model';
 import { WrapService } from './wrap.service';
 import { TransactionsWrapService } from './transactions-wrap.service';
@@ -16,7 +16,7 @@ export class WrapResolver {
     ) {}
 
     @ResolveField()
-    async wrappedToken(): Promise<TokenModel> {
+    async wrappedToken(): Promise<EsdtToken> {
         return this.wrapService.getWrappedEgldToken();
     }
 

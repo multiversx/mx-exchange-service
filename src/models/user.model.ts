@@ -1,20 +1,57 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { TokenModel } from './esdtToken.model';
-import { NFTTokenModel } from './nftToken.model';
+import { EsdtToken } from './tokens/esdtToken.model';
+import { NftToken } from './tokens/nftToken.model';
+import { BaseToken } from './interfaces/token.interface';
+import { BaseNftToken } from './interfaces/nftToken.interface';
+import { FarmToken } from './interfaces/farmToken.interface';
+import { LockedLpToken } from './interfaces/lockedLpToken.interface';
+import { LockedFarmToken } from './interfaces/lockedFarmToken.interface';
+import { FarmTokenAttributesModel } from './farm.model';
+import {
+    WrappedFarmTokenAttributesModel,
+    WrappedLpTokenAttributesModel,
+} from './proxy.model';
 
-@ObjectType()
-export class UserTokenModel extends TokenModel {
-    @Field() value: string;
+@ObjectType({
+    implements: () => [BaseToken],
+})
+export class UserToken extends EsdtToken implements BaseToken {
+    @Field() valueUSD: string;
 }
 
-@ObjectType()
-export class UserNFTTokenModel extends NFTTokenModel {
-    @Field() value: string;
+@ObjectType({
+    implements: () => [BaseNftToken],
+})
+export class UserNftToken extends NftToken implements BaseNftToken {
+    @Field() valueUSD: string;
+    @Field() decodedAttributes: string;
+}
+
+@ObjectType({
+    implements: () => [FarmToken],
+})
+export class UserFarmToken extends NftToken implements FarmToken {
+    decodedAttributes: FarmTokenAttributesModel;
+    @Field() valueUSD: string;
+}
+
+@ObjectType({
+    implements: () => [LockedLpToken],
+})
+export class UserLockedLPToken extends NftToken implements LockedLpToken {
+    decodedAttributes: WrappedLpTokenAttributesModel;
+    @Field() valueUSD: string;
+}
+
+@ObjectType({
+    implements: () => [LockedFarmToken],
+})
+export class UserLockedFarmToken extends NftToken implements LockedFarmToken {
+    decodedAttributes: WrappedFarmTokenAttributesModel;
+    @Field() valueUSD: string;
 }
 
 @ObjectType()
 export class UserModel {
     @Field() address: string;
-    @Field(type => [UserTokenModel]) tokens: UserTokenModel[];
-    @Field(type => [UserNFTTokenModel]) nfts: UserNFTTokenModel[];
 }

@@ -9,7 +9,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BinaryCodec } from '@elrondnetwork/erdjs';
 import { farmsConfig, scAddress } from '../../config';
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import {
     FarmModel,
     FarmTokenAttributesModel,
@@ -18,8 +18,7 @@ import {
 import { CacheFarmService } from '../../services/cache-manager/cache-farm.service';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
-import BigNumber from 'bignumber.js';
-import { NFTTokenModel } from '../../models/nftToken.model';
+import { NftToken } from '../../models/tokens/nftToken.model';
 import { PairService } from '../pair/pair.service';
 import { ContextService } from '../../services/context/context.service';
 
@@ -32,17 +31,17 @@ export class FarmService {
         private pairService: PairService,
     ) {}
 
-    async getFarmedToken(farmAddress: string): Promise<TokenModel> {
+    async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
         return this.context.getTokenMetadata(farmedTokenID);
     }
 
-    async getFarmToken(farmAddress: string): Promise<NFTTokenModel> {
+    async getFarmToken(farmAddress: string): Promise<NftToken> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
-        return this.context.getNFTTokenMetadata(farmTokenID);
+        return this.context.getNftTokenMetadata(farmTokenID);
     }
 
-    async getFarmingToken(farmAddress: string): Promise<TokenModel> {
+    async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.getFarmingTokenID(farmAddress);
         return this.context.getTokenMetadata(farmingTokenID);
     }

@@ -1,7 +1,6 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { TokenModel } from '../../models/esdtToken.model';
 import {
     AddLiquidityProxyArgs,
     ReclaimTemporaryFundsProxyArgs,
@@ -24,8 +23,9 @@ import { ProxyFarmService } from './proxy-farm/proxy-farm.service';
 import { TransactionsProxyPairService } from './proxy-pair/proxy-pair-transactions.service';
 import { TransactionsProxyFarmService } from './proxy-farm/proxy-farm-transactions.service';
 import { ProxyService } from './proxy.service';
-import { NFTTokenModel } from '../../models/nftToken.model';
 import { DecodeAttributesArgs } from './dto/proxy.args';
+import { NftToken } from 'src/models/tokens/nftToken.model';
+import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 
 @Resolver(of => ProxyModel)
 export class ProxyResolver {
@@ -41,22 +41,22 @@ export class ProxyResolver {
     ) {}
 
     @ResolveField()
-    async wrappedLpToken(): Promise<NFTTokenModel> {
+    async wrappedLpToken(): Promise<NftToken> {
         return await this.proxyPairService.getwrappedLpToken();
     }
 
     @ResolveField()
-    async wrappedFarmToken(): Promise<NFTTokenModel> {
+    async wrappedFarmToken(): Promise<NftToken> {
         return await this.proxyFarmService.getwrappedFarmToken();
     }
 
     @ResolveField()
-    async assetToken(): Promise<TokenModel> {
+    async assetToken(): Promise<EsdtToken> {
         return await this.proxyService.getAssetToken();
     }
 
     @ResolveField()
-    async lockedAssetToken(): Promise<NFTTokenModel> {
+    async lockedAssetToken(): Promise<NftToken> {
         return await this.proxyService.getlockedAssetToken();
     }
 
