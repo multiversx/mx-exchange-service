@@ -6,7 +6,7 @@ import {
     SmartContractAbi,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
-import { SmartContractType } from 'src/modules/token-merging/dto/token.merging.args';
+import { SmartContractType } from '../../modules/token-merging/dto/token.merging.args';
 import { abiConfig, elrondConfig, scAddress } from '../../config';
 
 @Injectable()
