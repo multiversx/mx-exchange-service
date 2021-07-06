@@ -9,6 +9,7 @@ import {
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
+    AddLiquidityBatchArgs,
     ESDTTransferArgs,
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
@@ -128,6 +129,13 @@ export class PairResolver {
             pairAddress,
             liquidityAmount,
         );
+    }
+
+    @Query(returns => [TransactionModel])
+    async addLiquidityBatch(
+        @Args() args: AddLiquidityBatchArgs,
+    ): Promise<TransactionModel[]> {
+        return await this.transactionService.addLiquidityBatch(args);
     }
 
     @Query(returns => TransactionModel)

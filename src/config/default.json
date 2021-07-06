@@ -16,7 +16,11 @@
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqh906k5w8wewfp86y6crf8yw444jzzzsj0n4svpx5kk",
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgq9mhj2d9zu5fq2krqd6ew3emqf0ppjut60n4sw592nz",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq9s7ft5fj72zyt8qn8yd24xcl8rxu9v4m0n4sjlh528",
-        "wrappingAddress": "erd1qqqqqqqqqqqqqpgqhpy2hy6p0pvw6z5l3w3ykrf9aj5r5s3n0n4s6vk5dw"
+        "wrappingAddress": {
+            "1": "erd1qqqqqqqqqqqqqpgqhpy2hy6p0pvw6z5l3w3ykrf9aj5r5s3n0n4s6vk5dw",
+            "2": "erd1qqqqqqqqqqqqqpgqhpy2hy6p0pvw6z5l3w3ykrf9aj5r5s3n0n4s6vk5dw",
+            "3": "erd1qqqqqqqqqqqqqpgqhpy2hy6p0pvw6z5l3w3ykrf9aj5r5s3n0n4s6vk5dw"
+        }
     },
     "tokenProviderUSD": "WEGLD-b9cba1",
     "priceFeeds": {

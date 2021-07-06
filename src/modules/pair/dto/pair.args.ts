@@ -13,6 +13,24 @@ export class AddLiquidityArgs {
 }
 
 @ArgsType()
+export class AddLiquidityBatchArgs {
+    @Field()
+    pairAddress: string;
+    @Field()
+    sender: string;
+    @Field()
+    firstTokenID: string;
+    @Field()
+    firstTokenAmount: string;
+    @Field()
+    secondTokenID: string;
+    @Field()
+    secondTokenAmount: string;
+    @Field()
+    tolerance: number;
+}
+
+@ArgsType()
 export class RemoveLiquidityArgs {
     @Field()
     pairAddress: string;
