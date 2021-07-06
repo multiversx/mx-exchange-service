@@ -7,7 +7,7 @@ import {
     BigUIntValue,
 } from '@elrondnetwork/erdjs';
 import { TransactionModel } from '../../models/transaction.model';
-import { elrondConfig, gasConfig } from 'src/config';
+import { elrondConfig, gasConfig } from '../../config';
 import { WrapService } from './wrap.service';
 import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
@@ -21,8 +21,11 @@ export class TransactionsWrapService {
         private readonly context: ContextService,
     ) {}
 
-    async wrapEgld(amount: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getWrapSmartContract();
+    async wrapEgld(
+        amount: string,
+        shardID?: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getWrapSmartContract(shardID);
         const interaction: Interaction = contract.methods.wrapEgld([]);
         const transaction = interaction.buildTransaction();
         transaction.setValue(new Balance(amount));
@@ -34,8 +37,11 @@ export class TransactionsWrapService {
         };
     }
 
-    async unwrapEgld(amount: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getWrapSmartContract();
+    async unwrapEgld(
+        amount: string,
+        shardID?: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getWrapSmartContract(shardID);
 
         const wrappedEgldToken = await this.wrapService.getWrappedEgldToken();
 

@@ -7,6 +7,7 @@ import { elrondConfig, gasConfig } from '../../config';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
+    AddLiquidityBatchArgs,
     ESDTTransferArgs,
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
@@ -16,6 +17,8 @@ import { PairService } from './pair.service';
 import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import { TransactionsWrapService } from '../wrapping/transactions-wrap.service';
+import { WrapService } from '../wrapping/wrap.service';
 
 @Injectable()
 export class TransactionPairService {
@@ -23,7 +26,101 @@ export class TransactionPairService {
         private readonly elrondProxy: ElrondProxyService,
         private readonly pairService: PairService,
         private readonly context: ContextService,
+        private readonly wrapService: WrapService,
+        private readonly wrapTransaction: TransactionsWrapService,
     ) {}
+
+    async addLiquidityBatch(
+        args: AddLiquidityBatchArgs,
+    ): Promise<TransactionModel[]> {
+        let esdtTransferTransactions: Promise<TransactionModel>[];
+        let eGLDwrapTransaction: Promise<TransactionModel>;
+        const transactions: Promise<TransactionModel>[] = [];
+
+        const [wrappedTokenID, shardID] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
+            this.elrondProxy.getAddressShardID(args.sender),
+        ]);
+
+        switch ('eGLD') {
+            case args.firstTokenID:
+                eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
+                    args.firstTokenAmount,
+                    shardID,
+                );
+                transactions.push(eGLDwrapTransaction);
+
+                esdtTransferTransactions = this.esdtTransferBatch([
+                    {
+                        pairAddress: args.pairAddress,
+                        token: wrappedTokenID,
+                        amount: args.firstTokenAmount,
+                    },
+                    {
+                        pairAddress: args.pairAddress,
+                        token: args.secondTokenID,
+                        amount: args.secondTokenAmount,
+                    },
+                ]);
+
+                esdtTransferTransactions.map(transaction =>
+                    transactions.push(transaction),
+                );
+                break;
+            case args.secondTokenID:
+                eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
+                    args.secondTokenAmount,
+                    shardID,
+                );
+                transactions.push(eGLDwrapTransaction);
+
+                esdtTransferTransactions = this.esdtTransferBatch([
+                    {
+                        pairAddress: args.pairAddress,
+                        token: args.firstTokenID,
+                        amount: args.firstTokenAmount,
+                    },
+                    {
+                        pairAddress: args.pairAddress,
+                        token: wrappedTokenID,
+                        amount: args.secondTokenAmount,
+                    },
+                ]);
+
+                esdtTransferTransactions.map(transaction =>
+                    transactions.push(transaction),
+                );
+                break;
+            default:
+                esdtTransferTransactions = this.esdtTransferBatch([
+                    {
+                        pairAddress: args.pairAddress,
+                        token: args.firstTokenID,
+                        amount: args.firstTokenAmount,
+                    },
+                    {
+                        pairAddress: args.pairAddress,
+                        token: args.secondTokenID,
+                        amount: args.secondTokenAmount,
+                    },
+                ]);
+
+                esdtTransferTransactions.map(transaction =>
+                    transactions.push(transaction),
+                );
+                break;
+        }
+
+        const addLiquidityTransaction = this.addLiquidity({
+            pairAddress: args.pairAddress,
+            amount0: args.firstTokenAmount,
+            amount1: args.secondTokenAmount,
+            tolerance: args.tolerance,
+        });
+        transactions.push(addLiquidityTransaction);
+
+        return Promise.all(transactions);
+    }
 
     async addLiquidity(args: AddLiquidityArgs): Promise<TransactionModel> {
         const amount0 = new BigNumber(args.amount0);
@@ -157,6 +254,18 @@ export class TransactionPairService {
             contract,
             transactionArgs,
             new GasLimit(gasConfig.swapTokens),
+        );
+    }
+
+    esdtTransferBatch(
+        batchArgs: ESDTTransferArgs[],
+    ): Promise<TransactionModel>[] {
+        return batchArgs.map(args =>
+            this.esdtTransfer({
+                pairAddress: args.pairAddress,
+                token: args.token,
+                amount: args.amount,
+            }),
         );
     }
 
