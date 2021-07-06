@@ -113,7 +113,7 @@ describe('UserService', () => {
                 canWipe: true,
                 balance: '1000000000000000000',
                 identifier: null,
-                valueUSD: '200',
+                valueUSD: '100',
             },
         ]);
     });

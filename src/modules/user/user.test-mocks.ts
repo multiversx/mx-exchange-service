@@ -1,6 +1,7 @@
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { FarmTokenAttributesModel } from '../../models/farm.model';
 import { NftToken } from '../../models/tokens/nftToken.model';
+import BigNumber from 'bignumber.js';
 
 const pairsMetadata = [
     {
@@ -182,7 +183,14 @@ export class PairServiceMock {
     }
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string> {
-        return 'pair_address_1';
+        if (tokenID === 'LPT-1111') {
+            return 'pair_address_1';
+        }
+        return;
+    }
+
+    async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
+        return new BigNumber('100');
     }
 }
 
