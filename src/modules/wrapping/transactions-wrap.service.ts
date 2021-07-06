@@ -21,10 +21,8 @@ export class TransactionsWrapService {
         private readonly context: ContextService,
     ) {}
 
-    async wrapEgld(
-        amount: string,
-        shardID?: number,
-    ): Promise<TransactionModel> {
+    async wrapEgld(sender: string, amount: string): Promise<TransactionModel> {
+        const shardID = await this.elrondProxy.getAddressShardID(sender);
         const contract = await this.elrondProxy.getWrapSmartContract(shardID);
         const interaction: Interaction = contract.methods.wrapEgld([]);
         const transaction = interaction.buildTransaction();
@@ -38,9 +36,10 @@ export class TransactionsWrapService {
     }
 
     async unwrapEgld(
+        sender: string,
         amount: string,
-        shardID?: number,
     ): Promise<TransactionModel> {
+        const shardID = await this.elrondProxy.getAddressShardID(sender);
         const contract = await this.elrondProxy.getWrapSmartContract(shardID);
 
         const wrappedEgldToken = await this.wrapService.getWrappedEgldToken();

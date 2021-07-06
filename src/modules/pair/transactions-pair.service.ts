@@ -37,16 +37,13 @@ export class TransactionPairService {
         let eGLDwrapTransaction: Promise<TransactionModel>;
         const transactions: Promise<TransactionModel>[] = [];
 
-        const [wrappedTokenID, shardID] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
-            this.elrondProxy.getAddressShardID(args.sender),
-        ]);
+        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
 
         switch ('eGLD') {
             case args.firstTokenID:
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
+                    args.sender,
                     args.firstTokenAmount,
-                    shardID,
                 );
                 transactions.push(eGLDwrapTransaction);
 
@@ -69,8 +66,8 @@ export class TransactionPairService {
                 break;
             case args.secondTokenID:
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
+                    args.sender,
                     args.secondTokenAmount,
-                    shardID,
                 );
                 transactions.push(eGLDwrapTransaction);
 
