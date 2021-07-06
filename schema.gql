@@ -2,7 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type EsdtToken implements IToken {
+type EsdtToken implements BaseToken {
   token: String!
   name: String!
   type: String!
@@ -22,7 +22,7 @@ type EsdtToken implements IToken {
   identifier: String
 }
 
-interface IToken {
+interface BaseToken {
   token: String!
   name: String!
   type: String!
@@ -98,7 +98,12 @@ type TransactionModel {
   signature: String
 }
 
-type NftToken implements INftToken & IToken {
+type WrapModel {
+  address: String!
+  wrappedToken: EsdtToken!
+}
+
+type NftToken implements BaseNftToken & BaseToken {
   token: String!
   name: String!
   type: String!
@@ -126,7 +131,7 @@ type NftToken implements INftToken & IToken {
   royalties: String
 }
 
-interface INftToken {
+interface BaseNftToken {
   token: String!
   name: String!
   type: String!
@@ -171,9 +176,11 @@ type RewardsModel {
 type FarmModel {
   address: String!
   farmedToken: EsdtToken!
+  farmedTokenPriceUSD: String!
   farmToken: NftToken!
   farmTokenPriceUSD: String!
   farmingToken: EsdtToken!
+  farmingTokenPriceUSD: String!
   perBlockRewards: String!
   farmTokenSupply: String!
   farmingTokenReserve: String!
@@ -189,11 +196,6 @@ type CommunityDistributionModel {
 type DistributionModel {
   address: String!
   communityDistribution: CommunityDistributionModel!
-}
-
-type WrapModel {
-  address: String!
-  wrappedToken: EsdtToken!
 }
 
 type ProxyModel {
@@ -244,7 +246,7 @@ type LockedAssetModel {
   unlockMilestones: [UnlockMileStoneModel!]!
 }
 
-type UserToken implements IToken {
+type UserToken implements BaseToken {
   token: String!
   name: String!
   type: String!
@@ -295,12 +297,16 @@ type Query {
   getEquivalent(amount: String!, tokenInID: String!, pairAddress: String!): String!
   getTemporaryFunds(callerAddress: String!): [TemporaryFundsModel!]!
   getLiquidityPosition(liquidityAmount: String!, pairAddress: String!): LiquidityPosition!
+  addLiquidityBatch(pairAddress: String!, sender: String!, firstTokenID: String!, firstTokenAmount: String!, secondTokenID: String!, secondTokenAmount: String!, tolerance: Float!): [TransactionModel!]!
   addLiquidity(pairAddress: String!, amount0: String!, amount1: String!, tolerance: Float!): TransactionModel!
   reclaimTemporaryFunds(pairAddress: String!): TransactionModel!
   removeLiquidity(pairAddress: String!, liquidity: String!, liquidityTokenID: String!, tolerance: Float!): TransactionModel!
   swapTokensFixedInput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): TransactionModel!
   swapTokensFixedOutput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): TransactionModel!
   tokensTransfer(pairAddress: String!, token: String!, amount: String!): TransactionModel!
+  wrappingInfo: WrapModel!
+  wrapEgld(amount: String!): TransactionModel!
+  unwrapEgld(amount: String!): TransactionModel!
   farmTokenAttributes(attributes: String!, identifier: String!): FarmTokenAttributesModel!
   farms: [FarmModel!]!
   getRewardsForPosition(farmAddress: String!, liquidity: String!, identifier: String!, attributes: String!): RewardsModel!
@@ -323,9 +329,6 @@ type Query {
   wrappedFarmTokenAttributes(args: DecodeAttributesArgs!): [WrappedFarmTokenAttributesModel!]!
   lockedAssetFactory: LockedAssetModel!
   unlockAssets(sender: String!, lockedTokenID: String!, lockedTokenNonce: Int!, amount: String!): TransactionModel!
-  wrappingInfo: WrapModel!
-  wrapEgld(amount: String!): TransactionModel!
-  unwrapEgld(amount: String!): TransactionModel!
   tokens(offset: Int = 0, limit: Int = 10, address: String!): [UserToken!]!
   nfts(offset: Int = 0, limit: Int = 10, address: String!): [UserNftTokens!]!
   getTokenPriceUSD(tokenID: String!): String!
@@ -346,7 +349,7 @@ input DecodeAttributesModel {
 
 union UserNftTokens = UserNftToken | UserFarmToken | UserLockedLPToken | UserLockedFarmToken
 
-type UserNftToken implements INftToken & IToken {
+type UserNftToken implements BaseNftToken & BaseToken {
   token: String!
   name: String!
   type: String!
@@ -376,7 +379,7 @@ type UserNftToken implements INftToken & IToken {
   decodedAttributes: String!
 }
 
-type UserFarmToken implements IFarmToken & INftToken & IToken {
+type UserFarmToken implements FarmToken & BaseNftToken & BaseToken {
   token: String!
   name: String!
   type: String!
@@ -406,7 +409,7 @@ type UserFarmToken implements IFarmToken & INftToken & IToken {
   valueUSD: String!
 }
 
-interface IFarmToken {
+interface FarmToken {
   token: String!
   name: String!
   type: String!
@@ -435,7 +438,7 @@ interface IFarmToken {
   decodedAttributes: FarmTokenAttributesModel!
 }
 
-type UserLockedLPToken implements ILockedLpToken & INftToken & IToken {
+type UserLockedLPToken implements LockedLpToken & BaseNftToken & BaseToken {
   token: String!
   name: String!
   type: String!
@@ -465,7 +468,7 @@ type UserLockedLPToken implements ILockedLpToken & INftToken & IToken {
   valueUSD: String!
 }
 
-interface ILockedLpToken {
+interface LockedLpToken {
   token: String!
   name: String!
   type: String!
@@ -494,7 +497,7 @@ interface ILockedLpToken {
   decodedAttributes: WrappedLpTokenAttributesModel!
 }
 
-type UserLockedFarmToken implements ILockedFarmToken & INftToken & IToken {
+type UserLockedFarmToken implements LockedFarmToken & BaseNftToken & BaseToken {
   token: String!
   name: String!
   type: String!
@@ -524,7 +527,7 @@ type UserLockedFarmToken implements ILockedFarmToken & INftToken & IToken {
   valueUSD: String!
 }
 
-interface ILockedFarmToken {
+interface LockedFarmToken {
   token: String!
   name: String!
   type: String!
