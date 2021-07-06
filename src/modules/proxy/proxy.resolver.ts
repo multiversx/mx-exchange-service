@@ -24,8 +24,9 @@ import { TransactionsProxyPairService } from './proxy-pair/proxy-pair-transactio
 import { TransactionsProxyFarmService } from './proxy-farm/proxy-farm-transactions.service';
 import { ProxyService } from './proxy.service';
 import { DecodeAttributesArgs } from './dto/proxy.args';
-import { NftToken } from 'src/models/tokens/nftToken.model';
+import { NftCollectionToken } from 'src/models/tokens/nftToken.model';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { NftCollection } from 'src/models/interfaces/nftCollection.interface';
 
 @Resolver(of => ProxyModel)
 export class ProxyResolver {
@@ -41,12 +42,12 @@ export class ProxyResolver {
     ) {}
 
     @ResolveField()
-    async wrappedLpToken(): Promise<NftToken> {
+    async wrappedLpToken(): Promise<NftCollectionToken> {
         return await this.proxyPairService.getwrappedLpToken();
     }
 
     @ResolveField()
-    async wrappedFarmToken(): Promise<NftToken> {
+    async wrappedFarmToken(): Promise<NftCollection> {
         return await this.proxyFarmService.getwrappedFarmToken();
     }
 
@@ -56,7 +57,7 @@ export class ProxyResolver {
     }
 
     @ResolveField()
-    async lockedAssetToken(): Promise<NftToken> {
+    async lockedAssetToken(): Promise<NftCollectionToken> {
         return await this.proxyService.getlockedAssetToken();
     }
 

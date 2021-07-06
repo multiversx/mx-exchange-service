@@ -8,7 +8,7 @@ import {
 } from '../../models/locked-asset.model';
 import { UnlockAssetsArs } from './dto/locked-asset.args';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
-import { NftToken } from '../../models/tokens/nftToken.model';
+import { NftCollection } from 'src/models/interfaces/nftCollection.interface';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {
@@ -20,7 +20,7 @@ export class LockedAssetResolver {
     ) {}
 
     @ResolveField()
-    async lockedToken(): Promise<NftToken> {
+    async lockedToken(): Promise<NftCollection> {
         return await this.lockedAssetService.getLockedToken();
     }
 

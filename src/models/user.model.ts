@@ -1,4 +1,4 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { EsdtToken } from './tokens/esdtToken.model';
 import { NftToken } from './tokens/nftToken.model';
 import { BaseToken } from './interfaces/token.interface';
@@ -23,6 +23,7 @@ export class UserToken extends EsdtToken implements BaseToken {
     implements: () => [BaseNftToken],
 })
 export class UserNftToken extends NftToken implements BaseNftToken {
+    @Field(type => Int) decimals: number;
     @Field() valueUSD: string;
     @Field() decodedAttributes: string;
 }
@@ -31,6 +32,7 @@ export class UserNftToken extends NftToken implements BaseNftToken {
     implements: () => [FarmToken],
 })
 export class UserFarmToken extends NftToken implements FarmToken {
+    decimals: number;
     decodedAttributes: FarmTokenAttributesModel;
     @Field() valueUSD: string;
 }
@@ -39,6 +41,7 @@ export class UserFarmToken extends NftToken implements FarmToken {
     implements: () => [LockedLpToken],
 })
 export class UserLockedLPToken extends NftToken implements LockedLpToken {
+    decimals: number;
     decodedAttributes: WrappedLpTokenAttributesModel;
     @Field() valueUSD: string;
 }
@@ -47,6 +50,7 @@ export class UserLockedLPToken extends NftToken implements LockedLpToken {
     implements: () => [LockedFarmToken],
 })
 export class UserLockedFarmToken extends NftToken implements LockedFarmToken {
+    decimals: number;
     decodedAttributes: WrappedFarmTokenAttributesModel;
     @Field() valueUSD: string;
 }

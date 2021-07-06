@@ -2,7 +2,10 @@ import { ApiProvider } from '@elrondnetwork/erdjs';
 import { elrondConfig } from '../../config';
 import { Injectable } from '@nestjs/common';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
-import { NftToken } from '../../models/tokens/nftToken.model';
+import {
+    NftCollectionToken,
+    NftToken,
+} from '../../models/tokens/nftToken.model';
 
 @Injectable()
 export class ElrondApiService {
@@ -16,6 +19,13 @@ export class ElrondApiService {
 
     getService(): ApiProvider {
         return this.apiProvider;
+    }
+
+    async getNftCollection(tokenID: string): Promise<NftCollectionToken> {
+        return this.getService().doGetGeneric(
+            `collections/${tokenID}`,
+            response => response,
+        );
     }
 
     async getTokensForUser(

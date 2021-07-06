@@ -1,5 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { NftToken } from './tokens/nftToken.model';
+import { NftCollectionToken } from './tokens/nftToken.model';
 
 @ObjectType()
 export class UnlockMileStoneModel {
@@ -15,7 +15,7 @@ export class LockedAssetModel {
     address: string;
 
     @Field()
-    lockedToken: NftToken;
+    lockedToken: NftCollectionToken;
 
     @Field(type => [UnlockMileStoneModel])
     unlockMilestones: UnlockMileStoneModel[];
