@@ -1,25 +1,22 @@
-import { ObjectType } from '@nestjs/graphql';
-import { BaseToken } from '../interfaces/token.interface';
+import { Field, ObjectType } from '@nestjs/graphql';
 
-@ObjectType({
-    implements: () => [BaseToken],
-})
-export class EsdtToken implements BaseToken {
-    token: string;
-    name: string;
-    type: string;
-    owner: string;
-    minted: string;
-    burnt: string;
-    decimals: number;
-    isPaused: boolean;
-    canUpgrade: boolean;
-    canMint: boolean;
-    canBurn: boolean;
-    canChangeOwner: boolean;
-    canPause: boolean;
-    canFreeze: boolean;
-    canWipe: boolean;
-    balance?: string;
-    identifier?: string;
+@ObjectType()
+export class EsdtToken {
+    @Field() token: string;
+    @Field() name: string;
+    @Field() type: string;
+    @Field() owner: string;
+    @Field() minted: string;
+    @Field() burnt: string;
+    @Field() decimals: number;
+    @Field() isPaused: boolean;
+    @Field() canUpgrade: boolean;
+    @Field() canMint: boolean;
+    @Field() canBurn: boolean;
+    @Field() canChangeOwner: boolean;
+    @Field() canPause: boolean;
+    @Field() canFreeze: boolean;
+    @Field() canWipe: boolean;
+    @Field({ nullable: true }) balance?: string;
+    @Field({ nullable: true }) identifier?: string;
 }

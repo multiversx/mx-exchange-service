@@ -18,9 +18,9 @@ import {
 import { CacheFarmService } from '../../services/cache-manager/cache-farm.service';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
-import { NftToken } from '../../models/tokens/nftToken.model';
 import { PairService } from '../pair/pair.service';
 import { ContextService } from '../../services/context/context.service';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @Injectable()
 export class FarmService {
@@ -36,9 +36,9 @@ export class FarmService {
         return this.context.getTokenMetadata(farmedTokenID);
     }
 
-    async getFarmToken(farmAddress: string): Promise<NftToken> {
+    async getFarmToken(farmAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
-        return this.context.getNftTokenMetadata(farmTokenID);
+        return this.context.getNftCollectionMetadata(farmTokenID);
     }
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {

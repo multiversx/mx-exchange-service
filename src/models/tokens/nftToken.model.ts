@@ -1,17 +1,18 @@
-import { ObjectType } from '@nestjs/graphql';
-import { BaseNftToken } from '../interfaces/nftToken.interface';
-import { EsdtToken } from './esdtToken.model';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 
-@ObjectType({
-    implements: () => [BaseNftToken],
-})
-export class NftToken extends EsdtToken implements BaseNftToken {
-    canAddSpecialRoles: boolean;
-    canTransferNFTCreateRole: boolean;
-    NFTCreateStopped: boolean;
-    wiped: string;
-    attributes?: string;
-    creator?: string;
-    nonce?: number;
-    royalties?: string;
+@ObjectType()
+export class NftToken {
+    @Field() identifier: string;
+    @Field() collection: string;
+    @Field(type => Int) timestamp: number;
+    @Field() attributes: string;
+    @Field(type => Int) nonce: number;
+    @Field() type: string;
+    @Field() name: string;
+    @Field() creator: string;
+    @Field(type => Int) royalties: number;
+    @Field(type => [String]) uris: string[];
+    @Field() url: string;
+    @Field(type => [String]) tags: string[];
+    @Field() balance: string;
 }

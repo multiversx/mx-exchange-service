@@ -116,7 +116,7 @@ export class UserService {
         nftToken: NftToken,
     ): Promise<typeof UserNftTokens> {
         const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
-            nftToken.token,
+            nftToken.collection,
         );
         if (farmAddress) {
             return this.computeFarmTokenValue(farmAddress, nftToken);
@@ -124,7 +124,7 @@ export class UserService {
 
         const lockedMEXID = await this.proxyService.getlockedAssetToken();
         const assetToken = await this.proxyService.getAssetToken();
-        if (nftToken.token === lockedMEXID.token) {
+        if (nftToken.collection === lockedMEXID.collection) {
             const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
                 assetToken.token,
             );
@@ -141,7 +141,7 @@ export class UserService {
         }
 
         const wrappedLpToken = await this.proxyPairService.getwrappedLpToken();
-        if (nftToken.token === wrappedLpToken.token) {
+        if (nftToken.collection === wrappedLpToken.collection) {
             const decodedWLPTAttributes = await this.proxyService.getWrappedLpTokenAttributes(
                 {
                     batchAttributes: [
@@ -174,7 +174,7 @@ export class UserService {
         }
 
         const wrappedFarmToken = await this.proxyFarmService.getwrappedFarmToken();
-        if (nftToken.token === wrappedFarmToken.token) {
+        if (nftToken.collection === wrappedFarmToken.collection) {
             const decodedWFMTAttributes = await this.proxyService.getWrappedFarmTokenAttributes(
                 {
                     batchAttributes: [
@@ -198,7 +198,7 @@ export class UserService {
                     farmToken,
                 );
                 return {
-                    ...nftToken,
+                    ...userFarmToken,
                     valueUSD: userFarmToken.valueUSD,
                     decodedAttributes: decodedWFMTAttributes[0],
                 };
@@ -206,6 +206,7 @@ export class UserService {
         }
         return {
             ...nftToken,
+            decimals: 0,
             valueUSD: '0',
             decodedAttributes: '',
         };
