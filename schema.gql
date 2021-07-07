@@ -2,7 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type EsdtToken implements IToken {
+type EsdtToken implements BaseToken {
   token: String!
   name: String!
   type: String!
@@ -22,7 +22,7 @@ type EsdtToken implements IToken {
   identifier: String
 }
 
-interface IToken {
+interface BaseToken {
   token: String!
   name: String!
   type: String!
@@ -98,43 +98,17 @@ type TransactionModel {
   signature: String
 }
 
-type NftToken implements INftToken & IToken {
-  token: String!
-  name: String!
-  type: String!
-  owner: String!
-  minted: String!
-  burnt: String!
-  decimals: Float!
-  isPaused: Boolean!
-  canUpgrade: Boolean!
-  canMint: Boolean!
-  canBurn: Boolean!
-  canChangeOwner: Boolean!
-  canPause: Boolean!
-  canFreeze: Boolean!
-  canWipe: Boolean!
-  balance: String
-  identifier: String
-  canAddSpecialRoles: Boolean!
-  canTransferNFTCreateRole: Boolean!
-  NFTCreateStopped: Boolean!
-  wiped: String!
-  attributes: String
-  creator: String
-  nonce: Int
-  royalties: String
+type WrapModel {
+  address: String!
+  wrappedToken: EsdtToken!
 }
 
-interface INftToken {
-  token: String!
+type NftCollectionToken implements NftCollection {
+  collection: String!
   name: String!
-  type: String!
-  owner: String!
-  minted: String!
-  burnt: String!
-  decimals: Float!
-  isPaused: Boolean!
+  ticker: String!
+  issuer: String!
+  timestamp: Float!
   canUpgrade: Boolean!
   canMint: Boolean!
   canBurn: Boolean!
@@ -142,16 +116,27 @@ interface INftToken {
   canPause: Boolean!
   canFreeze: Boolean!
   canWipe: Boolean!
-  balance: String
-  identifier: String
   canAddSpecialRoles: Boolean!
   canTransferNFTCreateRole: Boolean!
   NFTCreateStopped: Boolean!
-  wiped: String!
-  attributes: String
-  creator: String
-  nonce: Int
-  royalties: String
+}
+
+interface NftCollection {
+  collection: String!
+  name: String!
+  ticker: String!
+  issuer: String!
+  timestamp: Float!
+  canUpgrade: Boolean!
+  canMint: Boolean!
+  canBurn: Boolean!
+  canChangeOwner: Boolean!
+  canPause: Boolean!
+  canFreeze: Boolean!
+  canWipe: Boolean!
+  canAddSpecialRoles: Boolean!
+  canTransferNFTCreateRole: Boolean!
+  NFTCreateStopped: Boolean!
 }
 
 type FarmTokenAttributesModel {
@@ -171,9 +156,11 @@ type RewardsModel {
 type FarmModel {
   address: String!
   farmedToken: EsdtToken!
-  farmToken: NftToken!
+  farmedTokenPriceUSD: String!
+  farmToken: NftCollectionToken!
   farmTokenPriceUSD: String!
   farmingToken: EsdtToken!
+  farmingTokenPriceUSD: String!
   perBlockRewards: String!
   farmTokenSupply: String!
   farmingTokenReserve: String!
@@ -191,17 +178,12 @@ type DistributionModel {
   communityDistribution: CommunityDistributionModel!
 }
 
-type WrapModel {
-  address: String!
-  wrappedToken: EsdtToken!
-}
-
 type ProxyModel {
   address: String!
-  wrappedLpToken: NftToken!
-  wrappedFarmToken: NftToken!
+  wrappedLpToken: NftCollectionToken!
+  wrappedFarmToken: NftCollectionToken!
   assetToken: EsdtToken!
-  lockedAssetToken: NftToken!
+  lockedAssetToken: NftCollectionToken!
   intermediatedPairs: [String!]!
   intermediatedFarms: [String!]!
 }
@@ -240,11 +222,11 @@ type UnlockMileStoneModel {
 
 type LockedAssetModel {
   address: String!
-  lockedToken: NftToken!
+  lockedToken: NftCollectionToken!
   unlockMilestones: [UnlockMileStoneModel!]!
 }
 
-type UserToken implements IToken {
+type UserToken implements BaseToken {
   token: String!
   name: String!
   type: String!
@@ -295,12 +277,16 @@ type Query {
   getEquivalent(amount: String!, tokenInID: String!, pairAddress: String!): String!
   getTemporaryFunds(callerAddress: String!): [TemporaryFundsModel!]!
   getLiquidityPosition(liquidityAmount: String!, pairAddress: String!): LiquidityPosition!
+  addLiquidityBatch(pairAddress: String!, sender: String!, firstTokenID: String!, firstTokenAmount: String!, secondTokenID: String!, secondTokenAmount: String!, tolerance: Float!): [TransactionModel!]!
   addLiquidity(pairAddress: String!, amount0: String!, amount1: String!, tolerance: Float!): TransactionModel!
   reclaimTemporaryFunds(pairAddress: String!): TransactionModel!
   removeLiquidity(pairAddress: String!, liquidity: String!, liquidityTokenID: String!, tolerance: Float!): TransactionModel!
   swapTokensFixedInput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): TransactionModel!
   swapTokensFixedOutput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): TransactionModel!
   tokensTransfer(pairAddress: String!, token: String!, amount: String!): TransactionModel!
+  wrappingInfo: WrapModel!
+  wrapEgld(amount: String!, sender: String!): TransactionModel!
+  unwrapEgld(amount: String!, sender: String!): TransactionModel!
   farmTokenAttributes(attributes: String!, identifier: String!): FarmTokenAttributesModel!
   farms: [FarmModel!]!
   getRewardsForPosition(farmAddress: String!, liquidity: String!, identifier: String!, attributes: String!): RewardsModel!
@@ -323,9 +309,6 @@ type Query {
   wrappedFarmTokenAttributes(args: DecodeAttributesArgs!): [WrappedFarmTokenAttributesModel!]!
   lockedAssetFactory: LockedAssetModel!
   unlockAssets(sender: String!, lockedTokenID: String!, lockedTokenNonce: Int!, amount: String!): TransactionModel!
-  wrappingInfo: WrapModel!
-  wrapEgld(amount: String!): TransactionModel!
-  unwrapEgld(amount: String!): TransactionModel!
   tokens(offset: Int = 0, limit: Int = 10, address: String!): [UserToken!]!
   nfts(offset: Int = 0, limit: Int = 10, address: String!): [UserNftTokens!]!
   getTokenPriceUSD(tokenID: String!): String!
@@ -346,209 +329,148 @@ input DecodeAttributesModel {
 
 union UserNftTokens = UserNftToken | UserFarmToken | UserLockedLPToken | UserLockedFarmToken
 
-type UserNftToken implements INftToken & IToken {
-  token: String!
-  name: String!
+type UserNftToken implements BaseNftToken {
+  identifier: String!
+  collection: String!
+  timestamp: Int!
+  attributes: String!
+  nonce: Int!
   type: String!
-  owner: String!
-  minted: String!
-  burnt: String!
-  decimals: Float!
-  isPaused: Boolean!
-  canUpgrade: Boolean!
-  canMint: Boolean!
-  canBurn: Boolean!
-  canChangeOwner: Boolean!
-  canPause: Boolean!
-  canFreeze: Boolean!
-  canWipe: Boolean!
-  balance: String
-  identifier: String
-  canAddSpecialRoles: Boolean!
-  canTransferNFTCreateRole: Boolean!
-  NFTCreateStopped: Boolean!
-  wiped: String!
-  attributes: String
-  creator: String
-  nonce: Int
-  royalties: String
+  name: String!
+  creator: String!
+  royalties: Int!
+  uris: [String!]!
+  url: String!
+  tags: [String!]!
+  balance: String!
+  decimals: Int!
   valueUSD: String!
   decodedAttributes: String!
 }
 
-type UserFarmToken implements IFarmToken & INftToken & IToken {
-  token: String!
-  name: String!
+interface BaseNftToken {
+  identifier: String!
+  collection: String!
+  timestamp: Int!
+  attributes: String!
+  nonce: Int!
   type: String!
-  owner: String!
-  minted: String!
-  burnt: String!
-  decimals: Float!
-  isPaused: Boolean!
-  canUpgrade: Boolean!
-  canMint: Boolean!
-  canBurn: Boolean!
-  canChangeOwner: Boolean!
-  canPause: Boolean!
-  canFreeze: Boolean!
-  canWipe: Boolean!
-  balance: String
-  identifier: String
-  canAddSpecialRoles: Boolean!
-  canTransferNFTCreateRole: Boolean!
-  NFTCreateStopped: Boolean!
-  wiped: String!
-  attributes: String
-  creator: String
-  nonce: Int
-  royalties: String
+  name: String!
+  creator: String!
+  royalties: Int!
+  uris: [String!]!
+  url: String!
+  tags: [String!]!
+  balance: String!
+}
+
+type UserFarmToken implements FarmToken & BaseNftToken {
+  identifier: String!
+  collection: String!
+  timestamp: Int!
+  attributes: String!
+  nonce: Int!
+  type: String!
+  name: String!
+  creator: String!
+  royalties: Int!
+  uris: [String!]!
+  url: String!
+  tags: [String!]!
+  balance: String!
+  decimals: Int!
   decodedAttributes: FarmTokenAttributesModel!
   valueUSD: String!
 }
 
-interface IFarmToken {
-  token: String!
-  name: String!
+interface FarmToken {
+  identifier: String!
+  collection: String!
+  timestamp: Int!
+  attributes: String!
+  nonce: Int!
   type: String!
-  owner: String!
-  minted: String!
-  burnt: String!
-  decimals: Float!
-  isPaused: Boolean!
-  canUpgrade: Boolean!
-  canMint: Boolean!
-  canBurn: Boolean!
-  canChangeOwner: Boolean!
-  canPause: Boolean!
-  canFreeze: Boolean!
-  canWipe: Boolean!
-  balance: String
-  identifier: String
-  canAddSpecialRoles: Boolean!
-  canTransferNFTCreateRole: Boolean!
-  NFTCreateStopped: Boolean!
-  wiped: String!
-  attributes: String
-  creator: String
-  nonce: Int
-  royalties: String
+  name: String!
+  creator: String!
+  royalties: Int!
+  uris: [String!]!
+  url: String!
+  tags: [String!]!
+  balance: String!
+  decimals: Int!
   decodedAttributes: FarmTokenAttributesModel!
 }
 
-type UserLockedLPToken implements ILockedLpToken & INftToken & IToken {
-  token: String!
-  name: String!
+type UserLockedLPToken implements LockedLpToken & BaseNftToken {
+  identifier: String!
+  collection: String!
+  timestamp: Int!
+  attributes: String!
+  nonce: Int!
   type: String!
-  owner: String!
-  minted: String!
-  burnt: String!
-  decimals: Float!
-  isPaused: Boolean!
-  canUpgrade: Boolean!
-  canMint: Boolean!
-  canBurn: Boolean!
-  canChangeOwner: Boolean!
-  canPause: Boolean!
-  canFreeze: Boolean!
-  canWipe: Boolean!
-  balance: String
-  identifier: String
-  canAddSpecialRoles: Boolean!
-  canTransferNFTCreateRole: Boolean!
-  NFTCreateStopped: Boolean!
-  wiped: String!
-  attributes: String
-  creator: String
-  nonce: Int
-  royalties: String
+  name: String!
+  creator: String!
+  royalties: Int!
+  uris: [String!]!
+  url: String!
+  tags: [String!]!
+  balance: String!
+  decimals: Int!
   decodedAttributes: WrappedLpTokenAttributesModel!
   valueUSD: String!
 }
 
-interface ILockedLpToken {
-  token: String!
-  name: String!
+interface LockedLpToken {
+  identifier: String!
+  collection: String!
+  timestamp: Int!
+  attributes: String!
+  nonce: Int!
   type: String!
-  owner: String!
-  minted: String!
-  burnt: String!
-  decimals: Float!
-  isPaused: Boolean!
-  canUpgrade: Boolean!
-  canMint: Boolean!
-  canBurn: Boolean!
-  canChangeOwner: Boolean!
-  canPause: Boolean!
-  canFreeze: Boolean!
-  canWipe: Boolean!
-  balance: String
-  identifier: String
-  canAddSpecialRoles: Boolean!
-  canTransferNFTCreateRole: Boolean!
-  NFTCreateStopped: Boolean!
-  wiped: String!
-  attributes: String
-  creator: String
-  nonce: Int
-  royalties: String
+  name: String!
+  creator: String!
+  royalties: Int!
+  uris: [String!]!
+  url: String!
+  tags: [String!]!
+  balance: String!
+  decimals: Int!
   decodedAttributes: WrappedLpTokenAttributesModel!
 }
 
-type UserLockedFarmToken implements ILockedFarmToken & INftToken & IToken {
-  token: String!
-  name: String!
+type UserLockedFarmToken implements LockedFarmToken & BaseNftToken {
+  identifier: String!
+  collection: String!
+  timestamp: Int!
+  attributes: String!
+  nonce: Int!
   type: String!
-  owner: String!
-  minted: String!
-  burnt: String!
-  decimals: Float!
-  isPaused: Boolean!
-  canUpgrade: Boolean!
-  canMint: Boolean!
-  canBurn: Boolean!
-  canChangeOwner: Boolean!
-  canPause: Boolean!
-  canFreeze: Boolean!
-  canWipe: Boolean!
-  balance: String
-  identifier: String
-  canAddSpecialRoles: Boolean!
-  canTransferNFTCreateRole: Boolean!
-  NFTCreateStopped: Boolean!
-  wiped: String!
-  attributes: String
-  creator: String
-  nonce: Int
-  royalties: String
+  name: String!
+  creator: String!
+  royalties: Int!
+  uris: [String!]!
+  url: String!
+  tags: [String!]!
+  balance: String!
+  decimals: Int!
   decodedAttributes: WrappedFarmTokenAttributesModel!
   valueUSD: String!
 }
 
-interface ILockedFarmToken {
-  token: String!
-  name: String!
+interface LockedFarmToken {
+  identifier: String!
+  collection: String!
+  timestamp: Int!
+  attributes: String!
+  nonce: Int!
   type: String!
-  owner: String!
-  minted: String!
-  burnt: String!
-  decimals: Float!
-  isPaused: Boolean!
-  canUpgrade: Boolean!
-  canMint: Boolean!
-  canBurn: Boolean!
-  canChangeOwner: Boolean!
-  canPause: Boolean!
-  canFreeze: Boolean!
-  canWipe: Boolean!
-  balance: String
-  identifier: String
-  canAddSpecialRoles: Boolean!
-  canTransferNFTCreateRole: Boolean!
-  NFTCreateStopped: Boolean!
-  wiped: String!
-  attributes: String
-  creator: String
-  nonce: Int
-  royalties: String
+  name: String!
+  creator: String!
+  royalties: Int!
+  uris: [String!]!
+  url: String!
+  tags: [String!]!
+  balance: String!
+  decimals: Int!
   decodedAttributes: WrappedFarmTokenAttributesModel!
 }

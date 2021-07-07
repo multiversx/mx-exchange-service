@@ -8,11 +8,11 @@ import {
 } from '../../models/locked-asset.model';
 import { UnlockAssetsArs } from './dto/locked-asset.args';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
-import { NftToken } from '../../models/tokens/nftToken.model';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { TokenMergingService } from 'src/modules/token-merging/token.merging.service';
-import { SmartContractType } from 'src/modules/token-merging/dto/token.merging.args';
-import { TokenMergingTransactionsService } from 'src/modules/token-merging/token.merging.transactions.service';
+import { TokenMergingService } from '../token-merging/token.merging.service';
+import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
+import { SmartContractType } from '../token-merging/dto/token.merging.args';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {
@@ -30,7 +30,7 @@ export class LockedAssetResolver {
     ) {}
 
     @ResolveField()
-    async lockedToken(): Promise<NftToken> {
+    async lockedToken(): Promise<NftCollection> {
         return await this.lockedAssetService.getLockedToken();
     }
 

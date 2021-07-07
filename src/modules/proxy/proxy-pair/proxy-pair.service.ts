@@ -3,7 +3,7 @@ import { AbiProxyPairService } from './proxy-pair-abi.service';
 import { CacheProxyPairService } from '../../../services/cache-manager/cache-proxy-pair.service';
 import { GenericEsdtAmountPair } from '../../../models/proxy.model';
 import { ContextService } from '../../../services/context/context.service';
-import { NftToken } from 'src/models/tokens/nftToken.model';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @Injectable()
 export class ProxyPairService {
@@ -13,10 +13,10 @@ export class ProxyPairService {
         private context: ContextService,
     ) {}
 
-    async getwrappedLpToken(): Promise<NftToken> {
+    async getwrappedLpToken(): Promise<NftCollection> {
         const cachedData = await this.cacheService.getWrappedLpTokenID();
         if (!!cachedData) {
-            return await this.context.getNftTokenMetadata(
+            return await this.context.getNftCollectionMetadata(
                 cachedData.wrappedLpTokenID,
             );
         }
@@ -26,7 +26,7 @@ export class ProxyPairService {
             wrappedLpTokenID: wrappedLpTokenID,
         });
 
-        return await this.context.getNftTokenMetadata(wrappedLpTokenID);
+        return await this.context.getNftCollectionMetadata(wrappedLpTokenID);
     }
 
     async getIntermediatedPairs(): Promise<string[]> {

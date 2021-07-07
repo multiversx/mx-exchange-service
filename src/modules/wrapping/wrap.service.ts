@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { scAddress } from 'src/config';
+import { scAddress } from '../../config';
 import { CacheWrapService } from '../../services/cache-manager/cache-wrapping.service';
 import { ContextService } from '../../services/context/context.service';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';

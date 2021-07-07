@@ -1,6 +1,7 @@
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { FarmTokenAttributesModel } from '../../models/farm.model';
 import { NftToken } from '../../models/tokens/nftToken.model';
+import BigNumber from 'bignumber.js';
 
 const pairsMetadata = [
     {
@@ -64,31 +65,19 @@ export class ElrondApiServiceMock {
     async getNftsForUser(address: string): Promise<NftToken[]> {
         return [
             {
-                token: 'FMT-1234',
+                collection: 'FMT-1234',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
-                owner: 'farm_address_1',
-                minted: '0',
-                burnt: '0',
-                decimals: 0,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: false,
-                canBurn: false,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
                 balance: '1000000000000000000',
                 identifier: 'FMT-1234-01',
-                canAddSpecialRoles: true,
-                canTransferNFTCreateRole: false,
-                NFTCreateStopped: false,
-                wiped: '0',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                 creator: 'farm_address_1',
                 nonce: 1,
-                royalties: '0',
+                royalties: 0,
+                timestamp: 0,
+                uris: [],
+                url: '',
+                tags: [],
             },
         ];
     }
@@ -182,7 +171,14 @@ export class PairServiceMock {
     }
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string> {
-        return 'pair_address_1';
+        if (tokenID === 'LPT-1111') {
+            return 'pair_address_1';
+        }
+        return;
+    }
+
+    async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
+        return new BigNumber('100');
     }
 }
 

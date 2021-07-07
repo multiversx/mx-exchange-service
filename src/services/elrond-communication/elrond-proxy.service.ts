@@ -38,6 +38,14 @@ export class ElrondProxyService {
         }
     }
 
+    async getAddressShardID(address: string): Promise<number> {
+        const response = await this.getService().doGetGeneric(
+            `address/${address}/shard`,
+            response => response,
+        );
+        return response.shardID;
+    }
+
     async getRouterSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.routerAddress,
@@ -50,9 +58,9 @@ export class ElrondProxyService {
         return this.getSmartContract(pairAddress, abiConfig.pair, 'Pair');
     }
 
-    async getWrapSmartContract(): Promise<SmartContract> {
+    async getWrapSmartContract(shardID = 1): Promise<SmartContract> {
         return this.getSmartContract(
-            scAddress.wrappingAddress,
+            scAddress.wrappingAddress.get(shardID.toString()),
             abiConfig.wrap,
             'EgldEsdtSwap',
         );

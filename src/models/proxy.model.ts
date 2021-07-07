@@ -1,7 +1,7 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { EsdtToken } from './tokens/esdtToken.model';
 import { FarmTokenAttributesModel } from './farm.model';
-import { NftToken } from './tokens/nftToken.model';
+import { NftCollection } from './tokens/nftCollection.model';
 
 @ObjectType()
 export class ProxyModel {
@@ -9,16 +9,16 @@ export class ProxyModel {
     address: string;
 
     @Field()
-    wrappedLpToken: NftToken;
+    wrappedLpToken: NftCollection;
 
     @Field()
-    wrappedFarmToken: NftToken;
+    wrappedFarmToken: NftCollection;
 
     @Field()
     assetToken: EsdtToken;
 
     @Field()
-    lockedAssetToken: NftToken;
+    lockedAssetToken: NftCollection;
 
     @Field(type => [String])
     intermediatedPairs: string[];

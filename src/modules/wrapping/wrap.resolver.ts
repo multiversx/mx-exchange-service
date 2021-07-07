@@ -26,14 +26,18 @@ export class WrapResolver {
     }
 
     @Query(returns => TransactionModel)
-    async wrapEgld(@Args('amount') amount: string): Promise<TransactionModel> {
-        return this.transactionService.wrapEgld(amount);
+    async wrapEgld(
+        @Args('sender') sender: string,
+        @Args('amount') amount: string,
+    ): Promise<TransactionModel> {
+        return this.transactionService.wrapEgld(sender, amount);
     }
 
     @Query(returns => TransactionModel)
     async unwrapEgld(
+        @Args('sender') sender: string,
         @Args('amount') amount: string,
     ): Promise<TransactionModel> {
-        return this.transactionService.unwrapEgld(amount);
+        return this.transactionService.unwrapEgld(sender, amount);
     }
 }
