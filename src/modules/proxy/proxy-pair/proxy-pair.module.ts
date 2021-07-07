@@ -6,6 +6,7 @@ import { TransactionsProxyPairService } from './proxy-pair-transactions.service'
 import { ProxyPairService } from './proxy-pair.service';
 import { ContextModule } from '../../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../../services/elrond-communication/elrond-communication.module';
+import { WrappingModule } from 'src/modules/wrapping/wrap.module';
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { ElrondCommunicationModule } from '../../../services/elrond-communicatio
         CacheManagerModule,
         ContextModule,
         PairModule,
+        WrappingModule,
     ],
     providers: [
         AbiProxyPairService,
