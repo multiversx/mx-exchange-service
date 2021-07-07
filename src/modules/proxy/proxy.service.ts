@@ -16,7 +16,7 @@ import { FarmService } from '../farm/farm.service';
 import { DecodeAttributesArgs } from './dto/proxy.args';
 import { ContextService } from '../../services/context/context.service';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
-import { NftCollectionToken } from 'src/models/tokens/nftToken.model';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @Injectable()
 export class ProxyService {
@@ -49,7 +49,7 @@ export class ProxyService {
         return await this.context.getTokenMetadata(assetTokenID);
     }
 
-    async getlockedAssetToken(): Promise<NftCollectionToken> {
+    async getlockedAssetToken(): Promise<NftCollection> {
         const cachedData = await this.cacheService.getLockedAssetTokenID();
         if (!!cachedData) {
             return await this.context.getNftCollectionMetadata(

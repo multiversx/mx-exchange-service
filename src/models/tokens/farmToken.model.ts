@@ -1,9 +1,9 @@
-import { Field, Int, InterfaceType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { FarmTokenAttributesModel } from '../farm.model';
-import { BaseNftToken } from './nftToken.interface';
+import { NftToken } from './nftToken.model';
 
-@InterfaceType()
-export abstract class FarmToken extends BaseNftToken {
+@ObjectType()
+export class FarmToken extends NftToken {
     @Field(type => Int) decimals: number;
     @Field(type => FarmTokenAttributesModel)
     decodedAttributes: FarmTokenAttributesModel;

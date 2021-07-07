@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ContextService } from '../../../services/context/context.service';
 import { CacheProxyFarmService } from '../../../services/cache-manager/cache-proxy-farm.service';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
-import { NftCollection } from 'src/models/interfaces/nftCollection.interface';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @Injectable()
 export class ProxyFarmService {

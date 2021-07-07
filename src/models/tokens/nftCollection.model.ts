@@ -1,7 +1,7 @@
-import { Field, InterfaceType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 
-@InterfaceType()
-export abstract class NftCollection {
+@ObjectType()
+export class NftCollection {
     @Field() collection: string;
     @Field() name: string;
     @Field() ticker: string;

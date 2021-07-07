@@ -16,11 +16,8 @@ import {
 } from '@elrondnetwork/erdjs';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { TransactionModel } from '../../models/transaction.model';
-import {
-    NftCollectionToken,
-    NftToken,
-} from '../../models/tokens/nftToken.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 interface PairMetadata {
     address: string;
@@ -197,9 +194,7 @@ export class ContextService {
         return tokenMetadata;
     }
 
-    async getNftCollectionMetadata(
-        tokenID: string,
-    ): Promise<NftCollectionToken> {
+    async getNftCollectionMetadata(tokenID: string): Promise<NftCollection> {
         const nftCollectionMetadata = await this.apiService.getNftCollection(
             tokenID,
         );

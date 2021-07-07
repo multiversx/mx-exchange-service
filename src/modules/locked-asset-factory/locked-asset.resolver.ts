@@ -8,7 +8,7 @@ import {
 } from '../../models/locked-asset.model';
 import { UnlockAssetsArs } from './dto/locked-asset.args';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
-import { NftCollection } from 'src/models/interfaces/nftCollection.interface';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {
