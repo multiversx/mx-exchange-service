@@ -159,6 +159,29 @@
             ]
         },
         {
+            "name": "depositFarmTokens",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "mergeFarmTokens",
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "GenericEsdtAmountPair"
+                }
+            ]
+        },
+        {
             "name": "getFarmingTokenReserve",
             "inputs": [],
             "outputs": [
@@ -430,14 +453,6 @@
             ]
         },
         {
-            "name": "depositToken",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
             "name": "withdrawAllTokensFromDeposit",
             "inputs": [
                 {
@@ -526,17 +541,6 @@
         {
             "name": "setLocalRolesFarmToken",
             "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "mergeTokens",
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
             "outputs": []
         }
     ],

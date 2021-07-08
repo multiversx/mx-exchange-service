@@ -103,6 +103,39 @@
             "outputs": []
         },
         {
+            "name": "depositLockedAssetTokens",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "mergeLockedAssetTokens",
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "GenericEsdtAmountPair"
+                }
+            ]
+        },
+        {
+            "name": "setNftDepositMaxLen",
+            "inputs": [
+                {
+                    "name": "max_len",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "getLastErrorMessage",
             "inputs": [],
             "outputs": [
@@ -248,14 +281,6 @@
             ]
         },
         {
-            "name": "depositToken",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
             "name": "withdrawAllTokensFromDeposit",
             "inputs": [
                 {
@@ -314,17 +339,6 @@
                     "multi_result": true
                 }
             ]
-        },
-        {
-            "name": "mergeTokens",
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
         }
     ],
     "types": {

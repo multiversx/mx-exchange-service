@@ -9,6 +9,10 @@
             {
                 "name": "locked_asset_token_id",
                 "type": "TokenIdentifier"
+            },
+            {
+                "name": "locked_asset_factory_address",
+                "type": "Address"
             }
         ],
         "outputs": []
@@ -68,6 +72,24 @@
             "outputs": []
         },
         {
+            "name": "depositWrappedTokens",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "setNftDepositMaxLen",
+            "inputs": [
+                {
+                    "name": "max_len",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "getLastErrorMessage",
             "inputs": [],
             "outputs": [
@@ -99,6 +121,44 @@
             "outputs": [
                 {
                     "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getWrappedLpTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getWrappedFarmTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getIntermediatedFarms",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getIntermediatedPairs",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
                 }
             ]
         },
@@ -236,25 +296,6 @@
             ]
         },
         {
-            "name": "getIntermediatedPairs",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<Address>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getWrappedLpTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
             "name": "addFarmToIntermediate",
             "inputs": [
                 {
@@ -327,23 +368,17 @@
             "outputs": []
         },
         {
-            "name": "getIntermediatedFarms",
-            "inputs": [],
-            "outputs": [
+            "name": "compoundRewardsProxy",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
                 {
-                    "type": "variadic<Address>",
-                    "multi_result": true
+                    "name": "farm_address",
+                    "type": "Address"
                 }
-            ]
-        },
-        {
-            "name": "getWrappedFarmTokenId",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
+            ],
+            "outputs": []
         },
         {
             "name": "getGeneratedTokenAmountList",
@@ -392,6 +427,101 @@
                     "type": "BigUint"
                 }
             ]
+        },
+        {
+            "name": "withdrawAllTokensFromDeposit",
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "withdrawTokenFromDeposit",
+            "inputs": [
+                {
+                    "name": "index",
+                    "type": "u32"
+                },
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getnftDeposit",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<GenericEsdtAmountPair>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getnftDepositMaxLen",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getNftDepositAcceptedTokenIds",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getTransferExecGasLimit",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "mergeWrappedFarmTokens",
+            "inputs": [
+                {
+                    "name": "farm_contract",
+                    "type": "Address"
+                },
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "mergeWrappedLpTokens",
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
         }
     ],
     "types": {
