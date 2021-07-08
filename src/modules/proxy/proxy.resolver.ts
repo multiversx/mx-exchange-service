@@ -3,6 +3,7 @@ import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityProxyArgs,
+    AddLiquidityProxyBatchArgs,
     ReclaimTemporaryFundsProxyArgs,
     RemoveLiquidityProxyArgs,
     TokensTransferArgs,
@@ -80,6 +81,15 @@ export class ProxyResolver {
         @Args() args: TokensTransferArgs,
     ): Promise<TransactionModel> {
         return await this.transactionsProxyPairService.esdtTransferProxy(args);
+    }
+
+    @Query(returns => [TransactionModel])
+    async addLiquidityProxyBatch(
+        @Args() args: AddLiquidityProxyBatchArgs,
+    ): Promise<TransactionModel[]> {
+        return await this.transactionsProxyPairService.addLiquidityProxyBatch(
+            args,
+        );
     }
 
     @Query(returns => TransactionModel)
