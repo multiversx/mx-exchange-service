@@ -33,7 +33,9 @@ export class ElrondProxyService {
                 return this.getFarmSmartContract(address);
             case SmartContractType.LOCKED_ASSET_FACTORY:
                 return this.getLockedAssetFactorySmartContract();
-            case SmartContractType.PROXY:
+            case SmartContractType.PROXY_PAIR:
+                return this.getProxyDexSmartContract();
+            case SmartContractType.PROXY_FARM:
                 return this.getProxyDexSmartContract();
         }
     }
