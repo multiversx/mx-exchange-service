@@ -40,7 +40,7 @@ export class ElrondApiServiceMock {
     async getTokensForUser(address: string): Promise<EsdtToken[]> {
         return [
             {
-                token: 'MEX-bd9937',
+                identifier: 'MEX-bd9937',
                 name: 'MaiarExchangeToken',
                 type: 'FungibleESDT',
                 owner:
@@ -57,7 +57,6 @@ export class ElrondApiServiceMock {
                 canFreeze: true,
                 canWipe: true,
                 balance: '1000000000000000000',
-                identifier: null,
             },
         ];
     }
@@ -104,7 +103,7 @@ export class FarmServiceMock {
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         return {
-            token: 'LPT-1111',
+            identifier: 'LPT-1111',
             name: 'LiquidityPoolToken',
             type: 'FungibleESDT',
             owner: 'user_address_1',
@@ -148,7 +147,7 @@ export class FarmServiceMock {
 export class PairServiceMock {
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
         return {
-            token: 'LPT-1111',
+            identifier: 'LPT-1111',
             name: 'LiquidityPoolToken',
             type: 'FungibleESDT',
             owner: 'user_address_1',

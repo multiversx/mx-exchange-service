@@ -91,7 +91,7 @@ export class ContextServiceMock {
 
     async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
         return {
-            token: tokenID,
+            identifier: tokenID,
             name: tokenID,
             type: 'FungibleESDT',
             owner: 'user_address_1',

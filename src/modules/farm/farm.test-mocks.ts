@@ -44,7 +44,7 @@ export class FarmServiceMock {
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         return {
-            token: 'LPT-1111',
+            identifier: 'LPT-1111',
             name: 'LiquidityPoolToken',
             type: 'FungibleESDT',
             owner: 'user_address_1',

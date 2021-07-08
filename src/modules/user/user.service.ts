@@ -44,7 +44,7 @@ export class UserService {
         );
         const promises = userTokens.map(async token => {
             const esdtTokenDetails = await this.getEsdtTokenDetails(
-                token.token,
+                token.identifier,
             );
             const denominator = new BigNumber(`1e-${token.decimals}`);
             const valueUSD = new BigNumber(token.balance)
@@ -126,7 +126,7 @@ export class UserService {
         const assetToken = await this.proxyService.getAssetToken();
         if (nftToken.collection === lockedMEXID.collection) {
             const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
-                assetToken.token,
+                assetToken.identifier,
             );
             const denominator = new BigNumber(`1e-${assetToken.decimals}`);
             const valueUSD = new BigNumber(nftToken.balance)
