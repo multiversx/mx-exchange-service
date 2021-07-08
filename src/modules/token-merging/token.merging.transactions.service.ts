@@ -4,6 +4,7 @@ import {
     BytesValue,
     GasLimit,
     Interaction,
+    TypedValue,
     U32Value,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
@@ -17,6 +18,7 @@ import {
     CompoundRewardsArgs,
     DepositTokenArgs,
     SftInteractionArgs,
+    SmartContractType,
     WithdrawTokenFromDepositArgs,
     WithdrawTokensFromDepositArgs,
 } from './dto/token.merging.args';
@@ -33,7 +35,21 @@ export class TokenMergingTransactionsService {
             args.smartContractType,
             args.address,
         );
-        const interaction: Interaction = contract.methods.mergeTokens([]);
+
+        let interaction: Interaction;
+        switch (args.smartContractType) {
+            case SmartContractType.FARM:
+                interaction = contract.methods.mergeFarmTokens([]);
+            case SmartContractType.LOCKED_ASSET_FACTORY:
+                interaction = contract.methods.mergeLockedAssetTokens([]);
+            case SmartContractType.PROXY_PAIR:
+                interaction = contract.methods.mergeWrappedLpTokens([]);
+            case SmartContractType.PROXY_FARM:
+                interaction = contract.methods.mergeWrappedFarmTokens([
+                    BytesValue.fromHex(new Address(args.address).hex()),
+                ]);
+        }
+
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.default));
         return {
@@ -79,19 +95,36 @@ export class TokenMergingTransactionsService {
         };
     }
 
-    async depositToken(args: DepositTokenArgs): Promise<TransactionModel> {
-        return this.SftInteraction(args, 'depositToken');
+    async depositTokens(args: DepositTokenArgs): Promise<TransactionModel> {
+        switch (args.smartContractType) {
+            case SmartContractType.FARM:
+                return this.SftInteraction(args, 'depositFarmTokens');
+            case SmartContractType.LOCKED_ASSET_FACTORY:
+                return this.SftInteraction(args, 'depositLockedAssetTokens');
+            case SmartContractType.PROXY_PAIR:
+                return this.SftInteraction(args, 'depositWrappedTokens');
+            case SmartContractType.PROXY_FARM:
+                return this.SftInteraction(args, 'depositWrappedTokens');
+        }
     }
 
     async compoundRewards(
         args: CompoundRewardsArgs,
     ): Promise<TransactionModel> {
-        return this.SftInteraction(args, 'compoundRewards');
+        switch (args.smartContractType) {
+            case SmartContractType.FARM:
+                return this.SftInteraction(args, 'compoundRewards');
+            case SmartContractType.PROXY_FARM:
+                return this.SftInteraction(args, 'compoundRewardsProxy', [
+                    BytesValue.fromHex(new Address(args.address).hex()),
+                ]);
+        }
     }
 
     private async SftInteraction(
         args: SftInteractionArgs,
         method: string,
+        methodArgs?: TypedValue[],
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getSmartContractByType(
             args.smartContractType,
@@ -103,6 +136,7 @@ export class TokenMergingTransactionsService {
             new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(new Address(contract.getAddress().hex()).hex()),
             BytesValue.fromUTF8(method),
+            ...methodArgs,
         ];
 
         const transaction = this.context.nftTransfer(

@@ -3,7 +3,8 @@ import { ArgsType, Field, Int, registerEnumType } from '@nestjs/graphql';
 export enum SmartContractType {
     FARM,
     LOCKED_ASSET_FACTORY,
-    PROXY,
+    PROXY_PAIR,
+    PROXY_FARM,
 }
 
 registerEnumType(SmartContractType, {
