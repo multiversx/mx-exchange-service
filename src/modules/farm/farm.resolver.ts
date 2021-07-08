@@ -19,6 +19,8 @@ import { FarmStatisticsService } from './farm-statistics.service';
 import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
 import { TokenMergingService } from '../token-merging/token.merging.service';
 import {
+    BaseNftDepositArgs,
+    CompoundRewardsArgs,
     DepositTokenArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
@@ -155,7 +157,7 @@ export class FarmResolver {
         };
 
         return await Promise.all([
-            this.mergeTokensTransactions.depositToken(depositTokenArgs),
+            this.mergeTokensTransactions.depositTokens(depositTokenArgs),
             this.transactionsService.enterFarm(enterFarmArgs),
         ]);
     }
@@ -170,5 +172,26 @@ export class FarmResolver {
         @Args() args: ClaimRewardsArgs,
     ): Promise<TransactionModel> {
         return await this.transactionsService.claimRewards(args);
+    }
+
+    @Query(returns => TransactionModel)
+    async depositFarmTokens(
+        @Args() args: DepositTokenArgs,
+    ): Promise<TransactionModel> {
+        return await this.mergeTokensTransactions.depositTokens(args);
+    }
+
+    @Query(returns => TransactionModel)
+    async mergeFarmTokens(
+        @Args() args: BaseNftDepositArgs,
+    ): Promise<TransactionModel> {
+        return await this.mergeTokensTransactions.mergeTokens(args);
+    }
+
+    @Query(returns => TransactionModel)
+    async compoundRewards(
+        @Args() args: CompoundRewardsArgs,
+    ): Promise<TransactionModel> {
+        return await this.mergeTokensTransactions.compoundRewards(args);
     }
 }
