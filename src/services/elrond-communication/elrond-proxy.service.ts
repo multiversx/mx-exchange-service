@@ -8,16 +8,27 @@ import {
 import { Injectable } from '@nestjs/common';
 import { SmartContractType } from '../../modules/token-merging/dto/token.merging.args';
 import { abiConfig, elrondConfig, scAddress } from '../../config';
+import Agent, { HttpsAgent } from 'agentkeepalive';
 
 @Injectable()
 export class ElrondProxyService {
     private readonly proxy: ProxyProvider;
 
     constructor() {
-        this.proxy = new ProxyProvider(
-            elrondConfig.gateway,
-            elrondConfig.proxyTimeout,
-        );
+        const keepAliveOptions = {
+            maxSockets: elrondConfig.keepAliveMaxSockets,
+            maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+            timeout: elrondConfig.keepAliveTimeout,
+            freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+        };
+        const httpAgent = new Agent(keepAliveOptions);
+        const httpsAgent = new HttpsAgent(keepAliveOptions);
+
+        this.proxy = new ProxyProvider(elrondConfig.gateway, {
+            timeout: elrondConfig.proxyTimeout,
+            httpAgent: elrondConfig.keepAlive ? httpAgent : null,
+            httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+        });
     }
 
     getService(): ProxyProvider {

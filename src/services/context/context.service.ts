@@ -164,7 +164,11 @@ export class ContextService {
         visited.set(input, true);
         while (queue.length > 0) {
             const node = queue.shift();
-            for (const value of pairsMap.get(node)) {
+            const adjacentVertices = pairsMap.get(node);
+            if (!adjacentVertices) {
+                return [];
+            }
+            for (const value of adjacentVertices) {
                 if (value === output) {
                     path.push(output);
                     return path;

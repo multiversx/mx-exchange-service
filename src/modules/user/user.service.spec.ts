@@ -95,7 +95,7 @@ describe('UserService', () => {
             }),
         ).toEqual([
             {
-                token: 'MEX-bd9937',
+                identifier: 'MEX-b6bb7d',
                 name: 'MaiarExchangeToken',
                 type: 'FungibleESDT',
                 owner:
@@ -112,7 +112,6 @@ describe('UserService', () => {
                 canFreeze: true,
                 canWipe: true,
                 balance: '1000000000000000000',
-                identifier: null,
                 valueUSD: '100',
             },
         ]);

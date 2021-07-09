@@ -63,8 +63,8 @@ describe('PairService', () => {
     it('should get first token', async () => {
         const firstToken = await service.getFirstToken('pair_address_1');
         expect(firstToken).toEqual({
-            token: 'WEGLD-b9cba1',
-            name: 'WEGLD-b9cba1',
+            identifier: 'WEGLD-88600a',
+            name: 'WEGLD-88600a',
             type: 'FungibleESDT',
             owner: 'user_address_1',
             minted: '0',
@@ -88,8 +88,8 @@ describe('PairService', () => {
         expect(allTemporaryFunds[0]).toEqual({
             pairAddress: 'pair_address_1',
             firstToken: {
-                token: 'WEGLD-b9cba1',
-                name: 'WEGLD-b9cba1',
+                identifier: 'WEGLD-88600a',
+                name: 'WEGLD-88600a',
                 type: 'FungibleESDT',
                 owner: 'user_address_1',
                 minted: '0',
@@ -106,8 +106,8 @@ describe('PairService', () => {
             },
             firstAmount: '100',
             secondToken: {
-                token: 'MEX-bd9937',
-                name: 'MEX-bd9937',
+                identifier: 'MEX-b6bb7d',
+                name: 'MEX-b6bb7d',
                 type: 'FungibleESDT',
                 owner: 'user_address_1',
                 minted: '0',
@@ -129,7 +129,7 @@ describe('PairService', () => {
     it('should get simple token price in USD', async () => {
         const tokenPriceUSD = await service.getTokenPriceUSD(
             'pair_address_1',
-            'MEX-bd9937',
+            'MEX-b6bb7d',
         );
         expect(tokenPriceUSD.toFixed()).toEqual('50');
     });
@@ -137,7 +137,7 @@ describe('PairService', () => {
     it('should get token price in USD from simple path', async () => {
         const tokenPriceUSD = await service.getTokenPriceUSD(
             'pair_address_3',
-            'BUSD-fd5ddb',
+            'BUSD-05b16f',
         );
         expect(tokenPriceUSD.toFixed()).toEqual('100');
     });

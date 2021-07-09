@@ -90,7 +90,7 @@ export class PairService {
         const firstToken = await this.getFirstToken(pairAddress);
         const firstTokenPrice = await this.getEquivalentForLiquidity(
             pairAddress,
-            firstToken.token,
+            firstToken.identifier,
             new BigNumber(`1e${firstToken.decimals}`).toFixed(),
         );
         return new BigNumber(firstTokenPrice)
@@ -102,7 +102,7 @@ export class PairService {
         const secondToken = await this.getSecondToken(pairAddress);
         const secondTokenPrice = await this.getEquivalentForLiquidity(
             pairAddress,
-            secondToken.token,
+            secondToken.identifier,
             new BigNumber(`1e${secondToken.decimals}`).toFixed(),
         );
         return new BigNumber(secondTokenPrice)

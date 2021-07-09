@@ -10,22 +10,22 @@ interface PairMetadata {
 
 const pairsMetadata = [
     {
-        firstToken: 'WEGLD-b9cba1',
-        secondToken: 'MEX-bd9937',
+        firstToken: 'WEGLD-88600a',
+        secondToken: 'MEX-b6bb7d',
         address: 'pair_address_1',
     },
     {
-        firstToken: 'WEGLD-b9cba1',
-        secondToken: 'BUSD-fd5ddb',
+        firstToken: 'WEGLD-88600a',
+        secondToken: 'BUSD-05b16f',
         address: 'pair_address_2',
     },
     {
-        firstToken: 'MEX-bd9937',
-        secondToken: 'BUSD-fd5ddb',
+        firstToken: 'MEX-b6bb7d',
+        secondToken: 'BUSD-05b16f',
         address: 'pair_address_3',
     },
     {
-        firstToken: 'MEX-bd9937',
+        firstToken: 'MEX-b6bb7d',
         secondToken: 'SPT-f66742',
         address: 'pair_address_4',
     },
@@ -91,7 +91,7 @@ export class ContextServiceMock {
 
     async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
         return {
-            token: tokenID,
+            identifier: tokenID,
             name: tokenID,
             type: 'FungibleESDT',
             owner: 'user_address_1',
@@ -128,14 +128,14 @@ export class ContextServiceMock {
 
     async getPairsMap(): Promise<Map<string, string[]>> {
         const pairsMap: Map<string, string[]> = new Map();
-        pairsMap.set('WEGLD-b9cba1', ['MEX-bd9937', 'BUSD-fd5ddb']);
-        pairsMap.set('MEX-bd9937', [
-            'WEGLD-b9cba1',
-            'BUSD-fd5ddb',
+        pairsMap.set('WEGLD-88600a', ['MEX-b6bb7d', 'BUSD-05b16f']);
+        pairsMap.set('MEX-b6bb7d', [
+            'WEGLD-88600a',
+            'BUSD-05b16f',
             'SPT-f66742',
         ]);
-        pairsMap.set('BUSD-fd5ddb', ['WEGLD-b9cba1', 'MEX-bd9937']);
-        pairsMap.set('SPT-f66742', ['MEX-bd9937']);
+        pairsMap.set('BUSD-05b16f', ['WEGLD-88600a', 'MEX-b6bb7d']);
+        pairsMap.set('SPT-f66742', ['MEX-b6bb7d']);
 
         return pairsMap;
     }

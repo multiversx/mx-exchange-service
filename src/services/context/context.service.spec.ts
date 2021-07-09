@@ -29,26 +29,26 @@ describe('ContextService', () => {
         const pairsMap = await service.getPairsMap();
 
         const expectedMap = new Map();
-        expectedMap.set('WEGLD-b9cba1', ['MEX-bd9937', 'BUSD-fd5ddb']);
-        expectedMap.set('MEX-bd9937', ['WEGLD-b9cba1']);
-        expectedMap.set('BUSD-fd5ddb', ['WEGLD-b9cba1']);
+        expectedMap.set('WEGLD-88600a', ['MEX-b6bb7d', 'BUSD-05b16f']);
+        expectedMap.set('MEX-b6bb7d', ['WEGLD-88600a']);
+        expectedMap.set('BUSD-05b16f', ['WEGLD-88600a']);
 
         expect(pairsMap).toEqual(expectedMap);
     });
 
     it('should get path between tokens', async () => {
-        let path = await service.getPath('MEX-bd9937', 'WEGLD-b9cba1');
-        expect(path).toEqual(['MEX-bd9937', 'WEGLD-b9cba1']);
+        let path = await service.getPath('MEX-b6bb7d', 'WEGLD-88600a');
+        expect(path).toEqual(['MEX-b6bb7d', 'WEGLD-88600a']);
 
-        path = await service.getPath('BUSD-fd5ddb', 'WEGLD-b9cba1');
-        expect(path).toEqual(['BUSD-fd5ddb', 'WEGLD-b9cba1']);
+        path = await service.getPath('BUSD-05b16f', 'WEGLD-88600a');
+        expect(path).toEqual(['BUSD-05b16f', 'WEGLD-88600a']);
 
-        path = await service.getPath('MEX-bd9937', 'BUSD-fd5ddb');
-        expect(path).toEqual(['MEX-bd9937', 'WEGLD-b9cba1', 'BUSD-fd5ddb']);
+        path = await service.getPath('MEX-b6bb7d', 'BUSD-05b16f');
+        expect(path).toEqual(['MEX-b6bb7d', 'WEGLD-88600a', 'BUSD-05b16f']);
     });
 
     it('should not get a path between tokens', async () => {
-        const path = await service.getPath('MEX-bd9937', 'SPT-1111');
+        const path = await service.getPath('MEX-b6bb7d', 'SPT-1111');
         expect(path).toEqual([]);
     });
 });

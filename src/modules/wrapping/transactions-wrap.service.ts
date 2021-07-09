@@ -45,7 +45,7 @@ export class TransactionsWrapService {
         const wrappedEgldToken = await this.wrapService.getWrappedEgldToken();
 
         const args = [
-            BytesValue.fromUTF8(wrappedEgldToken.token),
+            BytesValue.fromUTF8(wrappedEgldToken.identifier),
             new BigUIntValue(new BigNumber(amount)),
             BytesValue.fromUTF8('unwrapEgld'),
         ];
