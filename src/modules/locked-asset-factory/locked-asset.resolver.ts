@@ -9,11 +9,10 @@ import {
 import { UnlockAssetsArs } from './dto/locked-asset.args';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { TokenMergingService } from '../token-merging/token.merging.service';
 import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
 import {
-    BaseNftDepositArgs,
+    TokensMergingArgs,
     DepositTokenArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
@@ -25,8 +24,6 @@ export class LockedAssetResolver {
         private readonly lockedAssetService: LockedAssetService,
         @Inject(TransactionsLockedAssetService)
         private readonly transactionsService: TransactionsLockedAssetService,
-        @Inject(ElrondProxyService)
-        private readonly elrondProxy: ElrondProxyService,
         @Inject(TokenMergingService)
         private readonly mergeTokensService: TokenMergingService,
         @Inject(TokenMergingTransactionsService)
@@ -78,7 +75,7 @@ export class LockedAssetResolver {
 
     @Query(returns => TransactionModel)
     async mergeLockedAssetTokens(
-        @Args() args: BaseNftDepositArgs,
+        @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }

@@ -2,12 +2,11 @@ import { Inject } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { GenericEsdtAmountPair } from 'src/models/proxy.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import {
     CompoundRewardsArgs,
-    NftDepositArgs,
+    TokensMergingArgs,
+    UserNftDepositArgs,
     WithdrawTokenFromDepositArgs,
-    WithdrawTokensFromDepositArgs,
 } from './dto/token.merging.args';
 import { TokenMergingService } from './token.merging.service';
 import { TokenMergingTransactionsService } from './token.merging.transactions.service';
@@ -15,8 +14,6 @@ import { TokenMergingTransactionsService } from './token.merging.transactions.se
 @Resolver()
 export class TokenMergingResolver {
     constructor(
-        @Inject(ElrondProxyService)
-        private readonly elrondProxy: ElrondProxyService,
         @Inject(TokenMergingTransactionsService)
         private readonly mergeTokensTransactions: TokenMergingTransactionsService,
         @Inject(TokenMergingService)
@@ -24,15 +21,15 @@ export class TokenMergingResolver {
     ) {}
 
     @Query(returns => [GenericEsdtAmountPair])
-    async nftDeposit(
-        @Args() args: NftDepositArgs,
+    async userNftDeposit(
+        @Args() args: UserNftDepositArgs,
     ): Promise<GenericEsdtAmountPair[]> {
         return await this.mergeTokensService.getNftDeposit(args);
     }
 
     @Query(returns => TransactionModel)
     async withdrawAllTokensFromDeposit(
-        @Args() args: WithdrawTokensFromDepositArgs,
+        @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {
         return await this.mergeTokensTransactions.withdrawAllTokensFromDeposit(
             args,

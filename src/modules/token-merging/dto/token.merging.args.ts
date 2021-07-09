@@ -12,7 +12,7 @@ registerEnumType(SmartContractType, {
 });
 
 @ArgsType()
-export class BaseNftDepositArgs {
+export class TokensMergingArgs {
     @Field(type => SmartContractType)
     smartContractType: SmartContractType;
     @Field({ nullable: true })
@@ -20,31 +20,19 @@ export class BaseNftDepositArgs {
 }
 
 @ArgsType()
-export class NftDepositArgs extends BaseNftDepositArgs {
+export class UserNftDepositArgs extends TokensMergingArgs {
     @Field()
     userAddress: string;
 }
 
 @ArgsType()
-export class WithdrawTokensFromDepositArgs {
-    @Field(type => SmartContractType)
-    smartContractType: SmartContractType;
-    @Field({ nullable: true })
-    address?: string;
-}
-
-@ArgsType()
-export class WithdrawTokenFromDepositArgs extends WithdrawTokensFromDepositArgs {
+export class WithdrawTokenFromDepositArgs extends TokensMergingArgs {
     @Field(type => Int)
     tokenIndex: number;
 }
 
 @ArgsType()
-export class SftInteractionArgs {
-    @Field(type => SmartContractType)
-    smartContractType: SmartContractType;
-    @Field({ nullable: true })
-    address?: string;
+export class SftInteractionArgs extends TokensMergingArgs {
     @Field()
     sender: string;
     @Field()

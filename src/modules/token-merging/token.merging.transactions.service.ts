@@ -14,13 +14,12 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import {
-    BaseNftDepositArgs,
+    TokensMergingArgs,
     CompoundRewardsArgs,
     DepositTokenArgs,
     SftInteractionArgs,
     SmartContractType,
     WithdrawTokenFromDepositArgs,
-    WithdrawTokensFromDepositArgs,
 } from './dto/token.merging.args';
 
 @Injectable()
@@ -30,7 +29,7 @@ export class TokenMergingTransactionsService {
         private readonly elrondProxy: ElrondProxyService,
     ) {}
 
-    async mergeTokens(args: BaseNftDepositArgs): Promise<TransactionModel> {
+    async mergeTokens(args: TokensMergingArgs): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getSmartContractByType(
             args.smartContractType,
             args.address,
@@ -59,7 +58,7 @@ export class TokenMergingTransactionsService {
     }
 
     async withdrawAllTokensFromDeposit(
-        args: WithdrawTokensFromDepositArgs,
+        args: TokensMergingArgs,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getSmartContractByType(
             args.smartContractType,

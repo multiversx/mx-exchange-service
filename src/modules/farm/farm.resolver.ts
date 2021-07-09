@@ -19,7 +19,7 @@ import { FarmStatisticsService } from './farm-statistics.service';
 import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
 import { TokenMergingService } from '../token-merging/token.merging.service';
 import {
-    BaseNftDepositArgs,
+    TokensMergingArgs,
     CompoundRewardsArgs,
     DepositTokenArgs,
     SmartContractType,
@@ -183,7 +183,7 @@ export class FarmResolver {
 
     @Query(returns => TransactionModel)
     async mergeFarmTokens(
-        @Args() args: BaseNftDepositArgs,
+        @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }

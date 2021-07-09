@@ -29,7 +29,7 @@ import { DecodeAttributesArgs } from './dto/proxy.args';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import {
-    BaseNftDepositArgs,
+    TokensMergingArgs,
     CompoundRewardsArgs,
     DepositTokenArgs,
     SmartContractType,
@@ -211,14 +211,14 @@ export class ProxyResolver {
 
     @Query(returns => TransactionModel)
     async mergeWrappedLpTokens(
-        @Args() args: BaseNftDepositArgs,
+        @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }
 
     @Query(returns => TransactionModel)
     async mergeWrappedFarmTokens(
-        @Args() args: BaseNftDepositArgs,
+        @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }
