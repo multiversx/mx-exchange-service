@@ -1,5 +1,6 @@
 import { Address, BytesValue, Interaction } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
 import { GenericEsdtAmountPair } from 'src/models/proxy.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import {
@@ -30,7 +31,7 @@ export class TokenMergingAbiService {
         return response.firstValue.valueOf().map(value => value);
     }
 
-    async getnftDepositMaxLen(args: TokensMergingArgs): Promise<number> {
+    async getnftDepositMaxLen(args: TokensMergingArgs): Promise<BigNumber> {
         const contract = await this.elrondProxy.getSmartContractByType(
             args.smartContractType,
             args.address,

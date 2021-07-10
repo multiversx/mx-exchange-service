@@ -18,12 +18,19 @@ export class TokenMergingService {
     }
 
     async getNftDepositMaxLen(args: TokensMergingArgs): Promise<number> {
-        return this.mergeTokensAbi.getnftDepositMaxLen(args);
+        const nftDepositMaxLen = await this.mergeTokensAbi.getnftDepositMaxLen(
+            args,
+        );
+        console.log(nftDepositMaxLen);
+        return nftDepositMaxLen.toNumber();
     }
 
     async getNftDepositAcceptedTokenIDs(
         args: TokensMergingArgs,
     ): Promise<string[]> {
-        return this.mergeTokensAbi.getNftDepositAcceptedTokenIds(args);
+        const nftDepositAcceptedTokenIDs = await this.mergeTokensAbi.getNftDepositAcceptedTokenIds(
+            args,
+        );
+        return nftDepositAcceptedTokenIDs.map(tokenID => tokenID.toString());
     }
 }
