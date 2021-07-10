@@ -136,6 +136,9 @@ export class FarmServiceMock {
             aprMultiplier: 1,
             lockedRewards: false,
             rewardPerShare: '3000',
+            initialFarmingAmount: '100',
+            compoundedReward: '10',
+            currentFarmAmount: '100',
         };
     }
 
