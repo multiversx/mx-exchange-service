@@ -102,16 +102,19 @@ export class ProxyService {
                 farmToken.attributes,
             );
 
-            return {
+            const decodedWrappedFarmTokenAttributes: WrappedFarmTokenAttributesModel = {
                 identifier: arg.identifier,
                 attributes: arg.attributes,
                 farmTokenID: decodedAttributes.farmTokenID.toString(),
                 farmTokenNonce: decodedAttributes.farmTokenNonce,
+                farmTokenAmount: decodedAttributes.farmTokenAmount,
                 farmTokenIdentifier: decodedAttributes.farmTokenIdentifier,
                 farmTokenAttributes: decodedFarmAttributes,
-                farmedTokenID: decodedAttributes.farmedTokenID.toString(),
-                farmedTokenNonce: decodedAttributes.farmedTokenNonce,
+                farmingTokenID: decodedAttributes.farmingTokenID.toString(),
+                farmingTokenNonce: decodedAttributes.farmingTokenNonce,
+                farmingTokenAmount: decodedAttributes.farmingTokenAmount,
             };
+            return decodedWrappedFarmTokenAttributes;
         });
 
         return Promise.all(promises);
