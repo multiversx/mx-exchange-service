@@ -48,7 +48,7 @@ export class LockedAssetResolver {
     }
 
     @ResolveField(type => [String])
-    async nftDepostAcceptedTokenIDs() {
+    async nftDepositAcceptedTokenIDs() {
         return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
             smartContractType: SmartContractType.LOCKED_ASSET_FACTORY,
         });

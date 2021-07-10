@@ -24,5 +24,5 @@ export class LockedAssetModel {
     nftDepositMaxLen: number;
 
     @Field(type => [String])
-    nftDepositAcceptedTokenID: string[];
+    nftDepositAcceptedTokenIDs: string[];
 }
