@@ -16,6 +16,12 @@ export class FarmTokenAttributesModel {
     aprMultiplier: number;
     @Field()
     lockedRewards: boolean;
+    @Field()
+    initialFarmingAmount: string;
+    @Field()
+    compoundedReward: string;
+    @Field()
+    currentFarmAmount: string;
 }
 
 @ObjectType()
