@@ -42,7 +42,15 @@ export class UserService {
             args.offset,
             args.limit,
         );
-        const promises = userTokens.map(async token => {
+
+        const userPairEsdtTokens = [];
+        for (const userToken of userTokens) {
+            if (await this.pairService.isPairEsdtToken(userToken.identifier)) {
+                userPairEsdtTokens.push(userToken);
+            }
+        }
+
+        const promises = userPairEsdtTokens.map(async token => {
             const esdtTokenDetails = await this.getEsdtTokenDetails(
                 token.identifier,
             );
