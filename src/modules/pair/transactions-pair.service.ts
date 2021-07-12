@@ -39,7 +39,7 @@ export class TransactionPairService {
 
         const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
 
-        switch ('eGLD') {
+        switch (elrondConfig.EGLDIdentifier) {
             case args.firstTokenID:
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
                     args.sender,
@@ -168,11 +168,24 @@ export class TransactionPairService {
 
     async removeLiquidity(
         args: RemoveLiquidityArgs,
-    ): Promise<TransactionModel> {
-        const liquidityPosition = await this.pairService.getLiquidityPosition(
-            args.pairAddress,
-            args.liquidity,
-        );
+    ): Promise<TransactionModel[]> {
+        const transactions = [];
+        const [
+            wrappedTokenID,
+            firstTokenID,
+            secondTokenID,
+            liquidityPosition,
+            contract,
+        ] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
+            this.pairService.getFirstTokenID(args.pairAddress),
+            this.pairService.getSecondTokenID(args.pairAddress),
+            this.pairService.getLiquidityPosition(
+                args.pairAddress,
+                args.liquidity,
+            ),
+            this.elrondProxy.getPairSmartContract(args.pairAddress),
+        ]);
 
         const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
             .multipliedBy(1 - args.tolerance)
@@ -181,9 +194,6 @@ export class TransactionPairService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const contract = await this.elrondProxy.getPairSmartContract(
-            args.pairAddress,
-        );
         const transactionArgs = [
             BytesValue.fromUTF8(args.liquidityTokenID),
             new BigUIntValue(new BigNumber(args.liquidity)),
@@ -191,17 +201,39 @@ export class TransactionPairService {
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
         ];
-
-        return this.context.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.removeLiquidity),
+        transactions.push(
+            this.context.esdtTransfer(
+                contract,
+                transactionArgs,
+                new GasLimit(gasConfig.removeLiquidity),
+            ),
         );
+
+        switch (wrappedTokenID) {
+            case firstTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        amount0Min.toString(),
+                    ),
+                );
+                break;
+            case secondTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        amount1Min.toString(),
+                    ),
+                );
+        }
+
+        return transactions;
     }
 
     async swapTokensFixedInput(
         args: SwapTokensFixedInputArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
+        const transactions = [];
         const contract = await this.elrondProxy.getPairSmartContract(
             args.pairAddress,
         );
@@ -220,16 +252,55 @@ export class TransactionPairService {
             new BigUIntValue(amountOutMin),
         ];
 
-        return this.context.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.swapTokens),
-        );
+        switch (elrondConfig.EGLDIdentifier) {
+            case args.tokenInID:
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        args.sender,
+                        args.amountIn,
+                    ),
+                );
+                transactions.push(
+                    this.context.esdtTransfer(
+                        contract,
+                        transactionArgs,
+                        new GasLimit(gasConfig.swapTokens),
+                    ),
+                );
+                break;
+            case args.tokenOutID:
+                transactions.push(
+                    this.context.esdtTransfer(
+                        contract,
+                        transactionArgs,
+                        new GasLimit(gasConfig.swapTokens),
+                    ),
+                );
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        amountOutMin.toString(),
+                    ),
+                );
+                break;
+            default:
+                transactions.push(
+                    this.context.esdtTransfer(
+                        contract,
+                        transactionArgs,
+                        new GasLimit(gasConfig.swapTokens),
+                    ),
+                );
+                break;
+        }
+
+        return transactions;
     }
 
     async swapTokensFixedOutput(
         args: SwapTokensFixedOutputArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
+        const transactions = [];
         const contract = await this.elrondProxy.getPairSmartContract(
             args.pairAddress,
         );
@@ -247,11 +318,49 @@ export class TransactionPairService {
             new BigUIntValue(amountOut),
         ];
 
-        return this.context.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.swapTokens),
-        );
+        switch (elrondConfig.EGLDIdentifier) {
+            case args.tokenInID:
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        args.sender,
+                        amountInMax.toString(),
+                    ),
+                );
+                transactions.push(
+                    this.context.esdtTransfer(
+                        contract,
+                        transactionArgs,
+                        new GasLimit(gasConfig.swapTokens),
+                    ),
+                );
+                break;
+            case args.tokenOutID:
+                transactions.push(
+                    this.context.esdtTransfer(
+                        contract,
+                        transactionArgs,
+                        new GasLimit(gasConfig.swapTokens),
+                    ),
+                );
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        args.amountOut,
+                    ),
+                );
+                break;
+            default:
+                transactions.push(
+                    this.context.esdtTransfer(
+                        contract,
+                        transactionArgs,
+                        new GasLimit(gasConfig.swapTokens),
+                    ),
+                );
+                break;
+        }
+
+        return transactions;
     }
 
     esdtTransferBatch(

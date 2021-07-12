@@ -6,6 +6,7 @@
         "gateway": "https://devnet-gateway.elrond.com",
         "explorer": "https://devnet-explorer.elrond.com",
         "chainID": "D",
+        "EGLDIdentifier": "EGLD",
         "version": 1,
         "proxyTimeout": 60000,
         "timeoutLimit": 10000,
