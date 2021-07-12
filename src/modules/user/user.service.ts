@@ -13,6 +13,7 @@ import { ElrondApiService } from '../../services/elrond-communication/elrond-api
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { UserNftTokens } from './nfttokens.union';
 import { UserTokensArgs } from './dto/user.args';
+import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -34,6 +35,7 @@ export class UserService {
         private proxyPairService: ProxyPairService,
         private proxyFarmService: ProxyFarmService,
         private farmService: FarmService,
+        private lockedAssetService: LockedAssetService,
     ) {}
 
     async getAllEsdtTokens(args: UserTokensArgs): Promise<UserToken[]> {
@@ -79,7 +81,17 @@ export class UserService {
             args.offset,
             args.limit,
         );
-        const promises = userNFTs.map(async nftToken => {
+        const userExchangeNFTs = [];
+        for (const userNft of userNFTs) {
+            const [isFarmToken, isLockedToken] = await Promise.all([
+                this.farmService.isFarmToken(userNft.collection),
+                this.isLockedToken(userNft.collection),
+            ]);
+            if (isFarmToken || isLockedToken) {
+                userExchangeNFTs.push(userNft);
+            }
+        }
+        const promises = userExchangeNFTs.map(async nftToken => {
             const userNftToken = await this.getNftTokenValueUSD(nftToken);
             return userNftToken;
         });
@@ -118,6 +130,27 @@ export class UserService {
             type: EsdtTokenType.FungibleToken,
             priceUSD: tokenPriceUSD.toFixed(),
         };
+    }
+
+    private async isLockedToken(tokenID: string): Promise<boolean> {
+        const [
+            lockedMEXTokenID,
+            lockedLpTokenID,
+            lockedFarmTokenID,
+        ] = await Promise.all([
+            this.lockedAssetService.getLockedTokenID(),
+            this.proxyPairService.getwrappedLpTokenID(),
+            this.proxyFarmService.getwrappedFarmTokenID(),
+        ]);
+
+        if (
+            tokenID === lockedMEXTokenID ||
+            tokenID === lockedLpTokenID ||
+            tokenID === lockedFarmTokenID
+        ) {
+            return true;
+        }
+        return false;
     }
 
     private async getNftTokenValueUSD(
