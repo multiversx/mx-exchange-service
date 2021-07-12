@@ -239,7 +239,8 @@ export class UserService {
                     farmToken,
                 );
                 return {
-                    ...userFarmToken,
+                    ...nftToken,
+                    decimals: userFarmToken.decimals,
                     valueUSD: userFarmToken.valueUSD,
                     decodedAttributes: decodedWFMTAttributes[0],
                 };
