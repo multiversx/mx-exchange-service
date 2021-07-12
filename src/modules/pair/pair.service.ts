@@ -472,4 +472,24 @@ export class PairService {
         const pair = pairs.find(pair => pair.lpTokenID === tokenID);
         return pair?.pairAddress;
     }
+
+    async isPairEsdtToken(tokenID: string): Promise<boolean> {
+        const pairsAddress = await this.context.getAllPairsAddress();
+        for (const pairAddress of pairsAddress) {
+            const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
+                this.getFirstTokenID(pairAddress),
+                this.getSecondTokenID(pairAddress),
+                this.getLpTokenID(pairAddress),
+            ]);
+
+            if (
+                tokenID === firstTokenID ||
+                tokenID === secondTokenID ||
+                tokenID === lpTokenID
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
