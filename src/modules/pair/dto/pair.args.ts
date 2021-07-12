@@ -35,6 +35,8 @@ export class RemoveLiquidityArgs {
     @Field()
     pairAddress: string;
     @Field()
+    sender: string;
+    @Field()
     liquidity: string;
     @Field()
     liquidityTokenID: string;
@@ -46,6 +48,8 @@ export class RemoveLiquidityArgs {
 export class SwapTokensFixedInputArgs {
     @Field()
     pairAddress: string;
+    @Field()
+    sender: string;
     @Field()
     tokenInID: string;
     @Field()
@@ -62,6 +66,8 @@ export class SwapTokensFixedInputArgs {
 export class SwapTokensFixedOutputArgs {
     @Field()
     pairAddress: string;
+    @Field()
+    sender: string;
     @Field()
     tokenInID: string;
     @Field()
