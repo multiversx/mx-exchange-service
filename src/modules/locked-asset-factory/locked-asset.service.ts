@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { CacheLockedAssetService } from 'src/services/cache-manager/cache-locked-asset.service';
+import { CacheLockedAssetService } from '../../services/cache-manager/cache-locked-asset.service';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
 import {
     LockedAssetModel,
     UnlockMileStoneModel,
 } from '../../models/locked-asset.model';
-import { scAddress } from 'src/config';
+import { scAddress } from '../../config';
 import { ContextService } from '../../services/context/context.service';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from '../../models/tokens/nftCollection.model';
 
 @Injectable()
 export class LockedAssetService {
@@ -38,7 +38,7 @@ export class LockedAssetService {
         return unlockMilestones;
     }
 
-    private async getLockedTokenID(): Promise<string> {
+    async getLockedTokenID(): Promise<string> {
         const cachedData = await this.cacheService.getLockedTokenID();
         if (!!cachedData) {
             return cachedData.lockedTokenID;

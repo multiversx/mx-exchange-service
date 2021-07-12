@@ -111,6 +111,16 @@ export class FarmService {
         return farms;
     }
 
+    async isFarmToken(tokenID: string): Promise<boolean> {
+        for (const farmAddress of farmsConfig) {
+            const farmTokenID = await this.getFarmTokenID(farmAddress);
+            if (tokenID === farmTokenID) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     async getFarmAddressByFarmTokenID(tokenID: string): Promise<string | null> {
         for (const farmAddress of farmsConfig) {
             const farmTokenID = await this.getFarmTokenID(farmAddress);

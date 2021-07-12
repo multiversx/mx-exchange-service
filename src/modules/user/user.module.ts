@@ -9,6 +9,7 @@ import { ProxyPairModule } from '../proxy/proxy-pair/proxy-pair.module';
 import { ProxyModule } from '../proxy/proxy.module';
 import { UserResolver } from './user.resolver';
 import { UserService } from './user.service';
+import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { UserService } from './user.service';
         ProxyPairModule,
         ProxyFarmModule,
         FarmModule,
+        LockedAssetModule,
     ],
     providers: [UserService, UserResolver],
     exports: [UserService],

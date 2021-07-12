@@ -121,6 +121,10 @@ export class FarmServiceMock {
         };
     }
 
+    async isFarmToken(tokenID: string): Promise<boolean> {
+        return true;
+    }
+
     async getFarmAddressByFarmTokenID(farmTokenID: string): Promise<string> {
         return farmMetadata.address;
     }
@@ -182,12 +186,30 @@ export class PairServiceMock {
     async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
         return new BigNumber('100');
     }
+
+    async isPairEsdtToken(tokenID: string): Promise<boolean> {
+        return true;
+    }
 }
 
 export class PriceFeedServiceMock {}
 
 export class ProxyServiceMock {}
 
-export class ProxyPairServiceMock {}
+export class ProxyPairServiceMock {
+    async getwrappedLpTokenID(): Promise<string> {
+        return 'LKLP-1111';
+    }
+}
 
-export class ProxyFarmServiceMock {}
+export class ProxyFarmServiceMock {
+    async getwrappedFarmTokenID(): Promise<string> {
+        return 'LKFARM-1111';
+    }
+}
+
+export class LockedAssetMock {
+    async getLockedTokenID(): Promise<string> {
+        return 'LKMEX-1111';
+    }
+}

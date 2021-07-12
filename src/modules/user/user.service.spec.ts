@@ -11,6 +11,7 @@ import {
     ContextServiceMock,
     ElrondApiServiceMock,
     FarmServiceMock,
+    LockedAssetMock,
     PairServiceMock,
     PriceFeedServiceMock,
     ProxyFarmServiceMock,
@@ -19,6 +20,7 @@ import {
 } from './user.test-mocks';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ContextService } from '../../services/context/context.service';
+import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 
 describe('UserService', () => {
     let service: UserService;
@@ -63,6 +65,11 @@ describe('UserService', () => {
         useClass: ProxyFarmServiceMock,
     };
 
+    const LockedAssetProvider = {
+        provide: LockedAssetService,
+        useClass: LockedAssetMock,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -74,6 +81,7 @@ describe('UserService', () => {
                 ProxyPairServiceProvider,
                 ProxyFarmServiceProvider,
                 FarmServiceProvider,
+                LockedAssetProvider,
                 UserService,
             ],
             imports: [CacheManagerModule],
