@@ -112,12 +112,12 @@ export class TransactionsProxyPairService {
 
                 addLiquidityProxyTransaction = this.addLiquidityProxy({
                     pairAddress: args.pairAddress,
-                    amount0: args.firstTokenAmount,
-                    amount1: args.secondTokenAmount,
-                    token0ID: args.firstTokenID,
-                    token0Nonce: args.firstTokenNonce,
-                    token1ID: wrappedTokenID,
-                    token1Nonce: args.secondTokenNonce,
+                    amount0: args.secondTokenAmount,
+                    amount1: args.firstTokenAmount,
+                    token0ID: wrappedTokenID,
+                    token0Nonce: args.secondTokenNonce,
+                    token1ID: args.firstTokenID,
+                    token1Nonce: args.firstTokenNonce,
                     tolerance: args.tolerance,
                 });
                 transactions.push(addLiquidityProxyTransaction);
@@ -143,17 +143,31 @@ export class TransactionsProxyPairService {
                 esdtTransferTransactions.map(transaction =>
                     transactions.push(transaction),
                 );
-                addLiquidityProxyTransaction = this.addLiquidityProxy({
-                    pairAddress: args.pairAddress,
-                    amount0: args.firstTokenAmount,
-                    amount1: args.secondTokenAmount,
-                    token0ID: args.firstTokenID,
-                    token0Nonce: args.firstTokenNonce,
-                    token1ID: args.secondTokenID,
-                    token1Nonce: args.secondTokenNonce,
-                    tolerance: args.tolerance,
-                });
-                transactions.push(addLiquidityProxyTransaction);
+                if (!args.firstTokenNonce && args.secondTokenNonce) {
+                    addLiquidityProxyTransaction = this.addLiquidityProxy({
+                        pairAddress: args.pairAddress,
+                        amount0: args.firstTokenAmount,
+                        amount1: args.secondTokenAmount,
+                        token0ID: args.firstTokenID,
+                        token0Nonce: args.firstTokenNonce,
+                        token1ID: args.secondTokenID,
+                        token1Nonce: args.secondTokenNonce,
+                        tolerance: args.tolerance,
+                    });
+                    transactions.push(addLiquidityProxyTransaction);
+                } else if (args.firstTokenNonce && !args.secondTokenNonce) {
+                    addLiquidityProxyTransaction = this.addLiquidityProxy({
+                        pairAddress: args.pairAddress,
+                        amount0: args.secondTokenAmount,
+                        amount1: args.firstTokenAmount,
+                        token0ID: args.secondTokenID,
+                        token0Nonce: args.secondTokenNonce,
+                        token1ID: args.firstTokenID,
+                        token1Nonce: args.firstTokenNonce,
+                        tolerance: args.tolerance,
+                    });
+                    transactions.push(addLiquidityProxyTransaction);
+                }
                 break;
         }
 
