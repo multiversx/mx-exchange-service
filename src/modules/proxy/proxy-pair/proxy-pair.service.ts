@@ -13,19 +13,21 @@ export class ProxyPairService {
         private context: ContextService,
     ) {}
 
-    async getwrappedLpToken(): Promise<NftCollection> {
+    async getwrappedLpTokenID(): Promise<string> {
         const cachedData = await this.cacheService.getWrappedLpTokenID();
         if (!!cachedData) {
-            return await this.context.getNftCollectionMetadata(
-                cachedData.wrappedLpTokenID,
-            );
+            return cachedData.wrappedLpTokenID;
         }
 
         const wrappedLpTokenID = await this.abiService.getWrappedLpTokenID();
         this.cacheService.setWrappedLpTokenID({
             wrappedLpTokenID: wrappedLpTokenID,
         });
+        return wrappedLpTokenID;
+    }
 
+    async getwrappedLpToken(): Promise<NftCollection> {
+        const wrappedLpTokenID = await this.getwrappedLpTokenID();
         return await this.context.getNftCollectionMetadata(wrappedLpTokenID);
     }
 

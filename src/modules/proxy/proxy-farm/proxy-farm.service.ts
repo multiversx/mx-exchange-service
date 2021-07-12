@@ -12,19 +12,21 @@ export class ProxyFarmService {
         private context: ContextService,
     ) {}
 
-    async getwrappedFarmToken(): Promise<NftCollection> {
+    async getwrappedFarmTokenID(): Promise<string> {
         const cachedData = await this.cacheService.getWrappedFarmTokenID();
         if (!!cachedData) {
-            return this.context.getNftCollectionMetadata(
-                cachedData.wrappedFarmTokenID,
-            );
+            return cachedData.wrappedFarmTokenID;
         }
 
         const wrappedFarmTokenID = await this.abiService.getWrappedFarmTokenID();
         this.cacheService.setWrappedFarmTokenID({
             wrappedFarmTokenID: wrappedFarmTokenID,
         });
+        return wrappedFarmTokenID;
+    }
 
+    async getwrappedFarmToken(): Promise<NftCollection> {
+        const wrappedFarmTokenID = await this.getwrappedFarmTokenID();
         return this.context.getNftCollectionMetadata(wrappedFarmTokenID);
     }
 
