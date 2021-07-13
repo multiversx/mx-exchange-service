@@ -10,8 +10,10 @@ import {
     ContextServiceMock,
     PriceFeedServiceMock,
     RedlockServiceMock,
+    WrapServiceMock,
 } from './pair.test-constants';
 import { ContextService } from '../../services/context/context.service';
+import { WrapService } from '../wrapping/wrap.service';
 
 describe('PairService', () => {
     let service: PairService;
@@ -41,6 +43,11 @@ describe('PairService', () => {
         useClass: PriceFeedServiceMock,
     };
 
+    const WrapServiceProvider = {
+        provide: WrapService,
+        useClass: WrapServiceMock,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -50,6 +57,7 @@ describe('PairService', () => {
                 RedlockServiceProvider,
                 PriceFeedServiceProvider,
                 PairService,
+                WrapServiceProvider,
             ],
         }).compile();
 

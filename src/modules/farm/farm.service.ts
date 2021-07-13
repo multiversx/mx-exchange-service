@@ -111,6 +111,16 @@ export class FarmService {
         return farms;
     }
 
+    async isFarmToken(tokenID: string): Promise<boolean> {
+        for (const farmAddress of farmsConfig) {
+            const farmTokenID = await this.getFarmTokenID(farmAddress);
+            if (tokenID === farmTokenID) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     async getFarmAddressByFarmTokenID(tokenID: string): Promise<string | null> {
         for (const farmAddress of farmsConfig) {
             const farmTokenID = await this.getFarmTokenID(farmAddress);
@@ -153,6 +163,21 @@ export class FarmService {
                 '',
                 new BooleanType(),
             ),
+            new StructFieldDefinition(
+                'initialFarmingAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'compoundedReward',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'currentFarmAmount',
+                '',
+                new BigUIntType(),
+            ),
         ]);
 
         const [decoded, decodedLength] = codec.decodeNested(
@@ -167,6 +192,9 @@ export class FarmService {
             enteringEpoch: decodedAttributes.enteringEpoch,
             aprMultiplier: decodedAttributes.aprMultiplier,
             lockedRewards: decodedAttributes.withLockedRewards,
+            initialFarmingAmount: decodedAttributes.initialFarmingAmount,
+            compoundedReward: decodedAttributes.compoundedReward,
+            currentFarmAmount: decodedAttributes.currentFarmAmount,
         };
     }
 
