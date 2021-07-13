@@ -42,7 +42,7 @@ export class TransactionsProxyPairService {
 
         const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
 
-        switch ('eGLD') {
+        switch (elrondConfig.EGLDIdentifier) {
             case args.firstTokenID:
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
                     args.sender,
