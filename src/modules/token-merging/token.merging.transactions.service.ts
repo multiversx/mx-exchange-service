@@ -39,14 +39,18 @@ export class TokenMergingTransactionsService {
         switch (args.smartContractType) {
             case SmartContractType.FARM:
                 interaction = contract.methods.mergeFarmTokens([]);
+                break;
             case SmartContractType.LOCKED_ASSET_FACTORY:
                 interaction = contract.methods.mergeLockedAssetTokens([]);
+                break;
             case SmartContractType.PROXY_PAIR:
                 interaction = contract.methods.mergeWrappedLpTokens([]);
+                break;
             case SmartContractType.PROXY_FARM:
                 interaction = contract.methods.mergeWrappedFarmTokens([
                     BytesValue.fromHex(new Address(args.address).hex()),
                 ]);
+                break;
         }
 
         const transaction = interaction.buildTransaction();
