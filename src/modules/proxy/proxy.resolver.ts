@@ -115,10 +115,10 @@ export class ProxyResolver {
         );
     }
 
-    @Query(returns => TransactionModel)
+    @Query(returns => [TransactionModel])
     async removeLiquidityProxy(
         @Args() args: RemoveLiquidityProxyArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return await this.transactionsProxyPairService.removeLiquidityProxy(
             args,
         );
