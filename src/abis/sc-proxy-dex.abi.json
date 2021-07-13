@@ -72,14 +72,6 @@
             "outputs": []
         },
         {
-            "name": "depositWrappedTokens",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
             "name": "setNftDepositMaxLen",
             "inputs": [
                 {
@@ -290,7 +282,7 @@
             ],
             "outputs": [
                 {
-                    "type": "variadic<GenericEsdtAmountPair>",
+                    "type": "variadic<GenericTokenAmountPair>",
                     "multi_result": true
                 }
             ]
@@ -429,6 +421,14 @@
             ]
         },
         {
+            "name": "depositTokens",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
             "name": "withdrawAllTokensFromDeposit",
             "inputs": [
                 {
@@ -464,8 +464,7 @@
             ],
             "outputs": [
                 {
-                    "type": "variadic<GenericEsdtAmountPair>",
-                    "multi_result": true
+                    "type": "List<GenericTokenAmountPair>"
                 }
             ]
         },
@@ -554,7 +553,7 @@
                 }
             ]
         },
-        "GenericEsdtAmountPair": {
+        "GenericTokenAmountPair": {
             "type": "struct",
             "fields": [
                 {

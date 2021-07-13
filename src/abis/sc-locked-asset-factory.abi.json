@@ -58,7 +58,7 @@
             ],
             "outputs": [
                 {
-                    "type": "GenericEsdtAmountPair"
+                    "type": "GenericTokenAmountPair"
                 }
             ]
         },
@@ -101,29 +101,6 @@
                 }
             ],
             "outputs": []
-        },
-        {
-            "name": "depositLockedAssetTokens",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "mergeLockedAssetTokens",
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "GenericEsdtAmountPair"
-                }
-            ]
         },
         {
             "name": "setNftDepositMaxLen",
@@ -281,6 +258,14 @@
             ]
         },
         {
+            "name": "depositTokens",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
             "name": "withdrawAllTokensFromDeposit",
             "inputs": [
                 {
@@ -316,8 +301,7 @@
             ],
             "outputs": [
                 {
-                    "type": "variadic<GenericEsdtAmountPair>",
-                    "multi_result": true
+                    "type": "List<GenericTokenAmountPair>"
                 }
             ]
         },
@@ -337,6 +321,21 @@
                 {
                     "type": "variadic<TokenIdentifier>",
                     "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "mergeLockedAssetTokens",
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "GenericTokenAmountPair"
                 }
             ]
         }
@@ -371,7 +370,7 @@
                 }
             ]
         },
-        "GenericEsdtAmountPair": {
+        "GenericTokenAmountPair": {
             "type": "struct",
             "fields": [
                 {
