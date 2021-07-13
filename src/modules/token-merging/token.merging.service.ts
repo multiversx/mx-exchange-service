@@ -21,7 +21,6 @@ export class TokenMergingService {
         const nftDepositMaxLen = await this.mergeTokensAbi.getnftDepositMaxLen(
             args,
         );
-        console.log(nftDepositMaxLen);
         return nftDepositMaxLen.toNumber();
     }
 

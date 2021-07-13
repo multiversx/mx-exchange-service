@@ -27,8 +27,14 @@ export class TokenMergingAbiService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-
-        return response.firstValue.valueOf().map(value => value);
+        return response.firstValue.valueOf().map(value => {
+            const depositedNft = value.valueOf();
+            const genericEsdtAmountPair = new GenericEsdtAmountPair();
+            genericEsdtAmountPair.tokenID = depositedNft.token_id.toString();
+            genericEsdtAmountPair.tokenNonce = depositedNft.token_nonce.toNumber();
+            genericEsdtAmountPair.amount = depositedNft.amount.toFixed();
+            return genericEsdtAmountPair;
+        });
     }
 
     async getnftDepositMaxLen(args: TokensMergingArgs): Promise<BigNumber> {
