@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { BigUIntValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
+import {
+    BigUIntValue,
+    TypedValue,
+} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { GasLimit } from '@elrondnetwork/erdjs';
@@ -255,23 +258,17 @@ export class TransactionPairService {
         args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const contract = await this.elrondProxy.getPairSmartContract(
-            args.pairAddress,
-        );
+        let transactionArgs: TypedValue[];
+        const [wrappedTokenID, contract] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
+            this.elrondProxy.getPairSmartContract(args.pairAddress),
+        ]);
 
         const amountIn = new BigNumber(args.amountIn);
         const amountOut = new BigNumber(args.amountOut);
         const amountOutMin = amountOut
             .multipliedBy(1 - args.tolerance)
             .integerValue();
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(amountIn),
-            BytesValue.fromUTF8('swapTokensFixedInput'),
-            BytesValue.fromUTF8(args.tokenOutID),
-            new BigUIntValue(amountOutMin),
-        ];
 
         switch (elrondConfig.EGLDIdentifier) {
             case args.tokenInID:
@@ -281,6 +278,15 @@ export class TransactionPairService {
                         args.amountIn,
                     ),
                 );
+
+                transactionArgs = [
+                    BytesValue.fromUTF8(wrappedTokenID),
+                    new BigUIntValue(amountIn),
+                    BytesValue.fromUTF8('swapTokensFixedInput'),
+                    BytesValue.fromUTF8(args.tokenOutID),
+                    new BigUIntValue(amountOutMin),
+                ];
+
                 transactions.push(
                     this.context.esdtTransfer(
                         contract,
@@ -290,6 +296,13 @@ export class TransactionPairService {
                 );
                 break;
             case args.tokenOutID:
+                transactionArgs = [
+                    BytesValue.fromUTF8(args.tokenInID),
+                    new BigUIntValue(amountIn),
+                    BytesValue.fromUTF8('swapTokensFixedInput'),
+                    BytesValue.fromUTF8(wrappedTokenID),
+                    new BigUIntValue(amountOutMin),
+                ];
                 transactions.push(
                     this.context.esdtTransfer(
                         contract,
@@ -305,6 +318,14 @@ export class TransactionPairService {
                 );
                 break;
             default:
+                transactionArgs = [
+                    BytesValue.fromUTF8(args.tokenInID),
+                    new BigUIntValue(amountIn),
+                    BytesValue.fromUTF8('swapTokensFixedInput'),
+                    BytesValue.fromUTF8(args.tokenOutID),
+                    new BigUIntValue(amountOutMin),
+                ];
+
                 transactions.push(
                     this.context.esdtTransfer(
                         contract,
@@ -322,22 +343,17 @@ export class TransactionPairService {
         args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const contract = await this.elrondProxy.getPairSmartContract(
-            args.pairAddress,
-        );
+        let transactionArgs: TypedValue[];
+        const [wrappedTokenID, contract] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
+            this.elrondProxy.getPairSmartContract(args.pairAddress),
+        ]);
 
         const amountIn = new BigNumber(args.amountIn);
         const amountOut = new BigNumber(args.amountOut);
         const amountInMax = amountIn
             .multipliedBy(1 + args.tolerance)
             .integerValue();
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(amountInMax),
-            BytesValue.fromUTF8('swapTokensFixedOutput'),
-            BytesValue.fromUTF8(args.tokenOutID),
-            new BigUIntValue(amountOut),
-        ];
 
         switch (elrondConfig.EGLDIdentifier) {
             case args.tokenInID:
@@ -347,6 +363,15 @@ export class TransactionPairService {
                         amountInMax.toString(),
                     ),
                 );
+
+                transactionArgs = [
+                    BytesValue.fromUTF8(wrappedTokenID),
+                    new BigUIntValue(amountInMax),
+                    BytesValue.fromUTF8('swapTokensFixedOutput'),
+                    BytesValue.fromUTF8(args.tokenOutID),
+                    new BigUIntValue(amountOut),
+                ];
+
                 transactions.push(
                     this.context.esdtTransfer(
                         contract,
@@ -356,6 +381,13 @@ export class TransactionPairService {
                 );
                 break;
             case args.tokenOutID:
+                transactionArgs = [
+                    BytesValue.fromUTF8(args.tokenInID),
+                    new BigUIntValue(amountInMax),
+                    BytesValue.fromUTF8('swapTokensFixedOutput'),
+                    BytesValue.fromUTF8(wrappedTokenID),
+                    new BigUIntValue(amountOut),
+                ];
                 transactions.push(
                     this.context.esdtTransfer(
                         contract,
@@ -371,6 +403,14 @@ export class TransactionPairService {
                 );
                 break;
             default:
+                transactionArgs = [
+                    BytesValue.fromUTF8(args.tokenInID),
+                    new BigUIntValue(amountInMax),
+                    BytesValue.fromUTF8('swapTokensFixedOutput'),
+                    BytesValue.fromUTF8(args.tokenOutID),
+                    new BigUIntValue(amountOut),
+                ];
+
                 transactions.push(
                     this.context.esdtTransfer(
                         contract,
