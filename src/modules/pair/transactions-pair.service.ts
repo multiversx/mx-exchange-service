@@ -9,6 +9,7 @@ import {
     AddLiquidityArgs,
     AddLiquidityBatchArgs,
     ESDTTransferArgs,
+    ReclaimTemporaryFundsArgs,
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
@@ -150,20 +151,40 @@ export class TransactionPairService {
     }
 
     async reclaimTemporaryFunds(
-        pairAddress: string,
-    ): Promise<TransactionModel> {
+        args: ReclaimTemporaryFundsArgs,
+    ): Promise<TransactionModel[]> {
+        const transactions: TransactionModel[] = [];
+        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
         const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
+            args.pairAddress,
         );
         const interaction: Interaction = contract.methods.reclaimTemporaryFunds(
             [],
         );
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+        transactions.push(TransactionModel.fromTransaction(transaction));
+
+        switch (wrappedTokenID) {
+            case args.firstTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        args.firstTokenAmount,
+                    ),
+                );
+                break;
+            case args.secondTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        args.secoundTokenAmount,
+                    ),
+                );
+                break;
+        }
+
+        return transactions;
     }
 
     async removeLiquidity(
