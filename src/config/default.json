@@ -62,7 +62,7 @@
         "setLocalRoles": 200000000,
         "setState": 200000000,
         "setFee": 200000000,
-        "addLiquidityProxy": 250000000,
+        "addLiquidityProxy": 300000000,
         "removeLiquidityProxy": 250000000,
         "enterFarm": 200000000,
         "exitFarm": 100000000,
