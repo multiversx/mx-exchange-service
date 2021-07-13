@@ -298,7 +298,9 @@ export class TransactionsProxyPairService {
 
     async reclaimTemporaryFundsProxy(
         args: ReclaimTemporaryFundsProxyArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
+        const transactions = [];
+        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
         const contract = await this.elrondProxy.getProxyDexSmartContract();
         const interaction: Interaction = contract.methods.reclaimTemporaryFundsProxy(
             [
@@ -311,9 +313,29 @@ export class TransactionsProxyPairService {
 
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+
+        transactions.push(TransactionModel.fromTransaction(transaction));
+
+        switch (wrappedTokenID) {
+            case args.firstTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        args.firstTokenAmount,
+                    ),
+                );
+                break;
+            case args.secondTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        args.secondTokenAmount,
+                    ),
+                );
+            default:
+                break;
+        }
+
+        return transactions;
     }
 }

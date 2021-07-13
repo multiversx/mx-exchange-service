@@ -60,10 +60,16 @@ export class RemoveLiquidityProxyArgs {
 
 @ArgsType()
 export class ReclaimTemporaryFundsProxyArgs {
+    @Field()
+    sender: string;
     @Field() firstTokenID: string;
-    @Field() secondTokenID: string;
     @Field(type => Int, { nullable: true })
     firstTokenNonce?: number;
+    @Field({ nullable: true })
+    firstTokenAmount?: string;
+    @Field() secondTokenID: string;
     @Field(type => Int, { nullable: true })
     secondTokenNonce?: number;
+    @Field({ nullable: true })
+    secondTokenAmount?: string;
 }
