@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { tokenProviderUSD, tokensPriceData } from '../../config';
+import { elrondConfig, tokenProviderUSD, tokensPriceData } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../../models/pair-info.model';
 import {
@@ -17,6 +17,7 @@ import { AbiPairService } from './abi-pair.service';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { ContextService } from '../../services/context/context.service';
+import { WrapService } from '../wrapping/wrap.service';
 
 @Injectable()
 export class PairService {
@@ -25,6 +26,7 @@ export class PairService {
         private cacheService: CachePairService,
         private context: ContextService,
         private priceFeed: PriceFeedService,
+        private wrapService: WrapService,
     ) {}
 
     async getFirstTokenID(pairAddress: string): Promise<string> {
@@ -285,13 +287,24 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+        const [
+            wrappedTokenID,
+            firstTokenID,
+            secondTokenID,
+            pairInfo,
+        ] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
             this.abiService.getPairInfoMetadata(pairAddress),
         ]);
 
-        switch (tokenInID) {
+        const tokenIn =
+            tokenInID === elrondConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : tokenInID;
+
+        switch (tokenIn) {
             case firstTokenID:
                 return getAmountOut(
                     amount,
@@ -314,13 +327,24 @@ export class PairService {
         tokenOutID: string,
         amount: string,
     ): Promise<string> {
-        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+        const [
+            wrappedTokenID,
+            firstTokenID,
+            secondTokenID,
+            pairInfo,
+        ] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
             this.abiService.getPairInfoMetadata(pairAddress),
         ]);
 
-        switch (tokenOutID) {
+        const tokenOut =
+            tokenOutID === elrondConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : tokenOutID;
+
+        switch (tokenOut) {
             case firstTokenID:
                 return getAmountIn(
                     amount,
@@ -343,13 +367,24 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+        const [
+            wrappedTokenID,
+            firstTokenID,
+            secondTokenID,
+            pairInfo,
+        ] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
             this.abiService.getPairInfoMetadata(pairAddress),
         ]);
 
-        switch (tokenInID) {
+        const tokenIn =
+            tokenInID === elrondConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : tokenInID;
+
+        switch (tokenIn) {
             case firstTokenID:
                 return quote(
                     amount,

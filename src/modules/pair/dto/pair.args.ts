@@ -31,6 +31,22 @@ export class AddLiquidityBatchArgs {
 }
 
 @ArgsType()
+export class ReclaimTemporaryFundsArgs {
+    @Field()
+    pairAddress: string;
+    @Field()
+    sender: string;
+    @Field({ nullable: true })
+    firstTokenID?: string;
+    @Field({ nullable: true })
+    firstTokenAmount?: string;
+    @Field({ nullable: true })
+    secondTokenID?: string;
+    @Field({ nullable: true })
+    secoundTokenAmount?: string;
+}
+
+@ArgsType()
 export class RemoveLiquidityArgs {
     @Field()
     pairAddress: string;

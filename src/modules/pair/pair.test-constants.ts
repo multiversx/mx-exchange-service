@@ -256,3 +256,9 @@ export class PriceFeedServiceMock {
         return 100;
     }
 }
+
+export class WrapServiceMock {
+    async getWrappedEgldTokenID(): Promise<string> {
+        return 'WEGLD-1111';
+    }
+}

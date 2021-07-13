@@ -207,12 +207,24 @@ export class TransactionsProxyPairService {
 
     async removeLiquidityProxy(
         args: RemoveLiquidityProxyArgs,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
-        const liquidityPosition = await this.pairService.getLiquidityPosition(
-            args.pairAddress,
-            args.liquidity,
-        );
+    ): Promise<TransactionModel[]> {
+        const transactions = [];
+        const [
+            wrappedTokenID,
+            firstTokenID,
+            secondTokenID,
+            liquidityPosition,
+            contract,
+        ] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
+            this.pairService.getFirstTokenID(args.pairAddress),
+            this.pairService.getSecondTokenID(args.pairAddress),
+            this.pairService.getLiquidityPosition(
+                args.pairAddress,
+                args.liquidity,
+            ),
+            this.elrondProxy.getProxyDexSmartContract(),
+        ]);
         const amount0Min = new BigNumber(
             liquidityPosition.firstTokenAmount.toString(),
         ).multipliedBy(1 - args.tolerance);
@@ -236,10 +248,28 @@ export class TransactionsProxyPairService {
             transactionArgs,
             new GasLimit(gasConfig.removeLiquidityProxy),
         );
-
         transaction.receiver = args.sender;
+        transactions.push(transaction);
 
-        return transaction;
+        switch (wrappedTokenID) {
+            case firstTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        amount0Min.toString(),
+                    ),
+                );
+                break;
+            case secondTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        amount1Min.toString(),
+                    ),
+                );
+        }
+
+        return transactions;
     }
 
     esdtTransferProxyBatch(
@@ -298,7 +328,9 @@ export class TransactionsProxyPairService {
 
     async reclaimTemporaryFundsProxy(
         args: ReclaimTemporaryFundsProxyArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
+        const transactions = [];
+        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
         const contract = await this.elrondProxy.getProxyDexSmartContract();
         const interaction: Interaction = contract.methods.reclaimTemporaryFundsProxy(
             [
@@ -311,9 +343,29 @@ export class TransactionsProxyPairService {
 
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+
+        transactions.push(TransactionModel.fromTransaction(transaction));
+
+        switch (wrappedTokenID) {
+            case args.firstTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        args.firstTokenAmount,
+                    ),
+                );
+                break;
+            case args.secondTokenID:
+                transactions.push(
+                    await this.wrapTransaction.unwrapEgld(
+                        args.sender,
+                        args.secondTokenAmount,
+                    ),
+                );
+            default:
+                break;
+        }
+
+        return transactions;
     }
 }

@@ -106,19 +106,19 @@ export class ProxyResolver {
         return this.proxyPairService.getTemporaryFundsProxy(userAddress);
     }
 
-    @Query(returns => TransactionModel)
+    @Query(returns => [TransactionModel])
     async reclaimTemporaryFundsProxy(
         @Args() args: ReclaimTemporaryFundsProxyArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return await this.transactionsProxyPairService.reclaimTemporaryFundsProxy(
             args,
         );
     }
 
-    @Query(returns => TransactionModel)
+    @Query(returns => [TransactionModel])
     async removeLiquidityProxy(
         @Args() args: RemoveLiquidityProxyArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return await this.transactionsProxyPairService.removeLiquidityProxy(
             args,
         );
