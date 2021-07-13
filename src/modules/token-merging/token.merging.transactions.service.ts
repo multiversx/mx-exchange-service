@@ -124,14 +124,17 @@ export class TokenMergingTransactionsService {
             args.smartContractType,
             args.address,
         );
-        const transactionArgs = [
+        const transactionArgs: TypedValue[] = [
             BytesValue.fromUTF8(args.tokenID),
             new U32Value(args.tokenNonce),
             new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(new Address(contract.getAddress().hex()).hex()),
             BytesValue.fromUTF8(method),
-            ...methodArgs,
         ];
+
+        if (methodArgs) {
+            transactionArgs.push(...methodArgs);
+        }
 
         const transaction = this.context.nftTransfer(
             contract,
