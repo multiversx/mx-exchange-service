@@ -95,16 +95,7 @@ export class TokenMergingTransactionsService {
     }
 
     async depositTokens(args: DepositTokenArgs): Promise<TransactionModel> {
-        switch (args.smartContractType) {
-            case SmartContractType.FARM:
-                return this.SftInteraction(args, 'depositFarmTokens');
-            case SmartContractType.LOCKED_ASSET_FACTORY:
-                return this.SftInteraction(args, 'depositLockedAssetTokens');
-            case SmartContractType.PROXY_PAIR:
-                return this.SftInteraction(args, 'depositWrappedTokens');
-            case SmartContractType.PROXY_FARM:
-                return this.SftInteraction(args, 'depositWrappedTokens');
-        }
+        return this.SftInteraction(args, 'depositTokens');
     }
 
     async compoundRewards(

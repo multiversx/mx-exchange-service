@@ -175,13 +175,6 @@ export class FarmResolver {
     }
 
     @Query(returns => TransactionModel)
-    async depositFarmTokens(
-        @Args() args: DepositTokenArgs,
-    ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.depositTokens(args);
-    }
-
-    @Query(returns => TransactionModel)
     async mergeFarmTokens(
         @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {

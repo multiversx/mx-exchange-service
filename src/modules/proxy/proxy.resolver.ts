@@ -203,13 +203,6 @@ export class ProxyResolver {
     }
 
     @Query(returns => TransactionModel)
-    async depositWrappedTokens(
-        @Args() args: DepositTokenArgs,
-    ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.depositTokens(args);
-    }
-
-    @Query(returns => TransactionModel)
     async mergeWrappedLpTokens(
         @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {

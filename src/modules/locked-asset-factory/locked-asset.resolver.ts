@@ -67,13 +67,6 @@ export class LockedAssetResolver {
     }
 
     @Query(returns => TransactionModel)
-    async depositLockedAssetTokens(
-        @Args() args: DepositTokenArgs,
-    ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.depositTokens(args);
-    }
-
-    @Query(returns => TransactionModel)
     async mergeLockedAssetTokens(
         @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {
