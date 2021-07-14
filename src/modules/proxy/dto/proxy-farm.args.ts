@@ -1,5 +1,4 @@
 import { ArgsType, Field, Int } from '@nestjs/graphql';
-import { SmartContractType } from 'src/modules/token-merging/dto/token.merging.args';
 
 @ArgsType()
 export class EnterFarmProxyArgs {
@@ -22,8 +21,6 @@ export class EnterFarmProxyBatchArgs {
     @Field() amount: string;
     @Field({ nullable: true }) lockRewards: boolean;
 
-    @Field(type => SmartContractType)
-    smartContractType: SmartContractType;
     @Field()
     lockedFarmTokenID: string;
     @Field(type => Int)

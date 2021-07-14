@@ -164,7 +164,6 @@ export class ProxyResolver {
     ): Promise<TransactionModel[]> {
         const depositTokenArgs: DepositTokenArgs = {
             smartContractType: SmartContractType.PROXY_FARM,
-            address: '',
             tokenID: args.lockedFarmTokenID,
             tokenNonce: args.lockedFarmTokenNonce,
             amount: args.lockedFarmAmount,
