@@ -13,23 +13,22 @@ import { UserModule } from './modules/user/user.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import {
     utilities as nestWinstonModuleUtilities,
-    WinstonModule
+    WinstonModule,
 } from 'nest-winston';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
-
 
 const logTransports: Transport[] = [
     new winston.transports.Console({
         format: winston.format.combine(
             winston.format.timestamp(),
             nestWinstonModuleUtilities.format.nestLike(),
-        )
-    })
-]
+        ),
+    }),
+];
 
-const loglevel = !!process.env.LOG_LEVEL ? process.env.LOG_LEVEL: 'error';
+const loglevel = !!process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 'error';
 
 if (!!process.env.LOG_FILE) {
     logTransports.push(
@@ -37,9 +36,9 @@ if (!!process.env.LOG_FILE) {
             filename: process.env.LOG_FILE,
             dirname: 'logs',
             maxsize: 100000,
-            level: loglevel
-        })
-    )
+            level: loglevel,
+        }),
+    );
 }
 
 @Module({
@@ -48,18 +47,19 @@ if (!!process.env.LOG_FILE) {
             isGlobal: true,
         }),
         WinstonModule.forRoot({
-            transports: logTransports
+            transports: logTransports,
         }),
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
             playground: true,
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {
-                  message:
-                    error.extensions?.exception?.response?.message || error.message,
+                    message:
+                        error.extensions?.exception?.response?.message ||
+                        error.message,
                 };
                 return graphQLFormattedError;
-              },
+            },
         }),
 
         HttpModule,
