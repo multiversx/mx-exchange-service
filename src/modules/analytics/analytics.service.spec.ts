@@ -17,6 +17,12 @@ import { HyperblockService } from '../../services/transactions/hyperblock.servic
 import { ShardTransaction } from '../../services/transactions/entities/shard.transaction';
 import { TransactionModule } from '../../services/transactions/transaction.module';
 import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
+import {
+    utilities as nestWinstonModuleUtilities,
+    WinstonModule,
+} from 'nest-winston';
+import * as winston from 'winston';
+import * as Transport from 'winston-transport';
 
 describe('FarmStatisticsService', () => {
     let service: AnalyticsService;
@@ -39,9 +45,21 @@ describe('FarmStatisticsService', () => {
         useClass: ContextServiceMock,
     };
 
+    const logTransports: Transport[] = [
+        new winston.transports.Console({
+            format: winston.format.combine(
+                winston.format.timestamp(),
+                nestWinstonModuleUtilities.format.nestLike(),
+            ),
+        }),
+    ];
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [
+                WinstonModule.forRoot({
+                    transports: logTransports,
+                }),
                 ElrondCommunicationModule,
                 CacheManagerModule,
                 TransactionModule,
