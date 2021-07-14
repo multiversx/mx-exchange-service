@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { TokenModel } from './esdtToken.model';
-import { NFTTokenModel } from './nftToken.model';
+import { EsdtToken } from './tokens/esdtToken.model';
+import { NftCollection } from './tokens/nftCollection.model';
 
 @ObjectType()
 export class FarmTokenAttributesModel {
@@ -16,6 +16,12 @@ export class FarmTokenAttributesModel {
     aprMultiplier: number;
     @Field()
     lockedRewards: boolean;
+    @Field()
+    initialFarmingAmount: string;
+    @Field()
+    compoundedReward: string;
+    @Field()
+    currentFarmAmount: string;
 }
 
 @ObjectType()
@@ -32,16 +38,22 @@ export class FarmModel {
     address: string;
 
     @Field()
-    farmedToken: TokenModel;
+    farmedToken: EsdtToken;
 
     @Field()
-    farmToken: NFTTokenModel;
+    farmedTokenPriceUSD: string;
+
+    @Field()
+    farmToken: NftCollection;
 
     @Field()
     farmTokenPriceUSD: string;
 
     @Field()
-    farmingToken: TokenModel;
+    farmingToken: EsdtToken;
+
+    @Field()
+    farmingTokenPriceUSD: string;
 
     @Field()
     perBlockRewards: string;
@@ -54,6 +66,12 @@ export class FarmModel {
 
     @Field()
     APR: string;
+
+    @Field(type => Int)
+    nftDepositMaxLen: number;
+
+    @Field(type => [String])
+    nftDepositAcceptedTokenIDs: string[];
 
     @Field()
     state: string;

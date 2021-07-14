@@ -41,12 +41,14 @@ export function decodeWrappedFarmTokenAttributes(attributes: string) {
     const structType = new StructType('WrappedFarmTokenAttributes', [
         new StructFieldDefinition('farmTokenID', '', new TokenIdentifierType()),
         new StructFieldDefinition('farmTokenNonce', '', new U64Type()),
+        new StructFieldDefinition('farmTokenAmount', '', new BigUIntType()),
         new StructFieldDefinition(
-            'farmedTokenID',
+            'farmingTokenID',
             '',
             new TokenIdentifierType(),
         ),
-        new StructFieldDefinition('farmedTokenNonce', '', new U64Type()),
+        new StructFieldDefinition('farmingTokenNonce', '', new U64Type()),
+        new StructFieldDefinition('farmingTokenAmount', '', new BigUIntType()),
     ]);
 
     const [decoded, decodedLength] = codec.decodeNested(

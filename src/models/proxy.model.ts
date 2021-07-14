@@ -1,7 +1,7 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { TokenModel } from './esdtToken.model';
+import { EsdtToken } from './tokens/esdtToken.model';
 import { FarmTokenAttributesModel } from './farm.model';
-import { NFTTokenModel } from './nftToken.model';
+import { NftCollection } from './tokens/nftCollection.model';
 
 @ObjectType()
 export class ProxyModel {
@@ -9,22 +9,28 @@ export class ProxyModel {
     address: string;
 
     @Field()
-    wrappedLpToken: NFTTokenModel;
+    wrappedLpToken: NftCollection;
 
     @Field()
-    wrappedFarmToken: NFTTokenModel;
+    wrappedFarmToken: NftCollection;
 
     @Field()
-    assetToken: TokenModel;
+    assetToken: EsdtToken;
 
     @Field()
-    lockedAssetToken: NFTTokenModel;
+    lockedAssetToken: NftCollection;
 
     @Field(type => [String])
     intermediatedPairs: string[];
 
     @Field(type => [String])
     intermediatedFarms: string[];
+
+    @Field(type => Int)
+    nftDepositMaxLen: number;
+
+    @Field(type => [String])
+    nftDepositAcceptedTokenIDs: string[];
 }
 
 @ObjectType()
@@ -54,13 +60,17 @@ export class WrappedFarmTokenAttributesModel {
     @Field(type => Int)
     farmTokenNonce: number;
     @Field()
+    farmTokenAmount: string;
+    @Field()
     farmTokenIdentifier: string;
     @Field(type => FarmTokenAttributesModel)
     farmTokenAttributes: FarmTokenAttributesModel;
     @Field()
-    farmedTokenID: string;
-    @Field(type => Int)
-    farmedTokenNonce: number;
+    farmingTokenID: string;
+    @Field()
+    farmingTokenNonce: string;
+    @Field()
+    farmingTokenAmount: string;
 }
 
 @ObjectType()

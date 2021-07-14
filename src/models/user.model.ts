@@ -1,20 +1,49 @@
-import { ObjectType, Field } from '@nestjs/graphql';
-import { TokenModel } from './esdtToken.model';
-import { NFTTokenModel } from './nftToken.model';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { EsdtToken } from './tokens/esdtToken.model';
+import { NftToken } from './tokens/nftToken.model';
+import { FarmTokenAttributesModel } from './farm.model';
+import {
+    WrappedFarmTokenAttributesModel,
+    WrappedLpTokenAttributesModel,
+} from './proxy.model';
+import { FarmToken } from './tokens/farmToken.model';
+import { LockedLpToken } from './tokens/lockedLpToken.model';
+import { LockedFarmToken } from './tokens/lockedFarmToken.model';
 
 @ObjectType()
-export class UserTokenModel extends TokenModel {
-    @Field() value: string;
+export class UserToken extends EsdtToken {
+    @Field() valueUSD: string;
 }
 
 @ObjectType()
-export class UserNFTTokenModel extends NFTTokenModel {
-    @Field() value: string;
+export class UserNftToken extends NftToken {
+    @Field(type => Int) decimals: number;
+    @Field() valueUSD: string;
+    @Field() decodedAttributes: string;
+}
+
+@ObjectType()
+export class UserFarmToken extends FarmToken {
+    decimals: number;
+    decodedAttributes: FarmTokenAttributesModel;
+    @Field() valueUSD: string;
+}
+
+@ObjectType()
+export class UserLockedLPToken extends LockedLpToken {
+    decimals: number;
+    decodedAttributes: WrappedLpTokenAttributesModel;
+    @Field() valueUSD: string;
+}
+
+@ObjectType()
+export class UserLockedFarmToken extends LockedFarmToken {
+    decimals: number;
+    decodedAttributes: WrappedFarmTokenAttributesModel;
+    @Field() valueUSD: string;
 }
 
 @ObjectType()
 export class UserModel {
     @Field() address: string;
-    @Field(type => [UserTokenModel]) tokens: UserTokenModel[];
-    @Field(type => [UserNFTTokenModel]) nfts: UserNFTTokenModel[];
 }

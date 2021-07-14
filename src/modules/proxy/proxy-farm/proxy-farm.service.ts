@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ContextService } from '../../../services/context/context.service';
-import { NFTTokenModel } from '../../../models/nftToken.model';
 import { CacheProxyFarmService } from '../../../services/cache-manager/cache-proxy-farm.service';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @Injectable()
 export class ProxyFarmService {
@@ -12,20 +12,22 @@ export class ProxyFarmService {
         private context: ContextService,
     ) {}
 
-    async getwrappedFarmToken(): Promise<NFTTokenModel> {
+    async getwrappedFarmTokenID(): Promise<string> {
         const cachedData = await this.cacheService.getWrappedFarmTokenID();
         if (!!cachedData) {
-            return this.context.getNFTTokenMetadata(
-                cachedData.wrappedFarmTokenID,
-            );
+            return cachedData.wrappedFarmTokenID;
         }
 
         const wrappedFarmTokenID = await this.abiService.getWrappedFarmTokenID();
         this.cacheService.setWrappedFarmTokenID({
             wrappedFarmTokenID: wrappedFarmTokenID,
         });
+        return wrappedFarmTokenID;
+    }
 
-        return this.context.getNFTTokenMetadata(wrappedFarmTokenID);
+    async getwrappedFarmToken(): Promise<NftCollection> {
+        const wrappedFarmTokenID = await this.getwrappedFarmTokenID();
+        return this.context.getNftCollectionMetadata(wrappedFarmTokenID);
     }
 
     async getIntermediatedFarms(): Promise<string[]> {

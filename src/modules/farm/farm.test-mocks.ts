@@ -1,23 +1,23 @@
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 
 const pairsMetadata = [
     {
-        firstToken: 'WEGLD-b9cba1',
-        secondToken: 'MEX-bd9937',
+        firstToken: 'WEGLD-88600a',
+        secondToken: 'MEX-b6bb7d',
         address: 'pair_address_1',
     },
     {
-        firstToken: 'WEGLD-b9cba1',
+        firstToken: 'WEGLD-88600a',
         secondToken: 'BUSD-f66742',
         address: 'pair_address_2',
     },
     {
-        firstToken: 'MEX-bd9937',
+        firstToken: 'MEX-b6bb7d',
         secondToken: 'BUSD-f66742',
         address: 'pair_address_3',
     },
     {
-        firstToken: 'MEX-bd9937',
+        firstToken: 'MEX-b6bb7d',
         secondToken: 'SPT-f66742',
         address: 'pair_address_4',
     },
@@ -25,7 +25,7 @@ const pairsMetadata = [
 
 const farmMetadata = {
     address: 'farm_address_1',
-    farmedTokenID: 'MEX-bd9937',
+    farmedTokenID: 'MEX-b6bb7d',
     farmTokenID: 'FMT-1234',
     farmingTokenID: 'LPT-1111',
     farmTotalSupply: '1000000',
@@ -42,9 +42,9 @@ export class FarmServiceMock {
         return farmMetadata.farmedTokenID;
     }
 
-    async getFarmingToken(farmAddress: string): Promise<TokenModel> {
+    async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         return {
-            token: 'LPT-1111',
+            identifier: 'LPT-1111',
             name: 'LiquidityPoolToken',
             type: 'FungibleESDT',
             owner: 'user_address_1',

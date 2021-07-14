@@ -9,7 +9,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BinaryCodec } from '@elrondnetwork/erdjs';
 import { farmsConfig, scAddress } from '../../config';
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import {
     FarmModel,
     FarmTokenAttributesModel,
@@ -18,31 +18,30 @@ import {
 import { CacheFarmService } from '../../services/cache-manager/cache-farm.service';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './dto/farm.args';
-import BigNumber from 'bignumber.js';
-import { NFTTokenModel } from '../../models/nftToken.model';
 import { PairService } from '../pair/pair.service';
 import { ContextService } from '../../services/context/context.service';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @Injectable()
 export class FarmService {
     constructor(
-        private abiService: AbiFarmService,
-        private cacheService: CacheFarmService,
-        private context: ContextService,
-        private pairService: PairService,
+        private readonly abiService: AbiFarmService,
+        private readonly cacheService: CacheFarmService,
+        private readonly context: ContextService,
+        private readonly pairService: PairService,
     ) {}
 
-    async getFarmedToken(farmAddress: string): Promise<TokenModel> {
+    async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
         return this.context.getTokenMetadata(farmedTokenID);
     }
 
-    async getFarmToken(farmAddress: string): Promise<NFTTokenModel> {
+    async getFarmToken(farmAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
-        return this.context.getNFTTokenMetadata(farmTokenID);
+        return this.context.getNftCollectionMetadata(farmTokenID);
     }
 
-    async getFarmingToken(farmAddress: string): Promise<TokenModel> {
+    async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.getFarmingTokenID(farmAddress);
         return this.context.getTokenMetadata(farmingTokenID);
     }
@@ -112,6 +111,16 @@ export class FarmService {
         return farms;
     }
 
+    async isFarmToken(tokenID: string): Promise<boolean> {
+        for (const farmAddress of farmsConfig) {
+            const farmTokenID = await this.getFarmTokenID(farmAddress);
+            if (tokenID === farmTokenID) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     async getFarmAddressByFarmTokenID(tokenID: string): Promise<string | null> {
         for (const farmAddress of farmsConfig) {
             const farmTokenID = await this.getFarmTokenID(farmAddress);
@@ -154,6 +163,21 @@ export class FarmService {
                 '',
                 new BooleanType(),
             ),
+            new StructFieldDefinition(
+                'initialFarmingAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'compoundedReward',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'currentFarmAmount',
+                '',
+                new BigUIntType(),
+            ),
         ]);
 
         const [decoded, decodedLength] = codec.decodeNested(
@@ -168,6 +192,9 @@ export class FarmService {
             enteringEpoch: decodedAttributes.enteringEpoch,
             aprMultiplier: decodedAttributes.aprMultiplier,
             lockedRewards: decodedAttributes.withLockedRewards,
+            initialFarmingAmount: decodedAttributes.initialFarmingAmount,
+            compoundedReward: decodedAttributes.compoundedReward,
+            currentFarmAmount: decodedAttributes.currentFarmAmount,
         };
     }
 
@@ -216,6 +243,23 @@ export class FarmService {
             farmingTokenID: farmingTokenID,
         });
         return farmingTokenID;
+    }
+
+    async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
+        const farmedTokenID = await this.getFarmedTokenID(farmAddress);
+        if (scAddress.has(farmedTokenID)) {
+            const pairAddress = scAddress.get(farmedTokenID);
+            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
+                pairAddress,
+                farmedTokenID,
+            );
+            return tokenPriceUSD.toFixed();
+        }
+
+        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
+            farmedTokenID,
+        );
+        return tokenPriceUSD.toFixed();
     }
 
     async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {

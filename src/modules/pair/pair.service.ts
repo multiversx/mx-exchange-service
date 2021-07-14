@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { tokenProviderUSD, tokensPriceData } from '../../config';
+import { elrondConfig, tokenProviderUSD, tokensPriceData } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import { PairInfoModel } from '../../models/pair-info.model';
 import {
@@ -15,8 +15,9 @@ import {
 import { CachePairService } from '../../services/cache-manager/cache-pair.service';
 import { AbiPairService } from './abi-pair.service';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { ContextService } from '../../services/context/context.service';
+import { WrapService } from '../wrapping/wrap.service';
 
 @Injectable()
 export class PairService {
@@ -25,6 +26,7 @@ export class PairService {
         private cacheService: CachePairService,
         private context: ContextService,
         private priceFeed: PriceFeedService,
+        private wrapService: WrapService,
     ) {}
 
     async getFirstTokenID(pairAddress: string): Promise<string> {
@@ -70,17 +72,17 @@ export class PairService {
         return lpTokenID;
     }
 
-    async getFirstToken(pairAddress: string): Promise<TokenModel> {
+    async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
         return this.context.getTokenMetadata(firstTokenID);
     }
 
-    async getSecondToken(pairAddress: string): Promise<TokenModel> {
+    async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
         return this.context.getTokenMetadata(secondTokenID);
     }
 
-    async getLpToken(pairAddress: string): Promise<TokenModel> {
+    async getLpToken(pairAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.getLpTokenID(pairAddress);
 
         return this.context.getTokenMetadata(lpTokenID);
@@ -90,7 +92,7 @@ export class PairService {
         const firstToken = await this.getFirstToken(pairAddress);
         const firstTokenPrice = await this.getEquivalentForLiquidity(
             pairAddress,
-            firstToken.token,
+            firstToken.identifier,
             new BigNumber(`1e${firstToken.decimals}`).toFixed(),
         );
         return new BigNumber(firstTokenPrice)
@@ -102,7 +104,7 @@ export class PairService {
         const secondToken = await this.getSecondToken(pairAddress);
         const secondTokenPrice = await this.getEquivalentForLiquidity(
             pairAddress,
-            secondToken.token,
+            secondToken.identifier,
             new BigNumber(`1e${secondToken.decimals}`).toFixed(),
         );
         return new BigNumber(secondTokenPrice)
@@ -285,13 +287,24 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+        const [
+            wrappedTokenID,
+            firstTokenID,
+            secondTokenID,
+            pairInfo,
+        ] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
             this.abiService.getPairInfoMetadata(pairAddress),
         ]);
 
-        switch (tokenInID) {
+        const tokenIn =
+            tokenInID === elrondConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : tokenInID;
+
+        switch (tokenIn) {
             case firstTokenID:
                 return getAmountOut(
                     amount,
@@ -314,13 +327,24 @@ export class PairService {
         tokenOutID: string,
         amount: string,
     ): Promise<string> {
-        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+        const [
+            wrappedTokenID,
+            firstTokenID,
+            secondTokenID,
+            pairInfo,
+        ] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
             this.abiService.getPairInfoMetadata(pairAddress),
         ]);
 
-        switch (tokenOutID) {
+        const tokenOut =
+            tokenOutID === elrondConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : tokenOutID;
+
+        switch (tokenOut) {
             case firstTokenID:
                 return getAmountIn(
                     amount,
@@ -343,13 +367,24 @@ export class PairService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
+        const [
+            wrappedTokenID,
+            firstTokenID,
+            secondTokenID,
+            pairInfo,
+        ] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
             this.abiService.getPairInfoMetadata(pairAddress),
         ]);
 
-        switch (tokenInID) {
+        const tokenIn =
+            tokenInID === elrondConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : tokenInID;
+
+        switch (tokenIn) {
             case firstTokenID:
                 return quote(
                     amount,
@@ -471,5 +506,25 @@ export class PairService {
         const pairs = await Promise.all(promises);
         const pair = pairs.find(pair => pair.lpTokenID === tokenID);
         return pair?.pairAddress;
+    }
+
+    async isPairEsdtToken(tokenID: string): Promise<boolean> {
+        const pairsAddress = await this.context.getAllPairsAddress();
+        for (const pairAddress of pairsAddress) {
+            const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
+                this.getFirstTokenID(pairAddress),
+                this.getSecondTokenID(pairAddress),
+                this.getLpTokenID(pairAddress),
+            ]);
+
+            if (
+                tokenID === firstTokenID ||
+                tokenID === secondTokenID ||
+                tokenID === lpTokenID
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }

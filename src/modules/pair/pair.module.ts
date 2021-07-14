@@ -7,6 +7,7 @@ import { TransactionPairService } from './transactions-pair.service';
 import { PriceFeedModule } from '../../services/price-feed/price-feed.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
+import { WrappingModule } from '../wrapping/wrap.module';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { ElrondCommunicationModule } from '../../services/elrond-communication/e
         CacheManagerModule,
         ContextModule,
         PriceFeedModule,
+        WrappingModule,
     ],
     providers: [
         PairService,

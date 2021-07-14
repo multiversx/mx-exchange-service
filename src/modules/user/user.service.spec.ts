@@ -11,6 +11,7 @@ import {
     ContextServiceMock,
     ElrondApiServiceMock,
     FarmServiceMock,
+    LockedAssetMock,
     PairServiceMock,
     PriceFeedServiceMock,
     ProxyFarmServiceMock,
@@ -19,6 +20,7 @@ import {
 } from './user.test-mocks';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ContextService } from '../../services/context/context.service';
+import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 
 describe('UserService', () => {
     let service: UserService;
@@ -63,6 +65,11 @@ describe('UserService', () => {
         useClass: ProxyFarmServiceMock,
     };
 
+    const LockedAssetProvider = {
+        provide: LockedAssetService,
+        useClass: LockedAssetMock,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -74,6 +81,7 @@ describe('UserService', () => {
                 ProxyPairServiceProvider,
                 ProxyFarmServiceProvider,
                 FarmServiceProvider,
+                LockedAssetProvider,
                 UserService,
             ],
             imports: [CacheManagerModule],
@@ -87,9 +95,15 @@ describe('UserService', () => {
     });
 
     it('should get user esdt tokens', async () => {
-        expect(await service.getAllEsdtTokens('user_address_1')).toEqual([
+        expect(
+            await service.getAllEsdtTokens({
+                address: 'user_address_1',
+                offset: 0,
+                limit: 10,
+            }),
+        ).toEqual([
             {
-                token: 'MEX-bd9937',
+                identifier: 'MEX-b6bb7d',
                 name: 'MaiarExchangeToken',
                 type: 'FungibleESDT',
                 owner:
@@ -106,41 +120,46 @@ describe('UserService', () => {
                 canFreeze: true,
                 canWipe: true,
                 balance: '1000000000000000000',
-                identifier: null,
-                value: '200',
+                valueUSD: '100',
             },
         ]);
     });
 
     it('should get user nfts tokens', async () => {
-        expect(await service.getAllNFTTokens('user_address_1')).toEqual([
+        expect(
+            await service.getAllNftTokens({
+                address: 'user_address_1',
+                offset: 0,
+                limit: 10,
+            }),
+        ).toEqual([
             {
-                token: 'FMT-1234',
+                collection: 'FMT-1234',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
-                owner: 'farm_address_1',
-                minted: '0',
-                burnt: '0',
-                decimals: 0,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: false,
-                canBurn: false,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
+                decimals: 18,
                 balance: '1000000000000000000',
                 identifier: 'FMT-1234-01',
-                canAddSpecialRoles: true,
-                canTransferNFTCreateRole: false,
-                NFTCreateStopped: false,
-                wiped: '0',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                 creator: 'farm_address_1',
                 nonce: 1,
-                royalties: '0',
-                value: '200',
+                royalties: 0,
+                valueUSD: '200',
+                decodedAttributes: {
+                    aprMultiplier: 1,
+                    attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
+                    enteringEpoch: 1,
+                    identifier: 'FMT-1234-01',
+                    lockedRewards: false,
+                    rewardPerShare: '3000',
+                    initialFarmingAmount: '100',
+                    compoundedReward: '10',
+                    currentFarmAmount: '100',
+                },
+                timestamp: 0,
+                uris: [],
+                url: '',
+                tags: [],
             },
         ]);
     });

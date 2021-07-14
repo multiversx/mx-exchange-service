@@ -1,8 +1,9 @@
 import { ApiProvider } from '@elrondnetwork/erdjs';
 import { elrondConfig } from '../../config';
 import { Injectable } from '@nestjs/common';
-import { TokenModel } from '../../models/esdtToken.model';
-import { NFTTokenModel } from '../../models/nftToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftToken } from 'src/models/tokens/nftToken.model';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 
 @Injectable()
@@ -29,16 +30,31 @@ export class ElrondApiService {
         return this.apiProvider;
     }
 
-    async getTokensForUser(address: string): Promise<TokenModel[]> {
-        return await this.getService().doGetGeneric(
-            `accounts/${address}/tokens`,
+    async getNftCollection(tokenID: string): Promise<NftCollection> {
+        return this.getService().doGetGeneric(
+            `collections/${tokenID}`,
             response => response,
         );
     }
 
-    async getNftsForUser(address: string): Promise<NFTTokenModel[]> {
-        return await this.getService().doGetGeneric(
-            `accounts/${address}/nfts`,
+    async getTokensForUser(
+        address: string,
+        from = 0,
+        size = 100,
+    ): Promise<EsdtToken[]> {
+        return this.getService().doGetGeneric(
+            `accounts/${address}/tokens?from=${from}&size=${size}`,
+            response => response,
+        );
+    }
+
+    async getNftsForUser(
+        address: string,
+        from = 0,
+        size = 100,
+    ): Promise<NftToken[]> {
+        return this.getService().doGetGeneric(
+            `accounts/${address}/nfts?from=${from}&size=${size}`,
             response => response,
         );
     }
@@ -46,7 +62,7 @@ export class ElrondApiService {
     async getNftByTokenIdentifier(
         address: string,
         nftIdentifier: string,
-    ): Promise<NFTTokenModel> {
+    ): Promise<NftToken> {
         return await this.getService().doGetGeneric(
             `accounts/${address}/nfts/${nftIdentifier}`,
             response => response,

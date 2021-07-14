@@ -6,32 +6,37 @@
         "gateway": "https://devnet-gateway.elrond.com",
         "explorer": "https://devnet-explorer.elrond.com",
         "chainID": "D",
+        "EGLDIdentifier": "EGLD",
         "version": 1,
         "proxyTimeout": 60000,
         "timeoutLimit": 10000,
-        "keepAlive": true,
+        "keepAlive": false,
         "keepAliveTimeout": 50000,
         "keepAliveFreeSocketTimeout": 30000,
         "keepAliveMaxSockets": 100,
         "keepAliveMaxFreeSockets": 10
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqmc6lkxzn7cmj2c3ztczapds9ch2c4w9h0n4stl2uq7",
-        "MEX-bd9937": "erd1qqqqqqqqqqqqqpgqx0xh8fgpr5kjh9n7s53m7qllw42m5t7u0n4suz39xc",
-        "distributionAddress": "erd1qqqqqqqqqqqqqpgqh906k5w8wewfp86y6crf8yw444jzzzsj0n4svpx5kk",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgq9mhj2d9zu5fq2krqd6ew3emqf0ppjut60n4sw592nz",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq9s7ft5fj72zyt8qn8yd24xcl8rxu9v4m0n4sjlh528",
-        "wrappingAddress": "erd1qqqqqqqqqqqqqpgqhpy2hy6p0pvw6z5l3w3ykrf9aj5r5s3n0n4s6vk5dw"
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqreqh628erfddlxjqagepvucd49z4sswa0n4sy08qel",
+        "MEX-b6bb7d": "erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqy7gwk022nnrywfmhup3gn7kkfscw66a30n4sy2zaxx",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqmu6w6w375fu79g5qea0cuy5lkgz2d3et0n4srera2n",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq646juuvw4659tns8z88h5zmn9n0a9dma0n4shrqrca",
+        "wrappingAddress": {
+            "0": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
+            "1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
+            "2": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c"
+        }
     },
-    "tokenProviderUSD": "WEGLD-b9cba1",
+    "tokenProviderUSD": "BUSD-05b16f",
     "priceFeeds": {
-        "WEGLD-b9cba1": "egld",
-        "BUSD-fd5ddb": "busd"
+        "WEGLD-88600a": "egld",
+        "BUSD-05b16f": "busd"
     },
     "farms": [
-        "erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z",
-        "erd1qqqqqqqqqqqqqpgq2l97gw2j4wnlem4y2rx7dudqlssjtwpu0n4sd0u3w2",
-        "erd1qqqqqqqqqqqqqpgqpyuhxu2qvwm6udztx7hccwkzsrj4mt2r0n4swyh8pp"
+        "erd1qqqqqqqqqqqqqpgq9gwtsn3dzgggt34j4mega0dy3p0e807n0n4swy6l76",
+        "erd1qqqqqqqqqqqqqpgqts43y9mhaan36wjfjkrey55v3n4uu3kg0n4shjtsl6",
+        "erd1qqqqqqqqqqqqqpgqnp3tpaeq3kq4ksmnunags3p4w0rlekdc0n4sjdp2cy"
     ],
     "caching": {
         "networkConfig": 1,
@@ -57,7 +62,7 @@
         "setLocalRoles": 200000000,
         "setState": 200000000,
         "setFee": 200000000,
-        "addLiquidityProxy": 250000000,
+        "addLiquidityProxy": 300000000,
         "removeLiquidityProxy": 250000000,
         "enterFarm": 200000000,
         "exitFarm": 100000000,

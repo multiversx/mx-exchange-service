@@ -9,7 +9,9 @@ import {
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
+    AddLiquidityBatchArgs,
     ESDTTransferArgs,
+    ReclaimTemporaryFundsArgs,
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
@@ -130,6 +132,13 @@ export class PairResolver {
         );
     }
 
+    @Query(returns => [TransactionModel])
+    async addLiquidityBatch(
+        @Args() args: AddLiquidityBatchArgs,
+    ): Promise<TransactionModel[]> {
+        return await this.transactionService.addLiquidityBatch(args);
+    }
+
     @Query(returns => TransactionModel)
     async addLiquidity(
         @Args() args: AddLiquidityArgs,
@@ -137,31 +146,31 @@ export class PairResolver {
         return await this.transactionService.addLiquidity(args);
     }
 
-    @Query(returns => TransactionModel)
+    @Query(returns => [TransactionModel])
     async reclaimTemporaryFunds(
-        @Args('pairAddress') pairAddress: string,
-    ): Promise<TransactionModel> {
-        return await this.transactionService.reclaimTemporaryFunds(pairAddress);
+        @Args() args: ReclaimTemporaryFundsArgs,
+    ): Promise<TransactionModel[]> {
+        return await this.transactionService.reclaimTemporaryFunds(args);
     }
 
-    @Query(returns => TransactionModel)
+    @Query(returns => [TransactionModel])
     async removeLiquidity(
         @Args() args: RemoveLiquidityArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return await this.transactionService.removeLiquidity(args);
     }
 
-    @Query(returns => TransactionModel)
+    @Query(returns => [TransactionModel])
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return await this.transactionService.swapTokensFixedInput(args);
     }
 
-    @Query(returns => TransactionModel)
+    @Query(returns => [TransactionModel])
     async swapTokensFixedOutput(
         @Args() args: SwapTokensFixedOutputArgs,
-    ): Promise<TransactionModel> {
+    ): Promise<TransactionModel[]> {
         return await this.transactionService.swapTokensFixedOutput(args);
     }
 

@@ -13,11 +13,11 @@ import {
     GasLimit,
     ContractFunction,
 } from '@elrondnetwork/erdjs';
-import { TokenModel } from '../../models/esdtToken.model';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { TransactionModel } from '../../models/transaction.model';
-import { NFTTokenModel } from '../../models/nftToken.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from '../elrond-communication/elrond-proxy.service';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 interface PairMetadata {
     address: string;
@@ -158,7 +158,11 @@ export class ContextService {
         visited.set(input, true);
         while (queue.length > 0) {
             const node = queue.shift();
-            for (const value of pairsMap.get(node)) {
+            const adjacentVertices = pairsMap.get(node);
+            if (!adjacentVertices) {
+                return [];
+            }
+            for (const value of adjacentVertices) {
                 if (value === output) {
                     path.push(output);
                     return path;
@@ -175,7 +179,7 @@ export class ContextService {
         return [];
     }
 
-    async getTokenMetadata(tokenID: string): Promise<TokenModel> {
+    async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
         const cachedData = await this.cacheManagerService.getToken(tokenID);
         if (!!cachedData) {
             return cachedData.token;
@@ -188,11 +192,11 @@ export class ContextService {
         return tokenMetadata;
     }
 
-    async getNFTTokenMetadata(tokenID: string): Promise<NFTTokenModel> {
-        const nftTokenMetadata = await this.apiService
-            .getService()
-            .getNFTToken(tokenID);
-        return nftTokenMetadata;
+    async getNftCollectionMetadata(tokenID: string): Promise<NftCollection> {
+        const nftCollectionMetadata = await this.apiService.getNftCollection(
+            tokenID,
+        );
+        return nftCollectionMetadata;
     }
 
     esdtTransfer(

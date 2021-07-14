@@ -28,6 +28,26 @@ export class AddLiquidityProxyArgs {
 }
 
 @ArgsType()
+export class AddLiquidityProxyBatchArgs {
+    @Field()
+    pairAddress: string;
+    @Field()
+    firstTokenAmount: string;
+    @Field()
+    firstTokenID: string;
+    @Field(type => Int, { nullable: true })
+    firstTokenNonce?: number;
+    @Field()
+    secondTokenAmount: string;
+    @Field()
+    secondTokenID: string;
+    @Field(type => Int, { nullable: true })
+    secondTokenNonce?: number;
+    @Field({ nullable: true }) sender?: string;
+    @Field() tolerance: number;
+}
+
+@ArgsType()
 export class RemoveLiquidityProxyArgs {
     @Field() sender: string;
     @Field() pairAddress: string;
@@ -40,10 +60,16 @@ export class RemoveLiquidityProxyArgs {
 
 @ArgsType()
 export class ReclaimTemporaryFundsProxyArgs {
+    @Field()
+    sender: string;
     @Field() firstTokenID: string;
-    @Field() secondTokenID: string;
     @Field(type => Int, { nullable: true })
     firstTokenNonce?: number;
+    @Field({ nullable: true })
+    firstTokenAmount?: string;
+    @Field() secondTokenID: string;
     @Field(type => Int, { nullable: true })
     secondTokenNonce?: number;
+    @Field({ nullable: true })
+    secondTokenAmount?: string;
 }

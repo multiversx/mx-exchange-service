@@ -10,7 +10,6 @@ import { CacheProxyPairService } from './cache-proxy-pair.service';
 import { CacheProxyFarmService } from './cache-proxy-farm.service';
 import { CacheFarmService } from './cache-farm.service';
 import { CacheLockedAssetService } from './cache-locked-asset.service';
-import { CacheUserService } from './cache-user.service';
 
 @Module({
     providers: [
@@ -23,7 +22,6 @@ import { CacheUserService } from './cache-user.service';
         CacheProxyPairService,
         CacheProxyFarmService,
         CacheLockedAssetService,
-        CacheUserService,
     ],
     imports: [
         CacheModule.register({
@@ -45,7 +43,6 @@ import { CacheUserService } from './cache-user.service';
         CacheProxyPairService,
         CacheProxyFarmService,
         CacheLockedAssetService,
-        CacheUserService,
     ],
 })
 export class CacheManagerModule {}

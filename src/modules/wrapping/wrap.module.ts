@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ContextModule } from 'src/services/context/context.module';
+import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 import { AbiWrapService } from './abi-wrap.service';
@@ -15,6 +15,6 @@ import { WrapService } from './wrap.service';
         TransactionsWrapService,
         WrapResolver,
     ],
-    exports: [WrapService],
+    exports: [WrapService, TransactionsWrapService],
 })
 export class WrappingModule {}

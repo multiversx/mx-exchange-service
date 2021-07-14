@@ -1,10 +1,9 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-export class TokenModel {
-    @Field() token: string;
+export class EsdtToken {
+    @Field() identifier: string;
     @Field() name: string;
-    @Field() type: string;
     @Field() owner: string;
     @Field() minted: string;
     @Field() burnt: string;
@@ -17,6 +16,6 @@ export class TokenModel {
     @Field() canPause: boolean;
     @Field() canFreeze: boolean;
     @Field() canWipe: boolean;
+    @Field({ nullable: true }) type: string;
     @Field({ nullable: true }) balance?: string;
-    @Field({ nullable: true }) identifier?: string;
 }
