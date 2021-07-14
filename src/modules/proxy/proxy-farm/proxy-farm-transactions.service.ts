@@ -42,7 +42,7 @@ export class TransactionsProxyFarmService {
         const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.enterFarm),
+            new GasLimit(gasConfig.enterFarmProxy),
         );
 
         transaction.receiver = args.sender;
