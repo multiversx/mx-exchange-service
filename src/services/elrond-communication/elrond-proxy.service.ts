@@ -6,6 +6,7 @@ import {
     SmartContractAbi,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
+import { SmartContractType } from '../../modules/token-merging/dto/token.merging.args';
 import { abiConfig, elrondConfig, scAddress } from '../../config';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 
@@ -32,6 +33,22 @@ export class ElrondProxyService {
 
     getService(): ProxyProvider {
         return this.proxy;
+    }
+
+    async getSmartContractByType(
+        type: SmartContractType,
+        address?: string,
+    ): Promise<SmartContract> {
+        switch (type) {
+            case SmartContractType.FARM:
+                return this.getFarmSmartContract(address);
+            case SmartContractType.LOCKED_ASSET_FACTORY:
+                return this.getLockedAssetFactorySmartContract();
+            case SmartContractType.PROXY_PAIR:
+                return this.getProxyDexSmartContract();
+            case SmartContractType.PROXY_FARM:
+                return this.getProxyDexSmartContract();
+        }
     }
 
     async getAddressShardID(address: string): Promise<number> {

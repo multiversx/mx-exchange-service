@@ -8,6 +8,7 @@ import { ProxyFarmModule } from './proxy-farm/proxy-farm.module';
 import { ProxyPairModule } from './proxy-pair/proxy-pair.module';
 import { ProxyResolver } from './proxy.resolver';
 import { ProxyService } from './proxy.service';
+import { TokenMergingModule } from '../token-merging/token.merging.module';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { ProxyService } from './proxy.service';
         ProxyPairModule,
         ProxyFarmModule,
         FarmModule,
+        TokenMergingModule,
     ],
     providers: [AbiProxyService, ProxyService, ProxyResolver],
     exports: [ProxyService, ProxyResolver],

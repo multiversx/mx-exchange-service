@@ -58,7 +58,7 @@
             ],
             "outputs": [
                 {
-                    "type": "GenericEsdtAmountPair"
+                    "type": "GenericTokenAmountPair"
                 }
             ]
         },
@@ -98,6 +98,16 @@
                     "name": "roles",
                     "type": "variadic<EsdtLocalRole>",
                     "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setNftDepositMaxLen",
+            "inputs": [
+                {
+                    "name": "max_len",
+                    "type": "u32"
                 }
             ],
             "outputs": []
@@ -148,15 +158,6 @@
                 }
             ],
             "outputs": []
-        },
-        {
-            "name": "getTransferExecGasLimit",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
         },
         {
             "name": "getLockedAssetTokenId",
@@ -246,6 +247,97 @@
                     "type": "BigUint"
                 }
             ]
+        },
+        {
+            "name": "getTransferExecGasLimit",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "depositTokens",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "withdrawAllTokensFromDeposit",
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "withdrawTokenFromDeposit",
+            "inputs": [
+                {
+                    "name": "index",
+                    "type": "u32"
+                },
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getnftDeposit",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<GenericTokenAmountPair>"
+                }
+            ]
+        },
+        {
+            "name": "getnftDepositMaxLen",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getNftDepositAcceptedTokenIds",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "mergeLockedAssetTokens",
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "GenericTokenAmountPair"
+                }
+            ]
         }
     ],
     "types": {
@@ -278,7 +370,7 @@
                 }
             ]
         },
-        "GenericEsdtAmountPair": {
+        "GenericTokenAmountPair": {
             "type": "struct",
             "fields": [
                 {
