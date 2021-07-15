@@ -54,10 +54,12 @@ if (!!process.env.LOG_FILE) {
             playground: true,
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {
+                    ...error,
                     message:
                         error.extensions?.exception?.response?.message ||
                         error.message,
                 };
+                console.error(graphQLFormattedError);
                 return graphQLFormattedError;
             },
         }),
