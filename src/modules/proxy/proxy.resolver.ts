@@ -10,6 +10,7 @@ import {
 } from './dto/proxy-pair.args';
 import {
     ClaimFarmRewardsProxyArgs,
+    CompoundRewardsProxyArgs,
     EnterFarmProxyArgs,
     EnterFarmProxyBatchArgs,
     ExitFarmProxyArgs,
@@ -30,7 +31,6 @@ import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import {
     TokensMergingArgs,
-    CompoundRewardsArgs,
     DepositTokenArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
@@ -217,9 +217,11 @@ export class ProxyResolver {
 
     @Query(returns => TransactionModel)
     async compoundRewardsProxy(
-        @Args() args: CompoundRewardsArgs,
+        @Args() args: CompoundRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.compoundRewards(args);
+        return await this.transactionsProxyFarmService.compoundRewardsProxy(
+            args,
+        );
     }
 
     @Query(returns => [WrappedLpTokenAttributesModel])

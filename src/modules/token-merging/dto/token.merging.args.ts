@@ -45,6 +45,3 @@ export class SftInteractionArgs extends TokensMergingArgs {
 
 @ArgsType()
 export class DepositTokenArgs extends SftInteractionArgs {}
-
-@ArgsType()
-export class CompoundRewardsArgs extends SftInteractionArgs {}
