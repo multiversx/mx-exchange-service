@@ -11,6 +11,7 @@ import { TransactionsFarmService } from './transactions-farm.service';
 import {
     CalculateRewardsArgs,
     ClaimRewardsArgs,
+    CompoundRewardsArgs,
     EnterFarmArgs,
     EnterFarmBatchArgs,
     ExitFarmArgs,
@@ -20,7 +21,6 @@ import { TokenMergingTransactionsService } from '../token-merging/token.merging.
 import { TokenMergingService } from '../token-merging/token.merging.service';
 import {
     TokensMergingArgs,
-    CompoundRewardsArgs,
     DepositTokenArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
@@ -175,16 +175,16 @@ export class FarmResolver {
     }
 
     @Query(returns => TransactionModel)
+    async compoundRewards(
+        @Args() args: CompoundRewardsArgs,
+    ): Promise<TransactionModel> {
+        return await this.transactionsService.compoundRewards(args);
+    }
+
+    @Query(returns => TransactionModel)
     async mergeFarmTokens(
         @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {
         return await this.mergeTokensTransactions.mergeTokens(args);
-    }
-
-    @Query(returns => TransactionModel)
-    async compoundRewards(
-        @Args() args: CompoundRewardsArgs,
-    ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.compoundRewards(args);
     }
 }

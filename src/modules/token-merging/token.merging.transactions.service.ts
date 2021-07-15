@@ -15,7 +15,6 @@ import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import {
     TokensMergingArgs,
-    CompoundRewardsArgs,
     DepositTokenArgs,
     SftInteractionArgs,
     SmartContractType,
@@ -100,19 +99,6 @@ export class TokenMergingTransactionsService {
 
     async depositTokens(args: DepositTokenArgs): Promise<TransactionModel> {
         return this.SftInteraction(args, 'depositTokens');
-    }
-
-    async compoundRewards(
-        args: CompoundRewardsArgs,
-    ): Promise<TransactionModel> {
-        switch (args.smartContractType) {
-            case SmartContractType.FARM:
-                return this.SftInteraction(args, 'compoundRewards');
-            case SmartContractType.PROXY_FARM:
-                return this.SftInteraction(args, 'compoundRewardsProxy', [
-                    BytesValue.fromHex(new Address(args.address).hex()),
-                ]);
-        }
     }
 
     private async SftInteraction(

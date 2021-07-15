@@ -20,7 +20,7 @@ export class TokensMergingArgs {
 }
 
 @ArgsType()
-export class UserNftDepositArgs extends TokensMergingArgs {
+export class UserNftDepositArgs {
     @Field()
     userAddress: string;
 }
@@ -45,6 +45,3 @@ export class SftInteractionArgs extends TokensMergingArgs {
 
 @ArgsType()
 export class DepositTokenArgs extends SftInteractionArgs {}
-
-@ArgsType()
-export class CompoundRewardsArgs extends SftInteractionArgs {}

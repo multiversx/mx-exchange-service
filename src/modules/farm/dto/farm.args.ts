@@ -64,3 +64,6 @@ export class ExitFarmArgs extends SftFarmInteractionArgs {}
 
 @ArgsType()
 export class ClaimRewardsArgs extends SftFarmInteractionArgs {}
+
+@ArgsType()
+export class CompoundRewardsArgs extends SftFarmInteractionArgs {}

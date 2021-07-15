@@ -3,29 +3,32 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { GenericEsdtAmountPair } from 'src/models/proxy.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
-import {
-    TokensMergingArgs,
-    UserNftDepositArgs,
-} from './dto/token.merging.args';
+import { SmartContractType, TokensMergingArgs } from './dto/token.merging.args';
 
 @Injectable()
 export class TokenMergingAbiService {
     constructor(private readonly elrondProxy: ElrondProxyService) {}
 
     async getNftDeposit(
-        args: UserNftDepositArgs,
+        userAddress: string,
+        smartContractType: SmartContractType,
+        address?: string,
     ): Promise<GenericEsdtAmountPair[]> {
         const contract = await this.elrondProxy.getSmartContractByType(
-            args.smartContractType,
-            args.address,
+            smartContractType,
+            address,
         );
         const interaction: Interaction = contract.methods.getnftDeposit([
-            BytesValue.fromHex(new Address(args.userAddress).hex()),
+            BytesValue.fromHex(new Address(userAddress).hex()),
         ]);
         const queryResponse = await contract.runQuery(
             this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
+        if (queryResponse.returnData[0] === '') {
+            return [];
+        }
+
         const response = interaction.interpretQueryResponse(queryResponse);
         return response.firstValue.valueOf().map(value => {
             const depositedNft = value.valueOf();
