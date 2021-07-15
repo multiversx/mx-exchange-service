@@ -1,21 +1,36 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
-import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ContextService } from './context.service';
-import { ElrondApiServiceMock } from './context.test-mocks';
+import {
+    utilities as nestWinstonModuleUtilities,
+    WinstonModule,
+} from 'nest-winston';
+import * as winston from 'winston';
+import * as Transport from 'winston-transport';
+import { ElrondCommunicationModule } from '../elrond-communication/elrond-communication.module';
 
 describe('ContextService', () => {
     let service: ContextService;
 
-    const ElrondApiServiceProvider = {
-        provide: ElrondApiService,
-        useClass: ElrondApiServiceMock,
-    };
+    const logTransports: Transport[] = [
+        new winston.transports.Console({
+            format: winston.format.combine(
+                winston.format.timestamp(),
+                nestWinstonModuleUtilities.format.nestLike(),
+            ),
+        }),
+    ];
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CacheManagerModule],
-            providers: [ElrondApiServiceProvider, ContextService],
+            imports: [
+                WinstonModule.forRoot({
+                    transports: logTransports,
+                }),
+                CacheManagerModule,
+                ElrondCommunicationModule,
+            ],
+            providers: [ContextService],
         }).compile();
 
         service = module.get<ContextService>(ContextService);

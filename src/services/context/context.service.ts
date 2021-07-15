@@ -8,7 +8,6 @@ import {
 import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import {
-    ProxyProvider,
     Address,
     SmartContract,
     GasLimit,
@@ -17,6 +16,7 @@ import {
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { TransactionModel } from '../../models/transaction.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import { ElrondProxyService } from '../elrond-communication/elrond-proxy.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 interface PairMetadata {
@@ -27,17 +27,11 @@ interface PairMetadata {
 
 @Injectable()
 export class ContextService {
-    private readonly proxy: ProxyProvider;
-
     constructor(
-        private apiService: ElrondApiService,
-        private cacheManagerService: CacheManagerService,
-    ) {
-        this.proxy = new ProxyProvider(
-            elrondConfig.elrondApi,
-            elrondConfig.proxyTimeout,
-        );
-    }
+        private readonly elrondProxy: ElrondProxyService,
+        private readonly apiService: ElrondApiService,
+        private readonly cacheManagerService: CacheManagerService,
+    ) {}
 
     private async getContract(): Promise<SmartContract> {
         const abiRegistry = await AbiRegistry.load({
@@ -61,7 +55,7 @@ export class ContextService {
         );
 
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             interaction.buildQuery(),
         );
         const result = interaction.interpretQueryResponse(queryResponse);
@@ -89,7 +83,7 @@ export class ContextService {
         );
 
         const queryResponse = await contract.runQuery(
-            this.proxy,
+            this.elrondProxy.getService(),
             getAllPairsInteraction.buildQuery(),
         );
         const result = getAllPairsInteraction.interpretQueryResponse(

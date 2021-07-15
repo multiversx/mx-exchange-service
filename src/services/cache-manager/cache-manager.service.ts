@@ -1,6 +1,9 @@
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 import { Cache } from 'cache-manager';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from '../../config';
+import { Logger } from 'winston';
 
 const Keys = {
     networkConfig: () => 'networkConfig',
@@ -21,6 +24,7 @@ const FactoryKeys = {
 export class CacheManagerService {
     constructor(
         @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger
     ) {}
 
     async getPairsAddress(): Promise<Record<string, any>> {
@@ -105,18 +109,31 @@ export class CacheManagerService {
     }
 
     async get(key: string): Promise<any> {
-        return this.cacheManager.get(key);
+        try {
+            return this.cacheManager.get(key);
+        } catch (error) {
+            this.logger.error('An error occured while trying to get from redis cache.', {
+                path: 'redis-cache.service.get',
+                exception: error.toString(),
+                cacheKey: key
+            });
+            return null;
+        }
     }
 
-    async set(key: string, value: any, ttl: number) {
-        if (!value) {
+    async set(key: string, value: any, ttl: number = cacheConfig.default): Promise<void> {
+        if (isNil(value)) {
             return;
         }
 
-        if (ttl <= -1) {
-            return this.cacheManager.set(key, value);
-        } else {
+        try {
             return this.cacheManager.set(key, value, { ttl });
+        } catch (error) {
+            this.logger.error('An error occurred while trying to set in redis cache.', {
+                path: 'redis-cache.service.set',
+                exception: error.toString(),
+                cacheKey: key
+            })
         }
     }
 }

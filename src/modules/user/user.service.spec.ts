@@ -21,6 +21,12 @@ import {
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ContextService } from '../../services/context/context.service';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
+import {
+    utilities as nestWinstonModuleUtilities,
+    WinstonModule,
+} from 'nest-winston';
+import * as winston from 'winston';
+import * as Transport from 'winston-transport';
 
 describe('UserService', () => {
     let service: UserService;
@@ -70,6 +76,15 @@ describe('UserService', () => {
         useClass: LockedAssetMock,
     };
 
+    const logTransports: Transport[] = [
+        new winston.transports.Console({
+            format: winston.format.combine(
+                winston.format.timestamp(),
+                nestWinstonModuleUtilities.format.nestLike(),
+            ),
+        }),
+    ];
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -84,7 +99,12 @@ describe('UserService', () => {
                 LockedAssetProvider,
                 UserService,
             ],
-            imports: [CacheManagerModule],
+            imports: [
+                WinstonModule.forRoot({
+                    transports: logTransports,
+                }),
+                CacheManagerModule,
+            ],
         }).compile();
 
         service = module.get<UserService>(UserService);

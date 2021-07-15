@@ -3,9 +3,8 @@
 # ------------------------------------------------------
 
 type EsdtToken {
-  token: String!
+  identifier: String!
   name: String!
-  type: String!
   owner: String!
   minted: String!
   burnt: String!
@@ -18,8 +17,8 @@ type EsdtToken {
   canPause: Boolean!
   canFreeze: Boolean!
   canWipe: Boolean!
+  type: String
   balance: String
-  identifier: String
 }
 
 type PairInfoModel {
@@ -91,7 +90,7 @@ type TransactionModel {
   data: String!
   chainID: String!
   version: Float!
-  options: String
+  options: Float
   status: String
   signature: String
 }
@@ -108,6 +107,9 @@ type FarmTokenAttributesModel {
   enteringEpoch: Int!
   aprMultiplier: Int!
   lockedRewards: Boolean!
+  initialFarmingAmount: String!
+  compoundedReward: String!
+  currentFarmAmount: String!
 }
 
 type RewardsModel {
@@ -127,17 +129,9 @@ type FarmModel {
   farmTokenSupply: String!
   farmingTokenReserve: String!
   APR: String!
+  nftDepositMaxLen: Int!
+  nftDepositAcceptedTokenIDs: [String!]!
   state: String!
-}
-
-type CommunityDistributionModel {
-  epoch: Float!
-  amount: String!
-}
-
-type DistributionModel {
-  address: String!
-  communityDistribution: CommunityDistributionModel!
 }
 
 type ProxyModel {
@@ -148,6 +142,8 @@ type ProxyModel {
   lockedAssetToken: NftCollection!
   intermediatedPairs: [String!]!
   intermediatedFarms: [String!]!
+  nftDepositMaxLen: Int!
+  nftDepositAcceptedTokenIDs: [String!]!
 }
 
 type WrappedLpTokenAttributesModel {
@@ -164,10 +160,12 @@ type WrappedFarmTokenAttributesModel {
   attributes: String!
   farmTokenID: String!
   farmTokenNonce: Int!
+  farmTokenAmount: String!
   farmTokenIdentifier: String!
   farmTokenAttributes: FarmTokenAttributesModel!
-  farmedTokenID: String!
-  farmedTokenNonce: Int!
+  farmingTokenID: String!
+  farmingTokenNonce: String!
+  farmingTokenAmount: String!
 }
 
 type GenericEsdtAmountPair {
@@ -175,6 +173,16 @@ type GenericEsdtAmountPair {
   tokenNonce: String!
   amount: String!
   pairAddress: String
+}
+
+type CommunityDistributionModel {
+  epoch: Float!
+  amount: String!
+}
+
+type DistributionModel {
+  address: String!
+  communityDistribution: CommunityDistributionModel!
 }
 
 type UnlockMileStoneModel {
@@ -186,12 +194,13 @@ type LockedAssetModel {
   address: String!
   lockedToken: NftCollection!
   unlockMilestones: [UnlockMileStoneModel!]!
+  nftDepositMaxLen: Int!
+  nftDepositAcceptedTokenIDs: [String!]!
 }
 
 type UserToken {
-  token: String!
+  identifier: String!
   name: String!
-  type: String!
   owner: String!
   minted: String!
   burnt: String!
@@ -204,8 +213,8 @@ type UserToken {
   canPause: Boolean!
   canFreeze: Boolean!
   canWipe: Boolean!
+  type: String
   balance: String
-  identifier: String
   valueUSD: String!
 }
 
@@ -241,10 +250,10 @@ type Query {
   getLiquidityPosition(liquidityAmount: String!, pairAddress: String!): LiquidityPosition!
   addLiquidityBatch(pairAddress: String!, sender: String!, firstTokenID: String!, firstTokenAmount: String!, secondTokenID: String!, secondTokenAmount: String!, tolerance: Float!): [TransactionModel!]!
   addLiquidity(pairAddress: String!, amount0: String!, amount1: String!, tolerance: Float!): TransactionModel!
-  reclaimTemporaryFunds(pairAddress: String!): TransactionModel!
-  removeLiquidity(pairAddress: String!, liquidity: String!, liquidityTokenID: String!, tolerance: Float!): TransactionModel!
-  swapTokensFixedInput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): TransactionModel!
-  swapTokensFixedOutput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): TransactionModel!
+  reclaimTemporaryFunds(pairAddress: String!, sender: String!, firstTokenID: String, firstTokenAmount: String, secondTokenID: String, secoundTokenAmount: String): [TransactionModel!]!
+  removeLiquidity(pairAddress: String!, sender: String!, liquidity: String!, liquidityTokenID: String!, tolerance: Float!): [TransactionModel!]!
+  swapTokensFixedInput(pairAddress: String!, sender: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): [TransactionModel!]!
+  swapTokensFixedOutput(pairAddress: String!, sender: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): [TransactionModel!]!
   tokensTransfer(pairAddress: String!, token: String!, amount: String!): TransactionModel!
   wrappingInfo: WrapModel!
   wrapEgld(amount: String!, sender: String!): TransactionModel!
@@ -253,8 +262,15 @@ type Query {
   farms: [FarmModel!]!
   getRewardsForPosition(farmAddress: String!, liquidity: String!, identifier: String!, attributes: String!): RewardsModel!
   enterFarm(farmAddress: String!, tokenInID: String!, amount: String!, lockRewards: Boolean): TransactionModel!
+  enterFarmBatch(farmAddress: String!, tokenInID: String!, amountIn: String!, lockRewards: Boolean, sender: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): [TransactionModel!]!
   exitFarm(farmAddress: String!, sender: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
   claimRewards(farmAddress: String!, sender: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
+  mergeFarmTokens(smartContractType: SmartContractType!, address: String): TransactionModel!
+  compoundRewards(sender: String!, tokenID: String!, tokenNonce: Int!, amount: String!, smartContractType: SmartContractType!, address: String): TransactionModel!
+  userNftDeposit(smartContractType: SmartContractType!, address: String, userAddress: String!): [GenericEsdtAmountPair!]!
+  depositTokens(sender: String!, tokenID: String!, tokenNonce: Int!, amount: String!, smartContractType: SmartContractType!, address: String): TransactionModel!
+  withdrawAllTokensFromDeposit(smartContractType: SmartContractType!, address: String): TransactionModel!
+  withdrawTokenFromDeposit(smartContractType: SmartContractType!, address: String, tokenIndex: Int!): TransactionModel!
   distribution: DistributionModel!
   claimLockedAssets: TransactionModel!
   distributedLockedAssets(userAddress: String!): String!
@@ -263,15 +279,20 @@ type Query {
   addLiquidityProxyBatch(pairAddress: String!, firstTokenAmount: String!, firstTokenID: String!, firstTokenNonce: Int, secondTokenAmount: String!, secondTokenID: String!, secondTokenNonce: Int, sender: String, tolerance: Float!): [TransactionModel!]!
   addLiquidityProxy(pairAddress: String!, amount0: String!, amount1: String!, tolerance: Float!, token0ID: String!, token1ID: String!, token0Nonce: Int, token1Nonce: Int): TransactionModel!
   getTemporaryFundsProxy(userAddress: String!): [GenericEsdtAmountPair!]!
-  reclaimTemporaryFundsProxy(firstTokenID: String!, secondTokenID: String!, firstTokenNonce: Int, secondTokenNonce: Int): TransactionModel!
-  removeLiquidityProxy(sender: String!, pairAddress: String!, wrappedLpTokenID: String!, wrappedLpTokenNonce: Int!, liquidity: String!, tolerance: Float!): TransactionModel!
+  reclaimTemporaryFundsProxy(sender: String!, firstTokenID: String!, firstTokenNonce: Int, firstTokenAmount: String, secondTokenID: String!, secondTokenNonce: Int, secondTokenAmount: String): [TransactionModel!]!
+  removeLiquidityProxy(sender: String!, pairAddress: String!, wrappedLpTokenID: String!, wrappedLpTokenNonce: Int!, liquidity: String!, tolerance: Float!): [TransactionModel!]!
   enterFarmProxy(sender: String!, farmAddress: String!, acceptedLockedTokenID: String!, acceptedLockedTokenNonce: Int!, amount: String!, lockRewards: Boolean): TransactionModel!
+  enterFarmProxyBatch(sender: String!, farmAddress: String!, acceptedLockedTokenID: String!, acceptedLockedTokenNonce: Int!, amount: String!, lockRewards: Boolean, lockedFarmTokenID: String!, lockedFarmTokenNonce: Int!, lockedFarmAmount: String!): [TransactionModel!]!
   exitFarmProxy(sender: String!, farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
   claimFarmRewardsProxy(sender: String!, farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
+  mergeWrappedLpTokens(smartContractType: SmartContractType!, address: String): TransactionModel!
+  mergeWrappedFarmTokens(smartContractType: SmartContractType!, address: String): TransactionModel!
+  compoundRewardsProxy(sender: String!, tokenID: String!, tokenNonce: Int!, amount: String!, smartContractType: SmartContractType!, address: String): TransactionModel!
   wrappedLpTokenAttributes(args: DecodeAttributesArgs!): [WrappedLpTokenAttributesModel!]!
   wrappedFarmTokenAttributes(args: DecodeAttributesArgs!): [WrappedFarmTokenAttributesModel!]!
   lockedAssetFactory: LockedAssetModel!
   unlockAssets(sender: String!, lockedTokenID: String!, lockedTokenNonce: Int!, amount: String!): TransactionModel!
+  mergeLockedAssetTokens(smartContractType: SmartContractType!, address: String): TransactionModel!
   tokens(offset: Int = 0, limit: Int = 10, address: String!): [UserToken!]!
   nfts(offset: Int = 0, limit: Int = 10, address: String!): [UserNftTokens!]!
   getTokenPriceUSD(tokenID: String!): String!
@@ -279,6 +300,13 @@ type Query {
   totalTokenSupply(tokenID: String!): String!
   totalAgregatedRewards(days: Int!): String!
   tradingInfo: TradingInfoModel!
+}
+
+enum SmartContractType {
+  FARM
+  LOCKED_ASSET_FACTORY
+  PROXY_PAIR
+  PROXY_FARM
 }
 
 input DecodeAttributesArgs {
