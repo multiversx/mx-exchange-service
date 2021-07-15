@@ -15,14 +15,17 @@ async function bootstrap() {
         AppModule,
         new FastifyAdapter(),
     );
-    await app.listen(parseInt(process.env.PORT));
+    await app.listen(parseInt(process.env.PORT), process.env.LISTEN_ADDRESS);
 
     if (cronConfig.cacheWarmer) {
         const processorApp = await NestFactory.create<NestFastifyApplication>(
             CacheWarmerModule,
             new FastifyAdapter(),
         );
-        await processorApp.listen(parseInt(process.env.CRON_PORT));
+        await processorApp.listen(
+            parseInt(process.env.CRON_PORT),
+            process.env.LISTEN_ADDRESS,
+        );
     }
 }
 bootstrap();
