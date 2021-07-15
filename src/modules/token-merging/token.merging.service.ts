@@ -22,7 +22,6 @@ export class TokenMergingService {
                 SmartContractType.FARM,
                 farmAddress,
             );
-            console.log(depositedNfts);
             for (const depositedNft of depositedNfts) {
                 depositedNft.address = farmAddress;
                 userNftDeposits.push(depositedNft);

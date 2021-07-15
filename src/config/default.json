@@ -1,7 +1,7 @@
 {
     "elrond": {
         "elastic": "https://devnet-index.elrond.com",
-        "elrondApi": "https://devnet-beta-api.elrond.com",
+        "elrondApi": "https://devnet-api.elrond.com",
         "elrondData": "https://data.elrond.com",
         "gateway": "https://devnet-gateway.elrond.com",
         "explorer": "https://devnet-explorer.elrond.com",
