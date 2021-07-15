@@ -23,9 +23,9 @@
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqmu6w6w375fu79g5qea0cuy5lkgz2d3et0n4srera2n",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq646juuvw4659tns8z88h5zmn9n0a9dma0n4shrqrca",
         "wrappingAddress": {
-            "0": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
+            "0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
-            "2": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c"
+            "2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         }
     },
     "tokenProviderUSD": "BUSD-05b16f",
