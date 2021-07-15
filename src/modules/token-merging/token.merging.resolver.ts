@@ -3,7 +3,6 @@ import { Args, Query, Resolver } from '@nestjs/graphql';
 import { GenericEsdtAmountPair } from 'src/models/proxy.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
-    CompoundRewardsArgs,
     DepositTokenArgs,
     TokensMergingArgs,
     UserNftDepositArgs,
@@ -26,6 +25,13 @@ export class TokenMergingResolver {
         @Args() args: UserNftDepositArgs,
     ): Promise<GenericEsdtAmountPair[]> {
         return await this.mergeTokensService.getNftDeposit(args);
+    }
+
+    @Query(returns => [GenericEsdtAmountPair])
+    async userNftDepositProxy(
+        @Args() args: UserNftDepositArgs,
+    ): Promise<GenericEsdtAmountPair[]> {
+        return await this.mergeTokensService.getNftDepositProxy(args);
     }
 
     @Query(returns => TransactionModel)
@@ -51,12 +57,5 @@ export class TokenMergingResolver {
         return await this.mergeTokensTransactions.withdrawTokenFromDeposit(
             args,
         );
-    }
-
-    @Query(returns => TransactionModel)
-    async compoundRewards(
-        @Args() args: CompoundRewardsArgs,
-    ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.compoundRewards(args);
     }
 }

@@ -66,6 +66,7 @@
         "removeLiquidityProxy": 250000000,
         "enterFarm": 200000000,
         "exitFarm": 100000000,
+        "enterFarmProxy": 500000000,
         "exitFarmProxy": 250000000,
         "wrapeGLD": 8000000,
         "claimLockedAssets": 100000000

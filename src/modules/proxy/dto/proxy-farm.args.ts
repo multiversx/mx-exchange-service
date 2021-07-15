@@ -48,3 +48,17 @@ export class ClaimFarmRewardsProxyArgs {
     wrappedFarmTokenNonce: number;
     @Field() amount: string;
 }
+
+@ArgsType()
+export class CompoundRewardsProxyArgs {
+    @Field()
+    sender: string;
+    @Field()
+    farmAddress: string;
+    @Field()
+    tokenID: string;
+    @Field(type => Int)
+    tokenNonce: number;
+    @Field()
+    amount: string;
+}

@@ -82,5 +82,5 @@ export class GenericEsdtAmountPair {
     @Field()
     amount: string;
     @Field({ nullable: true })
-    pairAddress: string;
+    address: string;
 }

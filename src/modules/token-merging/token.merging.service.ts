@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { farmsConfig, scAddress } from 'src/config';
 import { GenericEsdtAmountPair } from 'src/models/proxy.model';
 import {
+    SmartContractType,
     TokensMergingArgs,
     UserNftDepositArgs,
 } from './dto/token.merging.args';
@@ -13,8 +15,37 @@ export class TokenMergingService {
     async getNftDeposit(
         args: UserNftDepositArgs,
     ): Promise<GenericEsdtAmountPair[]> {
-        const depositedNfts = await this.mergeTokensAbi.getNftDeposit(args);
-        return depositedNfts;
+        const userNftDeposits = [];
+        for (const farmAddress of farmsConfig) {
+            const depositedNfts = await this.mergeTokensAbi.getNftDeposit(
+                args.userAddress,
+                SmartContractType.FARM,
+                farmAddress,
+            );
+            console.log(depositedNfts);
+            for (const depositedNft of depositedNfts) {
+                depositedNft.address = farmAddress;
+                userNftDeposits.push(depositedNft);
+            }
+        }
+        return userNftDeposits;
+    }
+
+    async getNftDepositProxy(
+        args: UserNftDepositArgs,
+    ): Promise<GenericEsdtAmountPair[]> {
+        const userNftDeposits = [];
+
+        const depositedNfts = await this.mergeTokensAbi.getNftDeposit(
+            args.userAddress,
+            SmartContractType.PROXY_FARM,
+        );
+        for (const depositedNft of depositedNfts) {
+            depositedNft.address = scAddress.proxyDexAddress;
+            userNftDeposits.push(depositedNft);
+        }
+
+        return userNftDeposits;
     }
 
     async getNftDepositMaxLen(args: TokensMergingArgs): Promise<number> {
