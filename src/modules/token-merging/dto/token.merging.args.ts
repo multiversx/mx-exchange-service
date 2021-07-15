@@ -20,7 +20,7 @@ export class TokensMergingArgs {
 }
 
 @ArgsType()
-export class UserNftDepositArgs extends TokensMergingArgs {
+export class UserNftDepositArgs {
     @Field()
     userAddress: string;
 }

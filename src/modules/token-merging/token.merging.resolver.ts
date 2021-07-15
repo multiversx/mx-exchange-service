@@ -27,6 +27,13 @@ export class TokenMergingResolver {
         return await this.mergeTokensService.getNftDeposit(args);
     }
 
+    @Query(returns => [GenericEsdtAmountPair])
+    async userNftDepositProxy(
+        @Args() args: UserNftDepositArgs,
+    ): Promise<GenericEsdtAmountPair[]> {
+        return await this.mergeTokensService.getNftDepositProxy(args);
+    }
+
     @Query(returns => TransactionModel)
     async depositTokens(
         @Args() args: DepositTokenArgs,
