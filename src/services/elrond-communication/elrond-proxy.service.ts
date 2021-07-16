@@ -73,7 +73,7 @@ export class ElrondProxyService {
 
     async getWrapSmartContract(shardID = 1): Promise<SmartContract> {
         return this.getSmartContract(
-            scAddress.wrappingAddress.get(shardID.toString()),
+            scAddress.wrappingAddress.get(`shardID-${shardID}`),
             abiConfig.wrap,
             'EgldEsdtSwap',
         );

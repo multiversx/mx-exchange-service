@@ -17,15 +17,15 @@ export class WrapService {
     async getWrappingInfo(): Promise<WrapModel[]> {
         return [
             new WrapModel({
-                address: scAddress.wrappingAddress.get('0'),
+                address: scAddress.wrappingAddress.get('shardID-0'),
                 shard: 0,
             }),
             new WrapModel({
-                address: scAddress.wrappingAddress.get('1'),
+                address: scAddress.wrappingAddress.get('shardID-1'),
                 shard: 1,
             }),
             new WrapModel({
-                address: scAddress.wrappingAddress.get('2'),
+                address: scAddress.wrappingAddress.get('shardID-2'),
                 shard: 2,
             }),
         ];
