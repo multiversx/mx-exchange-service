@@ -1,5 +1,5 @@
 import { TransactionModel } from '../../models/transaction.model';
-import { PairModel } from '../../models/pair.model';
+import { PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from '../../models/factory.model';
 import { Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';

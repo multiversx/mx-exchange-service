@@ -9,7 +9,7 @@ import {
 } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { GetPairsArgs, PairModel } from '../../models/pair.model';
+import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from '../../models/factory.model';
 
 @Resolver(of => FactoryModel)

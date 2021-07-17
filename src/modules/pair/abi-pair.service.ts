@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { Address } from '@elrondnetwork/erdjs';
-import { PairInfoModel } from '../../models/pair-info.model';
+import { PairInfoModel } from './models/pair-info.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import BigNumber from 'bignumber.js';
 
@@ -75,12 +75,11 @@ export class AbiPairService {
         );
         const response = interaction.interpretQueryResponse(queryResponse);
 
-        const pairInfo = {
+        return new PairInfoModel({
             reserves0: response.values[0].valueOf().toFixed(),
             reserves1: response.values[1].valueOf().toFixed(),
             totalSupply: response.values[2].valueOf().toFixed(),
-        };
-        return pairInfo;
+        });
     }
 
     async getTemporaryFunds(

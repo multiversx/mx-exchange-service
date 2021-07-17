@@ -1,4 +1,4 @@
-import { PairInfoModel } from '../../models/pair-info.model';
+import { PairInfoModel } from './models/pair-info.model';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import BigNumber from 'bignumber.js';
 

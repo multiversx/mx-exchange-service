@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { elrondConfig, tokenProviderUSD, tokensPriceData } from '../../config';
 import { BigNumber } from 'bignumber.js';
-import { PairInfoModel } from '../../models/pair-info.model';
-import {
-    LiquidityPosition,
-    TemporaryFundsModel,
-} from '../../models/pair.model';
+import { PairInfoModel } from './models/pair-info.model';
+import { LiquidityPosition, TemporaryFundsModel } from './models/pair.model';
 import {
     quote,
     getAmountOut,

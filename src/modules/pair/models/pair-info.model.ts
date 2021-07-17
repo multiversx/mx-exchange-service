@@ -10,4 +10,8 @@ export class PairInfoModel {
 
     @Field()
     totalSupply: string;
+
+    constructor(init?: Partial<PairInfoModel>) {
+        Object.assign(this, init);
+    }
 }
