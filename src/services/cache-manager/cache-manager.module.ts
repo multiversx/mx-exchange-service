@@ -1,9 +1,7 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { CacheManagerService } from './cache-manager.service';
-
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheDistributionService } from './cache-distribution.service';
-import { CachePairService } from './cache-pair.service';
 import { CacheWrapService } from './cache-wrapping.service';
 import { CacheProxyService } from './cache-proxy.service';
 import { CacheProxyPairService } from './cache-proxy-pair.service';
@@ -14,7 +12,6 @@ import { CacheLockedAssetService } from './cache-locked-asset.service';
 @Module({
     providers: [
         CacheManagerService,
-        CachePairService,
         CacheFarmService,
         CacheDistributionService,
         CacheWrapService,
@@ -35,7 +32,6 @@ import { CacheLockedAssetService } from './cache-locked-asset.service';
     ],
     exports: [
         CacheManagerService,
-        CachePairService,
         CacheFarmService,
         CacheWrapService,
         CacheDistributionService,
