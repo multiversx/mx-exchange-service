@@ -18,6 +18,7 @@ import {
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import { RedisModule } from 'nestjs-redis';
 
 const logTransports: Transport[] = [
     new winston.transports.Console({
@@ -51,7 +52,6 @@ if (!!process.env.LOG_FILE) {
         }),
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
-            playground: true,
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {
                     ...error,
@@ -63,7 +63,13 @@ if (!!process.env.LOG_FILE) {
                 return graphQLFormattedError;
             },
         }),
-
+        RedisModule.register([
+            {
+                host: process.env.REDIS_URL,
+                port: parseInt(process.env.REDIS_PORT),
+                password: process.env.REDIS_PASSWORD,
+            },
+        ]),
         HttpModule,
         CacheManagerModule,
         RouterModule,
