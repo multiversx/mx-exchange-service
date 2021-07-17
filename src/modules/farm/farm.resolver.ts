@@ -6,7 +6,7 @@ import {
     FarmModel,
     FarmTokenAttributesModel,
     RewardsModel,
-} from '../../models/farm.model';
+} from './models/farm.model';
 import { TransactionsFarmService } from './transactions-farm.service';
 import {
     CalculateRewardsArgs,
@@ -15,7 +15,7 @@ import {
     EnterFarmArgs,
     EnterFarmBatchArgs,
     ExitFarmArgs,
-} from './dto/farm.args';
+} from './models/farm.args';
 import { FarmStatisticsService } from './farm-statistics.service';
 import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
 import { TokenMergingService } from '../token-merging/token.merging.service';

@@ -9,6 +9,7 @@ import { PairModule } from '../pair/pair.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { TokenMergingModule } from 'src/modules/token-merging/token.merging.module';
+import { RedisCacheService } from 'src/services/redis-cache.service';
 
 @Module({
     imports: [
@@ -23,6 +24,7 @@ import { TokenMergingModule } from 'src/modules/token-merging/token.merging.modu
         AbiFarmService,
         TransactionsFarmService,
         FarmStatisticsService,
+        RedisCacheService,
         FarmResolver,
     ],
     exports: [FarmService],

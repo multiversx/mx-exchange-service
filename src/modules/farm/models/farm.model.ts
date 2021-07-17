@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { EsdtToken } from './tokens/esdtToken.model';
-import { NftCollection } from './tokens/nftCollection.model';
+import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @ObjectType()
 export class FarmTokenAttributesModel {
@@ -22,6 +22,10 @@ export class FarmTokenAttributesModel {
     compoundedReward: string;
     @Field()
     currentFarmAmount: string;
+
+    constructor(init?: Partial<FarmTokenAttributesModel>) {
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
@@ -30,6 +34,10 @@ export class RewardsModel {
     decodedAttributes: FarmTokenAttributesModel;
     @Field()
     rewards: string;
+
+    constructor(init?: Partial<RewardsModel>) {
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
@@ -75,4 +83,8 @@ export class FarmModel {
 
     @Field()
     state: string;
+
+    constructor(init?: Partial<FarmModel>) {
+        Object.assign(this, init);
+    }
 }
