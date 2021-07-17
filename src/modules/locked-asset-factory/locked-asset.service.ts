@@ -2,12 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { CacheLockedAssetService } from '../../services/cache-manager/cache-locked-asset.service';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
 import {
+    LockedAssetAttributes,
     LockedAssetModel,
     UnlockMileStoneModel,
-} from '../../models/locked-asset.model';
+} from './models/locked-asset.model';
 import { scAddress } from '../../config';
 import { ContextService } from '../../services/context/context.service';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
+import {
+    BinaryCodec,
+    BooleanType,
+    ListType,
+    StructFieldDefinition,
+    StructType,
+    U64Type,
+    U8Type,
+} from '@elrondnetwork/erdjs/out';
+import { DecodeAttributesArgs } from '../proxy/dto/proxy.args';
 
 @Injectable()
 export class LockedAssetService {
@@ -46,5 +57,55 @@ export class LockedAssetService {
         const lockedTokenID = await this.abiService.getLockedTokenID();
         this.cacheService.setLockedTokenID({ lockedTokenID: lockedTokenID });
         return lockedTokenID;
+    }
+
+    decodeLockedAssetAttributes(
+        args: DecodeAttributesArgs,
+    ): LockedAssetAttributes[] {
+        const decodedBatchAttributes = [];
+        for (const attributes of args.batchAttributes) {
+            const attributesBuffer = Buffer.from(
+                attributes.attributes,
+                'base64',
+            );
+            const codec = new BinaryCodec();
+
+            const structType = new StructType('LockedAssetAttributes', [
+                new StructFieldDefinition(
+                    'unlockSchedule',
+                    '',
+                    new ListType(
+                        new StructType('UnlockMilestone', [
+                            new StructFieldDefinition(
+                                'epoch',
+                                '',
+                                new U64Type(),
+                            ),
+                            new StructFieldDefinition(
+                                'percent',
+                                '',
+                                new U8Type(),
+                            ),
+                        ]),
+                    ),
+                ),
+                new StructFieldDefinition('isMerged', '', new BooleanType()),
+            ]);
+
+            const [decoded, decodedLength] = codec.decodeNested(
+                attributesBuffer,
+                structType,
+            );
+            const decodedAttributes = decoded.valueOf();
+            decodedBatchAttributes.push(
+                new LockedAssetAttributes({
+                    attributes: attributes.attributes,
+                    identifier: attributes.identifier,
+                    isMerged: decodedAttributes.isMerged,
+                    unlockSchedule: decodedAttributes.unlockSchedule,
+                }),
+            );
+        }
+        return decodedBatchAttributes;
     }
 }

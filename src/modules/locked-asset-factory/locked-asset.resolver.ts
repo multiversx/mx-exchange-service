@@ -3,19 +3,20 @@ import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { LockedAssetService } from './locked-asset.service';
 import {
+    LockedAssetAttributes,
     LockedAssetModel,
     UnlockMileStoneModel,
-} from '../../models/locked-asset.model';
-import { UnlockAssetsArs } from './dto/locked-asset.args';
+} from './models/locked-asset.model';
+import { UnlockAssetsArs } from './models/locked-asset.args';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { TokenMergingService } from '../token-merging/token.merging.service';
 import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
 import {
     TokensMergingArgs,
-    DepositTokenArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
+import { DecodeAttributesArgs } from '../proxy/dto/proxy.args';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {
@@ -71,5 +72,12 @@ export class LockedAssetResolver {
         @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {
         return await this.mergeTokensTransactions.mergeTokens(args);
+    }
+
+    @Query(returns => [LockedAssetAttributes])
+    async decodeLockedAssetAttributes(
+        @Args('args') args: DecodeAttributesArgs,
+    ): Promise<LockedAssetAttributes[]> {
+        return this.lockedAssetService.decodeLockedAssetAttributes(args);
     }
 }
