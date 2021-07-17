@@ -69,7 +69,7 @@ export class PairResolver {
     @ResolveField()
     async info(@Parent() pair: PairModel) {
         const { address } = pair;
-        return await this.pairService.getPairInfo(address);
+        return await this.pairService.getPairInfoMetadata(address);
     }
 
     @ResolveField()

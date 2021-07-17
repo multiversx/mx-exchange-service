@@ -1,18 +1,17 @@
 import { Module } from '@nestjs/common';
 import { PairService } from './pair.service';
 import { PairResolver } from './pair.resolver';
-import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 import { AbiPairService } from './abi-pair.service';
 import { TransactionPairService } from './transactions-pair.service';
 import { PriceFeedModule } from '../../services/price-feed/price-feed.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
+import { RedisCacheService } from 'src/services/redis-cache.service';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
-        CacheManagerModule,
         ContextModule,
         PriceFeedModule,
         WrappingModule,
@@ -22,6 +21,7 @@ import { WrappingModule } from '../wrapping/wrap.module';
         AbiPairService,
         TransactionPairService,
         PairResolver,
+        RedisCacheService,
     ],
     exports: [PairService],
 })
