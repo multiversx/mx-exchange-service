@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { UnlockMileStoneModel } from '../../models/locked-asset.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import { UnlockMileStoneModel } from './models/locked-asset.model';
 
 @Injectable()
 export class AbiLockedAssetService {
@@ -37,10 +37,10 @@ export class AbiLockedAssetService {
         const unlockMilestones: UnlockMileStoneModel[] = result.firstValue
             .valueOf()
             .map(unlockMilestone => {
-                return {
+                return new UnlockMileStoneModel({
                     epoch: unlockMilestone.unlock_epoch,
                     percent: unlockMilestone.unlock_percent,
-                };
+                });
             });
 
         return unlockMilestones;

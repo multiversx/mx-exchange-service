@@ -8,7 +8,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { TransactionModel } from '../../models/transaction.model';
 import { BigNumber } from 'bignumber.js';
-import { UnlockAssetsArs } from './dto/locked-asset.args';
+import { UnlockAssetsArs } from './models/locked-asset.args';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 

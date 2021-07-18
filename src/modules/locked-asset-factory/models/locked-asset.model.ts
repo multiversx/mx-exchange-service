@@ -1,5 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { NftCollection } from './tokens/nftCollection.model';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @ObjectType()
 export class UnlockMileStoneModel {
@@ -7,6 +7,10 @@ export class UnlockMileStoneModel {
     epoch: number;
     @Field(type => Int)
     percent: number;
+
+    constructor(init?: Partial<UnlockMileStoneModel>) {
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
@@ -25,4 +29,8 @@ export class LockedAssetModel {
 
     @Field(type => [String])
     nftDepositAcceptedTokenIDs: string[];
+
+    constructor(init?: Partial<LockedAssetModel>) {
+        Object.assign(this, init);
+    }
 }
