@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { farmsConfig, scAddress } from 'src/config';
-import { GenericEsdtAmountPair } from 'src/models/proxy.model';
+import { GenericEsdtAmountPair } from 'src/modules/proxy/models/proxy.model';
 import {
     SmartContractType,
     TokensMergingArgs,

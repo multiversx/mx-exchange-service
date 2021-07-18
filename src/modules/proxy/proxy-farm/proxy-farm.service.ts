@@ -1,28 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ContextService } from '../../../services/context/context.service';
-import { CacheProxyFarmService } from '../../../services/cache-manager/cache-proxy-farm.service';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { RedisCacheService } from 'src/services/redis-cache.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import * as Redis from 'ioredis';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { cacheConfig } from 'src/config';
 
 @Injectable()
 export class ProxyFarmService {
+    private redisClient: Redis.Redis;
     constructor(
         private abiService: AbiProxyFarmService,
-        private cacheService: CacheProxyFarmService,
         private context: ContextService,
-    ) {}
+        private readonly redisCacheService: RedisCacheService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
+        this.redisClient = this.redisCacheService.getClient();
+    }
+
+    private async getTokenID(
+        tokenCacheKey: string,
+        createValueFunc: () => any,
+    ): Promise<string> {
+        try {
+            const cacheKey = this.getProxyFarmCacheKey(tokenCacheKey);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                createValueFunc,
+                cacheConfig.token,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occurred while get ${tokenCacheKey}`,
+                error,
+                {
+                    path: 'ProxyFarmService.getTokenID',
+                },
+            );
+        }
+    }
 
     async getwrappedFarmTokenID(): Promise<string> {
-        const cachedData = await this.cacheService.getWrappedFarmTokenID();
-        if (!!cachedData) {
-            return cachedData.wrappedFarmTokenID;
-        }
-
-        const wrappedFarmTokenID = await this.abiService.getWrappedFarmTokenID();
-        this.cacheService.setWrappedFarmTokenID({
-            wrappedFarmTokenID: wrappedFarmTokenID,
-        });
-        return wrappedFarmTokenID;
+        return this.getTokenID('wrappedFarmTokenID', () =>
+            this.abiService.getWrappedFarmTokenID(),
+        );
     }
 
     async getwrappedFarmToken(): Promise<NftCollection> {
@@ -31,17 +56,28 @@ export class ProxyFarmService {
     }
 
     async getIntermediatedFarms(): Promise<string[]> {
-        const cachedData = await this.cacheService.getIntermediatedFarmsAddress();
-        if (!!cachedData) {
-            return cachedData.farms;
+        try {
+            const cacheKey = this.getProxyFarmCacheKey('intermediatedFarms');
+            const getIntermediatedFarms = () =>
+                this.abiService.getIntermediatedFarmsAddress();
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getIntermediatedFarms,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occurred while get proxy intermediated farms`,
+                error,
+                {
+                    path: 'ProxyFarmService.getIntermediatedFarms',
+                },
+            );
         }
+    }
 
-        const farms = await this.abiService.getIntermediatedFarmsAddress();
-
-        this.cacheService.setIntermediatedFarmsAddress({
-            farms: farms,
-        });
-
-        return farms;
+    private getProxyFarmCacheKey(...args: any) {
+        return generateCacheKeyFromParams('proxyFarm', args);
     }
 }

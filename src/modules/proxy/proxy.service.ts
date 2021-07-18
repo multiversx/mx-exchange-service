@@ -1,69 +1,89 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AbiProxyService } from './proxy-abi.service';
-import { CacheProxyService } from '../../services/cache-manager/cache-proxy.service';
 import {
     ProxyModel,
     WrappedFarmTokenAttributesModel,
     WrappedLpTokenAttributesModel,
-} from '../../models/proxy.model';
-import { scAddress } from '../../config';
+} from './models/proxy.model';
+import { cacheConfig, scAddress } from '../../config';
 import {
     decodeWrappedFarmTokenAttributes,
     decodeWrappedLPTokenAttributes,
 } from './utils';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { FarmService } from '../farm/farm.service';
-import { DecodeAttributesArgs } from './dto/proxy.args';
+import { DecodeAttributesArgs } from './models/proxy.args';
 import { ContextService } from '../../services/context/context.service';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { RedisCacheService } from 'src/services/redis-cache.service';
+import * as Redis from 'ioredis';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 
 @Injectable()
 export class ProxyService {
+    private redisClient: Redis.Redis;
+
     constructor(
         private apiService: ElrondApiService,
         private abiService: AbiProxyService,
-        private cacheService: CacheProxyService,
         private context: ContextService,
         private farmService: FarmService,
-    ) {}
+        private readonly redisCacheService: RedisCacheService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
+        this.redisClient = this.redisCacheService.getClient();
+    }
 
     async getProxyInfo(): Promise<ProxyModel> {
-        const proxy = new ProxyModel();
-        proxy.address = scAddress.proxyDexAddress;
-        return proxy;
+        return new ProxyModel({ address: scAddress.proxyDexAddress });
+    }
+
+    private async getTokenID(
+        tokenCacheKey: string,
+        createValueFunc: () => any,
+    ): Promise<string> {
+        try {
+            const cacheKey = this.getProxyCacheKey(tokenCacheKey);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                createValueFunc,
+                cacheConfig.token,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occurred while get ${tokenCacheKey}`,
+                error,
+                {
+                    path: 'ProxyService.getTokenID',
+                },
+            );
+        }
+    }
+
+    async getAssetTokenID(): Promise<string> {
+        return this.getTokenID('assetTokenID', () =>
+            this.abiService.getAssetTokenID(),
+        );
+    }
+
+    async getLockedAssetTokenID(): Promise<string> {
+        return this.getTokenID('lockedAssetTokenID', () =>
+            this.abiService.getLockedAssetTokenID(),
+        );
     }
 
     async getAssetToken(): Promise<EsdtToken> {
-        const cachedData = await this.cacheService.getAssetTokenID();
-        if (!!cachedData) {
-            return await this.context.getTokenMetadata(cachedData.assetTokenID);
-        }
-
-        const assetTokenID = await this.abiService.getAssetTokenID();
-
-        this.cacheService.setAssetTokenID({
-            assetTokenID: assetTokenID,
-        });
-
-        return await this.context.getTokenMetadata(assetTokenID);
+        const assetTokenID = await this.getAssetTokenID();
+        return this.context.getTokenMetadata(assetTokenID);
     }
 
     async getlockedAssetToken(): Promise<NftCollection> {
-        const cachedData = await this.cacheService.getLockedAssetTokenID();
-        if (!!cachedData) {
-            return await this.context.getNftCollectionMetadata(
-                cachedData.lockedAssetTokenID,
-            );
-        }
-
-        const lockedAssetTokenID = await this.abiService.getLockedAssetTokenID();
-
-        this.cacheService.setLockedAssetTokenID({
-            lockedAssetTokenID: lockedAssetTokenID,
-        });
-
-        return await this.context.getNftCollectionMetadata(lockedAssetTokenID);
+        const lockedAssetTokenID = await this.getLockedAssetTokenID();
+        return this.context.getNftCollectionMetadata(lockedAssetTokenID);
     }
 
     getWrappedLpTokenAttributes(
@@ -74,14 +94,14 @@ export class ProxyService {
                 arg.attributes,
             );
 
-            return {
+            return new WrappedLpTokenAttributesModel({
                 identifier: arg.identifier,
                 attributes: arg.attributes,
                 lpTokenID: decodedAttributes.lpTokenID.toString(),
                 lpTokenTotalAmount: decodedAttributes.lpTokenTotalAmount.toFixed(),
                 lockedAssetsInvested: decodedAttributes.lockedAssetsInvested.toFixed(),
                 lockedAssetsNonce: decodedAttributes.lockedAssetsNonce.toString(),
-            };
+            });
         });
     }
 
@@ -97,12 +117,12 @@ export class ProxyService {
                 scAddress.proxyDexAddress,
                 decodedAttributes.farmTokenIdentifier,
             );
-            const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
+            const decodedFarmAttributes = this.farmService.decodeFarmTokenAttributes(
                 decodedAttributes.farmTokenIdentifier,
                 farmToken.attributes,
             );
 
-            const decodedWrappedFarmTokenAttributes: WrappedFarmTokenAttributesModel = {
+            return new WrappedFarmTokenAttributesModel({
                 identifier: arg.identifier,
                 attributes: arg.attributes,
                 farmTokenID: decodedAttributes.farmTokenID.toString(),
@@ -113,10 +133,13 @@ export class ProxyService {
                 farmingTokenID: decodedAttributes.farmingTokenID.toString(),
                 farmingTokenNonce: decodedAttributes.farmingTokenNonce,
                 farmingTokenAmount: decodedAttributes.farmingTokenAmount,
-            };
-            return decodedWrappedFarmTokenAttributes;
+            });
         });
 
         return Promise.all(promises);
+    }
+
+    private getProxyCacheKey(...args: any) {
+        return generateCacheKeyFromParams('proxy', args);
     }
 }

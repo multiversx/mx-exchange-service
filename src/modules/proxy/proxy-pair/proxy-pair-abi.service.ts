@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Address, BytesValue } from '@elrondnetwork/erdjs';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { GenericEsdtAmountPair } from '../../../models/proxy.model';
+import { GenericEsdtAmountPair } from '../models/proxy.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()

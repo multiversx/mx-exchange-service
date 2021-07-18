@@ -6,7 +6,7 @@ import {
     TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
-import { WrappedFarmTokenAttributesModel } from '../../models/proxy.model';
+import { WrappedFarmTokenAttributesModel } from './models/proxy.model';
 
 function decimalToHex(d: number): string {
     const h = d.toString(16);

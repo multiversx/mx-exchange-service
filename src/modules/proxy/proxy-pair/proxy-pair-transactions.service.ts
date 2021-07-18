@@ -16,7 +16,7 @@ import {
     ReclaimTemporaryFundsProxyArgs,
     RemoveLiquidityProxyArgs,
     TokensTransferArgs,
-} from '../dto/proxy-pair.args';
+} from '../models/proxy-pair.args';
 import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';

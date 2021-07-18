@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
-import { GenericEsdtAmountPair } from 'src/models/proxy.model';
+import { GenericEsdtAmountPair } from 'src/modules/proxy/models/proxy.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     DepositTokenArgs,
