@@ -1,10 +1,9 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { CacheManagerService } from './cache-manager.service';
 import * as redisStore from 'cache-manager-redis-store';
-import { CacheWrapService } from './cache-wrapping.service';
 
 @Module({
-    providers: [CacheManagerService, CacheWrapService],
+    providers: [CacheManagerService],
     imports: [
         CacheModule.register({
             ttl: 60 * 5,
@@ -13,6 +12,6 @@ import { CacheWrapService } from './cache-wrapping.service';
             port: process.env.REDIS_PORT,
         }),
     ],
-    exports: [CacheManagerService, CacheWrapService],
+    exports: [CacheManagerService],
 })
 export class CacheManagerModule {}
