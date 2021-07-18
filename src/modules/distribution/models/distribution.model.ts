@@ -7,6 +7,10 @@ export class CommunityDistributionModel {
 
     @Field()
     amount: string;
+
+    constructor(init?: Partial<CommunityDistributionModel>) {
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
@@ -16,4 +20,8 @@ export class DistributionModel {
 
     @Field()
     communityDistribution: CommunityDistributionModel;
+
+    constructor(init?: Partial<DistributionModel>) {
+        Object.assign(this, init);
+    }
 }

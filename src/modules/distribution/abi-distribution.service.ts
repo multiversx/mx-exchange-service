@@ -1,18 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Address } from '@elrondnetwork/erdjs';
-import {
-    BytesValue,
-    TypedValue,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
+import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import BigNumber from 'bignumber.js';
+import { CommunityDistributionModel } from './models/distribution.model';
 
 @Injectable()
 export class AbiDistributionService {
     constructor(private readonly elrondProxy: ElrondProxyService) {}
 
-    async getCommunityDistribution(): Promise<TypedValue[]> {
+    async getCommunityDistribution(): Promise<CommunityDistributionModel> {
         const contract = await this.elrondProxy.getDistributionSmartContract();
         const interaction: Interaction = contract.methods.getLastCommunityDistributionAmountAndEpoch(
             [],
@@ -24,7 +22,10 @@ export class AbiDistributionService {
 
         const result = interaction.interpretQueryResponse(queryResponse);
 
-        return result.values;
+        return new CommunityDistributionModel({
+            amount: result.values[0].valueOf(),
+            epoch: result.values[1].valueOf(),
+        });
     }
 
     async getDistributedLockedAssets(userAddress: string): Promise<BigNumber> {
