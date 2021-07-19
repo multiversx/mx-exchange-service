@@ -10,11 +10,16 @@ import {
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
-import { FactoryModel } from '../../models/factory.model';
+import { FactoryModel } from './models/factory.model';
+import { TransactionRouterService } from './transactions.router.service';
 
 @Resolver(of => FactoryModel)
 export class RouterResolver {
-    constructor(@Inject(RouterService) private routerService: RouterService) {}
+    constructor(
+        @Inject(RouterService) private routerService: RouterService,
+        @Inject(TransactionRouterService)
+        private readonly transactionService: TransactionRouterService,
+    ) {}
 
     @Query(returns => FactoryModel)
     async factory() {
@@ -46,7 +51,7 @@ export class RouterResolver {
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
     ): Promise<TransactionModel> {
-        return this.routerService.createPair(firstTokenID, secondTokenID);
+        return this.transactionService.createPair(firstTokenID, secondTokenID);
     }
 
     @Query(returns => TransactionModel)
@@ -55,7 +60,7 @@ export class RouterResolver {
         @Args('lpTokenName') lpTokenName: string,
         @Args('lpTokenTicker') lpTokenTicker: string,
     ): Promise<TransactionModel> {
-        return this.routerService.issueLpToken(
+        return this.transactionService.issueLpToken(
             address,
             lpTokenName,
             lpTokenTicker,
@@ -66,7 +71,7 @@ export class RouterResolver {
     async setLocalRoles(
         @Args('address') address: string,
     ): Promise<TransactionModel> {
-        return this.routerService.setLocalRoles(address);
+        return this.transactionService.setLocalRoles(address);
     }
 
     @Query(returns => TransactionModel)
@@ -74,7 +79,7 @@ export class RouterResolver {
         @Args('address') address: string,
         @Args('enable') enable: boolean,
     ): Promise<TransactionModel> {
-        return this.routerService.setState(address, enable);
+        return this.transactionService.setState(address, enable);
     }
 
     @Query(returns => TransactionModel)
@@ -84,7 +89,7 @@ export class RouterResolver {
         @Args('feeTokenID') feeTokenID: string,
         @Args('enable') enable: boolean,
     ): Promise<TransactionModel> {
-        return this.routerService.setFee(
+        return this.transactionService.setFee(
             pairAddress,
             feeToAddress,
             feeTokenID,

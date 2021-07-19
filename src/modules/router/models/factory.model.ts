@@ -16,4 +16,8 @@ export class FactoryModel {
 
     @Field()
     totalLiquidity: number;
+
+    constructor(init?: Partial<FactoryModel>) {
+        Object.assign(this, init);
+    }
 }

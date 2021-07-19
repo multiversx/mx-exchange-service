@@ -1,42 +1,82 @@
-import { TransactionModel } from '../../models/transaction.model';
-import { PairModel } from '../pair/models/pair.model';
-import { FactoryModel } from '../../models/factory.model';
-import { Injectable } from '@nestjs/common';
-import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { Address, GasLimit } from '@elrondnetwork/erdjs';
-import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
+import { FactoryModel } from './models/factory.model';
+import { Inject, Injectable } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
-import { elrondConfig, scAddress } from '../../config';
-import { ContextService } from '../../services/context/context.service';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import { cacheConfig, elrondConfig, scAddress } from '../../config';
+import { RedisCacheService } from 'src/services/redis-cache.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import * as Redis from 'ioredis';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { AbiRouterService } from './abi.router.service';
+import { PairMetadata } from './models/pair.metadata.model';
+import { PairModel } from '../pair/models/pair.model';
 
 @Injectable()
 export class RouterService {
     private readonly elasticClient: Client;
+    private redisClient: Redis.Redis;
 
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
-        private readonly cacheManagerService: CacheManagerService,
-        private readonly context: ContextService,
+        private readonly abiService: AbiRouterService,
+        private readonly redisCacheService: RedisCacheService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.elasticClient = new Client({
             node: elrondConfig.elastic + '/transactions',
         });
+        this.redisClient = this.redisCacheService.getClient();
     }
 
     async getFactory(): Promise<FactoryModel> {
-        const dexFactory = new FactoryModel();
-        dexFactory.address = scAddress.routerAddress;
-        return dexFactory;
+        return new FactoryModel({
+            address: scAddress.routerAddress,
+        });
     }
 
     async getAllPairsAddress(): Promise<string[]> {
-        return await this.context.getAllPairsAddress();
+        try {
+            const cacheKey = this.getRouterCacheKey('pairsAddress');
+            const getPairsAddress = () => this.abiService.getAllPairsAddress();
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getPairsAddress,
+                cacheConfig.pairsMetadata,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occurred while get all pairs address`,
+                error,
+                {
+                    path: 'RouterService.getAllPairsAddress',
+                },
+            );
+        }
+    }
+
+    async getPairsMetadata(): Promise<PairMetadata[]> {
+        try {
+            const cacheKey = this.getRouterCacheKey('pairsMetadata');
+            const getPairsMetadata = () => this.abiService.getPairsMetadata();
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getPairsMetadata,
+                cacheConfig.pairsMetadata,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occurred while get pairs metadata`,
+                error,
+                {
+                    path: 'RouterService.getPairsMetadata',
+                },
+            );
+        }
     }
 
     async getAllPairs(offset: number, limit: number): Promise<PairModel[]> {
-        const pairsAddress = await this.context.getAllPairsAddress();
+        const pairsAddress = await this.getAllPairsAddress();
         const pairs = pairsAddress.map(pairAddress => {
             const pair = new PairModel();
             pair.address = pairAddress;
@@ -47,25 +87,55 @@ export class RouterService {
     }
 
     async getPairCount(): Promise<number> {
-        const cachedData = await this.cacheManagerService.getPairCount();
-        if (!!cachedData) {
-            return cachedData.pairCount;
+        try {
+            const cacheKey = this.getRouterCacheKey('pairCount');
+            const getPairCount = () => this.computePairCount();
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getPairCount,
+                cacheConfig.pairs,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occurred while get pairs count`,
+                error,
+                {
+                    path: 'RouterService.getPairCount',
+                },
+            );
         }
-
-        const pairCount = (await this.context.getPairsMetadata()).length;
-
-        this.cacheManagerService.setPairCount({ pairCount: pairCount });
-        return pairCount;
     }
 
     async getTotalTxCount(): Promise<number> {
-        const cachedData = await this.cacheManagerService.getTotalTxCount();
-        if (!!cachedData) {
-            return cachedData.totalTxCount;
+        try {
+            const cacheKey = this.getRouterCacheKey('totalTxCount');
+            const getTotalTxCount = () => this.computeTotalTxCount();
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getTotalTxCount,
+                cacheConfig.txTotalCount,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occurred while get total tx count`,
+                error,
+                {
+                    path: 'RouterService.getTotalTxCount',
+                },
+            );
         }
+    }
 
+    private async computePairCount(): Promise<number> {
+        const pairs = await this.getAllPairsAddress();
+        return pairs.length;
+    }
+
+    private async computeTotalTxCount(): Promise<number> {
         let totalTxCount = 0;
-        const pairs = await this.context.getPairsMetadata();
+        const pairs = await this.getPairsMetadata();
 
         for (const pair of pairs) {
             const body = {
@@ -88,98 +158,21 @@ export class RouterService {
                     body,
                 });
                 totalTxCount += response.body.hits.total.value;
-            } catch (e) {
-                console.log(e);
+            } catch (error) {
+                this.logger.error(
+                    `An error occurred while compute total Tx count`,
+                    error,
+                    {
+                        path: 'RouterService.computeTotalTxCount',
+                    },
+                );
             }
         }
 
-        this.cacheManagerService.setTotalTxCount({
-            totalTxCount: totalTxCount,
-        });
         return totalTxCount;
     }
 
-    async createPair(
-        token0ID: string,
-        token1ID: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
-
-        const createPairInteraction: Interaction = contract.methods.createPair([
-            BytesValue.fromUTF8(token0ID),
-            BytesValue.fromUTF8(token1ID),
-        ]);
-
-        const transaction = createPairInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(50000000));
-        return transaction.toPlainObject();
-    }
-
-    async issueLpToken(
-        pairAddress: string,
-        lpTokenName: string,
-        lpTokenTicker: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
-        const issueLPTokenInteraction: Interaction = contract.methods.issueLPToken(
-            [
-                BytesValue.fromHex(new Address(pairAddress).hex()),
-                BytesValue.fromUTF8(lpTokenName),
-                BytesValue.fromUTF8(lpTokenTicker),
-            ],
-        );
-
-        const transaction = issueLPTokenInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(100000000));
-        return transaction.toPlainObject();
-    }
-
-    async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
-        const setLocalRolesInteraction: Interaction = contract.methods.setLocalRoles(
-            [BytesValue.fromHex(new Address(pairAddress).hex())],
-        );
-
-        const transaction = setLocalRolesInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(25000000));
-        return transaction.toPlainObject();
-    }
-
-    async setState(
-        address: string,
-        enable: boolean,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
-        const args = [BytesValue.fromHex(new Address(address).hex())];
-
-        const stateInteraction: Interaction = enable
-            ? contract.methods.resume(args)
-            : contract.methods.pause(args);
-
-        const transaction = stateInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(1000000));
-        return transaction.toPlainObject();
-    }
-
-    async setFee(
-        pairAddress: string,
-        feeToAddress: string,
-        feeTokenID: string,
-        enable: boolean,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
-        const args = [
-            BytesValue.fromHex(new Address(pairAddress).hex()),
-            BytesValue.fromHex(new Address(feeToAddress).hex()),
-            BytesValue.fromUTF8(feeTokenID),
-        ];
-
-        const setFeeInteraction: Interaction = enable
-            ? contract.methods.setFeeOn([args])
-            : contract.methods.setFeeOff([args]);
-
-        const transaction = setFeeInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(1000000));
-        return transaction.toPlainObject();
+    private getRouterCacheKey(...args: any) {
+        return generateCacheKeyFromParams('router', args);
     }
 }

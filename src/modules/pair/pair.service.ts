@@ -401,12 +401,12 @@ export class PairService {
                 this.abiService.getTemporaryFunds(
                     pairMetadata.address,
                     callerAddress,
-                    pairMetadata.firstToken,
+                    pairMetadata.firstTokenID,
                 ),
                 this.abiService.getTemporaryFunds(
                     pairMetadata.address,
                     callerAddress,
-                    pairMetadata.secondToken,
+                    pairMetadata.secondTokenID,
                 ),
             ]);
 
