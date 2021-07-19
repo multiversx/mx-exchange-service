@@ -51,7 +51,6 @@ if (!!process.env.LOG_FILE) {
         }),
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
-            playground: true,
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {
                     ...error,
