@@ -314,7 +314,7 @@ export class FarmService {
         });
     }
 
-    private getFarmCacheKey(pairAddress: string, ...args: any) {
-        return generateCacheKeyFromParams('pair', pairAddress, ...args);
+    private getFarmCacheKey(farmAddress: string, ...args: any) {
+        return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }
 }
