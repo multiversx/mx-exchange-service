@@ -7,7 +7,7 @@ import { PriceFeedModule } from '../../services/price-feed/price-feed.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { RedisCacheService } from '../../services/redis-cache.service';
 
 @Module({
     imports: [

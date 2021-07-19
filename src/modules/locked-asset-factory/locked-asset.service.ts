@@ -7,9 +7,9 @@ import {
 import { cacheConfig, scAddress } from '../../config';
 import { ContextService } from '../../services/context/context.service';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { RedisCacheService } from '../../services/redis-cache.service';
 import * as Redis from 'ioredis';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 

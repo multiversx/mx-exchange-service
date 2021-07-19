@@ -2,13 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { AbiProxyPairService } from './proxy-pair-abi.service';
 import { GenericEsdtAmountPair } from '../models/proxy.model';
 import { ContextService } from '../../../services/context/context.service';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { NftCollection } from '../../../models/tokens/nftCollection.model';
+import { RedisCacheService } from '../../../services/redis-cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import * as Redis from 'ioredis';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { cacheConfig } from 'src/config';
+import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
+import { cacheConfig } from '../../../config';
 
 @Injectable()
 export class ProxyPairService {

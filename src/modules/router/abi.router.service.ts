@@ -1,6 +1,6 @@
 import { Interaction } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { PairMetadata } from './models/pair.metadata.model';
 
 @Injectable()

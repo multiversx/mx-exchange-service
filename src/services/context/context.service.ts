@@ -10,13 +10,13 @@ import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { TransactionModel } from '../../models/transaction.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { RedisCacheService } from '../redis-cache.service';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { RouterService } from 'src/modules/router/router.service';
-import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import { RouterService } from '../../modules/router/router.service';
+import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
 
 @Injectable()
 export class ContextService {

@@ -19,12 +19,12 @@ import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from './models/farm.args';
 import { PairService } from '../pair/pair.service';
 import { ContextService } from '../../services/context/context.service';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from '../../models/tokens/nftCollection.model';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { RedisCacheService } from 'src/services/redis-cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { RedisCacheService } from '../../services/redis-cache.service';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 
 @Injectable()
 export class FarmService {

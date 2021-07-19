@@ -5,7 +5,7 @@ import { AbiWrapService } from './abi-wrap.service';
 import { TransactionsWrapService } from './transactions-wrap.service';
 import { WrapResolver } from './wrap.resolver';
 import { WrapService } from './wrap.service';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { RedisCacheService } from '../../services/redis-cache.service';
 
 @Module({
     imports: [ElrondCommunicationModule, ContextModule],

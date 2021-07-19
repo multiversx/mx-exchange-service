@@ -4,7 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig, elrondConfig } from '../../config';
 import { RedisCacheService } from '../redis-cache.service';
 import * as Redis from 'ioredis';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { Logger } from 'winston';
 
 @Injectable()

@@ -4,7 +4,7 @@ import { Logger } from 'winston';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisCacheService } from '../redis-cache.service';
 import * as Redis from 'ioredis';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 
 @Injectable()
 export class HyperblockService {

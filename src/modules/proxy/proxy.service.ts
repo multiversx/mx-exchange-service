@@ -14,13 +14,13 @@ import { ElrondApiService } from '../../services/elrond-communication/elrond-api
 import { FarmService } from '../farm/farm.service';
 import { DecodeAttributesArgs } from './models/proxy.args';
 import { ContextService } from '../../services/context/context.service';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
+import { NftCollection } from '../../models/tokens/nftCollection.model';
+import { RedisCacheService } from '../../services/redis-cache.service';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 
 @Injectable()
 export class ProxyService {

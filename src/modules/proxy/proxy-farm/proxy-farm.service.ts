@@ -2,12 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ContextService } from '../../../services/context/context.service';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { RedisCacheService } from '../../../services/redis-cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import * as Redis from 'ioredis';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { cacheConfig } from 'src/config';
+import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
+import { cacheConfig } from '../../../config';
 
 @Injectable()
 export class ProxyFarmService {

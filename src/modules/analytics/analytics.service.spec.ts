@@ -12,7 +12,6 @@ import {
 } from '../farm/farm.test-mocks';
 import { PairService } from '../pair/pair.service';
 import { AnalyticsService } from './analytics.service';
-import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 import { HyperblockService } from '../../services/transactions/hyperblock.service';
 import { ShardTransaction } from '../../services/transactions/entities/shard.transaction';
 import { TransactionModule } from '../../services/transactions/transaction.module';
@@ -23,6 +22,8 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
+import { RedisCacheService } from '../../services/redis-cache.service';
+import { RedisModule } from 'nestjs-redis';
 
 describe('FarmStatisticsService', () => {
     let service: AnalyticsService;
@@ -61,8 +62,14 @@ describe('FarmStatisticsService', () => {
                     transports: logTransports,
                 }),
                 ElrondCommunicationModule,
-                CacheManagerModule,
                 TransactionModule,
+                RedisModule.register([
+                    {
+                        host: process.env.REDIS_URL,
+                        port: parseInt(process.env.REDIS_PORT),
+                        password: process.env.REDIS_PASSWORD,
+                    },
+                ]),
             ],
             providers: [
                 ContextServiceProvider,
@@ -70,6 +77,7 @@ describe('FarmStatisticsService', () => {
                 PairServiceProvider,
                 AnalyticsService,
                 HyperblockService,
+                RedisCacheService,
             ],
         }).compile();
 
