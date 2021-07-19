@@ -19,7 +19,6 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
         }),
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
-            playground: true,
             debug: true,
         }),
         HttpModule,
