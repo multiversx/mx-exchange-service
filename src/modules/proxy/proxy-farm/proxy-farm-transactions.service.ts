@@ -11,6 +11,7 @@ import BigNumber from 'bignumber.js';
 
 import {
     ClaimFarmRewardsProxyArgs,
+    CompoundRewardsProxyArgs,
     EnterFarmProxyArgs,
     ExitFarmProxyArgs,
 } from '../dto/proxy-farm.args';
@@ -42,7 +43,7 @@ export class TransactionsProxyFarmService {
         const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.enterFarm),
+            new GasLimit(gasConfig.enterFarmProxy),
         );
 
         transaction.receiver = args.sender;
@@ -84,6 +85,31 @@ export class TransactionsProxyFarmService {
             new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(contract.getAddress().hex()),
             BytesValue.fromUTF8('claimRewardsProxy'),
+            BytesValue.fromHex(new Address(args.farmAddress).hex()),
+        ];
+
+        const transaction = this.context.nftTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.exitFarmProxy),
+        );
+
+        transaction.receiver = args.sender;
+
+        return transaction;
+    }
+
+    async compoundRewardsProxy(
+        args: CompoundRewardsProxyArgs,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.tokenID),
+            new U32Value(args.tokenNonce),
+            new BigUIntValue(new BigNumber(args.amount)),
+            BytesValue.fromHex(contract.getAddress().hex()),
+            BytesValue.fromUTF8('compoundRewardsProxy'),
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 

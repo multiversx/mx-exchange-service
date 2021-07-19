@@ -10,6 +10,7 @@ import { gasConfig } from '../../config';
 import { BigNumber } from 'bignumber.js';
 import {
     ClaimRewardsArgs,
+    CompoundRewardsArgs,
     EnterFarmArgs,
     ExitFarmArgs,
     SftFarmInteractionArgs,
@@ -47,11 +48,17 @@ export class TransactionsFarmService {
     }
 
     async exitFarm(args: ExitFarmArgs): Promise<TransactionModel> {
-        return await this.SftFarmInteraction(args, 'exitFarm');
+        return this.SftFarmInteraction(args, 'exitFarm');
     }
 
     async claimRewards(args: ClaimRewardsArgs): Promise<TransactionModel> {
-        return await this.SftFarmInteraction(args, 'claimRewards');
+        return this.SftFarmInteraction(args, 'claimRewards');
+    }
+
+    async compoundRewards(
+        args: CompoundRewardsArgs,
+    ): Promise<TransactionModel> {
+        return this.SftFarmInteraction(args, 'compoundRewards');
     }
 
     private async SftFarmInteraction(

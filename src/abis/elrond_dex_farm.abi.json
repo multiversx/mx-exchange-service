@@ -115,6 +115,24 @@
             ]
         },
         {
+            "name": "compoundRewards",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "GenericEsdtAmountPair"
+                }
+            ]
+        },
+        {
             "name": "acceptFee",
             "payableInTokens": [
                 "*"
@@ -141,26 +159,27 @@
             ]
         },
         {
-            "name": "issueFarmToken",
+            "name": "depositFarmTokens",
             "payableInTokens": [
-                "EGLD"
+                "*"
             ],
-            "inputs": [
-                {
-                    "name": "token_display_name",
-                    "type": "bytes"
-                },
-                {
-                    "name": "token_ticker",
-                    "type": "bytes"
-                }
-            ],
+            "inputs": [],
             "outputs": []
         },
         {
-            "name": "setLocalRolesFarmToken",
-            "inputs": [],
-            "outputs": []
+            "name": "mergeFarmTokens",
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "GenericEsdtAmountPair"
+                }
+            ]
         },
         {
             "name": "getFarmingTokenReserve",
@@ -245,6 +264,16 @@
                 {
                     "name": "gas_limit",
                     "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setNftDepositMaxLen",
+            "inputs": [
+                {
+                    "name": "max_len",
+                    "type": "u32"
                 }
             ],
             "outputs": []
@@ -422,6 +451,97 @@
                     "type": "BigUint"
                 }
             ]
+        },
+        {
+            "name": "withdrawAllTokensFromDeposit",
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "withdrawTokenFromDeposit",
+            "inputs": [
+                {
+                    "name": "index",
+                    "type": "u32"
+                },
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getnftDeposit",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "variadic<GenericEsdtAmountPair>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getnftDepositMaxLen",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getNftDepositAcceptedTokenIds",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getTransferExecGasLimit",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "issueFarmToken",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRolesFarmToken",
+            "inputs": [],
+            "outputs": []
         }
     ],
     "types": {

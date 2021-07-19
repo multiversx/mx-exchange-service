@@ -25,6 +25,12 @@ export class ProxyModel {
 
     @Field(type => [String])
     intermediatedFarms: string[];
+
+    @Field(type => Int)
+    nftDepositMaxLen: number;
+
+    @Field(type => [String])
+    nftDepositAcceptedTokenIDs: string[];
 }
 
 @ObjectType()
@@ -76,5 +82,5 @@ export class GenericEsdtAmountPair {
     @Field()
     amount: string;
     @Field({ nullable: true })
-    pairAddress: string;
+    address: string;
 }

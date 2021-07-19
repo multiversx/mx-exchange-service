@@ -20,8 +20,8 @@ export class WrapResolver {
         return this.wrapService.getWrappedEgldToken();
     }
 
-    @Query(returns => WrapModel)
-    async wrappingInfo(): Promise<WrapModel> {
+    @Query(returns => [WrapModel])
+    async wrappingInfo(): Promise<WrapModel[]> {
         return this.wrapService.getWrappingInfo();
     }
 

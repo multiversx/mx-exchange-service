@@ -39,7 +39,31 @@ export class SftFarmInteractionArgs {
 }
 
 @ArgsType()
+export class EnterFarmBatchArgs {
+    @Field()
+    farmAddress: string;
+
+    @Field()
+    tokenInID: string;
+    @Field()
+    amountIn: string;
+    @Field({ nullable: true })
+    lockRewards: boolean;
+    @Field()
+    sender: string;
+
+    @Field()
+    farmTokenID: string;
+    @Field(type => Int)
+    farmTokenNonce: number;
+    @Field()
+    amount: string;
+}
+@ArgsType()
 export class ExitFarmArgs extends SftFarmInteractionArgs {}
 
 @ArgsType()
 export class ClaimRewardsArgs extends SftFarmInteractionArgs {}
+
+@ArgsType()
+export class CompoundRewardsArgs extends SftFarmInteractionArgs {}

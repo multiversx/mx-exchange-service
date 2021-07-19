@@ -10,7 +10,9 @@ import {
 } from './dto/proxy-pair.args';
 import {
     ClaimFarmRewardsProxyArgs,
+    CompoundRewardsProxyArgs,
     EnterFarmProxyArgs,
+    EnterFarmProxyBatchArgs,
     ExitFarmProxyArgs,
 } from './dto/proxy-farm.args';
 import { ProxyPairService } from './proxy-pair/proxy-pair.service';
@@ -27,6 +29,13 @@ import { ProxyService } from './proxy.service';
 import { DecodeAttributesArgs } from './dto/proxy.args';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import {
+    TokensMergingArgs,
+    DepositTokenArgs,
+    SmartContractType,
+} from '../token-merging/dto/token.merging.args';
+import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
+import { TokenMergingService } from '../token-merging/token.merging.service';
 
 @Resolver(of => ProxyModel)
 export class ProxyResolver {
@@ -39,6 +48,10 @@ export class ProxyResolver {
         private transactionsProxyPairService: TransactionsProxyPairService,
         @Inject(TransactionsProxyFarmService)
         private transactionsProxyFarmService: TransactionsProxyFarmService,
+        @Inject(TokenMergingTransactionsService)
+        private readonly mergeTokensTransactions: TokenMergingTransactionsService,
+        @Inject(TokenMergingService)
+        private readonly mergeTokensService: TokenMergingService,
     ) {}
 
     @ResolveField()
@@ -69,6 +82,20 @@ export class ProxyResolver {
     @ResolveField()
     async intermediatedFarms(): Promise<string[]> {
         return await this.proxyFarmService.getIntermediatedFarms();
+    }
+
+    @ResolveField()
+    async nftDepositMaxLen() {
+        return await this.mergeTokensService.getNftDepositMaxLen({
+            smartContractType: SmartContractType.PROXY_PAIR,
+        });
+    }
+
+    @ResolveField(type => [String])
+    async nftDepositAcceptedTokenIDs() {
+        return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
+            smartContractType: SmartContractType.PROXY_PAIR,
+        });
     }
 
     @Query(returns => ProxyModel)
@@ -131,6 +158,33 @@ export class ProxyResolver {
         return await this.transactionsProxyFarmService.enterFarmProxy(args);
     }
 
+    @Query(returns => [TransactionModel])
+    async enterFarmProxyBatch(
+        @Args() args: EnterFarmProxyBatchArgs,
+    ): Promise<TransactionModel[]> {
+        const depositTokenArgs: DepositTokenArgs = {
+            smartContractType: SmartContractType.PROXY_FARM,
+            tokenID: args.lockedFarmTokenID,
+            tokenNonce: args.lockedFarmTokenNonce,
+            amount: args.lockedFarmAmount,
+            sender: args.sender,
+        };
+        const enterFarmProxyArgs: EnterFarmProxyArgs = {
+            sender: args.sender,
+            acceptedLockedTokenID: args.acceptedLockedTokenID,
+            acceptedLockedTokenNonce: args.acceptedLockedTokenNonce,
+            farmAddress: args.farmAddress,
+            amount: args.amount,
+            lockRewards: args.lockRewards,
+        };
+        return await Promise.all([
+            this.mergeTokensTransactions.depositTokens(depositTokenArgs),
+            this.transactionsProxyFarmService.enterFarmProxy(
+                enterFarmProxyArgs,
+            ),
+        ]);
+    }
+
     @Query(returns => TransactionModel)
     async exitFarmProxy(
         @Args() args: ExitFarmProxyArgs,
@@ -143,6 +197,29 @@ export class ProxyResolver {
         @Args() args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
         return await this.transactionsProxyFarmService.claimFarmRewardsProxy(
+            args,
+        );
+    }
+
+    @Query(returns => TransactionModel)
+    async mergeWrappedLpTokens(
+        @Args() args: TokensMergingArgs,
+    ): Promise<TransactionModel> {
+        return await this.mergeTokensTransactions.mergeTokens(args);
+    }
+
+    @Query(returns => TransactionModel)
+    async mergeWrappedFarmTokens(
+        @Args() args: TokensMergingArgs,
+    ): Promise<TransactionModel> {
+        return await this.mergeTokensTransactions.mergeTokens(args);
+    }
+
+    @Query(returns => TransactionModel)
+    async compoundRewardsProxy(
+        @Args() args: CompoundRewardsProxyArgs,
+    ): Promise<TransactionModel> {
+        return await this.transactionsProxyFarmService.compoundRewardsProxy(
             args,
         );
     }

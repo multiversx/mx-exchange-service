@@ -20,5 +20,3 @@ const pairsMetadata = [
         address: 'pair_address_4',
     },
 ];
-
-export class ElrondApiServiceMock {}

@@ -12,6 +12,24 @@ export class EnterFarmProxyArgs {
 }
 
 @ArgsType()
+export class EnterFarmProxyBatchArgs {
+    @Field() sender: string;
+    @Field() farmAddress: string;
+    @Field() acceptedLockedTokenID: string;
+    @Field(type => Int)
+    acceptedLockedTokenNonce: number;
+    @Field() amount: string;
+    @Field({ nullable: true }) lockRewards: boolean;
+
+    @Field()
+    lockedFarmTokenID: string;
+    @Field(type => Int)
+    lockedFarmTokenNonce: number;
+    @Field()
+    lockedFarmAmount: string;
+}
+
+@ArgsType()
 export class ExitFarmProxyArgs {
     @Field() sender: string;
     @Field() farmAddress: string;
@@ -29,4 +47,18 @@ export class ClaimFarmRewardsProxyArgs {
     @Field(type => Int)
     wrappedFarmTokenNonce: number;
     @Field() amount: string;
+}
+
+@ArgsType()
+export class CompoundRewardsProxyArgs {
+    @Field()
+    sender: string;
+    @Field()
+    farmAddress: string;
+    @Field()
+    tokenID: string;
+    @Field(type => Int)
+    tokenNonce: number;
+    @Field()
+    amount: string;
 }

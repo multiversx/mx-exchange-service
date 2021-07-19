@@ -14,10 +14,21 @@ export class WrapService {
         private context: ContextService,
     ) {}
 
-    async getWrappingInfo(): Promise<WrapModel> {
-        const wrappingInfo = new WrapModel();
-        wrappingInfo.address = scAddress.wrappingAddress;
-        return wrappingInfo;
+    async getWrappingInfo(): Promise<WrapModel[]> {
+        return [
+            new WrapModel({
+                address: scAddress.wrappingAddress.get('shardID-0'),
+                shard: 0,
+            }),
+            new WrapModel({
+                address: scAddress.wrappingAddress.get('shardID-1'),
+                shard: 1,
+            }),
+            new WrapModel({
+                address: scAddress.wrappingAddress.get('shardID-2'),
+                shard: 2,
+            }),
+        ];
     }
 
     async getWrappedEgldTokenID(): Promise<string> {
