@@ -1,7 +1,6 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { CacheManagerModule } from './services/cache-manager/cache-manager.module';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
 import { FarmModule } from './modules/farm/farm.module';
@@ -71,7 +70,6 @@ if (!!process.env.LOG_FILE) {
             },
         ]),
         HttpModule,
-        CacheManagerModule,
         RouterModule,
         PairModule,
         FarmModule,

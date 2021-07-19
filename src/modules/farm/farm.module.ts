@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { FarmService } from './farm.service';
 import { FarmResolver } from './farm.resolver';
-import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 import { AbiFarmService } from './abi-farm.service';
 import { TransactionsFarmService } from './transactions-farm.service';
 import { FarmStatisticsService } from './farm-statistics.service';
@@ -14,7 +13,6 @@ import { RedisCacheService } from 'src/services/redis-cache.service';
 @Module({
     imports: [
         ElrondCommunicationModule,
-        CacheManagerModule,
         ContextModule,
         PairModule,
         TokenMergingModule,
@@ -27,6 +25,6 @@ import { RedisCacheService } from 'src/services/redis-cache.service';
         RedisCacheService,
         FarmResolver,
     ],
-    exports: [FarmService],
+    exports: [FarmService, FarmStatisticsService],
 })
 export class FarmModule {}

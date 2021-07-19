@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { CacheManagerModule } from 'src/services/cache-manager/cache-manager.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { TransactionModule } from 'src/services/transactions/transaction.module';
@@ -11,7 +10,6 @@ import { AnalyticsService } from './analytics.service';
 @Module({
     imports: [
         ElrondCommunicationModule,
-        CacheManagerModule,
         ContextModule,
         PairModule,
         FarmModule,
