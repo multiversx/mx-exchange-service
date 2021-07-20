@@ -13,6 +13,11 @@ export class AnalyticsResolver {
     }
 
     @Query(returns => String)
+    async totalValueLockedUSD(): Promise<string> {
+        return this.analyticsService.getTotalValueLockedUSD();
+    }
+
+    @Query(returns => String)
     async totalLockedValueUSDFarms(): Promise<string> {
         return this.analyticsService.getLockedValueUSDFarms();
     }
