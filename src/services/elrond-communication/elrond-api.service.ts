@@ -1,15 +1,19 @@
 import { ApiProvider } from '@elrondnetwork/erdjs';
 import { elrondConfig } from '../../config';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { NftToken } from 'src/models/tokens/nftToken.model';
 import Agent, { HttpsAgent } from 'agentkeepalive';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class ElrondApiService {
     private apiProvider: ApiProvider;
-    constructor() {
+    constructor(
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
         const keepAliveOptions = {
             maxSockets: elrondConfig.keepAliveMaxSockets,
             maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
@@ -28,6 +32,21 @@ export class ElrondApiService {
 
     getService(): ApiProvider {
         return this.apiProvider;
+    }
+
+    async getCurrentEpoch(): Promise<number> {
+        try {
+            const block = await this.getService().doGetGeneric(
+                'blocks?size=1',
+                resonse => resonse,
+            );
+            return block[0].epoch;
+        } catch (error) {
+            this.logger.error('An error occurred while get current epoch', {
+                path: 'ElrondApiService.getCurrentEpoch',
+                error,
+            });
+        }
     }
 
     async getNftCollection(tokenID: string): Promise<NftCollection> {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { UnlockMileStoneModel } from '../../models/locked-asset.model';
+import { UnlockMileStoneModel } from './models/locked-asset.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
