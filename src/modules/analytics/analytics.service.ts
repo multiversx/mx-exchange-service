@@ -41,25 +41,78 @@ export class AnalyticsService {
         return tokenPriceUSD.toFixed();
     }
 
+    async getPairLockedValueUSD(pairAddress: string): Promise<string> {
+        const [
+            firstToken,
+            secondToken,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+            reserves,
+        ] = await Promise.all([
+            this.pairService.getFirstToken(pairAddress),
+            this.pairService.getSecondToken(pairAddress),
+            this.pairService.getFirstTokenPriceUSD(pairAddress),
+            this.pairService.getSecondTokenPriceUSD(pairAddress),
+            this.pairService.getPairInfoMetadata(pairAddress),
+        ]);
+
+        const firstTokenLockedValueUSD = new BigNumber(reserves.reserves0)
+            .multipliedBy(`1e-${firstToken.decimals}`)
+            .multipliedBy(firstTokenPriceUSD);
+        const secondTokenLockedValueUSD = new BigNumber(reserves.reserves1)
+            .multipliedBy(`1e-${secondToken.decimals}`)
+            .multipliedBy(secondTokenPriceUSD);
+
+        return firstTokenLockedValueUSD
+            .plus(secondTokenLockedValueUSD)
+            .toFixed();
+    }
+
+    async getFarmLockedValueUSD(farmAddress: string): Promise<string> {
+        const [
+            farmingToken,
+            farmingTokenPriceUSD,
+            farmingTokenReserve,
+        ] = await Promise.all([
+            this.farmService.getFarmingToken(farmAddress),
+            this.farmService.getFarmingTokenPriceUSD(farmAddress),
+            this.farmService.getFarmingTokenReserve(farmAddress),
+        ]);
+
+        const lockedValue = new BigNumber(farmingTokenReserve)
+            .multipliedBy(`1e-${farmingToken.decimals}`)
+            .multipliedBy(farmingTokenPriceUSD);
+
+        return lockedValue.toFixed();
+    }
+
+    async getTotalValueLockedUSD(): Promise<string> {
+        const pairsAddress = await this.context.getAllPairsAddress();
+        let totalValueLockedUSD = new BigNumber(0);
+        const promises = pairsAddress.map(pairAddress =>
+            this.getPairLockedValueUSD(pairAddress),
+        );
+
+        const lockedValuesUSD = await Promise.all([
+            ...promises,
+            this.getFarmLockedValueUSD(farmsConfig[2]),
+        ]);
+
+        for (const lockedValueUSD of lockedValuesUSD) {
+            totalValueLockedUSD = totalValueLockedUSD.plus(lockedValueUSD);
+        }
+
+        return totalValueLockedUSD.toFixed();
+    }
+
     async getLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
-        for (const farmAddress of farmsConfig) {
-            const farmingToken = await this.farmService.getFarmingToken(
-                farmAddress,
-            );
-            const lockedValue = await this.farmService.getFarmingTokenReserve(
-                farmAddress,
-            );
-            const farmingTokenPriceUSD = await this.farmService.getFarmingTokenPriceUSD(
-                farmAddress,
-            );
-            const lockedValueDenom = new BigNumber(lockedValue).multipliedBy(
-                `1e-${farmingToken.decimals}`,
-            );
-            const lockedValueUSD = new BigNumber(lockedValueDenom).multipliedBy(
-                new BigNumber(farmingTokenPriceUSD),
-            );
-            totalLockedValue = totalLockedValue.plus(lockedValueUSD);
+        const promises: Promise<string>[] = farmsConfig.map(farmAddress =>
+            this.getFarmLockedValueUSD(farmAddress),
+        );
+        const farmsLockedValueUSD = await Promise.all(promises);
+        for (const farmLockedValueUSD of farmsLockedValueUSD) {
+            totalLockedValue = totalLockedValue.plus(farmLockedValueUSD);
         }
 
         return totalLockedValue.toFixed();
