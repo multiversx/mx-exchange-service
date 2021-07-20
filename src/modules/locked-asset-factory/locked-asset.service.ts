@@ -19,6 +19,7 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out';
 import { DecodeAttributesArgs } from '../proxy/dto/proxy.args';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 
 @Injectable()
 export class LockedAssetService {
@@ -26,6 +27,7 @@ export class LockedAssetService {
         private abiService: AbiLockedAssetService,
         private cacheService: CacheLockedAssetService,
         private context: ContextService,
+        private apiService: ElrondApiService,
     ) {}
 
     async getLockedAssetInfo(): Promise<LockedAssetModel> {
@@ -59,10 +61,11 @@ export class LockedAssetService {
         return lockedTokenID;
     }
 
-    decodeLockedAssetAttributes(
+    async decodeLockedAssetAttributes(
         args: DecodeAttributesArgs,
-    ): LockedAssetAttributes[] {
+    ): Promise<LockedAssetAttributes[]> {
         const decodedBatchAttributes = [];
+        const currentEpoch = await this.apiService.getCurrentEpoch();
         for (const attributes of args.batchAttributes) {
             const attributesBuffer = Buffer.from(
                 attributes.attributes,
@@ -97,12 +100,21 @@ export class LockedAssetService {
                 structType,
             );
             const decodedAttributes = decoded.valueOf();
+            const unlockSchedule = decodedAttributes.unlockSchedule.map(
+                unlockMilestone => {
+                    const epoch = unlockMilestone.epoch - currentEpoch;
+                    return new UnlockMileStoneModel({
+                        percent: unlockMilestone.percent,
+                        epochs: epoch > 0 ? epoch : 0,
+                    });
+                },
+            );
             decodedBatchAttributes.push(
                 new LockedAssetAttributes({
                     attributes: attributes.attributes,
                     identifier: attributes.identifier,
                     isMerged: decodedAttributes.isMerged,
-                    unlockSchedule: decodedAttributes.unlockSchedule,
+                    unlockSchedule: unlockSchedule,
                 }),
             );
         }
