@@ -5,6 +5,7 @@ import {
     Interaction,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
+import { gasConfig } from 'src/config';
 import { TransactionModel } from '../../models/transaction.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
@@ -24,7 +25,7 @@ export class TransactionRouterService {
         ]);
 
         const transaction = createPairInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(50000000));
+        transaction.setGasLimit(new GasLimit(gasConfig.createPair));
         return transaction.toPlainObject();
     }
 
@@ -43,7 +44,7 @@ export class TransactionRouterService {
         );
 
         const transaction = issueLPTokenInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(100000000));
+        transaction.setGasLimit(new GasLimit(gasConfig.issueToken));
         return transaction.toPlainObject();
     }
 
@@ -54,7 +55,7 @@ export class TransactionRouterService {
         );
 
         const transaction = setLocalRolesInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(25000000));
+        transaction.setGasLimit(new GasLimit(gasConfig.setLocalRoles));
         return transaction.toPlainObject();
     }
 
@@ -70,7 +71,7 @@ export class TransactionRouterService {
             : contract.methods.pause(args);
 
         const transaction = stateInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(1000000));
+        transaction.setGasLimit(new GasLimit(gasConfig.setState));
         return transaction.toPlainObject();
     }
 
@@ -92,7 +93,7 @@ export class TransactionRouterService {
             : contract.methods.setFeeOff([args]);
 
         const transaction = setFeeInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(1000000));
+        transaction.setGasLimit(new GasLimit(gasConfig.setFee));
         return transaction.toPlainObject();
     }
 }
