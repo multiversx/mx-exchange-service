@@ -4,11 +4,27 @@ import { NftCollection } from '../../../models/tokens/nftCollection.model';
 @ObjectType()
 export class UnlockMileStoneModel {
     @Field(type => Int)
-    epoch: number;
+    epochs: number;
     @Field(type => Int)
     percent: number;
 
     constructor(init?: Partial<UnlockMileStoneModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class LockedAssetAttributes {
+    @Field()
+    attributes: string;
+    @Field()
+    identifier: string;
+    @Field(type => [UnlockMileStoneModel])
+    unlockSchedule: UnlockMileStoneModel[];
+    @Field()
+    isMerged: boolean;
+
+    constructor(init?: Partial<LockedAssetAttributes>) {
         Object.assign(this, init);
     }
 }

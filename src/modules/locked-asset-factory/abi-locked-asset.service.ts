@@ -38,7 +38,7 @@ export class AbiLockedAssetService {
             .valueOf()
             .map(unlockMilestone => {
                 return new UnlockMileStoneModel({
-                    epoch: unlockMilestone.unlock_epoch,
+                    epochs: unlockMilestone.unlock_epoch,
                     percent: unlockMilestone.unlock_percent,
                 });
             });
