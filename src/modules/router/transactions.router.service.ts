@@ -5,7 +5,7 @@ import {
     Interaction,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
-import { gasConfig } from 'src/config';
+import { gasConfig } from '../../config';
 import { TransactionModel } from '../../models/transaction.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
