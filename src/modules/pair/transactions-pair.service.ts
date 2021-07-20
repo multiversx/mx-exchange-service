@@ -37,85 +37,63 @@ export class TransactionPairService {
     async addLiquidityBatch(
         args: AddLiquidityBatchArgs,
     ): Promise<TransactionModel[]> {
-        let esdtTransferTransactions: Promise<TransactionModel>[];
         let eGLDwrapTransaction: Promise<TransactionModel>;
         const transactions: Promise<TransactionModel>[] = [];
 
         const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
 
+        let firstTokenID = args.firstTokenID;
+        let secondTokenID = args.secondTokenID;
+        let firstTokenAmount = args.firstTokenAmount;
+        let secondTokenAmount = args.secondTokenAmount;
+
         switch (elrondConfig.EGLDIdentifier) {
             case args.firstTokenID:
+                firstTokenID = wrappedTokenID;
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
                     args.sender,
-                    args.firstTokenAmount,
+                    firstTokenAmount,
                 );
                 transactions.push(eGLDwrapTransaction);
 
-                esdtTransferTransactions = this.esdtTransferBatch([
-                    {
-                        pairAddress: args.pairAddress,
-                        token: wrappedTokenID,
-                        amount: args.firstTokenAmount,
-                    },
-                    {
-                        pairAddress: args.pairAddress,
-                        token: args.secondTokenID,
-                        amount: args.secondTokenAmount,
-                    },
-                ]);
-
-                esdtTransferTransactions.map(transaction =>
-                    transactions.push(transaction),
-                );
                 break;
             case args.secondTokenID:
+                secondTokenID = wrappedTokenID;
+                firstTokenAmount = args.secondTokenAmount;
+                secondTokenAmount = args.firstTokenAmount;
+
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
                     args.sender,
                     args.secondTokenAmount,
                 );
                 transactions.push(eGLDwrapTransaction);
 
-                esdtTransferTransactions = this.esdtTransferBatch([
-                    {
-                        pairAddress: args.pairAddress,
-                        token: args.firstTokenID,
-                        amount: args.firstTokenAmount,
-                    },
-                    {
-                        pairAddress: args.pairAddress,
-                        token: wrappedTokenID,
-                        amount: args.secondTokenAmount,
-                    },
-                ]);
-
-                esdtTransferTransactions.map(transaction =>
-                    transactions.push(transaction),
-                );
                 break;
             default:
-                esdtTransferTransactions = this.esdtTransferBatch([
-                    {
-                        pairAddress: args.pairAddress,
-                        token: args.firstTokenID,
-                        amount: args.firstTokenAmount,
-                    },
-                    {
-                        pairAddress: args.pairAddress,
-                        token: args.secondTokenID,
-                        amount: args.secondTokenAmount,
-                    },
-                ]);
-
-                esdtTransferTransactions.map(transaction =>
-                    transactions.push(transaction),
-                );
                 break;
         }
 
+        const esdtTransferTransactions = this.esdtTransferBatch([
+            {
+                pairAddress: args.pairAddress,
+                token: firstTokenID,
+                amount: firstTokenAmount,
+            },
+            {
+                pairAddress: args.pairAddress,
+                token: secondTokenID,
+                amount: secondTokenAmount,
+            },
+        ]);
+
+        esdtTransferTransactions.map(transaction =>
+            transactions.push(transaction),
+        );
+
         const addLiquidityTransaction = this.addLiquidity({
             pairAddress: args.pairAddress,
-            amount0: args.firstTokenAmount,
-            amount1: args.secondTokenAmount,
+            amount0: firstTokenAmount,
+            amount1: secondTokenAmount,
             tolerance: args.tolerance,
         });
         transactions.push(addLiquidityTransaction);

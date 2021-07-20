@@ -3,6 +3,7 @@ import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { LockedAssetService } from './locked-asset.service';
 import {
+    LockedAssetAttributes,
     LockedAssetModel,
     UnlockMileStoneModel,
 } from './models/locked-asset.model';
@@ -15,6 +16,7 @@ import {
     TokensMergingArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
+import { DecodeAttributesArgs } from '../proxy/dto/proxy.args';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {
@@ -70,5 +72,12 @@ export class LockedAssetResolver {
         @Args() args: TokensMergingArgs,
     ): Promise<TransactionModel> {
         return await this.mergeTokensTransactions.mergeTokens(args);
+    }
+
+    @Query(returns => [LockedAssetAttributes])
+    async decodeLockedAssetAttributes(
+        @Args('args') args: DecodeAttributesArgs,
+    ): Promise<LockedAssetAttributes[]> {
+        return this.lockedAssetService.decodeLockedAssetAttributes(args);
     }
 }
