@@ -1,13 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { cacheConfig, scAddress } from '../../config';
+import { Injectable } from '@nestjs/common';
+import { scAddress } from '../../config';
 import { FarmService } from './farm.service';
 import BigNumber from 'bignumber.js';
 import { PairService } from '../pair/pair.service';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { RedisCacheService } from '../../services/redis-cache.service';
-import * as Redis from 'ioredis';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Logger } from 'winston';
 
 @Injectable()
 export class FarmStatisticsService {
