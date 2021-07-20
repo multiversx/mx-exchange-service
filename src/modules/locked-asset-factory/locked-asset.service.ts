@@ -19,7 +19,7 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out';
 import { DecodeAttributesArgs } from '../proxy/dto/proxy.args';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 
 @Injectable()
 export class LockedAssetService {
