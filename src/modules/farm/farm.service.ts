@@ -25,6 +25,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { RedisCacheService } from '../../services/redis-cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class FarmService {
@@ -45,8 +46,8 @@ export class FarmService {
         tokenCacheKey: string,
         createValueFunc: () => any,
     ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, tokenCacheKey);
         try {
-            const cacheKey = this.getFarmCacheKey(farmAddress, tokenCacheKey);
             return this.redisCacheService.getOrSet(
                 this.redisClient,
                 cacheKey,
@@ -54,14 +55,13 @@ export class FarmService {
                 cacheConfig.token,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get ${tokenCacheKey}`,
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getTokenID.name,
+                cacheKey,
                 error,
-                {
-                    path: 'FarmService.getTokenID',
-                    farmAddress,
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
@@ -99,11 +99,8 @@ export class FarmService {
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'farmTokenSupply');
         try {
-            const cacheKey = this.getFarmCacheKey(
-                farmAddress,
-                'farmTokenSupply',
-            );
             const getFarmTokenSupply = () =>
                 this.abiService.getFarmTokenSupply(farmAddress);
             return this.redisCacheService.getOrSet(
@@ -113,23 +110,22 @@ export class FarmService {
                 cacheConfig.reserves,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get farmToken supply`,
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getFarmTokenSupply.name,
+                cacheKey,
                 error,
-                {
-                    path: 'FarmService.getFarmTokenSupply',
-                    farmAddress,
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(
+            farmAddress,
+            'farmingTokenReserve',
+        );
         try {
-            const cacheKey = this.getFarmCacheKey(
-                farmAddress,
-                'farmingTokenReserve',
-            );
             const getFarmingTokenReserve = () =>
                 this.abiService.getFarmingTokenReserve(farmAddress);
             return this.redisCacheService.getOrSet(
@@ -139,23 +135,19 @@ export class FarmService {
                 cacheConfig.reserves,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get farmingToken reserves`,
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getFarmingTokenReserve.name,
+                cacheKey,
                 error,
-                {
-                    path: 'FarmService.getFarmingTokenReserve',
-                    farmAddress,
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'rewardsPerBlock');
         try {
-            const cacheKey = this.getFarmCacheKey(
-                farmAddress,
-                'rewardsPerBlock',
-            );
             const getRewardsPerBlock = () =>
                 this.abiService.getRewardsPerBlock(farmAddress);
             return this.redisCacheService.getOrSet(
@@ -165,14 +157,13 @@ export class FarmService {
                 cacheConfig.default,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get farm rewards per block`,
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getRewardsPerBlock.name,
+                cacheKey,
                 error,
-                {
-                    path: 'FarmService.getRewardsPerBlock',
-                    farmAddress,
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

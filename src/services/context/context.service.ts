@@ -17,6 +17,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { RouterService } from '../../modules/router/router.service';
 import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class ContextService {
@@ -115,8 +116,8 @@ export class ContextService {
     }
 
     async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
+        const cacheKey = this.getContextCacheKey(tokenID);
         try {
-            const cacheKey = this.getContextCacheKey(tokenID);
             const getTokenMetadata = () =>
                 this.apiService.getService().getESDTToken(tokenID);
             return this.redisCacheService.getOrSet(
@@ -126,19 +127,19 @@ export class ContextService {
                 cacheConfig.token,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get token metadata`,
+            const logMessage = generateGetLogMessage(
+                ContextService.name,
+                this.getTokenMetadata.name,
+                cacheKey,
                 error,
-                {
-                    path: 'ContextService.getTokenMetadata',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
     async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
+        const cacheKey = this.getContextCacheKey(collection);
         try {
-            const cacheKey = this.getContextCacheKey(collection);
             const getNftCollectionMetadata = () =>
                 this.apiService.getNftCollection(collection);
             return this.redisCacheService.getOrSet(
@@ -148,13 +149,13 @@ export class ContextService {
                 cacheConfig.token,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get token metadata`,
+            const logMessage = generateGetLogMessage(
+                ContextService.name,
+                this.getTokenMetadata.name,
+                cacheKey,
                 error,
-                {
-                    path: 'ContextService.getTokenMetadata',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

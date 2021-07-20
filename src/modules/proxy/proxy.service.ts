@@ -21,6 +21,7 @@ import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class ProxyService {
@@ -45,8 +46,8 @@ export class ProxyService {
         tokenCacheKey: string,
         createValueFunc: () => any,
     ): Promise<string> {
+        const cacheKey = this.getProxyCacheKey(tokenCacheKey);
         try {
-            const cacheKey = this.getProxyCacheKey(tokenCacheKey);
             return this.redisCacheService.getOrSet(
                 this.redisClient,
                 cacheKey,
@@ -54,13 +55,13 @@ export class ProxyService {
                 cacheConfig.token,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get ${tokenCacheKey}`,
+            const logMessage = generateGetLogMessage(
+                ProxyService.name,
+                this.getTokenID.name,
+                cacheKey,
                 error,
-                {
-                    path: 'ProxyService.getTokenID',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

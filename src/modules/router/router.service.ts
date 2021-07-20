@@ -10,6 +10,10 @@ import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { AbiRouterService } from './abi.router.service';
 import { PairMetadata } from './models/pair.metadata.model';
 import { PairModel } from '../pair/models/pair.model';
+import {
+    generateComputeLogMessage,
+    generateGetLogMessage,
+} from '../../utils/generate-log-message';
 
 @Injectable()
 export class RouterService {
@@ -34,8 +38,8 @@ export class RouterService {
     }
 
     async getAllPairsAddress(): Promise<string[]> {
+        const cacheKey = this.getRouterCacheKey('pairsAddress');
         try {
-            const cacheKey = this.getRouterCacheKey('pairsAddress');
             const getPairsAddress = () => this.abiService.getAllPairsAddress();
             return this.redisCacheService.getOrSet(
                 this.redisClient,
@@ -44,19 +48,19 @@ export class RouterService {
                 cacheConfig.pairsMetadata,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get all pairs address`,
+            const logMessage = generateGetLogMessage(
+                RouterService.name,
+                this.getAllPairsAddress.name,
+                cacheKey,
                 error,
-                {
-                    path: 'RouterService.getAllPairsAddress',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
+        const cacheKey = this.getRouterCacheKey('pairsMetadata');
         try {
-            const cacheKey = this.getRouterCacheKey('pairsMetadata');
             const getPairsMetadata = () => this.abiService.getPairsMetadata();
             return this.redisCacheService.getOrSet(
                 this.redisClient,
@@ -65,13 +69,13 @@ export class RouterService {
                 cacheConfig.pairsMetadata,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get pairs metadata`,
+            const logMessage = generateGetLogMessage(
+                RouterService.name,
+                this.getPairsMetadata.name,
+                cacheKey,
                 error,
-                {
-                    path: 'RouterService.getPairsMetadata',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
@@ -87,8 +91,8 @@ export class RouterService {
     }
 
     async getPairCount(): Promise<number> {
+        const cacheKey = this.getRouterCacheKey('pairCount');
         try {
-            const cacheKey = this.getRouterCacheKey('pairCount');
             const getPairCount = () => this.computePairCount();
             return this.redisCacheService.getOrSet(
                 this.redisClient,
@@ -97,19 +101,19 @@ export class RouterService {
                 cacheConfig.pairs,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get pairs count`,
+            const logMessage = generateGetLogMessage(
+                RouterService.name,
+                this.getPairCount.name,
+                cacheKey,
                 error,
-                {
-                    path: 'RouterService.getPairCount',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
     async getTotalTxCount(): Promise<number> {
+        const cacheKey = this.getRouterCacheKey('totalTxCount');
         try {
-            const cacheKey = this.getRouterCacheKey('totalTxCount');
             const getTotalTxCount = () => this.computeTotalTxCount();
             return this.redisCacheService.getOrSet(
                 this.redisClient,
@@ -118,13 +122,13 @@ export class RouterService {
                 cacheConfig.txTotalCount,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get total tx count`,
+            const logMessage = generateGetLogMessage(
+                RouterService.name,
+                this.getTotalTxCount.name,
+                cacheKey,
                 error,
-                {
-                    path: 'RouterService.getTotalTxCount',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
@@ -159,13 +163,13 @@ export class RouterService {
                 });
                 totalTxCount += response.body.hits.total.value;
             } catch (error) {
-                this.logger.error(
-                    `An error occurred while compute total Tx count`,
+                const logMessage = generateComputeLogMessage(
+                    RouterService.name,
+                    this.getTotalTxCount.name,
+                    'total tx count',
                     error,
-                    {
-                        path: 'RouterService.computeTotalTxCount',
-                    },
                 );
+                this.logger.error(logMessage);
             }
         }
 

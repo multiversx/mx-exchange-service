@@ -24,6 +24,7 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class LockedAssetService {
@@ -43,10 +44,8 @@ export class LockedAssetService {
     }
 
     async getLockedTokenID(): Promise<string> {
+        const cacheKey = this.getLockedAssetFactoryCacheKey('lockedTokenID');
         try {
-            const cacheKey = this.getLockedAssetFactoryCacheKey(
-                'lockedTokenID',
-            );
             const getLockedTokenID = () => this.abiService.getLockedTokenID();
             return this.redisCacheService.getOrSet(
                 this.redisClient,
@@ -55,13 +54,13 @@ export class LockedAssetService {
                 cacheConfig.token,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get locked asset tokenID`,
+            const logMessage = generateGetLogMessage(
+                LockedAssetService.name,
+                this.getLockedTokenID.name,
+                cacheKey,
                 error,
-                {
-                    path: 'LockedAssetService.getLockedTokenID',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
@@ -71,10 +70,10 @@ export class LockedAssetService {
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
+        const cacheKey = this.getLockedAssetFactoryCacheKey(
+            'defaultUnlockPeriod',
+        );
         try {
-            const cacheKey = this.getLockedAssetFactoryCacheKey(
-                'defaultUnlockPeriod',
-            );
             const getDefaultUnlockPeriod = () =>
                 this.abiService.getDefaultUnlockPeriod();
             return this.redisCacheService.getOrSet(
@@ -84,13 +83,13 @@ export class LockedAssetService {
                 cacheConfig.default,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get loked asset default unlock period`,
+            const logMessage = generateGetLogMessage(
+                LockedAssetService.name,
+                this.getLockedTokenID.name,
+                cacheKey,
                 error,
-                {
-                    path: 'LockedAssetService.getDefaultUnlockPeriod',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

@@ -9,7 +9,8 @@ import { RedisCacheService } from 'src/services/redis-cache.service';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class DistributionService {
@@ -29,10 +30,8 @@ export class DistributionService {
     }
 
     async getCommunityDistribution(): Promise<CommunityDistributionModel> {
+        const cacheKey = this.getDistributionCacheKey('communityDistribution');
         try {
-            const cacheKey = this.getDistributionCacheKey(
-                'communityDistribution',
-            );
             const getCommunityDistribution = () =>
                 this.abiService.getCommunityDistribution();
             return this.redisCacheService.getOrSet(
@@ -42,13 +41,13 @@ export class DistributionService {
                 cacheConfig.default,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get community distribution`,
+            const logMessage = generateGetLogMessage(
+                DistributionService.name,
+                this.getCommunityDistribution.name,
+                cacheKey,
                 error,
-                {
-                    path: 'DistributionService.getCommunityDistribution',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

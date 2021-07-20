@@ -9,6 +9,7 @@ import { RedisCacheService } from '../../services/redis-cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import * as Redis from 'ioredis';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class WrapService {
@@ -44,8 +45,8 @@ export class WrapService {
         tokenCacheKey: string,
         createValueFunc: () => any,
     ): Promise<string> {
+        const cacheKey = this.getWrapCacheKey(tokenCacheKey);
         try {
-            const cacheKey = this.getWrapCacheKey(tokenCacheKey);
             return this.redisCacheService.getOrSet(
                 this.redisClient,
                 cacheKey,
@@ -53,13 +54,13 @@ export class WrapService {
                 cacheConfig.token,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get ${tokenCacheKey}`,
+            const logMessage = generateGetLogMessage(
+                WrapService.name,
+                this.getTokenID.name,
+                cacheKey,
                 error,
-                {
-                    path: 'WrapService.getTokenID',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

@@ -8,6 +8,7 @@ import { Logger } from 'winston';
 import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { cacheConfig } from '../../../config';
+import { generateGetLogMessage } from '../../../utils/generate-log-message';
 
 @Injectable()
 export class ProxyFarmService {
@@ -25,8 +26,8 @@ export class ProxyFarmService {
         tokenCacheKey: string,
         createValueFunc: () => any,
     ): Promise<string> {
+        const cacheKey = this.getProxyFarmCacheKey(tokenCacheKey);
         try {
-            const cacheKey = this.getProxyFarmCacheKey(tokenCacheKey);
             return this.redisCacheService.getOrSet(
                 this.redisClient,
                 cacheKey,
@@ -34,13 +35,13 @@ export class ProxyFarmService {
                 cacheConfig.token,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get ${tokenCacheKey}`,
+            const logMessage = generateGetLogMessage(
+                ProxyFarmService.name,
+                this.getTokenID.name,
+                cacheKey,
                 error,
-                {
-                    path: 'ProxyFarmService.getTokenID',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
@@ -56,8 +57,8 @@ export class ProxyFarmService {
     }
 
     async getIntermediatedFarms(): Promise<string[]> {
+        const cacheKey = this.getProxyFarmCacheKey('intermediatedFarms');
         try {
-            const cacheKey = this.getProxyFarmCacheKey('intermediatedFarms');
             const getIntermediatedFarms = () =>
                 this.abiService.getIntermediatedFarmsAddress();
             return this.redisCacheService.getOrSet(
@@ -67,13 +68,13 @@ export class ProxyFarmService {
                 cacheConfig.default,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get proxy intermediated farms`,
+            const logMessage = generateGetLogMessage(
+                ProxyFarmService.name,
+                this.getIntermediatedFarms.name,
+                cacheKey,
                 error,
-                {
-                    path: 'ProxyFarmService.getIntermediatedFarms',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

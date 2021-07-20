@@ -5,6 +5,10 @@ import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisCacheService } from '../redis-cache.service';
 import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import {
+    generateGetLogMessage,
+    generateSetLogMessage,
+} from '../../utils/generate-log-message';
 
 @Injectable()
 export class HyperblockService {
@@ -28,23 +32,23 @@ export class HyperblockService {
     }
 
     async getLastProcessedNonce(): Promise<number | undefined> {
+        const cacheKey = this.getHyperblockCacheKey('lastPorcessedNonce');
         try {
-            const cacheKey = this.getHyperblockCacheKey('lastPorcessedNonce');
             return this.redisCacheService.get(this.redisClient, cacheKey);
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get last processed nonce`,
+            const logMessage = generateGetLogMessage(
+                HyperblockService.name,
+                this.getLastProcessedNonce.name,
+                cacheKey,
                 error,
-                {
-                    path: 'HyperblockService.getLastProcessedNonce',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
     async setLastProcessedNonce(nonce: number): Promise<void> {
+        const cacheKey = this.getHyperblockCacheKey('lastPorcessedNonce');
         try {
-            const cacheKey = this.getHyperblockCacheKey('lastPorcessedNonce');
             this.redisCacheService.set(
                 this.redisClient,
                 cacheKey,
@@ -52,13 +56,13 @@ export class HyperblockService {
                 Number.MAX_SAFE_INTEGER,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while set last processed nonce`,
+            const logMessage = generateSetLogMessage(
+                HyperblockService.name,
+                this.getLastProcessedNonce.name,
+                cacheKey,
                 error,
-                {
-                    path: 'HyperblockService.setLastProcessedNonce',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

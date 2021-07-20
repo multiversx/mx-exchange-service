@@ -6,6 +6,7 @@ import { RedisCacheService } from '../redis-cache.service';
 import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { Logger } from 'winston';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class PriceFeedService {
@@ -22,8 +23,8 @@ export class PriceFeedService {
     }
 
     async getTokenPrice(tokenName: string): Promise<BigNumber> {
+        const cacheKey = this.getPriceFeedCacheKey(tokenName);
         try {
-            const cacheKey = this.getPriceFeedCacheKey(tokenName);
             const getTokenPrice = () => this.getTokenPriceRaw(tokenName);
 
             const tokenPrice = await this.redisCacheService.getOrSet(
@@ -34,13 +35,13 @@ export class PriceFeedService {
             );
             return new BigNumber(tokenPrice);
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get token price feed`,
+            const logMessage = generateGetLogMessage(
+                PriceFeedService.name,
+                this.getTokenPrice.name,
+                cacheKey,
                 error,
-                {
-                    path: 'PriceFeedService.getTokenPrice',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

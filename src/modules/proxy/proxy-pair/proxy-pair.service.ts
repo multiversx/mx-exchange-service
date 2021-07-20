@@ -9,6 +9,7 @@ import { Logger } from 'winston';
 import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { cacheConfig } from '../../../config';
+import { generateGetLogMessage } from '../../../utils/generate-log-message';
 
 @Injectable()
 export class ProxyPairService {
@@ -26,8 +27,8 @@ export class ProxyPairService {
         tokenCacheKey: string,
         createValueFunc: () => any,
     ): Promise<string> {
+        const cacheKey = this.getProxyPairCacheKey(tokenCacheKey);
         try {
-            const cacheKey = this.getProxyPairCacheKey(tokenCacheKey);
             return this.redisCacheService.getOrSet(
                 this.redisClient,
                 cacheKey,
@@ -35,13 +36,13 @@ export class ProxyPairService {
                 cacheConfig.token,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get ${tokenCacheKey}`,
+            const logMessage = generateGetLogMessage(
+                ProxyPairService.name,
+                this.getTokenID.name,
+                cacheKey,
                 error,
-                {
-                    path: 'ProxyPairService.getTokenID',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
@@ -57,8 +58,8 @@ export class ProxyPairService {
     }
 
     async getIntermediatedPairs(): Promise<string[]> {
+        const cacheKey = this.getProxyPairCacheKey('intermediatedPairs');
         try {
-            const cacheKey = this.getProxyPairCacheKey('intermediatedPairs');
             const getIntermediatedPairs = () =>
                 this.abiService.getIntermediatedPairsAddress();
             return this.redisCacheService.getOrSet(
@@ -68,13 +69,13 @@ export class ProxyPairService {
                 cacheConfig.default,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get proxy intermediated pairs`,
+            const logMessage = generateGetLogMessage(
+                ProxyPairService.name,
+                this.getIntermediatedPairs.name,
+                cacheKey,
                 error,
-                {
-                    path: 'ProxyPairService.getIntermediatedPairs',
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

@@ -24,6 +24,7 @@ import { RedisCacheService } from '../../services/redis-cache.service';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class PairService {
@@ -44,8 +45,8 @@ export class PairService {
         tokenCacheKey: string,
         createValueFunc: () => any,
     ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, tokenCacheKey);
         try {
-            const cacheKey = this.getPairCacheKey(pairAddress, tokenCacheKey);
             return this.redisCacheService.getOrSet(
                 this.redisClient,
                 cacheKey,
@@ -53,14 +54,13 @@ export class PairService {
                 cacheConfig.token,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get ${tokenCacheKey}`,
+            const logMessage = generateGetLogMessage(
+                PairService.name,
+                this.getTokenID.name,
+                cacheKey,
                 error,
-                {
-                    path: 'PairService.getTokenID',
-                    pairAddress,
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 
@@ -236,8 +236,8 @@ export class PairService {
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'valueLocked');
         try {
-            const cacheKey = this.getPairCacheKey(pairAddress, 'valueLocked');
             const getValueLocked = () =>
                 this.abiService.getPairInfoMetadata(pairAddress);
             return this.redisCacheService.getOrSet(
@@ -247,14 +247,13 @@ export class PairService {
                 cacheConfig.reserves,
             );
         } catch (error) {
-            this.logger.error(
-                `An error occurred while get reserves and total supply`,
+            const logMessage = generateGetLogMessage(
+                PairService.name,
+                this.getPairInfoMetadata.name,
+                cacheKey,
                 error,
-                {
-                    path: 'PairService.getPairInfoMetadata',
-                    pairAddress,
-                },
             );
+            this.logger.error(logMessage);
         }
     }
 

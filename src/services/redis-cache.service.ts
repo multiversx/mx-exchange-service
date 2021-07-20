@@ -5,6 +5,12 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { RedisService } from 'nestjs-redis';
 import { generateCacheKey } from '../utils/generate-cache-key';
 import { Logger } from 'winston';
+import {
+    generateDeleteLogMessage,
+    generateGetLogMessage,
+    generateLogMessage,
+    generateSetLogMessage,
+} from '../utils/generate-log-message';
 
 @Injectable()
 export class RedisCacheService {
@@ -26,14 +32,13 @@ export class RedisCacheService {
         try {
             return JSON.parse(await client.get(cacheKey));
         } catch (err) {
-            this.logger.error(
-                'An error occurred while trying to get from redis cache.',
-                {
-                    path: 'redis-cache.service.get',
-                    exception: err.toString(),
-                    cacheKey: cacheKey,
-                },
+            const logMessage = generateGetLogMessage(
+                RedisCacheService.name,
+                this.get.name,
+                cacheKey,
+                err,
             );
+            this.logger.error(logMessage);
             return null;
         }
     }
@@ -51,19 +56,18 @@ export class RedisCacheService {
         try {
             await client.set(cacheKey, JSON.stringify(value), 'EX', ttl);
         } catch (err) {
-            this.logger.error(
-                'An error occurred while trying to set in redis cache.',
-                {
-                    path: 'redis-cache.service.set',
-                    exception: err.toString(),
-                    cacheKey: cacheKey,
-                },
+            const logMessage = generateSetLogMessage(
+                RedisCacheService.name,
+                this.set.name,
+                cacheKey,
+                err,
             );
+            this.logger.error(logMessage);
             return;
         }
     }
 
-    async del(
+    async delete(
         client: Redis.Redis,
         key: string,
         region: string = null,
@@ -72,14 +76,13 @@ export class RedisCacheService {
         try {
             await client.del(cacheKey);
         } catch (err) {
-            this.logger.error(
-                'An error occurred while trying to delete from redis cache.',
-                {
-                    path: 'redis-cache.service.del',
-                    exception: err.toString(),
-                    cacheKey: cacheKey,
-                },
+            const logMessage = generateDeleteLogMessage(
+                RedisCacheService.name,
+                this.delete.name,
+                cacheKey,
+                err,
             );
+            this.logger.error(logMessage);
         }
     }
 
@@ -87,13 +90,13 @@ export class RedisCacheService {
         try {
             await client.flushdb();
         } catch (err) {
-            this.logger.error(
-                'An error occurred while trying to flush the db',
-                {
-                    path: 'redis-cache.service.flushDb',
-                    exception: err.toString(),
-                },
+            const logMessage = generateLogMessage(
+                RedisCacheService.name,
+                this.flushDb.name,
+                'flushDb',
+                err,
             );
+            this.logger.error(logMessage);
         }
     }
 
@@ -148,15 +151,13 @@ export class RedisCacheService {
                 }
                 return data;
             } catch (err) {
-                this.logger.error(
-                    `An error occurred while trying to load value.`,
-                    {
-                        path: 'redis-cache.service.createValueFunc',
-                        exception: err.toString(),
-                        key,
-                        region,
-                    },
+                const logMessage = generateLogMessage(
+                    RedisCacheService.name,
+                    this.buildInternalCreateValueFunc.name,
+                    'trying to load value',
+                    err,
                 );
+                this.logger.error(logMessage);
                 return null;
             }
         };
