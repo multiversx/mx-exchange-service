@@ -66,9 +66,9 @@ export class LockedAssetService {
     ): Promise<LockedAssetAttributes[]> {
         const decodedBatchAttributes = [];
         const currentEpoch = await this.apiService.getCurrentEpoch();
-        for (const attributes of args.batchAttributes) {
+        for (const lockedAsset of args.batchAttributes) {
             const attributesBuffer = Buffer.from(
-                attributes.attributes,
+                lockedAsset.attributes,
                 'base64',
             );
             const codec = new BinaryCodec();
@@ -111,8 +111,8 @@ export class LockedAssetService {
             );
             decodedBatchAttributes.push(
                 new LockedAssetAttributes({
-                    attributes: attributes.attributes,
-                    identifier: attributes.identifier,
+                    attributes: lockedAsset.attributes,
+                    identifier: lockedAsset.identifier,
                     isMerged: decodedAttributes.isMerged,
                     unlockSchedule: unlockSchedule,
                 }),
