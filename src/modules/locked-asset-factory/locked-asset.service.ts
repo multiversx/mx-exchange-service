@@ -73,31 +73,11 @@ export class LockedAssetService {
             );
             const codec = new BinaryCodec();
 
-            const structType = new StructType('LockedAssetAttributes', [
-                new StructFieldDefinition(
-                    'unlockSchedule',
-                    '',
-                    new ListType(
-                        new StructType('UnlockMilestone', [
-                            new StructFieldDefinition(
-                                'epoch',
-                                '',
-                                new U64Type(),
-                            ),
-                            new StructFieldDefinition(
-                                'percent',
-                                '',
-                                new U8Type(),
-                            ),
-                        ]),
-                    ),
-                ),
-                new StructFieldDefinition('isMerged', '', new BooleanType()),
-            ]);
+            const lockedAssetAttributesStructure = this.getLockedAssetAttributesStructure();
 
             const [decoded, decodedLength] = codec.decodeNested(
                 attributesBuffer,
-                structType,
+                lockedAssetAttributesStructure,
             );
             const decodedAttributes = decoded.valueOf();
             const unlockSchedule = decodedAttributes.unlockSchedule.map(
@@ -119,5 +99,21 @@ export class LockedAssetService {
             );
         }
         return decodedBatchAttributes;
+    }
+
+    private getLockedAssetAttributesStructure(): StructType {
+        return new StructType('LockedAssetAttributes', [
+            new StructFieldDefinition(
+                'unlockSchedule',
+                '',
+                new ListType(
+                    new StructType('UnlockMilestone', [
+                        new StructFieldDefinition('epoch', '', new U64Type()),
+                        new StructFieldDefinition('percent', '', new U8Type()),
+                    ]),
+                ),
+            ),
+            new StructFieldDefinition('isMerged', '', new BooleanType()),
+        ]);
     }
 }
