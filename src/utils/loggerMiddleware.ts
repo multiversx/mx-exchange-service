@@ -23,7 +23,7 @@ export const loggerMiddleware: FieldMiddleware = async (
 ) => {
     const fieldName = ctx.info.parentType.name + '.' + ctx.info.fieldName;
     const fieldPath = getFieldPath(ctx.info.path);
-    console.log(fieldPath);
+
     const profiler = new PerformanceProfiler();
     const value = await next();
     profiler.stop();
