@@ -85,7 +85,7 @@ export class FarmResolver {
 
     @ResolveField()
     async APR(@Parent() parent: FarmModel) {
-        return await this.statisticsService.computeFarmAPR(parent.address);
+        return await this.statisticsService.getFarmAPR(parent.address);
     }
 
     @ResolveField()
