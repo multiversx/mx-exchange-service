@@ -81,7 +81,7 @@ export class CacheWarmerService {
             );
         });
         const secondTokensPromises = pairsAddress.map(async pairAddress => {
-            const firstTokenPrice = await this.pairService.computeFirstTokenPrice(
+            const secondTokenPrice = await this.pairService.computeSecondTokenPrice(
                 pairAddress,
             );
             const cacheKey = generateCacheKeyFromParams(
@@ -92,11 +92,11 @@ export class CacheWarmerService {
             this.redisCacheService.set(
                 this.redisCacheService.getClient(),
                 cacheKey,
-                firstTokenPrice,
+                secondTokenPrice,
                 cacheConfig.tokenPrice,
             );
         });
-        await Promise.all([firstTokensPromises, secondTokensPromises]);
+        await Promise.all([...firstTokensPromises, ...secondTokensPromises]);
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
