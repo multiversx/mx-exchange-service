@@ -7,6 +7,8 @@ import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { PerformanceProfiler } from '../../utils/performance.profiler';
+import { MetricsCollector } from '../../utils/metrics.collector';
 
 @Injectable()
 export class PriceFeedService {
@@ -46,10 +48,16 @@ export class PriceFeedService {
     }
 
     async getTokenPriceRaw(tokenName: string): Promise<string> {
+        const profiler = new PerformanceProfiler();
         const tokenPrice = await this.httpService
             .get(`${this.priceFeedUrl}/latest/quotes/${tokenName}/price`)
             .toPromise();
-
+        profiler.stop();
+        MetricsCollector.setExternalCall(
+            PriceFeedService.name,
+            this.getTokenPriceRaw.name,
+            profiler.duration,
+        );
         return tokenPrice.data;
     }
 
