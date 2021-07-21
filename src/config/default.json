@@ -52,6 +52,7 @@
         "priceFeed": 30,
         "reserves": 30,
         "apr": 120,
+        "default": 100
     },
     "gas": {
         "default": 50000000,
