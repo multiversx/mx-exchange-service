@@ -12,6 +12,9 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
+import { RedisCacheService } from './redis-cache.service';
+import { FarmModule } from 'src/modules/farm/farm.module';
+import { RedisModule } from 'nestjs-redis';
 
 const logTransports: Transport[] = [
     new winston.transports.Console({
@@ -44,13 +47,21 @@ if (!!process.env.LOG_FILE) {
         WinstonModule.forRoot({
             transports: logTransports,
         }),
+        RedisModule.register([
+            {
+                host: process.env.REDIS_URL,
+                port: parseInt(process.env.REDIS_PORT),
+                password: process.env.REDIS_PASSWORD,
+            },
+        ]),
         HttpModule,
         PriceFeedModule,
         PairModule,
         ServicesModule,
         ContextModule,
+        FarmModule,
     ],
     controllers: [],
-    providers: [CacheWarmerService],
+    providers: [CacheWarmerService, RedisCacheService],
 })
 export class CacheWarmerModule {}

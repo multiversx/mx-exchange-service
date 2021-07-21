@@ -47,10 +47,12 @@
         "txTotalCount": 10,
         "pairCount": 10,
         "token": 300,
+        "tokenPrice": 30,
         "userTokens": 3,
         "priceFeed": 30,
         "reserves": 30,
-        "default": 20
+        "apr": 120,
+        "default": 100
     },
     "gas": {
         "default": 50000000,
