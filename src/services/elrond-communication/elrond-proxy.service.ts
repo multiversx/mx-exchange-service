@@ -5,16 +5,21 @@ import {
     SmartContract,
     SmartContractAbi,
 } from '@elrondnetwork/erdjs/out';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { SmartContractType } from '../../modules/token-merging/dto/token.merging.args';
 import { abiConfig, elrondConfig, scAddress } from '../../config';
 import Agent, { HttpsAgent } from 'agentkeepalive';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { SmartContractProfiler } from '../../helpers/smartcontract.profiler';
 
 @Injectable()
 export class ElrondProxyService {
     private readonly proxy: ProxyProvider;
 
-    constructor() {
+    constructor(
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
         const keepAliveOptions = {
             maxSockets: elrondConfig.keepAliveMaxSockets,
             maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
@@ -117,7 +122,7 @@ export class ElrondProxyService {
         });
         const abi = new SmartContractAbi(abiRegistry, [contractInterface]);
 
-        const contract = new SmartContract({
+        const contract = new SmartContractProfiler({
             address: new Address(contractAddress),
             abi: abi,
         });
