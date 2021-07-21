@@ -16,7 +16,7 @@ import {
     TokensMergingArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
-import { DecodeAttributesArgs } from '../proxy/dto/proxy.args';
+import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {

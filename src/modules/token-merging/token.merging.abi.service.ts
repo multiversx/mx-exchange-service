@@ -1,7 +1,7 @@
 import { Address, BytesValue, Interaction } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { GenericEsdtAmountPair } from 'src/models/proxy.model';
+import { GenericEsdtAmountPair } from 'src/modules/proxy/models/proxy.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { SmartContractType, TokensMergingArgs } from './dto/token.merging.args';
 

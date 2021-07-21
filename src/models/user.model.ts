@@ -1,11 +1,11 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { EsdtToken } from './tokens/esdtToken.model';
 import { NftToken } from './tokens/nftToken.model';
-import { FarmTokenAttributesModel } from './farm.model';
+import { FarmTokenAttributesModel } from '../modules/farm/models/farm.model';
 import {
     WrappedFarmTokenAttributesModel,
     WrappedLpTokenAttributesModel,
-} from './proxy.model';
+} from '../modules/proxy/models/proxy.model';
 import { FarmToken } from './tokens/farmToken.model';
 import { LockedLpToken } from './tokens/lockedLpToken.model';
 import { LockedFarmToken } from './tokens/lockedFarmToken.model';

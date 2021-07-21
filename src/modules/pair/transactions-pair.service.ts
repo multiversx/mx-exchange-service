@@ -16,7 +16,7 @@ import {
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
-} from './dto/pair.args';
+} from './models/pair.args';
 import { PairService } from './pair.service';
 import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';

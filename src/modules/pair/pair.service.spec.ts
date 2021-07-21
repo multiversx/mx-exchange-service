@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { RedlockService } from '../../services';
-import { CachePairService } from '../../services/cache-manager/cache-pair.service';
 import { AbiPairService } from './abi-pair.service';
 import { PairService } from './pair.service';
 import {
     AbiPairServiceMock,
-    CachePairServiceMock,
     ContextServiceMock,
     PriceFeedServiceMock,
     RedlockServiceMock,
@@ -14,6 +12,14 @@ import {
 } from './pair.test-constants';
 import { ContextService } from '../../services/context/context.service';
 import { WrapService } from '../wrapping/wrap.service';
+import { RedisCacheService } from '../../services/redis-cache.service';
+import winston from 'winston';
+import {
+    utilities as nestWinstonModuleUtilities,
+    WinstonModule,
+} from 'nest-winston';
+import * as Transport from 'winston-transport';
+import { RedisModule } from 'nestjs-redis';
 
 describe('PairService', () => {
     let service: PairService;
@@ -26,11 +32,6 @@ describe('PairService', () => {
     const ContextServiceProvider = {
         provide: ContextService,
         useClass: ContextServiceMock,
-    };
-
-    const CachePairServiceProvider = {
-        provide: CachePairService,
-        useClass: CachePairServiceMock,
     };
 
     const RedlockServiceProvider = {
@@ -48,14 +49,35 @@ describe('PairService', () => {
         useClass: WrapServiceMock,
     };
 
+    const logTransports: Transport[] = [
+        new winston.transports.Console({
+            format: winston.format.combine(
+                winston.format.timestamp(),
+                nestWinstonModuleUtilities.format.nestLike(),
+            ),
+        }),
+    ];
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
+            imports: [
+                WinstonModule.forRoot({
+                    transports: logTransports,
+                }),
+                RedisModule.register([
+                    {
+                        host: process.env.REDIS_URL,
+                        port: parseInt(process.env.REDIS_PORT),
+                        password: process.env.REDIS_PASSWORD,
+                    },
+                ]),
+            ],
             providers: [
                 AbiPairServiceProvider,
-                CachePairServiceProvider,
                 ContextServiceProvider,
                 RedlockServiceProvider,
                 PriceFeedServiceProvider,
+                RedisCacheService,
                 PairService,
                 WrapServiceProvider,
             ],

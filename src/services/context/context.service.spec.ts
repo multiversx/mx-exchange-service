@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 import { ContextService } from './context.service';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -8,6 +7,9 @@ import {
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { ElrondCommunicationModule } from '../elrond-communication/elrond-communication.module';
+import { RedisCacheService } from '../redis-cache.service';
+import { RouterModule } from '../../modules/router/router.module';
+import { RedisModule } from 'nestjs-redis';
 
 describe('ContextService', () => {
     let service: ContextService;
@@ -27,10 +29,17 @@ describe('ContextService', () => {
                 WinstonModule.forRoot({
                     transports: logTransports,
                 }),
-                CacheManagerModule,
                 ElrondCommunicationModule,
+                RouterModule,
+                RedisModule.register([
+                    {
+                        host: process.env.REDIS_URL,
+                        port: parseInt(process.env.REDIS_PORT),
+                        password: process.env.REDIS_PASSWORD,
+                    },
+                ]),
             ],
-            providers: [ContextService],
+            providers: [ContextService, RedisCacheService],
         }).compile();
 
         service = module.get<ContextService>(ContextService);

@@ -1,4 +1,4 @@
-import { PairInfoModel } from '../../models/pair-info.model';
+import { PairInfoModel } from './models/pair-info.model';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import BigNumber from 'bignumber.js';
 
@@ -169,83 +169,6 @@ export class ContextServiceMock {
         }
 
         return [];
-    }
-}
-
-export class CachePairServiceMock {
-    async getFirstTokenID(pairAddress: string): Promise<Record<string, any>> {
-        return;
-    }
-
-    async setFirstTokenID(
-        pairAddress: string,
-        tokenID: Record<string, any>,
-    ): Promise<void> {
-        return;
-    }
-
-    async getSecondTokenID(pairAddress: string): Promise<Record<string, any>> {
-        return;
-    }
-
-    async setSecondTokenID(
-        pairAddress: string,
-        tokenID: Record<string, any>,
-    ): Promise<void> {
-        return;
-    }
-
-    async getLpTokenID(pairAddress: string): Promise<Record<string, any>> {
-        return;
-    }
-
-    async setLpTokenID(
-        pairAddress: string,
-        tokenID: Record<string, any>,
-    ): Promise<void> {
-        return;
-    }
-
-    async getReserves(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<Record<string, any>> {
-        return;
-    }
-
-    async setReserves(
-        pairAddress: string,
-        tokenID: string,
-        reserves: Record<string, any>,
-    ): Promise<void> {
-        return;
-    }
-
-    async getTotalSupply(pairAddress: string): Promise<Record<string, any>> {
-        return;
-    }
-
-    async setTotalSupply(
-        pairAddress: string,
-        tokenID: Record<string, any>,
-    ): Promise<void> {
-        return;
-    }
-
-    async getTemporaryFunds(
-        pairAddress: string,
-        callerAddress: string,
-        tokenID: string,
-    ) {
-        return;
-    }
-
-    async setTemporaryFunds(
-        pairAddress: string,
-        callerAddress: string,
-        tokenID: Record<string, any>,
-    ) {
-        return;
     }
 }
 

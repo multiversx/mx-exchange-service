@@ -14,7 +14,7 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
     SftFarmInteractionArgs,
-} from './dto/farm.args';
+} from './models/farm.args';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 

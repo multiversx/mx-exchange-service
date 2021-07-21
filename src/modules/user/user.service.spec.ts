@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { CacheManagerModule } from '../../services/cache-manager/cache-manager.module';
 import { FarmService } from '../farm/farm.service';
 import { PairService } from '../pair/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
@@ -103,7 +102,6 @@ describe('UserService', () => {
                 WinstonModule.forRoot({
                     transports: logTransports,
                 }),
-                CacheManagerModule,
             ],
         }).compile();
 

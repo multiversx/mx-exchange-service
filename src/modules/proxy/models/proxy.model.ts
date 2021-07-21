@@ -1,7 +1,7 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { EsdtToken } from './tokens/esdtToken.model';
-import { FarmTokenAttributesModel } from './farm.model';
-import { NftCollection } from './tokens/nftCollection.model';
+import { EsdtToken } from '../../../models/tokens/esdtToken.model';
+import { FarmTokenAttributesModel } from '../../farm/models/farm.model';
+import { NftCollection } from '../../../models/tokens/nftCollection.model';
 
 @ObjectType()
 export class ProxyModel {
@@ -31,6 +31,10 @@ export class ProxyModel {
 
     @Field(type => [String])
     nftDepositAcceptedTokenIDs: string[];
+
+    constructor(init?: Partial<ProxyModel>) {
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
@@ -47,6 +51,10 @@ export class WrappedLpTokenAttributesModel {
     lockedAssetsInvested: string;
     @Field(type => Int)
     lockedAssetsNonce: number;
+
+    constructor(init?: Partial<WrappedLpTokenAttributesModel>) {
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
@@ -71,6 +79,10 @@ export class WrappedFarmTokenAttributesModel {
     farmingTokenNonce: string;
     @Field()
     farmingTokenAmount: string;
+
+    constructor(init?: Partial<WrappedFarmTokenAttributesModel>) {
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
@@ -83,4 +95,8 @@ export class GenericEsdtAmountPair {
     amount: string;
     @Field({ nullable: true })
     address: string;
+
+    constructor(init?: Partial<GenericEsdtAmountPair>) {
+        Object.assign(this, init);
+    }
 }

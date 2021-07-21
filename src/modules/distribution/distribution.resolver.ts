@@ -5,7 +5,7 @@ import { DistributionService } from './distribution.service';
 import {
     CommunityDistributionModel,
     DistributionModel,
-} from '../../models/distribution.model';
+} from './models/distribution.model';
 import { TransactionsDistributionService } from './transaction-distribution.service';
 
 @Resolver(of => DistributionModel)

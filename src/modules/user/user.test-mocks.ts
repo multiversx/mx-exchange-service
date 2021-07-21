@@ -1,7 +1,7 @@
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
-import { FarmTokenAttributesModel } from '../../models/farm.model';
 import { NftToken } from '../../models/tokens/nftToken.model';
 import BigNumber from 'bignumber.js';
+import { FarmTokenAttributesModel } from '../farm/models/farm.model';
 
 const pairsMetadata = [
     {

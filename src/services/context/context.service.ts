@@ -1,14 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { CacheManagerService } from '../../services/cache-manager/cache-manager.service';
-import { elrondConfig, abiConfig, scAddress } from '../../config';
+import { Inject, Injectable } from '@nestjs/common';
+import { elrondConfig, cacheConfig } from '../../config';
+import { TypedValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import {
-    AbiRegistry,
-    TypedValue,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { SmartContractAbi } from '@elrondnetwork/erdjs/out/smartcontracts/abi';
-import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import {
-    Address,
     SmartContract,
     GasLimit,
     ContractFunction,
@@ -16,96 +9,39 @@ import {
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { TransactionModel } from '../../models/transaction.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
-import { ElrondProxyService } from '../elrond-communication/elrond-proxy.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
-
-interface PairMetadata {
-    address: string;
-    firstToken: string;
-    secondToken: string;
-}
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { RedisCacheService } from '../redis-cache.service';
+import * as Redis from 'ioredis';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { RouterService } from '../../modules/router/router.service';
+import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class ContextService {
-    constructor(
-        private readonly elrondProxy: ElrondProxyService,
-        private readonly apiService: ElrondApiService,
-        private readonly cacheManagerService: CacheManagerService,
-    ) {}
+    private redisClient: Redis.Redis;
 
-    private async getContract(): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({
-            files: [abiConfig.router],
-        });
-        const abi = new SmartContractAbi(abiRegistry, ['Router']);
-        return new SmartContract({
-            address: new Address(scAddress.routerAddress),
-            abi: abi,
-        });
+    constructor(
+        private readonly apiService: ElrondApiService,
+        private readonly routerService: RouterService,
+        private readonly redisCacheService: RedisCacheService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
+        this.redisClient = this.redisCacheService.getClient();
     }
 
     async getAllPairsAddress(): Promise<string[]> {
-        const cachedData = await this.cacheManagerService.getPairsAddress();
-        if (!!cachedData) {
-            return cachedData.pairsAddress;
-        }
-        const contract = await this.getContract();
-        const interaction: Interaction = contract.methods.getAllPairsAddresses(
-            [],
-        );
-
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
-
-        const pairsAddress = result.firstValue.valueOf().map(pairAddress => {
-            return pairAddress.toString();
-        });
-
-        this.cacheManagerService.setPairsAddress({
-            pairsAddress: pairsAddress,
-        });
-
-        return pairsAddress;
+        return this.routerService.getAllPairsAddress();
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
-        const cachedData = await this.cacheManagerService.getPairsMetadata();
-        if (!!cachedData) {
-            return cachedData.pairsMetadata;
-        }
-
-        const contract = await this.getContract();
-        const getAllPairsInteraction: Interaction = contract.methods.getAllPairContractMetadata(
-            [],
-        );
-
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            getAllPairsInteraction.buildQuery(),
-        );
-        const result = getAllPairsInteraction.interpretQueryResponse(
-            queryResponse,
-        );
-
-        const pairsMetadata = result.firstValue.valueOf().map(v => {
-            return {
-                firstToken: v.first_token_id.toString(),
-                secondToken: v.second_token_id.toString(),
-                address: v.address.toString(),
-            };
-        });
-        this.cacheManagerService.setPairsMetadata({
-            pairsMetadata: pairsMetadata,
-        });
-
-        return pairsMetadata;
+        return this.routerService.getPairsMetadata();
     }
 
     async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
-        const pairs = await this.getPairsMetadata();
+        const pairs = await this.routerService.getPairsMetadata();
         const pair = pairs.find(pair => pair.address === pairAddress);
 
         return pair;
@@ -115,13 +51,13 @@ export class ContextService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<PairMetadata> {
-        const pairsMetadata = await this.getPairsMetadata();
+        const pairsMetadata = await this.routerService.getPairsMetadata();
         for (const pair of pairsMetadata) {
             if (
-                (pair.firstToken === firstTokenID &&
-                    pair.secondToken === secondTokenID) ||
-                (pair.firstToken === secondTokenID &&
-                    pair.secondToken === firstTokenID)
+                (pair.firstTokenID === firstTokenID &&
+                    pair.secondTokenID === secondTokenID) ||
+                (pair.firstTokenID === secondTokenID &&
+                    pair.secondTokenID === firstTokenID)
             ) {
                 return pair;
             }
@@ -130,16 +66,16 @@ export class ContextService {
     }
 
     async getPairsMap(): Promise<Map<string, string[]>> {
-        const pairsMetadata = await this.getPairsMetadata();
+        const pairsMetadata = await this.routerService.getPairsMetadata();
         const pairsMap = new Map<string, string[]>();
         for (const pairMetadata of pairsMetadata) {
-            pairsMap.set(pairMetadata.firstToken, []);
-            pairsMap.set(pairMetadata.secondToken, []);
+            pairsMap.set(pairMetadata.firstTokenID, []);
+            pairsMap.set(pairMetadata.secondTokenID, []);
         }
 
         pairsMetadata.forEach(pair => {
-            pairsMap.get(pair.firstToken).push(pair.secondToken);
-            pairsMap.get(pair.secondToken).push(pair.firstToken);
+            pairsMap.get(pair.firstTokenID).push(pair.secondTokenID);
+            pairsMap.get(pair.secondTokenID).push(pair.firstTokenID);
         });
 
         return pairsMap;
@@ -180,23 +116,47 @@ export class ContextService {
     }
 
     async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
-        const cachedData = await this.cacheManagerService.getToken(tokenID);
-        if (!!cachedData) {
-            return cachedData.token;
+        const cacheKey = this.getContextCacheKey(tokenID);
+        try {
+            const getTokenMetadata = () =>
+                this.apiService.getService().getESDTToken(tokenID);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getTokenMetadata,
+                cacheConfig.token,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                ContextService.name,
+                this.getTokenMetadata.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
         }
-
-        const tokenMetadata = await this.apiService
-            .getService()
-            .getESDTToken(tokenID);
-        this.cacheManagerService.setToken(tokenID, { token: tokenMetadata });
-        return tokenMetadata;
     }
 
-    async getNftCollectionMetadata(tokenID: string): Promise<NftCollection> {
-        const nftCollectionMetadata = await this.apiService.getNftCollection(
-            tokenID,
-        );
-        return nftCollectionMetadata;
+    async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
+        const cacheKey = this.getContextCacheKey(collection);
+        try {
+            const getNftCollectionMetadata = () =>
+                this.apiService.getNftCollection(collection);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getNftCollectionMetadata,
+                cacheConfig.token,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                ContextService.name,
+                this.getTokenMetadata.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     esdtTransfer(
@@ -230,5 +190,9 @@ export class ContextService {
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
         };
+    }
+
+    private getContextCacheKey(...args: any) {
+        return generateCacheKeyFromParams('context', args);
     }
 }

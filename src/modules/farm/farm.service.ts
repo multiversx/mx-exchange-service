@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
     BigUIntType,
     BooleanType,
@@ -8,28 +8,80 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BinaryCodec } from '@elrondnetwork/erdjs';
-import { farmsConfig, scAddress } from '../../config';
+import { cacheConfig, farmsConfig, scAddress } from '../../config';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import {
     FarmModel,
     FarmTokenAttributesModel,
     RewardsModel,
-} from '../../models/farm.model';
-import { CacheFarmService } from '../../services/cache-manager/cache-farm.service';
+} from './models/farm.model';
 import { AbiFarmService } from './abi-farm.service';
-import { CalculateRewardsArgs } from './dto/farm.args';
+import { CalculateRewardsArgs } from './models/farm.args';
 import { PairService } from '../pair/pair.service';
 import { ContextService } from '../../services/context/context.service';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from '../../models/tokens/nftCollection.model';
+import * as Redis from 'ioredis';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { RedisCacheService } from '../../services/redis-cache.service';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class FarmService {
+    private redisClient: Redis.Redis;
+
     constructor(
         private readonly abiService: AbiFarmService,
-        private readonly cacheService: CacheFarmService,
+        private readonly redisCacheService: RedisCacheService,
         private readonly context: ContextService,
         private readonly pairService: PairService,
-    ) {}
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
+        this.redisClient = this.redisCacheService.getClient();
+    }
+
+    private async getTokenID(
+        farmAddress: string,
+        tokenCacheKey: string,
+        createValueFunc: () => any,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, tokenCacheKey);
+        try {
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                createValueFunc,
+                cacheConfig.token,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getTokenID.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
+    async getFarmedTokenID(farmAddress: string): Promise<string> {
+        return this.getTokenID(farmAddress, 'farmedTokenID', () =>
+            this.abiService.getFarmedTokenID(farmAddress),
+        );
+    }
+
+    async getFarmTokenID(farmAddress: string): Promise<string> {
+        return this.getTokenID(farmAddress, 'farmTokenID', () =>
+            this.abiService.getFarmTokenID(farmAddress),
+        );
+    }
+
+    async getFarmingTokenID(farmAddress: string): Promise<string> {
+        return this.getTokenID(farmAddress, 'farmingTokenID', () =>
+            this.abiService.getFarmingTokenID(farmAddress),
+        );
+    }
 
     async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
@@ -47,53 +99,72 @@ export class FarmService {
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getFarmTokenSupply(
-            farmAddress,
-        );
-        if (!!cachedData) {
-            return cachedData.farmTokenSupply;
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'farmTokenSupply');
+        try {
+            const getFarmTokenSupply = () =>
+                this.abiService.getFarmTokenSupply(farmAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getFarmTokenSupply,
+                cacheConfig.reserves,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getFarmTokenSupply.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
         }
-
-        const farmTokenSupply = await this.abiService.getFarmTokenSupply(
-            farmAddress,
-        );
-        this.cacheService.setFarmTokenSupply(farmAddress, {
-            farmTokenSupply: farmTokenSupply,
-        });
-        return farmTokenSupply.toFixed();
     }
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getFarmingTokenReserve(
+        const cacheKey = this.getFarmCacheKey(
             farmAddress,
+            'farmingTokenReserve',
         );
-        if (!!cachedData) {
-            return cachedData.farmingTokenReserve;
+        try {
+            const getFarmingTokenReserve = () =>
+                this.abiService.getFarmingTokenReserve(farmAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getFarmingTokenReserve,
+                cacheConfig.reserves,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getFarmingTokenReserve.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
         }
-
-        const farmingTokenReserve = await this.abiService.getFarmingTokenReserve(
-            farmAddress,
-        );
-        this.cacheService.setFarmingTokenReserve(farmAddress, {
-            farmingTokenReserve: farmingTokenReserve,
-        });
-        return farmingTokenReserve.toFixed();
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getRewardsPerBlock(
-            farmAddress,
-        );
-        if (!!cachedData) {
-            return cachedData.rewardsPerBlock;
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'rewardsPerBlock');
+        try {
+            const getRewardsPerBlock = () =>
+                this.abiService.getRewardsPerBlock(farmAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getRewardsPerBlock,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getRewardsPerBlock.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
         }
-        const rewardsPerBlock = await this.abiService.getRewardsPerBlock(
-            farmAddress,
-        );
-        this.cacheService.setRewardsPerBlock(farmAddress, {
-            rewardsPerBlock: rewardsPerBlock,
-        });
-        return rewardsPerBlock.toFixed();
     }
 
     async getState(farmAddress: string): Promise<string> {
@@ -103,9 +174,7 @@ export class FarmService {
     getFarms(): FarmModel[] {
         const farms: Array<FarmModel> = [];
         for (const farmAddress of farmsConfig) {
-            const farm = new FarmModel();
-            farm.address = farmAddress;
-            farms.push(farm);
+            farms.push(new FarmModel({ address: farmAddress }));
         }
 
         return farms;
@@ -147,6 +216,44 @@ export class FarmService {
         };
     }
 
+    async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
+        const farmedTokenID = await this.getFarmedTokenID(farmAddress);
+        if (scAddress.has(farmedTokenID)) {
+            const pairAddress = scAddress.get(farmedTokenID);
+            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
+                pairAddress,
+                farmedTokenID,
+            );
+            return tokenPriceUSD.toFixed();
+        }
+
+        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
+            farmedTokenID,
+        );
+        return tokenPriceUSD.toFixed();
+    }
+
+    async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
+        return this.getFarmingTokenPriceUSD(farmAddress);
+    }
+
+    async getFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
+        const farmingTokenID = await this.getFarmingTokenID(farmAddress);
+        if (scAddress.has(farmingTokenID)) {
+            const pairAddress = scAddress.get(farmingTokenID);
+            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
+                pairAddress,
+                farmingTokenID,
+            );
+            return tokenPriceUSD.toFixed();
+        }
+
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingTokenID,
+        );
+        return this.pairService.getLpTokenPriceUSD(pairAddress);
+    }
+
     decodeFarmTokenAttributes(
         identifier: string,
         attributes: string,
@@ -185,7 +292,7 @@ export class FarmService {
             structType,
         );
         const decodedAttributes = decoded.valueOf();
-        return {
+        return new FarmTokenAttributesModel({
             identifier: identifier,
             attributes: attributes,
             rewardPerShare: decodedAttributes.rewardPerShare.toString(),
@@ -195,91 +302,10 @@ export class FarmService {
             initialFarmingAmount: decodedAttributes.initialFarmingAmount,
             compoundedReward: decodedAttributes.compoundedReward,
             currentFarmAmount: decodedAttributes.currentFarmAmount,
-        };
-    }
-
-    async getFarmedTokenID(farmAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getFarmedTokenID(
-            farmAddress,
-        );
-        if (!!cachedData) {
-            return cachedData.farmedTokenID;
-        }
-
-        const farmedTokenID = await this.abiService.getFarmedTokenID(
-            farmAddress,
-        );
-        this.cacheService.setFarmedTokenID(farmAddress, {
-            farmedTokenID: farmedTokenID,
         });
-        return farmedTokenID;
     }
 
-    async getFarmTokenID(farmAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getFarmTokenID(farmAddress);
-        if (!!cachedData) {
-            return cachedData.farmTokenID;
-        }
-
-        const farmTokenID = await this.abiService.getFarmTokenID(farmAddress);
-        this.cacheService.setFarmTokenID(farmAddress, {
-            farmTokenID: farmTokenID,
-        });
-        return farmTokenID;
-    }
-
-    async getFarmingTokenID(farmAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getFarmingTokenID(
-            farmAddress,
-        );
-        if (!!cachedData) {
-            return cachedData.farmingTokenID;
-        }
-
-        const farmingTokenID = await this.abiService.getFarmingTokenID(
-            farmAddress,
-        );
-        this.cacheService.setFarmingTokenID(farmAddress, {
-            farmingTokenID: farmingTokenID,
-        });
-        return farmingTokenID;
-    }
-
-    async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
-        const farmedTokenID = await this.getFarmedTokenID(farmAddress);
-        if (scAddress.has(farmedTokenID)) {
-            const pairAddress = scAddress.get(farmedTokenID);
-            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
-                pairAddress,
-                farmedTokenID,
-            );
-            return tokenPriceUSD.toFixed();
-        }
-
-        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
-            farmedTokenID,
-        );
-        return tokenPriceUSD.toFixed();
-    }
-
-    async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
-        return this.getFarmingTokenPriceUSD(farmAddress);
-    }
-
-    async getFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
-        const farmingTokenID = await this.getFarmingTokenID(farmAddress);
-        if (scAddress.has(farmingTokenID)) {
-            const pairAddress = scAddress.get(farmingTokenID);
-            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
-                pairAddress,
-                farmingTokenID,
-            );
-            return tokenPriceUSD.toFixed();
-        }
-
-        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            farmingTokenID,
-        );
-        return this.pairService.getLpTokenPriceUSD(pairAddress);
+    private getFarmCacheKey(farmAddress: string, ...args: any) {
+        return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }
 }

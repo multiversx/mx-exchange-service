@@ -7,26 +7,26 @@ import {
     ReclaimTemporaryFundsProxyArgs,
     RemoveLiquidityProxyArgs,
     TokensTransferArgs,
-} from './dto/proxy-pair.args';
+} from './models/proxy-pair.args';
 import {
     ClaimFarmRewardsProxyArgs,
     CompoundRewardsProxyArgs,
     EnterFarmProxyArgs,
     EnterFarmProxyBatchArgs,
     ExitFarmProxyArgs,
-} from './dto/proxy-farm.args';
+} from './models/proxy-farm.args';
 import { ProxyPairService } from './proxy-pair/proxy-pair.service';
 import {
     GenericEsdtAmountPair,
     ProxyModel,
     WrappedFarmTokenAttributesModel,
     WrappedLpTokenAttributesModel,
-} from '../../models/proxy.model';
+} from './models/proxy.model';
 import { ProxyFarmService } from './proxy-farm/proxy-farm.service';
 import { TransactionsProxyPairService } from './proxy-pair/proxy-pair-transactions.service';
 import { TransactionsProxyFarmService } from './proxy-farm/proxy-farm-transactions.service';
 import { ProxyService } from './proxy.service';
-import { DecodeAttributesArgs } from './dto/proxy.args';
+import { DecodeAttributesArgs } from './models/proxy.args';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import {

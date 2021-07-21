@@ -1,7 +1,6 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { CacheManagerModule } from './services/cache-manager/cache-manager.module';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
 import { FarmModule } from './modules/farm/farm.module';
@@ -18,6 +17,7 @@ import {
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
+import { RedisModule } from 'nestjs-redis';
 
 const logTransports: Transport[] = [
     new winston.transports.Console({
@@ -62,9 +62,14 @@ if (!!process.env.LOG_FILE) {
                 return graphQLFormattedError;
             },
         }),
-
+        RedisModule.register([
+            {
+                host: process.env.REDIS_URL,
+                port: parseInt(process.env.REDIS_PORT),
+                password: process.env.REDIS_PASSWORD,
+            },
+        ]),
         HttpModule,
-        CacheManagerModule,
         RouterModule,
         PairModule,
         FarmModule,

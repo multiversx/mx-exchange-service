@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { FarmTokenAttributesModel } from '../farm.model';
+import { FarmTokenAttributesModel } from 'src/modules/farm/models/farm.model';
 import { NftToken } from './nftToken.model';
 
 @ObjectType()

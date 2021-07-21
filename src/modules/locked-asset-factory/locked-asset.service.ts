@@ -1,14 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { CacheLockedAssetService } from '../../services/cache-manager/cache-locked-asset.service';
+import { Inject, Injectable } from '@nestjs/common';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
 import {
     LockedAssetAttributes,
     LockedAssetModel,
     UnlockMileStoneModel,
 } from './models/locked-asset.model';
-import { scAddress } from '../../config';
+import { cacheConfig, scAddress } from '../../config';
 import { ContextService } from '../../services/context/context.service';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
+import { RedisCacheService } from '../../services/redis-cache.service';
+import * as Redis from 'ioredis';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 import {
     BinaryCodec,
     BooleanType,
@@ -18,22 +22,46 @@ import {
     U64Type,
     U8Type,
 } from '@elrondnetwork/erdjs/out';
-import { DecodeAttributesArgs } from '../proxy/dto/proxy.args';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class LockedAssetService {
+    private redisClient: Redis.Redis;
     constructor(
-        private abiService: AbiLockedAssetService,
-        private cacheService: CacheLockedAssetService,
-        private context: ContextService,
+        private readonly abiService: AbiLockedAssetService,
         private apiService: ElrondApiService,
-    ) {}
+        private readonly redisCacheService: RedisCacheService,
+        private context: ContextService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
+        this.redisClient = this.redisCacheService.getClient();
+    }
 
     async getLockedAssetInfo(): Promise<LockedAssetModel> {
-        const lockedAssetInfo = new LockedAssetModel();
-        lockedAssetInfo.address = scAddress.lockedAssetAddress;
-        return lockedAssetInfo;
+        return new LockedAssetModel({ address: scAddress.lockedAssetAddress });
+    }
+
+    async getLockedTokenID(): Promise<string> {
+        const cacheKey = this.getLockedAssetFactoryCacheKey('lockedTokenID');
+        try {
+            const getLockedTokenID = () => this.abiService.getLockedTokenID();
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getLockedTokenID,
+                cacheConfig.token,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                LockedAssetService.name,
+                this.getLockedTokenID.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getLockedToken(): Promise<NftCollection> {
@@ -42,23 +70,31 @@ export class LockedAssetService {
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
-        const cachedData = await this.cacheService.getMilestones();
-        if (!!cachedData) {
-            return cachedData.milestones;
+        const cacheKey = this.getLockedAssetFactoryCacheKey(
+            'defaultUnlockPeriod',
+        );
+        try {
+            const getDefaultUnlockPeriod = () =>
+                this.abiService.getDefaultUnlockPeriod();
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getDefaultUnlockPeriod,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                LockedAssetService.name,
+                this.getLockedTokenID.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
         }
-        const unlockMilestones = await this.abiService.getDefaultUnlockPeriod();
-        this.cacheService.setMilestones({ milestones: unlockMilestones });
-        return unlockMilestones;
     }
 
-    async getLockedTokenID(): Promise<string> {
-        const cachedData = await this.cacheService.getLockedTokenID();
-        if (!!cachedData) {
-            return cachedData.lockedTokenID;
-        }
-        const lockedTokenID = await this.abiService.getLockedTokenID();
-        this.cacheService.setLockedTokenID({ lockedTokenID: lockedTokenID });
-        return lockedTokenID;
+    private getLockedAssetFactoryCacheKey(...args: any) {
+        return generateCacheKeyFromParams('lockedAssetFactory', ...args);
     }
 
     async decodeLockedAssetAttributes(

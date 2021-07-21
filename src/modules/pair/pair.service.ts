@@ -1,75 +1,85 @@
-import { Injectable } from '@nestjs/common';
-import { elrondConfig, tokenProviderUSD, tokensPriceData } from '../../config';
-import { BigNumber } from 'bignumber.js';
-import { PairInfoModel } from '../../models/pair-info.model';
+import { Inject, Injectable } from '@nestjs/common';
 import {
-    LiquidityPosition,
-    TemporaryFundsModel,
-} from '../../models/pair.model';
+    cacheConfig,
+    elrondConfig,
+    tokenProviderUSD,
+    tokensPriceData,
+} from '../../config';
+import { BigNumber } from 'bignumber.js';
+import { PairInfoModel } from './models/pair-info.model';
+import { LiquidityPosition, TemporaryFundsModel } from './models/pair.model';
 import {
     quote,
     getAmountOut,
     getAmountIn,
     getTokenForGivenPosition,
 } from './pair.utils';
-import { CachePairService } from '../../services/cache-manager/cache-pair.service';
 import { AbiPairService } from './abi-pair.service';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { ContextService } from '../../services/context/context.service';
 import { WrapService } from '../wrapping/wrap.service';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { RedisCacheService } from '../../services/redis-cache.service';
+import * as Redis from 'ioredis';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class PairService {
+    private redisClient: Redis.Redis;
     constructor(
         private abiService: AbiPairService,
-        private cacheService: CachePairService,
+        private redisCacheService: RedisCacheService,
         private context: ContextService,
         private priceFeed: PriceFeedService,
         private wrapService: WrapService,
-    ) {}
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
+        this.redisClient = this.redisCacheService.getClient();
+    }
+
+    private async getTokenID(
+        pairAddress: string,
+        tokenCacheKey: string,
+        createValueFunc: () => any,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, tokenCacheKey);
+        try {
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                createValueFunc,
+                cacheConfig.token,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                PairService.name,
+                this.getTokenID.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
 
     async getFirstTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getFirstTokenID(pairAddress);
-        if (!!cachedData) {
-            return cachedData.firstTokenID;
-        }
-
-        const firstTokenID = await this.abiService.getFirstTokenID(pairAddress);
-        this.cacheService.setFirstTokenID(pairAddress, {
-            firstTokenID: firstTokenID,
-        });
-        return firstTokenID;
+        return this.getTokenID(pairAddress, 'firstTokenID', () =>
+            this.abiService.getFirstTokenID(pairAddress),
+        );
     }
 
     async getSecondTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getSecondTokenID(
-            pairAddress,
+        return this.getTokenID(pairAddress, 'secondTokenID', () =>
+            this.abiService.getSecondTokenID(pairAddress),
         );
-        if (!!cachedData) {
-            return cachedData.secondTokenID;
-        }
-
-        const secondTokenID = await this.abiService.getSecondTokenID(
-            pairAddress,
-        );
-        this.cacheService.setSecondTokenID(pairAddress, {
-            secondTokenID: secondTokenID,
-        });
-        return secondTokenID;
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {
-        const cachedData = await this.cacheService.getLpTokenID(pairAddress);
-        if (!!cachedData) {
-            return cachedData.lpTokenID;
-        }
-
-        const lpTokenID = await this.abiService.getLpTokenID(pairAddress);
-        this.cacheService.setLpTokenID(pairAddress, {
-            lpTokenID: lpTokenID,
-        });
-        return lpTokenID;
+        return this.getTokenID(pairAddress, 'lpTokenID', () =>
+            this.abiService.getLpTokenID(pairAddress),
+        );
     }
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
@@ -84,7 +94,6 @@ export class PairService {
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.getLpTokenID(pairAddress);
-
         return this.context.getTokenMetadata(lpTokenID);
     }
 
@@ -227,55 +236,25 @@ export class PairService {
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        const [firstTokenID, secondTokenID, pairInfo] = await Promise.all([
-            this.getFirstTokenID(pairAddress),
-            this.getSecondTokenID(pairAddress),
-            this.abiService.getPairInfoMetadata(pairAddress),
-        ]);
-
-        this.cacheService.setReserves(pairAddress, firstTokenID, {
-            reserves: pairInfo.reserves0,
-        });
-        this.cacheService.setReserves(pairAddress, secondTokenID, {
-            reserves: pairInfo.reserves1,
-        });
-        this.cacheService.setTotalSupply(pairAddress, {
-            totalSupply: pairInfo.totalSupply,
-        });
-
-        return pairInfo;
-    }
-
-    async getPairInfo(pairAddress: string): Promise<PairInfoModel> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.getFirstTokenID(pairAddress),
-            this.getSecondTokenID(pairAddress),
-        ]);
-
-        const [
-            cachedFirstReserve,
-            cachedSecondReserve,
-            cachedTotalSupply,
-        ] = await Promise.all([
-            this.cacheService.getReserves(pairAddress, firstTokenID),
-            this.cacheService.getReserves(pairAddress, secondTokenID),
-            this.cacheService.getTotalSupply(pairAddress),
-        ]);
-
-        if (
-            !!cachedFirstReserve &&
-            !!cachedSecondReserve &&
-            !!cachedTotalSupply
-        ) {
-            const pairInfo = {
-                reserves0: cachedFirstReserve.reserves,
-                reserves1: cachedSecondReserve.reserves,
-                totalSupply: cachedTotalSupply.totalSupply,
-            };
-            return pairInfo;
+        const cacheKey = this.getPairCacheKey(pairAddress, 'valueLocked');
+        try {
+            const getValueLocked = () =>
+                this.abiService.getPairInfoMetadata(pairAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getValueLocked,
+                cacheConfig.reserves,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                PairService.name,
+                this.getPairInfoMetadata.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
         }
-
-        return this.getPairInfoMetadata(pairAddress);
     }
 
     async getState(pairAddress: string): Promise<string> {
@@ -421,12 +400,12 @@ export class PairService {
                 this.abiService.getTemporaryFunds(
                     pairMetadata.address,
                     callerAddress,
-                    pairMetadata.firstToken,
+                    pairMetadata.firstTokenID,
                 ),
                 this.abiService.getTemporaryFunds(
                     pairMetadata.address,
                     callerAddress,
-                    pairMetadata.secondToken,
+                    pairMetadata.secondTokenID,
                 ),
             ]);
 
@@ -437,8 +416,9 @@ export class PairService {
                 continue;
             }
 
-            const temporaryFundsPair = new TemporaryFundsModel();
-            temporaryFundsPair.pairAddress = pairMetadata.address;
+            const temporaryFundsPair = new TemporaryFundsModel({
+                pairAddress: pairMetadata.address,
+            });
 
             if (!temporaryFundsFirstToken.isZero()) {
                 temporaryFundsPair.firstToken = firstToken;
@@ -473,10 +453,10 @@ export class PairService {
             pairInfo.totalSupply,
         );
 
-        return {
+        return new LiquidityPosition({
             firstTokenAmount: firstTokenAmount.toFixed(),
             secondTokenAmount: secondTokenAmount.toFixed(),
-        };
+        });
     }
 
     async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
@@ -526,5 +506,9 @@ export class PairService {
             }
         }
         return false;
+    }
+
+    private getPairCacheKey(pairAddress: string, ...args: any) {
+        return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }
 }

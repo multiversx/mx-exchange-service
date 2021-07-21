@@ -5,7 +5,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { Interaction } from '@elrondnetwork/erdjs';
 import { BigNumber } from 'bignumber.js';
-import { CalculateRewardsArgs } from './dto/farm.args';
+import { CalculateRewardsArgs } from './models/farm.args';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
@@ -57,7 +57,7 @@ export class AbiFarmService {
         return farmingTokenID;
     }
 
-    async getFarmTokenSupply(farmAddress: string): Promise<BigNumber> {
+    async getFarmTokenSupply(farmAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
@@ -69,11 +69,11 @@ export class AbiFarmService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        const farmTokenSupply = response.firstValue.valueOf();
-        return farmTokenSupply;
+        const farmTokenSupply: BigNumber = response.firstValue.valueOf();
+        return farmTokenSupply.toFixed();
     }
 
-    async getFarmingTokenReserve(farmAddress: string): Promise<BigNumber> {
+    async getFarmingTokenReserve(farmAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
@@ -85,11 +85,11 @@ export class AbiFarmService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        const farmingTokenReserve = response.firstValue.valueOf();
-        return farmingTokenReserve;
+        const farmingTokenReserve: BigNumber = response.firstValue.valueOf();
+        return farmingTokenReserve.toFixed();
     }
 
-    async getRewardsPerBlock(farmAddress: string): Promise<BigNumber> {
+    async getRewardsPerBlock(farmAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
@@ -101,8 +101,8 @@ export class AbiFarmService {
             interaction.buildQuery(),
         );
         const response = interaction.interpretQueryResponse(queryResponse);
-        const rewardsPerBlock = response.firstValue.valueOf();
-        return rewardsPerBlock;
+        const rewardsPerBlock: BigNumber = response.firstValue.valueOf();
+        return rewardsPerBlock.toFixed();
     }
 
     async calculateRewardsForGivenPosition(

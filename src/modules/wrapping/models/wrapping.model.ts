@@ -1,5 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { EsdtToken } from './tokens/esdtToken.model';
+import { EsdtToken } from '../../../models/tokens/esdtToken.model';
 
 @ObjectType()
 export class WrapModel {

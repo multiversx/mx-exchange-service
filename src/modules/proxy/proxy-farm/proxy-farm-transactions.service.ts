@@ -14,7 +14,7 @@ import {
     CompoundRewardsProxyArgs,
     EnterFarmProxyArgs,
     ExitFarmProxyArgs,
-} from '../dto/proxy-farm.args';
+} from '../models/proxy-farm.args';
 import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 

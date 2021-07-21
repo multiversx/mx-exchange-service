@@ -5,7 +5,7 @@ import {
     LiquidityPosition,
     PairModel,
     TemporaryFundsModel,
-} from '../../models/pair.model';
+} from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -15,7 +15,7 @@ import {
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
-} from './dto/pair.args';
+} from './models/pair.args';
 import { TransactionPairService } from './transactions-pair.service';
 
 @Resolver(of => PairModel)
@@ -69,7 +69,7 @@ export class PairResolver {
     @ResolveField()
     async info(@Parent() pair: PairModel) {
         const { address } = pair;
-        return await this.pairService.getPairInfo(address);
+        return await this.pairService.getPairInfoMetadata(address);
     }
 
     @ResolveField()
