@@ -47,6 +47,7 @@
         "txTotalCount": 10,
         "pairCount": 10,
         "token": 300,
+        "tokenPrice": 30,
         "userTokens": 3,
         "priceFeed": 30,
         "reserves": 30,

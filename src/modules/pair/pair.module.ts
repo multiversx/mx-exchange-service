@@ -23,6 +23,6 @@ import { RedisCacheService } from '../../services/redis-cache.service';
         PairResolver,
         RedisCacheService,
     ],
-    exports: [PairService],
+    exports: [PairService, AbiPairService],
 })
 export class PairModule {}

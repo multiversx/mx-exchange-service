@@ -47,7 +47,7 @@ export class PriceFeedService {
         }
     }
 
-    async getTokenPriceRaw(tokenName: string): Promise<string> {
+    async getTokenPriceRaw(tokenName: string): Promise<BigNumber> {
         const profiler = new PerformanceProfiler();
         const tokenPrice = await this.httpService
             .get(`${this.priceFeedUrl}/latest/quotes/${tokenName}/price`)
