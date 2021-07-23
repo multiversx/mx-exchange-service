@@ -25,7 +25,7 @@ export class ElrondApiService {
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
 
-        this.apiProvider = new ApiProvider(elrondConfig.elrondApi, {
+        this.apiProvider = new ApiProvider(process.env.ELRONDAPI_URL, {
             timeout: elrondConfig.proxyTimeout,
             httpAgent: elrondConfig.keepAlive ? httpAgent : null,
             httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
