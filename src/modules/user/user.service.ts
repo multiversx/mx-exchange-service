@@ -7,12 +7,12 @@ import { PairService } from '../pair/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
 import { ProxyService } from '../proxy/proxy.service';
-import { UserToken } from '../../models/user.model';
+import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { UserNftTokens } from './nfttokens.union';
-import { UserTokensArgs } from './dto/user.args';
+import { UserTokensArgs } from './models/user.args';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 
 type EsdtTokenDetails = {
@@ -163,8 +163,10 @@ export class UserService {
             return this.computeFarmTokenValue(farmAddress, nftToken);
         }
 
-        const lockedMEXID = await this.proxyService.getlockedAssetToken();
-        const assetToken = await this.proxyService.getAssetToken();
+        const [lockedMEXID, assetToken] = await Promise.all([
+            this.proxyService.getlockedAssetToken(),
+            this.proxyService.getAssetToken(),
+        ]);
         if (nftToken.collection === lockedMEXID.collection) {
             const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
                 assetToken.identifier,
@@ -173,11 +175,21 @@ export class UserService {
             const valueUSD = new BigNumber(nftToken.balance)
                 .multipliedBy(denominator)
                 .multipliedBy(new BigNumber(tokenPriceUSD));
+            const decodedAttributes = await this.lockedAssetService.decodeLockedAssetAttributes(
+                {
+                    batchAttributes: [
+                        {
+                            identifier: nftToken.identifier,
+                            attributes: nftToken.attributes,
+                        },
+                    ],
+                },
+            );
             return {
                 ...nftToken,
                 decimals: assetToken.decimals,
                 valueUSD: valueUSD.toFixed(),
-                decodedAttributes: '',
+                decodedAttributes: decodedAttributes[0],
             };
         }
 

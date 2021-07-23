@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { Query, Args, Resolver } from '@nestjs/graphql';
-import { UserToken } from '../../models/user.model';
-import { UserTokensArgs } from './dto/user.args';
+import { UserToken } from './models/user.model';
+import { UserTokensArgs } from './models/user.args';
 import { UserNftTokens } from './nfttokens.union';
 import { UserService } from './user.service';
 
