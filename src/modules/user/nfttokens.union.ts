@@ -4,16 +4,18 @@ import {
     UserFarmToken,
     UserLockedFarmToken,
     UserLockedLPToken,
+    UserLockedAssetToken,
     UserNftToken,
-} from 'src/models/user.model';
+} from './models/user.model';
 
 export const UserNftTokens = createUnionType({
     name: 'UserNftTokens',
     types: () => [
-        UserNftToken,
+        UserLockedAssetToken,
         UserFarmToken,
         UserLockedLPToken,
         UserLockedFarmToken,
+        UserNftToken,
     ],
     resolveType(value) {
         if (value.decodedAttributes.aprMultiplier) {
@@ -24,6 +26,9 @@ export const UserNftTokens = createUnionType({
         }
         if (value.decodedAttributes.farmTokenID) {
             return UserLockedFarmToken.name;
+        }
+        if (value.decodedAttributes.unlockSchedule) {
+            return UserLockedAssetToken.name;
         }
         return UserNftToken.name;
     },
