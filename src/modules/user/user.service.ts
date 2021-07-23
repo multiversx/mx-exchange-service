@@ -14,6 +14,7 @@ import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { UserNftTokens } from './nfttokens.union';
 import { UserTokensArgs } from './models/user.args';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
+import { WrapService } from '../wrapping/wrap.service';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -36,18 +37,27 @@ export class UserService {
         private proxyFarmService: ProxyFarmService,
         private farmService: FarmService,
         private lockedAssetService: LockedAssetService,
+        private wrapService: WrapService,
     ) {}
 
     async getAllEsdtTokens(args: UserTokensArgs): Promise<UserToken[]> {
-        const userTokens: EsdtToken[] = await this.apiService.getTokensForUser(
-            args.address,
-            args.offset,
-            args.limit,
-        );
-
+        const [wrappedEGLDTokenID, userTokens] = await Promise.all([
+            this.wrapService.getWrappedEgldTokenID(),
+            this.apiService.getTokensForUser(
+                args.address,
+                args.offset,
+                args.limit,
+            ),
+        ]);
         const userPairEsdtTokens = [];
         for (const userToken of userTokens) {
-            if (await this.pairService.isPairEsdtToken(userToken.identifier)) {
+            const isPairEsdtToken = await this.pairService.isPairEsdtToken(
+                userToken.identifier,
+            );
+            if (
+                isPairEsdtToken &&
+                userToken.identifier !== wrappedEGLDTokenID
+            ) {
                 userPairEsdtTokens.push(userToken);
             }
         }

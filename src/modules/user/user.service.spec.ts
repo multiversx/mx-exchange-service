@@ -26,6 +26,8 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
+import { WrapService } from '../wrapping/wrap.service';
+import { WrapServiceMock } from '../wrapping/wrap.test-mocks';
 
 describe('UserService', () => {
     let service: UserService;
@@ -75,6 +77,11 @@ describe('UserService', () => {
         useClass: LockedAssetMock,
     };
 
+    const WrapServiceProvider = {
+        provide: WrapService,
+        useClass: WrapServiceMock,
+    };
+
     const logTransports: Transport[] = [
         new winston.transports.Console({
             format: winston.format.combine(
@@ -96,6 +103,7 @@ describe('UserService', () => {
                 ProxyFarmServiceProvider,
                 FarmServiceProvider,
                 LockedAssetProvider,
+                WrapServiceProvider,
                 UserService,
             ],
             imports: [
