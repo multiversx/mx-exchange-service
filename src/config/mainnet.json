@@ -22,7 +22,6 @@
         "erd1qqqqqqqqqqqqqpgqu6s4e5mndgf37psxw9mdlmjavp2er3f00n4snwyk3q"
     ],
     "caching": {
-        "networkConfig": 1,
         "pairsMetadata": 10,
         "pairs": 60,
         "txTotalCount": 60,
