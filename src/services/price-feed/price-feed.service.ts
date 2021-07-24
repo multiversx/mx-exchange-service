@@ -20,7 +20,7 @@ export class PriceFeedService {
         private readonly redisCacheService: RedisCacheService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.priceFeedUrl = elrondConfig.elrondData;
+        this.priceFeedUrl = process.env.ELRONDDATA_URL;
         this.redisClient = this.redisCacheService.getClient();
     }
 

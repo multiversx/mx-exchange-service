@@ -19,7 +19,6 @@ import * as Transport from 'winston-transport';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { RedisModule } from 'nestjs-redis';
 import { loggerMiddleware } from './utils/loggerMiddleware';
-import { MetricsController } from './modules/metrics/metrics.controller';
 
 const logTransports: Transport[] = [
     new winston.transports.Console({
@@ -85,6 +84,5 @@ if (!!process.env.LOG_FILE) {
         UserModule,
         AnalyticsModule,
     ],
-    controllers: [MetricsController],
 })
 export class AppModule {}

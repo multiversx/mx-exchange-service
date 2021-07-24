@@ -26,7 +26,7 @@ export class RouterService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.elasticClient = new Client({
-            node: elrondConfig.elastic + '/transactions',
+            node: process.env.ELASTICSEARCH_URL + '/transactions',
         });
         this.redisClient = this.redisCacheService.getClient();
     }
