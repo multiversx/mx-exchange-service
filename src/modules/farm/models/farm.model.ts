@@ -72,6 +72,12 @@ export class FarmModel {
     @Field()
     farmingTokenReserve: string;
 
+    @Field(type => Int)
+    penaltyPercent: number;
+
+    @Field(type => Int)
+    minimumFarmingEpochs: number;
+
     @Field()
     APR: string;
 

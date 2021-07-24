@@ -105,6 +105,36 @@ export class AbiFarmService {
         return rewardsPerBlock.toFixed();
     }
 
+    async getPenaltyPercent(farmAddress: string): Promise<number> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getPenaltyPercent([]);
+        const queryResponse = await contract.runQuery(
+            this.elrondProxy.getService(),
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const penaltyPercent: BigNumber = response.firstValue.valueOf();
+        return penaltyPercent.toNumber();
+    }
+
+    async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getMinimumFarmingEpoch(
+            [],
+        );
+        const queryResponse = await contract.runQuery(
+            this.elrondProxy.getService(),
+            interaction.buildQuery(),
+        );
+        const response = interaction.interpretQueryResponse(queryResponse);
+        const minimumFarmingEpochs: BigNumber = response.firstValue.valueOf();
+        return minimumFarmingEpochs.toNumber();
+    }
+
     async calculateRewardsForGivenPosition(
         args: CalculateRewardsArgs,
     ): Promise<BigNumber> {

@@ -167,6 +167,53 @@ export class FarmService {
         }
     }
 
+    async getPenaltyPercent(farmAddress: string): Promise<number> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'penaltyPercent');
+        try {
+            const getPenaltyPercent = () =>
+                this.abiService.getPenaltyPercent(farmAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getPenaltyPercent,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getPenaltyPercent.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
+    async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
+        const cacheKey = this.getFarmCacheKey(
+            farmAddress,
+            'minimumFarmingEpochs',
+        );
+        try {
+            const getMinimumFarmingEpochs = () =>
+                this.abiService.getMinimumFarmingEpochs(farmAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getMinimumFarmingEpochs,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getMinimumFarmingEpochs.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
     async getState(farmAddress: string): Promise<string> {
         return this.abiService.getState(farmAddress);
     }
