@@ -26,7 +26,7 @@ import { Logger } from 'winston';
 import { RedisCacheService } from '../../services/redis-cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 
 @Injectable()
 export class FarmService {
@@ -273,11 +273,11 @@ export class FarmService {
             );
         }
 
-        return {
+        return new RewardsModel({
             decodedAttributes: farmTokenAttributes,
             remainingFarmingEpochs: remainingFarmingEpochs,
             rewards: rewards.toFixed(),
-        };
+        });
     }
 
     async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {

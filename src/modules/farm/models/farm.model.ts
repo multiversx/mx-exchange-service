@@ -32,12 +32,12 @@ export class FarmTokenAttributesModel {
     ): FarmTokenAttributesModel {
         return new FarmTokenAttributesModel({
             rewardPerShare: decodedAttributes.rewardPerShare.toString(),
-            enteringEpoch: decodedAttributes.enteringEpoch,
-            aprMultiplier: decodedAttributes.aprMultiplier,
+            enteringEpoch: decodedAttributes.enteringEpoch.toNumber(),
+            aprMultiplier: decodedAttributes.aprMultiplier.toNumber(),
             lockedRewards: decodedAttributes.withLockedRewards,
-            initialFarmingAmount: decodedAttributes.initialFarmingAmount,
-            compoundedReward: decodedAttributes.compoundedReward,
-            currentFarmAmount: decodedAttributes.currentFarmAmount,
+            initialFarmingAmount: decodedAttributes.initialFarmingAmount.toFixed(),
+            compoundedReward: decodedAttributes.compoundedReward.toFixed(),
+            currentFarmAmount: decodedAttributes.currentFarmAmount.toFixed(),
         });
     }
 }
