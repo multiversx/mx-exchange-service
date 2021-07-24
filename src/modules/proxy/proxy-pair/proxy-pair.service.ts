@@ -86,6 +86,6 @@ export class ProxyPairService {
     }
 
     private getProxyPairCacheKey(...args: any) {
-        return generateCacheKeyFromParams('proxyPair', args);
+        return generateCacheKeyFromParams('proxyPair', ...args);
     }
 }

@@ -71,6 +71,6 @@ export class HyperblockService {
     }
 
     private getHyperblockCacheKey(...args: any) {
-        return generateCacheKeyFromParams('hyperblock', args);
+        return generateCacheKeyFromParams('hyperblock', ...args);
     }
 }

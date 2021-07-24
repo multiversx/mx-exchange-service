@@ -1,5 +1,5 @@
 const DEFAULT_REGION = 'defaultregion';
-const SEPARATOR = '_';
+const SEPARATOR = '.';
 
 const isObject = input => {
     return input === Object(input);

@@ -76,6 +76,6 @@ export class WrapService {
     }
 
     private getWrapCacheKey(...args: any) {
-        return generateCacheKeyFromParams('wrap', args);
+        return generateCacheKeyFromParams('wrap', ...args);
     }
 }
