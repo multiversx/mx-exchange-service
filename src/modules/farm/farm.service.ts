@@ -26,6 +26,7 @@ import { Logger } from 'winston';
 import { RedisCacheService } from '../../services/redis-cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 
 @Injectable()
 export class FarmService {
@@ -33,6 +34,7 @@ export class FarmService {
 
     constructor(
         private readonly abiService: AbiFarmService,
+        private readonly apiService: ElrondApiService,
         private readonly redisCacheService: RedisCacheService,
         private readonly context: ContextService,
         private readonly pairService: PairService,
@@ -253,12 +255,27 @@ export class FarmService {
         const rewards = await this.abiService.calculateRewardsForGivenPosition(
             args,
         );
-        const decodedAttributes = this.decodeFarmTokenAttributes(
+        const farmTokenAttributes = this.decodeFarmTokenAttributes(
             args.identifier,
             args.attributes,
         );
+
+        let remainingFarmingEpochs = 0;
+        if (farmTokenAttributes.lockedRewards) {
+            const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
+                this.apiService.getCurrentEpoch(),
+                this.getMinimumFarmingEpochs(args.farmAddress),
+            ]);
+            remainingFarmingEpochs = Math.max(
+                0,
+                minimumFarmingEpochs -
+                    (currentEpoch - farmTokenAttributes.enteringEpoch),
+            );
+        }
+
         return {
-            decodedAttributes: decodedAttributes,
+            decodedAttributes: farmTokenAttributes,
+            remainingFarmingEpochs: remainingFarmingEpochs,
             rewards: rewards.toFixed(),
         };
     }
@@ -308,7 +325,24 @@ export class FarmService {
         const attributesBuffer = Buffer.from(attributes, 'base64');
         const codec = new BinaryCodec();
 
-        const structType = new StructType('FarmTokenAttributes', [
+        const structType = this.getFarmTokenAttributesStructure();
+
+        const [decoded, decodedLength] = codec.decodeNested(
+            attributesBuffer,
+            structType,
+        );
+
+        const decodedAttributes = decoded.valueOf();
+        const farmTokenAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
+            decodedAttributes,
+        );
+        farmTokenAttributes.attributes = attributes;
+        farmTokenAttributes.identifier = identifier;
+        return farmTokenAttributes;
+    }
+
+    getFarmTokenAttributesStructure(): StructType {
+        return new StructType('FarmTokenAttributes', [
             new StructFieldDefinition('rewardPerShare', '', new BigUIntType()),
             new StructFieldDefinition('enteringEpoch', '', new U64Type()),
             new StructFieldDefinition('aprMultiplier', '', new U8Type()),
@@ -333,23 +367,6 @@ export class FarmService {
                 new BigUIntType(),
             ),
         ]);
-
-        const [decoded, decodedLength] = codec.decodeNested(
-            attributesBuffer,
-            structType,
-        );
-        const decodedAttributes = decoded.valueOf();
-        return new FarmTokenAttributesModel({
-            identifier: identifier,
-            attributes: attributes,
-            rewardPerShare: decodedAttributes.rewardPerShare.toString(),
-            enteringEpoch: decodedAttributes.enteringEpoch,
-            aprMultiplier: decodedAttributes.aprMultiplier,
-            lockedRewards: decodedAttributes.withLockedRewards,
-            initialFarmingAmount: decodedAttributes.initialFarmingAmount,
-            compoundedReward: decodedAttributes.compoundedReward,
-            currentFarmAmount: decodedAttributes.currentFarmAmount,
-        });
     }
 
     private getFarmCacheKey(farmAddress: string, ...args: any) {
