@@ -84,6 +84,16 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async penaltyPercent(@Parent() parent: FarmModel) {
+        return await this.farmService.getPenaltyPercent(parent.address);
+    }
+
+    @ResolveField()
+    async minimumFarmingEpochs(@Parent() parent: FarmModel) {
+        return await this.farmService.getMinimumFarmingEpochs(parent.address);
+    }
+
+    @ResolveField()
     async APR(@Parent() parent: FarmModel) {
         return await this.statisticsService.getFarmAPR(parent.address);
     }
