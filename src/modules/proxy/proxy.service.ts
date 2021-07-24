@@ -141,6 +141,6 @@ export class ProxyService {
     }
 
     private getProxyCacheKey(...args: any) {
-        return generateCacheKeyFromParams('proxy', args);
+        return generateCacheKeyFromParams('proxy', ...args);
     }
 }

@@ -79,6 +79,6 @@ export class ProxyFarmService {
     }
 
     private getProxyFarmCacheKey(...args: any) {
-        return generateCacheKeyFromParams('proxyFarm', args);
+        return generateCacheKeyFromParams('proxyFarm', ...args);
     }
 }
