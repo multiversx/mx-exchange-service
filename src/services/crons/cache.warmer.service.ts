@@ -8,6 +8,7 @@ import { RedisCacheService } from '../redis-cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { AbiPairService } from 'src/modules/pair/abi-pair.service';
 import { PairService } from 'src/modules/pair/pair.service';
+import { FarmService } from 'src/modules/farm/farm.service';
 
 @Injectable()
 export class CacheWarmerService {
@@ -16,6 +17,7 @@ export class CacheWarmerService {
         private readonly pairService: PairService,
         private readonly abiPairService: AbiPairService,
         private readonly context: ContextService,
+        private readonly farmService: FarmService,
         private readonly farmStatisticsService: FarmStatisticsService,
         private readonly redisCacheService: RedisCacheService,
     ) {}
@@ -97,6 +99,43 @@ export class CacheWarmerService {
             );
         });
         await Promise.all([...firstTokensPromises, ...secondTokensPromises]);
+    }
+
+    @Cron(CronExpression.EVERY_10_SECONDS)
+    async cacheFarmTokensPrices(): Promise<void> {
+        for (const farmAddress of farmsConfig) {
+            const [
+                farmedTokenPriceUSD,
+                farmingTokenPriceUSD,
+            ] = await Promise.all([
+                this.farmService.computeFarmedTokenPriceUSD(farmAddress),
+                this.farmService.computeFarmingTokenPriceUSD(farmAddress),
+            ]);
+
+            const farmedTokenCacheKey = generateCacheKeyFromParams(
+                'farm',
+                farmAddress,
+                'farmedTokenPriceUSD',
+            );
+            const farmingTokenCacheKey = generateCacheKeyFromParams(
+                'farm',
+                farmAddress,
+                'farmingTokenPriceUSD',
+            );
+
+            this.redisCacheService.set(
+                this.redisCacheService.getClient(),
+                farmedTokenCacheKey,
+                farmedTokenPriceUSD,
+                cacheConfig.tokenPrice,
+            );
+            this.redisCacheService.set(
+                this.redisCacheService.getClient(),
+                farmingTokenCacheKey,
+                farmingTokenPriceUSD,
+                cacheConfig.tokenPrice,
+            );
+        }
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)

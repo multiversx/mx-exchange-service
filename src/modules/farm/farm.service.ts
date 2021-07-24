@@ -41,7 +41,7 @@ export class FarmService {
         this.redisClient = this.redisCacheService.getClient();
     }
 
-    private async getTokenID(
+    private async getTokenData(
         farmAddress: string,
         tokenCacheKey: string,
         createValueFunc: () => any,
@@ -57,7 +57,7 @@ export class FarmService {
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 FarmService.name,
-                this.getTokenID.name,
+                this.getTokenData.name,
                 cacheKey,
                 error,
             );
@@ -66,19 +66,19 @@ export class FarmService {
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        return this.getTokenID(farmAddress, 'farmedTokenID', () =>
+        return this.getTokenData(farmAddress, 'farmedTokenID', () =>
             this.abiService.getFarmedTokenID(farmAddress),
         );
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
-        return this.getTokenID(farmAddress, 'farmTokenID', () =>
+        return this.getTokenData(farmAddress, 'farmTokenID', () =>
             this.abiService.getFarmTokenID(farmAddress),
         );
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        return this.getTokenID(farmAddress, 'farmingTokenID', () =>
+        return this.getTokenData(farmAddress, 'farmingTokenID', () =>
             this.abiService.getFarmingTokenID(farmAddress),
         );
     }
@@ -217,6 +217,12 @@ export class FarmService {
     }
 
     async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
+        return this.getTokenData(farmAddress, 'farmedTokenPriceUSD', () =>
+            this.computeFarmedTokenPriceUSD(farmAddress),
+        );
+    }
+
+    async computeFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
         if (scAddress.has(farmedTokenID)) {
             const pairAddress = scAddress.get(farmedTokenID);
@@ -238,6 +244,12 @@ export class FarmService {
     }
 
     async getFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
+        return this.getTokenData(farmAddress, 'farmingTokenPriceUSD', () =>
+            this.computeFarmingTokenPriceUSD(farmAddress),
+        );
+    }
+
+    async computeFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
         const farmingTokenID = await this.getFarmingTokenID(farmAddress);
         if (scAddress.has(farmingTokenID)) {
             const pairAddress = scAddress.get(farmingTokenID);
