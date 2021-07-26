@@ -58,16 +58,16 @@ export class TransactionPairService {
 
                 break;
             case args.secondTokenID:
-                secondTokenID = wrappedTokenID;
+                firstTokenID = wrappedTokenID;
                 firstTokenAmount = args.secondTokenAmount;
+                secondTokenID = args.firstTokenID;
                 secondTokenAmount = args.firstTokenAmount;
 
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
                     args.sender,
-                    args.secondTokenAmount,
+                    firstTokenAmount,
                 );
                 transactions.push(eGLDwrapTransaction);
-
                 break;
             default:
                 break;
