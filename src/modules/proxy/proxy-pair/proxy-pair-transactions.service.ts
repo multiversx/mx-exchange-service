@@ -19,8 +19,8 @@ import {
 } from '../models/proxy-pair.args';
 import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { WrapService } from '../../wrapping/wrap.service';
+import { TransactionsWrapService } from '../../wrapping/transactions-wrap.service';
 
 @Injectable()
 export class TransactionsProxyPairService {

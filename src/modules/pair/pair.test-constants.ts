@@ -194,6 +194,23 @@ export class ContextServiceMock {
             chainID: elrondConfig.chainID,
         };
     }
+
+    nftTransfer(
+        contract: SmartContract,
+        args: TypedValue[],
+        gasLimit: GasLimit,
+    ): TransactionModel {
+        const transaction = contract.call({
+            func: new ContractFunction('ESDTNFTTransfer'),
+            args: args,
+            gasLimit: gasLimit,
+        });
+
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
+    }
 }
 
 export class RedlockServiceMock {}
