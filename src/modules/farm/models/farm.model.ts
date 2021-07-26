@@ -26,6 +26,20 @@ export class FarmTokenAttributesModel {
     constructor(init?: Partial<FarmTokenAttributesModel>) {
         Object.assign(this, init);
     }
+
+    static fromDecodedAttributes(
+        decodedAttributes: any,
+    ): FarmTokenAttributesModel {
+        return new FarmTokenAttributesModel({
+            rewardPerShare: decodedAttributes.rewardPerShare.toString(),
+            enteringEpoch: decodedAttributes.enteringEpoch.toNumber(),
+            aprMultiplier: decodedAttributes.aprMultiplier.toNumber(),
+            lockedRewards: decodedAttributes.withLockedRewards,
+            initialFarmingAmount: decodedAttributes.initialFarmingAmount.toFixed(),
+            compoundedReward: decodedAttributes.compoundedReward.toFixed(),
+            currentFarmAmount: decodedAttributes.currentFarmAmount.toFixed(),
+        });
+    }
 }
 
 @ObjectType()
@@ -34,6 +48,8 @@ export class RewardsModel {
     decodedAttributes: FarmTokenAttributesModel;
     @Field()
     rewards: string;
+    @Field(type => Int, { nullable: true })
+    remainingFarmingEpochs?: number;
 
     constructor(init?: Partial<RewardsModel>) {
         Object.assign(this, init);
@@ -71,6 +87,12 @@ export class FarmModel {
 
     @Field()
     farmingTokenReserve: string;
+
+    @Field(type => Int)
+    penaltyPercent: number;
+
+    @Field(type => Int)
+    minimumFarmingEpochs: number;
 
     @Field()
     APR: string;

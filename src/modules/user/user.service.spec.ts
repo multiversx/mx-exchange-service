@@ -8,7 +8,6 @@ import { ProxyService } from '../proxy/proxy.service';
 import { UserService } from './user.service';
 import {
     ContextServiceMock,
-    ElrondApiServiceMock,
     FarmServiceMock,
     LockedAssetMock,
     PairServiceMock,
@@ -28,6 +27,7 @@ import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { WrapService } from '../wrapping/wrap.service';
 import { WrapServiceMock } from '../wrapping/wrap.test-mocks';
+import { ElrondApiServiceMock } from '../../services/elrond-communication/elrond.api.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
