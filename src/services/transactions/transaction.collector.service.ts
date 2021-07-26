@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 import { cronConfig } from '../../config';
 import { ShardTransaction } from './entities/shard.transaction';
 import { HyperblockService } from './hyperblock.service';
@@ -8,8 +9,10 @@ export class TransactionCollectorService {
     constructor(private readonly hyperblockService: HyperblockService) {}
 
     async getNewTransactions(): Promise<ShardTransaction[]> {
-        let currentNonce = await this.hyperblockService.getCurrentNonce();
-        const lastProcessedNonce = await this.hyperblockService.getLastProcessedNonce();
+        let [currentNonce, lastProcessedNonce] = await Promise.all([
+            this.hyperblockService.getCurrentNonce(),
+            this.hyperblockService.getLastProcessedNonce(),
+        ]);
         console.log({
             currentNonce: currentNonce,
             lastProcessedNonce: lastProcessedNonce,
@@ -26,8 +29,19 @@ export class TransactionCollectorService {
             await this.hyperblockService.setLastProcessedNonce(currentNonce);
         }
 
-        if (currentNonce > lastProcessedNonce + cronConfig.transactionCollectorMaxHyperblocks) {
-            currentNonce = lastProcessedNonce + cronConfig.transactionCollectorMaxHyperblocks;
+        // maximum last number of nonces, makes no sense to look too far behind
+        const maxLookBehind = cronConfig.transactionCollectorMaxLookBehind;
+        if (currentNonce > lastProcessedNonce + maxLookBehind) {
+            lastProcessedNonce = currentNonce - maxLookBehind;
+        }
+
+        if (
+            currentNonce >
+            lastProcessedNonce + cronConfig.transactionCollectorMaxHyperblocks
+        ) {
+            currentNonce =
+                lastProcessedNonce +
+                cronConfig.transactionCollectorMaxHyperblocks;
         }
 
         let allTransactions: ShardTransaction[] = [];
@@ -46,6 +60,10 @@ export class TransactionCollectorService {
             allTransactions = allTransactions.concat(...transactions);
         }
         await this.hyperblockService.setLastProcessedNonce(currentNonce);
+        MetricsCollector.setLastProcessedNonce(
+            this.hyperblockService.getShardID(),
+            currentNonce,
+        );
         return allTransactions;
     }
 

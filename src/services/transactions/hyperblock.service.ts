@@ -9,6 +9,7 @@ import {
     generateGetLogMessage,
     generateSetLogMessage,
 } from '../../utils/generate-log-message';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class HyperblockService {
@@ -24,11 +25,17 @@ export class HyperblockService {
         this.redisClient = this.redisCacheService.getClient();
     }
 
+    getShardID(): number {
+        return this.metachainID;
+    }
+
     async getCurrentNonce(): Promise<number> {
         const shardInfo = await this.elrondApi.getCurrentNonce(
             this.metachainID,
         );
-        return shardInfo.data.status.erd_nonce;
+        const currentNonce = shardInfo.data.status.erd_nonce;
+        MetricsCollector.setCurrentNonce(this.metachainID, currentNonce);
+        return currentNonce;
     }
 
     async getLastProcessedNonce(): Promise<number | undefined> {
