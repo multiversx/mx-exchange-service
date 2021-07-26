@@ -177,6 +177,6 @@ export class RouterService {
     }
 
     private getRouterCacheKey(...args: any) {
-        return generateCacheKeyFromParams('router', args);
+        return generateCacheKeyFromParams('router', ...args);
     }
 }

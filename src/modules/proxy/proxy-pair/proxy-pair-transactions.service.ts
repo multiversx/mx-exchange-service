@@ -19,8 +19,8 @@ import {
 } from '../models/proxy-pair.args';
 import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { WrapService } from '../../wrapping/wrap.service';
+import { TransactionsWrapService } from '../../wrapping/transactions-wrap.service';
 
 @Injectable()
 export class TransactionsProxyPairService {
@@ -181,8 +181,12 @@ export class TransactionsProxyPairService {
         const amount0 = new BigNumber(args.amount0);
         const amount1 = new BigNumber(args.amount1);
 
-        const amount0Min = amount0.multipliedBy(1 - args.tolerance);
-        const amount1Min = amount1.multipliedBy(1 - args.tolerance);
+        const amount0Min = amount0
+            .multipliedBy(1 - args.tolerance)
+            .integerValue();
+        const amount1Min = amount1
+            .multipliedBy(1 - args.tolerance)
+            .integerValue();
 
         const interaction: Interaction = contract.methods.addLiquidityProxy([
             BytesValue.fromHex(new Address(args.pairAddress).hex()),

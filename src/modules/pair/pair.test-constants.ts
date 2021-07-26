@@ -1,6 +1,14 @@
 import { PairInfoModel } from './models/pair-info.model';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import BigNumber from 'bignumber.js';
+import {
+    ContractFunction,
+    GasLimit,
+    SmartContract,
+    TypedValue,
+} from '@elrondnetwork/erdjs/out';
+import { TransactionModel } from '../../models/transaction.model';
+import { elrondConfig } from '../../config';
 
 interface PairMetadata {
     address: string;
@@ -169,6 +177,39 @@ export class ContextServiceMock {
         }
 
         return [];
+    }
+
+    esdtTransfer(
+        contract: SmartContract,
+        args: TypedValue[],
+        gasLimit: GasLimit,
+    ): TransactionModel {
+        const transaction = contract.call({
+            func: new ContractFunction('ESDTTransfer'),
+            args: args,
+            gasLimit: gasLimit,
+        });
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
+    }
+
+    nftTransfer(
+        contract: SmartContract,
+        args: TypedValue[],
+        gasLimit: GasLimit,
+    ): TransactionModel {
+        const transaction = contract.call({
+            func: new ContractFunction('ESDTNFTTransfer'),
+            args: args,
+            gasLimit: gasLimit,
+        });
+
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 }
 

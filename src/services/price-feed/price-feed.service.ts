@@ -62,6 +62,6 @@ export class PriceFeedService {
     }
 
     private getPriceFeedCacheKey(...args: any) {
-        return generateCacheKeyFromParams('priceFeed', args);
+        return generateCacheKeyFromParams('priceFeed', ...args);
     }
 }

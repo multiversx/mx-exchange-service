@@ -193,6 +193,6 @@ export class ContextService {
     }
 
     private getContextCacheKey(...args: any) {
-        return generateCacheKeyFromParams('context', args);
+        return generateCacheKeyFromParams('context', ...args);
     }
 }
