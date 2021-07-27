@@ -8,7 +8,12 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BinaryCodec } from '@elrondnetwork/erdjs';
-import { cacheConfig, farmsConfig, scAddress } from '../../config';
+import {
+    cacheConfig,
+    constantsConfig,
+    farmsConfig,
+    scAddress,
+} from '../../config';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import {
     ExitFarmTokensModel,
@@ -350,13 +355,13 @@ export class FarmService {
             initialFarmingAmount = initialFarmingAmount.minus(
                 initialFarmingAmount
                     .multipliedBy(penaltyPercent)
-                    .dividedBy(100)
+                    .dividedBy(constantsConfig.MAX_PENALTY_PERCENT)
                     .integerValue(),
             );
             rewards = rewards.minus(
                 rewards
                     .multipliedBy(penaltyPercent)
-                    .dividedBy(100)
+                    .dividedBy(constantsConfig.MAX_PENALTY_PERCENT)
                     .integerValue(),
             );
         }
