@@ -29,6 +29,7 @@ import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import BigNumber from 'bignumber.js';
+import { ruleOfThree } from '../../helpers/helpers';
 
 @Injectable()
 export class FarmService {
@@ -327,7 +328,7 @@ export class FarmService {
             args.identifier,
             args.attributes,
         );
-        let initialFarmingAmount = this.ruleOfThree(
+        let initialFarmingAmount = ruleOfThree(
             new BigNumber(args.liquidity),
             new BigNumber(decodedAttributes.currentFarmAmount),
             new BigNumber(decodedAttributes.initialFarmingAmount),
@@ -335,7 +336,7 @@ export class FarmService {
         const rewardsForPosition = await this.getRewardsForPosition(args);
         let rewards = new BigNumber(rewardsForPosition.rewards);
         rewards = rewards.plus(
-            this.ruleOfThree(
+            ruleOfThree(
                 new BigNumber(args.liquidity),
                 new BigNumber(decodedAttributes.currentFarmAmount),
                 new BigNumber(decodedAttributes.compoundedReward),
@@ -364,17 +365,6 @@ export class FarmService {
             farmingTokens: initialFarmingAmount.toFixed(),
             rewards: rewards.toFixed(),
         });
-    }
-
-    ruleOfThree(
-        part: BigNumber,
-        total: BigNumber,
-        value: BigNumber,
-    ): BigNumber {
-        return part
-            .multipliedBy(value)
-            .dividedBy(total)
-            .integerValue();
     }
 
     decodeFarmTokenAttributes(
