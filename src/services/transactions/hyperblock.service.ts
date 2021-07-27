@@ -9,7 +9,7 @@ import {
     generateGetLogMessage,
     generateSetLogMessage,
 } from '../../utils/generate-log-message';
-import { MetricsCollector } from 'src/utils/metrics.collector';
+import { MetricsCollector } from '../../utils/metrics.collector';
 
 @Injectable()
 export class HyperblockService {
