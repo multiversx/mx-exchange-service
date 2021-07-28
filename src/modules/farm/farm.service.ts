@@ -8,9 +8,15 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BinaryCodec } from '@elrondnetwork/erdjs';
-import { cacheConfig, farmsConfig, scAddress } from '../../config';
+import {
+    cacheConfig,
+    constantsConfig,
+    farmsConfig,
+    scAddress,
+} from '../../config';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import {
+    ExitFarmTokensModel,
     FarmModel,
     FarmTokenAttributesModel,
     RewardsModel,
@@ -27,6 +33,8 @@ import { RedisCacheService } from '../../services/redis-cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import BigNumber from 'bignumber.js';
+import { ruleOfThree } from '../../helpers/helpers';
 
 @Injectable()
 export class FarmService {
@@ -316,6 +324,52 @@ export class FarmService {
             farmingTokenID,
         );
         return this.pairService.getLpTokenPriceUSD(pairAddress);
+    }
+
+    async getTokensForExitFarm(
+        args: CalculateRewardsArgs,
+    ): Promise<ExitFarmTokensModel> {
+        const decodedAttributes = this.decodeFarmTokenAttributes(
+            args.identifier,
+            args.attributes,
+        );
+        let initialFarmingAmount = ruleOfThree(
+            new BigNumber(args.liquidity),
+            new BigNumber(decodedAttributes.currentFarmAmount),
+            new BigNumber(decodedAttributes.initialFarmingAmount),
+        );
+        const rewardsForPosition = await this.getRewardsForPosition(args);
+        let rewards = new BigNumber(rewardsForPosition.rewards);
+        rewards = rewards.plus(
+            ruleOfThree(
+                new BigNumber(args.liquidity),
+                new BigNumber(decodedAttributes.currentFarmAmount),
+                new BigNumber(decodedAttributes.compoundedReward),
+            ),
+        );
+
+        if (rewardsForPosition.remainingFarmingEpochs > 0) {
+            const penaltyPercent = await this.getPenaltyPercent(
+                args.farmAddress,
+            );
+            initialFarmingAmount = initialFarmingAmount.minus(
+                initialFarmingAmount
+                    .multipliedBy(penaltyPercent)
+                    .dividedBy(constantsConfig.MAX_PENALTY_PERCENT)
+                    .integerValue(),
+            );
+            rewards = rewards.minus(
+                rewards
+                    .multipliedBy(penaltyPercent)
+                    .dividedBy(constantsConfig.MAX_PENALTY_PERCENT)
+                    .integerValue(),
+            );
+        }
+
+        return new ExitFarmTokensModel({
+            farmingTokens: initialFarmingAmount.toFixed(),
+            rewards: rewards.toFixed(),
+        });
     }
 
     decodeFarmTokenAttributes(

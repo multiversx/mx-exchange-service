@@ -57,6 +57,18 @@ export class RewardsModel {
 }
 
 @ObjectType()
+export class ExitFarmTokensModel {
+    @Field()
+    farmingTokens: string;
+    @Field()
+    rewards: string;
+
+    constructor(init?: Partial<ExitFarmTokensModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class FarmModel {
     @Field()
     address: string;
