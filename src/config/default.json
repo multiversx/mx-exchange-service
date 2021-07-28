@@ -80,7 +80,8 @@
         "wrap": "./src/abis/egld-esdt-swap.abi.json"
     },
     "cron": {
-        "transactionCollectorMaxHyperblocks": 10
+        "transactionCollectorMaxHyperblocks": 10,
+        "transactionCollectorMaxLookBehind": 100
     },
     "constants": {
         "MAX_PENALTY_PERCENT": 10000
