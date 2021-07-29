@@ -268,19 +268,16 @@ export class FarmService {
             args.attributes,
         );
 
-        let remainingFarmingEpochs = 0;
-        if (farmTokenAttributes.lockedRewards) {
-            const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
-                this.apiService.getCurrentEpoch(),
-                this.getMinimumFarmingEpochs(args.farmAddress),
-            ]);
-            remainingFarmingEpochs = Math.max(
-                0,
-                minimumFarmingEpochs -
-                    (currentEpoch - farmTokenAttributes.enteringEpoch),
-            );
-        }
+        const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
+            this.apiService.getCurrentEpoch(),
+            this.getMinimumFarmingEpochs(args.farmAddress),
+        ]);
 
+        const remainingFarmingEpochs = Math.max(
+            0,
+            minimumFarmingEpochs -
+                (currentEpoch - farmTokenAttributes.enteringEpoch),
+        );
         return new RewardsModel({
             decodedAttributes: farmTokenAttributes,
             remainingFarmingEpochs: remainingFarmingEpochs,
