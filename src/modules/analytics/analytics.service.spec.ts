@@ -164,7 +164,7 @@ describe('FarmStatisticsService', () => {
             return newTransactions;
         });
 
-        const tradingVolumes = await service.getTradingInfo();
+        const tradingVolumes = await service.getAnalytics();
 
         expect(tradingVolumes).toEqual({
             factory: {
