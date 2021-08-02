@@ -51,8 +51,8 @@ export class ESDTTransferTransaction extends GenericTransaction {
     public getDataEndpointArgs(): string[] | undefined {
         if (!this.dataEndpointArgs) {
             const decoded = this.getDataArgs();
-            if (decoded && decoded.length > 2) {
-                this.dataEndpointArgs = decoded.splice(2);
+            if (decoded && decoded.length > 3) {
+                this.dataEndpointArgs = decoded.splice(3);
             }
         }
         return this.dataEndpointArgs;
