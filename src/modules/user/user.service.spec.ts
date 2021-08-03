@@ -174,6 +174,7 @@ describe('UserService', () => {
                 decodedAttributes: {
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
+                    originalEnteringEpoch: 1,
                     enteringEpoch: 1,
                     identifier: 'FMT-1234-01',
                     lockedRewards: false,
