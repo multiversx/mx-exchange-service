@@ -10,12 +10,13 @@ import * as Transport from 'winston-transport';
 import { ContextService } from '../../services/context/context.service';
 import { PairService } from '../pair/pair.service';
 import { FarmService } from './farm.service';
-import { ContextServiceMock, PairServiceMock } from './farm.test-mocks';
+import { PairServiceMock } from './farm.test-mocks';
 import { AbiFarmService } from './abi-farm.service';
 import { AbiFarmServiceMock } from './abi.farm.service.mock';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../services/elrond-communication/elrond.api.service.mock';
 import { FarmTokenAttributesModel, RewardsModel } from './models/farm.model';
+import { ContextServiceMock } from '../../services/context/context.service.mocks';
 
 describe('FarmStatisticsService', () => {
     let service: FarmService;
