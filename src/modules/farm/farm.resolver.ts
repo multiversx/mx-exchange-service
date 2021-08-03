@@ -3,6 +3,7 @@ import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { Inject } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import {
+    ExitFarmTokensModel,
     FarmModel,
     FarmTokenAttributesModel,
     RewardsModel,
@@ -84,6 +85,16 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async penaltyPercent(@Parent() parent: FarmModel) {
+        return await this.farmService.getPenaltyPercent(parent.address);
+    }
+
+    @ResolveField()
+    async minimumFarmingEpochs(@Parent() parent: FarmModel) {
+        return await this.farmService.getMinimumFarmingEpochs(parent.address);
+    }
+
+    @ResolveField()
     async APR(@Parent() parent: FarmModel) {
         return await this.statisticsService.getFarmAPR(parent.address);
     }
@@ -130,6 +141,13 @@ export class FarmResolver {
         @Args() args: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
         return await this.farmService.getRewardsForPosition(args);
+    }
+
+    @Query(returns => ExitFarmTokensModel)
+    async getExitFarmTokens(
+        @Args() args: CalculateRewardsArgs,
+    ): Promise<ExitFarmTokensModel> {
+        return this.farmService.getTokensForExitFarm(args);
     }
 
     @Query(returns => TransactionModel)

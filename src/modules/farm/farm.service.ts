@@ -8,9 +8,15 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BinaryCodec } from '@elrondnetwork/erdjs';
-import { cacheConfig, farmsConfig, scAddress } from '../../config';
+import {
+    cacheConfig,
+    constantsConfig,
+    farmsConfig,
+    scAddress,
+} from '../../config';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import {
+    ExitFarmTokensModel,
     FarmModel,
     FarmTokenAttributesModel,
     RewardsModel,
@@ -26,6 +32,9 @@ import { Logger } from 'winston';
 import { RedisCacheService } from '../../services/redis-cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import BigNumber from 'bignumber.js';
+import { ruleOfThree } from '../../helpers/helpers';
 
 @Injectable()
 export class FarmService {
@@ -33,6 +42,7 @@ export class FarmService {
 
     constructor(
         private readonly abiService: AbiFarmService,
+        private readonly apiService: ElrondApiService,
         private readonly redisCacheService: RedisCacheService,
         private readonly context: ContextService,
         private readonly pairService: PairService,
@@ -167,6 +177,53 @@ export class FarmService {
         }
     }
 
+    async getPenaltyPercent(farmAddress: string): Promise<number> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'penaltyPercent');
+        try {
+            const getPenaltyPercent = () =>
+                this.abiService.getPenaltyPercent(farmAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getPenaltyPercent,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getPenaltyPercent.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
+    async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
+        const cacheKey = this.getFarmCacheKey(
+            farmAddress,
+            'minimumFarmingEpochs',
+        );
+        try {
+            const getMinimumFarmingEpochs = () =>
+                this.abiService.getMinimumFarmingEpochs(farmAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getMinimumFarmingEpochs,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getMinimumFarmingEpochs.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
     async getState(farmAddress: string): Promise<string> {
         return this.abiService.getState(farmAddress);
     }
@@ -206,14 +263,26 @@ export class FarmService {
         const rewards = await this.abiService.calculateRewardsForGivenPosition(
             args,
         );
-        const decodedAttributes = this.decodeFarmTokenAttributes(
+        const farmTokenAttributes = this.decodeFarmTokenAttributes(
             args.identifier,
             args.attributes,
         );
-        return {
-            decodedAttributes: decodedAttributes,
+
+        const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
+            this.apiService.getCurrentEpoch(),
+            this.getMinimumFarmingEpochs(args.farmAddress),
+        ]);
+
+        const remainingFarmingEpochs = Math.max(
+            0,
+            minimumFarmingEpochs -
+                (currentEpoch - farmTokenAttributes.enteringEpoch),
+        );
+        return new RewardsModel({
+            decodedAttributes: farmTokenAttributes,
+            remainingFarmingEpochs: remainingFarmingEpochs,
             rewards: rewards.toFixed(),
-        };
+        });
     }
 
     async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
@@ -254,6 +323,52 @@ export class FarmService {
         return this.pairService.getLpTokenPriceUSD(pairAddress);
     }
 
+    async getTokensForExitFarm(
+        args: CalculateRewardsArgs,
+    ): Promise<ExitFarmTokensModel> {
+        const decodedAttributes = this.decodeFarmTokenAttributes(
+            args.identifier,
+            args.attributes,
+        );
+        let initialFarmingAmount = ruleOfThree(
+            new BigNumber(args.liquidity),
+            new BigNumber(decodedAttributes.currentFarmAmount),
+            new BigNumber(decodedAttributes.initialFarmingAmount),
+        );
+        const rewardsForPosition = await this.getRewardsForPosition(args);
+        let rewards = new BigNumber(rewardsForPosition.rewards);
+        rewards = rewards.plus(
+            ruleOfThree(
+                new BigNumber(args.liquidity),
+                new BigNumber(decodedAttributes.currentFarmAmount),
+                new BigNumber(decodedAttributes.compoundedReward),
+            ),
+        );
+
+        if (rewardsForPosition.remainingFarmingEpochs > 0) {
+            const penaltyPercent = await this.getPenaltyPercent(
+                args.farmAddress,
+            );
+            initialFarmingAmount = initialFarmingAmount.minus(
+                initialFarmingAmount
+                    .multipliedBy(penaltyPercent)
+                    .dividedBy(constantsConfig.MAX_PENALTY_PERCENT)
+                    .integerValue(),
+            );
+            rewards = rewards.minus(
+                rewards
+                    .multipliedBy(penaltyPercent)
+                    .dividedBy(constantsConfig.MAX_PENALTY_PERCENT)
+                    .integerValue(),
+            );
+        }
+
+        return new ExitFarmTokensModel({
+            farmingTokens: initialFarmingAmount.toFixed(),
+            rewards: rewards.toFixed(),
+        });
+    }
+
     decodeFarmTokenAttributes(
         identifier: string,
         attributes: string,
@@ -261,7 +376,24 @@ export class FarmService {
         const attributesBuffer = Buffer.from(attributes, 'base64');
         const codec = new BinaryCodec();
 
-        const structType = new StructType('FarmTokenAttributes', [
+        const structType = this.getFarmTokenAttributesStructure();
+
+        const [decoded, decodedLength] = codec.decodeNested(
+            attributesBuffer,
+            structType,
+        );
+
+        const decodedAttributes = decoded.valueOf();
+        const farmTokenAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
+            decodedAttributes,
+        );
+        farmTokenAttributes.attributes = attributes;
+        farmTokenAttributes.identifier = identifier;
+        return farmTokenAttributes;
+    }
+
+    getFarmTokenAttributesStructure(): StructType {
+        return new StructType('FarmTokenAttributes', [
             new StructFieldDefinition('rewardPerShare', '', new BigUIntType()),
             new StructFieldDefinition('enteringEpoch', '', new U64Type()),
             new StructFieldDefinition('aprMultiplier', '', new U8Type()),
@@ -286,23 +418,6 @@ export class FarmService {
                 new BigUIntType(),
             ),
         ]);
-
-        const [decoded, decodedLength] = codec.decodeNested(
-            attributesBuffer,
-            structType,
-        );
-        const decodedAttributes = decoded.valueOf();
-        return new FarmTokenAttributesModel({
-            identifier: identifier,
-            attributes: attributes,
-            rewardPerShare: decodedAttributes.rewardPerShare.toString(),
-            enteringEpoch: decodedAttributes.enteringEpoch,
-            aprMultiplier: decodedAttributes.aprMultiplier,
-            lockedRewards: decodedAttributes.withLockedRewards,
-            initialFarmingAmount: decodedAttributes.initialFarmingAmount,
-            compoundedReward: decodedAttributes.compoundedReward,
-            currentFarmAmount: decodedAttributes.currentFarmAmount,
-        });
     }
 
     private getFarmCacheKey(farmAddress: string, ...args: any) {
