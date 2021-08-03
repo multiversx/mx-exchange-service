@@ -29,9 +29,9 @@
         "BUSD-05b16f": "busd"
     },
     "farms": [
-        "erd1qqqqqqqqqqqqqpgq9gwtsn3dzgggt34j4mega0dy3p0e807n0n4swy6l76",
-        "erd1qqqqqqqqqqqqqpgqts43y9mhaan36wjfjkrey55v3n4uu3kg0n4shjtsl6",
-        "erd1qqqqqqqqqqqqqpgqnp3tpaeq3kq4ksmnunags3p4w0rlekdc0n4sjdp2cy"
+        "erd1qqqqqqqqqqqqqpgqy20dhf2t8dgpfuewhzncjl8vmsw59evv0n4sd3ntck",
+        "erd1qqqqqqqqqqqqqpgq2s0a4tkv25h8xle8t7szhqqjdx2l6lpy0n4s0ekcx4",
+        "erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c"
     ],
     "caching": {
         "networkConfig": 1,
