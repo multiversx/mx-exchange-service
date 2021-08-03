@@ -11,11 +11,8 @@ import { ContextService } from '../../services/context/context.service';
 import { PairService } from '../pair/pair.service';
 import { FarmStatisticsService } from './farm-statistics.service';
 import { FarmService } from './farm.service';
-import {
-    ContextServiceMock,
-    FarmServiceMock,
-    PairServiceMock,
-} from './farm.test-mocks';
+import { FarmServiceMock, PairServiceMock } from './farm.test-mocks';
+import { ContextServiceMock } from '../../services/context/context.service.mocks';
 
 describe('FarmStatisticsService', () => {
     let service: FarmStatisticsService;
