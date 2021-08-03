@@ -5,11 +5,7 @@ import { ElrondProxyService } from '../../services/elrond-communication/elrond-p
 import { ContextService } from '../../services/context/context.service';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { FarmService } from '../farm/farm.service';
-import {
-    ContextServiceMock,
-    FarmServiceMock,
-    PairServiceMock,
-} from '../farm/farm.test-mocks';
+import { FarmServiceMock } from '../farm/farm.test-mocks';
 import { PairService } from '../pair/pair.service';
 import { AnalyticsService } from './analytics.service';
 import { HyperblockService } from '../../services/transactions/hyperblock.service';
@@ -24,6 +20,17 @@ import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { RedisCacheService } from '../../services/redis-cache.service';
 import { RedisModule } from 'nestjs-redis';
+import { ContextServiceMock } from '../../services/context/context.service.mocks';
+import { PairAnalyticsServiceMock } from '../pair/pair.analytics.service.mock';
+import { PairAnalyticsService } from '../pair/pair.analytics.service';
+import { PairInfoModel } from '../pair/models/pair-info.model';
+import { PairServiceMock } from '../pair/pair.service.mock';
+import {
+    AnalyticsModel,
+    FactoryAnalyticsModel,
+    PairAnalyticsModel,
+    TokenAnalyticsModel,
+} from './models/analytics.model';
 
 describe('FarmStatisticsService', () => {
     let service: AnalyticsService;
@@ -39,6 +46,11 @@ describe('FarmStatisticsService', () => {
     const PairServiceProvider = {
         provide: PairService,
         useClass: PairServiceMock,
+    };
+
+    const PairAnalyticsServiceProvider = {
+        provide: PairAnalyticsService,
+        useClass: PairAnalyticsServiceMock,
     };
 
     const ContextServiceProvider = {
@@ -75,6 +87,7 @@ describe('FarmStatisticsService', () => {
                 ContextServiceProvider,
                 FarmServiceProvider,
                 PairServiceProvider,
+                PairAnalyticsServiceProvider,
                 AnalyticsService,
                 HyperblockService,
                 RedisCacheService,
@@ -110,10 +123,24 @@ describe('FarmStatisticsService', () => {
         );
 
         const totalMexSupply = await service.getTotalTokenSupply('MEX-b6bb7d');
-        expect(totalMexSupply).toEqual('810');
+        expect(totalMexSupply).toEqual('630');
     });
 
     it('should get trading volumes', async () => {
+        jest.spyOn(pairService, 'getFirstTokenID').mockImplementation(
+            async () => 'WEGLD-88600a',
+        );
+        jest.spyOn(pairService, 'getSecondTokenID').mockImplementation(
+            async () => 'MEX-b6bb7d',
+        );
+        jest.spyOn(pairService, 'getPairInfoMetadata').mockImplementation(
+            async () =>
+                new PairInfoModel({
+                    reserves0: '5',
+                    reserves1: '500',
+                    totalSupply: '50',
+                }),
+        );
         jest.spyOn(pairService, 'getFirstTokenPriceUSD').mockImplementation(
             async () => '100',
         );
@@ -126,33 +153,14 @@ describe('FarmStatisticsService', () => {
         ).mockImplementation(async () => {
             const newTransactions = [];
 
-            const pairsAddress = [
-                'erd1qqqqqqqqqqqqqpgqx0xh8fgpr5kjh9n7s53m7qllw42m5t7u0n4suz39xc',
-                'erd1qqqqqqqqqqqqqpgqlsepv678hp2sv30wcslwqh9s09m9kqaa0n4smta0sj',
-            ];
-
-            for (let index = 0; index < 10; index++) {
+            for (let index = 0; index < 1; index++) {
                 const transaction = new ShardTransaction();
                 transaction.data =
-                    'RVNEVFRyYW5zZmVyQDU3NTg0NTQ3NGM0NDJkNjQ2MTMzNjYzMjM0QDBkZTBiNmIzYTc2NDAwMDBANzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NEA0ZDQ1NTgyZDM1MzMzMTM2MzIzM0AwMTUxYjZmNjAxZTYzMGRlMzY=';
+                    'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDM4MzgzNjMwMzA2MUAwZGUwYjZiM2E3NjQwMDAwQDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzRANGQ0NTU4MmQ2MjM2NjI2MjM3NjRAMGQyZGMwODM0MGQ4ZWUxMDAw';
                 transaction.sender = '';
-                transaction.receiver = pairsAddress[0];
-                transaction.sourceShard = 0;
-                transaction.destinationShard = 1;
-                transaction.hash = '';
-                transaction.nonce = 0;
-                transaction.status = '';
-                transaction.value = 0;
-                newTransactions.push(transaction);
-            }
-
-            for (let index = 0; index < 10; index++) {
-                const transaction = new ShardTransaction();
-                transaction.data =
-                    'RVNEVFRyYW5zZmVyQDU3NTg0NTQ3NGM0NDJkNjQ2MTMzNjYzMjM0QDBkZTBiNmIzYTc2NDAwMDBANzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NEA0ZDQ1NTgyZDM1MzMzMTM2MzIzM0AwMTUxYjZmNjAxZTYzMGRlMzY=';
-                transaction.sender = '';
-                transaction.receiver = pairsAddress[1];
-                transaction.sourceShard = 0;
+                transaction.receiver =
+                    'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww';
+                transaction.sourceShard = 1;
                 transaction.destinationShard = 1;
                 transaction.hash = '';
                 transaction.nonce = 0;
@@ -166,25 +174,54 @@ describe('FarmStatisticsService', () => {
 
         const tradingVolumes = await service.getAnalytics();
 
-        expect(tradingVolumes).toEqual({
-            factory: {
-                totalVolumesUSD: '1001',
-                totalFeesUSD: '30.03',
-            },
-            pairs: [
-                {
-                    pairAddress:
-                        'erd1qqqqqqqqqqqqqpgqx0xh8fgpr5kjh9n7s53m7qllw42m5t7u0n4suz39xc',
-                    volumesUSD: '500.5',
-                    feesUSD: '15.015',
-                },
-                {
-                    pairAddress:
-                        'erd1qqqqqqqqqqqqqpgqlsepv678hp2sv30wcslwqh9s09m9kqaa0n4smta0sj',
-                    volumesUSD: '500.5',
-                    feesUSD: '15.015',
-                },
-            ],
-        });
+        expect(tradingVolumes).toEqual(
+            new AnalyticsModel({
+                factory: new FactoryAnalyticsModel({
+                    totalFeesUSD: '0.3',
+                    totalVolumesUSD: '62.15522261',
+                    totalValueLockedUSD: '120002000',
+                }),
+                pairs: [
+                    new PairAnalyticsModel({
+                        feesUSD: '0.3',
+                        liquidity: '50',
+                        pairAddress:
+                            'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww',
+                        totalValueLockedFirstToken: '5',
+                        totalValueLockedSecondToken: '5000',
+                        totalValueLockedUSD: '1000',
+                        volumesUSD: '62.15522261',
+                    }),
+                    new PairAnalyticsModel({
+                        feesUSD: '0',
+                        liquidity: '50',
+                        pairAddress:
+                            'erd1qqqqqqqqqqqqqpgq3gmttefd840klya8smn7zeae402w2esw0n4sm8m04f',
+                        totalValueLockedFirstToken: '5',
+                        totalValueLockedSecondToken: '5000',
+                        totalValueLockedUSD: '1000',
+                        volumesUSD: '0',
+                    }),
+                ],
+                tokens: [
+                    new TokenAnalyticsModel({
+                        feesUSD: '0.3',
+                        tokenID: 'WEGLD-88600a',
+                        totalValueLocked: '5',
+                        totalValueLockedUSD: '500',
+                        volume: '1000000000000000000',
+                        volumeUSD: '100',
+                    }),
+                    new TokenAnalyticsModel({
+                        feesUSD: '0',
+                        tokenID: 'MEX-b6bb7d',
+                        totalValueLocked: '5000',
+                        totalValueLockedUSD: '500',
+                        volume: '243104452200000000000',
+                        volumeUSD: '24.31044522',
+                    }),
+                ],
+            }),
+        );
     });
 });
