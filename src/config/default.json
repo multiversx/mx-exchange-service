@@ -15,7 +15,7 @@
         "routerAddress": "erd1qqqqqqqqqqqqqpgqreqh628erfddlxjqagepvucd49z4sswa0n4sy08qel",
         "MEX-b6bb7d": "erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqy7gwk022nnrywfmhup3gn7kkfscw66a30n4sy2zaxx",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqmu6w6w375fu79g5qea0cuy5lkgz2d3et0n4srera2n",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqdkwc004l832gtshfp4k2x62upawv46xa0n4s7746h6",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq646juuvw4659tns8z88h5zmn9n0a9dma0n4shrqrca",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
@@ -52,7 +52,7 @@
     "gas": {
         "default": 50000000,
         "esdtTransfer": 70000000,
-        "reclaimTemporaryFunds": 50000000,
+        "reclaimTemporaryFunds": 75000000,
         "addLiquidity": 50000000,
         "removeLiquidity": 70000000,
         "swapTokens": 150000000,
