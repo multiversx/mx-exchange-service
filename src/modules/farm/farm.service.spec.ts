@@ -83,7 +83,7 @@ describe('FarmStatisticsService', () => {
 
     it('should get rewards with locked rewards', async () => {
         const attributes =
-            'AAAABwc+9Mqu1tkAAAAAAAAAAQIBAAAACIrHIwSJ6AAAAAAAAAAAAAkBFY5GCRPQAAA=';
+            'AAAABwc+9Mqu1tkAAAAAAAAAAQAAAAAAAAABAgEAAAAIiscjBInoAAAAAAAAAAAACQEVjkYJE9AAAA==';
         const identifier = 'MEXFARM-abcd-01';
         const liquidity = '2000000000000000000';
         const rewards = await service.getRewardsForPosition({
@@ -98,8 +98,9 @@ describe('FarmStatisticsService', () => {
                 decodedAttributes: new FarmTokenAttributesModel({
                     identifier: 'MEXFARM-abcd-01',
                     attributes:
-                        'AAAABwc+9Mqu1tkAAAAAAAAAAQIBAAAACIrHIwSJ6AAAAAAAAAAAAAkBFY5GCRPQAAA=',
+                        'AAAABwc+9Mqu1tkAAAAAAAAAAQAAAAAAAAABAgEAAAAIiscjBInoAAAAAAAAAAAACQEVjkYJE9AAAA==',
                     rewardPerShare: '2039545930372825',
+                    originalEnteringEpoch: 1,
                     enteringEpoch: 1,
                     aprMultiplier: 2,
                     lockedRewards: true,

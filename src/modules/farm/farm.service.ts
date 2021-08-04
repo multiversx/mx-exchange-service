@@ -395,6 +395,11 @@ export class FarmService {
     getFarmTokenAttributesStructure(): StructType {
         return new StructType('FarmTokenAttributes', [
             new StructFieldDefinition('rewardPerShare', '', new BigUIntType()),
+            new StructFieldDefinition(
+                'originalEnteringEpoch',
+                '',
+                new U64Type(),
+            ),
             new StructFieldDefinition('enteringEpoch', '', new U64Type()),
             new StructFieldDefinition('aprMultiplier', '', new U8Type()),
             new StructFieldDefinition(

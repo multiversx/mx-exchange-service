@@ -89,6 +89,7 @@ export class FarmServiceMock {
         return {
             identifier: identifier,
             attributes: attributes,
+            originalEnteringEpoch: 1,
             enteringEpoch: 1,
             aprMultiplier: 1,
             lockedRewards: false,

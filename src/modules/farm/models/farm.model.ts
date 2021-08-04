@@ -11,6 +11,8 @@ export class FarmTokenAttributesModel {
     @Field()
     rewardPerShare: string;
     @Field(type => Int)
+    originalEnteringEpoch: number;
+    @Field(type => Int)
     enteringEpoch: number;
     @Field(type => Int)
     aprMultiplier: number;
@@ -32,6 +34,7 @@ export class FarmTokenAttributesModel {
     ): FarmTokenAttributesModel {
         return new FarmTokenAttributesModel({
             rewardPerShare: decodedAttributes.rewardPerShare.toString(),
+            originalEnteringEpoch: decodedAttributes.originalEnteringEpoch.toNumber(),
             enteringEpoch: decodedAttributes.enteringEpoch.toNumber(),
             aprMultiplier: decodedAttributes.aprMultiplier.toNumber(),
             lockedRewards: decodedAttributes.withLockedRewards,
