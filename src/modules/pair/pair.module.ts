@@ -8,6 +8,7 @@ import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { RedisCacheService } from '../../services/redis-cache.service';
+import { PairAnalyticsService } from './pair.analytics.service';
 
 @Module({
     imports: [
@@ -18,11 +19,12 @@ import { RedisCacheService } from '../../services/redis-cache.service';
     ],
     providers: [
         PairService,
+        PairAnalyticsService,
         AbiPairService,
         TransactionPairService,
         PairResolver,
         RedisCacheService,
     ],
-    exports: [PairService, AbiPairService],
+    exports: [PairService, AbiPairService, PairAnalyticsService],
 })
 export class PairModule {}

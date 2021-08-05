@@ -84,6 +84,8 @@
         "transactionCollectorMaxLookBehind": 100
     },
     "constants": {
-        "MAX_PENALTY_PERCENT": 10000
+        "MAX_PENALTY_PERCENT": 10000,
+        "SWAP_FEE_PERCENT": 300,
+        "SWAP_FEE_PERCENT_BASE_POINTS": 100000
     }
 }
