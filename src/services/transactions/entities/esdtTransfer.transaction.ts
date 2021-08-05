@@ -35,6 +35,7 @@ export class ESDTTransferTransaction extends GenericTransaction {
         return this.dataESDTAmount;
     }
 
+    // Extract endpoint name from data: ESDTTransfer@<tokenIdentifier>@<tokenAmount>@<EndpointName>@<Arg1>@...
     public getDataEndpointName(): string | undefined {
         if (!this.dataEndpointName) {
             const decoded = this.getDataArgs();
@@ -48,6 +49,7 @@ export class ESDTTransferTransaction extends GenericTransaction {
         return this.dataEndpointName;
     }
 
+    // Extract arguments from data: ESDTTransfer@<tokenIdentifier>@<tokenAmount>@<EndpointName>@<Arg1>@...
     public getDataEndpointArgs(): string[] | undefined {
         if (!this.dataEndpointArgs) {
             const decoded = this.getDataArgs();

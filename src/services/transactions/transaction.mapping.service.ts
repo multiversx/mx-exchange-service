@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
+import { constantsConfig } from '../../config';
 import { PairService } from '../../modules/pair/pair.service';
 import { ESDTTransferTransaction } from './entities/esdtTransfer.transaction';
 import { SwapAnalytics } from './models/swap.analytics.dto';
@@ -64,8 +65,8 @@ export class TransactionMappingService {
             .plus(tokenOutAmountUSD)
             .div(new BigNumber(2));
         const feesUSD = tokenInAmountUSD
-            .times(new BigNumber(300))
-            .div(new BigNumber(100000));
+            .times(new BigNumber(constantsConfig.SWAP_FEE_PERCENT))
+            .div(new BigNumber(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS));
         return {
             pairAddress: pairAddress,
             volumeUSD: amountTotalUSD,

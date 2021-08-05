@@ -32,7 +32,7 @@ export function processPairsAnalytics(
         const pairIndex = pairsAnalytics.findIndex(
             pair => pair.pairAddress === swap.pairAddress,
         );
-        if (pairIndex > 0) {
+        if (pairIndex >= 0) {
             pairsAnalytics[pairIndex].volumesUSD = new BigNumber(
                 pairsAnalytics[pairIndex].volumesUSD,
             )
@@ -66,7 +66,7 @@ export function processTokensAnalytics(
         const tokenInIndex = tokensAnalytics.findIndex(
             token => token.tokenID === swap.tokenInID,
         );
-        if (tokenInIndex > 0) {
+        if (tokenInIndex >= 0) {
             tokensAnalytics[tokenInIndex].volume = new BigNumber(
                 tokensAnalytics[tokenInIndex].volume,
             )
@@ -96,7 +96,7 @@ export function processTokensAnalytics(
         const tokenOutIndex = tokensAnalytics.findIndex(
             token => token.tokenID === swap.tokenOutID,
         );
-        if (tokenOutIndex > 0) {
+        if (tokenOutIndex >= 0) {
             tokensAnalytics[tokenOutIndex].volume = new BigNumber(
                 tokensAnalytics[tokenOutIndex].volume,
             )
