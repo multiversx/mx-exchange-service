@@ -1,7 +1,7 @@
 import { Interaction } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { generateRunQueryLogMessage } from '../../utils/generate-log-message';
 import { Logger } from 'winston';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { PairMetadata } from './models/pair.metadata.model';
@@ -34,10 +34,9 @@ export class AbiRouterService {
 
             return pairsAddress;
         } catch (error) {
-            const logMessage = generateGetLogMessage(
+            const logMessage = generateRunQueryLogMessage(
                 AbiRouterService.name,
                 this.getAllPairsAddress.name,
-                '',
                 error,
             );
             this.logger.error(logMessage);
@@ -50,22 +49,31 @@ export class AbiRouterService {
             [],
         );
 
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            getAllPairsInteraction.buildQuery(),
-        );
-        const result = getAllPairsInteraction.interpretQueryResponse(
-            queryResponse,
-        );
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                getAllPairsInteraction.buildQuery(),
+            );
+            const result = getAllPairsInteraction.interpretQueryResponse(
+                queryResponse,
+            );
 
-        const pairsMetadata = result.firstValue.valueOf().map(v => {
-            return new PairMetadata({
-                firstTokenID: v.first_token_id.toString(),
-                secondTokenID: v.second_token_id.toString(),
-                address: v.address.toString(),
+            const pairsMetadata = result.firstValue.valueOf().map(v => {
+                return new PairMetadata({
+                    firstTokenID: v.first_token_id.toString(),
+                    secondTokenID: v.second_token_id.toString(),
+                    address: v.address.toString(),
+                });
             });
-        });
 
-        return pairsMetadata;
+            return pairsMetadata;
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiRouterService.name,
+                this.getPairsMetadata.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 }

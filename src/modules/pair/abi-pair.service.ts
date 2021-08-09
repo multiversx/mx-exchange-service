@@ -1,28 +1,44 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { Address } from '@elrondnetwork/erdjs';
 import { PairInfoModel } from './models/pair-info.model';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import BigNumber from 'bignumber.js';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { generateRunQueryLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class AbiPairService {
-    constructor(private readonly elrondProxy: ElrondProxyService) {}
+    constructor(
+        private readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {}
 
     async getFirstTokenID(pairAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
         const interaction: Interaction = contract.methods.getFirstTokenId([]);
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
-        const firstTokenID = response.firstValue.valueOf().toString();
 
-        return firstTokenID;
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const firstTokenID = response.firstValue.valueOf().toString();
+
+            return firstTokenID;
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiPairService.name,
+                this.getFirstTokenID.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getSecondTokenID(pairAddress: string): Promise<string> {
@@ -30,14 +46,24 @@ export class AbiPairService {
             pairAddress,
         );
         const interaction: Interaction = contract.methods.getSecondTokenId([]);
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
-        const secondTokenID = response.firstValue.valueOf().toString();
 
-        return secondTokenID;
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const secondTokenID = response.firstValue.valueOf().toString();
+
+            return secondTokenID;
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiPairService.name,
+                this.getSecondTokenID.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {
@@ -47,17 +73,26 @@ export class AbiPairService {
         const getLpTokenInteraction: Interaction = contract.methods.getLpTokenIdentifier(
             [],
         );
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            getLpTokenInteraction.buildQuery(),
-        );
-        const response = getLpTokenInteraction.interpretQueryResponse(
-            queryResponse,
-        );
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                getLpTokenInteraction.buildQuery(),
+            );
+            const response = getLpTokenInteraction.interpretQueryResponse(
+                queryResponse,
+            );
 
-        const lpTokenID = response.firstValue.valueOf().toString();
+            const lpTokenID = response.firstValue.valueOf().toString();
 
-        return lpTokenID;
+            return lpTokenID;
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiPairService.name,
+                this.getLpTokenID.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
@@ -69,17 +104,26 @@ export class AbiPairService {
             [],
         );
 
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
 
-        return new PairInfoModel({
-            reserves0: response.values[0].valueOf().toFixed(),
-            reserves1: response.values[1].valueOf().toFixed(),
-            totalSupply: response.values[2].valueOf().toFixed(),
-        });
+            return new PairInfoModel({
+                reserves0: response.values[0].valueOf().toFixed(),
+                reserves1: response.values[1].valueOf().toFixed(),
+                totalSupply: response.values[2].valueOf().toFixed(),
+            });
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiPairService.name,
+                this.getPairInfoMetadata.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getTemporaryFunds(
@@ -96,16 +140,25 @@ export class AbiPairService {
             BytesValue.fromUTF8(tokenID),
         ]);
 
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
 
-        const response = interaction.interpretQueryResponse(queryResponse);
+            const response = interaction.interpretQueryResponse(queryResponse);
 
-        const temporaryFunds = response.firstValue.valueOf();
+            const temporaryFunds = response.firstValue.valueOf();
 
-        return temporaryFunds;
+            return temporaryFunds;
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiPairService.name,
+                this.getTemporaryFunds.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getState(pairAddress: string): Promise<string> {
@@ -113,12 +166,22 @@ export class AbiPairService {
             pairAddress,
         );
         const interaction: Interaction = contract.methods.getState([]);
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
-        const state = response.firstValue.valueOf();
-        return state;
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const state = response.firstValue.valueOf();
+            return state;
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiPairService.name,
+                this.getState.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 }
