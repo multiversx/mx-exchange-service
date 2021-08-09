@@ -5,7 +5,7 @@ import { GenericEsdtAmountPair } from '../models/proxy.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
+import { generateGetLogMessage } from '../../../utils/generate-log-message';
 
 @Injectable()
 export class AbiProxyPairService {
