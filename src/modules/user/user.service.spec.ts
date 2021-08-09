@@ -8,7 +8,6 @@ import { ProxyService } from '../proxy/proxy.service';
 import { UserService } from './user.service';
 import {
     ContextServiceMock,
-    ElrondApiServiceMock,
     FarmServiceMock,
     LockedAssetMock,
     PairServiceMock,
@@ -26,6 +25,9 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
+import { WrapService } from '../wrapping/wrap.service';
+import { WrapServiceMock } from '../wrapping/wrap.test-mocks';
+import { ElrondApiServiceMock } from '../../services/elrond-communication/elrond.api.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -75,6 +77,11 @@ describe('UserService', () => {
         useClass: LockedAssetMock,
     };
 
+    const WrapServiceProvider = {
+        provide: WrapService,
+        useClass: WrapServiceMock,
+    };
+
     const logTransports: Transport[] = [
         new winston.transports.Console({
             format: winston.format.combine(
@@ -96,6 +103,7 @@ describe('UserService', () => {
                 ProxyFarmServiceProvider,
                 FarmServiceProvider,
                 LockedAssetProvider,
+                WrapServiceProvider,
                 UserService,
             ],
             imports: [
@@ -166,6 +174,7 @@ describe('UserService', () => {
                 decodedAttributes: {
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
+                    originalEnteringEpoch: 1,
                     enteringEpoch: 1,
                     identifier: 'FMT-1234-01',
                     lockedRewards: false,

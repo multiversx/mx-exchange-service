@@ -14,10 +14,17 @@ import { TransactionCollectorService } from '../../services/transactions/transac
 import { TransactionInterpreterService } from '../../services/transactions/transaction.interpreter.service';
 import { TransactionMappingService } from '../../services/transactions/transaction.mapping.service';
 import {
-    FactoryTradingModel,
-    PairTradingModel,
-    TradingInfoModel,
-} from '../../models/analytics.model';
+    AnalyticsModel,
+    FactoryAnalyticsModel,
+    PairAnalyticsModel,
+    TokenAnalyticsModel,
+} from './models/analytics.model';
+import {
+    processFactoryAnalytics,
+    processPairsAnalytics,
+    processTokensAnalytics,
+} from './analytics.processor';
+import { PairAnalyticsService } from '../pair/pair.analytics.service';
 
 export interface TradingInfoType {
     volumeUSD: BigNumber;
@@ -31,6 +38,7 @@ export class AnalyticsService {
         private readonly context: ContextService,
         private readonly farmService: FarmService,
         private readonly pairService: PairService,
+        private readonly pairAnalytics: PairAnalyticsService,
         private readonly transactionCollector: TransactionCollectorService,
         private readonly transactionInterpreter: TransactionInterpreterService,
         private readonly transactionMapping: TransactionMappingService,
@@ -39,33 +47,6 @@ export class AnalyticsService {
     async getTokenPriceUSD(tokenID: string): Promise<string> {
         const tokenPriceUSD = await this.pairService.getPriceUSDByPath(tokenID);
         return tokenPriceUSD.toFixed();
-    }
-
-    async getPairLockedValueUSD(pairAddress: string): Promise<string> {
-        const [
-            firstToken,
-            secondToken,
-            firstTokenPriceUSD,
-            secondTokenPriceUSD,
-            reserves,
-        ] = await Promise.all([
-            this.pairService.getFirstToken(pairAddress),
-            this.pairService.getSecondToken(pairAddress),
-            this.pairService.getFirstTokenPriceUSD(pairAddress),
-            this.pairService.getSecondTokenPriceUSD(pairAddress),
-            this.pairService.getPairInfoMetadata(pairAddress),
-        ]);
-
-        const firstTokenLockedValueUSD = new BigNumber(reserves.reserves0)
-            .multipliedBy(`1e-${firstToken.decimals}`)
-            .multipliedBy(firstTokenPriceUSD);
-        const secondTokenLockedValueUSD = new BigNumber(reserves.reserves1)
-            .multipliedBy(`1e-${secondToken.decimals}`)
-            .multipliedBy(secondTokenPriceUSD);
-
-        return firstTokenLockedValueUSD
-            .plus(secondTokenLockedValueUSD)
-            .toFixed();
     }
 
     async getFarmLockedValueUSD(farmAddress: string): Promise<string> {
@@ -90,7 +71,7 @@ export class AnalyticsService {
         const pairsAddress = await this.context.getAllPairsAddress();
         let totalValueLockedUSD = new BigNumber(0);
         const promises = pairsAddress.map(pairAddress =>
-            this.getPairLockedValueUSD(pairAddress),
+            this.pairAnalytics.getPairLockedValueUSD(pairAddress),
         );
 
         const lockedValuesUSD = await Promise.all([
@@ -233,7 +214,7 @@ export class AnalyticsService {
         return burnedMex;
     }
 
-    async getTradingInfo(): Promise<TradingInfoModel> {
+    async getAnalytics(): Promise<AnalyticsModel> {
         const transactions = await this.transactionCollector.getNewTransactions();
         const esdtTransferTransactions = this.transactionInterpreter.getESDTTransferTransactions(
             transactions,
@@ -246,57 +227,96 @@ export class AnalyticsService {
             return this.transactionMapping.handleSwap(swapTransaction);
         });
 
-        const rawTradingInfos = await Promise.all(promises);
+        const swapTradingInfos = await Promise.all(promises);
+        const factoryAnalytics = processFactoryAnalytics(swapTradingInfos);
+        const pairsAnalytics = processPairsAnalytics(swapTradingInfos);
+        const tokensAnalytics = processTokensAnalytics(swapTradingInfos);
 
-        const factoryTradingInfo = new FactoryTradingModel();
-        factoryTradingInfo.totalVolumesUSD = new BigNumber(0).toFixed();
-        factoryTradingInfo.totalFeesUSD = new BigNumber(0).toFixed();
-
-        const pairsTradingInfoMap = new Map<string, TradingInfoType>();
-        for (const rawTradingInfo of rawTradingInfos) {
-            factoryTradingInfo.totalFeesUSD = new BigNumber(
-                factoryTradingInfo.totalFeesUSD,
-            )
-                .plus(rawTradingInfo.feesUSD)
-                .toFixed();
-            factoryTradingInfo.totalVolumesUSD = new BigNumber(
-                factoryTradingInfo.totalVolumesUSD,
-            )
-                .plus(rawTradingInfo.volumeUSD)
-                .toFixed();
-
-            if (!pairsTradingInfoMap.has(rawTradingInfo.pairAddress)) {
-                pairsTradingInfoMap.set(rawTradingInfo.pairAddress, {
-                    volumeUSD: rawTradingInfo.volumeUSD,
-                    feesUSD: rawTradingInfo.feesUSD,
-                });
+        factoryAnalytics.totalValueLockedUSD = await this.getTotalValueLockedUSD();
+        const pairsAddress = await this.context.getPairsMetadata();
+        for (const pair of pairsAddress) {
+            const [
+                firstTokenID,
+                secondTokenID,
+                pairReserves,
+                firstTokenLockedValueUSD,
+                secondTokenLockedValueUSD,
+                totalValueLockedUSD,
+            ] = await Promise.all([
+                this.pairService.getFirstTokenID(pair.address),
+                this.pairService.getSecondTokenID(pair.address),
+                this.pairService.getPairInfoMetadata(pair.address),
+                this.pairAnalytics.getFirstTokenValueLockedUSD(pair.address),
+                this.pairAnalytics.getSecondTokenValueLockedUSD(pair.address),
+                this.pairAnalytics.getPairLockedValueUSD(pair.address),
+            ]);
+            const pairAnalytics = pairsAnalytics.find(
+                swap => swap.pairAddress === pair.address,
+            );
+            if (pairAnalytics) {
+                pairAnalytics.totalValueLockedUSD = totalValueLockedUSD;
+                pairAnalytics.totalValueLockedFirstToken =
+                    pairReserves.reserves0;
+                pairAnalytics.totalValueLockedSecondToken =
+                    pairReserves.reserves1;
+                pairAnalytics.liquidity = pairReserves.totalSupply;
             } else {
-                const pairTransactionVolume = pairsTradingInfoMap.get(
-                    rawTradingInfo.pairAddress,
+                pairsAnalytics.push(
+                    new PairAnalyticsModel({
+                        pairAddress: pair.address,
+                        totalValueLockedUSD: totalValueLockedUSD,
+                        totalValueLockedFirstToken: pairReserves.reserves0,
+                        totalValueLockedSecondToken: pairReserves.reserves1,
+                        liquidity: pairReserves.totalSupply,
+                        feesUSD: '0',
+                        volumesUSD: '0',
+                    }),
                 );
-                pairsTradingInfoMap.set(rawTradingInfo.pairAddress, {
-                    volumeUSD: pairTransactionVolume.volumeUSD.plus(
-                        rawTradingInfo.volumeUSD,
-                    ),
-                    feesUSD: pairTransactionVolume.feesUSD.plus(
-                        rawTradingInfo.feesUSD,
-                    ),
-                });
+            }
+
+            const firstToken = tokensAnalytics.find(
+                token => token.tokenID === firstTokenID,
+            );
+            if (firstToken) {
+                firstToken.totalValueLocked = pairReserves.reserves0;
+                firstToken.totalValueLockedUSD = firstTokenLockedValueUSD;
+            } else {
+                tokensAnalytics.push(
+                    new TokenAnalyticsModel({
+                        tokenID: firstTokenID,
+                        totalValueLocked: pairReserves.reserves0,
+                        totalValueLockedUSD: firstTokenLockedValueUSD,
+                        volume: '0',
+                        volumeUSD: '0',
+                        feesUSD: '0',
+                    }),
+                );
+            }
+
+            const secondToken = tokensAnalytics.find(
+                token => token.tokenID === secondTokenID,
+            );
+            if (secondToken) {
+                secondToken.totalValueLocked = pairReserves.reserves1;
+                secondToken.totalValueLockedUSD = secondTokenLockedValueUSD;
+            } else {
+                tokensAnalytics.push(
+                    new TokenAnalyticsModel({
+                        tokenID: secondTokenID,
+                        totalValueLocked: pairReserves.reserves1,
+                        totalValueLockedUSD: secondTokenLockedValueUSD,
+                        volume: '0',
+                        volumeUSD: '0',
+                        feesUSD: '0',
+                    }),
+                );
             }
         }
 
-        const pairsTradingInfos: PairTradingModel[] = [];
-        pairsTradingInfoMap.forEach((value, key) => {
-            pairsTradingInfos.push({
-                pairAddress: key,
-                volumesUSD: value.volumeUSD.toFixed(),
-                feesUSD: value.feesUSD.toFixed(),
-            });
+        return new AnalyticsModel({
+            factory: factoryAnalytics,
+            pairs: pairsAnalytics,
+            tokens: tokensAnalytics,
         });
-
-        return {
-            factory: factoryTradingInfo,
-            pairs: pairsTradingInfos,
-        };
     }
 }

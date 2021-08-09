@@ -1,14 +1,16 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { EsdtToken } from './tokens/esdtToken.model';
-import { NftToken } from './tokens/nftToken.model';
-import { FarmTokenAttributesModel } from '../modules/farm/models/farm.model';
+import { EsdtToken } from '../../../models/tokens/esdtToken.model';
+import { NftToken } from '../../../models/tokens/nftToken.model';
+import { FarmTokenAttributesModel } from '../../farm/models/farm.model';
 import {
     WrappedFarmTokenAttributesModel,
     WrappedLpTokenAttributesModel,
-} from '../modules/proxy/models/proxy.model';
-import { FarmToken } from './tokens/farmToken.model';
-import { LockedLpToken } from './tokens/lockedLpToken.model';
-import { LockedFarmToken } from './tokens/lockedFarmToken.model';
+} from '../../proxy/models/proxy.model';
+import { FarmToken } from '../../../models/tokens/farmToken.model';
+import { LockedLpToken } from '../../../models/tokens/lockedLpToken.model';
+import { LockedFarmToken } from '../../../models/tokens/lockedFarmToken.model';
+import { LockedAssetToken } from 'src/models/tokens/lockedAssetToken.model';
+import { LockedAssetAttributes } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 
 @ObjectType()
 export class UserToken extends EsdtToken {
@@ -20,6 +22,13 @@ export class UserNftToken extends NftToken {
     @Field(type => Int) decimals: number;
     @Field() valueUSD: string;
     @Field() decodedAttributes: string;
+}
+
+@ObjectType()
+export class UserLockedAssetToken extends LockedAssetToken {
+    decimals: number;
+    decodedAttributes: LockedAssetAttributes;
+    @Field() valueUSD: string;
 }
 
 @ObjectType()

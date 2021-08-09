@@ -1,8 +1,10 @@
-import { register, Histogram, collectDefaultMetrics } from 'prom-client';
+import { register, Histogram, collectDefaultMetrics, Gauge } from 'prom-client';
 
 export class MetricsCollector {
     private static fieldDurationHistogram: Histogram<string>;
     private static externalCallsHistogram: Histogram<string>;
+    private static currentNonceGauge: Gauge<string>;
+    private static lastProcessedNonceGauge: Gauge<string>;
     private static isDefaultMetricsRegistered = false;
 
     static ensureIsInitialized() {
@@ -24,6 +26,22 @@ export class MetricsCollector {
             });
         }
 
+        if (!MetricsCollector.currentNonceGauge) {
+            MetricsCollector.currentNonceGauge = new Gauge({
+                name: 'current_nonce',
+                help: 'Current nonce of the given shard',
+                labelNames: ['shardId'],
+            });
+        }
+
+        if (!MetricsCollector.lastProcessedNonceGauge) {
+            MetricsCollector.lastProcessedNonceGauge = new Gauge({
+                name: 'last_processed_nonce',
+                help: 'Last processed nonce of the given shard',
+                labelNames: ['shardId'],
+            });
+        }
+
         if (!MetricsCollector.isDefaultMetricsRegistered) {
             MetricsCollector.isDefaultMetricsRegistered = true;
             collectDefaultMetrics();
@@ -42,6 +60,14 @@ export class MetricsCollector {
         MetricsCollector.externalCallsHistogram
             .labels(system, func)
             .observe(duration);
+    }
+
+    static setCurrentNonce(shardId: number, nonce: number) {
+        MetricsCollector.currentNonceGauge.set({ shardId }, nonce);
+    }
+
+    static setLastProcessedNonce(shardId: number, nonce: number) {
+        MetricsCollector.lastProcessedNonceGauge.set({ shardId }, nonce);
     }
 
     static async getMetrics(): Promise<string> {
