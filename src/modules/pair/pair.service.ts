@@ -280,7 +280,24 @@ export class PairService {
     }
 
     async getState(pairAddress: string): Promise<string> {
-        return this.abiService.getState(pairAddress);
+        const cacheKey = this.getPairCacheKey(pairAddress, 'state');
+        try {
+            const getState = () => this.abiService.getState(pairAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getState,
+                cacheConfig.state,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                PairService.name,
+                this.getState.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getAmountOut(
