@@ -36,6 +36,7 @@
     "caching": {
         "pairsMetadata": 100,
         "pairs": 100,
+        "state": 100,
         "txTotalCount": 10,
         "pairCount": 10,
         "token": 300,

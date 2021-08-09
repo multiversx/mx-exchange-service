@@ -225,7 +225,24 @@ export class FarmService {
     }
 
     async getState(farmAddress: string): Promise<string> {
-        return this.abiService.getState(farmAddress);
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'state');
+        try {
+            const getState = () => this.abiService.getState(farmAddress);
+            return this.redisCacheService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getState,
+                cacheConfig.state,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                FarmService.name,
+                this.getState.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     getFarms(): FarmModel[] {
