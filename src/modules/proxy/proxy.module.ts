@@ -25,6 +25,6 @@ import { RedisCacheService } from 'src/services/redis-cache.service';
         RedisCacheService,
         ProxyResolver,
     ],
-    exports: [ProxyService, ProxyResolver],
+    exports: [ProxyService, AbiProxyService, ProxyResolver],
 })
 export class ProxyModule {}

@@ -34,9 +34,9 @@
         "erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c"
     ],
     "caching": {
-        "pairsMetadata": 100,
-        "pairs": 100,
-        "state": 100,
+        "pairsMetadata": 120,
+        "pairs": 120,
+        "state": 120,
         "txTotalCount": 10,
         "pairCount": 10,
         "token": 300,

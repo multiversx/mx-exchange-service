@@ -1,48 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PriceFeedService } from '../price-feed/price-feed.service';
-import { cacheConfig, farmsConfig, tokensPriceData } from '../../config';
-import { ContextService } from '../context/context.service';
-import { FarmStatisticsService } from 'src/modules/farm/farm-statistics.service';
+import { cacheConfig, tokensPriceData } from '../../config';
 import { RedisCacheService } from '../redis-cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { AbiPairService } from 'src/modules/pair/abi-pair.service';
-import { PairService } from 'src/modules/pair/pair.service';
-import { FarmService } from 'src/modules/farm/farm.service';
 
 @Injectable()
 export class CacheWarmerService {
     constructor(
         private readonly priceFeed: PriceFeedService,
-        private readonly pairService: PairService,
-        private readonly abiPairService: AbiPairService,
-        private readonly context: ContextService,
-        private readonly farmService: FarmService,
-        private readonly farmStatisticsService: FarmStatisticsService,
         private readonly redisCacheService: RedisCacheService,
     ) {}
-
-    @Cron(CronExpression.EVERY_30_SECONDS)
-    async cachePairsInfo(): Promise<void> {
-        const pairsAddress = await this.context.getAllPairsAddress();
-        const promises = pairsAddress.map(async pairAddress => {
-            const pairInfoMetadata = await this.abiPairService.getPairInfoMetadata(
-                pairAddress,
-            );
-            const cacheKey = generateCacheKeyFromParams(
-                'pair',
-                pairAddress,
-                'valueLocked',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                pairInfoMetadata,
-                cacheConfig.reserves,
-            );
-        });
-        await Promise.all(promises);
-    }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cachePriceFeeds(): Promise<void> {
@@ -59,102 +27,6 @@ export class CacheWarmerService {
                 cacheKey,
                 tokenPrice,
                 cacheConfig.reserves,
-            );
-        }
-    }
-
-    @Cron(CronExpression.EVERY_10_SECONDS)
-    async cacheTokenPrices(): Promise<void> {
-        const pairsAddress = await this.context.getAllPairsAddress();
-        const firstTokensPromises = pairsAddress.map(async pairAddress => {
-            const firstTokenPrice = await this.pairService.computeFirstTokenPrice(
-                pairAddress,
-            );
-            const cacheKey = generateCacheKeyFromParams(
-                'pair',
-                pairAddress,
-                'firstTokenPrice',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                firstTokenPrice,
-                cacheConfig.tokenPrice,
-            );
-        });
-        const secondTokensPromises = pairsAddress.map(async pairAddress => {
-            const secondTokenPrice = await this.pairService.computeSecondTokenPrice(
-                pairAddress,
-            );
-            const cacheKey = generateCacheKeyFromParams(
-                'pair',
-                pairAddress,
-                'secondTokenPrice',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                secondTokenPrice,
-                cacheConfig.tokenPrice,
-            );
-        });
-        await Promise.all([...firstTokensPromises, ...secondTokensPromises]);
-    }
-
-    @Cron(CronExpression.EVERY_10_SECONDS)
-    async cacheFarmTokensPrices(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
-            const [
-                farmedTokenPriceUSD,
-                farmingTokenPriceUSD,
-            ] = await Promise.all([
-                this.farmService.computeFarmedTokenPriceUSD(farmAddress),
-                this.farmService.computeFarmingTokenPriceUSD(farmAddress),
-            ]);
-
-            const farmedTokenCacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'farmedTokenPriceUSD',
-            );
-            const farmingTokenCacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'farmingTokenPriceUSD',
-            );
-
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                farmedTokenCacheKey,
-                farmedTokenPriceUSD,
-                cacheConfig.tokenPrice,
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                farmingTokenCacheKey,
-                farmingTokenPriceUSD,
-                cacheConfig.tokenPrice,
-            );
-        }
-    }
-
-    @Cron(CronExpression.EVERY_30_SECONDS)
-    async cacheApr(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
-            const apr = await this.farmStatisticsService.computeFarmAPR(
-                farmAddress,
-            );
-            const cacheKey = generateCacheKeyFromParams(
-                'farmStatistics',
-                farmAddress,
-                'apr',
-            );
-
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                apr,
-                cacheConfig.apr,
             );
         }
     }

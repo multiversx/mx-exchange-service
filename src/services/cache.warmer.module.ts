@@ -15,6 +15,13 @@ import * as Transport from 'winston-transport';
 import { RedisCacheService } from './redis-cache.service';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { RedisModule } from 'nestjs-redis';
+import { ProxyModule } from 'src/modules/proxy/proxy.module';
+import { ProxyFarmModule } from 'src/modules/proxy/proxy-farm/proxy-farm.module';
+import { ProxyPairModule } from 'src/modules/proxy/proxy-pair/proxy-pair.module';
+import { PairCacheWarmerService } from './crons/pair.cache.warmer.service';
+import { FarmCacheWarmerService } from './crons/farm.cache.warmer.service';
+import { ProxyCacheWarmerService } from './crons/proxy.cache.warmer.service';
+import { ElrondCommunicationModule } from './elrond-communication/elrond-communication.module';
 
 const logTransports: Transport[] = [
     new winston.transports.Console({
@@ -58,10 +65,20 @@ if (!!process.env.LOG_FILE) {
         PriceFeedModule,
         PairModule,
         ServicesModule,
+        ElrondCommunicationModule,
         ContextModule,
         FarmModule,
+        ProxyModule,
+        ProxyFarmModule,
+        ProxyPairModule,
     ],
     controllers: [],
-    providers: [CacheWarmerService, RedisCacheService],
+    providers: [
+        CacheWarmerService,
+        PairCacheWarmerService,
+        FarmCacheWarmerService,
+        ProxyCacheWarmerService,
+        RedisCacheService,
+    ],
 })
 export class CacheWarmerModule {}

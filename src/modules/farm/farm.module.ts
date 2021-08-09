@@ -25,6 +25,6 @@ import { RedisCacheService } from 'src/services/redis-cache.service';
         RedisCacheService,
         FarmResolver,
     ],
-    exports: [FarmService, FarmStatisticsService],
+    exports: [FarmService, AbiFarmService, FarmStatisticsService],
 })
 export class FarmModule {}

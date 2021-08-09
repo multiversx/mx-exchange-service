@@ -21,6 +21,10 @@ import { RedisCacheService } from 'src/services/redis-cache.service';
         TransactionsProxyPairService,
         RedisCacheService,
     ],
-    exports: [ProxyPairService, TransactionsProxyPairService],
+    exports: [
+        ProxyPairService,
+        AbiProxyPairService,
+        TransactionsProxyPairService,
+    ],
 })
 export class ProxyPairModule {}
