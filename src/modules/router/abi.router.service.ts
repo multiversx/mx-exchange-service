@@ -1,11 +1,17 @@
 import { Interaction } from '@elrondnetwork/erdjs/out';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { generateGetLogMessage } from 'src/utils/generate-log-message';
+import { Logger } from 'winston';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { PairMetadata } from './models/pair.metadata.model';
 
 @Injectable()
 export class AbiRouterService {
-    constructor(private readonly elrondProxy: ElrondProxyService) {}
+    constructor(
+        private readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {}
 
     async getAllPairsAddress(): Promise<string[]> {
         const contract = await this.elrondProxy.getRouterSmartContract();
@@ -13,17 +19,29 @@ export class AbiRouterService {
             [],
         );
 
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
-        const result = interaction.interpretQueryResponse(queryResponse);
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const result = interaction.interpretQueryResponse(queryResponse);
 
-        const pairsAddress = result.firstValue.valueOf().map(pairAddress => {
-            return pairAddress.toString();
-        });
+            const pairsAddress = result.firstValue
+                .valueOf()
+                .map(pairAddress => {
+                    return pairAddress.toString();
+                });
 
-        return pairsAddress;
+            return pairsAddress;
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AbiRouterService.name,
+                this.getAllPairsAddress.name,
+                '',
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
