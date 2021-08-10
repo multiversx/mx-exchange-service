@@ -20,7 +20,7 @@ export class PairCacheWarmerService {
         @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_MINUTE)
     async cachePairs(): Promise<void> {
         const pairsMetadata = await this.context.getPairsMetadata();
         for (const pairMetadata of pairsMetadata) {
@@ -82,7 +82,7 @@ export class PairCacheWarmerService {
         }
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron('*/20 * * * * *')
     async cachePairsInfo(): Promise<void> {
         const pairsAddress = await this.context.getAllPairsAddress();
         const promises = pairsAddress.map(async pairAddress => {
@@ -99,7 +99,7 @@ export class PairCacheWarmerService {
         await Promise.all(promises);
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron('*/20 * * * * *')
     async cacheTokenPrices(): Promise<void> {
         const pairsAddress = await this.context.getAllPairsAddress();
         const firstTokensPromises = pairsAddress.map(async pairAddress => {

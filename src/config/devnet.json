@@ -2,10 +2,14 @@
     "caching": {
         "pairsMetadata": 300,
         "pairs": 300,
+        "state": 300,
         "txTotalCount": 10,
-        "pairCount": 300,
+        "pairCount": 10,
         "token": 300,
+        "tokenPrice": 30,
         "priceFeed": 30,
-        "default": 300
+        "reserves": 30,
+        "apr": 60,
+        "default": 120
     }
 }

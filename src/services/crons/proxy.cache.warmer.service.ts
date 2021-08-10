@@ -20,7 +20,7 @@ export class ProxyCacheWarmerService {
         @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_MINUTE)
     async cacheProxy(): Promise<void> {
         const [
             assetTokenID,

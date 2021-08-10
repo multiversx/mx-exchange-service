@@ -34,17 +34,17 @@
         "erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c"
     ],
     "caching": {
-        "pairsMetadata": 120,
-        "pairs": 120,
-        "state": 120,
+        "pairsMetadata": 300,
+        "pairs": 300,
+        "state": 300,
         "txTotalCount": 10,
         "pairCount": 10,
         "token": 300,
         "tokenPrice": 30,
         "priceFeed": 30,
         "reserves": 30,
-        "apr": 45,
-        "default": 10
+        "apr": 60,
+        "default": 120
     },
     "gas": {
         "default": 50000000,

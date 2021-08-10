@@ -20,7 +20,7 @@ export class FarmCacheWarmerService {
         @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_MINUTE)
     async cacheFarms(): Promise<void> {
         const farmsAddress: string[] = farmsConfig;
         const promises = farmsAddress.map(async farmAddress => {
@@ -100,7 +100,7 @@ export class FarmCacheWarmerService {
         Promise.all(promises);
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron('*/20 * * * * *')
     async cacheFarmReserves(): Promise<void> {
         for (const farmAddress of farmsConfig) {
             const [farmingTokenReserve, farmTokenSupply] = await Promise.all([
@@ -124,7 +124,7 @@ export class FarmCacheWarmerService {
         }
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron('*/20 * * * * *')
     async cacheFarmTokensPrices(): Promise<void> {
         for (const farmAddress of farmsConfig) {
             const [
@@ -151,7 +151,7 @@ export class FarmCacheWarmerService {
         }
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron('*/45 * * * * *')
     async cacheApr(): Promise<void> {
         for (const farmAddress of farmsConfig) {
             const apr = await this.farmStatisticsService.computeFarmAPR(
