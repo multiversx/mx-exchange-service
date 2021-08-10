@@ -114,9 +114,34 @@ export class ProxyResolver {
     async addLiquidityProxyBatch(
         @Args() args: AddLiquidityProxyBatchArgs,
     ): Promise<TransactionModel[]> {
-        return await this.transactionsProxyPairService.addLiquidityProxyBatch(
-            args,
-        );
+        if (
+            args.lockedLpTokenID &&
+            args.lockedLpTokenNonce &&
+            args.lockedLpTokenAmount
+        ) {
+            const depositTokenArgs: DepositTokenArgs = {
+                smartContractType: SmartContractType.PROXY_PAIR,
+                tokenID: args.lockedLpTokenID,
+                tokenNonce: args.lockedLpTokenNonce,
+                amount: args.lockedLpTokenAmount,
+                sender: args.sender,
+            };
+            const [
+                depositTokensTransaction,
+                addLiquidityProxyBatchTransactions,
+            ] = await Promise.all([
+                this.mergeTokensTransactions.depositTokens(depositTokenArgs),
+                this.transactionsProxyPairService.addLiquidityProxyBatch(args),
+            ]);
+            return [
+                depositTokensTransaction,
+                ...addLiquidityProxyBatchTransactions,
+            ];
+        } else {
+            return this.transactionsProxyPairService.addLiquidityProxyBatch(
+                args,
+            );
+        }
     }
 
     @Query(returns => TransactionModel)
