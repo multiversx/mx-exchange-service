@@ -30,6 +30,15 @@ export class AddLiquidityProxyArgs {
 @ArgsType()
 export class AddLiquidityProxyBatchArgs {
     @Field()
+    sender: string;
+    @Field({ nullable: true })
+    lockedLpTokenID?: string;
+    @Field(type => Int, { nullable: true })
+    lockedLpTokenNonce?: number;
+    @Field({ nullable: true })
+    lockedLpTokenAmount?: string;
+
+    @Field()
     pairAddress: string;
     @Field()
     firstTokenAmount: string;
@@ -43,7 +52,6 @@ export class AddLiquidityProxyBatchArgs {
     secondTokenID: string;
     @Field(type => Int, { nullable: true })
     secondTokenNonce?: number;
-    @Field({ nullable: true }) sender?: string;
     @Field() tolerance: number;
 }
 
