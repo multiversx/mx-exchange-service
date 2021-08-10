@@ -1,7 +1,16 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
 import { EsdtToken } from '../../../models/tokens/esdtToken.model';
 import { FarmTokenAttributesModel } from '../../farm/models/farm.model';
 import { NftCollection } from '../../../models/tokens/nftCollection.model';
+
+export enum LockedTokenType {
+    LOCKED_LP_TOKEN = 'LockedLpToken',
+    LOCKED_FARM_TOKEN = 'LockedFarmToken',
+}
+
+registerEnumType(LockedTokenType, {
+    name: 'LockedTokenType',
+});
 
 @ObjectType()
 export class ProxyModel {
@@ -93,6 +102,8 @@ export class GenericEsdtAmountPair {
     tokenNonce: string;
     @Field()
     amount: string;
+    @Field({ nullable: true })
+    type: LockedTokenType;
     @Field({ nullable: true })
     address: string;
 
