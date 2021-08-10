@@ -5,13 +5,7 @@ import { ContextModule } from './context/context.module';
 import { CacheWarmerService } from './crons/cache.warmer.service';
 import { PriceFeedModule } from './price-feed/price-feed.module';
 import { ServicesModule } from './services.module';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as winston from 'winston';
-import * as Transport from 'winston-transport';
-import { RedisCacheService } from './redis-cache.service';
+import { CachingService } from './caching/cache.service';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { ProxyModule } from 'src/modules/proxy/proxy.module';
 import { ProxyFarmModule } from 'src/modules/proxy/proxy-farm/proxy-farm.module';
@@ -44,7 +38,7 @@ import { CommonAppModule } from 'src/common.app.module';
         PairCacheWarmerService,
         FarmCacheWarmerService,
         ProxyCacheWarmerService,
-        RedisCacheService,
+        CachingService,
     ],
 })
 export class CacheWarmerModule {}

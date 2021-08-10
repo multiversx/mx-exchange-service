@@ -2,7 +2,7 @@ import { HttpService, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig, elrondConfig } from '../../config';
-import { RedisCacheService } from '../redis-cache.service';
+import { CachingService } from '../caching/cache.service';
 import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -17,11 +17,11 @@ export class PriceFeedService {
 
     constructor(
         private readonly httpService: HttpService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.priceFeedUrl = process.env.ELRONDDATA_URL;
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     async getTokenPrice(tokenName: string): Promise<BigNumber> {
@@ -29,7 +29,7 @@ export class PriceFeedService {
         try {
             const getTokenPrice = () => this.getTokenPriceRaw(tokenName);
 
-            const tokenPrice = await this.redisCacheService.getOrSet(
+            const tokenPrice = await this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getTokenPrice,

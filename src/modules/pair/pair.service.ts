@@ -20,7 +20,7 @@ import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { ContextService } from '../../services/context/context.service';
 import { WrapService } from '../wrapping/wrap.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { RedisCacheService } from '../../services/redis-cache.service';
+import { CachingService } from '../../services/caching/cache.service';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -31,13 +31,13 @@ export class PairService {
     private redisClient: Redis.Redis;
     constructor(
         private abiService: AbiPairService,
-        private redisCacheService: RedisCacheService,
+        private cachingService: CachingService,
         private context: ContextService,
         private priceFeed: PriceFeedService,
         private wrapService: WrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     private async getTokenData(
@@ -48,7 +48,7 @@ export class PairService {
     ): Promise<string> {
         const cacheKey = this.getPairCacheKey(pairAddress, tokenCacheKey);
         try {
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 createValueFunc,
@@ -262,7 +262,7 @@ export class PairService {
         try {
             const getValueLocked = () =>
                 this.abiService.getPairInfoMetadata(pairAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getValueLocked,
@@ -283,7 +283,7 @@ export class PairService {
         const cacheKey = this.getPairCacheKey(pairAddress, 'state');
         try {
             const getState = () => this.abiService.getState(pairAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getState,

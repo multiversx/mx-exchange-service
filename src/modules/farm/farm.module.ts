@@ -7,12 +7,13 @@ import { FarmStatisticsService } from './farm-statistics.service';
 import { PairModule } from '../pair/pair.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
-import { TokenMergingModule } from 'src/modules/token-merging/token.merging.module';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { TokenMergingModule } from '../../modules/token-merging/token.merging.module';
+import { CachingModule } from '../../services/caching/cache.module';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
+        CachingModule,
         ContextModule,
         PairModule,
         TokenMergingModule,
@@ -22,7 +23,6 @@ import { RedisCacheService } from 'src/services/redis-cache.service';
         AbiFarmService,
         TransactionsFarmService,
         FarmStatisticsService,
-        RedisCacheService,
         FarmResolver,
     ],
     exports: [FarmService, AbiFarmService, FarmStatisticsService],

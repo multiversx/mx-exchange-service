@@ -3,7 +3,7 @@ import { AbiProxyPairService } from './proxy-pair-abi.service';
 import { GenericEsdtAmountPair } from '../models/proxy.model';
 import { ContextService } from '../../../services/context/context.service';
 import { NftCollection } from '../../../models/tokens/nftCollection.model';
-import { RedisCacheService } from '../../../services/redis-cache.service';
+import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import * as Redis from 'ioredis';
@@ -18,10 +18,10 @@ export class ProxyPairService {
     constructor(
         private abiService: AbiProxyPairService,
         private context: ContextService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
     private async getTokenID(
         tokenCacheKey: string,
@@ -29,7 +29,7 @@ export class ProxyPairService {
     ): Promise<string> {
         const cacheKey = this.getProxyPairCacheKey(tokenCacheKey);
         try {
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 createValueFunc,
@@ -62,7 +62,7 @@ export class ProxyPairService {
         try {
             const getIntermediatedPairs = () =>
                 this.abiService.getIntermediatedPairsAddress();
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getIntermediatedPairs,

@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { cacheConfig, farmsConfig } from '../../config';
 import { FarmStatisticsService } from 'src/modules/farm/farm-statistics.service';
-import { RedisCacheService } from '../redis-cache.service';
+import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { FarmService } from 'src/modules/farm/farm.service';
 import { AbiFarmService } from 'src/modules/farm/abi-farm.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -15,7 +16,8 @@ export class FarmCacheWarmerService {
         private readonly farmService: FarmService,
         private readonly farmStatisticsService: FarmStatisticsService,
         private readonly apiService: ElrondApiService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
+        @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
     ) {}
 
     @Cron(CronExpression.EVERY_30_SECONDS)
@@ -39,79 +41,6 @@ export class FarmCacheWarmerService {
                 this.abiFarmService.getRewardsPerBlock(farmAddress),
                 this.abiFarmService.getState(farmAddress),
             ]);
-            let cacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'farmTokenID',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                farmTokenID,
-                cacheConfig.token,
-            );
-            cacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'farmingTokenID',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                farmingTokenID,
-                cacheConfig.token,
-            );
-            cacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'farmedTokenID',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                farmedTokenID,
-                cacheConfig.token,
-            );
-            cacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'minimumFarmingEpochs',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                minimumFarmingEpochs,
-                cacheConfig.default,
-            );
-            cacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'penaltyPercent',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                penaltyPercent,
-                cacheConfig.default,
-            );
-            cacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'rewardsPerBlock',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                rewardsPerBlock,
-                cacheConfig.default,
-            );
-            cacheKey = generateCacheKeyFromParams('farm', farmAddress, 'state');
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                state,
-                cacheConfig.state,
-            );
 
             const [farmToken, farmingToken, farmedToken] = await Promise.all([
                 this.apiService.getNftCollection(farmTokenID),
@@ -119,27 +48,53 @@ export class FarmCacheWarmerService {
                 this.apiService.getService().getESDTToken(farmedTokenID),
             ]);
 
-            cacheKey = generateCacheKeyFromParams('context', farmTokenID);
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                farmToken,
-                cacheConfig.token,
-            );
-            cacheKey = generateCacheKeyFromParams('context', farmingTokenID);
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                farmingToken,
-                cacheConfig.token,
-            );
-            cacheKey = generateCacheKeyFromParams('context', farmedTokenID);
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                farmedToken,
-                cacheConfig.token,
-            );
+            await Promise.all([
+                this.setFarmCache(
+                    farmAddress,
+                    'farmTokenID',
+                    farmTokenID,
+                    cacheConfig.token,
+                ),
+                this.setFarmCache(
+                    farmAddress,
+                    'farmingTokenID',
+                    farmingTokenID,
+                    cacheConfig.token,
+                ),
+                this.setFarmCache(
+                    farmAddress,
+                    'farmedTokenID',
+                    farmedTokenID,
+                    cacheConfig.token,
+                ),
+                this.setFarmCache(
+                    farmAddress,
+                    'minimumFarmingEpochs',
+                    minimumFarmingEpochs,
+                ),
+                this.setFarmCache(
+                    farmAddress,
+                    'penaltyPercent',
+                    penaltyPercent,
+                ),
+                this.setFarmCache(
+                    farmAddress,
+                    'rewardsPerBlock',
+                    rewardsPerBlock,
+                ),
+                this.setFarmCache(farmAddress, 'state', state),
+                this.setContextCache(farmTokenID, farmToken, cacheConfig.token),
+                this.setContextCache(
+                    farmingTokenID,
+                    farmingToken,
+                    cacheConfig.token,
+                ),
+                this.setContextCache(
+                    farmedTokenID,
+                    farmedToken,
+                    cacheConfig.token,
+                ),
+            ]);
         });
 
         Promise.all(promises);
@@ -152,29 +107,20 @@ export class FarmCacheWarmerService {
                 this.abiFarmService.getFarmingTokenReserve(farmAddress),
                 this.abiFarmService.getFarmTokenSupply(farmAddress),
             ]);
-
-            let cacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'farmingTokenReserve',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                farmingTokenReserve,
-                cacheConfig.reserves,
-            );
-            cacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'farmTokenSupply',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                farmTokenSupply,
-                cacheConfig.reserves,
-            );
+            await Promise.all([
+                this.setFarmCache(
+                    farmAddress,
+                    'farmingTokenReserve',
+                    farmingTokenReserve,
+                    cacheConfig.reserves,
+                ),
+                this.setFarmCache(
+                    farmAddress,
+                    'farmTokenSupply',
+                    farmTokenSupply,
+                    cacheConfig.reserves,
+                ),
+            ]);
         }
     }
 
@@ -188,30 +134,20 @@ export class FarmCacheWarmerService {
                 this.farmService.computeFarmedTokenPriceUSD(farmAddress),
                 this.farmService.computeFarmingTokenPriceUSD(farmAddress),
             ]);
-
-            const farmedTokenCacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'farmedTokenPriceUSD',
-            );
-            const farmingTokenCacheKey = generateCacheKeyFromParams(
-                'farm',
-                farmAddress,
-                'farmingTokenPriceUSD',
-            );
-
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                farmedTokenCacheKey,
-                farmedTokenPriceUSD,
-                cacheConfig.tokenPrice,
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                farmingTokenCacheKey,
-                farmingTokenPriceUSD,
-                cacheConfig.tokenPrice,
-            );
+            await Promise.all([
+                this.setFarmCache(
+                    farmAddress,
+                    'farmedTokenPriceUSD',
+                    farmedTokenPriceUSD,
+                    cacheConfig.tokenPrice,
+                ),
+                this.setFarmCache(
+                    farmAddress,
+                    'farmingTokenPriceUSD',
+                    farmingTokenPriceUSD,
+                    cacheConfig.tokenPrice,
+                ),
+            ]);
         }
     }
 
@@ -227,12 +163,33 @@ export class FarmCacheWarmerService {
                 'apr',
             );
 
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                apr,
-                cacheConfig.apr,
-            );
+            this.cachingService.setCache(cacheKey, apr, cacheConfig.apr);
+            await this.deleteCacheKey(cacheKey);
         }
+    }
+
+    private async setFarmCache(
+        farmAddress: string,
+        key: string,
+        value: any,
+        ttl: number = cacheConfig.default,
+    ) {
+        const cacheKey = generateCacheKeyFromParams('farm', farmAddress, key);
+        await this.cachingService.setCache(cacheKey, value, ttl);
+        await this.deleteCacheKey(cacheKey);
+    }
+
+    private async setContextCache(
+        key: string,
+        value: any,
+        ttl: number = cacheConfig.default,
+    ) {
+        const cacheKey = generateCacheKeyFromParams('context', key);
+        await this.cachingService.setCache(cacheKey, value, ttl);
+        await this.deleteCacheKey(cacheKey);
+    }
+
+    private async deleteCacheKey(key: string) {
+        await this.client.emit('deleteCacheKeys', [key]);
     }
 }

@@ -8,7 +8,7 @@ import {
 import { cacheConfig, scAddress } from '../../config';
 import { ContextService } from '../../services/context/context.service';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
-import { RedisCacheService } from '../../services/redis-cache.service';
+import { CachingService } from '../../services/caching/cache.service';
 import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -32,11 +32,11 @@ export class LockedAssetService {
     constructor(
         private readonly abiService: AbiLockedAssetService,
         private apiService: ElrondApiService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
         private context: ContextService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     async getLockedAssetInfo(): Promise<LockedAssetModel> {
@@ -47,7 +47,7 @@ export class LockedAssetService {
         const cacheKey = this.getLockedAssetFactoryCacheKey('lockedTokenID');
         try {
             const getLockedTokenID = () => this.abiService.getLockedTokenID();
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getLockedTokenID,
@@ -76,7 +76,7 @@ export class LockedAssetService {
         try {
             const getDefaultUnlockPeriod = () =>
                 this.abiService.getDefaultUnlockPeriod();
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getDefaultUnlockPeriod,

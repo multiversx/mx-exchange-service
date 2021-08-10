@@ -16,7 +16,7 @@ import { DecodeAttributesArgs } from './models/proxy.args';
 import { ContextService } from '../../services/context/context.service';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
-import { RedisCacheService } from '../../services/redis-cache.service';
+import { CachingService } from '../../services/caching/cache.service';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -32,10 +32,10 @@ export class ProxyService {
         private abiService: AbiProxyService,
         private context: ContextService,
         private farmService: FarmService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     async getProxyInfo(): Promise<ProxyModel> {
@@ -48,7 +48,7 @@ export class ProxyService {
     ): Promise<string> {
         const cacheKey = this.getProxyCacheKey(tokenCacheKey);
         try {
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 createValueFunc,

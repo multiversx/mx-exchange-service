@@ -29,7 +29,7 @@ import { NftCollection } from '../../models/tokens/nftCollection.model';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { RedisCacheService } from '../../services/redis-cache.service';
+import { CachingService } from '../../services/caching/cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
@@ -43,12 +43,12 @@ export class FarmService {
     constructor(
         private readonly abiService: AbiFarmService,
         private readonly apiService: ElrondApiService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
         private readonly context: ContextService,
         private readonly pairService: PairService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     private async getTokenData(
@@ -58,7 +58,7 @@ export class FarmService {
     ): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, tokenCacheKey);
         try {
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 createValueFunc,
@@ -113,7 +113,7 @@ export class FarmService {
         try {
             const getFarmTokenSupply = () =>
                 this.abiService.getFarmTokenSupply(farmAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getFarmTokenSupply,
@@ -138,7 +138,7 @@ export class FarmService {
         try {
             const getFarmingTokenReserve = () =>
                 this.abiService.getFarmingTokenReserve(farmAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getFarmingTokenReserve,
@@ -160,7 +160,7 @@ export class FarmService {
         try {
             const getRewardsPerBlock = () =>
                 this.abiService.getRewardsPerBlock(farmAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getRewardsPerBlock,
@@ -182,7 +182,7 @@ export class FarmService {
         try {
             const getPenaltyPercent = () =>
                 this.abiService.getPenaltyPercent(farmAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getPenaltyPercent,
@@ -207,7 +207,7 @@ export class FarmService {
         try {
             const getMinimumFarmingEpochs = () =>
                 this.abiService.getMinimumFarmingEpochs(farmAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getMinimumFarmingEpochs,
@@ -228,7 +228,7 @@ export class FarmService {
         const cacheKey = this.getFarmCacheKey(farmAddress, 'state');
         try {
             const getState = () => this.abiService.getState(farmAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getState,

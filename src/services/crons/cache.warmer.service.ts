@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PriceFeedService } from '../price-feed/price-feed.service';
 import { cacheConfig, tokensPriceData } from '../../config';
-import { RedisCacheService } from '../redis-cache.service';
+import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 
 @Injectable()
 export class CacheWarmerService {
     constructor(
         private readonly priceFeed: PriceFeedService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
     ) {}
 
     @Cron(CronExpression.EVERY_30_SECONDS)
@@ -22,8 +22,8 @@ export class CacheWarmerService {
                 'priceFeed',
                 tokensPriceData.get(priceFeed),
             );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
+            this.cachingService.set(
+                this.cachingService.getClient(),
                 cacheKey,
                 tokenPrice,
                 cacheConfig.reserves,

@@ -3,7 +3,7 @@ import { cacheConfig, scAddress } from '../../config';
 import { FarmService } from './farm.service';
 import BigNumber from 'bignumber.js';
 import { PairService } from '../pair/pair.service';
-import { RedisCacheService } from '../../services/redis-cache.service';
+import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
@@ -16,10 +16,10 @@ export class FarmStatisticsService {
     constructor(
         private farmService: FarmService,
         private pairService: PairService,
-        private redisCacheService: RedisCacheService,
+        private cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     async getFarmAPR(farmAddress: string): Promise<string> {
@@ -30,7 +30,7 @@ export class FarmStatisticsService {
         );
         try {
             const getFarmAPR = () => this.computeFarmAPR(farmAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getFarmAPR,

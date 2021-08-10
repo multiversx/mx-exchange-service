@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { cacheConfig } from '../../config';
 import { ContextService } from '../context/context.service';
-import { RedisCacheService } from '../redis-cache.service';
+import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { AbiPairService } from 'src/modules/pair/abi-pair.service';
 import { PairService } from 'src/modules/pair/pair.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -15,33 +16,23 @@ export class PairCacheWarmerService {
         private readonly abiPairService: AbiPairService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
+        @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
     ) {}
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cachePairs(): Promise<void> {
         const pairsMetadata = await this.context.getPairsMetadata();
         for (const pairMetadata of pairsMetadata) {
-            let cacheKey = generateCacheKeyFromParams(
-                'pair',
+            await this.setPairCache(
                 pairMetadata.address,
                 'firstTokenID',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
                 pairMetadata.firstTokenID,
                 cacheConfig.token,
             );
-
-            cacheKey = generateCacheKeyFromParams(
-                'pair',
+            await this.setPairCache(
                 pairMetadata.address,
                 'secondTokenID',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
                 pairMetadata.secondTokenID,
                 cacheConfig.token,
             );
@@ -49,13 +40,8 @@ export class PairCacheWarmerService {
             const firstToken = await this.apiService
                 .getService()
                 .getESDTToken(pairMetadata.firstTokenID);
-            cacheKey = generateCacheKeyFromParams(
-                'context',
+            await this.setContextCache(
                 pairMetadata.firstTokenID,
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
                 firstToken,
                 cacheConfig.token,
             );
@@ -63,13 +49,8 @@ export class PairCacheWarmerService {
             const secondToken = await this.apiService
                 .getService()
                 .getESDTToken(pairMetadata.secondTokenID);
-            cacheKey = generateCacheKeyFromParams(
-                'context',
+            await this.setContextCache(
                 pairMetadata.secondTokenID,
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
                 secondToken,
                 cacheConfig.token,
             );
@@ -77,14 +58,9 @@ export class PairCacheWarmerService {
             const lpTokenID = await this.abiPairService.getLpTokenID(
                 pairMetadata.address,
             );
-            cacheKey = generateCacheKeyFromParams(
-                'pair',
+            await this.setPairCache(
                 pairMetadata.address,
                 'lpTokenID',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
                 lpTokenID,
                 cacheConfig.token,
             );
@@ -92,27 +68,16 @@ export class PairCacheWarmerService {
             const lpToken = await this.apiService
                 .getService()
                 .getESDTToken(lpTokenID);
-            cacheKey = generateCacheKeyFromParams('context', lpTokenID);
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
-                lpToken,
-                cacheConfig.token,
-            );
+            await this.setContextCache(lpTokenID, lpToken, cacheConfig.token);
 
             const state = await this.abiPairService.getState(
                 pairMetadata.address,
             );
-            cacheKey = generateCacheKeyFromParams(
-                'pair',
+            await this.setPairCache(
                 pairMetadata.address,
                 'state',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
                 state,
-                cacheConfig.reserves,
+                cacheConfig.token,
             );
         }
     }
@@ -124,14 +89,9 @@ export class PairCacheWarmerService {
             const pairInfoMetadata = await this.abiPairService.getPairInfoMetadata(
                 pairAddress,
             );
-            const cacheKey = generateCacheKeyFromParams(
-                'pair',
+            await this.setPairCache(
                 pairAddress,
                 'valueLocked',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
                 pairInfoMetadata,
                 cacheConfig.reserves,
             );
@@ -146,14 +106,9 @@ export class PairCacheWarmerService {
             const firstTokenPrice = await this.pairService.computeFirstTokenPrice(
                 pairAddress,
             );
-            const cacheKey = generateCacheKeyFromParams(
-                'pair',
+            await this.setPairCache(
                 pairAddress,
                 'firstTokenPrice',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
                 firstTokenPrice,
                 cacheConfig.tokenPrice,
             );
@@ -162,18 +117,38 @@ export class PairCacheWarmerService {
             const secondTokenPrice = await this.pairService.computeSecondTokenPrice(
                 pairAddress,
             );
-            const cacheKey = generateCacheKeyFromParams(
-                'pair',
+            await this.setPairCache(
                 pairAddress,
                 'secondTokenPrice',
-            );
-            this.redisCacheService.set(
-                this.redisCacheService.getClient(),
-                cacheKey,
                 secondTokenPrice,
                 cacheConfig.tokenPrice,
             );
         });
         await Promise.all([...firstTokensPromises, ...secondTokensPromises]);
+    }
+
+    private async setPairCache(
+        pairAddress: string,
+        key: string,
+        value: any,
+        ttl: number = cacheConfig.default,
+    ) {
+        const cacheKey = generateCacheKeyFromParams('pair', pairAddress, key);
+        await this.cachingService.setCache(cacheKey, value, ttl);
+        await this.deleteCacheKey(cacheKey);
+    }
+
+    private async setContextCache(
+        key: string,
+        value: any,
+        ttl: number = cacheConfig.default,
+    ) {
+        const cacheKey = generateCacheKeyFromParams('context', key);
+        await this.cachingService.setCache(cacheKey, value, ttl);
+        await this.deleteCacheKey(cacheKey);
+    }
+
+    private async deleteCacheKey(key: string) {
+        await this.client.emit('deleteCacheKeys', [key]);
     }
 }
