@@ -11,6 +11,8 @@ import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class ProxyCacheWarmerService {
+    private invalidatedKeys = [];
+
     constructor(
         private readonly abiProxyService: AbiProxyService,
         private readonly abiProxyPairService: AbiProxyPairService,
@@ -102,6 +104,7 @@ export class ProxyCacheWarmerService {
                 cacheConfig.token,
             ),
         ]);
+        await this.deleteCacheKeys();
     }
 
     private async setProxyCache(
@@ -112,7 +115,7 @@ export class ProxyCacheWarmerService {
     ) {
         const cacheKey = generateCacheKeyFromParams(proxy, key);
         await this.cachingService.setCache(cacheKey, value, ttl);
-        await this.deleteCacheKey(cacheKey);
+        this.invalidatedKeys.push(cacheKey);
     }
 
     private async setContextCache(
@@ -122,10 +125,11 @@ export class ProxyCacheWarmerService {
     ) {
         const cacheKey = generateCacheKeyFromParams('context', key);
         await this.cachingService.setCache(cacheKey, value, ttl);
-        await this.deleteCacheKey(cacheKey);
+        this.invalidatedKeys.push(cacheKey);
     }
 
-    private async deleteCacheKey(key: string) {
-        await this.client.emit('deleteCacheKeys', [key]);
+    private async deleteCacheKeys() {
+        await this.client.emit('deleteCacheKeys', this.invalidatedKeys);
+        this.invalidatedKeys = [];
     }
 }

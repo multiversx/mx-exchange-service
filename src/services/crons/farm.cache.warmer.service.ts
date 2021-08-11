@@ -11,6 +11,8 @@ import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class FarmCacheWarmerService {
+    private invalidatedKeys = [];
+
     constructor(
         private readonly abiFarmService: AbiFarmService,
         private readonly farmService: FarmService,
@@ -97,10 +99,11 @@ export class FarmCacheWarmerService {
             ]);
         });
 
-        Promise.all(promises);
+        await Promise.all(promises);
+        await this.deleteCacheKeys();
     }
 
-    @Cron('*/20 * * * * *')
+    @Cron('*/45 * * * * *')
     async cacheFarmReserves(): Promise<void> {
         for (const farmAddress of farmsConfig) {
             const [farmingTokenReserve, farmTokenSupply] = await Promise.all([
@@ -122,9 +125,10 @@ export class FarmCacheWarmerService {
                 ),
             ]);
         }
+        await this.deleteCacheKeys();
     }
 
-    @Cron('*/20 * * * * *')
+    @Cron('*/45 * * * * *')
     async cacheFarmTokensPrices(): Promise<void> {
         for (const farmAddress of farmsConfig) {
             const [
@@ -149,6 +153,7 @@ export class FarmCacheWarmerService {
                 ),
             ]);
         }
+        await this.deleteCacheKeys();
     }
 
     @Cron('*/45 * * * * *')
@@ -164,7 +169,8 @@ export class FarmCacheWarmerService {
             );
 
             this.cachingService.setCache(cacheKey, apr, cacheConfig.apr);
-            await this.deleteCacheKey(cacheKey);
+            this.invalidatedKeys.push(cacheKey);
+            await this.deleteCacheKeys();
         }
     }
 
@@ -176,7 +182,7 @@ export class FarmCacheWarmerService {
     ) {
         const cacheKey = generateCacheKeyFromParams('farm', farmAddress, key);
         await this.cachingService.setCache(cacheKey, value, ttl);
-        await this.deleteCacheKey(cacheKey);
+        this.invalidatedKeys.push(cacheKey);
     }
 
     private async setContextCache(
@@ -186,10 +192,11 @@ export class FarmCacheWarmerService {
     ) {
         const cacheKey = generateCacheKeyFromParams('context', key);
         await this.cachingService.setCache(cacheKey, value, ttl);
-        await this.deleteCacheKey(cacheKey);
+        this.invalidatedKeys.push(cacheKey);
     }
 
-    private async deleteCacheKey(key: string) {
-        await this.client.emit('deleteCacheKeys', [key]);
+    private async deleteCacheKeys() {
+        await this.client.emit('deleteCacheKeys', this.invalidatedKeys);
+        this.invalidatedKeys = [];
     }
 }
