@@ -130,7 +130,7 @@ describe('PairService', () => {
     });
 
     it('should get simple token price in USD', async () => {
-        const tokenPriceUSD = await service.getTokenPriceUSD(
+        const tokenPriceUSD = await service.computeTokenPriceUSD(
             'pair_address_1',
             'MEX-b6bb7d',
         );
@@ -138,7 +138,7 @@ describe('PairService', () => {
     });
 
     it('should get token price in USD from simple path', async () => {
-        const tokenPriceUSD = await service.getTokenPriceUSD(
+        const tokenPriceUSD = await service.computeTokenPriceUSD(
             'pair_address_3',
             'BUSD-05b16f',
         );
@@ -146,7 +146,7 @@ describe('PairService', () => {
     });
 
     it('should get token price in USD from multiple path', async () => {
-        const tokenPriceUSD = await service.getTokenPriceUSD(
+        const tokenPriceUSD = await service.computeTokenPriceUSD(
             'pair_address_4',
             'SPT-f66742',
         );
@@ -162,13 +162,6 @@ describe('PairService', () => {
             firstTokenAmount: '1',
             secondTokenAmount: '2',
         });
-    });
-
-    it('should get lpToken Price from pair', async () => {
-        const lpTokenPrice = await service.getLpTokenSecondTokenEquivalent(
-            'pair_address_1',
-        );
-        expect(lpTokenPrice).toEqual('4');
     });
 
     it('should get lpToken Price in USD from pair', async () => {

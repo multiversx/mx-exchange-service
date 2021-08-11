@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CachingService } from '../../services/caching/cache.service';
 import { ContextService } from '../../services/context/context.service';
 import { PairService } from '../pair/pair.service';
 import { FarmStatisticsService } from './farm-statistics.service';

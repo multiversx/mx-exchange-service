@@ -312,7 +312,7 @@ export class FarmService {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
         if (scAddress.has(farmedTokenID)) {
             const pairAddress = scAddress.get(farmedTokenID);
-            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairService.computeTokenPriceUSD(
                 pairAddress,
                 farmedTokenID,
             );
@@ -339,7 +339,7 @@ export class FarmService {
         const farmingTokenID = await this.getFarmingTokenID(farmAddress);
         if (scAddress.has(farmingTokenID)) {
             const pairAddress = scAddress.get(farmingTokenID);
-            const tokenPriceUSD = await this.pairService.getTokenPriceUSD(
+            const tokenPriceUSD = await this.pairService.computeTokenPriceUSD(
                 pairAddress,
                 farmingTokenID,
             );
@@ -454,7 +454,7 @@ export class FarmService {
         ]);
     }
 
-    private getFarmCacheKey(farmAddress: string, ...args: any) {
+    getFarmCacheKey(farmAddress: string, ...args: any) {
         return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }
 }

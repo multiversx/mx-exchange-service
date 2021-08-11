@@ -11,6 +11,7 @@ import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class PairCacheWarmerService {
+    private invalidatedKeys = [];
     constructor(
         private readonly pairService: PairService,
         private readonly abiPairService: AbiPairService,
@@ -80,6 +81,7 @@ export class PairCacheWarmerService {
                 cacheConfig.token,
             );
         }
+        await this.deleteCacheKeys();
     }
 
     @Cron('*/20 * * * * *')
@@ -97,34 +99,67 @@ export class PairCacheWarmerService {
             );
         });
         await Promise.all(promises);
+        await this.deleteCacheKeys();
     }
 
     @Cron('*/20 * * * * *')
     async cacheTokenPrices(): Promise<void> {
-        const pairsAddress = await this.context.getAllPairsAddress();
-        const firstTokensPromises = pairsAddress.map(async pairAddress => {
-            const firstTokenPrice = await this.pairService.computeFirstTokenPrice(
-                pairAddress,
-            );
-            await this.setPairCache(
-                pairAddress,
-                'firstTokenPrice',
+        const pairsMetadata = await this.context.getPairsMetadata();
+        for (const pairMetadata of pairsMetadata) {
+            const [
                 firstTokenPrice,
-                cacheConfig.tokenPrice,
-            );
-        });
-        const secondTokensPromises = pairsAddress.map(async pairAddress => {
-            const secondTokenPrice = await this.pairService.computeSecondTokenPrice(
-                pairAddress,
-            );
-            await this.setPairCache(
-                pairAddress,
-                'secondTokenPrice',
+                firstTokenPriceUSD,
                 secondTokenPrice,
-                cacheConfig.tokenPrice,
-            );
-        });
-        await Promise.all([...firstTokensPromises, ...secondTokensPromises]);
+                secondTokenPriceUSD,
+                lpTokenPriceUSD,
+            ] = await Promise.all([
+                this.pairService.computeFirstTokenPrice(pairMetadata.address),
+                this.pairService.computeTokenPriceUSD(
+                    pairMetadata.address,
+                    pairMetadata.firstTokenID,
+                ),
+                this.pairService.computeSecondTokenPrice(pairMetadata.address),
+                this.pairService.computeTokenPriceUSD(
+                    pairMetadata.address,
+                    pairMetadata.secondTokenID,
+                ),
+                this.pairService.computeLpTokenPriceUSD(pairMetadata.address),
+            ]);
+
+            await Promise.all([
+                this.setPairCache(
+                    pairMetadata.address,
+                    'firstTokenPrice',
+                    firstTokenPrice,
+                    cacheConfig.tokenPrice,
+                ),
+                this.setPairCache(
+                    pairMetadata.address,
+                    'firstTokenPriceUSD',
+                    firstTokenPriceUSD,
+                    cacheConfig.tokenPrice,
+                ),
+                this.setPairCache(
+                    pairMetadata.address,
+                    'secondTokenPrice',
+                    secondTokenPrice,
+                    cacheConfig.tokenPrice,
+                ),
+                this.setPairCache(
+                    pairMetadata.address,
+                    'secondTokenPriceUSD',
+                    secondTokenPriceUSD,
+                    cacheConfig.tokenPrice,
+                ),
+                this.setPairCache(
+                    pairMetadata.address,
+                    'lpTokenPriceUSD',
+                    lpTokenPriceUSD,
+                    cacheConfig.tokenPrice,
+                ),
+            ]);
+        }
+        await this.deleteCacheKeys();
     }
 
     private async setPairCache(
@@ -135,7 +170,7 @@ export class PairCacheWarmerService {
     ) {
         const cacheKey = generateCacheKeyFromParams('pair', pairAddress, key);
         await this.cachingService.setCache(cacheKey, value, ttl);
-        await this.deleteCacheKey(cacheKey);
+        this.invalidatedKeys.push(cacheKey);
     }
 
     private async setContextCache(
@@ -145,10 +180,11 @@ export class PairCacheWarmerService {
     ) {
         const cacheKey = generateCacheKeyFromParams('context', key);
         await this.cachingService.setCache(cacheKey, value, ttl);
-        await this.deleteCacheKey(cacheKey);
+        this.invalidatedKeys.push(cacheKey);
     }
 
-    private async deleteCacheKey(key: string) {
-        await this.client.emit('deleteCacheKeys', [key]);
+    private async deleteCacheKeys() {
+        await this.client.emit('deleteCacheKeys', this.invalidatedKeys);
+        this.invalidatedKeys = [];
     }
 }

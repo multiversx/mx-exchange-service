@@ -72,6 +72,13 @@ export class PairServiceMock {
         return '200';
     }
 
+    async computeTokenPriceUSD(
+        pairAddress: string,
+        tokenID: string,
+    ): Promise<string> {
+        return '100';
+    }
+
     async getPairAddressByLpTokenID(tokenID: string): Promise<string> {
         return 'pair_address_1';
     }
