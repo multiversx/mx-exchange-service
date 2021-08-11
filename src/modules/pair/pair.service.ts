@@ -25,6 +25,7 @@ import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { oneHour, oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class PairService {
@@ -66,20 +67,29 @@ export class PairService {
     }
 
     async getFirstTokenID(pairAddress: string): Promise<string> {
-        return this.getTokenData(pairAddress, 'firstTokenID', () =>
-            this.abiService.getFirstTokenID(pairAddress),
+        return this.getTokenData(
+            pairAddress,
+            'firstTokenID',
+            () => this.abiService.getFirstTokenID(pairAddress),
+            oneHour(),
         );
     }
 
     async getSecondTokenID(pairAddress: string): Promise<string> {
-        return this.getTokenData(pairAddress, 'secondTokenID', () =>
-            this.abiService.getSecondTokenID(pairAddress),
+        return this.getTokenData(
+            pairAddress,
+            'secondTokenID',
+            () => this.abiService.getSecondTokenID(pairAddress),
+            oneHour(),
         );
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {
-        return this.getTokenData(pairAddress, 'lpTokenID', () =>
-            this.abiService.getLpTokenID(pairAddress),
+        return this.getTokenData(
+            pairAddress,
+            'lpTokenID',
+            () => this.abiService.getLpTokenID(pairAddress),
+            oneHour(),
         );
     }
 
@@ -103,7 +113,7 @@ export class PairService {
             pairAddress,
             'firstTokenPrice',
             () => this.computeFirstTokenPrice(pairAddress),
-            cacheConfig.tokenPrice,
+            oneMinute(),
         );
     }
 
@@ -124,7 +134,7 @@ export class PairService {
             pairAddress,
             'secondTokenPrice',
             () => this.computeSecondTokenPrice(pairAddress),
-            cacheConfig.tokenPrice,
+            oneMinute(),
         );
     }
 
@@ -147,7 +157,7 @@ export class PairService {
             pairAddress,
             'firstTokenPriceUSD',
             () => this.computeTokenPriceUSD(pairAddress, firstTokenID),
-            cacheConfig.tokenPrice,
+            oneMinute(),
         );
         return tokenPriceUSD;
     }
@@ -158,7 +168,7 @@ export class PairService {
             pairAddress,
             'secondTokenPriceUSD',
             () => this.computeTokenPriceUSD(pairAddress, secondTokenID),
-            cacheConfig.tokenPrice,
+            oneMinute(),
         );
         return tokenPriceUSD;
     }
@@ -168,7 +178,7 @@ export class PairService {
             pairAddress,
             'lpTokenPriceUSD',
             () => this.computeLpTokenPriceUSD(pairAddress),
-            cacheConfig.tokenPrice,
+            oneMinute(),
         );
     }
 
@@ -273,7 +283,7 @@ export class PairService {
                 this.redisClient,
                 cacheKey,
                 getValueLocked,
-                cacheConfig.reserves,
+                oneMinute(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -294,7 +304,7 @@ export class PairService {
                 this.redisClient,
                 cacheKey,
                 getState,
-                cacheConfig.state,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(

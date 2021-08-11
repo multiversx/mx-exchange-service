@@ -34,7 +34,7 @@ import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import BigNumber from 'bignumber.js';
-import { ruleOfThree } from '../../helpers/helpers';
+import { oneHour, oneMinute, ruleOfThree } from '../../helpers/helpers';
 
 @Injectable()
 export class FarmService {
@@ -55,6 +55,7 @@ export class FarmService {
         farmAddress: string,
         tokenCacheKey: string,
         createValueFunc: () => any,
+        ttl: number = cacheConfig.default,
     ): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, tokenCacheKey);
         try {
@@ -62,7 +63,7 @@ export class FarmService {
                 this.redisClient,
                 cacheKey,
                 createValueFunc,
-                cacheConfig.token,
+                ttl,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -76,20 +77,29 @@ export class FarmService {
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        return this.getTokenData(farmAddress, 'farmedTokenID', () =>
-            this.abiService.getFarmedTokenID(farmAddress),
+        return this.getTokenData(
+            farmAddress,
+            'farmedTokenID',
+            () => this.abiService.getFarmedTokenID(farmAddress),
+            oneHour(),
         );
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
-        return this.getTokenData(farmAddress, 'farmTokenID', () =>
-            this.abiService.getFarmTokenID(farmAddress),
+        return this.getTokenData(
+            farmAddress,
+            'farmTokenID',
+            () => this.abiService.getFarmTokenID(farmAddress),
+            oneHour(),
         );
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        return this.getTokenData(farmAddress, 'farmingTokenID', () =>
-            this.abiService.getFarmingTokenID(farmAddress),
+        return this.getTokenData(
+            farmAddress,
+            'farmingTokenID',
+            () => this.abiService.getFarmingTokenID(farmAddress),
+            oneHour(),
         );
     }
 
@@ -117,7 +127,7 @@ export class FarmService {
                 this.redisClient,
                 cacheKey,
                 getFarmTokenSupply,
-                cacheConfig.reserves,
+                oneMinute(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -142,7 +152,7 @@ export class FarmService {
                 this.redisClient,
                 cacheKey,
                 getFarmingTokenReserve,
-                cacheConfig.reserves,
+                oneMinute(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -164,7 +174,7 @@ export class FarmService {
                 this.redisClient,
                 cacheKey,
                 getRewardsPerBlock,
-                cacheConfig.default,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -186,7 +196,7 @@ export class FarmService {
                 this.redisClient,
                 cacheKey,
                 getPenaltyPercent,
-                cacheConfig.default,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -211,7 +221,7 @@ export class FarmService {
                 this.redisClient,
                 cacheKey,
                 getMinimumFarmingEpochs,
-                cacheConfig.default,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -232,7 +242,7 @@ export class FarmService {
                 this.redisClient,
                 cacheKey,
                 getState,
-                cacheConfig.state,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -303,8 +313,11 @@ export class FarmService {
     }
 
     async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
-        return this.getTokenData(farmAddress, 'farmedTokenPriceUSD', () =>
-            this.computeFarmedTokenPriceUSD(farmAddress),
+        return this.getTokenData(
+            farmAddress,
+            'farmedTokenPriceUSD',
+            () => this.computeFarmedTokenPriceUSD(farmAddress),
+            oneMinute(),
         );
     }
 
@@ -330,8 +343,11 @@ export class FarmService {
     }
 
     async getFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
-        return this.getTokenData(farmAddress, 'farmingTokenPriceUSD', () =>
-            this.computeFarmingTokenPriceUSD(farmAddress),
+        return this.getTokenData(
+            farmAddress,
+            'farmingTokenPriceUSD',
+            () => this.computeFarmingTokenPriceUSD(farmAddress),
+            oneMinute(),
         );
     }
 

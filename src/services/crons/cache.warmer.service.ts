@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PriceFeedService } from '../price-feed/price-feed.service';
-import { cacheConfig, tokensPriceData } from '../../config';
+import { tokensPriceData } from '../../config';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class CacheWarmerService {
@@ -22,12 +23,7 @@ export class CacheWarmerService {
                 'priceFeed',
                 tokensPriceData.get(priceFeed),
             );
-            this.cachingService.set(
-                this.cachingService.getClient(),
-                cacheKey,
-                tokenPrice,
-                cacheConfig.reserves,
-            );
+            this.cachingService.setCache(cacheKey, tokenPrice, oneMinute());
         }
     }
 }

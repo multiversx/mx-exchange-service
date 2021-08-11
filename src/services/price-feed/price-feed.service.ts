@@ -1,7 +1,6 @@
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { cacheConfig, elrondConfig } from '../../config';
 import { CachingService } from '../caching/cache.service';
 import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
@@ -9,6 +8,7 @@ import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { MetricsCollector } from '../../utils/metrics.collector';
+import { oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class PriceFeedService {
@@ -33,7 +33,7 @@ export class PriceFeedService {
                 this.redisClient,
                 cacheKey,
                 getTokenPrice,
-                cacheConfig.priceFeed,
+                oneMinute(),
             );
             return new BigNumber(tokenPrice);
         } catch (error) {

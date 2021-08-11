@@ -8,6 +8,7 @@ import { AbiPairService } from 'src/modules/pair/abi-pair.service';
 import { PairService } from 'src/modules/pair/pair.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { ClientProxy } from '@nestjs/microservices';
+import { oneHour, oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -21,7 +22,7 @@ export class PairCacheWarmerService {
         @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
     ) {}
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_30_MINUTES)
     async cachePairs(): Promise<void> {
         const pairsMetadata = await this.context.getPairsMetadata();
         for (const pairMetadata of pairsMetadata) {
@@ -29,13 +30,13 @@ export class PairCacheWarmerService {
                 pairMetadata.address,
                 'firstTokenID',
                 pairMetadata.firstTokenID,
-                cacheConfig.token,
+                oneHour(),
             );
             await this.setPairCache(
                 pairMetadata.address,
                 'secondTokenID',
                 pairMetadata.secondTokenID,
-                cacheConfig.token,
+                oneHour(),
             );
 
             const firstToken = await this.apiService
@@ -44,7 +45,7 @@ export class PairCacheWarmerService {
             await this.setContextCache(
                 pairMetadata.firstTokenID,
                 firstToken,
-                cacheConfig.token,
+                oneHour(),
             );
 
             const secondToken = await this.apiService
@@ -53,7 +54,7 @@ export class PairCacheWarmerService {
             await this.setContextCache(
                 pairMetadata.secondTokenID,
                 secondToken,
-                cacheConfig.token,
+                oneHour(),
             );
 
             const lpTokenID = await this.abiPairService.getLpTokenID(
@@ -63,13 +64,13 @@ export class PairCacheWarmerService {
                 pairMetadata.address,
                 'lpTokenID',
                 lpTokenID,
-                cacheConfig.token,
+                oneHour(),
             );
 
             const lpToken = await this.apiService
                 .getService()
                 .getESDTToken(lpTokenID);
-            await this.setContextCache(lpTokenID, lpToken, cacheConfig.token);
+            await this.setContextCache(lpTokenID, lpToken, oneHour());
 
             const state = await this.abiPairService.getState(
                 pairMetadata.address,
@@ -78,13 +79,13 @@ export class PairCacheWarmerService {
                 pairMetadata.address,
                 'state',
                 state,
-                cacheConfig.token,
+                oneHour(),
             );
         }
         await this.deleteCacheKeys();
     }
 
-    @Cron('*/20 * * * * *')
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async cachePairsInfo(): Promise<void> {
         const pairsAddress = await this.context.getAllPairsAddress();
         const promises = pairsAddress.map(async pairAddress => {
@@ -95,14 +96,14 @@ export class PairCacheWarmerService {
                 pairAddress,
                 'valueLocked',
                 pairInfoMetadata,
-                cacheConfig.reserves,
+                oneMinute(),
             );
         });
         await Promise.all(promises);
         await this.deleteCacheKeys();
     }
 
-    @Cron('*/20 * * * * *')
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheTokenPrices(): Promise<void> {
         const pairsMetadata = await this.context.getPairsMetadata();
         for (const pairMetadata of pairsMetadata) {
@@ -131,31 +132,31 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     'firstTokenPrice',
                     firstTokenPrice,
-                    cacheConfig.tokenPrice,
+                    oneMinute(),
                 ),
                 this.setPairCache(
                     pairMetadata.address,
                     'firstTokenPriceUSD',
                     firstTokenPriceUSD,
-                    cacheConfig.tokenPrice,
+                    oneMinute(),
                 ),
                 this.setPairCache(
                     pairMetadata.address,
                     'secondTokenPrice',
                     secondTokenPrice,
-                    cacheConfig.tokenPrice,
+                    oneMinute(),
                 ),
                 this.setPairCache(
                     pairMetadata.address,
                     'secondTokenPriceUSD',
                     secondTokenPriceUSD,
-                    cacheConfig.tokenPrice,
+                    oneMinute(),
                 ),
                 this.setPairCache(
                     pairMetadata.address,
                     'lpTokenPriceUSD',
                     lpTokenPriceUSD,
-                    cacheConfig.tokenPrice,
+                    oneMinute(),
                 ),
             ]);
         }

@@ -30,6 +30,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../services/caching/cache.service';
 import * as Redis from 'ioredis';
+import { oneMinute } from '../../helpers/helpers';
 
 export interface TradingInfoType {
     volumeUSD: BigNumber;
@@ -64,7 +65,7 @@ export class AnalyticsService {
                 this.redisClient,
                 cacheKey,
                 getTokenPriceUSD,
-                cacheConfig.tokenPrice,
+                oneMinute(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -96,7 +97,7 @@ export class AnalyticsService {
                 this.redisClient,
                 cacheKey,
                 getFarmLockedValueUSD,
-                cacheConfig.default,
+                oneMinute() * 2,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -136,7 +137,7 @@ export class AnalyticsService {
                 this.redisClient,
                 cacheKey,
                 getTotalValueLockedUSD,
-                cacheConfig.default,
+                oneMinute() * 2,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -193,7 +194,7 @@ export class AnalyticsService {
                 this.redisClient,
                 cacheKey,
                 getTotalAgregatedRewards,
-                cacheConfig.default,
+                oneMinute() * 2,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -236,7 +237,7 @@ export class AnalyticsService {
                 this.redisClient,
                 cacheKey,
                 getTotalTokenSupply,
-                cacheConfig.default,
+                oneMinute() * 2,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(

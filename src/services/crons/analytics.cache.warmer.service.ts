@@ -10,6 +10,7 @@ import {
 } from 'src/config';
 import { ClientProxy } from '@nestjs/microservices';
 import { AnalyticsService } from 'src/modules/analytics/analytics.service';
+import { oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
@@ -31,6 +32,7 @@ export class AnalyticsCacheWarmerService {
                 farmAddress,
                 'lockedValueUSD',
                 farmLockedValueUSD,
+                oneMinute() * 2,
             );
         }
 
@@ -41,6 +43,7 @@ export class AnalyticsCacheWarmerService {
             await this.setAnalyticsCache(
                 [token, 'totalTokenSupply'],
                 totalTokenSupply,
+                oneMinute() * 2,
             );
         }
         const [totalValueLockedUSD, totalAgregatedRewards] = await Promise.all([
@@ -51,10 +54,12 @@ export class AnalyticsCacheWarmerService {
             this.setAnalyticsCache(
                 ['totalValueLockedUSD'],
                 totalValueLockedUSD,
+                oneMinute() * 2,
             ),
             this.setAnalyticsCache(
                 [30, 'totalAgregatedRewards'],
                 totalAgregatedRewards,
+                oneMinute() * 2,
             ),
         ]);
 
@@ -70,6 +75,7 @@ export class AnalyticsCacheWarmerService {
             await this.setAnalyticsCache(
                 [token, 'tokenPriceUSD'],
                 tokenPriceUSD,
+                oneMinute(),
             );
         }
         await this.deleteCacheKeys();

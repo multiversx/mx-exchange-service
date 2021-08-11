@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { elrondConfig, cacheConfig } from '../../config';
+import { elrondConfig } from '../../config';
 import { TypedValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import {
     SmartContract,
@@ -18,6 +18,7 @@ import { Logger } from 'winston';
 import { RouterService } from '../../modules/router/router.service';
 import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { oneHour } from '../../helpers/helpers';
 
 @Injectable()
 export class ContextService {
@@ -124,7 +125,7 @@ export class ContextService {
                 this.redisClient,
                 cacheKey,
                 getTokenMetadata,
-                cacheConfig.token,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -146,7 +147,7 @@ export class ContextService {
                 this.redisClient,
                 cacheKey,
                 getNftCollectionMetadata,
-                cacheConfig.token,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(

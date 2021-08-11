@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { cacheConfig, scAddress } from '../../config';
+import { scAddress } from '../../config';
 import { FarmService } from './farm.service';
 import BigNumber from 'bignumber.js';
 import { PairService } from '../pair/pair.service';
@@ -9,6 +9,7 @@ import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import * as Redis from 'ioredis';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class FarmStatisticsService {
@@ -34,7 +35,7 @@ export class FarmStatisticsService {
                 this.redisClient,
                 cacheKey,
                 getFarmAPR,
-                cacheConfig.apr,
+                oneMinute(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(

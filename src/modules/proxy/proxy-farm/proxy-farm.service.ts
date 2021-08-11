@@ -7,8 +7,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
-import { cacheConfig } from '../../../config';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
+import { oneHour } from '../../../helpers/helpers';
 
 @Injectable()
 export class ProxyFarmService {
@@ -32,7 +32,7 @@ export class ProxyFarmService {
                 this.redisClient,
                 cacheKey,
                 createValueFunc,
-                cacheConfig.token,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -65,7 +65,7 @@ export class ProxyFarmService {
                 this.redisClient,
                 cacheKey,
                 getIntermediatedFarms,
-                cacheConfig.default,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(

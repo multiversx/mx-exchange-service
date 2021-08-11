@@ -22,6 +22,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { oneHour } from '../../helpers/helpers';
 
 @Injectable()
 export class ProxyService {
@@ -52,7 +53,7 @@ export class ProxyService {
                 this.redisClient,
                 cacheKey,
                 createValueFunc,
-                cacheConfig.token,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
