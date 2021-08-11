@@ -98,7 +98,9 @@ describe('FarmStatisticsService', () => {
             async () => new BigNumber(10),
         );
 
-        const totalMexSupply = await service.getTotalTokenSupply('MEX-b6bb7d');
+        const totalMexSupply = await service.computeTotalTokenSupply(
+            'MEX-b6bb7d',
+        );
         expect(totalMexSupply).toEqual('630');
     });
 
