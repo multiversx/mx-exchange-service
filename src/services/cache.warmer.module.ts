@@ -20,6 +20,8 @@ import {
     ClientProxyFactory,
 } from '@nestjs/microservices';
 import { CommonAppModule } from 'src/common.app.module';
+import { AnalyticsCacheWarmerService } from './crons/analytics.cache.warmer.service';
+import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
 
 @Module({
     imports: [
@@ -36,6 +38,7 @@ import { CommonAppModule } from 'src/common.app.module';
         ProxyModule,
         ProxyFarmModule,
         ProxyPairModule,
+        AnalyticsModule,
     ],
     controllers: [],
     providers: [
@@ -43,6 +46,7 @@ import { CommonAppModule } from 'src/common.app.module';
         PairCacheWarmerService,
         FarmCacheWarmerService,
         ProxyCacheWarmerService,
+        AnalyticsCacheWarmerService,
         CachingService,
         {
             provide: 'PUBSUB_SERVICE',

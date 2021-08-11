@@ -3,11 +3,11 @@ import {
     Interaction,
     SmartContract,
 } from '@elrondnetwork/erdjs/out';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
-import { farmsConfig } from '../../config';
+import { cacheConfig, farmsConfig } from '../../config';
 import { FarmService } from '../farm/farm.service';
 import { PairService } from '../pair/pair.service';
 import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
@@ -15,7 +15,6 @@ import { TransactionInterpreterService } from '../../services/transactions/trans
 import { TransactionMappingService } from '../../services/transactions/transaction.mapping.service';
 import {
     AnalyticsModel,
-    FactoryAnalyticsModel,
     PairAnalyticsModel,
     TokenAnalyticsModel,
 } from './models/analytics.model';
@@ -25,6 +24,12 @@ import {
     processTokensAnalytics,
 } from './analytics.processor';
 import { PairAnalyticsService } from '../pair/pair.analytics.service';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { CachingService } from '../../services/caching/cache.service';
+import * as Redis from 'ioredis';
 
 export interface TradingInfoType {
     volumeUSD: BigNumber;
@@ -33,6 +38,8 @@ export interface TradingInfoType {
 
 @Injectable()
 export class AnalyticsService {
+    private redisClient: Redis.Redis;
+
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly context: ContextService,
@@ -42,14 +49,67 @@ export class AnalyticsService {
         private readonly transactionCollector: TransactionCollectorService,
         private readonly transactionInterpreter: TransactionInterpreterService,
         private readonly transactionMapping: TransactionMappingService,
-    ) {}
+        private readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
+        this.redisClient = this.cachingService.getClient();
+    }
 
     async getTokenPriceUSD(tokenID: string): Promise<string> {
+        const cacheKey = this.getAnalyticsCacheKey(tokenID, 'tokenPriceUSD');
+        try {
+            const getTokenPriceUSD = () => this.computeTokenPriceUSD(tokenID);
+
+            return this.cachingService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getTokenPriceUSD,
+                cacheConfig.tokenPrice,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getTokenPriceUSD.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
+    async computeTokenPriceUSD(tokenID: string): Promise<string> {
         const tokenPriceUSD = await this.pairService.getPriceUSDByPath(tokenID);
         return tokenPriceUSD.toFixed();
     }
 
     async getFarmLockedValueUSD(farmAddress: string): Promise<string> {
+        const cacheKey = generateCacheKeyFromParams(
+            'farm',
+            farmAddress,
+            'lockedValueUSD',
+        );
+        try {
+            const getFarmLockedValueUSD = () =>
+                this.computeFarmLockedValueUSD(farmAddress);
+
+            return this.cachingService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getFarmLockedValueUSD,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getFarmLockedValueUSD.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
+    async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
         const [
             farmingToken,
             farmingTokenPriceUSD,
@@ -68,6 +128,28 @@ export class AnalyticsService {
     }
 
     async getTotalValueLockedUSD(): Promise<string> {
+        const cacheKey = this.getAnalyticsCacheKey('totalValueLockedUSD');
+        try {
+            const getTotalValueLockedUSD = () =>
+                this.computeTotalValueLockedUSD();
+            return this.cachingService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getTotalValueLockedUSD,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getTotalValueLockedUSD.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
+    async computeTotalValueLockedUSD(): Promise<string> {
         const pairsAddress = await this.context.getAllPairsAddress();
         let totalValueLockedUSD = new BigNumber(0);
         const promises = pairsAddress.map(pairAddress =>
@@ -76,7 +158,7 @@ export class AnalyticsService {
 
         const lockedValuesUSD = await Promise.all([
             ...promises,
-            this.getFarmLockedValueUSD(farmsConfig[2]),
+            this.computeFarmLockedValueUSD(farmsConfig[2]),
         ]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
@@ -100,6 +182,31 @@ export class AnalyticsService {
     }
 
     async getTotalAgregatedRewards(days: number): Promise<string> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            days,
+            'totalAgregatedRewards',
+        );
+        try {
+            const getTotalAgregatedRewards = () =>
+                this.computeTotalAgregatedRewards(days);
+            return this.cachingService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getTotalAgregatedRewards,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getTotalAgregatedRewards.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
+    async computeTotalAgregatedRewards(days: number): Promise<string> {
         const farmsAddress: [] = farmsConfig;
         const promises = farmsAddress.map(async farmAddress =>
             this.farmService.getRewardsPerBlock(farmAddress),
@@ -121,6 +228,28 @@ export class AnalyticsService {
     }
 
     async getTotalTokenSupply(tokenID: string): Promise<string> {
+        const cacheKey = this.getAnalyticsCacheKey(tokenID, 'totalTokenSupply');
+        try {
+            const getTotalTokenSupply = () =>
+                this.computeTotalTokenSupply(tokenID);
+            return this.cachingService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getTotalTokenSupply,
+                cacheConfig.default,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getTotalTokenSupply.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
+    async computeTotalTokenSupply(tokenID: string): Promise<string> {
         const pairsAddress = await this.context.getAllPairsAddress();
         const farmsAddress = farmsConfig;
         const contractsPromises: Promise<SmartContract>[] = [];
@@ -318,5 +447,9 @@ export class AnalyticsService {
             pairs: pairsAnalytics,
             tokens: tokensAnalytics,
         });
+    }
+
+    private getAnalyticsCacheKey(...args: any) {
+        return generateCacheKeyFromParams('analytics', ...args);
     }
 }
