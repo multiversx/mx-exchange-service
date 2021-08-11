@@ -2,7 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
-import { cacheConfig, farmsConfig } from 'src/config';
+import {
+    cacheConfig,
+    cachedTokensPriceConfig,
+    farmsConfig,
+    tokensSupplyConfig,
+} from 'src/config';
 import { ClientProxy } from '@nestjs/microservices';
 import { AnalyticsService } from 'src/modules/analytics/analytics.service';
 
@@ -29,8 +34,7 @@ export class AnalyticsCacheWarmerService {
             );
         }
 
-        const tokens = ['MEX-b6bb7d', 'LKMEX-7c4256'];
-        for (const token of tokens) {
+        for (const token of tokensSupplyConfig) {
             const totalTokenSupply = await this.analyticsService.computeTotalTokenSupply(
                 token,
             );
@@ -59,8 +63,7 @@ export class AnalyticsCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheTokenPriceUSD(): Promise<void> {
-        const tokens = ['MEX-b6bb7d'];
-        for (const token of tokens) {
+        for (const token of cachedTokensPriceConfig) {
             const tokenPriceUSD = await this.analyticsService.computeTokenPriceUSD(
                 token,
             );

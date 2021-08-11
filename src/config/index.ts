@@ -25,6 +25,10 @@ export const tokenProviderUSD = config.get('tokenProviderUSD');
 
 export const tokensPriceData = config.get('priceFeeds');
 
+export const tokensSupplyConfig = config.get('tokensSupply');
+
+export const cachedTokensPriceConfig = config.get('cachedTokensPrice');
+
 export const cronConfig = config.get('cron');
 
 export const constantsConfig = config.get('constants');

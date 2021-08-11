@@ -28,6 +28,8 @@
         "WEGLD-88600a": "egld",
         "BUSD-05b16f": "busd"
     },
+    "tokensSupply": ["MEX-b6bb7d", "LKMEX-7c4256"],
+    "cachedTokensPrice": ["MEX-b6bb7d"],
     "farms": [
         "erd1qqqqqqqqqqqqqpgqy20dhf2t8dgpfuewhzncjl8vmsw59evv0n4sd3ntck",
         "erd1qqqqqqqqqqqqqpgq2s0a4tkv25h8xle8t7szhqqjdx2l6lpy0n4s0ekcx4",
