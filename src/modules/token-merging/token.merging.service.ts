@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { farmsConfig, scAddress } from 'src/config';
-import { GenericEsdtAmountPair } from 'src/modules/proxy/models/proxy.model';
+import {
+    GenericEsdtAmountPair,
+    LockedTokenType,
+} from 'src/modules/proxy/models/proxy.model';
+import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
+import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
 import {
     SmartContractType,
     TokensMergingArgs,
@@ -10,7 +15,11 @@ import { TokenMergingAbiService } from './token.merging.abi.service';
 
 @Injectable()
 export class TokenMergingService {
-    constructor(private readonly mergeTokensAbi: TokenMergingAbiService) {}
+    constructor(
+        private readonly mergeTokensAbi: TokenMergingAbiService,
+        private readonly proxyPairService: ProxyPairService,
+        private readonly proxyFarmService: ProxyFarmService,
+    ) {}
 
     async getNftDeposit(
         args: UserNftDepositArgs,
@@ -35,12 +44,28 @@ export class TokenMergingService {
     ): Promise<GenericEsdtAmountPair[]> {
         const userNftDeposits = [];
 
-        const depositedNfts = await this.mergeTokensAbi.getNftDeposit(
-            args.userAddress,
-            SmartContractType.PROXY_FARM,
-        );
+        const [
+            lockedLpTokenCollection,
+            lockedFarmTokenCollection,
+            depositedNfts,
+        ] = await Promise.all([
+            this.proxyPairService.getwrappedLpTokenID(),
+            this.proxyFarmService.getwrappedFarmTokenID(),
+            this.mergeTokensAbi.getNftDeposit(
+                args.userAddress,
+                SmartContractType.PROXY_FARM,
+            ),
+        ]);
         for (const depositedNft of depositedNfts) {
             depositedNft.address = scAddress.proxyDexAddress;
+            switch (depositedNft.tokenID) {
+                case lockedLpTokenCollection:
+                    depositedNft.type = LockedTokenType.LOCKED_LP_TOKEN;
+                    break;
+                case lockedFarmTokenCollection:
+                    depositedNft.type = LockedTokenType.LOCKED_FARM_TOKEN;
+                    break;
+            }
             userNftDeposits.push(depositedNft);
         }
 
