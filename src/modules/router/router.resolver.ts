@@ -7,11 +7,12 @@ import {
     Args,
     Int,
 } from '@nestjs/graphql';
-import { Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './transactions.router.service';
+import { JwtAdminGuard } from '../../helpers/guards/jwt.admin.guard';
 
 @Resolver(of => FactoryModel)
 export class RouterResolver {
@@ -46,6 +47,7 @@ export class RouterResolver {
         return this.routerService.getAllPairs(page.offset, page.limit);
     }
 
+    @UseGuards(JwtAdminGuard)
     @Query(returns => TransactionModel)
     async createPair(
         @Args('firstTokenID') firstTokenID: string,
@@ -54,6 +56,7 @@ export class RouterResolver {
         return this.transactionService.createPair(firstTokenID, secondTokenID);
     }
 
+    @UseGuards(JwtAdminGuard)
     @Query(returns => TransactionModel)
     async issueLPToken(
         @Args('address') address: string,
@@ -67,6 +70,7 @@ export class RouterResolver {
         );
     }
 
+    @UseGuards(JwtAdminGuard)
     @Query(returns => TransactionModel)
     async setLocalRoles(
         @Args('address') address: string,
@@ -74,6 +78,7 @@ export class RouterResolver {
         return this.transactionService.setLocalRoles(address);
     }
 
+    @UseGuards(JwtAdminGuard)
     @Query(returns => TransactionModel)
     async setState(
         @Args('address') address: string,
@@ -82,6 +87,7 @@ export class RouterResolver {
         return this.transactionService.setState(address, enable);
     }
 
+    @UseGuards(JwtAdminGuard)
     @Query(returns => TransactionModel)
     async setFee(
         @Args('pairAddress') pairAddress: string,

@@ -1,5 +1,5 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
-import { Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { LockedAssetService } from './locked-asset.service';
 import {
@@ -17,6 +17,7 @@ import {
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
+import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {
@@ -60,6 +61,7 @@ export class LockedAssetResolver {
         return await this.lockedAssetService.getLockedAssetInfo();
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async unlockAssets(
         @Args() args: UnlockAssetsArs,
@@ -67,6 +69,7 @@ export class LockedAssetResolver {
         return await this.transactionsService.unlockAssets(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async mergeLockedAssetTokens(
         @Args() args: TokensMergingArgs,
@@ -74,6 +77,7 @@ export class LockedAssetResolver {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [LockedAssetAttributes])
     async decodeLockedAssetAttributes(
         @Args('args') args: DecodeAttributesArgs,

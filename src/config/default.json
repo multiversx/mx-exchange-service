@@ -86,5 +86,9 @@
         "MAX_PENALTY_PERCENT": 10000,
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000
+    },
+    "security": {
+        "admins": [],
+        "jwtSecret": "123456789"
     }
 }

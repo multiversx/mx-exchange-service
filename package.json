@@ -58,6 +58,7 @@
         "graphql-subscriptions": "^1.2.1",
         "graphql-tools": "^5.0.0",
         "ioredis": "^4.27.7",
+        "jsonwebtoken": "^8.5.1",
         "mongoose": "^5.13.6",
         "nest-winston": "^1.5.0",
         "nestjs-graphql-pagination": "^1.0.0",

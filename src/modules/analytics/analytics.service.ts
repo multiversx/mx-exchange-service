@@ -171,7 +171,7 @@ export class AnalyticsService {
     async getLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
         const promises: Promise<string>[] = farmsConfig.map(farmAddress =>
-            this.getFarmLockedValueUSD(farmAddress),
+            this.computeFarmLockedValueUSD(farmAddress),
         );
         const farmsLockedValueUSD = await Promise.all(promises);
         for (const farmLockedValueUSD of farmsLockedValueUSD) {
@@ -361,7 +361,7 @@ export class AnalyticsService {
         const pairsAnalytics = processPairsAnalytics(swapTradingInfos);
         const tokensAnalytics = processTokensAnalytics(swapTradingInfos);
 
-        factoryAnalytics.totalValueLockedUSD = await this.getTotalValueLockedUSD();
+        factoryAnalytics.totalValueLockedUSD = await this.computeTotalValueLockedUSD();
         const pairsAddress = await this.context.getPairsMetadata();
         for (const pair of pairsAddress) {
             const [

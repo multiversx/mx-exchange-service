@@ -1,6 +1,6 @@
 import { PairService } from './pair.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
-import { Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import {
     LiquidityPosition,
     PairModel,
@@ -17,6 +17,7 @@ import {
     SwapTokensFixedOutputArgs,
 } from './models/pair.args';
 import { TransactionPairService } from './transactions-pair.service';
+import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 
 @Resolver(of => PairModel)
 export class PairResolver {
@@ -116,6 +117,7 @@ export class PairResolver {
         );
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TemporaryFundsModel])
     async getTemporaryFunds(@Args('callerAddress') callerAddress: string) {
         return await this.pairService.getTemporaryFunds(callerAddress);
@@ -132,6 +134,7 @@ export class PairResolver {
         );
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async addLiquidityBatch(
         @Args() args: AddLiquidityBatchArgs,
@@ -139,6 +142,7 @@ export class PairResolver {
         return await this.transactionService.addLiquidityBatch(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async addLiquidity(
         @Args() args: AddLiquidityArgs,
@@ -146,6 +150,7 @@ export class PairResolver {
         return await this.transactionService.addLiquidity(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async reclaimTemporaryFunds(
         @Args() args: ReclaimTemporaryFundsArgs,
@@ -153,6 +158,7 @@ export class PairResolver {
         return await this.transactionService.reclaimTemporaryFunds(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async removeLiquidity(
         @Args() args: RemoveLiquidityArgs,
@@ -160,6 +166,7 @@ export class PairResolver {
         return await this.transactionService.removeLiquidity(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
@@ -167,6 +174,7 @@ export class PairResolver {
         return await this.transactionService.swapTokensFixedInput(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async swapTokensFixedOutput(
         @Args() args: SwapTokensFixedOutputArgs,
@@ -174,6 +182,7 @@ export class PairResolver {
         return await this.transactionService.swapTokensFixedOutput(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async tokensTransfer(
         @Args() args: ESDTTransferArgs,
