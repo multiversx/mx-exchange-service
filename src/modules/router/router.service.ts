@@ -2,7 +2,7 @@ import { FactoryModel } from './models/factory.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
 import { cacheConfig, elrondConfig, scAddress } from '../../config';
-import { RedisCacheService } from '../../services/redis-cache.service';
+import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import * as Redis from 'ioredis';
@@ -22,13 +22,13 @@ export class RouterService {
 
     constructor(
         private readonly abiService: AbiRouterService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.elasticClient = new Client({
             node: process.env.ELASTICSEARCH_URL + '/transactions',
         });
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     async getFactory(): Promise<FactoryModel> {
@@ -41,7 +41,7 @@ export class RouterService {
         const cacheKey = this.getRouterCacheKey('pairsAddress');
         try {
             const getPairsAddress = () => this.abiService.getAllPairsAddress();
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getPairsAddress,
@@ -62,7 +62,7 @@ export class RouterService {
         const cacheKey = this.getRouterCacheKey('pairsMetadata');
         try {
             const getPairsMetadata = () => this.abiService.getPairsMetadata();
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getPairsMetadata,
@@ -94,7 +94,7 @@ export class RouterService {
         const cacheKey = this.getRouterCacheKey('pairCount');
         try {
             const getPairCount = () => this.computePairCount();
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getPairCount,
@@ -115,7 +115,7 @@ export class RouterService {
         const cacheKey = this.getRouterCacheKey('totalTxCount');
         try {
             const getTotalTxCount = () => this.computeTotalTxCount();
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getTotalTxCount,

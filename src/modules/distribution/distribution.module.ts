@@ -5,16 +5,15 @@ import { DistributionResolver } from './distribution.resolver';
 import { DistributionService } from './distribution.service';
 import { TransactionsDistributionService } from './transaction-distribution.service';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { CachingModule } from '../../services/caching/cache.module';
 
 @Module({
-    imports: [ContextModule, ElrondCommunicationModule],
+    imports: [ContextModule, ElrondCommunicationModule, CachingModule],
     providers: [
         DistributionService,
         AbiDistributionService,
         TransactionsDistributionService,
         DistributionResolver,
-        RedisCacheService,
     ],
     exports: [DistributionService],
 })

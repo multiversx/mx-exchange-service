@@ -5,7 +5,7 @@ import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { WrapModel } from './models/wrapping.model';
 import { AbiWrapService } from './abi-wrap.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { RedisCacheService } from '../../services/redis-cache.service';
+import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import * as Redis from 'ioredis';
@@ -18,10 +18,10 @@ export class WrapService {
     constructor(
         private abiService: AbiWrapService,
         private context: ContextService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     async getWrappingInfo(): Promise<WrapModel[]> {
@@ -47,7 +47,7 @@ export class WrapService {
     ): Promise<string> {
         const cacheKey = this.getWrapCacheKey(tokenCacheKey);
         try {
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 createValueFunc,

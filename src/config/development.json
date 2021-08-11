@@ -1,6 +1,5 @@
 {
     "caching": {
-        "networkConfig": 1,
         "pairsMetadata": 100,
         "pairs": 100,
         "txTotalCount": 10,

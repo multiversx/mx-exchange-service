@@ -20,7 +20,7 @@ import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { ContextService } from '../../services/context/context.service';
 import { WrapService } from '../wrapping/wrap.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { RedisCacheService } from '../../services/redis-cache.service';
+import { CachingService } from '../../services/caching/cache.service';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -31,13 +31,13 @@ export class PairService {
     private redisClient: Redis.Redis;
     constructor(
         private abiService: AbiPairService,
-        private redisCacheService: RedisCacheService,
+        private cachingService: CachingService,
         private context: ContextService,
         private priceFeed: PriceFeedService,
         private wrapService: WrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     private async getTokenData(
@@ -45,10 +45,10 @@ export class PairService {
         tokenCacheKey: string,
         createValueFunc: () => any,
         ttl = cacheConfig.token,
-    ): Promise<string> {
+    ): Promise<any> {
         const cacheKey = this.getPairCacheKey(pairAddress, tokenCacheKey);
         try {
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 createValueFunc,
@@ -142,51 +142,58 @@ export class PairService {
 
     async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
-        const tokenPriceUSD = await this.getTokenPriceUSD(
+
+        const tokenPriceUSD = await this.getTokenData(
             pairAddress,
-            firstTokenID,
+            'firstTokenPriceUSD',
+            () => this.computeTokenPriceUSD(pairAddress, firstTokenID),
+            cacheConfig.tokenPrice,
         );
-        return tokenPriceUSD.toFixed();
+        return tokenPriceUSD;
     }
 
     async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
-        const tokenPriceUSD = await this.getTokenPriceUSD(
+        const tokenPriceUSD = await this.getTokenData(
             pairAddress,
-            secondTokenID,
+            'secondTokenPriceUSD',
+            () => this.computeTokenPriceUSD(pairAddress, secondTokenID),
+            cacheConfig.tokenPrice,
         );
-        return tokenPriceUSD.toFixed();
+        return tokenPriceUSD;
     }
 
-    async getLpTokenSecondTokenEquivalent(
-        pairAddress: string,
-    ): Promise<string> {
+    async getLpTokenPriceUSD(pairAddress: string): Promise<string> {
+        return this.getTokenData(
+            pairAddress,
+            'lpTokenPriceUSD',
+            () => this.computeLpTokenPriceUSD(pairAddress),
+            cacheConfig.tokenPrice,
+        );
+    }
+
+    async computeLpTokenPriceUSD(pairAddress: string): Promise<string> {
         const [secondToken, lpToken, firstTokenPrice] = await Promise.all([
             this.getSecondToken(pairAddress),
             this.getLpToken(pairAddress),
             this.getFirstTokenPrice(pairAddress),
         ]);
-        const lpTokenPosition = await this.getLiquidityPosition(
-            pairAddress,
-            new BigNumber(`1e${lpToken.decimals}`).toFixed(),
-        );
+        const [secondTokenPriceUSD, lpTokenPosition] = await Promise.all([
+            this.computeTokenPriceUSD(pairAddress, secondToken.identifier),
+            this.getLiquidityPosition(
+                pairAddress,
+                new BigNumber(`1e${lpToken.decimals}`).toFixed(),
+            ),
+        ]);
 
         const lpTokenPrice = new BigNumber(firstTokenPrice)
             .multipliedBy(new BigNumber(lpTokenPosition.firstTokenAmount))
             .plus(new BigNumber(lpTokenPosition.secondTokenAmount));
-        return lpTokenPrice
+        const lpTokenPriceDenom = lpTokenPrice
             .multipliedBy(`1e-${secondToken.decimals}`)
             .toFixed();
-    }
 
-    async getLpTokenPriceUSD(pairAddress: string): Promise<string> {
-        const lpTokenEquivalent = await this.getLpTokenSecondTokenEquivalent(
-            pairAddress,
-        );
-        const secondTokenPriceUSD = await this.getSecondTokenPriceUSD(
-            pairAddress,
-        );
-        return new BigNumber(lpTokenEquivalent)
+        return new BigNumber(lpTokenPriceDenom)
             .multipliedBy(secondTokenPriceUSD)
             .toFixed();
     }
@@ -203,7 +210,7 @@ export class PairService {
         }
     }
 
-    async getTokenPriceUSD(
+    async computeTokenPriceUSD(
         pairAddress: string,
         tokenID: string,
     ): Promise<BigNumber> {
@@ -262,7 +269,7 @@ export class PairService {
         try {
             const getValueLocked = () =>
                 this.abiService.getPairInfoMetadata(pairAddress);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getValueLocked,
@@ -280,7 +287,24 @@ export class PairService {
     }
 
     async getState(pairAddress: string): Promise<string> {
-        return this.abiService.getState(pairAddress);
+        const cacheKey = this.getPairCacheKey(pairAddress, 'state');
+        try {
+            const getState = () => this.abiService.getState(pairAddress);
+            return this.cachingService.getOrSet(
+                this.redisClient,
+                cacheKey,
+                getState,
+                cacheConfig.state,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                PairService.name,
+                this.getState.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getAmountOut(
@@ -492,7 +516,7 @@ export class PairService {
         }
         const pair = await this.context.getPairByTokens(path[0], path[1]);
         const firstTokenPrice = await this.getTokenPrice(pair.address, path[0]);
-        const secondTokenPriceUSD = await this.getTokenPriceUSD(
+        const secondTokenPriceUSD = await this.computeTokenPriceUSD(
             pair.address,
             path[1],
         );

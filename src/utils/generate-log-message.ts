@@ -3,6 +3,7 @@ enum LogType {
     SET = 'set',
     DELETE = 'delete',
     COMPUTE = 'compute',
+    RUN_QUERY = 'runQuery',
 }
 
 export const generateLogMessage = (
@@ -77,4 +78,12 @@ export const generateComputeLogMessage = (
         error,
         LogType.COMPUTE,
     );
+};
+
+export const generateRunQueryLogMessage = (
+    className: string,
+    methodName: string,
+    error: any,
+) => {
+    return generateLogMessage(className, methodName, error, LogType.RUN_QUERY);
 };

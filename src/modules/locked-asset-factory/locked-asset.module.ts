@@ -6,12 +6,13 @@ import { AbiLockedAssetService } from './abi-locked-asset.service';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
-import { TokenMergingModule } from 'src/modules/token-merging/token.merging.module';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { TokenMergingModule } from '../../modules/token-merging/token.merging.module';
+import { CachingModule } from '../../services/caching/cache.module';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
+        CachingModule,
         ContextModule,
         ProxyModule,
         TokenMergingModule,
@@ -20,7 +21,6 @@ import { RedisCacheService } from 'src/services/redis-cache.service';
         AbiLockedAssetService,
         TransactionsLockedAssetService,
         LockedAssetService,
-        RedisCacheService,
         LockedAssetResolver,
     ],
     exports: [LockedAssetService],

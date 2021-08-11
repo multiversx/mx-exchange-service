@@ -1,45 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextService } from './context.service';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as winston from 'winston';
-import * as Transport from 'winston-transport';
 import { ElrondCommunicationModule } from '../elrond-communication/elrond-communication.module';
-import { RedisCacheService } from '../redis-cache.service';
 import { RouterModule } from '../../modules/router/router.module';
-import { RedisModule } from 'nestjs-redis';
+import { CommonAppModule } from '../../common.app.module';
+import { CachingModule } from '../caching/cache.module';
 
 describe('ContextService', () => {
     let service: ContextService;
 
-    const logTransports: Transport[] = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                nestWinstonModuleUtilities.format.nestLike(),
-            ),
-        }),
-    ];
-
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [
-                WinstonModule.forRoot({
-                    transports: logTransports,
-                }),
+                CommonAppModule,
+                CachingModule,
                 ElrondCommunicationModule,
                 RouterModule,
-                RedisModule.register([
-                    {
-                        host: process.env.REDIS_URL,
-                        port: parseInt(process.env.REDIS_PORT),
-                        password: process.env.REDIS_PASSWORD,
-                    },
-                ]),
             ],
-            providers: [ContextService, RedisCacheService],
+            providers: [ContextService],
         }).compile();
 
         service = module.get<ContextService>(ContextService);

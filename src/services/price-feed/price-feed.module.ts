@@ -1,11 +1,11 @@
 import { HttpModule, Module } from '@nestjs/common';
-import { RedisCacheService } from '../redis-cache.service';
+import { CachingModule } from '../caching/cache.module';
 import { ServicesModule } from '../services.module';
 import { PriceFeedService } from './price-feed.service';
 
 @Module({
-    imports: [HttpModule, ServicesModule],
-    providers: [PriceFeedService, RedisCacheService],
+    imports: [HttpModule, ServicesModule, CachingModule],
+    providers: [PriceFeedService],
     exports: [PriceFeedService],
 })
 export class PriceFeedModule {}

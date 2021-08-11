@@ -5,7 +5,7 @@ import {
     DistributionModel,
 } from './models/distribution.model';
 import { AbiDistributionService } from './abi-distribution.service';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { CachingService } from 'src/services/caching/cache.service';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -17,10 +17,10 @@ export class DistributionService {
     private redisClient: Redis.Redis;
     constructor(
         private abiService: AbiDistributionService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     async getDistributionInfo(): Promise<DistributionModel> {
@@ -34,7 +34,7 @@ export class DistributionService {
         try {
             const getCommunityDistribution = () =>
                 this.abiService.getCommunityDistribution();
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getCommunityDistribution,

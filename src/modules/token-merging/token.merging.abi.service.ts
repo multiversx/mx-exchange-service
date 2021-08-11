@@ -1,13 +1,19 @@
 import { Address, BytesValue, Interaction } from '@elrondnetwork/erdjs/out';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { GenericEsdtAmountPair } from 'src/modules/proxy/models/proxy.model';
+import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
+import { Logger } from 'winston';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { SmartContractType, TokensMergingArgs } from './dto/token.merging.args';
 
 @Injectable()
 export class TokenMergingAbiService {
-    constructor(private readonly elrondProxy: ElrondProxyService) {}
+    constructor(
+        private readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {}
 
     async getNftDeposit(
         userAddress: string,
@@ -21,23 +27,33 @@ export class TokenMergingAbiService {
         const interaction: Interaction = contract.methods.getnftDeposit([
             BytesValue.fromHex(new Address(userAddress).hex()),
         ]);
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
-        if (queryResponse.returnData[0] === '') {
-            return [];
-        }
 
-        const response = interaction.interpretQueryResponse(queryResponse);
-        return response.firstValue.valueOf().map(value => {
-            const depositedNft = value.valueOf();
-            const genericEsdtAmountPair = new GenericEsdtAmountPair();
-            genericEsdtAmountPair.tokenID = depositedNft.token_id.toString();
-            genericEsdtAmountPair.tokenNonce = depositedNft.token_nonce.toNumber();
-            genericEsdtAmountPair.amount = depositedNft.amount.toFixed();
-            return genericEsdtAmountPair;
-        });
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            if (queryResponse.returnData[0] === '') {
+                return [];
+            }
+
+            const response = interaction.interpretQueryResponse(queryResponse);
+            return response.firstValue.valueOf().map(value => {
+                const depositedNft = value.valueOf();
+                const genericEsdtAmountPair = new GenericEsdtAmountPair();
+                genericEsdtAmountPair.tokenID = depositedNft.token_id.toString();
+                genericEsdtAmountPair.tokenNonce = depositedNft.token_nonce.toNumber();
+                genericEsdtAmountPair.amount = depositedNft.amount.toFixed();
+                return genericEsdtAmountPair;
+            });
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                TokenMergingAbiService.name,
+                this.getNftDeposit.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getnftDepositMaxLen(args: TokensMergingArgs): Promise<BigNumber> {
@@ -48,13 +64,23 @@ export class TokenMergingAbiService {
         const interaction: Interaction = contract.methods.getnftDepositMaxLen(
             [],
         );
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
 
-        return response.firstValue.valueOf();
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+
+            return response.firstValue.valueOf();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                TokenMergingAbiService.name,
+                this.getnftDepositMaxLen.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getNftDepositAcceptedTokenIds(
@@ -67,12 +93,22 @@ export class TokenMergingAbiService {
         const interaction: Interaction = contract.methods.getNftDepositAcceptedTokenIds(
             [],
         );
-        const queryResponse = await contract.runQuery(
-            this.elrondProxy.getService(),
-            interaction.buildQuery(),
-        );
-        const response = interaction.interpretQueryResponse(queryResponse);
 
-        return response.firstValue.valueOf().map(value => value);
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+
+            return response.firstValue.valueOf().map(value => value);
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                TokenMergingAbiService.name,
+                this.getNftDepositAcceptedTokenIds.name,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 }

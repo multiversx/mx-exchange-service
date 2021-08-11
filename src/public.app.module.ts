@@ -1,5 +1,4 @@
-import { HttpModule, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
@@ -10,46 +9,15 @@ import { ProxyModule } from './modules/proxy/proxy.module';
 import { LockedAssetModule } from './modules/locked-asset-factory/locked-asset.module';
 import { UserModule } from './modules/user/user.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as winston from 'winston';
-import * as Transport from 'winston-transport';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
-import { RedisModule } from 'nestjs-redis';
 import { loggerMiddleware } from './utils/loggerMiddleware';
-
-const logTransports: Transport[] = [
-    new winston.transports.Console({
-        format: winston.format.combine(
-            winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike(),
-        ),
-    }),
-];
-
-const loglevel = !!process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 'error';
-
-if (!!process.env.LOG_FILE) {
-    logTransports.push(
-        new winston.transports.File({
-            filename: process.env.LOG_FILE,
-            dirname: 'logs',
-            maxsize: 100000,
-            level: loglevel,
-        }),
-    );
-}
+import { CommonAppModule } from './common.app.module';
+import { CachingService } from './services/caching/cache.service';
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-        }),
-        WinstonModule.forRoot({
-            transports: logTransports,
-        }),
+        CommonAppModule,
+        CacheModule.register(),
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
             buildSchemaOptions: {
@@ -66,13 +34,6 @@ if (!!process.env.LOG_FILE) {
                 return graphQLFormattedError;
             },
         }),
-        RedisModule.register([
-            {
-                host: process.env.REDIS_URL,
-                port: parseInt(process.env.REDIS_PORT),
-                password: process.env.REDIS_PASSWORD,
-            },
-        ]),
         HttpModule,
         RouterModule,
         PairModule,
@@ -84,5 +45,6 @@ if (!!process.env.LOG_FILE) {
         UserModule,
         AnalyticsModule,
     ],
+    providers: [CachingService],
 })
-export class AppModule {}
+export class PublicAppModule {}

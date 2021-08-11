@@ -4,16 +4,19 @@ import { ContextModule } from '../../../services/context/context.module';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
 import { TransactionsProxyFarmService } from './proxy-farm-transactions.service';
 import { ProxyFarmService } from './proxy-farm.service';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { CachingModule } from '../../../services/caching/cache.module';
 
 @Module({
-    imports: [ElrondCommunicationModule, ContextModule],
+    imports: [ElrondCommunicationModule, CachingModule, ContextModule],
     providers: [
         AbiProxyFarmService,
         ProxyFarmService,
         TransactionsProxyFarmService,
-        RedisCacheService,
     ],
-    exports: [ProxyFarmService, TransactionsProxyFarmService],
+    exports: [
+        ProxyFarmService,
+        AbiProxyFarmService,
+        TransactionsProxyFarmService,
+    ],
 })
 export class ProxyFarmModule {}

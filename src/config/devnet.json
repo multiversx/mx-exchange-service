@@ -1,13 +1,15 @@
 {
     "caching": {
-        "networkConfig": 1,
-        "pairsMetadata": 100,
-        "pairs": 100,
+        "pairsMetadata": 300,
+        "pairs": 300,
+        "state": 300,
         "txTotalCount": 10,
         "pairCount": 10,
         "token": 300,
-        "userTokens": 3,
+        "tokenPrice": 30,
         "priceFeed": 30,
-        "default": 20
+        "reserves": 30,
+        "apr": 60,
+        "default": 120
     }
 }

@@ -11,7 +11,7 @@ import { TransactionModel } from '../../models/transaction.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { RedisCacheService } from '../redis-cache.service';
+import { CachingService } from '../caching/cache.service';
 import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -26,10 +26,10 @@ export class ContextService {
     constructor(
         private readonly apiService: ElrondApiService,
         private readonly routerService: RouterService,
-        private readonly redisCacheService: RedisCacheService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.redisClient = this.redisCacheService.getClient();
+        this.redisClient = this.cachingService.getClient();
     }
 
     async getAllPairsAddress(): Promise<string[]> {
@@ -120,7 +120,7 @@ export class ContextService {
         try {
             const getTokenMetadata = () =>
                 this.apiService.getService().getESDTToken(tokenID);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getTokenMetadata,
@@ -142,7 +142,7 @@ export class ContextService {
         try {
             const getNftCollectionMetadata = () =>
                 this.apiService.getNftCollection(collection);
-            return this.redisCacheService.getOrSet(
+            return this.cachingService.getOrSet(
                 this.redisClient,
                 cacheKey,
                 getNftCollectionMetadata,

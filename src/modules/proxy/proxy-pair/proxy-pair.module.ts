@@ -5,12 +5,13 @@ import { TransactionsProxyPairService } from './proxy-pair-transactions.service'
 import { ProxyPairService } from './proxy-pair.service';
 import { ContextModule } from '../../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../../services/elrond-communication/elrond-communication.module';
-import { WrappingModule } from 'src/modules/wrapping/wrap.module';
-import { RedisCacheService } from 'src/services/redis-cache.service';
+import { WrappingModule } from '../../../modules/wrapping/wrap.module';
+import { CachingModule } from '../../../services/caching/cache.module';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
+        CachingModule,
         ContextModule,
         PairModule,
         WrappingModule,
@@ -19,8 +20,11 @@ import { RedisCacheService } from 'src/services/redis-cache.service';
         AbiProxyPairService,
         ProxyPairService,
         TransactionsProxyPairService,
-        RedisCacheService,
     ],
-    exports: [ProxyPairService, TransactionsProxyPairService],
+    exports: [
+        ProxyPairService,
+        AbiProxyPairService,
+        TransactionsProxyPairService,
+    ],
 })
 export class ProxyPairModule {}

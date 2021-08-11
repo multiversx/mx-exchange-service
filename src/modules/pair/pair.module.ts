@@ -7,8 +7,8 @@ import { PriceFeedModule } from '../../services/price-feed/price-feed.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
-import { RedisCacheService } from '../../services/redis-cache.service';
 import { PairAnalyticsService } from './pair.analytics.service';
+import { CachingModule } from '../../services/caching/cache.module';
 
 @Module({
     imports: [
@@ -16,6 +16,7 @@ import { PairAnalyticsService } from './pair.analytics.service';
         ContextModule,
         PriceFeedModule,
         WrappingModule,
+        CachingModule,
     ],
     providers: [
         PairService,
@@ -23,7 +24,6 @@ import { PairAnalyticsService } from './pair.analytics.service';
         AbiPairService,
         TransactionPairService,
         PairResolver,
-        RedisCacheService,
     ],
     exports: [PairService, AbiPairService, PairAnalyticsService],
 })

@@ -12,14 +12,8 @@ import {
 } from './pair.test-constants';
 import { ContextService } from '../../services/context/context.service';
 import { WrapService } from '../wrapping/wrap.service';
-import { RedisCacheService } from '../../services/redis-cache.service';
-import winston from 'winston';
-import {
-    utilities as nestWinstonModuleUtilities,
-    WinstonModule,
-} from 'nest-winston';
-import * as Transport from 'winston-transport';
-import { RedisModule } from 'nestjs-redis';
+import { CommonAppModule } from '../../common.app.module';
+import { CachingModule } from '../../services/caching/cache.module';
 
 describe('PairService', () => {
     let service: PairService;
@@ -49,35 +43,14 @@ describe('PairService', () => {
         useClass: WrapServiceMock,
     };
 
-    const logTransports: Transport[] = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.timestamp(),
-                nestWinstonModuleUtilities.format.nestLike(),
-            ),
-        }),
-    ];
-
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                WinstonModule.forRoot({
-                    transports: logTransports,
-                }),
-                RedisModule.register([
-                    {
-                        host: process.env.REDIS_URL,
-                        port: parseInt(process.env.REDIS_PORT),
-                        password: process.env.REDIS_PASSWORD,
-                    },
-                ]),
-            ],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 AbiPairServiceProvider,
                 ContextServiceProvider,
                 RedlockServiceProvider,
                 PriceFeedServiceProvider,
-                RedisCacheService,
                 PairService,
                 WrapServiceProvider,
             ],
@@ -157,7 +130,7 @@ describe('PairService', () => {
     });
 
     it('should get simple token price in USD', async () => {
-        const tokenPriceUSD = await service.getTokenPriceUSD(
+        const tokenPriceUSD = await service.computeTokenPriceUSD(
             'pair_address_1',
             'MEX-b6bb7d',
         );
@@ -165,7 +138,7 @@ describe('PairService', () => {
     });
 
     it('should get token price in USD from simple path', async () => {
-        const tokenPriceUSD = await service.getTokenPriceUSD(
+        const tokenPriceUSD = await service.computeTokenPriceUSD(
             'pair_address_3',
             'BUSD-05b16f',
         );
@@ -173,7 +146,7 @@ describe('PairService', () => {
     });
 
     it('should get token price in USD from multiple path', async () => {
-        const tokenPriceUSD = await service.getTokenPriceUSD(
+        const tokenPriceUSD = await service.computeTokenPriceUSD(
             'pair_address_4',
             'SPT-f66742',
         );
@@ -189,13 +162,6 @@ describe('PairService', () => {
             firstTokenAmount: '1',
             secondTokenAmount: '2',
         });
-    });
-
-    it('should get lpToken Price from pair', async () => {
-        const lpTokenPrice = await service.getLpTokenSecondTokenEquivalent(
-            'pair_address_1',
-        );
-        expect(lpTokenPrice).toEqual('4');
     });
 
     it('should get lpToken Price in USD from pair', async () => {
