@@ -1,6 +1,6 @@
 import { FarmService } from './farm.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
-import { Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     ExitFarmTokensModel,
@@ -25,6 +25,7 @@ import {
     DepositTokenArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
+import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 
 @Resolver(of => FarmModel)
 export class FarmResolver {
@@ -120,6 +121,7 @@ export class FarmResolver {
         return await this.farmService.getState(parent.address);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => FarmTokenAttributesModel)
     async farmTokenAttributes(
         @Args('identifier') identifier: string,
@@ -136,6 +138,7 @@ export class FarmResolver {
         return this.farmService.getFarms();
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => RewardsModel)
     async getRewardsForPosition(
         @Args() args: CalculateRewardsArgs,
@@ -143,6 +146,7 @@ export class FarmResolver {
         return await this.farmService.getRewardsForPosition(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => ExitFarmTokensModel)
     async getExitFarmTokens(
         @Args() args: CalculateRewardsArgs,
@@ -150,11 +154,13 @@ export class FarmResolver {
         return this.farmService.getTokensForExitFarm(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async enterFarm(@Args() args: EnterFarmArgs): Promise<TransactionModel> {
         return await this.transactionsService.enterFarm(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async enterFarmBatch(
         @Args() enterFarmBatchArgs: EnterFarmBatchArgs,
@@ -180,11 +186,13 @@ export class FarmResolver {
         ]);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async exitFarm(@Args() args: ExitFarmArgs): Promise<TransactionModel> {
         return await this.transactionsService.exitFarm(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async claimRewards(
         @Args() args: ClaimRewardsArgs,
@@ -192,6 +200,7 @@ export class FarmResolver {
         return await this.transactionsService.claimRewards(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async compoundRewards(
         @Args() args: CompoundRewardsArgs,
@@ -199,6 +208,7 @@ export class FarmResolver {
         return await this.transactionsService.compoundRewards(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async mergeFarmTokens(
         @Args() args: TokensMergingArgs,

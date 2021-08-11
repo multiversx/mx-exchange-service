@@ -1,10 +1,11 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
-import { Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { WrapModel } from './models/wrapping.model';
 import { WrapService } from './wrap.service';
 import { TransactionsWrapService } from './transactions-wrap.service';
+import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 
 @Resolver(of => WrapModel)
 export class WrapResolver {
@@ -25,6 +26,7 @@ export class WrapResolver {
         return this.wrapService.getWrappingInfo();
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async wrapEgld(
         @Args('sender') sender: string,
@@ -33,6 +35,7 @@ export class WrapResolver {
         return this.transactionService.wrapEgld(sender, amount);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async unwrapEgld(
         @Args('sender') sender: string,

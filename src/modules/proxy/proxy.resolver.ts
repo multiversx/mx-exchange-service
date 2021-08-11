@@ -1,5 +1,5 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
-import { Inject } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityProxyArgs,
@@ -36,6 +36,7 @@ import {
 } from '../token-merging/dto/token.merging.args';
 import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
 import { TokenMergingService } from '../token-merging/token.merging.service';
+import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 
 @Resolver(of => ProxyModel)
 export class ProxyResolver {
@@ -103,6 +104,7 @@ export class ProxyResolver {
         return await this.proxyService.getProxyInfo();
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async tokensTransferProxy(
         @Args() args: TokensTransferArgs,
@@ -110,6 +112,7 @@ export class ProxyResolver {
         return await this.transactionsProxyPairService.esdtTransferProxy(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async addLiquidityProxyBatch(
         @Args() args: AddLiquidityProxyBatchArgs,
@@ -144,6 +147,7 @@ export class ProxyResolver {
         }
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async addLiquidityProxy(
         @Args() args: AddLiquidityProxyArgs,
@@ -151,6 +155,7 @@ export class ProxyResolver {
         return await this.transactionsProxyPairService.addLiquidityProxy(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [GenericEsdtAmountPair])
     async getTemporaryFundsProxy(
         @Args('userAddress') userAddress: string,
@@ -158,6 +163,7 @@ export class ProxyResolver {
         return this.proxyPairService.getTemporaryFundsProxy(userAddress);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async reclaimTemporaryFundsProxy(
         @Args() args: ReclaimTemporaryFundsProxyArgs,
@@ -167,6 +173,7 @@ export class ProxyResolver {
         );
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async removeLiquidityProxy(
         @Args() args: RemoveLiquidityProxyArgs,
@@ -176,6 +183,7 @@ export class ProxyResolver {
         );
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async enterFarmProxy(
         @Args() args: EnterFarmProxyArgs,
@@ -183,6 +191,7 @@ export class ProxyResolver {
         return await this.transactionsProxyFarmService.enterFarmProxy(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TransactionModel])
     async enterFarmProxyBatch(
         @Args() args: EnterFarmProxyBatchArgs,
@@ -210,6 +219,7 @@ export class ProxyResolver {
         ]);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async exitFarmProxy(
         @Args() args: ExitFarmProxyArgs,
@@ -217,6 +227,7 @@ export class ProxyResolver {
         return await this.transactionsProxyFarmService.exitFarmProxy(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async claimFarmRewardsProxy(
         @Args() args: ClaimFarmRewardsProxyArgs,
@@ -226,6 +237,7 @@ export class ProxyResolver {
         );
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async mergeWrappedLpTokens(
         @Args() args: TokensMergingArgs,
@@ -233,6 +245,7 @@ export class ProxyResolver {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async mergeWrappedFarmTokens(
         @Args() args: TokensMergingArgs,
@@ -240,6 +253,7 @@ export class ProxyResolver {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => TransactionModel)
     async compoundRewardsProxy(
         @Args() args: CompoundRewardsProxyArgs,
@@ -249,6 +263,7 @@ export class ProxyResolver {
         );
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [WrappedLpTokenAttributesModel])
     async wrappedLpTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
@@ -256,6 +271,7 @@ export class ProxyResolver {
         return this.proxyService.getWrappedLpTokenAttributes(args);
     }
 
+    @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [WrappedFarmTokenAttributesModel])
     async wrappedFarmTokenAttributes(
         @Args('args')
