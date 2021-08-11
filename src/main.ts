@@ -9,6 +9,7 @@ import { PublicAppModule } from './public.app.module';
 import { PrivateAppModule } from './private.app.module';
 import { CacheWarmerModule } from './services/cache.warmer.module';
 import { PubSubModule } from './services/pub.sub.module';
+import { LoggingInterceptor } from './utils/logging.interceptor';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -17,6 +18,8 @@ async function bootstrap() {
         PublicAppModule,
         new FastifyAdapter(),
     );
+
+    app.useGlobalInterceptors(new LoggingInterceptor());
 
     await app.listen(parseInt(process.env.PORT), process.env.LISTEN_ADDRESS);
 
