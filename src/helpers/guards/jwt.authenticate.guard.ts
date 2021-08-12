@@ -1,6 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { verify } from 'jsonwebtoken';
-import { securityConfig } from '../../config';
 
 @Injectable()
 export class JwtAuthenticateGuard implements CanActivate {
@@ -17,7 +16,7 @@ export class JwtAuthenticateGuard implements CanActivate {
         const jwt = authorization.replace('Bearer ', '');
 
         try {
-            const jwtSecret = securityConfig.jwtSecret;
+            const jwtSecret = process.env.JWT_SECRET;
 
             await new Promise((resolve, reject) => {
                 verify(jwt, jwtSecret, (err, decoded) => {
