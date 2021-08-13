@@ -13,6 +13,9 @@ import { GraphQLError, GraphQLFormattedError } from 'graphql';
 import { loggerMiddleware } from './utils/loggerMiddleware';
 import { CommonAppModule } from './common.app.module';
 import { CachingService } from './services/caching/cache.service';
+import * as winston from 'winston';
+import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
+import * as Transport from 'winston-transport';
 
 @Module({
     imports: [
@@ -25,12 +28,45 @@ import { CachingService } from './services/caching/cache.service';
             },
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {
-                    ...error,
                     message:
                         error.extensions?.exception?.response?.message ||
                         error.message,
+                    extensions: error.extensions,
+                    path: error.path,
                 };
-                console.error(graphQLFormattedError);
+                const logTransports: Transport[] = [
+                    new winston.transports.Console({
+                        format: winston.format.combine(
+                            winston.format.timestamp(),
+                            nestWinstonModuleUtilities.format.nestLike(),
+                        ),
+                        level: 'error',
+                    }),
+                ];
+
+                const loglevel = !!process.env.LOG_LEVEL
+                    ? process.env.LOG_LEVEL
+                    : 'error';
+
+                if (!!process.env.LOG_FILE) {
+                    logTransports.push(
+                        new winston.transports.File({
+                            filename: process.env.LOG_FILE,
+                            dirname: 'logs',
+                            maxsize: 100000,
+                            level: loglevel,
+                        }),
+                    );
+                }
+                const logger = winston.createLogger({
+                    format: winston.format.combine(
+                        winston.format.timestamp(),
+                        nestWinstonModuleUtilities.format.nestLike(),
+                    ),
+                    level: 'error',
+                    transports: logTransports,
+                });
+                logger.error(graphQLFormattedError);
                 return graphQLFormattedError;
             },
         }),

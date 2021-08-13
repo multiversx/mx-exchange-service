@@ -8,6 +8,7 @@ import { CachingService } from '../caching/cache.service';
 import { cacheConfig } from 'src/config';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { ClientProxy } from '@nestjs/microservices';
+import { oneHour } from '../../helpers/helpers';
 
 @Injectable()
 export class ProxyCacheWarmerService {
@@ -22,7 +23,7 @@ export class ProxyCacheWarmerService {
         @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
     ) {}
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_30_MINUTES)
     async cacheProxy(): Promise<void> {
         const [
             assetTokenID,
@@ -57,51 +58,49 @@ export class ProxyCacheWarmerService {
                 'proxy',
                 'assetTokenID',
                 assetTokenID,
-                cacheConfig.token,
+                oneHour(),
             ),
             this.setProxyCache(
                 'proxy',
                 'lockedAssetTokenID',
                 lockedAssetTokenID,
-                cacheConfig.token,
+                oneHour(),
             ),
             this.setProxyCache(
                 'proxyPair',
                 'wrappedLpTokenID',
                 wrappedLpTokenID,
-                cacheConfig.token,
+                oneHour(),
             ),
             this.setProxyCache(
                 'proxyPair',
                 'intermediatedPairs',
                 intermediatedPairs,
+                oneHour(),
             ),
             this.setProxyCache(
                 'proxyFarm',
                 'wrappedFarmTokenID',
                 wrappedFarmTokenID,
-                cacheConfig.token,
+                oneHour(),
             ),
             this.setProxyCache(
                 'proxyFarm',
                 'intermediatedFarms',
                 intermediatedFarms,
+                oneHour(),
             ),
-            this.setContextCache(assetTokenID, assetToken, cacheConfig.token),
+            this.setContextCache(assetTokenID, assetToken, oneHour()),
             this.setContextCache(
                 lockedAssetTokenID,
                 lockedAssetToken,
-                cacheConfig.token,
+                oneHour(),
             ),
-            this.setContextCache(
-                wrappedLpTokenID,
-                wrappedLpToken,
-                cacheConfig.token,
-            ),
+            this.setContextCache(wrappedLpTokenID, wrappedLpToken, oneHour()),
             this.setContextCache(
                 wrappedFarmTokenID,
                 wrappedFarmToken,
-                cacheConfig.token,
+                oneHour(),
             ),
         ]);
         await this.deleteCacheKeys();

@@ -8,6 +8,7 @@ import { FarmService } from 'src/modules/farm/farm.service';
 import { AbiFarmService } from 'src/modules/farm/abi-farm.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { ClientProxy } from '@nestjs/microservices';
+import { oneHour, oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -22,7 +23,7 @@ export class FarmCacheWarmerService {
         @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
     ) {}
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_30_MINUTES)
     async cacheFarms(): Promise<void> {
         const farmsAddress: string[] = farmsConfig;
         const promises = farmsAddress.map(async farmAddress => {
@@ -55,47 +56,42 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     'farmTokenID',
                     farmTokenID,
-                    cacheConfig.token,
+                    oneHour(),
                 ),
                 this.setFarmCache(
                     farmAddress,
                     'farmingTokenID',
                     farmingTokenID,
-                    cacheConfig.token,
+                    oneHour(),
                 ),
                 this.setFarmCache(
                     farmAddress,
                     'farmedTokenID',
                     farmedTokenID,
-                    cacheConfig.token,
+                    oneHour(),
                 ),
                 this.setFarmCache(
                     farmAddress,
                     'minimumFarmingEpochs',
                     minimumFarmingEpochs,
+                    oneHour(),
                 ),
                 this.setFarmCache(
                     farmAddress,
                     'penaltyPercent',
                     penaltyPercent,
+                    oneHour(),
                 ),
                 this.setFarmCache(
                     farmAddress,
                     'rewardsPerBlock',
                     rewardsPerBlock,
+                    oneHour(),
                 ),
-                this.setFarmCache(farmAddress, 'state', state),
-                this.setContextCache(farmTokenID, farmToken, cacheConfig.token),
-                this.setContextCache(
-                    farmingTokenID,
-                    farmingToken,
-                    cacheConfig.token,
-                ),
-                this.setContextCache(
-                    farmedTokenID,
-                    farmedToken,
-                    cacheConfig.token,
-                ),
+                this.setFarmCache(farmAddress, 'state', state, oneHour()),
+                this.setContextCache(farmTokenID, farmToken, oneHour()),
+                this.setContextCache(farmingTokenID, farmingToken, oneHour()),
+                this.setContextCache(farmedTokenID, farmedToken, oneHour()),
             ]);
         });
 
@@ -103,7 +99,7 @@ export class FarmCacheWarmerService {
         await this.deleteCacheKeys();
     }
 
-    @Cron('*/45 * * * * *')
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmReserves(): Promise<void> {
         for (const farmAddress of farmsConfig) {
             const [farmingTokenReserve, farmTokenSupply] = await Promise.all([
@@ -115,20 +111,20 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     'farmingTokenReserve',
                     farmingTokenReserve,
-                    cacheConfig.reserves,
+                    oneMinute(),
                 ),
                 this.setFarmCache(
                     farmAddress,
                     'farmTokenSupply',
                     farmTokenSupply,
-                    cacheConfig.reserves,
+                    oneMinute(),
                 ),
             ]);
         }
         await this.deleteCacheKeys();
     }
 
-    @Cron('*/45 * * * * *')
+    @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmTokensPrices(): Promise<void> {
         for (const farmAddress of farmsConfig) {
             const [
@@ -143,13 +139,13 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     'farmedTokenPriceUSD',
                     farmedTokenPriceUSD,
-                    cacheConfig.tokenPrice,
+                    oneMinute(),
                 ),
                 this.setFarmCache(
                     farmAddress,
                     'farmingTokenPriceUSD',
                     farmingTokenPriceUSD,
-                    cacheConfig.tokenPrice,
+                    oneMinute(),
                 ),
             ]);
         }
@@ -168,7 +164,7 @@ export class FarmCacheWarmerService {
                 'apr',
             );
 
-            this.cachingService.setCache(cacheKey, apr, cacheConfig.apr);
+            this.cachingService.setCache(cacheKey, apr, oneMinute());
             this.invalidatedKeys.push(cacheKey);
             await this.deleteCacheKeys();
         }

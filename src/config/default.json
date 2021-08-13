@@ -88,7 +88,6 @@
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000
     },
     "security": {
-        "admins": [],
-        "jwtSecret": "123456789"
+        "admins": []
     }
 }

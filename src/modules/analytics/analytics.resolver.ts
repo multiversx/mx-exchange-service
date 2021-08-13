@@ -1,4 +1,4 @@
-import { Int, Parent, Query, ResolveField } from '@nestjs/graphql';
+import { Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
 import { AnalyticsModel } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsService } from './analytics.service';
