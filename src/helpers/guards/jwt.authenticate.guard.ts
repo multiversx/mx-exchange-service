@@ -1,12 +1,11 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { verify } from 'jsonwebtoken';
+import { ForbiddenError } from 'apollo-server-express';
 
 @Injectable()
 export class JwtAuthenticateGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const request = context.switchToHttp().getRequest();
-
-        const authorization: string = context.getArgs()[2].req.raw.headers[
+        const authorization: string = context.getArgs()[2].req.headers[
             'authorization'
         ];
         if (!authorization) {
@@ -27,7 +26,9 @@ export class JwtAuthenticateGuard implements CanActivate {
                 });
             });
         } catch (error) {
-            console.error(error);
+            if (error.name === 'TokenExpiredError') {
+                throw new ForbiddenError(error.message);
+            }
             return false;
         }
 
