@@ -26,10 +26,7 @@ export class JwtAuthenticateGuard implements CanActivate {
                 });
             });
         } catch (error) {
-            if (error.name === 'TokenExpiredError') {
-                throw new ForbiddenError(error.message);
-            }
-            return false;
+            throw new ForbiddenError(error.message);
         }
 
         return true;
