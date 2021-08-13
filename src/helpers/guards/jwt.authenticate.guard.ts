@@ -26,7 +26,6 @@ export class JwtAuthenticateGuard implements CanActivate {
                 });
             });
         } catch (error) {
-            console.log(error.name);
             throw new ForbiddenError(error.message);
         }
 
