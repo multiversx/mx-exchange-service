@@ -26,7 +26,7 @@ async function bootstrap() {
     if (process.env.ENABLE_CACHE_WARMER === 'true') {
         const processorApp = await NestFactory.create(CacheWarmerModule);
         await processorApp.listen(
-            parseInt(process.env.CRON_PORT),
+            parseInt(process.env.CACHEWARMER_PORT),
             process.env.LISTEN_ADDRESS,
         );
     }
