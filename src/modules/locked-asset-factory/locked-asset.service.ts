@@ -56,6 +56,7 @@ export class LockedAssetService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -84,6 +85,7 @@ export class LockedAssetService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

@@ -18,6 +18,7 @@ import {
 } from '../token-merging/dto/token.merging.args';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {
@@ -34,26 +35,42 @@ export class LockedAssetResolver {
 
     @ResolveField()
     async lockedToken(): Promise<NftCollection> {
-        return await this.lockedAssetService.getLockedToken();
+        try {
+            return await this.lockedAssetService.getLockedToken();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async unlockMilestones(): Promise<UnlockMileStoneModel[]> {
-        return await this.lockedAssetService.getDefaultUnlockPeriod();
+        try {
+            return await this.lockedAssetService.getDefaultUnlockPeriod();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async nftDepositMaxLen() {
-        return await this.mergeTokensService.getNftDepositMaxLen({
-            smartContractType: SmartContractType.LOCKED_ASSET_FACTORY,
-        });
+        try {
+            return await this.mergeTokensService.getNftDepositMaxLen({
+                smartContractType: SmartContractType.LOCKED_ASSET_FACTORY,
+            });
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField(type => [String])
     async nftDepositAcceptedTokenIDs() {
-        return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
-            smartContractType: SmartContractType.LOCKED_ASSET_FACTORY,
-        });
+        try {
+            return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
+                smartContractType: SmartContractType.LOCKED_ASSET_FACTORY,
+            });
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => LockedAssetModel)
