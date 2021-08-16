@@ -162,6 +162,7 @@ export class AbiPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -186,6 +187,7 @@ export class AbiPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 }
