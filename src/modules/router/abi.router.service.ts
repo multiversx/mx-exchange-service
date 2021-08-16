@@ -40,6 +40,7 @@ export class AbiRouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -74,6 +75,7 @@ export class AbiRouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 }

@@ -1,7 +1,7 @@
 import { FactoryModel } from './models/factory.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
-import { cacheConfig, elrondConfig, scAddress } from '../../config';
+import { cacheConfig, scAddress } from '../../config';
 import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -13,6 +13,7 @@ import {
     generateComputeLogMessage,
     generateGetLogMessage,
 } from '../../utils/generate-log-message';
+import { oneSecond } from '../../helpers/helpers';
 
 @Injectable()
 export class RouterService {
@@ -41,7 +42,7 @@ export class RouterService {
             return this.cachingService.getOrSet(
                 cacheKey,
                 getPairsAddress,
-                cacheConfig.pairsMetadata,
+                oneSecond() * 10,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -51,6 +52,7 @@ export class RouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -71,16 +73,21 @@ export class RouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
     async getAllPairs(offset: number, limit: number): Promise<PairModel[]> {
         const pairsAddress = await this.getAllPairsAddress();
-        const pairs = pairsAddress.map(pairAddress => {
-            const pair = new PairModel();
-            pair.address = pairAddress;
-            return pair;
-        });
+        const pairs: PairModel[] = [];
+        for (const pairAddress of pairsAddress) {
+            pairs.push(
+                new PairModel({
+                    address: pairAddress,
+                }),
+            );
+            this.logger.info(pairAddress);
+        }
 
         return pairs.slice(offset, limit);
     }
@@ -102,6 +109,7 @@ export class RouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -110,7 +118,6 @@ export class RouterService {
         try {
             const getTotalTxCount = () => this.computeTotalTxCount();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getTotalTxCount,
                 cacheConfig.txTotalCount,
@@ -123,6 +130,7 @@ export class RouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

@@ -13,6 +13,7 @@ import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './transactions.router.service';
 import { JwtAdminGuard } from '../../helpers/guards/jwt.admin.guard';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver(of => FactoryModel)
 export class RouterResolver {
@@ -29,22 +30,38 @@ export class RouterResolver {
 
     @ResolveField(returns => Int!)
     async pairCount(@Parent() factoryModel: FactoryModel) {
-        return this.routerService.getPairCount();
+        try {
+            return this.routerService.getPairCount();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField(returns => Int!)
     async totalTxCount(@Parent() factoryModel: FactoryModel) {
-        return this.routerService.getTotalTxCount();
+        try {
+            return this.routerService.getTotalTxCount();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => [String])
     async pairAddresses(): Promise<string[]> {
-        return this.routerService.getAllPairsAddress();
+        try {
+            return this.routerService.getAllPairsAddress();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => [PairModel])
     async pairs(@Args() page: GetPairsArgs): Promise<PairModel[]> {
-        return this.routerService.getAllPairs(page.offset, page.limit);
+        try {
+            return this.routerService.getAllPairs(page.offset, page.limit);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(JwtAdminGuard)
