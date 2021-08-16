@@ -21,7 +21,6 @@ import { ContextService } from '../../services/context/context.service';
 import { WrapService } from '../wrapping/wrap.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { CachingService } from '../../services/caching/cache.service';
-import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
@@ -55,6 +54,7 @@ export class PairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -284,6 +284,7 @@ export class PairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -300,6 +301,7 @@ export class PairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

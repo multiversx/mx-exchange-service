@@ -28,7 +28,7 @@ export class AbiPairService {
                 interaction.buildQuery(),
             );
             const response = interaction.interpretQueryResponse(queryResponse);
-            const firstTokenID = response.firstValue.valueOf().toString();
+            const firstTokenID = response.firstValue?.valueOf().toString();
 
             return firstTokenID;
         } catch (error) {
@@ -38,6 +38,7 @@ export class AbiPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -63,6 +64,7 @@ export class AbiPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -92,6 +94,7 @@ export class AbiPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -123,6 +126,7 @@ export class AbiPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
