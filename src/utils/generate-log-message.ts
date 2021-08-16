@@ -85,5 +85,11 @@ export const generateRunQueryLogMessage = (
     methodName: string,
     error: any,
 ) => {
-    return generateLogMessage(className, methodName, error, LogType.RUN_QUERY);
+    return generateLogMessage(
+        className,
+        methodName,
+        error,
+        '',
+        LogType.RUN_QUERY,
+    );
 };
