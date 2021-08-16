@@ -37,6 +37,7 @@ import {
 import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
 import { TokenMergingService } from '../token-merging/token.merging.service';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver(of => ProxyModel)
 export class ProxyResolver {
@@ -57,46 +58,78 @@ export class ProxyResolver {
 
     @ResolveField()
     async wrappedLpToken(): Promise<NftCollection> {
-        return await this.proxyPairService.getwrappedLpToken();
+        try {
+            return await this.proxyPairService.getwrappedLpToken();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async wrappedFarmToken(): Promise<NftCollection> {
-        return await this.proxyFarmService.getwrappedFarmToken();
+        try {
+            return await this.proxyFarmService.getwrappedFarmToken();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async assetToken(): Promise<EsdtToken> {
-        return await this.proxyService.getAssetToken();
+        try {
+            return await this.proxyService.getAssetToken();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async lockedAssetToken(): Promise<NftCollection> {
-        return await this.proxyService.getlockedAssetToken();
+        try {
+            return await this.proxyService.getlockedAssetToken();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async intermediatedPairs(): Promise<string[]> {
-        return await this.proxyPairService.getIntermediatedPairs();
+        try {
+            return await this.proxyPairService.getIntermediatedPairs();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async intermediatedFarms(): Promise<string[]> {
-        return await this.proxyFarmService.getIntermediatedFarms();
+        try {
+            return await this.proxyFarmService.getIntermediatedFarms();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async nftDepositMaxLen() {
-        return await this.mergeTokensService.getNftDepositMaxLen({
-            smartContractType: SmartContractType.PROXY_PAIR,
-        });
+        try {
+            return await this.mergeTokensService.getNftDepositMaxLen({
+                smartContractType: SmartContractType.PROXY_PAIR,
+            });
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField(type => [String])
     async nftDepositAcceptedTokenIDs() {
-        return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
-            smartContractType: SmartContractType.PROXY_PAIR,
-        });
+        try {
+            return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
+                smartContractType: SmartContractType.PROXY_PAIR,
+            });
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => ProxyModel)

@@ -37,6 +37,7 @@ export class ProxyPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -69,6 +70,7 @@ export class ProxyPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

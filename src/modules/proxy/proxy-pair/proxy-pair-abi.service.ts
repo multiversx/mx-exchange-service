@@ -36,6 +36,7 @@ export class AbiProxyPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -63,6 +64,7 @@ export class AbiProxyPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

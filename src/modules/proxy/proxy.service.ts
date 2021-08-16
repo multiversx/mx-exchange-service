@@ -57,6 +57,7 @@ export class ProxyService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
