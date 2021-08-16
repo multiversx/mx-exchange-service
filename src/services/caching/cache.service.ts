@@ -12,7 +12,7 @@ import { Cache } from 'cache-manager';
 import { promisify } from 'util';
 import { cacheConfig } from '../../config';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
-import { ApiConfigService } from 'src/helpers/api.config.service';
+import { ApiConfigService } from '../../helpers/api.config.service';
 import { createClient, RedisClient } from 'redis';
 
 @Injectable()
@@ -205,17 +205,28 @@ export class CachingService {
             return cached;
         }
 
-        const value = await promise();
-        profiler.stop(`Cache miss for key ${key}`);
+        try {
+            const value = await promise();
+            profiler.stop(`Cache miss for key ${key}`);
 
-        if (localTtl > 0) {
-            await this.setCacheLocal<T>(key, value, localTtl);
-        }
+            if (localTtl > 0) {
+                await this.setCacheLocal<T>(key, value, localTtl);
+            }
 
-        if (remoteTtl > 0) {
-            await this.setCacheRemote<T>(key, value, remoteTtl);
+            if (remoteTtl > 0) {
+                await this.setCacheRemote<T>(key, value, remoteTtl);
+            }
+            return value;
+        } catch (error) {
+            const logMessage = generateSetLogMessage(
+                CachingService.name,
+                this.getOrSet.name,
+                key,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
         }
-        return value;
     }
 
     async deleteInCacheLocal(key: string) {
