@@ -43,14 +43,26 @@ export class DistributionService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
     async getDistributedLockedAssets(userAddress: string): Promise<string> {
-        const distributedLockedAssets = await this.abiService.getDistributedLockedAssets(
-            userAddress,
-        );
-        return distributedLockedAssets.toFixed();
+        try {
+            const distributedLockedAssets = await this.abiService.getDistributedLockedAssets(
+                userAddress,
+            );
+            return distributedLockedAssets.toFixed();
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                DistributionService.name,
+                this.getCommunityDistribution.name,
+                '',
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
     }
 
     private getDistributionCacheKey(...args: any) {
