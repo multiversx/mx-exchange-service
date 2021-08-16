@@ -55,6 +55,7 @@ export class WrapService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
