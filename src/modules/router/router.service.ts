@@ -5,7 +5,6 @@ import { cacheConfig, elrondConfig, scAddress } from '../../config';
 import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { AbiRouterService } from './abi.router.service';
 import { PairMetadata } from './models/pair.metadata.model';
@@ -18,7 +17,6 @@ import {
 @Injectable()
 export class RouterService {
     private readonly elasticClient: Client;
-    private redisClient: Redis.Redis;
 
     constructor(
         private readonly abiService: AbiRouterService,
@@ -28,7 +26,6 @@ export class RouterService {
         this.elasticClient = new Client({
             node: process.env.ELASTICSEARCH_URL + '/transactions',
         });
-        this.redisClient = this.cachingService.getClient();
     }
 
     async getFactory(): Promise<FactoryModel> {
@@ -42,7 +39,6 @@ export class RouterService {
         try {
             const getPairsAddress = () => this.abiService.getAllPairsAddress();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getPairsAddress,
                 cacheConfig.pairsMetadata,
@@ -63,7 +59,6 @@ export class RouterService {
         try {
             const getPairsMetadata = () => this.abiService.getPairsMetadata();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getPairsMetadata,
                 cacheConfig.pairsMetadata,
@@ -95,7 +90,6 @@ export class RouterService {
         try {
             const getPairCount = () => this.computePairCount();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getPairCount,
                 cacheConfig.pairs,

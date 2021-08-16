@@ -5,7 +5,7 @@ import {
     WrappedFarmTokenAttributesModel,
     WrappedLpTokenAttributesModel,
 } from './models/proxy.model';
-import { cacheConfig, scAddress } from '../../config';
+import { scAddress } from '../../config';
 import {
     decodeWrappedFarmTokenAttributes,
     decodeWrappedLPTokenAttributes,
@@ -17,7 +17,6 @@ import { ContextService } from '../../services/context/context.service';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
 import { CachingService } from '../../services/caching/cache.service';
-import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
@@ -26,8 +25,6 @@ import { oneHour } from '../../helpers/helpers';
 
 @Injectable()
 export class ProxyService {
-    private redisClient: Redis.Redis;
-
     constructor(
         private apiService: ElrondApiService,
         private abiService: AbiProxyService,
@@ -35,9 +32,7 @@ export class ProxyService {
         private farmService: FarmService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
 
     async getProxyInfo(): Promise<ProxyModel> {
         return new ProxyModel({ address: scAddress.proxyDexAddress });
@@ -50,7 +45,6 @@ export class ProxyService {
         const cacheKey = this.getProxyCacheKey(tokenCacheKey);
         try {
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 createValueFunc,
                 oneHour(),

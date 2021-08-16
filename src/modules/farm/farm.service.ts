@@ -26,7 +26,6 @@ import { CalculateRewardsArgs } from './models/farm.args';
 import { PairService } from '../pair/pair.service';
 import { ContextService } from '../../services/context/context.service';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
-import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../services/caching/cache.service';
@@ -38,8 +37,6 @@ import { oneHour, oneMinute, ruleOfThree } from '../../helpers/helpers';
 
 @Injectable()
 export class FarmService {
-    private redisClient: Redis.Redis;
-
     constructor(
         private readonly abiService: AbiFarmService,
         private readonly apiService: ElrondApiService,
@@ -47,9 +44,7 @@ export class FarmService {
         private readonly context: ContextService,
         private readonly pairService: PairService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
 
     private async getTokenData(
         farmAddress: string,
@@ -59,12 +54,7 @@ export class FarmService {
     ): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, tokenCacheKey);
         try {
-            return this.cachingService.getOrSet(
-                this.redisClient,
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
+            return this.cachingService.getOrSet(cacheKey, createValueFunc, ttl);
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 FarmService.name,
@@ -124,7 +114,6 @@ export class FarmService {
             const getFarmTokenSupply = () =>
                 this.abiService.getFarmTokenSupply(farmAddress);
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getFarmTokenSupply,
                 oneMinute(),
@@ -149,7 +138,6 @@ export class FarmService {
             const getFarmingTokenReserve = () =>
                 this.abiService.getFarmingTokenReserve(farmAddress);
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getFarmingTokenReserve,
                 oneMinute(),
@@ -171,7 +159,6 @@ export class FarmService {
             const getRewardsPerBlock = () =>
                 this.abiService.getRewardsPerBlock(farmAddress);
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getRewardsPerBlock,
                 oneHour(),
@@ -193,7 +180,6 @@ export class FarmService {
             const getPenaltyPercent = () =>
                 this.abiService.getPenaltyPercent(farmAddress);
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getPenaltyPercent,
                 oneHour(),
@@ -218,7 +204,6 @@ export class FarmService {
             const getMinimumFarmingEpochs = () =>
                 this.abiService.getMinimumFarmingEpochs(farmAddress);
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getMinimumFarmingEpochs,
                 oneHour(),
@@ -238,12 +223,7 @@ export class FarmService {
         const cacheKey = this.getFarmCacheKey(farmAddress, 'state');
         try {
             const getState = () => this.abiService.getState(farmAddress);
-            return this.cachingService.getOrSet(
-                this.redisClient,
-                cacheKey,
-                getState,
-                oneHour(),
-            );
+            return this.cachingService.getOrSet(cacheKey, getState, oneHour());
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 FarmService.name,

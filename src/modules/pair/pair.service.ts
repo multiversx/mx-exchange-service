@@ -29,7 +29,6 @@ import { oneHour, oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class PairService {
-    private redisClient: Redis.Redis;
     constructor(
         private abiService: AbiPairService,
         private cachingService: CachingService,
@@ -37,9 +36,7 @@ export class PairService {
         private priceFeed: PriceFeedService,
         private wrapService: WrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
 
     private async getTokenData(
         pairAddress: string,
@@ -49,12 +46,7 @@ export class PairService {
     ): Promise<any> {
         const cacheKey = this.getPairCacheKey(pairAddress, tokenCacheKey);
         try {
-            return this.cachingService.getOrSet(
-                this.redisClient,
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
+            return this.cachingService.getOrSet(cacheKey, createValueFunc, ttl);
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 PairService.name,
@@ -280,7 +272,6 @@ export class PairService {
             const getValueLocked = () =>
                 this.abiService.getPairInfoMetadata(pairAddress);
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getValueLocked,
                 oneMinute(),
@@ -300,12 +291,7 @@ export class PairService {
         const cacheKey = this.getPairCacheKey(pairAddress, 'state');
         try {
             const getState = () => this.abiService.getState(pairAddress);
-            return this.cachingService.getOrSet(
-                this.redisClient,
-                cacheKey,
-                getState,
-                oneHour(),
-            );
+            return this.cachingService.getOrSet(cacheKey, getState, oneHour());
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 PairService.name,
@@ -331,7 +317,7 @@ export class PairService {
             this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
-            this.abiService.getPairInfoMetadata(pairAddress),
+            this.getPairInfoMetadata(pairAddress),
         ]);
 
         const tokenIn =
@@ -371,7 +357,7 @@ export class PairService {
             this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
-            this.abiService.getPairInfoMetadata(pairAddress),
+            this.getPairInfoMetadata(pairAddress),
         ]);
 
         const tokenOut =
@@ -411,7 +397,7 @@ export class PairService {
             this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
-            this.abiService.getPairInfoMetadata(pairAddress),
+            this.getPairInfoMetadata(pairAddress),
         ]);
 
         const tokenIn =

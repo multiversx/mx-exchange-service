@@ -14,6 +14,7 @@ const logTransports: Transport[] = [
             winston.format.timestamp(),
             nestWinstonModuleUtilities.format.nestLike(),
         ),
+        level: 'debug',
     }),
 ];
 
@@ -38,13 +39,6 @@ if (!!process.env.LOG_FILE) {
         WinstonModule.forRoot({
             transports: logTransports,
         }),
-        RedisModule.register([
-            {
-                host: process.env.REDIS_URL,
-                port: parseInt(process.env.REDIS_PORT),
-                password: process.env.REDIS_PASSWORD,
-            },
-        ]),
     ],
     providers: [ApiConfigService],
     exports: [ApiConfigService],

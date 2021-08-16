@@ -1,23 +1,32 @@
 import { Injectable, Inject, CACHE_MANAGER } from '@nestjs/common';
 import { isNil } from '@nestjs/common/utils/shared.utils';
-import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { RedisService } from 'nestjs-redis';
 import { generateCacheKey } from '../../utils/generate-cache-key';
 import { Logger } from 'winston';
 import {
     generateDeleteLogMessage,
     generateGetLogMessage,
-    generateLogMessage,
     generateSetLogMessage,
 } from '../../utils/generate-log-message';
 import { Cache } from 'cache-manager';
 import { promisify } from 'util';
 import { cacheConfig } from '../../config';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import { createClient, RedisClient } from 'redis';
 
 @Injectable()
 export class CachingService {
+    private client = this.configService.getRedisPassword()
+        ? createClient(
+              this.configService.getRedisPort(),
+              this.configService.getRedisUrl(),
+          )
+        : createClient(
+              this.configService.getRedisPort(),
+              this.configService.getRedisUrl(),
+              { password: this.configService.getRedisPassword() },
+          );
     private static cache: Cache;
     private asyncSet = promisify(this.getClient().set).bind(this.getClient());
     private asyncGet = promisify(this.getClient().get).bind(this.getClient());
@@ -29,15 +38,15 @@ export class CachingService {
     private asyncKeys = promisify(this.getClient().keys).bind(this.getClient());
 
     constructor(
-        private readonly redisService: RedisService,
+        private readonly configService: ApiConfigService,
         @Inject(CACHE_MANAGER) private readonly cache: Cache,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         CachingService.cache = this.cache;
     }
 
-    getClient(clientName?: string): Redis.Redis {
-        return this.redisService.getClient(clientName);
+    getClient(): RedisClient {
+        return this.client;
     }
 
     private async setCacheRemote<T>(
@@ -110,14 +119,10 @@ export class CachingService {
         return value;
     }
 
-    async get(
-        client: Redis.Redis,
-        key: string,
-        region: string = null,
-    ): Promise<any> {
+    async get(key: string, region: string = null): Promise<any> {
         const cacheKey = generateCacheKey(key, region);
         try {
-            return JSON.parse(await client.get(cacheKey));
+            return JSON.parse(await this.asyncGet(key));
         } catch (err) {
             const logMessage = generateGetLogMessage(
                 CachingService.name,
@@ -130,18 +135,22 @@ export class CachingService {
         }
     }
     async set(
-        client: Redis.Redis,
         key: string,
         value: any,
         ttl: number = cacheConfig.default,
         region: string = null,
-    ): Promise<void> {
+    ): Promise<boolean> {
         if (isNil(value)) {
             return;
         }
         const cacheKey = generateCacheKey(key, region);
         try {
-            await client.set(cacheKey, JSON.stringify(value), 'EX', ttl);
+            return await this.asyncSet(
+                cacheKey,
+                JSON.stringify(value),
+                'EX',
+                ttl,
+            );
         } catch (err) {
             const logMessage = generateSetLogMessage(
                 CachingService.name,
@@ -154,14 +163,10 @@ export class CachingService {
         }
     }
 
-    async delete(
-        client: Redis.Redis,
-        key: string,
-        region: string = null,
-    ): Promise<void> {
+    async delete(key: string, region: string = null): Promise<void> {
         const cacheKey = generateCacheKey(key, region);
         try {
-            await client.del(cacheKey);
+            await this.asyncDel(cacheKey);
         } catch (err) {
             const logMessage = generateDeleteLogMessage(
                 CachingService.name,
@@ -173,22 +178,7 @@ export class CachingService {
         }
     }
 
-    async flushDb(client: Redis.Redis): Promise<void> {
-        try {
-            await client.flushdb();
-        } catch (err) {
-            const logMessage = generateLogMessage(
-                CachingService.name,
-                this.flushDb.name,
-                'flushDb',
-                err,
-            );
-            this.logger.error(logMessage);
-        }
-    }
-
     async getOrSet<T>(
-        client: Redis.Redis,
         key: string,
         promise: () => Promise<T>,
         remoteTtl: number = cacheConfig.default,
