@@ -86,7 +86,6 @@ export class RouterService {
                     address: pairAddress,
                 }),
             );
-            this.logger.info(pairAddress);
         }
 
         return pairs.slice(offset, limit);
