@@ -40,6 +40,7 @@ export class FarmStatisticsService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

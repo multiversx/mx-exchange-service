@@ -63,6 +63,7 @@ export class FarmService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -126,6 +127,7 @@ export class FarmService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -150,6 +152,7 @@ export class FarmService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -171,6 +174,7 @@ export class FarmService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -192,6 +196,7 @@ export class FarmService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -216,6 +221,7 @@ export class FarmService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -232,6 +238,7 @@ export class FarmService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
