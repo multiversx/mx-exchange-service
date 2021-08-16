@@ -53,6 +53,7 @@ export class TokenMergingAbiService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -80,6 +81,7 @@ export class TokenMergingAbiService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -109,6 +111,7 @@ export class TokenMergingAbiService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 }
