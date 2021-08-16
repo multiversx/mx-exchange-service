@@ -4,9 +4,9 @@ import {
     utilities as nestWinstonModuleUtilities,
     WinstonModule,
 } from 'nest-winston';
-import { RedisModule } from 'nestjs-redis';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
+import { ApiConfigService } from './helpers/api.config.service';
 
 const logTransports: Transport[] = [
     new winston.transports.Console({
@@ -46,5 +46,7 @@ if (!!process.env.LOG_FILE) {
             },
         ]),
     ],
+    providers: [ApiConfigService],
+    exports: [ApiConfigService],
 })
 export class CommonAppModule {}
