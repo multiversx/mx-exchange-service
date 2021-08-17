@@ -5,22 +5,18 @@ import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { oneHour } from '../../../helpers/helpers';
 
 @Injectable()
 export class ProxyFarmService {
-    private redisClient: Redis.Redis;
     constructor(
         private abiService: AbiProxyFarmService,
         private context: ContextService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
 
     private async getTokenID(
         tokenCacheKey: string,
@@ -29,7 +25,6 @@ export class ProxyFarmService {
         const cacheKey = this.getProxyFarmCacheKey(tokenCacheKey);
         try {
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 createValueFunc,
                 oneHour(),
@@ -42,6 +37,7 @@ export class ProxyFarmService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -62,7 +58,6 @@ export class ProxyFarmService {
             const getIntermediatedFarms = () =>
                 this.abiService.getIntermediatedFarmsAddress();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getIntermediatedFarms,
                 oneHour(),
@@ -75,6 +70,7 @@ export class ProxyFarmService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

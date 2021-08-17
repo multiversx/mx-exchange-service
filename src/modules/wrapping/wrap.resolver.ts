@@ -6,6 +6,7 @@ import { WrapModel } from './models/wrapping.model';
 import { WrapService } from './wrap.service';
 import { TransactionsWrapService } from './transactions-wrap.service';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver(of => WrapModel)
 export class WrapResolver {
@@ -18,7 +19,11 @@ export class WrapResolver {
 
     @ResolveField()
     async wrappedToken(): Promise<EsdtToken> {
-        return this.wrapService.getWrappedEgldToken();
+        try {
+            return this.wrapService.getWrappedEgldToken();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => [WrapModel])

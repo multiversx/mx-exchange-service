@@ -40,6 +40,7 @@ export class AbiDistributionService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -64,6 +65,7 @@ export class AbiDistributionService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 }

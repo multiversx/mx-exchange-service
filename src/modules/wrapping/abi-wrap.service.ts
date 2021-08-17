@@ -33,6 +33,7 @@ export class AbiWrapService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 }

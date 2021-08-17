@@ -9,7 +9,6 @@ import { cacheConfig, scAddress } from '../../config';
 import { ContextService } from '../../services/context/context.service';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
 import { CachingService } from '../../services/caching/cache.service';
-import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -28,16 +27,13 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class LockedAssetService {
-    private redisClient: Redis.Redis;
     constructor(
         private readonly abiService: AbiLockedAssetService,
         private apiService: ElrondApiService,
         private readonly cachingService: CachingService,
         private context: ContextService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
 
     async getLockedAssetInfo(): Promise<LockedAssetModel> {
         return new LockedAssetModel({ address: scAddress.lockedAssetAddress });
@@ -48,7 +44,6 @@ export class LockedAssetService {
         try {
             const getLockedTokenID = () => this.abiService.getLockedTokenID();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getLockedTokenID,
                 cacheConfig.token,
@@ -61,6 +56,7 @@ export class LockedAssetService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -77,7 +73,6 @@ export class LockedAssetService {
             const getDefaultUnlockPeriod = () =>
                 this.abiService.getDefaultUnlockPeriod();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getDefaultUnlockPeriod,
                 cacheConfig.default,
@@ -90,6 +85,7 @@ export class LockedAssetService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

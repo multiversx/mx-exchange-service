@@ -3,7 +3,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { CachingService } from '../caching/cache.service';
-import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import {
     generateGetLogMessage,
@@ -14,7 +13,6 @@ import { MetricsCollector } from '../../utils/metrics.collector';
 @Injectable()
 export class HyperblockService {
     private readonly metachainID: number;
-    private redisClient: Redis.Redis;
 
     constructor(
         private readonly elrondApi: ElrondApiService,
@@ -22,7 +20,6 @@ export class HyperblockService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.metachainID = 4294967295;
-        this.redisClient = this.cachingService.getClient();
     }
 
     getShardID(): number {
@@ -41,7 +38,7 @@ export class HyperblockService {
     async getLastProcessedNonce(): Promise<number | undefined> {
         const cacheKey = this.getHyperblockCacheKey('lastPorcessedNonce');
         try {
-            return this.cachingService.get(this.redisClient, cacheKey);
+            return this.cachingService.get(cacheKey);
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 HyperblockService.name,
@@ -56,12 +53,7 @@ export class HyperblockService {
     async setLastProcessedNonce(nonce: number): Promise<void> {
         const cacheKey = this.getHyperblockCacheKey('lastPorcessedNonce');
         try {
-            this.cachingService.set(
-                this.redisClient,
-                cacheKey,
-                nonce,
-                Number.MAX_SAFE_INTEGER,
-            );
+            this.cachingService.set(cacheKey, nonce, Number.MAX_SAFE_INTEGER);
         } catch (error) {
             const logMessage = generateSetLogMessage(
                 HyperblockService.name,

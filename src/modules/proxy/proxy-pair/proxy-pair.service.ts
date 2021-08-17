@@ -6,23 +6,18 @@ import { NftCollection } from '../../../models/tokens/nftCollection.model';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { oneHour } from '../../../helpers/helpers';
 
 @Injectable()
 export class ProxyPairService {
-    private redisClient: Redis.Redis;
-
     constructor(
         private abiService: AbiProxyPairService,
         private context: ContextService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
     private async getTokenID(
         tokenCacheKey: string,
         createValueFunc: () => any,
@@ -30,7 +25,6 @@ export class ProxyPairService {
         const cacheKey = this.getProxyPairCacheKey(tokenCacheKey);
         try {
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 createValueFunc,
                 oneHour(),
@@ -43,6 +37,7 @@ export class ProxyPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -63,7 +58,6 @@ export class ProxyPairService {
             const getIntermediatedPairs = () =>
                 this.abiService.getIntermediatedPairsAddress();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getIntermediatedPairs,
                 oneHour(),
@@ -76,6 +70,7 @@ export class ProxyPairService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

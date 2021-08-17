@@ -26,6 +26,7 @@ import {
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver(of => FarmModel)
 export class FarmResolver {
@@ -42,83 +43,151 @@ export class FarmResolver {
 
     @ResolveField()
     async farmedToken(@Parent() parent: FarmModel) {
-        return await this.farmService.getFarmedToken(parent.address);
+        try {
+            return await this.farmService.getFarmedToken(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async farmToken(@Parent() parent: FarmModel) {
-        return await this.farmService.getFarmToken(parent.address);
+        try {
+            return await this.farmService.getFarmToken(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async farmingToken(@Parent() parent: FarmModel) {
-        return await this.farmService.getFarmingToken(parent.address);
+        try {
+            return await this.farmService.getFarmingToken(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async perBlockRewards(@Parent() parent: FarmModel) {
-        return await this.farmService.getRewardsPerBlock(parent.address);
+        try {
+            return await this.farmService.getRewardsPerBlock(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async farmTokenSupply(@Parent() parent: FarmModel) {
-        return await this.farmService.getFarmTokenSupply(parent.address);
+        try {
+            return await this.farmService.getFarmTokenSupply(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async farmingTokenReserve(@Parent() parent: FarmModel) {
-        return await this.farmService.getFarmingTokenReserve(parent.address);
+        try {
+            return await this.farmService.getFarmingTokenReserve(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async farmedTokenPriceUSD(@Parent() parent: FarmModel) {
-        return await this.farmService.getFarmedTokenPriceUSD(parent.address);
+        try {
+            return await this.farmService.getFarmedTokenPriceUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async farmTokenPriceUSD(@Parent() parent: FarmModel) {
-        return await this.farmService.getFarmTokenPriceUSD(parent.address);
+        try {
+            return await this.farmService.getFarmTokenPriceUSD(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async farmingTokenPriceUSD(@Parent() parent: FarmModel) {
-        return await this.farmService.getFarmingTokenPriceUSD(parent.address);
+        try {
+            return await this.farmService.getFarmingTokenPriceUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async penaltyPercent(@Parent() parent: FarmModel) {
-        return await this.farmService.getPenaltyPercent(parent.address);
+        try {
+            return await this.farmService.getPenaltyPercent(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async minimumFarmingEpochs(@Parent() parent: FarmModel) {
-        return await this.farmService.getMinimumFarmingEpochs(parent.address);
+        try {
+            return await this.farmService.getMinimumFarmingEpochs(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async APR(@Parent() parent: FarmModel) {
-        return await this.statisticsService.getFarmAPR(parent.address);
+        try {
+            return await this.statisticsService.getFarmAPR(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async nftDepositMaxLen(@Parent() parent: FarmModel) {
-        return await this.mergeTokensService.getNftDepositMaxLen({
-            smartContractType: SmartContractType.FARM,
-            address: parent.address,
-        });
+        try {
+            return await this.mergeTokensService.getNftDepositMaxLen({
+                smartContractType: SmartContractType.FARM,
+                address: parent.address,
+            });
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField(type => [String])
     async nftDepositAcceptedTokenIDs(@Parent() parent: FarmModel) {
-        return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
-            smartContractType: SmartContractType.FARM,
-            address: parent.address,
-        });
+        try {
+            return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
+                smartContractType: SmartContractType.FARM,
+                address: parent.address,
+            });
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async state(@Parent() parent: FarmModel) {
-        return await this.farmService.getState(parent.address);
+        try {
+            return await this.farmService.getState(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(JwtAuthenticateGuard)
@@ -143,7 +212,11 @@ export class FarmResolver {
     async getRewardsForPosition(
         @Args() args: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
-        return await this.farmService.getRewardsForPosition(args);
+        try {
+            return await this.farmService.getRewardsForPosition(args);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(JwtAuthenticateGuard)

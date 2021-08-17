@@ -6,7 +6,6 @@ import {
 } from './models/distribution.model';
 import { AbiDistributionService } from './abi-distribution.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import * as Redis from 'ioredis';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
@@ -14,14 +13,11 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class DistributionService {
-    private redisClient: Redis.Redis;
     constructor(
         private abiService: AbiDistributionService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
 
     async getDistributionInfo(): Promise<DistributionModel> {
         return new DistributionModel({
@@ -35,7 +31,6 @@ export class DistributionService {
             const getCommunityDistribution = () =>
                 this.abiService.getCommunityDistribution();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getCommunityDistribution,
                 cacheConfig.default,
@@ -48,14 +43,26 @@ export class DistributionService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
     async getDistributedLockedAssets(userAddress: string): Promise<string> {
-        const distributedLockedAssets = await this.abiService.getDistributedLockedAssets(
-            userAddress,
-        );
-        return distributedLockedAssets.toFixed();
+        try {
+            const distributedLockedAssets = await this.abiService.getDistributedLockedAssets(
+                userAddress,
+            );
+            return distributedLockedAssets.toFixed();
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                DistributionService.name,
+                this.getCommunityDistribution.name,
+                '',
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
     }
 
     private getDistributionCacheKey(...args: any) {

@@ -8,21 +8,16 @@ import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import * as Redis from 'ioredis';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 
 @Injectable()
 export class WrapService {
-    private redisClient: Redis.Redis;
-
     constructor(
         private abiService: AbiWrapService,
         private context: ContextService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
 
     async getWrappingInfo(): Promise<WrapModel[]> {
         return [
@@ -48,7 +43,6 @@ export class WrapService {
         const cacheKey = this.getWrapCacheKey(tokenCacheKey);
         try {
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 createValueFunc,
                 cacheConfig.token,
@@ -61,6 +55,7 @@ export class WrapService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

@@ -7,21 +7,17 @@ import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import * as Redis from 'ioredis';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class FarmStatisticsService {
-    private redisClient: Redis.Redis;
     constructor(
         private farmService: FarmService,
         private pairService: PairService,
         private cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
 
     async getFarmAPR(farmAddress: string): Promise<string> {
         const cacheKey = generateCacheKeyFromParams(
@@ -32,7 +28,6 @@ export class FarmStatisticsService {
         try {
             const getFarmAPR = () => this.computeFarmAPR(farmAddress);
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getFarmAPR,
                 oneMinute(),
@@ -45,6 +40,7 @@ export class FarmStatisticsService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

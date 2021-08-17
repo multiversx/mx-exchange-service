@@ -1,11 +1,10 @@
 import { FactoryModel } from './models/factory.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { Client } from '@elastic/elasticsearch';
-import { cacheConfig, elrondConfig, scAddress } from '../../config';
+import { cacheConfig, scAddress } from '../../config';
 import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { AbiRouterService } from './abi.router.service';
 import { PairMetadata } from './models/pair.metadata.model';
@@ -14,11 +13,11 @@ import {
     generateComputeLogMessage,
     generateGetLogMessage,
 } from '../../utils/generate-log-message';
+import { oneSecond } from '../../helpers/helpers';
 
 @Injectable()
 export class RouterService {
     private readonly elasticClient: Client;
-    private redisClient: Redis.Redis;
 
     constructor(
         private readonly abiService: AbiRouterService,
@@ -28,7 +27,6 @@ export class RouterService {
         this.elasticClient = new Client({
             node: process.env.ELASTICSEARCH_URL + '/transactions',
         });
-        this.redisClient = this.cachingService.getClient();
     }
 
     async getFactory(): Promise<FactoryModel> {
@@ -42,10 +40,9 @@ export class RouterService {
         try {
             const getPairsAddress = () => this.abiService.getAllPairsAddress();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getPairsAddress,
-                cacheConfig.pairsMetadata,
+                oneSecond() * 10,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -55,6 +52,7 @@ export class RouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -63,7 +61,6 @@ export class RouterService {
         try {
             const getPairsMetadata = () => this.abiService.getPairsMetadata();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getPairsMetadata,
                 cacheConfig.pairsMetadata,
@@ -76,16 +73,20 @@ export class RouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
     async getAllPairs(offset: number, limit: number): Promise<PairModel[]> {
         const pairsAddress = await this.getAllPairsAddress();
-        const pairs = pairsAddress.map(pairAddress => {
-            const pair = new PairModel();
-            pair.address = pairAddress;
-            return pair;
-        });
+        const pairs: PairModel[] = [];
+        for (const pairAddress of pairsAddress) {
+            pairs.push(
+                new PairModel({
+                    address: pairAddress,
+                }),
+            );
+        }
 
         return pairs.slice(offset, limit);
     }
@@ -95,7 +96,6 @@ export class RouterService {
         try {
             const getPairCount = () => this.computePairCount();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getPairCount,
                 cacheConfig.pairs,
@@ -108,6 +108,7 @@ export class RouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -116,7 +117,6 @@ export class RouterService {
         try {
             const getTotalTxCount = () => this.computeTotalTxCount();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getTotalTxCount,
                 cacheConfig.txTotalCount,
@@ -129,6 +129,7 @@ export class RouterService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 

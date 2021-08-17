@@ -18,6 +18,7 @@ import {
 } from './models/pair.args';
 import { TransactionPairService } from './transactions-pair.service';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver(of => PairModel)
 export class PairResolver {
@@ -29,53 +30,95 @@ export class PairResolver {
 
     @ResolveField()
     async firstToken(@Parent() parent: PairModel) {
-        return await this.pairService.getFirstToken(parent.address);
+        try {
+            return await this.pairService.getFirstToken(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async secondToken(@Parent() parent: PairModel) {
-        return await this.pairService.getSecondToken(parent.address);
+        try {
+            return await this.pairService.getSecondToken(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async liquidityPoolToken(@Parent() parent: PairModel) {
-        return await this.pairService.getLpToken(parent.address);
+        try {
+            return await this.pairService.getLpToken(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async firstTokenPrice(@Parent() parent: PairModel) {
-        return await this.pairService.getFirstTokenPrice(parent.address);
+        try {
+            return await this.pairService.getFirstTokenPrice(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async firstTokenPriceUSD(@Parent() parent: PairModel) {
-        return await this.pairService.getFirstTokenPriceUSD(parent.address);
+        try {
+            return await this.pairService.getFirstTokenPriceUSD(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async secondTokenPriceUSD(@Parent() parent: PairModel) {
-        return await this.pairService.getSecondTokenPriceUSD(parent.address);
+        try {
+            return await this.pairService.getSecondTokenPriceUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async secondTokenPrice(@Parent() parent: PairModel) {
-        return await this.pairService.getSecondTokenPrice(parent.address);
+        try {
+            return await this.pairService.getSecondTokenPrice(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async liquidityPoolTokenPriceUSD(@Parent() parent: PairModel) {
-        return await this.pairService.getLpTokenPriceUSD(parent.address);
+        try {
+            return await this.pairService.getLpTokenPriceUSD(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async info(@Parent() pair: PairModel) {
         const { address } = pair;
-        return await this.pairService.getPairInfoMetadata(address);
+        try {
+            return await this.pairService.getPairInfoMetadata(address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField()
     async state(@Parent() parent: PairModel) {
-        return await this.pairService.getState(parent.address);
+        try {
+            return await this.pairService.getState(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => String)
@@ -84,11 +127,15 @@ export class PairResolver {
         @Args('tokenInID') tokenInID: string,
         @Args('amount') amount: string,
     ) {
-        return await this.pairService.getAmountOut(
-            pairAddress,
-            tokenInID,
-            amount,
-        );
+        try {
+            return await this.pairService.getAmountOut(
+                pairAddress,
+                tokenInID,
+                amount,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => String)
@@ -97,11 +144,15 @@ export class PairResolver {
         @Args('tokenOutID') tokenOutID: string,
         @Args('amount') amount: string,
     ) {
-        return await this.pairService.getAmountIn(
-            pairAddress,
-            tokenOutID,
-            amount,
-        );
+        try {
+            return await this.pairService.getAmountIn(
+                pairAddress,
+                tokenOutID,
+                amount,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => String)
@@ -110,17 +161,25 @@ export class PairResolver {
         @Args('tokenInID') tokenInID: string,
         @Args('amount') amount: string,
     ) {
-        return await this.pairService.getEquivalentForLiquidity(
-            pairAddress,
-            tokenInID,
-            amount,
-        );
+        try {
+            return await this.pairService.getEquivalentForLiquidity(
+                pairAddress,
+                tokenInID,
+                amount,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(JwtAuthenticateGuard)
     @Query(returns => [TemporaryFundsModel])
     async getTemporaryFunds(@Args('callerAddress') callerAddress: string) {
-        return await this.pairService.getTemporaryFunds(callerAddress);
+        try {
+            return await this.pairService.getTemporaryFunds(callerAddress);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => LiquidityPosition)
@@ -128,10 +187,14 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('liquidityAmount') liquidityAmount: string,
     ) {
-        return await this.pairService.getLiquidityPosition(
-            pairAddress,
-            liquidityAmount,
-        );
+        try {
+            return await this.pairService.getLiquidityPosition(
+                pairAddress,
+                liquidityAmount,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(JwtAuthenticateGuard)

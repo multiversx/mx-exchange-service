@@ -8,6 +8,7 @@ import {
 } from './models/distribution.model';
 import { TransactionsDistributionService } from './transaction-distribution.service';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver(of => DistributionModel)
 export class DistributionResolver {
@@ -20,12 +21,20 @@ export class DistributionResolver {
 
     @ResolveField()
     async communityDistribution(): Promise<CommunityDistributionModel> {
-        return await this.distributionService.getCommunityDistribution();
+        try {
+            return await this.distributionService.getCommunityDistribution();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(returns => DistributionModel)
     async distribution(): Promise<DistributionModel> {
-        return await this.distributionService.getDistributionInfo();
+        try {
+            return await this.distributionService.getDistributionInfo();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(JwtAuthenticateGuard)

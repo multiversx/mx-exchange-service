@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
-import { cacheConfig, farmsConfig } from '../../config';
+import { farmsConfig } from '../../config';
 import { FarmService } from '../farm/farm.service';
 import { PairService } from '../pair/pair.service';
 import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
@@ -29,7 +29,6 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../services/caching/cache.service';
-import * as Redis from 'ioredis';
 import { oneMinute } from '../../helpers/helpers';
 
 export interface TradingInfoType {
@@ -39,8 +38,6 @@ export interface TradingInfoType {
 
 @Injectable()
 export class AnalyticsService {
-    private redisClient: Redis.Redis;
-
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly context: ContextService,
@@ -52,9 +49,7 @@ export class AnalyticsService {
         private readonly transactionMapping: TransactionMappingService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-        this.redisClient = this.cachingService.getClient();
-    }
+    ) {}
 
     async getTokenPriceUSD(tokenID: string): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(tokenID, 'tokenPriceUSD');
@@ -62,7 +57,6 @@ export class AnalyticsService {
             const getTokenPriceUSD = () => this.computeTokenPriceUSD(tokenID);
 
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getTokenPriceUSD,
                 oneMinute(),
@@ -94,7 +88,6 @@ export class AnalyticsService {
                 this.computeFarmLockedValueUSD(farmAddress);
 
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getFarmLockedValueUSD,
                 oneMinute() * 2,
@@ -134,7 +127,6 @@ export class AnalyticsService {
             const getTotalValueLockedUSD = () =>
                 this.computeTotalValueLockedUSD();
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getTotalValueLockedUSD,
                 oneMinute() * 2,
@@ -191,7 +183,6 @@ export class AnalyticsService {
             const getTotalAgregatedRewards = () =>
                 this.computeTotalAgregatedRewards(days);
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getTotalAgregatedRewards,
                 oneMinute() * 2,
@@ -234,7 +225,6 @@ export class AnalyticsService {
             const getTotalTokenSupply = () =>
                 this.computeTotalTokenSupply(tokenID);
             return this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getTotalTokenSupply,
                 oneMinute() * 2,

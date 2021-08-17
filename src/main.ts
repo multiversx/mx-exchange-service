@@ -6,6 +6,7 @@ import { PrivateAppModule } from './private.app.module';
 import { CacheWarmerModule } from './services/cache.warmer.module';
 import { PubSubModule } from './services/pub.sub.module';
 import { LoggingInterceptor } from './utils/logging.interceptor';
+import { ApiConfigService } from './helpers/api.config.service';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -13,21 +14,25 @@ async function bootstrap() {
     const app = await NestFactory.create(PublicAppModule);
 
     app.useGlobalInterceptors(new LoggingInterceptor());
+    const apiConfigService = app.get<ApiConfigService>(ApiConfigService);
 
-    await app.listen(parseInt(process.env.PORT), process.env.LISTEN_ADDRESS);
+    await app.listen(
+        apiConfigService.getPublicAppPort(),
+        apiConfigService.getPublicAppListenAddress(),
+    );
 
-    if (process.env.ENABLE_PRIVATE_API === 'true') {
+    if (apiConfigService.isPrivateAppActive()) {
         const privateApp = await NestFactory.create(PrivateAppModule);
         await privateApp.listen(
-            parseInt(process.env.PRIVATE_PORT),
-            process.env.PRIVATE_LISTEN_ADDRESS,
+            apiConfigService.getPrivateAppPort(),
+            apiConfigService.getPrivateAppListenAddress(),
         );
     }
-    if (process.env.ENABLE_CACHE_WARMER === 'true') {
+    if (apiConfigService.isCacheWarmerCronActive()) {
         const processorApp = await NestFactory.create(CacheWarmerModule);
         await processorApp.listen(
-            parseInt(process.env.CACHEWARMER_PORT),
-            process.env.LISTEN_ADDRESS,
+            apiConfigService.getCacheWarmerPort(),
+            apiConfigService.getPublicAppListenAddress(),
         );
     }
 
@@ -36,9 +41,7 @@ async function bootstrap() {
         {
             transport: Transport.REDIS,
             options: {
-                url: `redis://${process.env.REDIS_URL}:${parseInt(
-                    process.env.REDIS_PORT,
-                )}`,
+                url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
                 retryDelay: 1000,
                 retryAttempts: 10,
                 retry_strategy: function(_: any) {

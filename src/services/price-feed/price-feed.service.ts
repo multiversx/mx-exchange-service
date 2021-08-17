@@ -2,7 +2,6 @@ import { HttpService, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { CachingService } from '../caching/cache.service';
-import * as Redis from 'ioredis';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
@@ -13,7 +12,6 @@ import { oneMinute } from '../../helpers/helpers';
 @Injectable()
 export class PriceFeedService {
     private readonly priceFeedUrl: string;
-    private redisClient: Redis.Redis;
 
     constructor(
         private readonly httpService: HttpService,
@@ -21,7 +19,6 @@ export class PriceFeedService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.priceFeedUrl = process.env.ELRONDDATA_URL;
-        this.redisClient = this.cachingService.getClient();
     }
 
     async getTokenPrice(tokenName: string): Promise<BigNumber> {
@@ -30,7 +27,6 @@ export class PriceFeedService {
             const getTokenPrice = () => this.getTokenPriceRaw(tokenName);
 
             const tokenPrice = await this.cachingService.getOrSet(
-                this.redisClient,
                 cacheKey,
                 getTokenPrice,
                 oneMinute(),

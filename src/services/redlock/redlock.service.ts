@@ -1,16 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { RedisService } from 'nestjs-redis';
-import * as Redis from 'ioredis';
+import { CachingService } from '../caching/cache.service';
 
 export type BooleanResponse = 1 | 0;
 @Injectable()
 export class RedlockService {
-    private readonly redisClient: Redis.Redis;
-
-    constructor(private redisService: RedisService) {
-        this.redisClient = this.redisService.getClient();
-    }
-
+    constructor(private readonly cacheService: CachingService) {}
     /**
      * Try to obtain a lock only once. if resource is already locked
      * return without trying
@@ -23,16 +17,16 @@ export class RedlockService {
     ): Promise<BooleanResponse> {
         const date = new Date();
         date.setSeconds(date.getSeconds() + timeoutSeconds);
-        const lock = await this.redisClient.setnx(resource, date.toString());
+        const lock = await this.cacheService.set(resource, date.toString());
 
-        if (lock == 0) {
-            return lock;
+        if (!lock) {
+            return 0;
         }
         await this.expire(resource, timeoutSeconds);
-        return lock;
+        return 1;
     }
 
     private expire(resource: string, ttlSecond: number) {
-        return this.redisClient.expire(resource, ttlSecond);
+        return this.cacheService.delete(resource);
     }
 }

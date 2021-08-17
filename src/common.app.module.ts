@@ -4,9 +4,9 @@ import {
     utilities as nestWinstonModuleUtilities,
     WinstonModule,
 } from 'nest-winston';
-import { RedisModule } from 'nestjs-redis';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
+import { ApiConfigService } from './helpers/api.config.service';
 
 const logTransports: Transport[] = [
     new winston.transports.Console({
@@ -14,6 +14,7 @@ const logTransports: Transport[] = [
             winston.format.timestamp(),
             nestWinstonModuleUtilities.format.nestLike(),
         ),
+        level: 'debug',
     }),
 ];
 
@@ -38,13 +39,8 @@ if (!!process.env.LOG_FILE) {
         WinstonModule.forRoot({
             transports: logTransports,
         }),
-        RedisModule.register([
-            {
-                host: process.env.REDIS_URL,
-                port: parseInt(process.env.REDIS_PORT),
-                password: process.env.REDIS_PASSWORD,
-            },
-        ]),
     ],
+    providers: [ApiConfigService],
+    exports: [ApiConfigService],
 })
 export class CommonAppModule {}
