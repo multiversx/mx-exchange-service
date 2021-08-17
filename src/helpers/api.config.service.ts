@@ -48,23 +48,23 @@ export class ApiConfigService {
     }
 
     isCacheWarmerCronActive(): boolean {
-        const cacheWramerActive = this.configService.get<boolean>(
+        const cacheWramerActive = this.configService.get<string>(
             'ENABLE_CACHE_WARMER',
         );
         if (!cacheWramerActive) {
             throw new Error('No cache warmer flag present');
         }
-        return cacheWramerActive;
+        return cacheWramerActive === 'true';
     }
 
     isPrivateAppActive(): boolean {
-        const privateAppActive = this.configService.get<boolean>(
+        const privateAppActive = this.configService.get<string>(
             'ENABLE_PRIVATE_API',
         );
         if (!privateAppActive) {
             throw new Error('No private api flag present');
         }
-        return privateAppActive;
+        return privateAppActive === 'true';
     }
 
     getRedisUrl(): string {
