@@ -82,10 +82,10 @@ export class FarmServiceMock {
         return farmMetadata.address;
     }
 
-    async decodeFarmTokenAttributes(
+    decodeFarmTokenAttributes(
         identifier: string,
         attributes: string,
-    ): Promise<FarmTokenAttributesModel> {
+    ): FarmTokenAttributesModel {
         return {
             identifier: identifier,
             attributes: attributes,

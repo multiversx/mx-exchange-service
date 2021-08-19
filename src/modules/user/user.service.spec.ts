@@ -28,6 +28,7 @@ import * as Transport from 'winston-transport';
 import { WrapService } from '../wrapping/wrap.service';
 import { WrapServiceMock } from '../wrapping/wrap.test-mocks';
 import { ElrondApiServiceMock } from '../../services/elrond-communication/elrond.api.service.mock';
+import { UserFarmToken } from './models/user.model';
 
 describe('UserService', () => {
     let service: UserService;
@@ -159,7 +160,7 @@ describe('UserService', () => {
                 limit: 10,
             }),
         ).toEqual([
-            {
+            new UserFarmToken({
                 collection: 'FMT-1234',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
@@ -187,7 +188,7 @@ describe('UserService', () => {
                 uris: [],
                 url: '',
                 tags: [],
-            },
+            }),
         ]);
     });
 });
