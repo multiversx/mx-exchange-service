@@ -1,4 +1,4 @@
 export enum ElasticSortOrder {
-  descending = 'desc',
-  ascending = 'asc'
+    descending = 'desc',
+    ascending = 'asc',
 }

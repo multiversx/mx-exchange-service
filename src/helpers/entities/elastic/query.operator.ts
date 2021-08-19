@@ -1,4 +1,4 @@
 export enum QueryOperator {
-  AND = 'AND',
-  OR = 'OR'
+    AND = 'AND',
+    OR = 'OR',
 }

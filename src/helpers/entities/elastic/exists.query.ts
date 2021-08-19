@@ -1,8 +1,7 @@
-import { AbstractQuery } from "./abstract.query";
+import { AbstractQuery } from './abstract.query';
 
 export class ExistsQuery extends AbstractQuery {
-
-  buildQuery(key: string): any {
-    return { exists: { field: key } };
-  }
+    buildQuery(key: string): any {
+        return { exists: { field: key } };
+    }
 }

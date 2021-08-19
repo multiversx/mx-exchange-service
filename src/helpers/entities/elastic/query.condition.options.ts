@@ -1,4 +1,4 @@
 export enum QueryConditionOptions {
-  should = 'should',
-  must = 'must'
+    should = 'should',
+    must = 'must',
 }

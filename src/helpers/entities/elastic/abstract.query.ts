@@ -1,19 +1,23 @@
-import { QueryOperator } from "./query.operator";
+import { QueryOperator } from './query.operator';
 
 export abstract class AbstractQuery {
-  private query: any;
+    private query: any;
 
-  constructor(
-    key: string,
-    value: any | undefined,
-    operator: QueryOperator | undefined
-  ) {
-    this.query = this.buildQuery(key, value, operator);
-  }
+    constructor(
+        key: string,
+        value: any | undefined,
+        operator: QueryOperator | undefined,
+    ) {
+        this.query = this.buildQuery(key, value, operator);
+    }
 
-  abstract buildQuery(key: string, value: any | undefined, operator: QueryOperator | undefined): any;
+    abstract buildQuery(
+        key: string,
+        value: any | undefined,
+        operator: QueryOperator | undefined,
+    ): any;
 
-  getQuery(): any {
-    return this.query;
-  }
+    getQuery(): any {
+        return this.query;
+    }
 }
