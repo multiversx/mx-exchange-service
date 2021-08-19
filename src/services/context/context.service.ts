@@ -18,6 +18,7 @@ import { RouterService } from '../../modules/router/router.service';
 import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { oneHour } from '../../helpers/helpers';
+import { NftToken } from 'src/models/tokens/nftToken.model';
 
 @Injectable()
 export class ContextService {
@@ -129,6 +130,7 @@ export class ContextService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
         }
     }
 
@@ -150,6 +152,53 @@ export class ContextService {
                 error,
             );
             this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getNftMetadata(nftTokenID: string): Promise<NftToken> {
+        const cacheKey = this.getContextCacheKey(nftTokenID);
+        try {
+            const getNftMetadata = () =>
+                this.apiService.getService().getNFTToken(nftTokenID);
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getNftMetadata,
+                oneHour(),
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                ContextService.name,
+                this.getNftMetadata.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+            console.log(error);
+            throw error;
+        }
+    }
+
+    async getCurrentEpoch(): Promise<number> {
+        const cacheKey = this.getContextCacheKey('currentEpoch');
+        try {
+            const getCurrentEpoch = async () =>
+                (await this.apiService.getStats()).epoch;
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getCurrentEpoch,
+                oneHour(),
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                ContextService.name,
+                this.getCurrentEpoch.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+            console.log(error);
+            throw error;
         }
     }
 

@@ -110,8 +110,7 @@ export class ProxyService {
                 arg.attributes,
             );
 
-            const farmToken = await this.apiService.getNftByTokenIdentifier(
-                scAddress.proxyDexAddress,
+            const farmToken = await this.context.getNftMetadata(
                 decodedAttributes.farmTokenIdentifier,
             );
             const decodedFarmAttributes = this.farmService.decodeFarmTokenAttributes(
