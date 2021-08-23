@@ -9,7 +9,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { MetricsCollector } from '../../utils/metrics.collector';
-import { Stats } from 'src/models/stats.model';
+import { Stats } from '../../models/stats.model';
 
 @Injectable()
 export class ElrondApiService {

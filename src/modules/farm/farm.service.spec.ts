@@ -12,7 +12,7 @@ import { ContextServiceMock } from '../../services/context/context.service.mocks
 import { CommonAppModule } from '../../common.app.module';
 import { CachingModule } from '../../services/caching/cache.module';
 
-describe('FarmStatisticsService', () => {
+describe('FarmService', () => {
     let service: FarmService;
 
     const AbiFarmServiceProvider = {

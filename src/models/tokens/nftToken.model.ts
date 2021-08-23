@@ -15,4 +15,8 @@ export class NftToken {
     @Field() url: string;
     @Field(type => [String]) tags: string[];
     @Field() balance: string;
+
+    constructor(init?: Partial<NftToken>) {
+        Object.assign(this, init);
+    }
 }
