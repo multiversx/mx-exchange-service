@@ -9,6 +9,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { MetricsCollector } from '../../utils/metrics.collector';
+import { Stats } from '../../models/stats.model';
 
 @Injectable()
 export class ElrondApiService {
@@ -59,19 +60,20 @@ export class ElrondApiService {
         return response;
     }
 
-    async getCurrentEpoch(): Promise<number> {
+    async getStats(): Promise<Stats> {
         try {
-            const block = await this.doGetGeneric(
-                this.getCurrentEpoch.name,
-                'blocks?size=1',
+            const stats = await this.doGetGeneric(
+                this.getStats.name,
+                'stats',
                 resonse => resonse,
             );
-            return block[0].epoch;
+            return new Stats(stats);
         } catch (error) {
-            this.logger.error('An error occurred while get current epoch', {
-                path: 'ElrondApiService.getCurrentEpoch',
+            this.logger.error('An error occurred while get stats', {
+                path: 'ElrondApiService.getStats',
                 error,
             });
+            throw error;
         }
     }
 

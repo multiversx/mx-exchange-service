@@ -97,7 +97,7 @@ export class LockedAssetService {
         args: DecodeAttributesArgs,
     ): Promise<LockedAssetAttributes[]> {
         const decodedBatchAttributes = [];
-        const currentEpoch = await this.apiService.getCurrentEpoch();
+        const currentEpoch = await this.context.getCurrentEpoch();
         for (const lockedAsset of args.batchAttributes) {
             const attributesBuffer = Buffer.from(
                 lockedAsset.attributes,

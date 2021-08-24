@@ -267,11 +267,15 @@ export class AnalyticsService {
             return this.getTokenSupply(contract, tokenID);
         });
         const tokenSupplies = await Promise.all(tokenSuppliesPromises);
+        const token = await this.context.getTokenMetadata(tokenID);
 
         let totalTokenSupply = new BigNumber(0);
         for (const tokenSupply of tokenSupplies) {
             totalTokenSupply = totalTokenSupply.plus(tokenSupply);
         }
+        totalTokenSupply = totalTokenSupply
+            .plus(token.minted)
+            .minus(token.burnt);
 
         return totalTokenSupply.toFixed();
     }

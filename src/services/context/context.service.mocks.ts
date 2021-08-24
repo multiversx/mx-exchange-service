@@ -48,4 +48,8 @@ export class ContextServiceMock {
             canWipe: true,
         };
     }
+
+    async getCurrentEpoch(): Promise<number> {
+        return 1;
+    }
 }
