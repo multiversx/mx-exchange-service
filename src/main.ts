@@ -7,6 +7,7 @@ import { CacheWarmerModule } from './services/cache.warmer.module';
 import { PubSubModule } from './services/pub.sub.module';
 import { LoggingInterceptor } from './utils/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
+import { WebSocketModule } from './modules/websocket/websocket.module';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -35,6 +36,22 @@ async function bootstrap() {
             apiConfigService.getPublicAppListenAddress(),
         );
     }
+
+    const eventsApp = await NestFactory.createMicroservice<MicroserviceOptions>(
+        WebSocketModule,
+        {
+            transport: Transport.REDIS,
+            options: {
+                url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
+                retryDelay: 1000,
+                retryAttempts: 10,
+                retry_strategy: function(_: any) {
+                    return 1000;
+                },
+            },
+        },
+    );
+    eventsApp.listen(() => console.log('Started events microservice'));
 
     const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
         PubSubModule,
