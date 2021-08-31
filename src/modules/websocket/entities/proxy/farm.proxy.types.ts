@@ -26,3 +26,11 @@ export type EnterFarmProxyEventType = FarmProxyEventType & {
     createdWithMerge: boolean;
 };
 
+export type ExitFarmProxyEventType = FarmProxyEventType & {
+    rewardToken: {
+        tokenID: string;
+        tokenNonce: number;
+        amount: string;
+    };
+};
+
