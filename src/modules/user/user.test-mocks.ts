@@ -1,6 +1,6 @@
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import BigNumber from 'bignumber.js';
-import { FarmTokenAttributesModel } from '../farm/models/farm.model';
+import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
 
 const pairsMetadata = [
     {
@@ -82,11 +82,11 @@ export class FarmServiceMock {
         return farmMetadata.address;
     }
 
-    async decodeFarmTokenAttributes(
+    decodeFarmTokenAttributes(
         identifier: string,
         attributes: string,
-    ): Promise<FarmTokenAttributesModel> {
-        return {
+    ): FarmTokenAttributesModel {
+        return new FarmTokenAttributesModel({
             identifier: identifier,
             attributes: attributes,
             originalEnteringEpoch: 1,
@@ -97,7 +97,7 @@ export class FarmServiceMock {
             initialFarmingAmount: '100',
             compoundedReward: '10',
             currentFarmAmount: '100',
-        };
+        });
     }
 
     async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {

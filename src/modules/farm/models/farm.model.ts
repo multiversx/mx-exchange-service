@@ -1,49 +1,7 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EsdtToken } from '../../../models/tokens/esdtToken.model';
 import { NftCollection } from '../../../models/tokens/nftCollection.model';
-
-@ObjectType()
-export class FarmTokenAttributesModel {
-    @Field()
-    identifier: string;
-    @Field()
-    attributes: string;
-    @Field()
-    rewardPerShare: string;
-    @Field(type => Int)
-    originalEnteringEpoch: number;
-    @Field(type => Int)
-    enteringEpoch: number;
-    @Field(type => Int)
-    aprMultiplier: number;
-    @Field()
-    lockedRewards: boolean;
-    @Field()
-    initialFarmingAmount: string;
-    @Field()
-    compoundedReward: string;
-    @Field()
-    currentFarmAmount: string;
-
-    constructor(init?: Partial<FarmTokenAttributesModel>) {
-        Object.assign(this, init);
-    }
-
-    static fromDecodedAttributes(
-        decodedAttributes: any,
-    ): FarmTokenAttributesModel {
-        return new FarmTokenAttributesModel({
-            rewardPerShare: decodedAttributes.rewardPerShare.toString(),
-            originalEnteringEpoch: decodedAttributes.originalEnteringEpoch.toNumber(),
-            enteringEpoch: decodedAttributes.enteringEpoch.toNumber(),
-            aprMultiplier: decodedAttributes.aprMultiplier.toNumber(),
-            lockedRewards: decodedAttributes.withLockedRewards,
-            initialFarmingAmount: decodedAttributes.initialFarmingAmount.toFixed(),
-            compoundedReward: decodedAttributes.compoundedReward.toFixed(),
-            currentFarmAmount: decodedAttributes.currentFarmAmount.toFixed(),
-        });
-    }
-}
+import { FarmTokenAttributesModel } from './farmTokenAttributes.model';
 
 @ObjectType()
 export class RewardsModel {
