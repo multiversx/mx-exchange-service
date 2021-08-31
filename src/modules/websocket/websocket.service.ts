@@ -14,6 +14,8 @@ import { AddLiquidityEvent } from './entities/pair/addLiquidity.event';
 import { RemoveLiquidityEvent } from './entities/pair/removeLiquidity.event';
 import { SwapEvent } from './entities/pair/swap.event';
 import { SwapNoFeeEvent } from './entities/pair/swapNoFee.event';
+import { AddLiquidityProxyEvent } from './entities/proxy/addLiquidityProxy.event';
+import { PairProxyEvent } from './entities/proxy/pairProxy.event';
 
 @Injectable()
 export class WebSocketService {
@@ -59,6 +61,16 @@ export class WebSocketService {
                 address:
                     'erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c',
                 identifier: 'compound_rewards',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqdkwc004l832gtshfp4k2x62upawv46xa0n4s7746h6',
+                identifier: 'add_liquidity_proxy',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqdkwc004l832gtshfp4k2x62upawv46xa0n4s7746h6',
+                identifier: 'remove_liquidity_proxy',
             },
         ],
     };
@@ -143,6 +155,22 @@ export class WebSocketService {
                         const compoundRewardsEvent = new RewardsEvent(rawEvent);
                         console.log({
                             compoundRewardsEvent: compoundRewardsEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'add_liquidity_proxy':
+                        const addLiquidityProxyEvent = new AddLiquidityProxyEvent(
+                            rawEvent,
+                        );
+                        console.log({
+                            addLiquidityProxyEvent: addLiquidityProxyEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'remove_liquidity_proxy':
+                        const removeLiquidityProxyEvent = new PairProxyEvent(
+                            rawEvent,
+                        );
+                        console.log({
+                            removeLiquidityProxyEvent: removeLiquidityProxyEvent.toPlainObject(),
                         });
                         break;
                 }
