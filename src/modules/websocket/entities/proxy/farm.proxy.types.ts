@@ -34,3 +34,41 @@ export type ExitFarmProxyEventType = FarmProxyEventType & {
     };
 };
 
+export type RewardsProxyEventType = GenericEventType & {
+    farmAddress: string;
+    oldWrappedFarmToken: {
+        tokenID: string;
+        tokenNonce: number;
+        amount: string;
+    };
+    newWrappedFarmToken: {
+        tokenID: string;
+        tokenNonce: number;
+        amount: string;
+    };
+    oldWrappedFarmAttributes: {
+        farmTokenID: string;
+        farmTokenNonce: number;
+        farmTokenAmount: string;
+        farmingTokenID: string;
+        farmingTokenNonce: number;
+        farmingTokenAmount: string;
+    };
+    newWrappedFarmAttributes: {
+        farmTokenID: string;
+        farmTokenNonce: number;
+        farmTokenAmount: string;
+        farmingTokenID: string;
+        farmingTokenNonce: number;
+        farmingTokenAmount: string;
+    };
+    createdWithMerge: boolean;
+};
+
+export type ClaimRewardsProxyEventType = RewardsProxyEventType & {
+    rewardToken: {
+        tokenID: string;
+        tokenNonce: number;
+        amount: string;
+    };
+};
