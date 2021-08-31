@@ -1,5 +1,6 @@
 import { Address } from '@elrondnetwork/erdjs/out';
 import BigNumber from 'bignumber.js';
+import { GenericEventType } from './generic.types';
 
 export class GenericEvent {
     private address = '';
@@ -22,5 +23,14 @@ export class GenericEvent {
 
     getIdentifier(): string {
         return this.identifier;
+    }
+
+    toPlainObject(): GenericEventType {
+        return {
+            caller: this.caller.bech32(),
+            block: this.block.toNumber(),
+            epoch: this.epoch.toNumber(),
+            timestamp: this.timestamp.toNumber(),
+        };
     }
 }

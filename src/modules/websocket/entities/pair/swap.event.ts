@@ -33,7 +33,7 @@ export class SwapEvent extends GenericEvent {
 
     toPlainObject(): SwapEventType {
         return {
-            caller: this.caller.bech32(),
+            ...super.toPlainObject(),
             tokenAmountIn: {
                 tokenID: this.tokenAmountIn.tokenID.toString(),
                 amount: this.tokenAmountIn.amount.toFixed(),
@@ -49,9 +49,6 @@ export class SwapEvent extends GenericEvent {
                     amount: reserve.amount.toFixed(),
                 };
             }),
-            block: this.block.toNumber(),
-            epoch: this.epoch.toNumber(),
-            timestamp: this.timestamp.toNumber(),
         };
     }
 

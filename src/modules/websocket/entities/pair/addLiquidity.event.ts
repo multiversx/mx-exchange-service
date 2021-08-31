@@ -33,7 +33,7 @@ export class AddLiquidityEvent extends GenericEvent {
 
     toPlainObject(): AddLiquidityEventType {
         return {
-            caller: this.caller.bech32(),
+            ...super.toPlainObject(),
             firstTokenAmount: {
                 tokenID: this.firstTokenAmount.tokenID.toString(),
                 amount: this.firstTokenAmount.amount.toFixed(),
@@ -53,9 +53,6 @@ export class AddLiquidityEvent extends GenericEvent {
                     amount: reserve.amount.toFixed(),
                 };
             }),
-            block: this.block.toNumber(),
-            epoch: this.epoch.toNumber(),
-            timestamp: this.timestamp.toNumber(),
         };
     }
 
