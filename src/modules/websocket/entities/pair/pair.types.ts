@@ -35,3 +35,11 @@ export type AddLiquidityEventType = GenericEventType & {
         amount: string;
     }[];
 };
+
+export type SwapNoFeeEventType = GenericEventType & {
+    tokenAmountOut: {
+        tokenID: string;
+        amount: string;
+    };
+    destination: string;
+};

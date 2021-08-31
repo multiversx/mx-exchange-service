@@ -10,6 +10,7 @@ import { AbiPairService } from '../pair/abi-pair.service';
 import { AddLiquidityEvent } from './entities/pair/addLiquidity.event';
 import { RemoveLiquidityEvent } from './entities/pair/removeLiquidity.event';
 import { SwapEvent } from './entities/pair/swap.event';
+import { SwapNoFeeEvent } from './entities/pair/swapNoFee.event';
 
 @Injectable()
 export class WebSocketService {
@@ -30,6 +31,11 @@ export class WebSocketService {
                 address:
                     'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww',
                 identifier: 'remove_liquidity',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww',
+                identifier: 'swap_no_fee_and_forward',
             },
         ],
     };
@@ -82,6 +88,14 @@ export class WebSocketService {
                         );
                         console.log({
                             removeLiquidityEvent: removeLiquidityEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'swap_no_fee_and_forward':
+                        const swapNoFeeAndForwardEvent = new SwapNoFeeEvent(
+                            rawEvent,
+                        );
+                        console.log({
+                            swapNoFeeAndForwardEvent: swapNoFeeAndForwardEvent.toPlainObject(),
                         });
                         break;
                 }
