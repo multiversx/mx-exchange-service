@@ -15,6 +15,10 @@ import { RemoveLiquidityEvent } from './entities/pair/removeLiquidity.event';
 import { SwapEvent } from './entities/pair/swap.event';
 import { SwapNoFeeEvent } from './entities/pair/swapNoFee.event';
 import { AddLiquidityProxyEvent } from './entities/proxy/addLiquidityProxy.event';
+import { ClaimRewardsProxyEvent } from './entities/proxy/claimRewardsProxy.event';
+import { CompoundRewardsProxyEvent } from './entities/proxy/compoundRewardsProxy.event';
+import { EnterFarmProxyEvent } from './entities/proxy/enterFarmProxy.event';
+import { ExitFarmProxyEvent } from './entities/proxy/exitFarmProxy.event';
 import { PairProxyEvent } from './entities/proxy/pairProxy.event';
 
 @Injectable()
@@ -71,6 +75,26 @@ export class WebSocketService {
                 address:
                     'erd1qqqqqqqqqqqqqpgqdkwc004l832gtshfp4k2x62upawv46xa0n4s7746h6',
                 identifier: 'remove_liquidity_proxy',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqdkwc004l832gtshfp4k2x62upawv46xa0n4s7746h6',
+                identifier: 'enter_farm_proxy',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqdkwc004l832gtshfp4k2x62upawv46xa0n4s7746h6',
+                identifier: 'exit_farm_proxy',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqdkwc004l832gtshfp4k2x62upawv46xa0n4s7746h6',
+                identifier: 'claim_rewards_farm_proxy',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqdkwc004l832gtshfp4k2x62upawv46xa0n4s7746h6',
+                identifier: 'compound_rewards_farm_proxy',
             },
         ],
     };
@@ -171,6 +195,38 @@ export class WebSocketService {
                         );
                         console.log({
                             removeLiquidityProxyEvent: removeLiquidityProxyEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'enter_farm_proxy':
+                        const enterFarmProxyEvent = new EnterFarmProxyEvent(
+                            rawEvent,
+                        );
+                        console.log({
+                            enterFarmProxyEvent: enterFarmProxyEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'exit_farm_proxy':
+                        const exitFarmProxyEvent = new ExitFarmProxyEvent(
+                            rawEvent,
+                        );
+                        console.log({
+                            exitFarmProxyEvent: exitFarmProxyEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'claim_rewards_farm_proxy':
+                        const claimRewardsProxyEvent = new ClaimRewardsProxyEvent(
+                            rawEvent,
+                        );
+                        console.log({
+                            claimRewardsProxyEvent: claimRewardsProxyEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'compound_rewards_farm_proxy':
+                        const compoundRewardsProxyEvent = new CompoundRewardsProxyEvent(
+                            rawEvent,
+                        );
+                        console.log({
+                            compoundRewardsProxyEvent: compoundRewardsProxyEvent.toPlainObject(),
                         });
                         break;
                 }
