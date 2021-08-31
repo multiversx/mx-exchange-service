@@ -1,12 +1,5 @@
-import {
-    BigUIntType,
-    BinaryCodec,
-    StructFieldDefinition,
-    StructType,
-    TokenIdentifierType,
-    U64Type,
-} from '@elrondnetwork/erdjs/out';
-import { WrappedFarmTokenAttributesModel } from './models/proxy.model';
+import { BinaryCodec } from '@elrondnetwork/erdjs/out';
+import { WrappedFarmTokenAttributesModel } from './models/wrappedFarmTokenAttributes.model';
 import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
 
 function decimalToHex(d: number): string {
@@ -30,18 +23,7 @@ export function decodeWrappedLPTokenAttributes(attributes: string) {
 export function decodeWrappedFarmTokenAttributes(attributes: string) {
     const attributesBuffer = Buffer.from(attributes, 'base64');
     const codec = new BinaryCodec();
-    const structType = new StructType('WrappedFarmTokenAttributes', [
-        new StructFieldDefinition('farmTokenID', '', new TokenIdentifierType()),
-        new StructFieldDefinition('farmTokenNonce', '', new U64Type()),
-        new StructFieldDefinition('farmTokenAmount', '', new BigUIntType()),
-        new StructFieldDefinition(
-            'farmingTokenID',
-            '',
-            new TokenIdentifierType(),
-        ),
-        new StructFieldDefinition('farmingTokenNonce', '', new U64Type()),
-        new StructFieldDefinition('farmingTokenAmount', '', new BigUIntType()),
-    ]);
+    const structType = WrappedFarmTokenAttributesModel.getStructure();
 
     const [decoded, decodedLength] = codec.decodeNested(
         attributesBuffer,

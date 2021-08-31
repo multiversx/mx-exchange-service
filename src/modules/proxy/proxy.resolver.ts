@@ -16,12 +16,9 @@ import {
     ExitFarmProxyArgs,
 } from './models/proxy-farm.args';
 import { ProxyPairService } from './proxy-pair/proxy-pair.service';
-import {
-    GenericEsdtAmountPair,
-    ProxyModel,
-    WrappedFarmTokenAttributesModel,
-} from './models/proxy.model';
+import { GenericEsdtAmountPair, ProxyModel } from './models/proxy.model';
 import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
+import { WrappedFarmTokenAttributesModel } from './models/wrappedFarmTokenAttributes.model';
 import { ProxyFarmService } from './proxy-farm/proxy-farm.service';
 import { TransactionsProxyPairService } from './proxy-pair/proxy-pair-transactions.service';
 import { TransactionsProxyFarmService } from './proxy-farm/proxy-farm-transactions.service';
