@@ -47,26 +47,6 @@ export class ProxyModel {
 }
 
 @ObjectType()
-export class WrappedLpTokenAttributesModel {
-    @Field()
-    identifier: string;
-    @Field()
-    attributes: string;
-    @Field()
-    lpTokenID: string;
-    @Field()
-    lpTokenTotalAmount: string;
-    @Field()
-    lockedAssetsInvested: string;
-    @Field(type => Int)
-    lockedAssetsNonce: number;
-
-    constructor(init?: Partial<WrappedLpTokenAttributesModel>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
 export class WrappedFarmTokenAttributesModel {
     @Field()
     identifier: string;

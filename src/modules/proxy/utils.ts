@@ -7,6 +7,7 @@ import {
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { WrappedFarmTokenAttributesModel } from './models/proxy.model';
+import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
 
 function decimalToHex(d: number): string {
     const h = d.toString(16);
@@ -16,16 +17,7 @@ function decimalToHex(d: number): string {
 export function decodeWrappedLPTokenAttributes(attributes: string) {
     const attributesBuffer = Buffer.from(attributes, 'base64');
     const codec = new BinaryCodec();
-    const structType = new StructType('WrappedLpTokenAttributes', [
-        new StructFieldDefinition('lpTokenID', '', new TokenIdentifierType()),
-        new StructFieldDefinition('lpTokenTotalAmount', '', new BigUIntType()),
-        new StructFieldDefinition(
-            'lockedAssetsInvested',
-            '',
-            new BigUIntType(),
-        ),
-        new StructFieldDefinition('lockedAssetsNonce', '', new U64Type()),
-    ]);
+    const structType = WrappedLpTokenAttributesModel.getStructure();
 
     const [decoded, decodedLength] = codec.decodeNested(
         attributesBuffer,

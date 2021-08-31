@@ -20,8 +20,8 @@ import {
     GenericEsdtAmountPair,
     ProxyModel,
     WrappedFarmTokenAttributesModel,
-    WrappedLpTokenAttributesModel,
 } from './models/proxy.model';
+import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
 import { ProxyFarmService } from './proxy-farm/proxy-farm.service';
 import { TransactionsProxyPairService } from './proxy-pair/proxy-pair-transactions.service';
 import { TransactionsProxyFarmService } from './proxy-farm/proxy-farm-transactions.service';
