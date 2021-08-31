@@ -9,6 +9,7 @@ import WebSocket from 'ws';
 import { AbiPairService } from '../pair/abi-pair.service';
 import { EnterFarmEvent } from './entities/farm/enterFarm.event';
 import { ExitFarmEvent } from './entities/farm/exitFarm.event';
+import { RewardsEvent } from './entities/farm/rewards.event';
 import { AddLiquidityEvent } from './entities/pair/addLiquidity.event';
 import { RemoveLiquidityEvent } from './entities/pair/removeLiquidity.event';
 import { SwapEvent } from './entities/pair/swap.event';
@@ -48,6 +49,16 @@ export class WebSocketService {
                 address:
                     'erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c',
                 identifier: 'exit_farm',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c',
+                identifier: 'claim_rewards',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c',
+                identifier: 'compound_rewards',
             },
         ],
     };
@@ -120,6 +131,18 @@ export class WebSocketService {
                         const exitFarmEvent = new ExitFarmEvent(rawEvent);
                         console.log({
                             exitFarmEvent: exitFarmEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'claim_rewards':
+                        const claimRewardsEvent = new RewardsEvent(rawEvent);
+                        console.log({
+                            claimRewardsEvent: claimRewardsEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'compound_rewards':
+                        const compoundRewardsEvent = new RewardsEvent(rawEvent);
+                        console.log({
+                            compoundRewardsEvent: compoundRewardsEvent.toPlainObject(),
                         });
                         break;
                 }
