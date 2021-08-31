@@ -11,3 +11,9 @@ export type FftTokenAmountPairType = {
     tokenID: string;
     amount: BigNumber;
 };
+
+export type GenericTokenAmountPairType = {
+    tokenID: string;
+    tokenNonce: BigNumber;
+    amount: BigNumber;
+};
