@@ -8,6 +8,7 @@ import { Logger } from 'winston';
 import WebSocket from 'ws';
 import { AbiPairService } from '../pair/abi-pair.service';
 import { EnterFarmEvent } from './entities/farm/enterFarm.event';
+import { ExitFarmEvent } from './entities/farm/exitFarm.event';
 import { AddLiquidityEvent } from './entities/pair/addLiquidity.event';
 import { RemoveLiquidityEvent } from './entities/pair/removeLiquidity.event';
 import { SwapEvent } from './entities/pair/swap.event';
@@ -42,6 +43,11 @@ export class WebSocketService {
                 address:
                     'erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c',
                 identifier: 'enter_farm',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c',
+                identifier: 'exit_farm',
             },
         ],
     };
@@ -108,6 +114,12 @@ export class WebSocketService {
                         const enterFarmEvent = new EnterFarmEvent(rawEvent);
                         console.log({
                             enterFarmEvent: enterFarmEvent.toPlainObject(),
+                        });
+                        break;
+                    case 'exit_farm':
+                        const exitFarmEvent = new ExitFarmEvent(rawEvent);
+                        console.log({
+                            exitFarmEvent: exitFarmEvent.toPlainObject(),
                         });
                         break;
                 }
