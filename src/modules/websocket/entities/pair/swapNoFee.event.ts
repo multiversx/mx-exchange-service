@@ -6,16 +6,19 @@ import {
     StructType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
-import { FftTokenAmountPairStruct } from 'src/utils/common.structures';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { FftTokenAmountPair } from 'src/models/fftTokenAmountPair.model';
 import { GenericEvent } from '../generic.event';
-import { FftTokenAmountPairType } from '../generic.types';
 import { SwapNoFeeTopics } from './pair.event.topics';
 import { SwapNoFeeEventType } from './pair.types';
 
+@ObjectType()
 export class SwapNoFeeEvent extends GenericEvent {
     private decodedTopics: SwapNoFeeTopics;
 
-    private tokenAmountOut: FftTokenAmountPairType;
+    @Field(type => FftTokenAmountPair)
+    private tokenAmountOut: FftTokenAmountPair;
+    @Field(type => String)
     private destination: Address;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -23,11 +26,16 @@ export class SwapNoFeeEvent extends GenericEvent {
         this.decodedTopics = new SwapNoFeeTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
+        this.tokenAmountOut = FftTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.tokenAmountOut,
+        );
     }
 
-    toPlainObject(): SwapNoFeeEventType {
+    toJSON(): SwapNoFeeEventType {
         return {
             ...super.toJSON(),
+            tokenAmountOut: this.tokenAmountOut.toJSON(),
+            destination: this.destination.toString(),
         };
     }
 
@@ -51,7 +59,7 @@ export class SwapNoFeeEvent extends GenericEvent {
             new StructFieldDefinition(
                 'tokenAmountOut',
                 '',
-                FftTokenAmountPairStruct(),
+                FftTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition('destination', '', new AddressType()),
             new StructFieldDefinition('block', '', new U64Type()),

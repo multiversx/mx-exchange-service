@@ -1,5 +1,4 @@
 import {
-    Address,
     AddressType,
     BigUIntType,
     BinaryCodec,
@@ -8,39 +7,55 @@ import {
     StructType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
+import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
-import { FftTokenAmountPairStruct } from 'src/utils/common.structures';
+import { FftTokenAmountPair } from 'src/models/fftTokenAmountPair.model';
 import { GenericEvent } from '../generic.event';
-import { FftTokenAmountPairType } from '../generic.types';
 import { PairEventTopics } from './pair.event.topics';
 import { AddLiquidityEventType } from './pair.types';
 
+@ObjectType()
 export class AddLiquidityEvent extends GenericEvent {
     private decodedTopics: PairEventTopics;
 
-    private firstTokenAmount: FftTokenAmountPairType;
-    private secondTokenAmount: FftTokenAmountPairType;
-    private liquidityPoolTokenAmount: FftTokenAmountPairType;
+    @Field(type => FftTokenAmountPair)
+    private firstTokenAmount: FftTokenAmountPair;
+    @Field(type => FftTokenAmountPair)
+    private secondTokenAmount: FftTokenAmountPair;
+    @Field(type => FftTokenAmountPair)
+    private liquidityPoolTokenAmount: FftTokenAmountPair;
+    @Field(type => String)
     private liquidityPoolSupply: BigNumber;
-    private pairReserves: FftTokenAmountPairType[];
+    @Field(type => [FftTokenAmountPair])
+    private pairReserves: FftTokenAmountPair[];
 
     constructor(init?: Partial<GenericEvent>) {
         super(init);
         this.decodedTopics = new PairEventTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
+        this.firstTokenAmount = FftTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.firstTokenAmount,
+        );
+        this.secondTokenAmount = FftTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.secondTokenAmount,
+        );
+        this.liquidityPoolTokenAmount = FftTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.liquidityPoolTokenAmount,
+        );
+        this.pairReserves = decodedEvent.pairReserves.map(reserve =>
+            FftTokenAmountPair.fromDecodedAttributes(reserve),
+        );
     }
 
-    toPlainObject(): AddLiquidityEventType {
+    toJSON(): AddLiquidityEventType {
         return {
             ...super.toJSON(),
+            firstTokenAmount: this.firstTokenAmount.toJSON(),
+            secondTokenAmount: this.secondTokenAmount.toJSON(),
+            liquidityPoolTokenAmount: this.liquidityPoolTokenAmount.toJSON(),
             liquidityPoolSupply: this.liquidityPoolSupply.toFixed(),
-            pairReserves: this.pairReserves.map(reserve => {
-                return {
-                    tokenID: reserve.tokenID.toString(),
-                    amount: reserve.amount.toFixed(),
-                };
-            }),
+            pairReserves: this.pairReserves.map(reserve => reserve.toJSON()),
         };
     }
 
@@ -64,17 +79,17 @@ export class AddLiquidityEvent extends GenericEvent {
             new StructFieldDefinition(
                 'firstTokenAmount',
                 '',
-                FftTokenAmountPairStruct(),
+                FftTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'secondTokenAmount',
                 '',
-                FftTokenAmountPairStruct(),
+                FftTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'liquidityPoolTokenAmount',
                 '',
-                FftTokenAmountPairStruct(),
+                FftTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'liquidityPoolSupply',
@@ -84,7 +99,7 @@ export class AddLiquidityEvent extends GenericEvent {
             new StructFieldDefinition(
                 'pairReserves',
                 '',
-                new ListType(FftTokenAmountPairStruct()),
+                new ListType(FftTokenAmountPair.getStructure()),
             ),
             new StructFieldDefinition('block', '', new U64Type()),
             new StructFieldDefinition('epoch', '', new U64Type()),

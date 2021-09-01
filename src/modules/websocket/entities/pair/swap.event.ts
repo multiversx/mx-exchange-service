@@ -1,5 +1,4 @@
 import {
-    Address,
     AddressType,
     BigUIntType,
     BinaryCodec,
@@ -8,20 +7,25 @@ import {
     StructType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
+import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
-import { FftTokenAmountPairStruct } from 'src/utils/common.structures';
+import { FftTokenAmountPair } from 'src/models/fftTokenAmountPair.model';
 import { GenericEvent } from '../generic.event';
-import { FftTokenAmountPairType } from '../generic.types';
 import { PairEventTopics } from './pair.event.topics';
 import { SwapEventType } from './pair.types';
 
+@ObjectType()
 export class SwapEvent extends GenericEvent {
     private decodedTopics: PairEventTopics;
 
-    private tokenAmountIn: FftTokenAmountPairType;
-    private tokenAmountOut: FftTokenAmountPairType;
-    private feeAmount: BigNumber;
-    private pairReserves: FftTokenAmountPairType[];
+    @Field(type => FftTokenAmountPair)
+    private tokenAmountIn: FftTokenAmountPair;
+    @Field(type => FftTokenAmountPair)
+    private tokenAmountOut: FftTokenAmountPair;
+    @Field(type => String)
+    feeAmount: BigNumber;
+    @Field(type => [FftTokenAmountPair])
+    private pairReserves: FftTokenAmountPair[];
 
     constructor(init?: Partial<GenericEvent>) {
         super(init);
@@ -29,17 +33,25 @@ export class SwapEvent extends GenericEvent {
         const decodedEvent = this.decodeEvent();
 
         Object.assign(this, decodedEvent);
+        this.tokenAmountIn = FftTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.tokenAmountIn,
+        );
+        this.tokenAmountOut = FftTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.tokenAmountOut,
+        );
+        this.pairReserves = decodedEvent.pairReserves.map(reserve =>
+            FftTokenAmountPair.fromDecodedAttributes(reserve),
+        );
     }
 
-    toPlainObject(): SwapEventType {
+    toJSON(): SwapEventType {
         return {
             ...super.toJSON(),
+            tokenAmountIn: this.tokenAmountIn.toJSON(),
+            tokenAmountOut: this.tokenAmountOut.toJSON(),
             feeAmount: this.feeAmount.toFixed(),
             pairReserves: this.pairReserves.map(reserve => {
-                return {
-                    tokenID: reserve.tokenID.toString(),
-                    amount: reserve.amount.toFixed(),
-                };
+                return reserve.toJSON();
             }),
         };
     }
@@ -68,18 +80,18 @@ export class SwapEvent extends GenericEvent {
             new StructFieldDefinition(
                 'tokenAmountIn',
                 '',
-                FftTokenAmountPairStruct(),
+                FftTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'tokenAmountOut',
                 '',
-                FftTokenAmountPairStruct(),
+                FftTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition('feeAmount', '', new BigUIntType()),
             new StructFieldDefinition(
                 'pairReserves',
                 '',
-                new ListType(FftTokenAmountPairStruct()),
+                new ListType(FftTokenAmountPair.getStructure()),
             ),
             new StructFieldDefinition('block', '', new U64Type()),
             new StructFieldDefinition('epoch', '', new U64Type()),

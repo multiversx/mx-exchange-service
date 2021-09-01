@@ -1,45 +1,22 @@
+import { FftTokenAmountPairType } from 'src/models/fftTokenAmountPair.model';
 import { GenericEventType } from '../generic.types';
 
 export type SwapEventType = GenericEventType & {
-    tokenAmountIn: {
-        tokenID: string;
-        amount: string;
-    };
-    tokenAmountOut: {
-        tokenID: string;
-        amount: string;
-    };
+    tokenAmountIn: FftTokenAmountPairType;
+    tokenAmountOut: FftTokenAmountPairType;
     feeAmount: string;
-    pairReserves: {
-        tokenID: string;
-        amount: string;
-    }[];
+    pairReserves: FftTokenAmountPairType[];
 };
 
 export type AddLiquidityEventType = GenericEventType & {
-    firstTokenAmount: {
-        tokenID: string;
-        amount: string;
-    };
-    secondTokenAmount: {
-        tokenID: string;
-        amount: string;
-    };
-    liquidityPoolTokenAmount: {
-        tokenID: string;
-        amount: string;
-    };
+    firstTokenAmount: FftTokenAmountPairType;
+    secondTokenAmount: FftTokenAmountPairType;
+    liquidityPoolTokenAmount: FftTokenAmountPairType;
     liquidityPoolSupply: string;
-    pairReserves: {
-        tokenID: string;
-        amount: string;
-    }[];
+    pairReserves: FftTokenAmountPairType[];
 };
 
 export type SwapNoFeeEventType = GenericEventType & {
-    tokenAmountOut: {
-        tokenID: string;
-        amount: string;
-    };
+    tokenAmountOut: FftTokenAmountPairType;
     destination: string;
 };
