@@ -36,7 +36,7 @@ export class ExitFarmProxyEvent extends GenericEvent {
 
     toPlainObject(): ExitFarmProxyEventType {
         return {
-            ...super.toPlainObject(),
+            ...super.toJSON(),
             farmAddress: this.farmAddress.bech32(),
             wrappedFarmToken: {
                 tokenID: this.wrappedFarmToken.tokenID.toString(),

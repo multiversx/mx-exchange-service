@@ -44,7 +44,7 @@ export class EnterFarmEvent extends GenericEvent {
 
     toPlainObject(): EnterFarmEventType {
         return {
-            ...super.toPlainObject(),
+            ...super.toJSON(),
             farmingToken: {
                 tokenID: this.farmingToken.tokenID.toString(),
                 amount: this.farmingToken.amount.toFixed(),

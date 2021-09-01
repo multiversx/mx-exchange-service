@@ -39,7 +39,7 @@ export class CompoundRewardsProxyEvent extends GenericEvent {
 
     toPlainObject(): RewardsProxyEventType {
         return {
-            ...super.toPlainObject(),
+            ...super.toJSON(),
             farmAddress: this.farmAddress.bech32(),
             oldWrappedFarmToken: {
                 tokenID: this.oldWrappedFarmToken.tokenID.toString(),

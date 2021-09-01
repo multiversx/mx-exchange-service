@@ -30,9 +30,9 @@ export class PairProxyEvent extends GenericEvent {
         );
     }
 
-    toPlainObject(): PairProxyEventType {
+    toJSON(): PairProxyEventType {
         return {
-            ...super.toPlainObject(),
+            ...super.toJSON(),
             firstToken: {
                 tokenID: this.firstToken.tokenID.toString(),
                 tokenNonce: this.firstToken.tokenNonce.toNumber(),

@@ -33,15 +33,7 @@ export class SwapEvent extends GenericEvent {
 
     toPlainObject(): SwapEventType {
         return {
-            ...super.toPlainObject(),
-            tokenAmountIn: {
-                tokenID: this.tokenAmountIn.tokenID.toString(),
-                amount: this.tokenAmountIn.amount.toFixed(),
-            },
-            tokenAmountOut: {
-                tokenID: this.tokenAmountOut.tokenID.toString(),
-                amount: this.tokenAmountOut.amount.toFixed(),
-            },
+            ...super.toJSON(),
             feeAmount: this.feeAmount.toFixed(),
             pairReserves: this.pairReserves.map(reserve => {
                 return {

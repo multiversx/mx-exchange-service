@@ -25,7 +25,7 @@ export class AddLiquidityProxyEvent extends PairProxyEvent {
 
     toPlainObject(): AddLiquidityProxyEventType {
         return {
-            ...super.toPlainObject(),
+            ...super.toJSON(),
             createdWithMerge: this.createdWithMerge,
         };
     }

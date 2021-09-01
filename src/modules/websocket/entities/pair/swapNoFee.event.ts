@@ -27,12 +27,7 @@ export class SwapNoFeeEvent extends GenericEvent {
 
     toPlainObject(): SwapNoFeeEventType {
         return {
-            ...super.toPlainObject(),
-            tokenAmountOut: {
-                tokenID: this.tokenAmountOut.tokenID.toString(),
-                amount: this.tokenAmountOut.amount.toFixed(),
-            },
-            destination: this.destination.bech32(),
+            ...super.toJSON(),
         };
     }
 

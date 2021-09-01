@@ -35,7 +35,7 @@ export class EnterFarmProxyEvent extends GenericEvent {
 
     toPlainObject(): EnterFarmProxyEventType {
         return {
-            ...super.toPlainObject(),
+            ...super.toJSON(),
             farmAddress: this.farmAddress.bech32(),
             farmingToken: {
                 tokenID: this.farmingToken.tokenID.toString(),

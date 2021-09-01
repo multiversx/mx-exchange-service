@@ -33,19 +33,7 @@ export class AddLiquidityEvent extends GenericEvent {
 
     toPlainObject(): AddLiquidityEventType {
         return {
-            ...super.toPlainObject(),
-            firstTokenAmount: {
-                tokenID: this.firstTokenAmount.tokenID.toString(),
-                amount: this.firstTokenAmount.amount.toFixed(),
-            },
-            secondTokenAmount: {
-                tokenID: this.secondTokenAmount.tokenID.toString(),
-                amount: this.secondTokenAmount.amount.toFixed(),
-            },
-            liquidityPoolTokenAmount: {
-                tokenID: this.liquidityPoolTokenAmount.tokenID.toString(),
-                amount: this.liquidityPoolTokenAmount.amount.toFixed(),
-            },
+            ...super.toJSON(),
             liquidityPoolSupply: this.liquidityPoolSupply.toFixed(),
             pairReserves: this.pairReserves.map(reserve => {
                 return {

@@ -40,7 +40,7 @@ export class ClaimRewardsProxyEvent extends GenericEvent {
 
     toPlainObject(): ClaimRewardsProxyEventType {
         return {
-            ...super.toPlainObject(),
+            ...super.toJSON(),
             farmAddress: this.farmAddress.bech32(),
             oldWrappedFarmToken: {
                 tokenID: this.oldWrappedFarmToken.tokenID.toString(),

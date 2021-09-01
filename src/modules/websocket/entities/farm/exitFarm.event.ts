@@ -43,7 +43,7 @@ export class ExitFarmEvent extends GenericEvent {
 
     toPlainObject(): ExitFarmEventType {
         return {
-            ...super.toPlainObject(),
+            ...super.toJSON(),
             farmingToken: {
                 tokenID: this.farmingToken.tokenID.toString(),
                 amount: this.farmingToken.amount.toFixed(),

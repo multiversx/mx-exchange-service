@@ -42,7 +42,7 @@ export class RewardsEvent extends GenericEvent {
 
     toPlainObject(): RewardsEventType {
         return {
-            ...super.toPlainObject(),
+            ...super.toJSON(),
             oldFarmToken: {
                 tokenID: this.oldFarmToken.tokenID.toString(),
                 tokenNonce: this.oldFarmToken.tokenNonce.toNumber(),
