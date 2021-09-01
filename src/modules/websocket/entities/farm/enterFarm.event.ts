@@ -7,28 +7,30 @@ import {
     StructType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
+import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
+import { FftTokenAmountPair } from 'src/models/fftTokenAmountPair.model';
+import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
-import {
-    FftTokenAmountPairStruct,
-    GenericTokenAmountPairStruct,
-} from 'src/utils/common.structures';
 import { GenericEvent } from '../generic.event';
-import {
-    FftTokenAmountPairType,
-    GenericTokenAmountPairType,
-} from '../generic.types';
 import { FarmEventsTopics } from './farm.event.topics';
 import { EnterFarmEventType } from './farm.types';
 
+@ObjectType()
 export class EnterFarmEvent extends GenericEvent {
     private decodedTopics: FarmEventsTopics;
 
-    private farmingToken: FftTokenAmountPairType;
-    private farmToken: GenericTokenAmountPairType;
+    @Field(type => FftTokenAmountPair)
+    private farmingToken: FftTokenAmountPair;
+    @Field(type => GenericTokenAmountPair)
+    private farmToken: GenericTokenAmountPair;
+    @Field(type => String)
     private farmSupply: BigNumber;
-    private rewardTokenReserve: FftTokenAmountPairType;
+    @Field(type => FftTokenAmountPair)
+    private rewardTokenReserve: FftTokenAmountPair;
+    @Field(type => FarmTokenAttributesModel)
     private farmAttributes: FarmTokenAttributesModel;
+    @Field()
     private createdWithMerge: boolean;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -37,28 +39,27 @@ export class EnterFarmEvent extends GenericEvent {
 
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
+        this.farmingToken = FftTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.farmingToken,
+        );
+        this.farmToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.farmToken,
+        );
+        this.rewardTokenReserve = FftTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.rewardTokenReserve,
+        );
         this.farmAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.farmAttributes,
         );
     }
 
-    toPlainObject(): EnterFarmEventType {
+    toJSON(): EnterFarmEventType {
         return {
             ...super.toJSON(),
-            farmingToken: {
-                tokenID: this.farmingToken.tokenID.toString(),
-                amount: this.farmingToken.amount.toFixed(),
-            },
-            farmToken: {
-                tokenID: this.farmToken.tokenID.toString(),
-                tokenNonce: this.farmToken.tokenNonce.toNumber(),
-                amount: this.farmToken.amount.toFixed(),
-            },
+            farmingToken: this.farmingToken.toJSON(),
+            farmToken: this.farmToken.toJSON(),
             farmSupply: this.farmSupply.toFixed(),
-            rewardTokenReserve: {
-                tokenID: this.rewardTokenReserve.tokenID.toString(),
-                amount: this.rewardTokenReserve.amount.toFixed(),
-            },
+            rewardTokenReserve: this.rewardTokenReserve.toJSON(),
             farmAttributes: this.farmAttributes.toPlainObject(),
             createdWithMerge: this.createdWithMerge,
         };
@@ -84,19 +85,19 @@ export class EnterFarmEvent extends GenericEvent {
             new StructFieldDefinition(
                 'farmingToken',
                 '',
-                FftTokenAmountPairStruct(),
+                FftTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition('farmingReserve', '', new BigUIntType()),
             new StructFieldDefinition(
                 'farmToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition('farmSupply', '', new BigUIntType()),
             new StructFieldDefinition(
                 'rewardTokenReserve',
                 '',
-                FftTokenAmountPairStruct(),
+                FftTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'farmAttributes',

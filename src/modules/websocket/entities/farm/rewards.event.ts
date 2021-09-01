@@ -7,24 +7,33 @@ import {
     StructType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
+import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
+import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
-import { GenericTokenAmountPairStruct } from 'src/utils/common.structures';
 import { GenericEvent } from '../generic.event';
-import { GenericTokenAmountPairType } from '../generic.types';
 import { FarmEventsTopics } from './farm.event.topics';
 import { RewardsEventType } from './rewards.types';
 
+@ObjectType()
 export class RewardsEvent extends GenericEvent {
     private decodedTopics: FarmEventsTopics;
 
-    private oldFarmToken: GenericTokenAmountPairType;
-    private newFarmToken: GenericTokenAmountPairType;
+    @Field(type => GenericTokenAmountPair)
+    private oldFarmToken: GenericTokenAmountPair;
+    @Field(type => GenericTokenAmountPair)
+    private newFarmToken: GenericTokenAmountPair;
+    @Field(type => String)
     private farmSupply: BigNumber;
-    private rewardToken: GenericTokenAmountPairType;
+    @Field(type => GenericTokenAmountPair)
+    private rewardToken: GenericTokenAmountPair;
+    @Field(type => String)
     private rewardTokenReserve: BigNumber;
+    @Field(type => FarmTokenAttributesModel)
     private oldFarmAttributes: FarmTokenAttributesModel;
+    @Field(type => FarmTokenAttributesModel)
     private newFarmAttributes: FarmTokenAttributesModel;
+    @Field()
     private createdWithMerge: boolean;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -32,6 +41,15 @@ export class RewardsEvent extends GenericEvent {
         this.decodedTopics = new FarmEventsTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
+        this.oldFarmToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.oldFarmToken,
+        );
+        this.newFarmToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.newFarmToken,
+        );
+        this.rewardToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.rewardToken,
+        );
         this.oldFarmAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.oldFarmAttributes,
         );
@@ -43,22 +61,10 @@ export class RewardsEvent extends GenericEvent {
     toPlainObject(): RewardsEventType {
         return {
             ...super.toJSON(),
-            oldFarmToken: {
-                tokenID: this.oldFarmToken.tokenID.toString(),
-                tokenNonce: this.oldFarmToken.tokenNonce.toNumber(),
-                amount: this.oldFarmToken.amount.toFixed(),
-            },
-            newFarmToken: {
-                tokenID: this.newFarmToken.tokenID.toString(),
-                tokenNonce: this.newFarmToken.tokenNonce.toNumber(),
-                amount: this.newFarmToken.amount.toFixed(),
-            },
+            oldFarmToken: this.oldFarmToken.toJSON(),
+            newFarmToken: this.newFarmToken.toJSON(),
             farmSupply: this.farmSupply.toFixed(),
-            rewardToken: {
-                tokenID: this.rewardToken.tokenID.toString(),
-                tokenNonce: this.rewardToken.tokenNonce.toNumber(),
-                amount: this.rewardToken.amount.toFixed(),
-            },
+            rewardToken: this.rewardToken.toJSON(),
             rewardTokenReserve: this.rewardTokenReserve.toFixed(),
             oldFarmAttributes: this.oldFarmAttributes.toPlainObject(),
             newFarmAttributes: this.newFarmAttributes.toPlainObject(),
@@ -86,18 +92,18 @@ export class RewardsEvent extends GenericEvent {
             new StructFieldDefinition(
                 'oldFarmToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'newFarmToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition('farmSupply', '', new BigUIntType()),
             new StructFieldDefinition(
                 'rewardToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'rewardTokenReserve',

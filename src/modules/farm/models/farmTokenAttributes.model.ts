@@ -10,10 +10,10 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class FarmTokenAttributesModel {
-    @Field()
-    identifier: string;
-    @Field()
-    attributes: string;
+    @Field({ nullable: true })
+    identifier?: string;
+    @Field({ nullable: true })
+    attributes?: string;
     @Field()
     rewardPerShare: string;
     @Field(type => Int)

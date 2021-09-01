@@ -1,22 +1,11 @@
+import { GenericTokenAmountPairType } from 'src/models/genericTokenAmountPair.model';
 import { GenericEventType } from '../generic.types';
 
 export type RewardsEventType = GenericEventType & {
-    oldFarmToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
-    newFarmToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
+    oldFarmToken: GenericTokenAmountPairType;
+    newFarmToken: GenericTokenAmountPairType;
     farmSupply: string;
-    rewardToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
+    rewardToken: GenericTokenAmountPairType;
     rewardTokenReserve: string;
     oldFarmAttributes: {
         rewardPerShare: string;

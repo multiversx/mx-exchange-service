@@ -1,15 +1,10 @@
+import { FftTokenAmountPairType } from 'src/models/fftTokenAmountPair.model';
+import { GenericTokenAmountPairType } from 'src/models/genericTokenAmountPair.model';
 import { GenericEventType } from '../generic.types';
 
 export type FarmEventType = GenericEventType & {
-    farmingToken: {
-        tokenID: string;
-        amount: string;
-    };
-    farmToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
+    farmingToken: FftTokenAmountPairType;
+    farmToken: GenericTokenAmountPairType;
     farmSupply: string;
     farmAttributes: {
         rewardPerShare: string;
@@ -24,19 +19,12 @@ export type FarmEventType = GenericEventType & {
 };
 
 export type EnterFarmEventType = FarmEventType & {
-    rewardTokenReserve: {
-        tokenID: string;
-        amount: string;
-    };
+    rewardTokenReserve: FftTokenAmountPairType;
     createdWithMerge: boolean;
 };
 
 export type ExitFarmEventType = FarmEventType & {
     farmingReserve: string;
-    rewardToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
+    rewardToken: GenericTokenAmountPairType;
     rewardReserve: string;
 };
