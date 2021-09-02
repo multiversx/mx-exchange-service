@@ -7,10 +7,16 @@ import { PairService } from '../pair/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
 import { ProxyService } from '../proxy/proxy.service';
-import { UserToken } from './models/user.model';
+import {
+    UserFarmToken,
+    UserLockedAssetToken,
+    UserLockedFarmToken,
+    UserLockedLPToken,
+    UserNftToken,
+    UserToken,
+} from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
-import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { UserNftTokens } from './nfttokens.union';
 import { UserTokensArgs } from './models/user.args';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
@@ -91,7 +97,7 @@ export class UserService {
             args.offset,
             args.limit,
         );
-        const userExchangeNFTs = [];
+        const userExchangeNFTs: NftToken[] = [];
         for (const userNft of userNFTs) {
             const [isFarmToken, isLockedToken] = await Promise.all([
                 this.farmService.isFarmToken(userNft.collection),
@@ -170,7 +176,7 @@ export class UserService {
             nftToken.collection,
         );
         if (farmAddress) {
-            return this.computeFarmTokenValue(farmAddress, nftToken);
+            return await this.computeFarmTokenValue(farmAddress, nftToken);
         }
 
         const [lockedMEXID, assetToken] = await Promise.all([
@@ -178,34 +184,33 @@ export class UserService {
             this.proxyService.getAssetToken(),
         ]);
         if (nftToken.collection === lockedMEXID.collection) {
-            const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
-                assetToken.identifier,
-            );
-            const denominator = new BigNumber(`1e-${assetToken.decimals}`);
-            const valueUSD = new BigNumber(nftToken.balance)
-                .multipliedBy(denominator)
-                .multipliedBy(new BigNumber(tokenPriceUSD));
-            const decodedAttributes = await this.lockedAssetService.decodeLockedAssetAttributes(
-                {
+            const [tokenPriceUSD, decodedAttributes] = await Promise.all([
+                this.pairService.getPriceUSDByPath(assetToken.identifier),
+                this.lockedAssetService.decodeLockedAssetAttributes({
                     batchAttributes: [
                         {
                             identifier: nftToken.identifier,
                             attributes: nftToken.attributes,
                         },
                     ],
-                },
-            );
-            return {
+                }),
+            ]);
+            const denominator = new BigNumber(`1e-${assetToken.decimals}`);
+            const valueUSD = new BigNumber(nftToken.balance)
+                .multipliedBy(denominator)
+                .multipliedBy(new BigNumber(tokenPriceUSD));
+
+            return new UserLockedAssetToken({
                 ...nftToken,
                 decimals: assetToken.decimals,
                 valueUSD: valueUSD.toFixed(),
                 decodedAttributes: decodedAttributes[0],
-            };
+            });
         }
 
         const wrappedLpToken = await this.proxyPairService.getwrappedLpToken();
         if (nftToken.collection === wrappedLpToken.collection) {
-            const decodedWLPTAttributes = await this.proxyService.getWrappedLpTokenAttributes(
+            const decodedWLPTAttributes = this.proxyService.getWrappedLpTokenAttributes(
                 {
                     batchAttributes: [
                         {
@@ -219,20 +224,21 @@ export class UserService {
                 decodedWLPTAttributes[0].lpTokenID,
             );
             if (pairAddress) {
-                const tokenPriceUSD = await this.pairService.getLpTokenPriceUSD(
-                    pairAddress,
-                );
-                const lpToken = await this.pairService.getLpToken(pairAddress);
+                const [lpToken, tokenPriceUSD] = await Promise.all([
+                    this.pairService.getLpToken(pairAddress),
+                    this.pairService.getLpTokenPriceUSD(pairAddress),
+                ]);
+
                 const denominator = new BigNumber(`1e-${lpToken.decimals}`);
                 const valueUSD = new BigNumber(nftToken.balance)
                     .multipliedBy(denominator)
                     .multipliedBy(new BigNumber(tokenPriceUSD));
-                return {
+                return new UserLockedLPToken({
                     ...nftToken,
                     decimals: lpToken.decimals,
                     valueUSD: valueUSD.toFixed(),
                     decodedAttributes: decodedWLPTAttributes[0],
-                };
+                });
             }
         }
 
@@ -260,45 +266,47 @@ export class UserService {
                     farmAddress,
                     farmToken,
                 );
-                return {
+                return new UserLockedFarmToken({
                     ...nftToken,
                     decimals: userFarmToken.decimals,
                     valueUSD: userFarmToken.valueUSD,
                     decodedAttributes: decodedWFMTAttributes[0],
-                };
+                });
             }
         }
-        return {
+        return new UserNftToken({
             ...nftToken,
             decimals: 0,
             valueUSD: '0',
             decodedAttributes: '',
-        };
+        });
     }
 
     private async computeFarmTokenValue(
         farmAddress: string,
         farmToken: NftToken,
     ): Promise<typeof UserNftTokens> {
-        const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
+        const decodedFarmAttributes = this.farmService.decodeFarmTokenAttributes(
             farmToken.identifier,
             farmToken.attributes,
         );
-        const tokenPriceUSD = await this.farmService.getFarmTokenPriceUSD(
-            farmAddress,
-        );
-        const lpToken = await this.farmService.getFarmingToken(farmAddress);
+
+        const [lpToken, tokenPriceUSD] = await Promise.all([
+            this.farmService.getFarmingToken(farmAddress),
+            this.farmService.getFarmTokenPriceUSD(farmAddress),
+        ]);
+
         const denominator = new BigNumber(`1e-${lpToken.decimals}`);
         const valueUSD = new BigNumber(farmToken.balance)
             .dividedBy(decodedFarmAttributes.aprMultiplier)
             .multipliedBy(denominator)
             .multipliedBy(new BigNumber(tokenPriceUSD));
 
-        return {
+        return new UserFarmToken({
             ...farmToken,
             decimals: lpToken.decimals,
             valueUSD: valueUSD.toFixed(),
             decodedAttributes: decodedFarmAttributes,
-        };
+        });
     }
 }

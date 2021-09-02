@@ -253,14 +253,16 @@ export class FarmService {
         return false;
     }
 
-    async getFarmAddressByFarmTokenID(tokenID: string): Promise<string | null> {
+    async getFarmAddressByFarmTokenID(
+        tokenID: string,
+    ): Promise<string | undefined> {
         for (const farmAddress of farmsConfig) {
             const farmTokenID = await this.getFarmTokenID(farmAddress);
             if (farmTokenID === tokenID) {
                 return farmAddress;
             }
         }
-        return null;
+        return undefined;
     }
 
     async getRewardsForPosition(
@@ -275,7 +277,7 @@ export class FarmService {
         );
 
         const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
-            this.apiService.getCurrentEpoch(),
+            this.context.getCurrentEpoch(),
             this.getMinimumFarmingEpochs(args.farmAddress),
         ]);
 
