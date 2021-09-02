@@ -95,4 +95,12 @@ export class ApiConfigService {
         }
         return apiUrl;
     }
+
+    getNotifierUrl(): string {
+        const notifierUrl = this.configService.get<string>('NOTIFIER_URL');
+        if (!notifierUrl) {
+            throw new Error('No notifier url present');
+        }
+        return notifierUrl;
+    }
 }
