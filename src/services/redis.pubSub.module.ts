@@ -1,6 +1,6 @@
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { Global, Module } from '@nestjs/common';
-import { ApiConfigService } from 'src/helpers/api.config.service';
+import { ApiConfigService } from '../helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import * as Redis from 'ioredis';
 

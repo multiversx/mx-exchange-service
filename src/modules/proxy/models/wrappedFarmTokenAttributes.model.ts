@@ -6,7 +6,7 @@ import {
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
+import { FarmTokenAttributesModel } from '../../../modules/farm/models/farmTokenAttributes.model';
 
 @ObjectType()
 export class WrappedFarmTokenAttributesModel {
