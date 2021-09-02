@@ -7,20 +7,26 @@ import {
     StructType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
 import { WrappedFarmTokenAttributesModel } from 'src/modules/proxy/models/wrappedFarmTokenAttributes.model';
-import { GenericTokenAmountPairStruct } from 'src/utils/common.structures';
 import { GenericEvent } from '../generic.event';
-import { GenericTokenAmountPairType } from '../generic.types';
 import { EnterFarmProxyEventType } from './farm.proxy.types';
 import { FarmProxyTopics } from './proxy.event.topics';
 
+@ObjectType()
 export class EnterFarmProxyEvent extends GenericEvent {
     private decodedTopics: FarmProxyTopics;
 
+    @Field(type => String)
     private farmAddress: Address;
-    private farmingToken: GenericTokenAmountPairType;
-    private wrappedFarmToken: GenericTokenAmountPairType;
+    @Field(type => GenericTokenAmountPair)
+    private farmingToken: GenericTokenAmountPair;
+    @Field(type => GenericTokenAmountPair)
+    private wrappedFarmToken: GenericTokenAmountPair;
+    @Field(type => WrappedFarmTokenAttributesModel)
     private wrappedFarmAttributes: WrappedFarmTokenAttributesModel;
+    @Field()
     private createdWithMerge: boolean;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -28,25 +34,23 @@ export class EnterFarmProxyEvent extends GenericEvent {
         this.decodedTopics = new FarmProxyTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
+        this.farmingToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.farmingToken,
+        );
+        this.wrappedFarmToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.wrappedFarmToken,
+        );
         this.wrappedFarmAttributes = WrappedFarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.wrappedFarmAttributes,
         );
     }
 
-    toPlainObject(): EnterFarmProxyEventType {
+    toJSON(): EnterFarmProxyEventType {
         return {
             ...super.toJSON(),
-            farmAddress: this.farmAddress.bech32(),
-            farmingToken: {
-                tokenID: this.farmingToken.tokenID.toString(),
-                tokenNonce: this.farmingToken.tokenNonce.toNumber(),
-                amount: this.farmingToken.amount.toFixed(),
-            },
-            wrappedFarmToken: {
-                tokenID: this.wrappedFarmToken.tokenID.toString(),
-                tokenNonce: this.wrappedFarmToken.tokenNonce.toNumber(),
-                amount: this.wrappedFarmToken.amount.toFixed(),
-            },
+            farmAddress: this.farmAddress.toString(),
+            farmingToken: this.farmingToken.toJSON(),
+            wrappedFarmToken: this.wrappedFarmToken.toJSON(),
             wrappedFarmAttributes: this.wrappedFarmAttributes.toPlainObject(),
             createdWithMerge: this.createdWithMerge,
         };
@@ -76,12 +80,12 @@ export class EnterFarmProxyEvent extends GenericEvent {
             new StructFieldDefinition(
                 'farmingToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedFarmToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedFarmAttributes',

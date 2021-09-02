@@ -5,19 +5,24 @@ import {
     StructType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
 import { WrappedLpTokenAttributesModel } from 'src/modules/proxy/models/wrappedLpTokenAttributes.model';
-import { GenericTokenAmountPairStruct } from 'src/utils/common.structures';
 import { GenericEvent } from '../generic.event';
-import { GenericTokenAmountPairType } from '../generic.types';
 import { PairProxyEventType } from './pair.proxy.types';
 import { PairProxyTopics } from './proxy.event.topics';
 
+@ObjectType()
 export class PairProxyEvent extends GenericEvent {
     protected decodedTopics: PairProxyTopics;
 
-    protected firstToken: GenericTokenAmountPairType;
-    protected secondToken: GenericTokenAmountPairType;
-    protected wrappedLpToken: GenericTokenAmountPairType;
+    @Field(type => GenericTokenAmountPair)
+    protected firstToken: GenericTokenAmountPair;
+    @Field(type => GenericTokenAmountPair)
+    protected secondToken: GenericTokenAmountPair;
+    @Field(type => GenericTokenAmountPair)
+    protected wrappedLpToken: GenericTokenAmountPair;
+    @Field(type => WrappedLpTokenAttributesModel)
     protected wrappedLpAttributes: WrappedLpTokenAttributesModel;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -25,6 +30,15 @@ export class PairProxyEvent extends GenericEvent {
         this.decodedTopics = new PairProxyTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
+        this.firstToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.firstToken,
+        );
+        this.secondToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.secondToken,
+        );
+        this.wrappedLpToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.wrappedLpToken,
+        );
         this.wrappedLpAttributes = WrappedLpTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.wrappedLpAttributes,
         );
@@ -33,21 +47,9 @@ export class PairProxyEvent extends GenericEvent {
     toJSON(): PairProxyEventType {
         return {
             ...super.toJSON(),
-            firstToken: {
-                tokenID: this.firstToken.tokenID.toString(),
-                tokenNonce: this.firstToken.tokenNonce.toNumber(),
-                amount: this.firstToken.amount.toFixed(),
-            },
-            secondToken: {
-                tokenID: this.secondToken.tokenID.toString(),
-                tokenNonce: this.secondToken.tokenNonce.toNumber(),
-                amount: this.secondToken.amount.toFixed(),
-            },
-            wrappedLpToken: {
-                tokenID: this.wrappedLpToken.tokenID.toString(),
-                tokenNonce: this.wrappedLpToken.tokenNonce.toNumber(),
-                amount: this.wrappedLpToken.amount.toFixed(),
-            },
+            firstToken: this.firstToken.toJSON(),
+            secondToken: this.firstToken.toJSON(),
+            wrappedLpToken: this.wrappedLpToken.toJSON(),
             wrappedLpAttributes: this.wrappedLpAttributes.toPlainObject(),
         };
     }
@@ -77,7 +79,7 @@ export class PairProxyEvent extends GenericEvent {
             new StructFieldDefinition(
                 'wrappedLpToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedLpAttributes',
@@ -87,12 +89,12 @@ export class PairProxyEvent extends GenericEvent {
             new StructFieldDefinition(
                 'firstToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'secondToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition('block', '', new U64Type()),
             new StructFieldDefinition('epoch', '', new U64Type()),

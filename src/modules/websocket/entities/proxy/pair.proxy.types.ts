@@ -1,21 +1,10 @@
+import { GenericTokenAmountPairType } from 'src/models/genericTokenAmountPair.model';
 import { GenericEventType } from '../generic.types';
 
 export type PairProxyEventType = GenericEventType & {
-    firstToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
-    secondToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
-    wrappedLpToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
+    firstToken: GenericTokenAmountPairType;
+    secondToken: GenericTokenAmountPairType;
+    wrappedLpToken: GenericTokenAmountPairType;
     wrappedLpAttributes: {
         lpTokenID: string;
         lpTokenTotalAmount: string;

@@ -6,12 +6,15 @@ import {
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { WrappedLpTokenAttributesModel } from 'src/modules/proxy/models/wrappedLpTokenAttributes.model';
-import { GenericTokenAmountPairStruct } from 'src/utils/common.structures';
 import { GenericEvent } from '../generic.event';
 import { PairProxyEvent } from './pairProxy.event';
 import { AddLiquidityProxyEventType } from './pair.proxy.types';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
 
+@ObjectType()
 export class AddLiquidityProxyEvent extends PairProxyEvent {
+    @Field()
     private createdWithMerge: boolean;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -23,7 +26,7 @@ export class AddLiquidityProxyEvent extends PairProxyEvent {
         );
     }
 
-    toPlainObject(): AddLiquidityProxyEventType {
+    toJSON(): AddLiquidityProxyEventType {
         return {
             ...super.toJSON(),
             createdWithMerge: this.createdWithMerge,
@@ -37,17 +40,17 @@ export class AddLiquidityProxyEvent extends PairProxyEvent {
             new StructFieldDefinition(
                 'firstToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'secondToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedLpToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedLpAttributes',

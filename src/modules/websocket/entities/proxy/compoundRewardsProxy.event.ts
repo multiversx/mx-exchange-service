@@ -7,21 +7,28 @@ import {
     StructType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
+import { Field, ObjectType } from '@nestjs/graphql';
+import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
 import { WrappedFarmTokenAttributesModel } from 'src/modules/proxy/models/wrappedFarmTokenAttributes.model';
-import { GenericTokenAmountPairStruct } from 'src/utils/common.structures';
 import { GenericEvent } from '../generic.event';
-import { GenericTokenAmountPairType } from '../generic.types';
 import { RewardsProxyEventType } from './farm.proxy.types';
 import { FarmProxyTopics } from './proxy.event.topics';
 
+@ObjectType()
 export class CompoundRewardsProxyEvent extends GenericEvent {
     private decodedTopics: FarmProxyTopics;
 
+    @Field(type => String)
     private farmAddress: Address;
-    private oldWrappedFarmToken: GenericTokenAmountPairType;
-    private newWrappedFarmToken: GenericTokenAmountPairType;
+    @Field(type => GenericTokenAmountPair)
+    private oldWrappedFarmToken: GenericTokenAmountPair;
+    @Field(type => GenericTokenAmountPair)
+    private newWrappedFarmToken: GenericTokenAmountPair;
+    @Field(type => WrappedFarmTokenAttributesModel)
     private oldWrappedFarmAttributes: WrappedFarmTokenAttributesModel;
+    @Field(type => WrappedFarmTokenAttributesModel)
     private newWrappedFarmAttributes: WrappedFarmTokenAttributesModel;
+    @Field()
     private createdWithMerge: boolean;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -29,6 +36,12 @@ export class CompoundRewardsProxyEvent extends GenericEvent {
         this.decodedTopics = new FarmProxyTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
+        this.oldWrappedFarmToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.oldWrappedFarmToken,
+        );
+        this.newWrappedFarmToken = GenericTokenAmountPair.fromDecodedAttributes(
+            decodedEvent.newWrappedFarmToken,
+        );
         this.oldWrappedFarmAttributes = WrappedFarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.oldWrappedFarmAttributes,
         );
@@ -37,20 +50,12 @@ export class CompoundRewardsProxyEvent extends GenericEvent {
         );
     }
 
-    toPlainObject(): RewardsProxyEventType {
+    toJSON(): RewardsProxyEventType {
         return {
             ...super.toJSON(),
-            farmAddress: this.farmAddress.bech32(),
-            oldWrappedFarmToken: {
-                tokenID: this.oldWrappedFarmToken.tokenID.toString(),
-                tokenNonce: this.oldWrappedFarmToken.tokenNonce.toNumber(),
-                amount: this.oldWrappedFarmToken.amount.toFixed(),
-            },
-            newWrappedFarmToken: {
-                tokenID: this.newWrappedFarmToken.tokenID.toString(),
-                tokenNonce: this.newWrappedFarmToken.tokenNonce.toNumber(),
-                amount: this.newWrappedFarmToken.amount.toFixed(),
-            },
+            farmAddress: this.farmAddress.toString(),
+            oldWrappedFarmToken: this.oldWrappedFarmToken.toJSON(),
+            newWrappedFarmToken: this.newWrappedFarmToken.toJSON(),
             oldWrappedFarmAttributes: this.oldWrappedFarmAttributes.toPlainObject(),
             newWrappedFarmAttributes: this.newWrappedFarmAttributes.toPlainObject(),
             createdWithMerge: this.createdWithMerge,
@@ -81,12 +86,12 @@ export class CompoundRewardsProxyEvent extends GenericEvent {
             new StructFieldDefinition(
                 'oldWrappedFarmToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'newWrappedFarmToken',
                 '',
-                GenericTokenAmountPairStruct(),
+                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition(
                 'oldWrappedFarmAttributes',

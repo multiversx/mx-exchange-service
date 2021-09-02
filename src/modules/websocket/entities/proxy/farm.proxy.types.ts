@@ -1,17 +1,10 @@
+import { GenericTokenAmountPairType } from 'src/models/genericTokenAmountPair.model';
 import { GenericEventType } from '../generic.types';
 
 export type FarmProxyEventType = GenericEventType & {
     farmAddress: string;
-    farmingToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
-    wrappedFarmToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
+    farmingToken: GenericTokenAmountPairType;
+    wrappedFarmToken: GenericTokenAmountPairType;
     wrappedFarmAttributes: {
         farmTokenID: string;
         farmTokenNonce: number;
@@ -27,25 +20,13 @@ export type EnterFarmProxyEventType = FarmProxyEventType & {
 };
 
 export type ExitFarmProxyEventType = FarmProxyEventType & {
-    rewardToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
+    rewardToken: GenericTokenAmountPairType;
 };
 
 export type RewardsProxyEventType = GenericEventType & {
     farmAddress: string;
-    oldWrappedFarmToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
-    newWrappedFarmToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
+    oldWrappedFarmToken: GenericTokenAmountPairType;
+    newWrappedFarmToken: GenericTokenAmountPairType;
     oldWrappedFarmAttributes: {
         farmTokenID: string;
         farmTokenNonce: number;
@@ -66,9 +47,5 @@ export type RewardsProxyEventType = GenericEventType & {
 };
 
 export type ClaimRewardsProxyEventType = RewardsProxyEventType & {
-    rewardToken: {
-        tokenID: string;
-        tokenNonce: number;
-        amount: string;
-    };
+    rewardToken: GenericTokenAmountPairType;
 };
