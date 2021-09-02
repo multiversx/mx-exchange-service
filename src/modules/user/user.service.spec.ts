@@ -29,6 +29,7 @@ import { WrapService } from '../wrapping/wrap.service';
 import { WrapServiceMock } from '../wrapping/wrap.test-mocks';
 import { ElrondApiServiceMock } from '../../services/elrond-communication/elrond.api.service.mock';
 import { UserFarmToken } from './models/user.model';
+import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
 
 describe('UserService', () => {
     let service: UserService;
@@ -172,7 +173,7 @@ describe('UserService', () => {
                 nonce: 1,
                 royalties: 0,
                 valueUSD: '200',
-                decodedAttributes: {
+                decodedAttributes: new FarmTokenAttributesModel({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                     originalEnteringEpoch: 1,
@@ -183,7 +184,7 @@ describe('UserService', () => {
                     initialFarmingAmount: '100',
                     compoundedReward: '10',
                     currentFarmAmount: '100',
-                },
+                }),
                 timestamp: 0,
                 uris: [],
                 url: '',
