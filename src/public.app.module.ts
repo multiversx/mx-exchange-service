@@ -16,6 +16,7 @@ import { CachingService } from './services/caching/cache.service';
 import * as winston from 'winston';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as Transport from 'winston-transport';
+import { WebSocketModule } from './modules/websocket/websocket.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import * as Transport from 'winston-transport';
             buildSchemaOptions: {
                 fieldMiddleware: [loggerMiddleware],
             },
+            installSubscriptionHandlers: true,
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {
                     message:
@@ -80,6 +82,7 @@ import * as Transport from 'winston-transport';
         WrappingModule,
         UserModule,
         AnalyticsModule,
+        WebSocketModule,
     ],
     providers: [CachingService],
 })
