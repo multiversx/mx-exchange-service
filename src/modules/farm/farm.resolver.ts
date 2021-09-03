@@ -5,7 +5,6 @@ import { TransactionModel } from '../../models/transaction.model';
 import {
     ExitFarmTokensModel,
     FarmModel,
-    FarmTokenAttributesModel,
     RewardsModel,
 } from './models/farm.model';
 import { TransactionsFarmService } from './transactions-farm.service';
@@ -27,6 +26,7 @@ import {
 } from '../token-merging/dto/token.merging.args';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
+import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 
 @Resolver(of => FarmModel)
 export class FarmResolver {

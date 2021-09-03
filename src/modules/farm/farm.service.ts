@@ -1,12 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import {
-    BigUIntType,
-    BooleanType,
-    StructFieldDefinition,
-    StructType,
-    U64Type,
-    U8Type,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BinaryCodec } from '@elrondnetwork/erdjs';
 import {
     cacheConfig,
@@ -18,7 +10,6 @@ import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import {
     ExitFarmTokensModel,
     FarmModel,
-    FarmTokenAttributesModel,
     RewardsModel,
 } from './models/farm.model';
 import { AbiFarmService } from './abi-farm.service';
@@ -34,6 +25,7 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import BigNumber from 'bignumber.js';
 import { oneHour, oneMinute, ruleOfThree } from '../../helpers/helpers';
+import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 
 @Injectable()
 export class FarmService {
@@ -410,7 +402,7 @@ export class FarmService {
         const attributesBuffer = Buffer.from(attributes, 'base64');
         const codec = new BinaryCodec();
 
-        const structType = this.getFarmTokenAttributesStructure();
+        const structType = FarmTokenAttributesModel.getStructure();
 
         const [decoded, decodedLength] = codec.decodeNested(
             attributesBuffer,
@@ -424,39 +416,6 @@ export class FarmService {
         farmTokenAttributes.attributes = attributes;
         farmTokenAttributes.identifier = identifier;
         return farmTokenAttributes;
-    }
-
-    getFarmTokenAttributesStructure(): StructType {
-        return new StructType('FarmTokenAttributes', [
-            new StructFieldDefinition('rewardPerShare', '', new BigUIntType()),
-            new StructFieldDefinition(
-                'originalEnteringEpoch',
-                '',
-                new U64Type(),
-            ),
-            new StructFieldDefinition('enteringEpoch', '', new U64Type()),
-            new StructFieldDefinition('aprMultiplier', '', new U8Type()),
-            new StructFieldDefinition(
-                'withLockedRewards',
-                '',
-                new BooleanType(),
-            ),
-            new StructFieldDefinition(
-                'initialFarmingAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'compoundedReward',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'currentFarmAmount',
-                '',
-                new BigUIntType(),
-            ),
-        ]);
     }
 
     getFarmCacheKey(farmAddress: string, ...args: any) {

@@ -7,8 +7,9 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { AbiPairService } from 'src/modules/pair/abi-pair.service';
 import { PairService } from 'src/modules/pair/pair.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
-import { ClientProxy } from '@nestjs/microservices';
 import { oneHour, oneMinute } from '../../helpers/helpers';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -19,7 +20,7 @@ export class PairCacheWarmerService {
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
         private readonly cachingService: CachingService,
-        @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_30_MINUTES)
@@ -185,7 +186,7 @@ export class PairCacheWarmerService {
     }
 
     private async deleteCacheKeys() {
-        await this.client.emit('deleteCacheKeys', this.invalidatedKeys);
+        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
         this.invalidatedKeys = [];
     }
 }

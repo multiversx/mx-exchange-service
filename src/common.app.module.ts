@@ -7,6 +7,7 @@ import {
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { ApiConfigService } from './helpers/api.config.service';
+import { RedisPubSubModule } from './services/redis.pubSub.module';
 
 const logTransports: Transport[] = [
     new winston.transports.Console({
@@ -39,6 +40,7 @@ if (!!process.env.LOG_FILE) {
         WinstonModule.forRoot({
             transports: logTransports,
         }),
+        RedisPubSubModule,
     ],
     providers: [ApiConfigService],
     exports: [ApiConfigService],

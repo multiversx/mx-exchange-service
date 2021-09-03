@@ -7,6 +7,7 @@ import { CacheWarmerModule } from './services/cache.warmer.module';
 import { PubSubModule } from './services/pub.sub.module';
 import { LoggingInterceptor } from './utils/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
+import { WebSocketResolver } from './modules/websocket/websocket.resolver';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -15,6 +16,9 @@ async function bootstrap() {
 
     app.useGlobalInterceptors(new LoggingInterceptor());
     const apiConfigService = app.get<ApiConfigService>(ApiConfigService);
+
+    const webSocketResolver = app.get<WebSocketResolver>(WebSocketResolver);
+    await webSocketResolver.subscribe();
 
     await app.listen(
         apiConfigService.getPublicAppPort(),

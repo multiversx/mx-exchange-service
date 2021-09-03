@@ -1,10 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AbiProxyService } from './proxy-abi.service';
-import {
-    ProxyModel,
-    WrappedFarmTokenAttributesModel,
-    WrappedLpTokenAttributesModel,
-} from './models/proxy.model';
+import { ProxyModel } from './models/proxy.model';
+import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
+import { WrappedFarmTokenAttributesModel } from './models/wrappedFarmTokenAttributes.model';
 import { scAddress } from '../../config';
 import {
     decodeWrappedFarmTokenAttributes,
