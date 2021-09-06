@@ -16,7 +16,7 @@ import { CachingService } from './services/caching/cache.service';
 import * as winston from 'winston';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { WebSocketModule } from './modules/websocket/websocket.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 
 @Module({
     imports: [
@@ -82,7 +82,7 @@ import { WebSocketModule } from './modules/websocket/websocket.module';
         WrappingModule,
         UserModule,
         AnalyticsModule,
-        WebSocketModule,
+        SubscriptionsModule,
     ],
     providers: [CachingService],
 })

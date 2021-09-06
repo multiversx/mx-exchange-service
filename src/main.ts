@@ -7,7 +7,8 @@ import { CacheWarmerModule } from './services/cache.warmer.module';
 import { PubSubModule } from './services/pub.sub.module';
 import { LoggingInterceptor } from './utils/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
-import { WebSocketResolver } from './modules/websocket/websocket.resolver';
+import { WebSocketService } from './modules/websocket/websocket.service';
+import { WebSocketModule } from './modules/websocket/websocket.module';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -17,13 +18,31 @@ async function bootstrap() {
     app.useGlobalInterceptors(new LoggingInterceptor());
     const apiConfigService = app.get<ApiConfigService>(ApiConfigService);
 
-    const webSocketResolver = app.get<WebSocketResolver>(WebSocketResolver);
-    await webSocketResolver.subscribe();
-
-    await app.listen(
-        apiConfigService.getPublicAppPort(),
-        apiConfigService.getPublicAppListenAddress(),
+    const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
+        PubSubModule,
+        {
+            transport: Transport.REDIS,
+            options: {
+                url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
+                retryDelay: 1000,
+                retryAttempts: 10,
+                retry_strategy: function(_: any) {
+                    return 1000;
+                },
+            },
+        },
     );
+
+    if (apiConfigService.isPublicApiActive()) {
+        pubSubApp.listen(() =>
+            console.log('Started Redis pub/sub microservice'),
+        );
+
+        await app.listen(
+            apiConfigService.getPublicAppPort(),
+            apiConfigService.getPublicAppListenAddress(),
+        );
+    }
 
     if (apiConfigService.isPrivateAppActive()) {
         const privateApp = await NestFactory.create(PrivateAppModule);
@@ -40,20 +59,17 @@ async function bootstrap() {
         );
     }
 
-    const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-        PubSubModule,
-        {
-            transport: Transport.REDIS,
-            options: {
-                url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
-                retryDelay: 1000,
-                retryAttempts: 10,
-                retry_strategy: function(_: any) {
-                    return 1000;
-                },
-            },
-        },
-    );
-    pubSubApp.listen(() => console.log('Started Redis pub/sub microservice'));
+    if (apiConfigService.isEventsNotifierAppActive()) {
+        const eventsNotifierApp = await NestFactory.createMicroservice<
+            MicroserviceOptions
+        >(WebSocketModule);
+        const webSocketService = eventsNotifierApp.get<WebSocketService>(
+            WebSocketService,
+        );
+        await webSocketService.subscribe();
+        eventsNotifierApp.listen(() =>
+            console.log('Started events notifier microservice'),
+        );
+    }
 }
 bootstrap();
