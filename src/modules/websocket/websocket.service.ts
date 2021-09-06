@@ -1,5 +1,4 @@
 import { Inject } from '@nestjs/common';
-import { Subscription } from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { EnterFarmEvent } from './entities/farm/enterFarm.event';
 import { ExitFarmEvent } from './entities/farm/exitFarm.event';
@@ -19,29 +18,15 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { ContextService } from 'src/services/context/context.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { farmsConfig, scAddress } from 'src/config';
+import {
+    FARM_EVENTS,
+    PAIR_EVENTS,
+    PROXY_EVENTS,
+} from './entities/generic.types';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
-enum PAIR_EVENTS {
-    SWAP = 'swap',
-    ADD_LIQUIDITY = 'add_liquidity',
-    REMOVE_LIQUIDITY = 'remove_liquidity',
-    SWAP_NO_FEE = 'swap_no_fee_and_forward',
-}
-enum FARM_EVENTS {
-    ENTER_FARM = 'enter_farm',
-    EXIT_FARM = 'exit_farm',
-    CLAIM_REWARDS = 'claim_rewards',
-    COMPOUND_REWARDS = 'compound_rewards',
-}
-enum PROXY_EVENTS {
-    ADD_LIQUIDITY_PROXY = 'add_liquidity_proxy',
-    REMOVE_LIQUIDITY_PROXY = 'remove_liquidity_proxy',
-    ENTER_FARM_PROXY = 'enter_farm_proxy',
-    EXIT_FARM_PROXY = 'exit_farm_proxy',
-    CLAIM_REWARDS_PROXY = 'claim_rewards_farm_proxy',
-    COMPOUND_REWARDS_PROXY = 'compound_rewards_farm_proxy',
-}
-
-export class WebSocketResolver {
+export class WebSocketService {
     private ws: WebSocket;
     private subEvent = {
         subscriptionEntries: [],
@@ -51,6 +36,7 @@ export class WebSocketResolver {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         private readonly context: ContextService,
         private readonly configService: ApiConfigService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.ws = new WebSocket(this.configService.getNotifierUrl());
 
@@ -60,7 +46,7 @@ export class WebSocketResolver {
                 switch (rawEvent.identifier) {
                     case PAIR_EVENTS.SWAP:
                         const swapEvent = new SwapEvent(rawEvent);
-                        console.log({ swapEvent: swapEvent.toJSON() });
+                        this.logger.info(JSON.stringify(swapEvent.toJSON()));
                         this.pubSub.publish(PAIR_EVENTS.SWAP, {
                             swapEvent: swapEvent,
                         });
@@ -69,9 +55,9 @@ export class WebSocketResolver {
                         const addLiquidityEvent = new AddLiquidityEvent(
                             rawEvent,
                         );
-                        console.log({
-                            addLiquidityEvent: addLiquidityEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(addLiquidityEvent.toJSON()),
+                        );
                         this.pubSub.publish(PAIR_EVENTS.ADD_LIQUIDITY, {
                             addLiquidityEvent: addLiquidityEvent,
                         });
@@ -80,9 +66,9 @@ export class WebSocketResolver {
                         const removeLiquidityEvent = new RemoveLiquidityEvent(
                             rawEvent,
                         );
-                        console.log({
-                            removeLiquidityEvent: removeLiquidityEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(removeLiquidityEvent.toJSON()),
+                        );
                         this.pubSub.publish(PAIR_EVENTS.REMOVE_LIQUIDITY, {
                             removeLiquidityEvent: removeLiquidityEvent,
                         });
@@ -91,45 +77,45 @@ export class WebSocketResolver {
                         const swapNoFeeAndForwardEvent = new SwapNoFeeEvent(
                             rawEvent,
                         );
-                        console.log({
-                            swapNoFeeAndForwardEvent: swapNoFeeAndForwardEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(swapNoFeeAndForwardEvent.toJSON()),
+                        );
                         this.pubSub.publish(PAIR_EVENTS.SWAP_NO_FEE, {
                             swapNoFeeAndForwardEvent: swapNoFeeAndForwardEvent,
                         });
                         break;
                     case FARM_EVENTS.ENTER_FARM:
                         const enterFarmEvent = new EnterFarmEvent(rawEvent);
-                        console.log({
-                            enterFarmEvent: enterFarmEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(enterFarmEvent.toJSON()),
+                        );
                         this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
                             enterFarmEvent: enterFarmEvent,
                         });
                         break;
                     case FARM_EVENTS.EXIT_FARM:
                         const exitFarmEvent = new ExitFarmEvent(rawEvent);
-                        console.log({
-                            exitFarmEvent: exitFarmEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(exitFarmEvent.toJSON()),
+                        );
                         this.pubSub.publish(FARM_EVENTS.EXIT_FARM, {
                             exitFarmEvent: exitFarmEvent,
                         });
                         break;
                     case FARM_EVENTS.CLAIM_REWARDS:
                         const claimRewardsEvent = new RewardsEvent(rawEvent);
-                        console.log({
-                            claimRewardsEvent: claimRewardsEvent.toPlainObject(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(claimRewardsEvent.toJSON()),
+                        );
                         this.pubSub.publish(FARM_EVENTS.CLAIM_REWARDS, {
                             claimRewardsEvent: claimRewardsEvent,
                         });
                         break;
                     case FARM_EVENTS.COMPOUND_REWARDS:
                         const compoundRewardsEvent = new RewardsEvent(rawEvent);
-                        console.log({
-                            compoundRewardsEvent: compoundRewardsEvent.toPlainObject(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(compoundRewardsEvent.toJSON()),
+                        );
                         this.pubSub.publish(FARM_EVENTS.COMPOUND_REWARDS, {
                             compoundRewardsEvent: compoundRewardsEvent,
                         });
@@ -138,9 +124,9 @@ export class WebSocketResolver {
                         const addLiquidityProxyEvent = new AddLiquidityProxyEvent(
                             rawEvent,
                         );
-                        console.log({
-                            addLiquidityProxyEvent: addLiquidityProxyEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(addLiquidityProxyEvent.toJSON()),
+                        );
                         this.pubSub.publish(PROXY_EVENTS.ADD_LIQUIDITY_PROXY, {
                             addLiquidityProxyEvent: addLiquidityProxyEvent,
                         });
@@ -149,9 +135,9 @@ export class WebSocketResolver {
                         const removeLiquidityProxyEvent = new PairProxyEvent(
                             rawEvent,
                         );
-                        console.log({
-                            removeLiquidityProxyEvent: removeLiquidityProxyEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(removeLiquidityProxyEvent.toJSON()),
+                        );
                         this.pubSub.publish(
                             PROXY_EVENTS.REMOVE_LIQUIDITY_PROXY,
                             {
@@ -163,9 +149,9 @@ export class WebSocketResolver {
                         const enterFarmProxyEvent = new EnterFarmProxyEvent(
                             rawEvent,
                         );
-                        console.log({
-                            enterFarmProxyEvent: enterFarmProxyEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(enterFarmProxyEvent.toJSON()),
+                        );
                         this.pubSub.publish(PROXY_EVENTS.ENTER_FARM_PROXY, {
                             enterFarmProxyEvent: enterFarmProxyEvent,
                         });
@@ -174,9 +160,9 @@ export class WebSocketResolver {
                         const exitFarmProxyEvent = new ExitFarmProxyEvent(
                             rawEvent,
                         );
-                        console.log({
-                            exitFarmProxyEvent: exitFarmProxyEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(exitFarmProxyEvent.toJSON()),
+                        );
                         this.pubSub.publish(PROXY_EVENTS.EXIT_FARM_PROXY, {
                             exitFarmProxyEvent: exitFarmProxyEvent,
                         });
@@ -185,9 +171,9 @@ export class WebSocketResolver {
                         const claimRewardsProxyEvent = new ClaimRewardsProxyEvent(
                             rawEvent,
                         );
-                        console.log({
-                            claimRewardsProxyEvent: claimRewardsProxyEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(claimRewardsProxyEvent.toJSON()),
+                        );
                         this.pubSub.publish(PROXY_EVENTS.CLAIM_REWARDS_PROXY, {
                             claimRewardsProxyEvent: claimRewardsProxyEvent,
                         });
@@ -196,9 +182,9 @@ export class WebSocketResolver {
                         const compoundRewardsProxyEvent = new CompoundRewardsProxyEvent(
                             rawEvent,
                         );
-                        console.log({
-                            compoundRewardsProxyEvent: compoundRewardsProxyEvent.toJSON(),
-                        });
+                        this.logger.info(
+                            JSON.stringify(compoundRewardsProxyEvent.toJSON()),
+                        );
                         this.pubSub.publish(
                             PROXY_EVENTS.COMPOUND_REWARDS_PROXY,
                             {
@@ -242,75 +228,5 @@ export class WebSocketResolver {
         );
 
         this.ws.send(JSON.stringify(this.subEvent));
-    }
-
-    @Subscription(() => SwapEvent)
-    swapEvent() {
-        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP);
-    }
-
-    @Subscription(() => AddLiquidityEvent)
-    addLiquidityEvent() {
-        return this.pubSub.asyncIterator(PAIR_EVENTS.ADD_LIQUIDITY);
-    }
-
-    @Subscription(() => RemoveLiquidityEvent)
-    removeLiquidityEvent() {
-        return this.pubSub.asyncIterator(PAIR_EVENTS.REMOVE_LIQUIDITY);
-    }
-
-    @Subscription(() => SwapNoFeeEvent)
-    swapNoFeeEvent() {
-        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_NO_FEE);
-    }
-
-    @Subscription(() => EnterFarmEvent)
-    enterFarmEvent() {
-        return this.pubSub.asyncIterator(FARM_EVENTS.ENTER_FARM);
-    }
-
-    @Subscription(() => ExitFarmEvent)
-    exitFarmEvent() {
-        return this.pubSub.asyncIterator(FARM_EVENTS.EXIT_FARM);
-    }
-
-    @Subscription(() => RewardsEvent)
-    claimRewardsEvent() {
-        return this.pubSub.asyncIterator(FARM_EVENTS.CLAIM_REWARDS);
-    }
-
-    @Subscription(() => RewardsEvent)
-    compoundRewardsEvent() {
-        return this.pubSub.asyncIterator(FARM_EVENTS.COMPOUND_REWARDS);
-    }
-
-    @Subscription(() => AddLiquidityProxyEvent)
-    addLiquidityProxyEvent() {
-        return this.pubSub.asyncIterator(PROXY_EVENTS.ADD_LIQUIDITY_PROXY);
-    }
-
-    @Subscription(() => PairProxyEvent)
-    removeLiquidityProxyEvent() {
-        return this.pubSub.asyncIterator(PROXY_EVENTS.REMOVE_LIQUIDITY_PROXY);
-    }
-
-    @Subscription(() => EnterFarmProxyEvent)
-    enterFarmProxyEvent() {
-        return this.pubSub.asyncIterator(PROXY_EVENTS.ENTER_FARM_PROXY);
-    }
-
-    @Subscription(() => ExitFarmProxyEvent)
-    exitFarmProxyEvent() {
-        return this.pubSub.asyncIterator(PROXY_EVENTS.EXIT_FARM_PROXY);
-    }
-
-    @Subscription(() => ClaimRewardsProxyEvent)
-    claimRewardsProxyEvent() {
-        return this.pubSub.asyncIterator(PROXY_EVENTS.CLAIM_REWARDS_PROXY);
-    }
-
-    @Subscription(() => CompoundRewardsProxyEvent)
-    compoundRewardsProxyEvent() {
-        return this.pubSub.asyncIterator(PROXY_EVENTS.COMPOUND_REWARDS_PROXY);
     }
 }
