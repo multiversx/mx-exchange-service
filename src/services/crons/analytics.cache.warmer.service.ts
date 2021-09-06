@@ -8,9 +8,10 @@ import {
     farmsConfig,
     tokensSupplyConfig,
 } from 'src/config';
-import { ClientProxy } from '@nestjs/microservices';
 import { AnalyticsService } from 'src/modules/analytics/analytics.service';
 import { oneMinute } from '../../helpers/helpers';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
@@ -19,7 +20,7 @@ export class AnalyticsCacheWarmerService {
     constructor(
         private readonly analyticsService: AnalyticsService,
         private readonly cachingService: CachingService,
-        @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_MINUTE)
@@ -103,7 +104,7 @@ export class AnalyticsCacheWarmerService {
     }
 
     private async deleteCacheKeys() {
-        await this.client.emit('deleteCacheKeys', this.invalidatedKeys);
+        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
         this.invalidatedKeys = [];
     }
 }

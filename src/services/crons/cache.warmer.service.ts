@@ -6,7 +6,8 @@ import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneMinute } from '../../helpers/helpers';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
-import { ClientProxy } from '@nestjs/microservices';
+import { PUB_SUB } from '../redis.pubSub.module';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 @Injectable()
 export class CacheWarmerService {
@@ -16,7 +17,7 @@ export class CacheWarmerService {
         private readonly apiService: ElrondApiService,
         private readonly priceFeed: PriceFeedService,
         private readonly cachingService: CachingService,
-        @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_30_SECONDS)
@@ -48,7 +49,7 @@ export class CacheWarmerService {
     }
 
     private async deleteCacheKeys() {
-        await this.client.emit('deleteCacheKeys', this.invalidatedKeys);
+        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
         this.invalidatedKeys = [];
     }
 }
