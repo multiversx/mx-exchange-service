@@ -47,6 +47,16 @@ export class ApiConfigService {
         return port;
     }
 
+    isPublicApiActive(): boolean {
+        const publicApiActive = this.configService.get<string>(
+            'ENABLE_PUBLIC_API',
+        );
+        if (!publicApiActive) {
+            throw new Error('No public api flag present');
+        }
+        return publicApiActive === 'true';
+    }
+
     isCacheWarmerCronActive(): boolean {
         const cacheWramerActive = this.configService.get<string>(
             'ENABLE_CACHE_WARMER',
@@ -65,6 +75,16 @@ export class ApiConfigService {
             throw new Error('No private api flag present');
         }
         return privateAppActive === 'true';
+    }
+
+    isEventsNotifierAppActive(): boolean {
+        const eventsNotifierAppActive = this.configService.get<string>(
+            'ENABLE_EVENTS_NOTIFIER',
+        );
+        if (!eventsNotifierAppActive) {
+            throw new Error('No events notifier api flag present');
+        }
+        return eventsNotifierAppActive === 'true';
     }
 
     getRedisUrl(): string {
