@@ -14,11 +14,6 @@ import { PairCacheWarmerService } from './crons/pair.cache.warmer.service';
 import { FarmCacheWarmerService } from './crons/farm.cache.warmer.service';
 import { ProxyCacheWarmerService } from './crons/proxy.cache.warmer.service';
 import { ElrondCommunicationModule } from './elrond-communication/elrond-communication.module';
-import {
-    ClientOptions,
-    Transport,
-    ClientProxyFactory,
-} from '@nestjs/microservices';
 import { CommonAppModule } from 'src/common.app.module';
 import { AnalyticsCacheWarmerService } from './crons/analytics.cache.warmer.service';
 import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
@@ -48,25 +43,6 @@ import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
         ProxyCacheWarmerService,
         AnalyticsCacheWarmerService,
         CachingService,
-        {
-            provide: 'PUBSUB_SERVICE',
-            useFactory: () => {
-                const clientOptions: ClientOptions = {
-                    transport: Transport.REDIS,
-                    options: {
-                        url: `redis://${process.env.REDIS_URL}:${parseInt(
-                            process.env.REDIS_PORT,
-                        )}`,
-                        retryDelay: 1000,
-                        retryAttempts: 10,
-                        retry_strategy: function(_: any) {
-                            return 1000;
-                        },
-                    },
-                };
-                return ClientProxyFactory.create(clientOptions);
-            },
-        },
     ],
 })
 export class CacheWarmerModule {}

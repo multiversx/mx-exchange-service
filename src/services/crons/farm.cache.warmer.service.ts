@@ -7,7 +7,8 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { FarmService } from 'src/modules/farm/farm.service';
 import { AbiFarmService } from 'src/modules/farm/abi-farm.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
-import { ClientProxy } from '@nestjs/microservices';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour, oneMinute } from '../../helpers/helpers';
 
 @Injectable()
@@ -20,7 +21,7 @@ export class FarmCacheWarmerService {
         private readonly farmStatisticsService: FarmStatisticsService,
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
-        @Inject('PUBSUB_SERVICE') private readonly client: ClientProxy,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_30_MINUTES)
@@ -192,7 +193,7 @@ export class FarmCacheWarmerService {
     }
 
     private async deleteCacheKeys() {
-        await this.client.emit('deleteCacheKeys', this.invalidatedKeys);
+        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
         this.invalidatedKeys = [];
     }
 }
