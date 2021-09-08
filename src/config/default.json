@@ -12,10 +12,10 @@
         "keepAliveMaxFreeSockets": 10
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqreqh628erfddlxjqagepvucd49z4sswa0n4sy08qel",
-        "MEX-b6bb7d": "erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqvz749aqquckr5hwvpu2kwvcewjkwk8ud0n4sfl9jgj",
+        "MEX-b6bb7d": "erd1qqqqqqqqqqqqqpgqcvyf54zu95dxsxeyslyvdryec0l4mrnz0n4sq4ryjp",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqy7gwk022nnrywfmhup3gn7kkfscw66a30n4sy2zaxx",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqdkwc004l832gtshfp4k2x62upawv46xa0n4s7746h6",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqqvtnuaqyrkj4pled6xguwk54qjk0heta0n4s5uzufw",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq646juuvw4659tns8z88h5zmn9n0a9dma0n4shrqrca",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
@@ -31,9 +31,9 @@
     "tokensSupply": ["MEX-b6bb7d", "LKMEX-7c4256"],
     "cachedTokensPrice": ["MEX-b6bb7d"],
     "farms": [
-        "erd1qqqqqqqqqqqqqpgqy20dhf2t8dgpfuewhzncjl8vmsw59evv0n4sd3ntck",
-        "erd1qqqqqqqqqqqqqpgq2s0a4tkv25h8xle8t7szhqqjdx2l6lpy0n4s0ekcx4",
-        "erd1qqqqqqqqqqqqqpgqnle99utjmjumkrrw5743409yn0sxqwc70n4svqtd8c"
+        "erd1qqqqqqqqqqqqqpgqaqy488ga3l4u2n05umlgym7u32mv3r8s0n4sca93mz",
+        "erd1qqqqqqqqqqqqqpgqndwuvku5pxe6sw0lgnewvde0tzue6upe0n4satrnk6",
+        "erd1qqqqqqqqqqqqqpgq2a2wfa46pw2wl4c6pexafq2wuf897aff0n4s25ky7c"
     ],
     "caching": {
         "pairsMetadata": 300,
