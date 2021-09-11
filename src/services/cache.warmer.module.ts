@@ -17,6 +17,7 @@ import { ElrondCommunicationModule } from './elrond-communication/elrond-communi
 import { CommonAppModule } from 'src/common.app.module';
 import { AnalyticsCacheWarmerService } from './crons/analytics.cache.warmer.service';
 import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
+import { BattleOfYieldsModule } from 'src/modules/battle-of-yields/battle.of.yields.module';
 
 @Module({
     imports: [
@@ -34,6 +35,7 @@ import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
         ProxyFarmModule,
         ProxyPairModule,
         AnalyticsModule,
+        BattleOfYieldsModule,
     ],
     controllers: [],
     providers: [

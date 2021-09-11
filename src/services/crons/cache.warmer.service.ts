@@ -8,6 +8,7 @@ import { oneMinute } from '../../helpers/helpers';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { BattleOfYieldsService } from 'src/modules/battle-of-yields/battle.of.yields.service';
 
 @Injectable()
 export class CacheWarmerService {
@@ -16,6 +17,7 @@ export class CacheWarmerService {
     constructor(
         private readonly apiService: ElrondApiService,
         private readonly priceFeed: PriceFeedService,
+        private readonly boyService: BattleOfYieldsService,
         private readonly cachingService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -46,6 +48,16 @@ export class CacheWarmerService {
 
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
+    }
+
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async cacheLeaderBoard(): Promise<void> {
+        const leaderBoard = await this.boyService.computeLeaderBoard();
+        const cacheKey = generateCacheKeyFromParams(
+            'battleOfYealds',
+            'leaderBoard',
+        );
+        this.cachingService.setCache(cacheKey, leaderBoard, oneMinute() * 5);
     }
 
     private async deleteCacheKeys() {
