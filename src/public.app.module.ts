@@ -17,6 +17,7 @@ import * as winston from 'winston';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { BattleOfYieldsModule } from './modules/battle-of-yields/battle.of.yields.module';
 
 @Module({
     imports: [
@@ -83,6 +84,7 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
         UserModule,
         AnalyticsModule,
         SubscriptionsModule,
+        BattleOfYieldsModule,
     ],
     providers: [CachingService],
 })
