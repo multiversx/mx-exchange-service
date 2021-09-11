@@ -77,10 +77,36 @@ export class ElrondApiService {
         }
     }
 
+    async getAccountBalance(address: string): Promise<string | undefined> {
+        const account = await this.doGetGeneric(
+            this.getAccountBalance.name,
+            `accounts/${address}`,
+            response => response,
+        );
+
+        return account.balance;
+    }
+
     async getNftCollection(tokenID: string): Promise<NftCollection> {
         return this.doGetGeneric(
             this.getNftCollection.name,
             `collections/${tokenID}`,
+            response => response,
+        );
+    }
+
+    async getTokensCountForUser(address: string): Promise<number> {
+        return this.doGetGeneric(
+            this.getTokensCountForUser.name,
+            `accounts/${address}/tokens/count`,
+            response => response,
+        );
+    }
+
+    async getNftsCountForUser(address: string): Promise<number> {
+        return this.doGetGeneric(
+            this.getNftsCountForUser.name,
+            `accounts/${address}/nfts/count`,
             response => response,
         );
     }
