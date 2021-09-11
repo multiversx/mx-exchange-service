@@ -123,4 +123,24 @@ export class ApiConfigService {
         }
         return notifierUrl;
     }
+
+    getElrondExtrasUrl(): string {
+        const extrasApiUrl = this.configService.get<string>(
+            'ELROND_EXTRASAPI_URL',
+        );
+        if (!extrasApiUrl) {
+            throw new Error('No extras api url present');
+        }
+        return extrasApiUrl;
+    }
+
+    getGlobalJWTToken(): string {
+        const globalJWTToken = this.configService.get<string>(
+            'GLOBAL_JWT_TOKEN',
+        );
+        if (!globalJWTToken) {
+            throw new Error('No global JWT token present');
+        }
+        return globalJWTToken;
+    }
 }
