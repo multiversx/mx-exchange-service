@@ -23,4 +23,11 @@ export class UserResolver {
     ): Promise<Array<typeof UserNftTokens>> {
         return await this.userService.getAllNftTokens(args);
     }
+
+    @Query(returns => Number)
+    async getUserWorth(
+        @Args('address', { type: () => String }) address: string,
+    ): Promise<number> {
+        return this.userService.computeUserWorth(address);
+    }
 }
