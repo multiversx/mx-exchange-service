@@ -309,4 +309,54 @@ export class UserService {
             decodedAttributes: decodedFarmAttributes,
         });
     }
+
+    async computeUserWorth(address: string): Promise<number | undefined> {
+        let userBalanceWorth = new BigNumber(0);
+
+        const [userEsdtTokensCount, userNftTokensCount] = await Promise.all([
+            this.apiService.getTokensCountForUser(address),
+            this.apiService.getNftsCountForUser(address),
+        ]);
+
+        const [
+            egldPrice,
+            userBalance,
+            userEsdtTokens,
+            userNftTokens,
+        ] = await Promise.all([
+            this.priceFeed.getTokenPrice('egld'),
+            this.apiService.getAccountBalance(address),
+            this.getAllEsdtTokens({
+                address: address,
+                offset: 0,
+                limit: userEsdtTokensCount,
+            }),
+            this.getAllNftTokens({
+                address: address,
+                offset: 0,
+                limit: userNftTokensCount,
+            }),
+        ]);
+        if (!userBalance) {
+            return undefined;
+        }
+        const userBalanceDenom = new BigNumber(userBalance).times('1e-18');
+
+        userBalanceWorth = userBalanceWorth.plus(
+            new BigNumber(userBalanceDenom).times(egldPrice),
+        );
+
+        for (const esdtToken of userEsdtTokens) {
+            userBalanceWorth = userBalanceWorth.plus(
+                new BigNumber(esdtToken.valueUSD),
+            );
+        }
+
+        for (const nftToken of userNftTokens) {
+            userBalanceWorth = userBalanceWorth.plus(
+                new BigNumber(nftToken.valueUSD),
+            );
+        }
+        return userBalanceWorth.toNumber();
+    }
 }
