@@ -1,6 +1,6 @@
 {
     "elrond": {
-        "chainID": "D",
+        "chainID": "T",
         "EGLDIdentifier": "EGLD",
         "version": 1,
         "proxyTimeout": 60000,
@@ -12,28 +12,28 @@
         "keepAliveMaxFreeSockets": 10
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqvz749aqquckr5hwvpu2kwvcewjkwk8ud0n4sfl9jgj",
-        "MEX-b6bb7d": "erd1qqqqqqqqqqqqqpgqcvyf54zu95dxsxeyslyvdryec0l4mrnz0n4sq4ryjp",
-        "distributionAddress": "erd1qqqqqqqqqqqqqpgqy7gwk022nnrywfmhup3gn7kkfscw66a30n4sy2zaxx",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqqvtnuaqyrkj4pled6xguwk54qjk0heta0n4s5uzufw",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq646juuvw4659tns8z88h5zmn9n0a9dma0n4shrqrca",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqnhlmwqvpt0r3uurlyg2p2f4q33q05cut0n4s325q26",
+        "MEX-ec32fa": "erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqz4tlrm2f5g5n67x2tq40s4q3zd6w3j2m0n4shdf27n",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgq78y09lw93f3udvsplshdv2vk957l5vl70n4splrad2",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqlauj5h3wdqnmtrlljxh87f6u992jtlj80n4sjpnl56",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
-            "shardID-1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgq0nr7dkfjwlqvt4hcz3adqzhnl0lqpn2w0n4sjecg6m",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         }
     },
-    "tokenProviderUSD": "BUSD-05b16f",
+    "tokenProviderUSD": "BUSD-f2c46d",
     "priceFeeds": {
-        "WEGLD-88600a": "egld",
-        "BUSD-05b16f": "busd"
+        "WEGLD-073650": "egld",
+        "BUSD-f2c46d": "busd"
     },
-    "tokensSupply": ["MEX-b6bb7d", "LKMEX-7c4256"],
-    "cachedTokensPrice": ["MEX-b6bb7d"],
+    "tokensSupply": ["MEX-ec32fa", "LKMEX-d1c4ab"],
+    "cachedTokensPrice": ["MEX-ec32fa"],
     "farms": [
-        "erd1qqqqqqqqqqqqqpgqaqy488ga3l4u2n05umlgym7u32mv3r8s0n4sca93mz",
-        "erd1qqqqqqqqqqqqqpgqndwuvku5pxe6sw0lgnewvde0tzue6upe0n4satrnk6",
-        "erd1qqqqqqqqqqqqqpgq2a2wfa46pw2wl4c6pexafq2wuf897aff0n4s25ky7c"
+        "erd1qqqqqqqqqqqqqpgqpfekajgprpwzfqfctzqfqe5j2n38t3ev0n4shhyhy5",
+        "erd1qqqqqqqqqqqqqpgqwe7relwdmhg52ra4d9t72nt5hk0qhjrd0n4spy0wnx",
+        "erd1qqqqqqqqqqqqqpgqfau7c39mzvmjkkkfmxtdwjgjparkgfmz0n4sfe8er6"
     ],
     "caching": {
         "pairsMetadata": 300,
@@ -67,7 +67,7 @@
         "enterFarmProxy": 500000000,
         "exitFarmProxy": 350000000,
         "wrapeGLD": 8000000,
-        "claimLockedAssets": 100000000
+        "claimLockedAssets": 150000000
     },
     "abi": {
         "router": "./src/abis/elrond_dex_router.abi.json",
