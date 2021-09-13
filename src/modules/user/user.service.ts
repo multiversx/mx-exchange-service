@@ -21,6 +21,7 @@ import { UserNftTokens } from './nfttokens.union';
 import { UserTokensArgs } from './models/user.args';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 import { WrapService } from '../wrapping/wrap.service';
+import { BoYAccount } from '../battle-of-yields/models/BoYAccount.model';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -310,7 +311,7 @@ export class UserService {
         });
     }
 
-    async computeUserWorth(address: string): Promise<number | undefined> {
+    async computeUserWorth(address: string): Promise<BoYAccount> {
         let userBalanceWorth = new BigNumber(0);
 
         const [userEsdtTokensCount, userNftTokensCount] = await Promise.all([
@@ -357,6 +358,11 @@ export class UserService {
                 new BigNumber(nftToken.valueUSD),
             );
         }
-        return userBalanceWorth.toNumber();
+        return new BoYAccount({
+            address: address,
+            userTokens: userEsdtTokens,
+            userNftTokens: userNftTokens,
+            netWorth: userBalanceWorth.toNumber(),
+        });
     }
 }

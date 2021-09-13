@@ -5,6 +5,7 @@ import { UserTokensArgs } from './models/user.args';
 import { UserNftTokens } from './nfttokens.union';
 import { UserService } from './user.service';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
+import { BoYAccount } from '../battle-of-yields/models/BoYAccount.model';
 
 @Resolver()
 export class UserResolver {
@@ -24,10 +25,10 @@ export class UserResolver {
         return await this.userService.getAllNftTokens(args);
     }
 
-    @Query(returns => Number)
+    @Query(returns => BoYAccount)
     async getUserWorth(
         @Args('address', { type: () => String }) address: string,
-    ): Promise<number> {
+    ): Promise<BoYAccount> {
         return this.userService.computeUserWorth(address);
     }
 }

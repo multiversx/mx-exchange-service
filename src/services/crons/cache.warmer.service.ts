@@ -54,7 +54,7 @@ export class CacheWarmerService {
     async cacheLeaderBoard(): Promise<void> {
         const leaderBoard = await this.boyService.computeLeaderBoard();
         const cacheKey = generateCacheKeyFromParams(
-            'battleOfYealds',
+            'battleOfYields',
             'leaderBoard',
         );
         this.cachingService.setCache(cacheKey, leaderBoard, oneMinute() * 5);

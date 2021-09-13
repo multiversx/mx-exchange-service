@@ -20,7 +20,7 @@ export class BattleOfYieldsResolver {
     @Query(results => [BoYAccount])
     async getLeaderBoard(): Promise<BoYAccount[]> {
         const cacheKey = generateCacheKeyFromParams(
-            'battleOfYealds',
+            'battleOfYields',
             'leaderBoard',
         );
         const getLeaderBoard = () => this.boyService.computeLeaderBoard();
