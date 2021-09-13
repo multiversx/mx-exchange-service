@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { battleOfYeldsConfig } from 'src/config';
 import { ContextService } from 'src/services/context/context.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondExtrasApiService } from 'src/services/elrond-communication/elrond.extras.api.service';

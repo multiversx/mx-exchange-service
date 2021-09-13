@@ -58,6 +58,8 @@ export class CacheWarmerService {
             'leaderBoard',
         );
         this.cachingService.setCache(cacheKey, leaderBoard, oneMinute() * 5);
+        this.invalidatedKeys.push(cacheKey);
+        await this.deleteCacheKeys();
     }
 
     private async deleteCacheKeys() {
