@@ -12,7 +12,8 @@
         "outDir": "./dist",
         "baseUrl": "./",
         "incremental": true,
-        "allowJs": true
+        "allowJs": true,
+        "resolveJsonModule": true
     },
     "include": ["src/**/*.ts", "test/**/*.ts"],
     "exclude": ["node_modules", "dist"]
