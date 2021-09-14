@@ -28,7 +28,7 @@ export class BattleOfYieldsResolver {
             return this.cachingService.getOrSet(
                 cacheKey,
                 getLeaderBoard,
-                oneMinute() * 3,
+                oneMinute() * 10,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
