@@ -10,6 +10,7 @@ import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { BattleOfYieldsService } from 'src/modules/battle-of-yields/battle.of.yields.service';
 import { Locker } from 'src/utils/locker';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class CacheWarmerService {
@@ -20,6 +21,7 @@ export class CacheWarmerService {
         private readonly priceFeed: PriceFeedService,
         private readonly boyService: BattleOfYieldsService,
         private readonly cachingService: CachingService,
+        private readonly configService: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -53,21 +55,23 @@ export class CacheWarmerService {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async cacheLeaderBoard(): Promise<void> {
-        await Locker.lock('Leaderboard', async () => {
-            const leaderBoard = await this.boyService.computeLeaderBoard();
-            const cacheKey = generateCacheKeyFromParams(
-                'battleOfYields',
-                'leaderBoard',
-            );
-            this.cachingService.setCache(
-                cacheKey,
-                leaderBoard,
-                oneMinute() * 10,
-            );
-            this.invalidatedKeys.push(cacheKey);
-            await this.deleteCacheKeys();
-            console.log('Cache leaderboard');
-        });
+        if (this.configService.isLeaderBoardActive()) {
+            await Locker.lock('Leaderboard', async () => {
+                console.log('Cache leaderboard');
+                const leaderBoard = await this.boyService.computeLeaderBoard();
+                const cacheKey = generateCacheKeyFromParams(
+                    'battleOfYields',
+                    'leaderBoard',
+                );
+                this.cachingService.setCache(
+                    cacheKey,
+                    leaderBoard,
+                    oneMinute() * 10,
+                );
+                this.invalidatedKeys.push(cacheKey);
+                await this.deleteCacheKeys();
+            });
+        }
     }
 
     private async deleteCacheKeys() {

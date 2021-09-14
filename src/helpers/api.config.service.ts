@@ -87,6 +87,16 @@ export class ApiConfigService {
         return eventsNotifierAppActive === 'true';
     }
 
+    isLeaderBoardActive(): boolean {
+        const leaderBoardActive = this.configService.get<string>(
+            'ENABLE_LEADERBOARD',
+        );
+        if (!leaderBoardActive) {
+            throw new Error('No events notifier api flag present');
+        }
+        return leaderBoardActive === 'true';
+    }
+
     getRedisUrl(): string {
         const redisUrl = this.configService.get<string>('REDIS_URL');
         if (!redisUrl) {
