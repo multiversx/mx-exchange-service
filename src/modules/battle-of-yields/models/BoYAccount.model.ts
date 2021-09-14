@@ -12,6 +12,8 @@ export class BoYAccount {
     userNftTokens: Array<typeof UserNftTokens>;
     @Field()
     netWorth: number;
+    @Field({ nullable: true })
+    teamMember: boolean;
 
     constructor(init?: Partial<BoYAccount>) {
         Object.assign(this, init);

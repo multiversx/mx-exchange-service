@@ -1,29 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { ElrondExtrasApiService } from 'src/services/elrond-communication/elrond.extras.api.service';
 import { UserService } from '../user/user.service';
 import { BoYAccount } from './models/BoYAccount.model';
 import asyncPool from 'tiny-async-pool';
+import { battleofyields, team } from '../../config/battle-of-yields.json';
 
 @Injectable()
 export class BattleOfYieldsService {
-    constructor(
-        private readonly extrasApiService: ElrondExtrasApiService,
-        private readonly userService: UserService,
-    ) {}
+    constructor(private readonly userService: UserService) {}
 
     async computeLeaderBoard(): Promise<BoYAccount[]> {
-        const boyAddresses = await this.extrasApiService.getBattleOfYieldsList();
-
         const boyAccounts: BoYAccount[] = [];
 
         const accounts = await asyncPool(
             20,
-            boyAddresses.slice(0, 1000),
-            address => this.userService.computeUserWorth(address),
+            battleofyields.slice(0, 10),
+            account => this.userService.computeUserWorth(account.address),
         );
         for (const account of accounts) {
             if (!account) {
                 continue;
+            }
+            if (team.find(address => account.address === address)) {
+                account.teamMember = true;
             }
             boyAccounts.push(account);
         }
