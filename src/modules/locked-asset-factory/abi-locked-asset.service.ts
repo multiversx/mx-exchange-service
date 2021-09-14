@@ -57,13 +57,40 @@ export class AbiLockedAssetService {
             const unlockMilestones: UnlockMileStoneModel[] = result.firstValue
                 .valueOf()
                 .map(unlockMilestone => {
+                    console.log(unlockMilestone.unlock_epoch);
                     return new UnlockMileStoneModel({
-                        epochs: unlockMilestone.unlock_epoch,
-                        percent: unlockMilestone.unlock_percent,
+                        epochs: unlockMilestone.unlock_epoch.toNumber(),
+                        percent: unlockMilestone.unlock_percent.toNumber(),
                     });
                 });
 
             return unlockMilestones;
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiLockedAssetService.name,
+                this.getDefaultUnlockPeriod.name,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getInitEpoch(): Promise<number> {
+        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const interaction: Interaction = contract.methods.getInitEpoch([]);
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+
+            const result = interaction.interpretQueryResponse(queryResponse);
+
+            const initEpoch = result.firstValue.valueOf();
+
+            return initEpoch.toNumber();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiLockedAssetService.name,
