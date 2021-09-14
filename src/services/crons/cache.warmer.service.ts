@@ -9,6 +9,7 @@ import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { BattleOfYieldsService } from 'src/modules/battle-of-yields/battle.of.yields.service';
+import { Locker } from 'src/utils/locker';
 
 @Injectable()
 export class CacheWarmerService {
@@ -52,14 +53,21 @@ export class CacheWarmerService {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async cacheLeaderBoard(): Promise<void> {
-        const leaderBoard = await this.boyService.computeLeaderBoard();
-        const cacheKey = generateCacheKeyFromParams(
-            'battleOfYields',
-            'leaderBoard',
-        );
-        this.cachingService.setCache(cacheKey, leaderBoard, oneMinute() * 5);
-        this.invalidatedKeys.push(cacheKey);
-        await this.deleteCacheKeys();
+        await Locker.lock('Leaderboard', async () => {
+            const leaderBoard = await this.boyService.computeLeaderBoard();
+            const cacheKey = generateCacheKeyFromParams(
+                'battleOfYields',
+                'leaderBoard',
+            );
+            this.cachingService.setCache(
+                cacheKey,
+                leaderBoard,
+                oneMinute() * 10,
+            );
+            this.invalidatedKeys.push(cacheKey);
+            await this.deleteCacheKeys();
+            console.log('Cache leaderboard');
+        });
     }
 
     private async deleteCacheKeys() {
