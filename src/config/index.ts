@@ -34,3 +34,5 @@ export const cronConfig = config.get('cron');
 export const constantsConfig = config.get('constants');
 
 export const securityConfig = config.get('security');
+
+export const whitelistedAddressesConfig = config.get('whitelistedAddresses');

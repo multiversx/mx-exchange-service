@@ -50,21 +50,22 @@
     },
     "gas": {
         "default": 50000000,
-        "esdtTransfer": 70000000,
+        "esdtTransfer": 30000000,
         "reclaimTemporaryFunds": 75000000,
-        "addLiquidity": 50000000,
-        "removeLiquidity": 70000000,
-        "swapTokens": 150000000,
+        "addLiquidity": 37000000,
+        "removeLiquidity": 35000000,
+        "swapTokens": 65000000,
         "createPair": 1400000000,
         "issueToken": 200000000,
         "setLocalRoles": 200000000,
         "setState": 200000000,
         "setFee": 200000000,
-        "addLiquidityProxy": 400000000,
+        "acceptEsdtPaymentProxy": 55000000,
+        "addLiquidityProxy": 250000000,
         "removeLiquidityProxy": 250000000,
-        "enterFarm": 200000000,
+        "enterFarm": 45000000,
         "exitFarm": 200000000,
-        "enterFarmProxy": 500000000,
+        "enterFarmProxy": 412000000,
         "exitFarmProxy": 350000000,
         "wrapeGLD": 8000000,
         "claimLockedAssets": 150000000
@@ -89,5 +90,21 @@
     },
     "security": {
         "admins": []
-    }
+    },
+    "whitelistedAddresses": [
+        "erd1qqqqqqqqqqqqqpgqpfekajgprpwzfqfctzqfqe5j2n38t3ev0n4shhyhy5", // farms
+        "erd1qqqqqqqqqqqqqpgqwe7relwdmhg52ra4d9t72nt5hk0qhjrd0n4spy0wnx", // farms
+        "erd1qqqqqqqqqqqqqpgqfau7c39mzvmjkkkfmxtdwjgjparkgfmz0n4sfe8er6", // farms
+        "erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc", // pairs
+        "erd1qqqqqqqqqqqqqpgqmffr70826epqhdf2ggsmgxgur77g53hr0n4s38y2qe", // pairs
+        "erd1qqqqqqqqqqqqqpgq78y09lw93f3udvsplshdv2vk957l5vl70n4splrad2", // proxy
+        "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax", // wraping
+        "erd1qqqqqqqqqqqqqpgq0nr7dkfjwlqvt4hcz3adqzhnl0lqpn2w0n4sjecg6m", // wraping
+        "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc", // wraping
+        "erd1qqqqqqqqqqqqqpgqz4tlrm2f5g5n67x2tq40s4q3zd6w3j2m0n4shdf27n", // distribution
+        "erd1qqqqqqqqqqqqqpgqlauj5h3wdqnmtrlljxh87f6u992jtlj80n4sjpnl56", // locked asset factory
+        "erd1m5pdkwc7zggkc3gvwtl5pnty65rwgs7d984ke7939wfkwzqu6g5qzy2e8k", // xEGLD airdrop
+        "erd1qqqqqqqqqqqqqpgqauyawadp2eex5kd30z5ehrrprgksjpyp0n4s00cy97", // BUSD airdrop
+        "erd1932eft30w753xyvme8d49qejgkjc09n5e49w4mwdjtm0neld797su0dlxp" // burn address
+    ]
 }

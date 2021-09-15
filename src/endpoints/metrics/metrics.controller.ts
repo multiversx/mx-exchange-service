@@ -153,4 +153,60 @@ export class MetricsController {
             );
         }
     }
+
+    @Get('/battleofyields/:address/disallowedoutgoingtxs')
+    async getUserOutgoingTxs(@Param('address') address: string): Promise<any> {
+        try {
+            return await this.metricsService.getUserdisalowedOutgoingTxs(
+                address,
+            );
+        } catch (error) {
+            console.log(error);
+            throw new HttpException(
+                'Failed to compute user outgoing transactions',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @Get('/battleofyields/:address/disallowedincomingtxs')
+    async getUserIncomingTxs(@Param('address') address: string): Promise<any> {
+        try {
+            return await this.metricsService.getDisalowedIncomingTxs(address);
+        } catch {
+            throw new HttpException(
+                'Failed to compute user incoming transactions',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @Get('/battleofyields/:address/checklockedmex')
+    async getDistributedLockedMEX(
+        @Param('address') address: string,
+    ): Promise<any> {
+        try {
+            return await this.metricsService.checkUserDistributedLockedMex(
+                address,
+            );
+        } catch {
+            throw new HttpException(
+                'Failed to compute user transactions',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @Get('/battleofyields/:address/checkbusd')
+    async getDistributedBUSD(@Param('address') address: string): Promise<any> {
+        try {
+            return await this.metricsService.checkUserDistributedBUSD(address);
+        } catch (error) {
+            console.log(error);
+            throw new HttpException(
+                'Failed to compute user busd transactions',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
 }

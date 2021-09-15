@@ -77,7 +77,7 @@ export class ElasticService {
 
     async getList(
         collection: string,
-        key: string,
+        key: string[],
         elasticQueryAdapter: ElasticQuery,
     ): Promise<any[]> {
         const elasticQuery = buildElasticQuery(elasticQueryAdapter);
@@ -87,7 +87,7 @@ export class ElasticService {
                 index: collection,
                 size: 10000,
                 scroll: '5s',
-                _source: [key],
+                _source: key,
                 body: {
                     query: elasticQuery.query,
                 },
