@@ -25,7 +25,10 @@ export class TransactionsProxyFarmService {
         private readonly context: ContextService,
     ) {}
 
-    async enterFarmProxy(args: EnterFarmProxyArgs): Promise<TransactionModel> {
+    async enterFarmProxy(
+        args: EnterFarmProxyArgs,
+        mergeTokens = false,
+    ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
         const method = args.lockRewards
             ? 'enterFarmAndLockRewardsProxy'
@@ -43,7 +46,11 @@ export class TransactionsProxyFarmService {
         const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.enterFarmProxy),
+            new GasLimit(
+                mergeTokens
+                    ? gasConfig.enterFarmProxyMerge
+                    : gasConfig.enterFarmProxy,
+            ),
         );
 
         transaction.receiver = args.sender;

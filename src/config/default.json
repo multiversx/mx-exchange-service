@@ -59,16 +59,20 @@
         "setLocalRoles": 200000000,
         "setState": 200000000,
         "setFee": 200000000,
-        "addLiquidityProxy": 400000000,
+        "acceptEsdtPaymentProxy": 55000000,
+        "addLiquidityProxy": 250000000,
+        "addLiquidityProxyMerge": 350000000,
         "removeLiquidityProxy": 250000000,
         "enterFarm": 200000000,
         "exitFarm": 200000000,
-        "enterFarmProxy": 412000000,
+        "enterFarmProxy": 200000000,
+        "enterFarmProxyMerge": 412000000,
         "exitFarmProxy": 200000000,
         "compoundRewardsProxy": 148000000,
         "claimRewardsProxy": 210000000,
         "wrapeGLD": 8000000,
-        "claimLockedAssets": 150000000
+        "claimLockedAssets": 150000000,
+        "depositTokens": 50000000
     },
     "abi": {
         "router": "./src/abis/elrond_dex_router.abi.json",
