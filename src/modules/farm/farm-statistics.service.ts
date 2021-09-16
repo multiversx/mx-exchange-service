@@ -56,10 +56,7 @@ export class FarmStatisticsService {
             farmingTokenReserve,
             rewardsPerBlock,
         ] = await Promise.all([
-            this.pairService.computeTokenPriceUSD(
-                scAddress.get(farmedTokenID),
-                farmedTokenID,
-            ),
+            this.pairService.computeTokenPriceUSD(farmedTokenID),
             this.farmService.getFarmingTokenPriceUSD(farmAddress),
             this.farmService.getFarmTokenSupply(farmAddress),
             this.farmService.getFarmingTokenReserve(farmAddress),
