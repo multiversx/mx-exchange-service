@@ -48,22 +48,31 @@ export class TransactionsFarmService {
     }
 
     async exitFarm(args: ExitFarmArgs): Promise<TransactionModel> {
-        return this.SftFarmInteraction(args, 'exitFarm');
+        return this.SftFarmInteraction(args, 'exitFarm', gasConfig.exitFarm);
     }
 
     async claimRewards(args: ClaimRewardsArgs): Promise<TransactionModel> {
-        return this.SftFarmInteraction(args, 'claimRewards');
+        return this.SftFarmInteraction(
+            args,
+            'claimRewards',
+            gasConfig.claimRewards,
+        );
     }
 
     async compoundRewards(
         args: CompoundRewardsArgs,
     ): Promise<TransactionModel> {
-        return this.SftFarmInteraction(args, 'compoundRewards');
+        return this.SftFarmInteraction(
+            args,
+            'compoundRewards',
+            gasConfig.compoundRewards,
+        );
     }
 
     private async SftFarmInteraction(
         args: SftFarmInteractionArgs,
         method: string,
+        gasLimit: number,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
@@ -80,7 +89,7 @@ export class TransactionsFarmService {
         const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.exitFarm),
+            new GasLimit(gasLimit),
         );
 
         transaction.receiver = args.sender;

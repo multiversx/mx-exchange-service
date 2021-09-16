@@ -366,7 +366,9 @@ export class TransactionsProxyPairService {
         );
 
         const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.reclaimTemporaryFundsProxy),
+        );
 
         transactions.push(TransactionModel.fromTransaction(transaction));
 
