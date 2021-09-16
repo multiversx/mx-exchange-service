@@ -34,6 +34,7 @@ export class TransactionsProxyPairService {
 
     async addLiquidityProxyBatch(
         args: AddLiquidityProxyBatchArgs,
+        mergeTokens = false,
     ): Promise<TransactionModel[]> {
         let eGLDwrapTransaction: Promise<TransactionModel>;
         let esdtTransferTransactions: Promise<TransactionModel>[];
@@ -70,16 +71,19 @@ export class TransactionsProxyPairService {
                     transactions.push(transaction),
                 );
 
-                addLiquidityProxyTransaction = this.addLiquidityProxy({
-                    pairAddress: args.pairAddress,
-                    amount0: args.firstTokenAmount,
-                    amount1: args.secondTokenAmount,
-                    token0ID: wrappedTokenID,
-                    token0Nonce: args.firstTokenNonce,
-                    token1ID: args.secondTokenID,
-                    token1Nonce: args.secondTokenNonce,
-                    tolerance: args.tolerance,
-                });
+                addLiquidityProxyTransaction = this.addLiquidityProxy(
+                    {
+                        pairAddress: args.pairAddress,
+                        amount0: args.firstTokenAmount,
+                        amount1: args.secondTokenAmount,
+                        token0ID: wrappedTokenID,
+                        token0Nonce: args.firstTokenNonce,
+                        token1ID: args.secondTokenID,
+                        token1Nonce: args.secondTokenNonce,
+                        tolerance: args.tolerance,
+                    },
+                    mergeTokens,
+                );
                 transactions.push(addLiquidityProxyTransaction);
 
                 break;
@@ -110,16 +114,19 @@ export class TransactionsProxyPairService {
                     transactions.push(transaction),
                 );
 
-                addLiquidityProxyTransaction = this.addLiquidityProxy({
-                    pairAddress: args.pairAddress,
-                    amount0: args.secondTokenAmount,
-                    amount1: args.firstTokenAmount,
-                    token0ID: wrappedTokenID,
-                    token0Nonce: args.secondTokenNonce,
-                    token1ID: args.firstTokenID,
-                    token1Nonce: args.firstTokenNonce,
-                    tolerance: args.tolerance,
-                });
+                addLiquidityProxyTransaction = this.addLiquidityProxy(
+                    {
+                        pairAddress: args.pairAddress,
+                        amount0: args.secondTokenAmount,
+                        amount1: args.firstTokenAmount,
+                        token0ID: wrappedTokenID,
+                        token0Nonce: args.secondTokenNonce,
+                        token1ID: args.firstTokenID,
+                        token1Nonce: args.firstTokenNonce,
+                        tolerance: args.tolerance,
+                    },
+                    mergeTokens,
+                );
                 transactions.push(addLiquidityProxyTransaction);
                 break;
             default:
@@ -144,28 +151,34 @@ export class TransactionsProxyPairService {
                     transactions.push(transaction),
                 );
                 if (!args.firstTokenNonce && args.secondTokenNonce) {
-                    addLiquidityProxyTransaction = this.addLiquidityProxy({
-                        pairAddress: args.pairAddress,
-                        amount0: args.firstTokenAmount,
-                        amount1: args.secondTokenAmount,
-                        token0ID: args.firstTokenID,
-                        token0Nonce: args.firstTokenNonce,
-                        token1ID: args.secondTokenID,
-                        token1Nonce: args.secondTokenNonce,
-                        tolerance: args.tolerance,
-                    });
+                    addLiquidityProxyTransaction = this.addLiquidityProxy(
+                        {
+                            pairAddress: args.pairAddress,
+                            amount0: args.firstTokenAmount,
+                            amount1: args.secondTokenAmount,
+                            token0ID: args.firstTokenID,
+                            token0Nonce: args.firstTokenNonce,
+                            token1ID: args.secondTokenID,
+                            token1Nonce: args.secondTokenNonce,
+                            tolerance: args.tolerance,
+                        },
+                        mergeTokens,
+                    );
                     transactions.push(addLiquidityProxyTransaction);
                 } else if (args.firstTokenNonce && !args.secondTokenNonce) {
-                    addLiquidityProxyTransaction = this.addLiquidityProxy({
-                        pairAddress: args.pairAddress,
-                        amount0: args.secondTokenAmount,
-                        amount1: args.firstTokenAmount,
-                        token0ID: args.secondTokenID,
-                        token0Nonce: args.secondTokenNonce,
-                        token1ID: args.firstTokenID,
-                        token1Nonce: args.firstTokenNonce,
-                        tolerance: args.tolerance,
-                    });
+                    addLiquidityProxyTransaction = this.addLiquidityProxy(
+                        {
+                            pairAddress: args.pairAddress,
+                            amount0: args.secondTokenAmount,
+                            amount1: args.firstTokenAmount,
+                            token0ID: args.secondTokenID,
+                            token0Nonce: args.secondTokenNonce,
+                            token1ID: args.firstTokenID,
+                            token1Nonce: args.firstTokenNonce,
+                            tolerance: args.tolerance,
+                        },
+                        mergeTokens,
+                    );
                     transactions.push(addLiquidityProxyTransaction);
                 }
                 break;
@@ -176,6 +189,7 @@ export class TransactionsProxyPairService {
 
     async addLiquidityProxy(
         args: AddLiquidityProxyArgs,
+        mergeTokens = false,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
         const amount0 = new BigNumber(args.amount0);
@@ -201,7 +215,13 @@ export class TransactionsProxyPairService {
         ]);
 
         const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.addLiquidityProxy));
+        transaction.setGasLimit(
+            new GasLimit(
+                mergeTokens
+                    ? gasConfig.addLiquidityProxyMerge
+                    : gasConfig.addLiquidityProxy,
+            ),
+        );
 
         return {
             ...transaction.toPlainObject(),

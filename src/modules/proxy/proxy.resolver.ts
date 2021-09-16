@@ -164,7 +164,10 @@ export class ProxyResolver {
                 addLiquidityProxyBatchTransactions,
             ] = await Promise.all([
                 this.mergeTokensTransactions.depositTokens(depositTokenArgs),
-                this.transactionsProxyPairService.addLiquidityProxyBatch(args),
+                this.transactionsProxyPairService.addLiquidityProxyBatch(
+                    args,
+                    true,
+                ),
             ]);
             return [
                 depositTokensTransaction,
@@ -245,6 +248,7 @@ export class ProxyResolver {
             this.mergeTokensTransactions.depositTokens(depositTokenArgs),
             this.transactionsProxyFarmService.enterFarmProxy(
                 enterFarmProxyArgs,
+                true,
             ),
         ]);
     }
