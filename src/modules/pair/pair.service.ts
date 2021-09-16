@@ -148,7 +148,7 @@ export class PairService {
         const tokenPriceUSD = await this.getTokenData(
             pairAddress,
             'firstTokenPriceUSD',
-            () => this.computeTokenPriceUSD(pairAddress, firstTokenID),
+            () => this.computeTokenPriceUSD(firstTokenID),
             oneMinute(),
         );
         return tokenPriceUSD;
@@ -159,7 +159,7 @@ export class PairService {
         const tokenPriceUSD = await this.getTokenData(
             pairAddress,
             'secondTokenPriceUSD',
-            () => this.computeTokenPriceUSD(pairAddress, secondTokenID),
+            () => this.computeTokenPriceUSD(secondTokenID),
             oneMinute(),
         );
         return tokenPriceUSD;
