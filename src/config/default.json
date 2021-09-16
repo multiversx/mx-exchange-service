@@ -25,7 +25,6 @@
     },
     "tokenProviderUSD": "BUSD-f2c46d",
     "priceFeeds": {
-        "WEGLD-073650": "egld",
         "BUSD-f2c46d": "busd"
     },
     "tokensSupply": ["MEX-ec32fa", "LKMEX-d1c4ab"],

@@ -117,12 +117,10 @@ export class PairCacheWarmerService {
             ] = await Promise.all([
                 this.pairService.computeFirstTokenPrice(pairMetadata.address),
                 this.pairService.computeTokenPriceUSD(
-                    pairMetadata.address,
                     pairMetadata.firstTokenID,
                 ),
                 this.pairService.computeSecondTokenPrice(pairMetadata.address),
                 this.pairService.computeTokenPriceUSD(
-                    pairMetadata.address,
                     pairMetadata.secondTokenID,
                 ),
                 this.pairService.computeLpTokenPriceUSD(pairMetadata.address),

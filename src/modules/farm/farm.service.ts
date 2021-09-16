@@ -305,9 +305,7 @@ export class FarmService {
     async computeFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
         if (scAddress.has(farmedTokenID)) {
-            const pairAddress = scAddress.get(farmedTokenID);
             const tokenPriceUSD = await this.pairService.computeTokenPriceUSD(
-                pairAddress,
                 farmedTokenID,
             );
             return tokenPriceUSD.toFixed();
@@ -335,9 +333,7 @@ export class FarmService {
     async computeFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
         const farmingTokenID = await this.getFarmingTokenID(farmAddress);
         if (scAddress.has(farmingTokenID)) {
-            const pairAddress = scAddress.get(farmingTokenID);
             const tokenPriceUSD = await this.pairService.computeTokenPriceUSD(
-                pairAddress,
                 farmingTokenID,
             );
             return tokenPriceUSD.toFixed();

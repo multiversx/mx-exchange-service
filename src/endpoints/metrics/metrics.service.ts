@@ -161,7 +161,6 @@ export class MetricsService {
                 if (decodedData[0] !== 'ESDTNFTTransfer') {
                     continue;
                 }
-                console.log(decodedData);
                 const scAddress = new Address(decodedData[4]);
                 if (
                     whitelistedAddresses.find(
@@ -313,7 +312,6 @@ export class MetricsService {
 
         for (const scresult of scresults) {
             const decodedData = base64Decode(scresult._source.data).split('@');
-            console.log(decodedData);
             if (decodedData[2] === '43c33c193756480000') {
                 claimTransactions.push(scresult);
             }

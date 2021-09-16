@@ -78,38 +78,30 @@ export class ContextService {
         return pairsMap;
     }
 
-    async getPath(input: string, output: string): Promise<string[]> {
-        const path = [input];
-        const queue = [input];
-        const visited = new Map<string, boolean>();
+    isConnected(
+        graph: Map<string, string[]>,
+        input: string,
+        output: string,
+        discovered: Map<string, boolean>,
+        path: string[] = [],
+    ): boolean {
+        discovered.set(input, true);
+        path.push(input);
 
-        const pairsMap = await this.getPairsMap();
-        for (const key of pairsMap.keys()) {
-            visited.set(key, false);
+        if (input === output) {
+            return true;
         }
 
-        visited.set(input, true);
-        while (queue.length > 0) {
-            const node = queue.shift();
-            const adjacentVertices = pairsMap.get(node);
-            if (!adjacentVertices) {
-                return [];
-            }
-            for (const value of adjacentVertices) {
-                if (value === output) {
-                    path.push(output);
-                    return path;
-                }
-
-                if (!visited.get(value)) {
-                    visited.set(value, true);
-                    queue.push(value);
-                    path.push(value);
+        for (const vertex of graph.get(input)) {
+            if (!discovered.get(vertex)) {
+                if (this.isConnected(graph, vertex, output, discovered, path)) {
+                    return true;
                 }
             }
         }
 
-        return [];
+        path.pop();
+        return false;
     }
 
     async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
