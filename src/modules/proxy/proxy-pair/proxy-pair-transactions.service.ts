@@ -306,7 +306,7 @@ export class TransactionsProxyPairService {
             return this.context.esdtTransfer(
                 contract,
                 transactionArgs,
-                new GasLimit(gasConfig.esdtTransfer),
+                new GasLimit(gasConfig.acceptEsdtPaymentProxy),
             );
         }
 
@@ -322,7 +322,7 @@ export class TransactionsProxyPairService {
         const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.acceptEsdtPaymentProxy),
         );
 
         transaction.receiver = args.sender;

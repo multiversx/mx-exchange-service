@@ -43,7 +43,7 @@ export class TransactionsFarmService {
         return this.context.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.enterFarm),
         );
     }
 

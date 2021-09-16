@@ -65,7 +65,9 @@
         "enterFarm": 45000000,
         "exitFarm": 200000000,
         "enterFarmProxy": 412000000,
-        "exitFarmProxy": 350000000,
+        "exitFarmProxy": 200000000,
+        "compoundRewardsProxy": 148000000,
+        "claimRewardsProxy": 210000000,
         "wrapeGLD": 8000000,
         "claimLockedAssets": 150000000
     },
