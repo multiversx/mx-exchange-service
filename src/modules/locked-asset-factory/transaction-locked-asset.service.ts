@@ -33,7 +33,7 @@ export class TransactionsLockedAssetService {
         const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
+            new GasLimit(gasConfig.unlockAssets),
         );
 
         transaction.receiver = args.sender;
