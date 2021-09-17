@@ -71,8 +71,8 @@
         "enterFarmProxy": 200000000,
         "enterFarmProxyMerge": 412000000,
         "exitFarmProxy": 235000000,
-        "compoundRewardsProxy": 148000000,
-        "claimRewardsProxy": 210000000,
+        "compoundRewardsProxy": 150000000,
+        "claimRewardsProxy": 240000000,
         "wrapeGLD": 8000000,
         "claimLockedAssets": 45000000,
         "depositTokens": 50000000
