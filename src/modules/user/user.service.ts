@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { scAddress, tokensPriceData } from '../../config';
+import { Inject, Injectable } from '@nestjs/common';
+import { farmsConfig } from '../../config';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { FarmService } from '../farm/farm.service';
 import { NftToken } from '../../models/tokens/nftToken.model';
@@ -7,14 +7,7 @@ import { PairService } from '../pair/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
 import { ProxyService } from '../proxy/proxy.service';
-import {
-    UserFarmToken,
-    UserLockedAssetToken,
-    UserLockedFarmToken,
-    UserLockedLPToken,
-    UserNftToken,
-    UserToken,
-} from './models/user.model';
+import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { UserNftTokens } from './nfttokens.union';
@@ -22,6 +15,16 @@ import { UserTokensArgs } from './models/user.args';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 import { WrapService } from '../wrapping/wrap.service';
 import { BoYAccount } from '../battle-of-yields/models/BoYAccount.model';
+import { UserComputeService } from './user.compute.service';
+import { LockedAssetToken } from 'src/models/tokens/lockedAssetToken.model';
+import { LockedLpToken } from 'src/models/tokens/lockedLpToken.model';
+import { LockedFarmToken } from 'src/models/tokens/lockedFarmToken.model';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { CachingService } from 'src/services/caching/cache.service';
+import { oneMinute, oneSecond } from 'src/helpers/helpers';
+import { generateGetLogMessage } from 'src/utils/generate-log-message';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -33,10 +36,19 @@ enum EsdtTokenType {
     FungibleLpToken = 'FungibleESDT-LP',
 }
 
+enum NftTokenType {
+    FarmToken,
+    LockedAssetToken,
+    LockedLpToken,
+    LockedFarmToken,
+}
+
 @Injectable()
 export class UserService {
     constructor(
+        private userComputeService: UserComputeService,
         private apiService: ElrondApiService,
+        private cachingService: CachingService,
         private pairService: PairService,
         private priceFeed: PriceFeedService,
         private proxyService: ProxyService,
@@ -45,6 +57,7 @@ export class UserService {
         private farmService: FarmService,
         private lockedAssetService: LockedAssetService,
         private wrapService: WrapService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getAllEsdtTokens(args: UserTokensArgs): Promise<UserToken[]> {
@@ -93,43 +106,89 @@ export class UserService {
     async getAllNftTokens(
         args: UserTokensArgs,
     ): Promise<Array<typeof UserNftTokens>> {
-        const userNFTs: NftToken[] = await this.apiService.getNftsForUser(
+        const userStats = await this.apiService.getAccountStats(args.address);
+        const cacheKey = this.getUserCacheKey(
             args.address,
-            args.offset,
-            args.limit,
+            userStats.nonce,
+            'nfts',
         );
-        const userExchangeNFTs: NftToken[] = [];
+        const getUserNfts = () =>
+            this.apiService.getNftsForUser(
+                args.address,
+                args.offset,
+                args.limit,
+            );
+
+        let userNFTs: NftToken[];
+
+        try {
+            userNFTs = await this.cachingService.getOrSet(
+                cacheKey,
+                getUserNfts,
+                oneSecond(),
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                PairService.name,
+                this.getAllNftTokens.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+
+        const promises: Promise<typeof UserNftTokens>[] = [];
+
         for (const userNft of userNFTs) {
-            const [isFarmToken, isLockedToken] = await Promise.all([
-                this.farmService.isFarmToken(userNft.collection),
-                this.isLockedToken(userNft.collection),
-            ]);
-            if (isFarmToken || isLockedToken) {
-                userExchangeNFTs.push(userNft);
+            const userNftTokenType = await this.getNftTokenType(
+                userNft.collection,
+            );
+            switch (userNftTokenType) {
+                case NftTokenType.FarmToken:
+                    const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
+                        userNft.collection,
+                    );
+                    promises.push(
+                        this.userComputeService.farmTokenUSD(
+                            userNft,
+                            farmAddress,
+                        ),
+                    );
+                    break;
+                case NftTokenType.LockedAssetToken:
+                    promises.push(
+                        this.userComputeService.lockedAssetTokenUSD(
+                            new LockedAssetToken(userNft),
+                        ),
+                    );
+                    break;
+                case NftTokenType.LockedLpToken:
+                    promises.push(
+                        this.userComputeService.lockedLpTokenUSD(
+                            new LockedLpToken(userNft),
+                        ),
+                    );
+                    break;
+                case NftTokenType.LockedFarmToken:
+                    promises.push(
+                        this.userComputeService.lockedFarmTokenUSD(
+                            new LockedFarmToken(userNft),
+                        ),
+                    );
+                    break;
+                default:
+                    break;
             }
         }
-        const promises = userExchangeNFTs.map(async nftToken => {
-            const userNftToken = await this.getNftTokenValueUSD(nftToken);
-            return userNftToken;
-        });
-        const nftTokens = await Promise.all(promises);
 
+        const nftTokens = await Promise.all(promises);
         return nftTokens;
     }
 
     private async getEsdtTokenDetails(
         tokenID: string,
     ): Promise<EsdtTokenDetails> {
-        if (tokensPriceData.has(tokenID)) {
-            const tokenPriceUSD = await this.priceFeed.getTokenPrice(
-                tokensPriceData.get(tokenID),
-            );
-            return {
-                type: EsdtTokenType.FungibleToken,
-                priceUSD: tokenPriceUSD.toFixed(),
-            };
-        }
-
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             tokenID,
         );
@@ -142,14 +201,16 @@ export class UserService {
                 priceUSD: tokenPriceUSD,
             };
         }
-        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(tokenID);
+        const tokenPriceUSD = await this.pairService.computeTokenPriceUSD(
+            tokenID,
+        );
         return {
             type: EsdtTokenType.FungibleToken,
             priceUSD: tokenPriceUSD.toFixed(),
         };
     }
 
-    private async isLockedToken(tokenID: string): Promise<boolean> {
+    private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
         const [
             lockedMEXTokenID,
             lockedLpTokenID,
@@ -159,156 +220,24 @@ export class UserService {
             this.proxyPairService.getwrappedLpTokenID(),
             this.proxyFarmService.getwrappedFarmTokenID(),
         ]);
-
-        if (
-            tokenID === lockedMEXTokenID ||
-            tokenID === lockedLpTokenID ||
-            tokenID === lockedFarmTokenID
-        ) {
-            return true;
+        const promises: Promise<string>[] = [];
+        for (const farmAddress of farmsConfig) {
+            promises.push(this.farmService.getFarmTokenID(farmAddress));
         }
-        return false;
-    }
-
-    private async getNftTokenValueUSD(
-        nftToken: NftToken,
-    ): Promise<typeof UserNftTokens> {
-        const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
-            nftToken.collection,
-        );
-        if (farmAddress) {
-            return await this.computeFarmTokenValue(farmAddress, nftToken);
+        const farmTokenIDs = await Promise.all(promises);
+        switch (tokenID) {
+            case lockedMEXTokenID:
+                return NftTokenType.LockedAssetToken;
+            case lockedLpTokenID:
+                return NftTokenType.LockedLpToken;
+            case lockedFarmTokenID:
+                return NftTokenType.LockedFarmToken;
+            default:
+                if (farmTokenIDs.find(farmTokenID => farmTokenID === tokenID)) {
+                    return NftTokenType.FarmToken;
+                }
+                return undefined;
         }
-
-        const [lockedMEXID, assetToken] = await Promise.all([
-            this.proxyService.getlockedAssetToken(),
-            this.proxyService.getAssetToken(),
-        ]);
-        if (nftToken.collection === lockedMEXID.collection) {
-            const [tokenPriceUSD, decodedAttributes] = await Promise.all([
-                this.pairService.getPriceUSDByPath(assetToken.identifier),
-                this.lockedAssetService.decodeLockedAssetAttributes({
-                    batchAttributes: [
-                        {
-                            identifier: nftToken.identifier,
-                            attributes: nftToken.attributes,
-                        },
-                    ],
-                }),
-            ]);
-            const denominator = new BigNumber(`1e-${assetToken.decimals}`);
-            const valueUSD = new BigNumber(nftToken.balance)
-                .multipliedBy(denominator)
-                .multipliedBy(new BigNumber(tokenPriceUSD));
-
-            return new UserLockedAssetToken({
-                ...nftToken,
-                decimals: assetToken.decimals,
-                valueUSD: valueUSD.toFixed(),
-                decodedAttributes: decodedAttributes[0],
-            });
-        }
-
-        const wrappedLpToken = await this.proxyPairService.getwrappedLpToken();
-        if (nftToken.collection === wrappedLpToken.collection) {
-            const decodedWLPTAttributes = this.proxyService.getWrappedLpTokenAttributes(
-                {
-                    batchAttributes: [
-                        {
-                            identifier: nftToken.identifier,
-                            attributes: nftToken.attributes,
-                        },
-                    ],
-                },
-            );
-            const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-                decodedWLPTAttributes[0].lpTokenID,
-            );
-            if (pairAddress) {
-                const [lpToken, tokenPriceUSD] = await Promise.all([
-                    this.pairService.getLpToken(pairAddress),
-                    this.pairService.getLpTokenPriceUSD(pairAddress),
-                ]);
-
-                const denominator = new BigNumber(`1e-${lpToken.decimals}`);
-                const valueUSD = new BigNumber(nftToken.balance)
-                    .multipliedBy(denominator)
-                    .multipliedBy(new BigNumber(tokenPriceUSD));
-                return new UserLockedLPToken({
-                    ...nftToken,
-                    decimals: lpToken.decimals,
-                    valueUSD: valueUSD.toFixed(),
-                    decodedAttributes: decodedWLPTAttributes[0],
-                });
-            }
-        }
-
-        const wrappedFarmToken = await this.proxyFarmService.getwrappedFarmToken();
-        if (nftToken.collection === wrappedFarmToken.collection) {
-            const decodedWFMTAttributes = await this.proxyService.getWrappedFarmTokenAttributes(
-                {
-                    batchAttributes: [
-                        {
-                            identifier: nftToken.identifier,
-                            attributes: nftToken.attributes,
-                        },
-                    ],
-                },
-            );
-            const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
-                decodedWFMTAttributes[0].farmTokenID,
-            );
-            if (farmAddress) {
-                const farmToken = await this.apiService.getNftByTokenIdentifier(
-                    scAddress.proxyDexAddress,
-                    decodedWFMTAttributes[0].farmTokenIdentifier,
-                );
-                const userFarmToken = await this.computeFarmTokenValue(
-                    farmAddress,
-                    farmToken,
-                );
-                return new UserLockedFarmToken({
-                    ...nftToken,
-                    decimals: userFarmToken.decimals,
-                    valueUSD: userFarmToken.valueUSD,
-                    decodedAttributes: decodedWFMTAttributes[0],
-                });
-            }
-        }
-        return new UserNftToken({
-            ...nftToken,
-            decimals: 0,
-            valueUSD: '0',
-            decodedAttributes: '',
-        });
-    }
-
-    private async computeFarmTokenValue(
-        farmAddress: string,
-        farmToken: NftToken,
-    ): Promise<typeof UserNftTokens> {
-        const decodedFarmAttributes = this.farmService.decodeFarmTokenAttributes(
-            farmToken.identifier,
-            farmToken.attributes,
-        );
-
-        const [lpToken, tokenPriceUSD] = await Promise.all([
-            this.farmService.getFarmingToken(farmAddress),
-            this.farmService.getFarmTokenPriceUSD(farmAddress),
-        ]);
-
-        const denominator = new BigNumber(`1e-${lpToken.decimals}`);
-        const valueUSD = new BigNumber(farmToken.balance)
-            .dividedBy(decodedFarmAttributes.aprMultiplier)
-            .multipliedBy(denominator)
-            .multipliedBy(new BigNumber(tokenPriceUSD));
-
-        return new UserFarmToken({
-            ...farmToken,
-            decimals: lpToken.decimals,
-            valueUSD: valueUSD.toFixed(),
-            decodedAttributes: decodedFarmAttributes,
-        });
     }
 
     async computeUserWorth(address: string): Promise<BoYAccount> {
@@ -321,12 +250,12 @@ export class UserService {
 
         const [
             egldPrice,
-            userBalance,
+            userStats,
             userEsdtTokens,
             userNftTokens,
         ] = await Promise.all([
             this.priceFeed.getTokenPrice('egld'),
-            this.apiService.getAccountBalance(address),
+            this.apiService.getAccountStats(address),
             this.getAllEsdtTokens({
                 address: address,
                 offset: 0,
@@ -338,10 +267,12 @@ export class UserService {
                 limit: userNftTokensCount,
             }),
         ]);
-        if (!userBalance) {
+        if (!userStats) {
             return undefined;
         }
-        const userBalanceDenom = new BigNumber(userBalance).times('1e-18');
+        const userBalanceDenom = new BigNumber(userStats.balance).times(
+            '1e-18',
+        );
 
         userBalanceWorth = userBalanceWorth.plus(
             new BigNumber(userBalanceDenom).times(egldPrice),
@@ -362,7 +293,14 @@ export class UserService {
             address: address,
             userTokens: userEsdtTokens,
             userNftTokens: userNftTokens,
+            balanceUSD: new BigNumber(userBalanceDenom)
+                .times(egldPrice)
+                .toFixed(),
             netWorth: userBalanceWorth.toNumber(),
         });
+    }
+
+    private getUserCacheKey(address: string, nonce: string, ...args: any) {
+        return generateCacheKeyFromParams('user', address, nonce, ...args);
     }
 }
