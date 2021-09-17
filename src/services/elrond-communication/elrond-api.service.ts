@@ -77,14 +77,14 @@ export class ElrondApiService {
         }
     }
 
-    async getAccountBalance(address: string): Promise<string | undefined> {
+    async getAccountStats(address: string): Promise<any | undefined> {
         const account = await this.doGetGeneric(
-            this.getAccountBalance.name,
+            this.getAccountStats.name,
             `accounts/${address}`,
             response => response,
         );
 
-        return account.balance;
+        return account;
     }
 
     async getNftCollection(tokenID: string): Promise<NftCollection> {
