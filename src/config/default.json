@@ -27,7 +27,7 @@
     "priceFeeds": {
         "BUSD-f2c46d": "busd"
     },
-    "tokensSupply": ["MEX-ec32fa", "LKMEX-d1c4ab"],
+    "tokensSupply": ["MEX-ec32fa"],
     "cachedTokensPrice": ["MEX-ec32fa"],
     "farms": [
         "erd1qqqqqqqqqqqqqpgqpfekajgprpwzfqfctzqfqe5j2n38t3ev0n4shhyhy5",
