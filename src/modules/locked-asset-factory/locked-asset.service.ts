@@ -101,7 +101,6 @@ export class LockedAssetService {
             monthStartEpoch,
             currentEpoch,
         } = await this.getMonthStartEpoch();
-        console.log(monthStartEpoch);
         for (const lockedAsset of args.batchAttributes) {
             const attributesBuffer = Buffer.from(
                 lockedAsset.attributes,
@@ -161,7 +160,6 @@ export class LockedAssetService {
     private async getMonthStartEpoch(): Promise<any> {
         const initEpoch = await this.abiService.getInitEpoch();
         const stats = await this.apiService.getStats();
-        console.log({ initEpoch: initEpoch, stats: stats });
         return {
             monthStartEpoch: stats.epoch - ((stats.epoch - initEpoch) % 30),
             currentEpoch: stats.epoch,
