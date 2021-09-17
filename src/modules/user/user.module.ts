@@ -11,10 +11,13 @@ import { UserResolver } from './user.resolver';
 import { UserService } from './user.service';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { WrappingModule } from '../wrapping/wrap.module';
+import { UserComputeService } from './user.compute.service';
+import { CachingModule } from 'src/services/caching/cache.module';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
+        CachingModule,
         ContextModule,
         PairModule,
         PriceFeedModule,
@@ -25,7 +28,7 @@ import { WrappingModule } from '../wrapping/wrap.module';
         LockedAssetModule,
         WrappingModule,
     ],
-    providers: [UserService, UserResolver],
+    providers: [UserService, UserComputeService, UserResolver],
     exports: [UserService],
 })
 export class UserModule {}
