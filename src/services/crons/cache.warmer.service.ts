@@ -4,7 +4,7 @@ import { PriceFeedService } from '../price-feed/price-feed.service';
 import { tokensPriceData } from '../../config';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { oneMinute } from '../../helpers/helpers';
+import { oneHour, oneMinute } from '../../helpers/helpers';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -53,7 +53,7 @@ export class CacheWarmerService {
         await this.deleteCacheKeys();
     }
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron('0 */45 * * * *')
     async cacheLeaderBoard(): Promise<void> {
         if (this.configService.isLeaderBoardActive()) {
             await Locker.lock('Leaderboard', async () => {
@@ -63,11 +63,7 @@ export class CacheWarmerService {
                     'battleOfYields',
                     'leaderBoard',
                 );
-                this.cachingService.setCache(
-                    cacheKey,
-                    leaderBoard,
-                    oneMinute() * 10,
-                );
+                this.cachingService.setCache(cacheKey, leaderBoard, oneHour());
                 this.invalidatedKeys.push(cacheKey);
                 await this.deleteCacheKeys();
             });

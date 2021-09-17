@@ -1,7 +1,7 @@
 import { Inject } from '@nestjs/common';
 import { Query, Resolver } from '@nestjs/graphql';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
@@ -28,7 +28,7 @@ export class BattleOfYieldsResolver {
             return this.cachingService.getOrSet(
                 cacheKey,
                 getLeaderBoard,
-                oneMinute() * 10,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(

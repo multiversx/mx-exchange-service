@@ -11,10 +11,8 @@ export class BattleOfYieldsService {
     async computeLeaderBoard(): Promise<BoYAccount[]> {
         const boyAccounts: BoYAccount[] = [];
 
-        const accounts = await asyncPool(
-            20,
-            battleofyields.slice(0, 10),
-            account => this.userService.computeUserWorth(account.address),
+        const accounts = await asyncPool(10, battleofyields, account =>
+            this.userService.computeUserWorth(account.address),
         );
         for (const account of accounts) {
             if (!account) {

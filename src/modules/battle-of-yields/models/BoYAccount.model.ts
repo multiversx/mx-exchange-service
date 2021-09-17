@@ -11,6 +11,8 @@ export class BoYAccount {
     @Field(type => [UserNftTokens])
     userNftTokens: Array<typeof UserNftTokens>;
     @Field()
+    balanceUSD: string;
+    @Field()
     netWorth: number;
     @Field({ nullable: true })
     teamMember: boolean;
