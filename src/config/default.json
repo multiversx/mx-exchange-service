@@ -65,7 +65,7 @@
         "reclaimTemporaryFundsProxy": 50000000,
         "removeLiquidityProxy": 250000000,
         "enterFarm": 45000000,
-        "exitFarm": 120000000,
+        "exitFarm": 170000000,
         "claimRewards": 75000000,
         "compoundRewards": 55000000,
         "enterFarmProxy": 200000000,
@@ -74,7 +74,7 @@
         "compoundRewardsProxy": 150000000,
         "claimRewardsProxy": 240000000,
         "wrapeGLD": 8000000,
-        "claimLockedAssets": 65000000,
+        "claimLockedAssets": 85000000,
         "unlockAssets": 45000000,
         "depositTokens": 50000000
     },
