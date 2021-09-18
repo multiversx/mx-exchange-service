@@ -12,7 +12,7 @@ export class BattleOfYieldsService {
         const boyAccounts: BoYAccount[] = [];
 
         const accounts = await asyncPool(10, battleofyields, account =>
-            this.userService.computeUserWorth(account.address),
+            this.userService.computeUserWorth(account.playAddress),
         );
         for (const account of accounts) {
             if (!account) {
