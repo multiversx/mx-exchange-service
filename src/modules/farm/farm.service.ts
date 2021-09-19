@@ -156,7 +156,7 @@ export class FarmService {
             return this.cachingService.getOrSet(
                 cacheKey,
                 getRewardsPerBlock,
-                oneHour(),
+                oneMinute(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(

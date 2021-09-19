@@ -34,7 +34,6 @@ export class FarmCacheWarmerService {
                 farmedTokenID,
                 minimumFarmingEpochs,
                 penaltyPercent,
-                rewardsPerBlock,
                 state,
             ] = await Promise.all([
                 this.abiFarmService.getFarmTokenID(farmAddress),
@@ -42,7 +41,6 @@ export class FarmCacheWarmerService {
                 this.abiFarmService.getFarmedTokenID(farmAddress),
                 this.abiFarmService.getMinimumFarmingEpochs(farmAddress),
                 this.abiFarmService.getPenaltyPercent(farmAddress),
-                this.abiFarmService.getRewardsPerBlock(farmAddress),
                 this.abiFarmService.getState(farmAddress),
             ]);
 
@@ -81,12 +79,6 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     'penaltyPercent',
                     penaltyPercent,
-                    oneHour(),
-                ),
-                this.setFarmCache(
-                    farmAddress,
-                    'rewardsPerBlock',
-                    rewardsPerBlock,
                     oneHour(),
                 ),
                 this.setFarmCache(farmAddress, 'state', state, oneHour()),
@@ -156,6 +148,15 @@ export class FarmCacheWarmerService {
     @Cron('*/45 * * * * *')
     async cacheApr(): Promise<void> {
         for (const farmAddress of farmsConfig) {
+            const rewardsPerBlock = await this.abiFarmService.getRewardsPerBlock(
+                farmAddress,
+            );
+            await this.setFarmCache(
+                farmAddress,
+                'rewardsPerBlock',
+                rewardsPerBlock,
+                oneMinute(),
+            );
             const apr = await this.farmStatisticsService.computeFarmAPR(
                 farmAddress,
             );
