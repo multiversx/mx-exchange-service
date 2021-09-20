@@ -467,6 +467,10 @@ export class PairService {
         const path: string[] = [];
         const discovered = new Map<string, boolean>();
         const graph = await this.context.getPairsMap();
+        if (!graph.has(tokenID)) {
+            return new BigNumber(0);
+        }
+
         for (const edge of graph.keys()) {
             discovered.set(edge, false);
         }
