@@ -293,7 +293,7 @@ export class UserService {
             address: address,
             userTokens: userEsdtTokens,
             userNftTokens: userNftTokens,
-            balance: userBalanceDenom.toFixed(),
+            balance: userStats.balance,
             balanceUSD: new BigNumber(userBalanceDenom)
                 .times(egldPrice)
                 .toFixed(),
