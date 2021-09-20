@@ -25,9 +25,6 @@ import { BattleOfYieldsModule } from './modules/battle-of-yields/battle.of.yield
         CacheModule.register(),
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
-            buildSchemaOptions: {
-                fieldMiddleware: [loggerMiddleware],
-            },
             installSubscriptionHandlers: true,
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {
