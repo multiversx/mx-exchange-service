@@ -55,19 +55,17 @@ export class CacheWarmerService {
 
     @Cron('0 */45 * * * *')
     async cacheLeaderBoard(): Promise<void> {
-        if (this.configService.isLeaderBoardActive()) {
-            await Locker.lock('Leaderboard', async () => {
-                console.log('Cache leaderboard');
-                const leaderBoard = await this.boyService.computeLeaderBoard();
-                const cacheKey = generateCacheKeyFromParams(
-                    'battleOfYields',
-                    'leaderBoard',
-                );
-                this.cachingService.setCache(cacheKey, leaderBoard, oneHour());
-                this.invalidatedKeys.push(cacheKey);
-                await this.deleteCacheKeys();
-            });
-        }
+        await Locker.lock('Leaderboard', async () => {
+            console.log('Cache leaderboard');
+            const leaderBoard = await this.boyService.computeLeaderBoard();
+            const cacheKey = generateCacheKeyFromParams(
+                'battleOfYields',
+                'leaderBoard',
+            );
+            this.cachingService.setCache(cacheKey, leaderBoard, oneHour());
+            this.invalidatedKeys.push(cacheKey);
+            await this.deleteCacheKeys();
+        });
     }
 
     private async deleteCacheKeys() {
