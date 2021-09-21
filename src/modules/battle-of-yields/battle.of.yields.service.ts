@@ -19,9 +19,13 @@ export class BattleOfYieldsService {
 
         let accounts: BoYAccount[];
         try {
-            accounts = await asyncPool(5, battleofyields, account =>
-                this.userService.computeUserWorth(account.playAddress),
-            );
+            accounts = await asyncPool(10, battleofyields, async account => {
+                await new Promise(r => setTimeout(r, 5000));
+                const accountWorth = await this.userService.computeUserWorth(
+                    account.playAddress,
+                );
+                return accountWorth;
+            });
         } catch (error) {
             this.logger.error(
                 'an error occured while computing users net worth',
