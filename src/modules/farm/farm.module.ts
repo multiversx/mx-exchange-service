@@ -9,6 +9,8 @@ import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { TokenMergingModule } from '../../modules/token-merging/token.merging.module';
 import { CachingModule } from '../../services/caching/cache.module';
+import { FarmGetterService } from './services/farm.getter.service';
+import { FarmComputeService } from './services/farm.compute.service';
 
 @Module({
     imports: [
@@ -21,10 +23,18 @@ import { CachingModule } from '../../services/caching/cache.module';
     providers: [
         FarmService,
         AbiFarmService,
+        FarmGetterService,
+        FarmComputeService,
         TransactionsFarmService,
         FarmStatisticsService,
         FarmResolver,
     ],
-    exports: [FarmService, AbiFarmService, FarmStatisticsService],
+    exports: [
+        FarmService,
+        AbiFarmService,
+        FarmGetterService,
+        FarmComputeService,
+        FarmStatisticsService,
+    ],
 })
 export class FarmModule {}

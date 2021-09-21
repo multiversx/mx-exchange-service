@@ -27,16 +27,15 @@ import {
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
+import { FarmGetterService } from './services/farm.getter.service';
 
 @Resolver(of => FarmModel)
 export class FarmResolver {
     constructor(
-        @Inject(FarmService) private readonly farmService: FarmService,
-        @Inject(TransactionsFarmService)
+        private readonly farmService: FarmService,
+        private readonly farmGetterService: FarmGetterService,
         private readonly transactionsService: TransactionsFarmService,
-        @Inject(TokenMergingTransactionsService)
         private readonly mergeTokensTransactions: TokenMergingTransactionsService,
-        @Inject(TokenMergingService)
         private readonly mergeTokensService: TokenMergingService,
         private readonly statisticsService: FarmStatisticsService,
     ) {}
@@ -44,7 +43,7 @@ export class FarmResolver {
     @ResolveField()
     async farmedToken(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getFarmedToken(parent.address);
+            return await this.farmGetterService.getFarmedToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -53,7 +52,7 @@ export class FarmResolver {
     @ResolveField()
     async farmToken(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getFarmToken(parent.address);
+            return await this.farmGetterService.getFarmToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -62,7 +61,7 @@ export class FarmResolver {
     @ResolveField()
     async farmingToken(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getFarmingToken(parent.address);
+            return await this.farmGetterService.getFarmingToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -71,7 +70,9 @@ export class FarmResolver {
     @ResolveField()
     async perBlockRewards(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getRewardsPerBlock(parent.address);
+            return await this.farmGetterService.getRewardsPerBlock(
+                parent.address,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -80,7 +81,9 @@ export class FarmResolver {
     @ResolveField()
     async farmTokenSupply(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getFarmTokenSupply(parent.address);
+            return await this.farmGetterService.getFarmTokenSupply(
+                parent.address,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -89,7 +92,7 @@ export class FarmResolver {
     @ResolveField()
     async farmingTokenReserve(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getFarmingTokenReserve(
+            return await this.farmGetterService.getFarmingTokenReserve(
                 parent.address,
             );
         } catch (error) {
@@ -100,7 +103,7 @@ export class FarmResolver {
     @ResolveField()
     async farmedTokenPriceUSD(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getFarmedTokenPriceUSD(
+            return await this.farmGetterService.getFarmedTokenPriceUSD(
                 parent.address,
             );
         } catch (error) {
@@ -111,7 +114,9 @@ export class FarmResolver {
     @ResolveField()
     async farmTokenPriceUSD(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getFarmTokenPriceUSD(parent.address);
+            return await this.farmGetterService.getFarmTokenPriceUSD(
+                parent.address,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -120,7 +125,7 @@ export class FarmResolver {
     @ResolveField()
     async farmingTokenPriceUSD(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getFarmingTokenPriceUSD(
+            return await this.farmGetterService.getFarmingTokenPriceUSD(
                 parent.address,
             );
         } catch (error) {
@@ -131,7 +136,9 @@ export class FarmResolver {
     @ResolveField()
     async penaltyPercent(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getPenaltyPercent(parent.address);
+            return await this.farmGetterService.getPenaltyPercent(
+                parent.address,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -140,7 +147,7 @@ export class FarmResolver {
     @ResolveField()
     async minimumFarmingEpochs(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getMinimumFarmingEpochs(
+            return await this.farmGetterService.getMinimumFarmingEpochs(
                 parent.address,
             );
         } catch (error) {
@@ -184,7 +191,7 @@ export class FarmResolver {
     @ResolveField()
     async state(@Parent() parent: FarmModel) {
         try {
-            return await this.farmService.getState(parent.address);
+            return await this.farmGetterService.getState(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }

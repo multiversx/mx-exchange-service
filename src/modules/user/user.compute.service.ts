@@ -6,6 +6,7 @@ import { LockedFarmToken } from '../../models/tokens/lockedFarmToken.model';
 import { LockedLpToken } from '../../models/tokens/lockedLpToken.model';
 import { NftToken } from '../../models/tokens/nftToken.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmService } from '../farm/services/farm.service';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 import { PairService } from '../pair/pair.service';
@@ -23,6 +24,7 @@ export class UserComputeService {
     constructor(
         private apiService: ElrondApiService,
         private farmService: FarmService,
+        private farmGetterService: FarmGetterService,
         private pairService: PairService,
         private lockedAssetService: LockedAssetService,
         private proxyService: ProxyService,
@@ -38,8 +40,8 @@ export class UserComputeService {
         );
 
         const [lpToken, tokenPriceUSD] = await Promise.all([
-            this.farmService.getFarmingToken(farmAddress),
-            this.farmService.getFarmTokenPriceUSD(farmAddress),
+            this.farmGetterService.getFarmingToken(farmAddress),
+            this.farmGetterService.getFarmTokenPriceUSD(farmAddress),
         ]);
 
         const denominator = new BigNumber(`1e-${lpToken.decimals}`);

@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { FarmService } from './farm.service';
 import BigNumber from 'bignumber.js';
 import { PairService } from '../../pair/pair.service';
 import { CachingService } from '../../../services/caching/cache.service';
@@ -8,11 +7,12 @@ import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { oneMinute } from '../../../helpers/helpers';
+import { FarmGetterService } from './farm.getter.service';
 
 @Injectable()
 export class FarmStatisticsService {
     constructor(
-        private farmService: FarmService,
+        private farmGetterService: FarmGetterService,
         private pairService: PairService,
         private cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
@@ -44,7 +44,7 @@ export class FarmStatisticsService {
     }
 
     async computeFarmAPR(farmAddress: string): Promise<string> {
-        const farmedTokenID = await this.farmService.getFarmedTokenID(
+        const farmedTokenID = await this.farmGetterService.getFarmedTokenID(
             farmAddress,
         );
 
@@ -56,10 +56,10 @@ export class FarmStatisticsService {
             rewardsPerBlock,
         ] = await Promise.all([
             this.pairService.computeTokenPriceUSD(farmedTokenID),
-            this.farmService.getFarmingTokenPriceUSD(farmAddress),
-            this.farmService.getFarmTokenSupply(farmAddress),
-            this.farmService.getFarmingTokenReserve(farmAddress),
-            this.farmService.getRewardsPerBlock(farmAddress),
+            this.farmGetterService.getFarmingTokenPriceUSD(farmAddress),
+            this.farmGetterService.getFarmTokenSupply(farmAddress),
+            this.farmGetterService.getFarmingTokenReserve(farmAddress),
+            this.farmGetterService.getRewardsPerBlock(farmAddress),
         ]);
 
         const farmTokenSupplyBig = new BigNumber(farmTokenSupply);

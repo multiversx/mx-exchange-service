@@ -4,12 +4,12 @@ import { cacheConfig, farmsConfig } from '../../config';
 import { FarmStatisticsService } from 'src/modules/farm/services/farm-statistics.service';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { FarmService } from 'src/modules/farm/services/farm.service';
 import { AbiFarmService } from 'src/modules/farm/services/abi-farm.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour, oneMinute } from '../../helpers/helpers';
+import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -17,7 +17,7 @@ export class FarmCacheWarmerService {
 
     constructor(
         private readonly abiFarmService: AbiFarmService,
-        private readonly farmService: FarmService,
+        private readonly farmComputeService: FarmComputeService,
         private readonly farmStatisticsService: FarmStatisticsService,
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
@@ -132,8 +132,10 @@ export class FarmCacheWarmerService {
                 farmedTokenPriceUSD,
                 farmingTokenPriceUSD,
             ] = await Promise.all([
-                this.farmService.computeFarmedTokenPriceUSD(farmAddress),
-                this.farmService.computeFarmingTokenPriceUSD(farmAddress),
+                this.farmComputeService.computeFarmedTokenPriceUSD(farmAddress),
+                this.farmComputeService.computeFarmingTokenPriceUSD(
+                    farmAddress,
+                ),
             ]);
             await Promise.all([
                 this.setFarmCache(
