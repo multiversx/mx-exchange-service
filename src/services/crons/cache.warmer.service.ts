@@ -4,13 +4,12 @@ import { PriceFeedService } from '../price-feed/price-feed.service';
 import { tokensPriceData } from '../../config';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { oneHour, oneMinute } from '../../helpers/helpers';
+import { oneMinute } from '../../helpers/helpers';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { BattleOfYieldsService } from 'src/modules/battle-of-yields/battle.of.yields.service';
 import { Locker } from 'src/utils/locker';
-import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class CacheWarmerService {
@@ -21,7 +20,6 @@ export class CacheWarmerService {
         private readonly priceFeed: PriceFeedService,
         private readonly boyService: BattleOfYieldsService,
         private readonly cachingService: CachingService,
-        private readonly configService: ApiConfigService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -53,7 +51,7 @@ export class CacheWarmerService {
         await this.deleteCacheKeys();
     }
 
-    @Cron('0 */45 * * * *')
+    @Cron(CronExpression.EVERY_HOUR)
     async cacheLeaderBoard(): Promise<void> {
         await Locker.lock('Leaderboard', async () => {
             console.log('Cache leaderboard');
@@ -62,7 +60,11 @@ export class CacheWarmerService {
                 'battleOfYields',
                 'leaderBoard',
             );
-            this.cachingService.setCache(cacheKey, leaderBoard, oneHour());
+            this.cachingService.setCache(
+                cacheKey,
+                leaderBoard,
+                oneMinute() * 90,
+            );
             this.invalidatedKeys.push(cacheKey);
             await this.deleteCacheKeys();
         });
