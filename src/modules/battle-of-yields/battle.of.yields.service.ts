@@ -1,20 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { BoYAccount } from './models/BoYAccount.model';
 import asyncPool from 'tiny-async-pool';
 import { battleofyields, team } from '../../config/battle-of-yields.json';
 import { BattleOfYieldsModel } from './models/battle.of.yields.model';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class BattleOfYieldsService {
-    constructor(private readonly userService: UserService) {}
+    constructor(
+        private readonly userService: UserService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {}
 
     async computeLeaderBoard(): Promise<BattleOfYieldsModel> {
         const boyAccounts: BoYAccount[] = [];
 
-        const accounts = await asyncPool(10, battleofyields, account =>
-            this.userService.computeUserWorth(account.playAddress),
-        );
+        let accounts: BoYAccount[];
+        try {
+            accounts = await asyncPool(
+                10,
+                battleofyields.slice(0, 30),
+                account =>
+                    this.userService.computeUserWorth(account.playAddress),
+            );
+        } catch (error) {
+            this.logger.error(
+                'an error occured while computing users net worth',
+                {
+                    path: `${BattleOfYieldsService.name}.${this.computeLeaderBoard.name}`,
+                    error,
+                },
+            );
+            throw error;
+        }
+
         for (const account of accounts) {
             if (!account) {
                 continue;

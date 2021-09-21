@@ -10,6 +10,8 @@ import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { BattleOfYieldsService } from 'src/modules/battle-of-yields/battle.of.yields.service';
 import { Locker } from 'src/utils/locker';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class CacheWarmerService {
@@ -21,6 +23,7 @@ export class CacheWarmerService {
         private readonly boyService: BattleOfYieldsService,
         private readonly cachingService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     @Cron(CronExpression.EVERY_30_SECONDS)
@@ -51,22 +54,44 @@ export class CacheWarmerService {
         await this.deleteCacheKeys();
     }
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_10_SECONDS)
     async cacheLeaderBoard(): Promise<void> {
         await Locker.lock('Leaderboard', async () => {
-            console.log('Cache leaderboard');
-            const leaderBoard = await this.boyService.computeLeaderBoard();
-            const cacheKey = generateCacheKeyFromParams(
-                'battleOfYields',
-                'leaderBoard',
-            );
-            this.cachingService.setCache(
-                cacheKey,
-                leaderBoard,
-                oneMinute() * 90,
-            );
-            this.invalidatedKeys.push(cacheKey);
-            await this.deleteCacheKeys();
+            try {
+                const leaderBoard = await this.boyService.computeLeaderBoard();
+                const cacheKey = generateCacheKeyFromParams(
+                    'battleOfYields',
+                    'leaderBoard',
+                );
+                console.log('Cached leaderboard');
+                this.cachingService.setCache(
+                    cacheKey,
+                    leaderBoard,
+                    oneMinute() * 90,
+                );
+                this.invalidatedKeys.push(cacheKey);
+                await this.deleteCacheKeys();
+            } catch (error) {
+                this.logger.error(
+                    'an error occured while computing leaderboard',
+                    {
+                        path: `${CacheWarmerService.name}.${this.cacheLeaderBoard.name}`,
+                        error,
+                    },
+                );
+                const cacheKey = generateCacheKeyFromParams(
+                    'battleOfYields',
+                    'leaderBoard',
+                );
+                const leaderBoard = this.cachingService.getCache(cacheKey);
+                this.cachingService.setCache(
+                    cacheKey,
+                    leaderBoard,
+                    oneMinute() * 90,
+                );
+                this.invalidatedKeys.push(cacheKey);
+                await this.deleteCacheKeys();
+            }
         });
     }
 
