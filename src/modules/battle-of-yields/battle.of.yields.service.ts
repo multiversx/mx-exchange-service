@@ -19,11 +19,8 @@ export class BattleOfYieldsService {
 
         let accounts: BoYAccount[];
         try {
-            accounts = await asyncPool(
-                10,
-                battleofyields.slice(0, 30),
-                account =>
-                    this.userService.computeUserWorth(account.playAddress),
+            accounts = await asyncPool(5, battleofyields.slice, account =>
+                this.userService.computeUserWorth(account.playAddress),
             );
         } catch (error) {
             this.logger.error(

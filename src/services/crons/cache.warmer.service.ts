@@ -54,7 +54,7 @@ export class CacheWarmerService {
         await this.deleteCacheKeys();
     }
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_HOUR)
     async cacheLeaderBoard(): Promise<void> {
         await Locker.lock('Leaderboard', async () => {
             try {
