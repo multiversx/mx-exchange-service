@@ -19,7 +19,7 @@ export class BattleOfYieldsService {
 
         let accounts: BoYAccount[];
         try {
-            accounts = await asyncPool(5, battleofyields.slice, account =>
+            accounts = await asyncPool(5, battleofyields, account =>
                 this.userService.computeUserWorth(account.playAddress),
             );
         } catch (error) {
