@@ -3,12 +3,13 @@ import { UserService } from '../user/user.service';
 import { BoYAccount } from './models/BoYAccount.model';
 import asyncPool from 'tiny-async-pool';
 import { battleofyields, team } from '../../config/battle-of-yields.json';
+import { BattleOfYieldsModel } from './models/battle.of.yields.model';
 
 @Injectable()
 export class BattleOfYieldsService {
     constructor(private readonly userService: UserService) {}
 
-    async computeLeaderBoard(): Promise<BoYAccount[]> {
+    async computeLeaderBoard(): Promise<BattleOfYieldsModel> {
         const boyAccounts: BoYAccount[] = [];
 
         const accounts = await asyncPool(10, battleofyields, account =>
@@ -23,7 +24,12 @@ export class BattleOfYieldsService {
             }
             boyAccounts.push(account);
         }
-
-        return boyAccounts.sort((a, b) => (a.netWorth < b.netWorth ? 1 : -1));
+        const sortedBoYAccounts = boyAccounts.sort((a, b) =>
+            a.netWorth < b.netWorth ? 1 : -1,
+        );
+        return new BattleOfYieldsModel({
+            leaderboard: sortedBoYAccounts,
+            timestamp: Date.now().toFixed(),
+        });
     }
 }

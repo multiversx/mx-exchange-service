@@ -7,7 +7,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { BattleOfYieldsService } from './battle.of.yields.service';
-import { BoYAccount } from './models/BoYAccount.model';
+import { BattleOfYieldsModel } from './models/battle.of.yields.model';
 
 @Resolver()
 export class BattleOfYieldsResolver {
@@ -17,8 +17,8 @@ export class BattleOfYieldsResolver {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Query(results => [BoYAccount])
-    async getLeaderBoard(): Promise<BoYAccount[]> {
+    @Query(results => BattleOfYieldsModel)
+    async getLeaderBoard(): Promise<BattleOfYieldsModel> {
         const cacheKey = generateCacheKeyFromParams(
             'battleOfYields',
             'leaderBoard',
