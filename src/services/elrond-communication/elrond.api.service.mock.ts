@@ -9,7 +9,7 @@ export class ElrondApiServiceMock {
     async getTokensForUser(address: string): Promise<EsdtToken[]> {
         return [
             {
-                identifier: 'MEX-b6bb7d',
+                identifier: 'MEX-ec32fa',
                 name: 'MaiarExchangeToken',
                 type: 'FungibleESDT',
                 owner:

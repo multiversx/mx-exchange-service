@@ -1,33 +1,11 @@
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import BigNumber from 'bignumber.js';
 import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
-
-const pairsMetadata = [
-    {
-        firstToken: 'WEGLD-88600a',
-        secondToken: 'MEX-b6bb7d',
-        address: 'pair_address_1',
-    },
-    {
-        firstToken: 'WEGLD-88600a',
-        secondToken: 'BUSD-f66742',
-        address: 'pair_address_2',
-    },
-    {
-        firstToken: 'MEX-b6bb7d',
-        secondToken: 'BUSD-f66742',
-        address: 'pair_address_3',
-    },
-    {
-        firstToken: 'MEX-b6bb7d',
-        secondToken: 'SPT-f66742',
-        address: 'pair_address_4',
-    },
-];
+import { pairsMetadata } from '../../services/context/context.service.mocks';
 
 const farmMetadata = {
     address: 'farm_address_1',
-    farmedTokenID: 'MEX-b6bb7d',
+    farmedTokenID: 'MEX-ec32fa',
     farmTokenID: 'FMT-1234',
     farmingTokenID: 'LPT-1111',
     farmTotalSupply: '1000000',
@@ -132,7 +110,7 @@ export class PairServiceMock {
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string> {
         if (tokenID === 'LPT-1111') {
-            return 'pair_address_1';
+            return 'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww';
         }
         return;
     }

@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedlockService } from '../../../services';
 import {
-    ContextServiceMock,
     RedlockServiceMock,
     WrapServiceMock,
 } from '../../pair/pair.test-constants';
@@ -15,10 +14,11 @@ import {
 import * as Transport from 'winston-transport';
 import { RedisModule } from 'nestjs-redis';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { TransactionsWrapService } from '../../wrapping/transactions-wrap.service';
 import { PairServiceMock } from '../../pair/pair.service.mock';
 import { TransactionsProxyPairService } from './proxy-pair-transactions.service';
 import { PairService } from '../../pair/pair.service';
+import { ContextServiceMock } from '../../../services/context/context.service.mocks';
+import { WrappingModule } from '../../../modules/wrapping/wrap.module';
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
@@ -66,6 +66,7 @@ describe('TransactionProxyPairService', () => {
                         password: process.env.REDIS_PASSWORD,
                     },
                 ]),
+                WrappingModule,
             ],
             providers: [
                 ElrondProxyService,
@@ -73,7 +74,6 @@ describe('TransactionProxyPairService', () => {
                 RedlockServiceProvider,
                 PairServiceProvider,
                 WrapServiceProvider,
-                TransactionsWrapService,
                 TransactionsProxyPairService,
             ],
         }).compile();
@@ -119,7 +119,7 @@ describe('TransactionProxyPairService', () => {
             'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMxMzEzMTMxQDBhQDYxNjM2MzY1NzA3NDQ1NzM2NDc0NTA2MTc5NmQ2NTZlNzQ1MDcyNmY3ODc5QDAwMDAwMDAwMDAwMDAwMDAwNTAwMjJmZGMyZjUyNDdiNGE0MGY5ZTNmYTNjMjljMDJmZTNlNDcxMTgxYTdjZWI=',
         );
         expect(transferSecondTokenTransaction.data).toEqual(
-            'RVNEVE5GVFRyYW5zZmVyQDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDA5QDAwMDAwMDAwMDAwMDAwMDAwNTAwMDMxNzNlNzQwNDFkYTU1MGZmMmRkMTkxYzc1YTk1MDRhY2ZiZTU3ZDdjZWJANjE2MzYzNjU3MDc0NDU3MzY0NzQ1MDYxNzk2ZDY1NmU3NDUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDA1MDAyMmZkYzJmNTI0N2I0YTQwZjllM2ZhM2MyOWMwMmZlM2U0NzExODFhN2NlYg==',
+            'RVNEVE5GVFRyYW5zZmVyQDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDA5QDAwMDAwMDAwMDAwMDAwMDAwNTAwZjFjOGYyZmRjNThhNjNjNmIyMDFmYzJlZDYyOTk2MmQzZGZhMzNmZTdjZWJANjE2MzYzNjU3MDc0NDU3MzY0NzQ1MDYxNzk2ZDY1NmU3NDUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDA1MDAyMmZkYzJmNTI0N2I0YTQwZjllM2ZhM2MyOWMwMmZlM2U0NzExODFhN2NlYg==',
         );
         expect(addLiquidity.data).toEqual(
             'YWRkTGlxdWlkaXR5UHJveHlAMDAwMDAwMDAwMDAwMDAwMDA1MDAyMmZkYzJmNTI0N2I0YTQwZjllM2ZhM2MyOWMwMmZlM2U0NzExODFhN2NlYkA1NzQ1NDc0YzQ0MmQzMTMxMzEzMUBAMGFAMDlANGM0YjRkNDU1ODJkMzEzMjMzMzRAMDFAMDlAMDg=',
@@ -154,7 +154,7 @@ describe('TransactionProxyPairService', () => {
         ] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
         expect(transferfirstTokenTransaction.data).toEqual(
-            'RVNEVE5GVFRyYW5zZmVyQDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDBhQDAwMDAwMDAwMDAwMDAwMDAwNTAwMDMxNzNlNzQwNDFkYTU1MGZmMmRkMTkxYzc1YTk1MDRhY2ZiZTU3ZDdjZWJANjE2MzYzNjU3MDc0NDU3MzY0NzQ1MDYxNzk2ZDY1NmU3NDUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDA1MDAyMmZkYzJmNTI0N2I0YTQwZjllM2ZhM2MyOWMwMmZlM2U0NzExODFhN2NlYg==',
+            'RVNEVE5GVFRyYW5zZmVyQDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDBhQDAwMDAwMDAwMDAwMDAwMDAwNTAwZjFjOGYyZmRjNThhNjNjNmIyMDFmYzJlZDYyOTk2MmQzZGZhMzNmZTdjZWJANjE2MzYzNjU3MDc0NDU3MzY0NzQ1MDYxNzk2ZDY1NmU3NDUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDA1MDAyMmZkYzJmNTI0N2I0YTQwZjllM2ZhM2MyOWMwMmZlM2U0NzExODFhN2NlYg==',
         );
         expect(transferSecondTokenTransaction.data).toEqual(
             'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMxMzEzMTMxQDA5QDYxNjM2MzY1NzA3NDQ1NzM2NDc0NTA2MTc5NmQ2NTZlNzQ1MDcyNmY3ODc5QDAwMDAwMDAwMDAwMDAwMDAwNTAwMjJmZGMyZjUyNDdiNGE0MGY5ZTNmYTNjMjljMDJmZTNlNDcxMTgxYTdjZWI=',
