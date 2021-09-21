@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { cacheConfig, farmsConfig } from '../../config';
-import { FarmStatisticsService } from 'src/modules/farm/farm-statistics.service';
+import { FarmStatisticsService } from 'src/modules/farm/services/farm-statistics.service';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { FarmService } from 'src/modules/farm/farm.service';
-import { AbiFarmService } from 'src/modules/farm/abi-farm.service';
+import { FarmService } from 'src/modules/farm/services/farm.service';
+import { AbiFarmService } from 'src/modules/farm/services/abi-farm.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';

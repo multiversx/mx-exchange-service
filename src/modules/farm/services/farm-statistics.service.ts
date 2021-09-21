@@ -1,14 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { scAddress } from '../../config';
 import { FarmService } from './farm.service';
 import BigNumber from 'bignumber.js';
-import { PairService } from '../pair/pair.service';
-import { CachingService } from '../../services/caching/cache.service';
+import { PairService } from '../../pair/pair.service';
+import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { oneMinute } from '../../helpers/helpers';
+import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
+import { generateGetLogMessage } from '../../../utils/generate-log-message';
+import { oneMinute } from '../../../helpers/helpers';
 
 @Injectable()
 export class FarmStatisticsService {

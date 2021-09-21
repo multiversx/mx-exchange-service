@@ -5,33 +5,31 @@ import {
     constantsConfig,
     farmsConfig,
     scAddress,
-} from '../../config';
-import { EsdtToken } from '../../models/tokens/esdtToken.model';
+} from '../../../config';
+import { EsdtToken } from '../../../models/tokens/esdtToken.model';
 import {
     ExitFarmTokensModel,
     FarmModel,
     RewardsModel,
-} from './models/farm.model';
+} from '../models/farm.model';
 import { AbiFarmService } from './abi-farm.service';
-import { CalculateRewardsArgs } from './models/farm.args';
-import { PairService } from '../pair/pair.service';
-import { ContextService } from '../../services/context/context.service';
-import { NftCollection } from '../../models/tokens/nftCollection.model';
+import { CalculateRewardsArgs } from '../models/farm.args';
+import { PairService } from '../../pair/pair.service';
+import { ContextService } from '../../../services/context/context.service';
+import { NftCollection } from '../../../models/tokens/nftCollection.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { CachingService } from '../../services/caching/cache.service';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import { CachingService } from '../../../services/caching/cache.service';
+import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
+import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import BigNumber from 'bignumber.js';
-import { oneHour, oneMinute, ruleOfThree } from '../../helpers/helpers';
-import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
+import { oneHour, oneMinute, ruleOfThree } from '../../../helpers/helpers';
+import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 
 @Injectable()
 export class FarmService {
     constructor(
         private readonly abiService: AbiFarmService,
-        private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
         private readonly context: ContextService,
         private readonly pairService: PairService,

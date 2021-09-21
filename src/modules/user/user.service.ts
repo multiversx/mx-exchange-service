@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { farmsConfig } from '../../config';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { FarmService } from '../farm/farm.service';
+import { FarmService } from '../farm/services/farm.service';
 import { NftToken } from '../../models/tokens/nftToken.model';
 import { PairService } from '../pair/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';

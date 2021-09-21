@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { FarmService } from '../farm/farm.service';
+import { FarmService } from '../farm/services/farm.service';
 import { PairService } from '../pair/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';

@@ -8,7 +8,7 @@ import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { farmsConfig } from '../../config';
-import { FarmService } from '../farm/farm.service';
+import { FarmService } from '../farm/services/farm.service';
 import { PairService } from '../pair/pair.service';
 import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
 import { TransactionInterpreterService } from '../../services/transactions/transaction.interpreter.service';

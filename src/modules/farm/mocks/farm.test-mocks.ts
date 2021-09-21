@@ -1,4 +1,4 @@
-import { EsdtToken } from '../../models/tokens/esdtToken.model';
+import { EsdtToken } from '../../../models/tokens/esdtToken.model';
 
 const farmMetadata = {
     address: 'farm_address_1',

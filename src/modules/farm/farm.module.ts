@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { FarmService } from './farm.service';
+import { FarmService } from './services/farm.service';
 import { FarmResolver } from './farm.resolver';
-import { AbiFarmService } from './abi-farm.service';
-import { TransactionsFarmService } from './transactions-farm.service';
-import { FarmStatisticsService } from './farm-statistics.service';
+import { AbiFarmService } from './services/abi-farm.service';
+import { TransactionsFarmService } from './services/transactions-farm.service';
+import { FarmStatisticsService } from './services/farm-statistics.service';
 import { PairModule } from '../pair/pair.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';

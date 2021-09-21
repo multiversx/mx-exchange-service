@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContextService } from '../../services/context/context.service';
-import { PairService } from '../pair/pair.service';
-import { FarmStatisticsService } from './farm-statistics.service';
-import { FarmService } from './farm.service';
-import { FarmServiceMock, PairServiceMock } from './farm.test-mocks';
-import { ContextServiceMock } from '../../services/context/context.service.mocks';
-import { CommonAppModule } from '../../common.app.module';
-import { CachingModule } from '../../services/caching/cache.module';
+import { ContextService } from '../../../services/context/context.service';
+import { PairService } from '../../pair/pair.service';
+import { FarmStatisticsService } from '../services/farm-statistics.service';
+import { FarmService } from '../services/farm.service';
+import { FarmServiceMock, PairServiceMock } from '../mocks/farm.test-mocks';
+import { ContextServiceMock } from '../../../services/context/context.service.mocks';
+import { CommonAppModule } from '../../../common.app.module';
+import { CachingModule } from '../../../services/caching/cache.module';
 
 describe('FarmStatisticsService', () => {
     let service: FarmStatisticsService;

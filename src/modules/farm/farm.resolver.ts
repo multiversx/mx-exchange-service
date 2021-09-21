@@ -1,4 +1,4 @@
-import { FarmService } from './farm.service';
+import { FarmService } from './services/farm.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
@@ -7,7 +7,7 @@ import {
     FarmModel,
     RewardsModel,
 } from './models/farm.model';
-import { TransactionsFarmService } from './transactions-farm.service';
+import { TransactionsFarmService } from './services/transactions-farm.service';
 import {
     CalculateRewardsArgs,
     ClaimRewardsArgs,
@@ -16,7 +16,7 @@ import {
     EnterFarmBatchArgs,
     ExitFarmArgs,
 } from './models/farm.args';
-import { FarmStatisticsService } from './farm-statistics.service';
+import { FarmStatisticsService } from './services/farm-statistics.service';
 import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
 import { TokenMergingService } from '../token-merging/token.merging.service';
 import {

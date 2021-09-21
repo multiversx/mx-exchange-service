@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { CalculateRewardsArgs } from './models/farm.args';
+import { CalculateRewardsArgs } from '../models/farm.args';
 
 export class AbiFarmServiceMock {
     async getPenaltyPercent(farmAddress: string): Promise<number> {
