@@ -131,7 +131,7 @@ describe('UserService', () => {
             }),
         ).toEqual([
             {
-                identifier: 'MEX-b6bb7d',
+                identifier: 'MEX-ec32fa',
                 name: 'MaiarExchangeToken',
                 type: 'FungibleESDT',
                 owner:

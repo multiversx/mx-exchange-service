@@ -24,7 +24,7 @@ import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { oneHour, oneMinute } from '../../helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from '../../helpers/helpers';
 
 @Injectable()
 export class PairService {
@@ -148,7 +148,7 @@ export class PairService {
         const tokenPriceUSD = await this.getTokenData(
             pairAddress,
             'firstTokenPriceUSD',
-            () => this.computeTokenPriceUSD(pairAddress, firstTokenID),
+            () => this.computeTokenPriceUSD(firstTokenID),
             oneMinute(),
         );
         return tokenPriceUSD;
@@ -159,7 +159,7 @@ export class PairService {
         const tokenPriceUSD = await this.getTokenData(
             pairAddress,
             'secondTokenPriceUSD',
-            () => this.computeTokenPriceUSD(pairAddress, secondTokenID),
+            () => this.computeTokenPriceUSD(secondTokenID),
             oneMinute(),
         );
         return tokenPriceUSD;
@@ -181,7 +181,7 @@ export class PairService {
             this.getFirstTokenPrice(pairAddress),
         ]);
         const [secondTokenPriceUSD, lpTokenPosition] = await Promise.all([
-            this.computeTokenPriceUSD(pairAddress, secondToken.identifier),
+            this.computeTokenPriceUSD(secondToken.identifier),
             this.getLiquidityPosition(
                 pairAddress,
                 new BigNumber(`1e${lpToken.decimals}`).toFixed(),
@@ -212,58 +212,14 @@ export class PairService {
         }
     }
 
-    async computeTokenPriceUSD(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<BigNumber> {
+    async computeTokenPriceUSD(tokenID: string): Promise<BigNumber> {
         if (tokensPriceData.has(tokenID)) {
             return this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID));
         }
 
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        let tokenPrice: string;
-        let tokenPriceUSD: BigNumber;
-        let usdPrice: BigNumber;
+        const usdPrice = await this.getPriceUSDByPath(tokenID);
 
-        switch (tokenID) {
-            case firstTokenID:
-                tokenPrice = await this.getFirstTokenPrice(pairAddress);
-                if (tokensPriceData.has(secondTokenID)) {
-                    const usdPrice = await this.priceFeed.getTokenPrice(
-                        tokensPriceData.get(secondTokenID),
-                    );
-                    tokenPriceUSD = new BigNumber(tokenPrice).multipliedBy(
-                        usdPrice,
-                    );
-                    return tokenPriceUSD;
-                }
-
-                usdPrice = await this.getPriceUSDByPath(secondTokenID);
-                tokenPriceUSD = new BigNumber(tokenPrice).multipliedBy(
-                    usdPrice,
-                );
-                return tokenPriceUSD;
-
-            case secondTokenID:
-                tokenPrice = await this.getSecondTokenPrice(pairAddress);
-                if (tokensPriceData.has(firstTokenID)) {
-                    const usdPrice = await this.priceFeed.getTokenPrice(
-                        tokensPriceData.get(firstTokenID),
-                    );
-                    tokenPriceUSD = new BigNumber(tokenPrice).multipliedBy(
-                        usdPrice,
-                    );
-                    return tokenPriceUSD;
-                }
-                usdPrice = await this.getPriceUSDByPath(firstTokenID);
-                tokenPriceUSD = new BigNumber(tokenPrice).multipliedBy(
-                    usdPrice,
-                );
-                return tokenPriceUSD;
-        }
-
-        return new BigNumber(0);
+        return usdPrice;
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
@@ -508,16 +464,30 @@ export class PairService {
             return new BigNumber(0);
         }
 
-        const path = await this.context.getPath(tokenID, tokenProviderUSD);
+        const path: string[] = [];
+        const discovered = new Map<string, boolean>();
+        const graph = await this.context.getPairsMap();
+        if (!graph.has(tokenID)) {
+            return new BigNumber(0);
+        }
+
+        for (const edge of graph.keys()) {
+            discovered.set(edge, false);
+        }
+        this.context.isConnected(
+            graph,
+            tokenID,
+            tokenProviderUSD,
+            discovered,
+            path,
+        );
+
         if (path.length === 0) {
             return new BigNumber(0);
         }
-        const pair = await this.context.getPairByTokens(path[0], path[1]);
-        const firstTokenPrice = await this.getTokenPrice(pair.address, path[0]);
-        const secondTokenPriceUSD = await this.computeTokenPriceUSD(
-            pair.address,
-            path[1],
-        );
+        const pair = await this.context.getPairByTokens(tokenID, path[1]);
+        const firstTokenPrice = await this.getTokenPrice(pair.address, tokenID);
+        const secondTokenPriceUSD = await this.computeTokenPriceUSD(path[1]);
         return new BigNumber(firstTokenPrice).multipliedBy(secondTokenPriceUSD);
     }
 

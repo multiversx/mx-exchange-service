@@ -1,18 +1,26 @@
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
-import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
+import {
+    ContractFunction,
+    GasLimit,
+    SmartContract,
+    TypedValue,
+} from '@elrondnetwork/erdjs/out';
+import { elrondConfig } from '../../config';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
+import { TransactionModel } from '../../models/transaction.model';
+import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
 
-const pairsMetadata: PairMetadata[] = [
+export const pairsMetadata: PairMetadata[] = [
     {
-        firstTokenID: 'WEGLD-88600a',
-        secondTokenID: 'MEX-b6bb7d',
+        firstTokenID: 'WEGLD-073650',
+        secondTokenID: 'MEX-ec32fa',
         address:
-            'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww',
+            'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc',
     },
     {
-        firstTokenID: 'WEGLD-88600a',
-        secondTokenID: 'BUSD-f66742',
+        firstTokenID: 'WEGLD-073650',
+        secondTokenID: 'BUSD-f2c46d',
         address:
-            'erd1qqqqqqqqqqqqqpgq3gmttefd840klya8smn7zeae402w2esw0n4sm8m04f',
+            'erd1qqqqqqqqqqqqqpgqmffr70826epqhdf2ggsmgxgur77g53hr0n4s38y2qe',
     },
 ];
 
@@ -51,5 +59,89 @@ export class ContextServiceMock {
 
     async getCurrentEpoch(): Promise<number> {
         return 1;
+    }
+
+    async getPairByTokens(
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<PairMetadata> {
+        for (const pair of pairsMetadata) {
+            if (
+                (pair.firstTokenID === firstTokenID &&
+                    pair.secondTokenID === secondTokenID) ||
+                (pair.firstTokenID === secondTokenID &&
+                    pair.secondTokenID === firstTokenID)
+            ) {
+                return pair;
+            }
+        }
+        return;
+    }
+
+    async getPairsMap(): Promise<Map<string, string[]>> {
+        const pairsMap: Map<string, string[]> = new Map();
+        pairsMap.set('WEGLD-073650', ['MEX-ec32fa', 'BUSD-f2c46d']);
+        pairsMap.set('MEX-ec32fa', ['WEGLD-073650']);
+        pairsMap.set('BUSD-f2c46d', ['WEGLD-073650']);
+
+        return pairsMap;
+    }
+
+    isConnected(
+        graph: Map<string, string[]>,
+        input: string,
+        output: string,
+        discovered: Map<string, boolean>,
+        path: string[] = [],
+    ): boolean {
+        discovered.set(input, true);
+        path.push(input);
+        if (input === output) {
+            return true;
+        }
+
+        for (const vertex of graph.get(input)) {
+            if (!discovered.get(vertex)) {
+                if (this.isConnected(graph, vertex, output, discovered, path)) {
+                    return true;
+                }
+            }
+        }
+
+        path.pop();
+        return false;
+    }
+
+    esdtTransfer(
+        contract: SmartContract,
+        args: TypedValue[],
+        gasLimit: GasLimit,
+    ): TransactionModel {
+        const transaction = contract.call({
+            func: new ContractFunction('ESDTTransfer'),
+            args: args,
+            gasLimit: gasLimit,
+        });
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
+    }
+
+    nftTransfer(
+        contract: SmartContract,
+        args: TypedValue[],
+        gasLimit: GasLimit,
+    ): TransactionModel {
+        const transaction = contract.call({
+            func: new ContractFunction('ESDTNFTTransfer'),
+            args: args,
+            gasLimit: gasLimit,
+        });
+
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 }

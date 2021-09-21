@@ -125,7 +125,7 @@ export class TokenMergingTransactionsService {
         const transaction = this.context.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.exitFarm),
+            new GasLimit(gasConfig.depositTokens),
         );
 
         transaction.receiver = args.sender;

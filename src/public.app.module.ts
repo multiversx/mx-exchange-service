@@ -24,9 +24,6 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
         CacheModule.register(),
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
-            buildSchemaOptions: {
-                fieldMiddleware: [loggerMiddleware],
-            },
             installSubscriptionHandlers: true,
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {

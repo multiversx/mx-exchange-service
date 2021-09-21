@@ -3,16 +3,16 @@ import { PairInfoModel } from './models/pair-info.model';
 
 export class PairServiceMock {
     async getFirstTokenID(pairAddress: string): Promise<string> {
-        return 'WEGLD-88600a';
+        return 'WEGLD-073650';
     }
     async getSecondTokenID(pairAddress: string): Promise<string> {
-        return 'MEX-b6bb7d';
+        return 'MEX-ec32fa';
     }
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         return {
-            identifier: 'WEGLD-88600a',
-            name: 'WEGLD-88600a',
+            identifier: 'WEGLD-073650',
+            name: 'WEGLD-073650',
             type: 'FungibleESDT',
             owner: 'user_address_1',
             minted: '0',
@@ -31,8 +31,8 @@ export class PairServiceMock {
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         return {
-            identifier: 'MEX-b6bb7d',
-            name: 'MEX-b6bb7d',
+            identifier: 'MEX-ec32fa',
+            name: 'MEX-ec32fa',
             type: 'FungibleESDT',
             owner: 'user_address_1',
             minted: '0',

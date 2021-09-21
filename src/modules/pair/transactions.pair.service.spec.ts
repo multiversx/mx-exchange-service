@@ -1,11 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RedlockService } from '../../services';
 import { PairService } from './pair.service';
-import {
-    ContextServiceMock,
-    RedlockServiceMock,
-    WrapServiceMock,
-} from './pair.test-constants';
+import { RedlockServiceMock, WrapServiceMock } from './pair.test-constants';
 import { ContextService } from '../../services/context/context.service';
 import { WrapService } from '../wrapping/wrap.service';
 import winston from 'winston';
@@ -19,6 +15,7 @@ import { ElrondProxyService } from '../../services/elrond-communication/elrond-p
 import { TransactionsWrapService } from '../wrapping/transactions-wrap.service';
 import { TransactionPairService } from './transactions-pair.service';
 import { PairServiceMock } from './pair.service.mock';
+import { ContextServiceMock } from '../../services/context/context.service.mocks';
 
 describe('TransactionPairService', () => {
     let service: TransactionPairService;
