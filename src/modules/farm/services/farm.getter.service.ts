@@ -140,6 +140,33 @@ export class FarmGetterService {
         );
     }
 
+    async getLastRewardBlockNonce(farmAddress: string): Promise<number> {
+        return this.getData(
+            farmAddress,
+            'lastRewardEpoch',
+            () => this.abiService.getLastRewardBlockNonce(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getUndistributedFees(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'undistributedFees',
+            () => this.abiService.getUndistributedFees(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'divisionSafetyConstant',
+            () => this.abiService.getDivisionSafetyConstant(farmAddress),
+            oneHour(),
+        );
+    }
+
     async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,

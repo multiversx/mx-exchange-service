@@ -1,6 +1,6 @@
 import { FarmService } from './services/farm.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     ExitFarmTokensModel,
@@ -148,6 +148,39 @@ export class FarmResolver {
     async minimumFarmingEpochs(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getMinimumFarmingEpochs(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async lastRewardBlockNonce(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getLastRewardBlockNonce(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async undistributedFees(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getUndistributedFees(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async divisionSafetyConstant(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getDivisionSafetyConstant(
                 parent.address,
             );
         } catch (error) {
