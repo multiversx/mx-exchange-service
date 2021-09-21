@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { scAddress } from 'src/config';
-import { LockedAssetToken } from 'src/models/tokens/lockedAssetToken.model';
-import { LockedFarmToken } from 'src/models/tokens/lockedFarmToken.model';
-import { LockedLpToken } from 'src/models/tokens/lockedLpToken.model';
-import { NftToken } from 'src/models/tokens/nftToken.model';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { scAddress } from '../../config';
+import { LockedAssetToken } from '../../models/tokens/lockedAssetToken.model';
+import { LockedFarmToken } from '../../models/tokens/lockedFarmToken.model';
+import { LockedLpToken } from '../../models/tokens/lockedLpToken.model';
+import { NftToken } from '../../models/tokens/nftToken.model';
+import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { FarmService } from '../farm/farm.service';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 import { PairService } from '../pair/pair.service';

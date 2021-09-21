@@ -1,4 +1,6 @@
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import BigNumber from 'bignumber.js';
+import { EsdtToken } from '../../models/tokens/esdtToken.model';
+import { pairsMetadata } from '../../services/context/context.service.mocks';
 import { PairInfoModel } from './models/pair-info.model';
 
 export class PairServiceMock {
@@ -7,6 +9,10 @@ export class PairServiceMock {
     }
     async getSecondTokenID(pairAddress: string): Promise<string> {
         return 'MEX-ec32fa';
+    }
+
+    async getLpTokenID(pairAddress: string): Promise<string> {
+        return 'LPT-1111';
     }
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
@@ -57,11 +63,46 @@ export class PairServiceMock {
         return '0.1';
     }
 
+    async getLpTokenPriceUSD(pairAddress: string): Promise<string> {
+        return '10';
+    }
+
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         return new PairInfoModel({
             reserves0: '5',
             reserves1: '5000',
             totalSupply: '50',
         });
+    }
+
+    async computeTokenPriceUSD(tokenID: string): Promise<BigNumber> {
+        return new BigNumber(100);
+    }
+
+    async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
+        if (tokenID === 'LPT-1111') {
+            return pairsMetadata[0].address;
+        }
+        return;
+    }
+
+    async isPairEsdtToken(tokenID: string): Promise<boolean> {
+        const pairsAddress = pairsMetadata.map(pair => pair.address);
+        for (const pairAddress of pairsAddress) {
+            const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
+                this.getFirstTokenID(pairAddress),
+                this.getSecondTokenID(pairAddress),
+                this.getLpTokenID(pairAddress),
+            ]);
+
+            if (
+                tokenID === firstTokenID ||
+                tokenID === secondTokenID ||
+                tokenID === lpTokenID
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -6,6 +6,17 @@ export class ElrondApiServiceMock {
         return 1;
     }
 
+    async getAccountStats(address: string): Promise<any | undefined> {
+        return {
+            address: 'user_address_1',
+            nonce: 1,
+            balance: '1000000000000000000',
+            rootHash: 'Xh9naslK9HMLbd3O6ueH04pdfDO0TIsXoM9BF9jouzs=',
+            txCount: 1,
+            shard: 1,
+        };
+    }
+
     async getTokensForUser(address: string): Promise<EsdtToken[]> {
         return [
             {
