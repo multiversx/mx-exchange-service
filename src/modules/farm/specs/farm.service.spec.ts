@@ -14,6 +14,7 @@ import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';
 import { FarmComputeService } from '../services/farm.compute.service';
+import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -21,6 +22,11 @@ describe('FarmService', () => {
     const AbiFarmServiceProvider = {
         provide: AbiFarmService,
         useClass: AbiFarmServiceMock,
+    };
+
+    const FarmGetterServiceProvider = {
+        provide: FarmGetterService,
+        useClass: FarmGetterServiceMock,
     };
 
     const ElrondApiServiceProvider = {
@@ -43,7 +49,7 @@ describe('FarmService', () => {
             imports: [CommonAppModule, CachingModule],
             providers: [
                 AbiFarmServiceProvider,
-                FarmGetterService,
+                FarmGetterServiceProvider,
                 FarmComputeService,
                 ElrondApiServiceProvider,
                 ContextServiceProvider,

@@ -4,8 +4,6 @@ import BigNumber from 'bignumber.js';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
-import { FarmService } from '../farm/services/farm.service';
-import { FarmServiceMock } from '../farm/mocks/farm.test-mocks';
 import { PairService } from '../pair/pair.service';
 import { AnalyticsService } from './analytics.service';
 import { HyperblockService } from '../../services/transactions/hyperblock.service';
@@ -25,6 +23,8 @@ import {
 } from './models/analytics.model';
 import { CommonAppModule } from '../../common.app.module';
 import { CachingModule } from '../../services/caching/cache.module';
+import { FarmGetterService } from '../farm/services/farm.getter.service';
+import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
 
 describe('FarmStatisticsService', () => {
     let service: AnalyticsService;
@@ -32,9 +32,9 @@ describe('FarmStatisticsService', () => {
     let transactionCollector: TransactionCollectorService;
     let pairService: PairService;
 
-    const FarmServiceProvider = {
-        provide: FarmService,
-        useClass: FarmServiceMock,
+    const FarmGetterServiceProvider = {
+        provide: FarmGetterService,
+        useClass: FarmGetterServiceMock,
     };
 
     const PairServiceProvider = {
@@ -62,7 +62,7 @@ describe('FarmStatisticsService', () => {
             ],
             providers: [
                 ContextServiceProvider,
-                FarmServiceProvider,
+                FarmGetterServiceProvider,
                 PairServiceProvider,
                 PairAnalyticsServiceProvider,
                 AnalyticsService,
