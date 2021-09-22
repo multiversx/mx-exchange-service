@@ -243,9 +243,14 @@ export class UserService {
     async computeUserWorth(address: string): Promise<BoYAccount> {
         let userBalanceWorth = new BigNumber(0);
 
-        const [userEsdtTokensCount, userNftTokensCount] = await Promise.all([
+        const [
+            userEsdtTokensCount,
+            userNftTokensCount,
+            wrappedEGLDTokenID,
+        ] = await Promise.all([
             this.apiService.getTokensCountForUser(address),
             this.apiService.getNftsCountForUser(address),
+            this.wrapService.getWrappedEgldTokenID(),
         ]);
 
         const [
@@ -254,7 +259,7 @@ export class UserService {
             userEsdtTokens,
             userNftTokens,
         ] = await Promise.all([
-            this.priceFeed.getTokenPrice('egld'),
+            this.pairService.computeTokenPriceUSD(wrappedEGLDTokenID),
             this.apiService.getAccountStats(address),
             this.getAllEsdtTokens({
                 address: address,

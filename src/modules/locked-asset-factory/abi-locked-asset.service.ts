@@ -57,7 +57,6 @@ export class AbiLockedAssetService {
             const unlockMilestones: UnlockMileStoneModel[] = result.firstValue
                 .valueOf()
                 .map(unlockMilestone => {
-                    console.log(unlockMilestone.unlock_epoch);
                     return new UnlockMileStoneModel({
                         epochs: unlockMilestone.unlock_epoch.toNumber(),
                         percent: unlockMilestone.unlock_percent.toNumber(),
