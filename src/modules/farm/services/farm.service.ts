@@ -96,7 +96,7 @@ export class FarmService {
         return new RewardsModel({
             decodedAttributes: farmTokenAttributes,
             remainingFarmingEpochs: remainingFarmingEpochs,
-            rewards: rewards.toFixed(),
+            rewards: rewards.integerValue().toFixed(),
         });
     }
 
