@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BinaryCodec } from '@elrondnetwork/erdjs';
 import { constantsConfig, farmsConfig } from '../../../config';
 import {
@@ -15,12 +15,15 @@ import BigNumber from 'bignumber.js';
 import { ruleOfThree } from '../../../helpers/helpers';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
+import { FarmComputeService } from './farm.compute.service';
 
 @Injectable()
 export class FarmService {
     constructor(
         private readonly abiService: AbiFarmService,
+        @Inject(forwardRef(() => FarmGetterService))
         private readonly farmGetterService: FarmGetterService,
+        private readonly farmComputeService: FarmComputeService,
         private readonly context: ContextService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -63,13 +66,22 @@ export class FarmService {
     async getRewardsForPosition(
         args: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
-        const rewards = await this.abiService.calculateRewardsForGivenPosition(
-            args,
-        );
         const farmTokenAttributes = this.decodeFarmTokenAttributes(
             args.identifier,
             args.attributes,
         );
+        let rewards: BigNumber;
+        if (args.vmQuery) {
+            rewards = await this.abiService.calculateRewardsForGivenPosition(
+                args,
+            );
+        } else {
+            rewards = await this.farmComputeService.computeFarmRewardsForPosition(
+                args.farmAddress,
+                args.liquidity,
+                farmTokenAttributes,
+            );
+        }
 
         const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
             this.context.getCurrentEpoch(),

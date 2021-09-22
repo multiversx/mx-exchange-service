@@ -10,6 +10,8 @@ export class CalculateRewardsArgs {
     identifier: string;
     @Field()
     attributes: string;
+    @Field(type => Boolean)
+    vmQuery = false;
 }
 
 @ArgsType()
