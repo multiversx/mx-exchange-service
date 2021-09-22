@@ -4,7 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
 import { NftToken } from '../../models/tokens/nftToken.model';
-import Agent, { HttpsAgent } from 'agentkeepalive';
+import Agent, { HttpOptions, HttpsAgent } from 'agentkeepalive';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
@@ -17,8 +17,9 @@ export class ElrondApiService {
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        const keepAliveOptions = {
-            maxSockets: elrondConfig.keepAliveMaxSockets,
+        const keepAliveOptions: HttpOptions = {
+            keepAlive: elrondConfig.keepAlive,
+            maxSockets: Infinity,
             maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
             timeout: elrondConfig.keepAliveTimeout,
             freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
@@ -78,37 +79,80 @@ export class ElrondApiService {
     }
 
     async getAccountStats(address: string): Promise<any | undefined> {
-        const account = await this.doGetGeneric(
-            this.getAccountStats.name,
-            `accounts/${address}`,
-            response => response,
-        );
-
-        return account;
+        try {
+            const account = await this.doGetGeneric(
+                this.getAccountStats.name,
+                `accounts/${address}`,
+                response => response,
+            );
+            return account;
+        } catch (error) {
+            this.logger.error(
+                `An error occured while get account stats ${address}`,
+                {
+                    path: `${ElrondApiService.name}.${this.getAccountStats.name}`,
+                    error,
+                },
+            );
+            throw error;
+        }
     }
 
     async getNftCollection(tokenID: string): Promise<NftCollection> {
-        return this.doGetGeneric(
-            this.getNftCollection.name,
-            `collections/${tokenID}`,
-            response => response,
-        );
+        try {
+            return this.doGetGeneric(
+                this.getNftCollection.name,
+                `collections/${tokenID}`,
+                response => response,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occured while get nft collection ${tokenID}`,
+                {
+                    path: `${ElrondApiService.name}.${this.getNftCollection.name}`,
+                    error,
+                },
+            );
+            throw error;
+        }
     }
 
     async getTokensCountForUser(address: string): Promise<number> {
-        return this.doGetGeneric(
-            this.getTokensCountForUser.name,
-            `accounts/${address}/tokens/count`,
-            response => response,
-        );
+        try {
+            return this.doGetGeneric(
+                this.getTokensCountForUser.name,
+                `accounts/${address}/tokens/count`,
+                response => response,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occured while get tokens count for user ${address}`,
+                {
+                    path: `${ElrondApiService.name}.${this.getTokensCountForUser.name}`,
+                    error,
+                },
+            );
+            throw error;
+        }
     }
 
     async getNftsCountForUser(address: string): Promise<number> {
-        return this.doGetGeneric(
-            this.getNftsCountForUser.name,
-            `accounts/${address}/nfts/count`,
-            response => response,
-        );
+        try {
+            return this.doGetGeneric(
+                this.getNftsCountForUser.name,
+                `accounts/${address}/nfts/count`,
+                response => response,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occured while get nfts count for user ${address}`,
+                {
+                    path: `${ElrondApiService.name}.${this.getNftsCountForUser.name}`,
+                    error,
+                },
+            );
+            throw error;
+        }
     }
 
     async getTokensForUser(
@@ -116,11 +160,22 @@ export class ElrondApiService {
         from = 0,
         size = 100,
     ): Promise<EsdtToken[]> {
-        return this.doGetGeneric(
-            this.getTokensForUser.name,
-            `accounts/${address}/tokens?from=${from}&size=${size}`,
-            response => response,
-        );
+        try {
+            return this.doGetGeneric(
+                this.getTokensForUser.name,
+                `accounts/${address}/tokens?from=${from}&size=${size}`,
+                response => response,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occured while get tokens for user ${address}`,
+                {
+                    path: `${ElrondApiService.name}.${this.getTokensForUser.name}`,
+                    error,
+                },
+            );
+            throw error;
+        }
     }
 
     async getNftsForUser(
@@ -128,45 +183,94 @@ export class ElrondApiService {
         from = 0,
         size = 100,
     ): Promise<NftToken[]> {
-        return this.doGetGeneric(
-            this.getNftsForUser.name,
-            `accounts/${address}/nfts?from=${from}&size=${size}`,
-            response => response,
-        );
+        try {
+            return this.doGetGeneric(
+                this.getNftsForUser.name,
+                `accounts/${address}/nfts?from=${from}&size=${size}`,
+                response => response,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occured while get nfts for user ${address}`,
+                {
+                    path: `${ElrondApiService.name}.${this.getNftsForUser.name}`,
+                    error,
+                },
+            );
+            throw error;
+        }
     }
 
     async getNftByTokenIdentifier(
         address: string,
         nftIdentifier: string,
     ): Promise<NftToken> {
-        return await this.doGetGeneric(
-            this.getNftByTokenIdentifier.name,
-            `accounts/${address}/nfts/${nftIdentifier}`,
-            response => response,
-        );
+        try {
+            return await this.doGetGeneric(
+                this.getNftByTokenIdentifier.name,
+                `accounts/${address}/nfts/${nftIdentifier}`,
+                response => response,
+            );
+        } catch (error) {
+            this.logger.error(
+                'An error occurred while get nft by token identifier',
+                {
+                    path: 'ElrondApiService.getNftTokenIdentifier',
+                    error,
+                },
+            );
+            throw error;
+        }
     }
 
     async getCurrentNonce(shardId: number): Promise<any> {
-        return this.doGetGeneric(
-            this.getCurrentNonce.name,
-            `network/status/${shardId}`,
-            response => response,
-        );
+        try {
+            return this.doGetGeneric(
+                this.getCurrentNonce.name,
+                `network/status/${shardId}`,
+                response => response,
+            );
+        } catch (error) {
+            this.logger.error(`An error occured while get current nonce`, {
+                path: `${ElrondApiService.name}.${this.getCurrentNonce.name}`,
+                error,
+            });
+            throw error;
+        }
     }
 
     async getHyperblockByNonce(nonce: number): Promise<any> {
-        return this.doGetGeneric(
-            this.getHyperblockByNonce.name,
-            `hyperblock/by-nonce/${nonce}`,
-            response => response,
-        );
+        try {
+            return this.doGetGeneric(
+                this.getHyperblockByNonce.name,
+                `hyperblock/by-nonce/${nonce}`,
+                response => response,
+            );
+        } catch (error) {
+            this.logger.error(
+                `An error occured while get hyperblock by nonce`,
+                {
+                    path: `${ElrondApiService.name}.${this.getHyperblockByNonce.name}`,
+                    error,
+                },
+            );
+            throw error;
+        }
     }
 
     async getTransaction(hash: string, withResults = false): Promise<any> {
-        return this.doGetGeneric(
-            this.getTransaction.name,
-            `transaction/${hash}?withResults=${withResults}`,
-            response => response,
-        );
+        try {
+            return this.doGetGeneric(
+                this.getTransaction.name,
+                `transaction/${hash}?withResults=${withResults}`,
+                response => response,
+            );
+        } catch (error) {
+            this.logger.error(`An error occured while get transaction`, {
+                path: `${ElrondApiService.name}.${this.getTransaction.name}`,
+                error,
+            });
+            throw error;
+        }
     }
 }

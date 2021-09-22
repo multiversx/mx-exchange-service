@@ -9,7 +9,7 @@
         "keepAliveTimeout": 50000,
         "keepAliveFreeSocketTimeout": 30000,
         "keepAliveMaxSockets": 100,
-        "keepAliveMaxFreeSockets": 10
+        "keepAliveMaxFreeSockets": 256
     },
     "scAddress": {
         "routerAddress": "erd1qqqqqqqqqqqqqpgqnhlmwqvpt0r3uurlyg2p2f4q33q05cut0n4s325q26",
