@@ -11,6 +11,7 @@ import { TokenMergingModule } from '../../modules/token-merging/token.merging.mo
 import { CachingModule } from '../../services/caching/cache.module';
 import { FarmGetterService } from './services/farm.getter.service';
 import { FarmComputeService } from './services/farm.compute.service';
+import { FarmSetterService } from './services/farm.setter.service';
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { FarmComputeService } from './services/farm.compute.service';
         FarmService,
         AbiFarmService,
         FarmGetterService,
+        FarmSetterService,
         FarmComputeService,
         TransactionsFarmService,
         FarmStatisticsService,
@@ -33,6 +35,7 @@ import { FarmComputeService } from './services/farm.compute.service';
         FarmService,
         AbiFarmService,
         FarmGetterService,
+        FarmSetterService,
         FarmComputeService,
         FarmStatisticsService,
     ],
