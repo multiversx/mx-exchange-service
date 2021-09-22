@@ -140,10 +140,19 @@ export class FarmGetterService {
         );
     }
 
+    async getRewardPerShare(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'rewardPerShare',
+            () => this.abiService.getRewardPerShare(farmAddress),
+            oneMinute(),
+        );
+    }
+
     async getLastRewardBlockNonce(farmAddress: string): Promise<number> {
         return this.getData(
             farmAddress,
-            'lastRewardEpoch',
+            'lastRewardBlocknonce',
             () => this.abiService.getLastRewardBlockNonce(farmAddress),
             oneMinute(),
         );
@@ -154,6 +163,15 @@ export class FarmGetterService {
             farmAddress,
             'undistributedFees',
             () => this.abiService.getUndistributedFees(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getCurrentBlockFee(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'currentBlockFee',
+            () => this.abiService.getCurrentBlockFee(farmAddress),
             oneMinute(),
         );
     }
@@ -189,7 +207,7 @@ export class FarmGetterService {
         );
     }
 
-    getFarmCacheKey(farmAddress: string, ...args: any) {
+    private getFarmCacheKey(farmAddress: string, ...args: any) {
         return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }
 }

@@ -67,11 +67,17 @@ export class FarmModel {
     @Field(type => Int)
     minimumFarmingEpochs: number;
 
+    @Field()
+    rewardPerShare: string;
+
     @Field(type => Int)
     lastRewardBlockNonce: number;
 
     @Field()
     undistributedFees: string;
+
+    @Field()
+    currentBlockFee: string;
 
     @Field()
     divisionSafetyConstant: string;

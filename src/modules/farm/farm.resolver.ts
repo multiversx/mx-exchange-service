@@ -156,6 +156,17 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async rewardPerShare(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getRewardPerShare(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async lastRewardBlockNonce(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getLastRewardBlockNonce(
@@ -170,6 +181,17 @@ export class FarmResolver {
     async undistributedFees(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getUndistributedFees(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async currentBlockFee(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getCurrentBlockFee(
                 parent.address,
             );
         } catch (error) {
@@ -253,7 +275,7 @@ export class FarmResolver {
         @Args() args: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
         try {
-            return await this.farmService.getRewardsForPosition(args);
+            return this.farmService.getRewardsForPosition(args);
         } catch (error) {
             throw new ApolloError(error);
         }

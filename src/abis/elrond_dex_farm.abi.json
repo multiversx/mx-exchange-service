@@ -209,6 +209,15 @@
             ]
         },
         {
+            "name": "getCurrentBlockFee",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Option<tuple<u64,BigUint>>"
+                }
+            ]
+        },
+        {
             "name": "set_penalty_percent",
             "inputs": [
                 {
