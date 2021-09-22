@@ -27,21 +27,27 @@ export class SmartContractProfiler extends SmartContract {
     ): Promise<QueryResponse> {
         const profiler = new PerformanceProfiler();
 
-        const result = super.runQuery(provider, {
-            func,
-            args,
-            value,
-            caller,
-        });
+        try {
+            const result = super.runQuery(provider, {
+                func,
+                args,
+                value,
+                caller,
+            });
 
-        profiler.stop();
+            profiler.stop();
 
-        MetricsCollector.setExternalCall(
-            'vm.query',
-            func.name,
-            profiler.duration,
-        );
+            MetricsCollector.setExternalCall(
+                'vm.query',
+                func.name,
+                profiler.duration,
+            );
 
-        return result;
+            return result;
+        } catch (error) {
+            profiler.stop();
+            console.log(`Failed vm-query with error: ${error}`);
+            throw error;
+        }
     }
 }
