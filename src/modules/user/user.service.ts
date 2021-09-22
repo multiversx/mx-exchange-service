@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { farmsConfig } from '../../config';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { FarmService } from '../farm/farm.service';
+import { FarmService } from '../farm/services/farm.service';
 import { NftToken } from '../../models/tokens/nftToken.model';
 import { PairService } from '../pair/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
-import { ProxyService } from '../proxy/proxy.service';
 import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
@@ -14,17 +13,18 @@ import { UserNftTokens } from './nfttokens.union';
 import { UserTokensArgs } from './models/user.args';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 import { WrapService } from '../wrapping/wrap.service';
-import { BoYAccount } from '../battle-of-yields/models/BoYAccount.model';
 import { UserComputeService } from './user.compute.service';
-import { LockedAssetToken } from 'src/models/tokens/lockedAssetToken.model';
-import { LockedLpToken } from 'src/models/tokens/lockedLpToken.model';
-import { LockedFarmToken } from 'src/models/tokens/lockedFarmToken.model';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { CachingService } from 'src/services/caching/cache.service';
-import { oneMinute, oneSecond } from 'src/helpers/helpers';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
+import { LockedAssetToken } from '../../models/tokens/lockedAssetToken.model';
+import { LockedLpToken } from '../../models/tokens/lockedLpToken.model';
+import { LockedFarmToken } from '../../models/tokens/lockedFarmToken.model';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { CachingService } from '../../services/caching/cache.service';
+import { oneSecond } from '../../helpers/helpers';
+import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { FarmGetterService } from '../farm/services/farm.getter.service';
+import { BoYAccount } from '../battle-of-yields/models/BoYAccount.model';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -51,10 +51,10 @@ export class UserService {
         private cachingService: CachingService,
         private pairService: PairService,
         private priceFeed: PriceFeedService,
-        private proxyService: ProxyService,
         private proxyPairService: ProxyPairService,
         private proxyFarmService: ProxyFarmService,
         private farmService: FarmService,
+        private farmGetterService: FarmGetterService,
         private lockedAssetService: LockedAssetService,
         private wrapService: WrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -222,7 +222,7 @@ export class UserService {
         ]);
         const promises: Promise<string>[] = [];
         for (const farmAddress of farmsConfig) {
-            promises.push(this.farmService.getFarmTokenID(farmAddress));
+            promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
         }
         const farmTokenIDs = await Promise.all(promises);
         switch (tokenID) {

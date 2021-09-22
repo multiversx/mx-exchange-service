@@ -101,6 +101,7 @@ export class LockedAssetService {
             monthStartEpoch,
             currentEpoch,
         } = await this.getMonthStartEpoch();
+
         for (const lockedAsset of args.batchAttributes) {
             const attributesBuffer = Buffer.from(
                 lockedAsset.attributes,

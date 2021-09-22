@@ -5,7 +5,6 @@ import { AbiPairService } from './abi-pair.service';
 import { PairService } from './pair.service';
 import {
     AbiPairServiceMock,
-    ContextServiceMock,
     PriceFeedServiceMock,
     RedlockServiceMock,
     WrapServiceMock,
@@ -14,6 +13,8 @@ import { ContextService } from '../../services/context/context.service';
 import { WrapService } from '../wrapping/wrap.service';
 import { CommonAppModule } from '../../common.app.module';
 import { CachingModule } from '../../services/caching/cache.module';
+import { ContextServiceMock } from '../../services/context/context.service.mocks';
+import { TemporaryFundsModel } from './models/pair.model';
 
 describe('PairService', () => {
     let service: PairService;
@@ -64,10 +65,12 @@ describe('PairService', () => {
     });
 
     it('should get first token', async () => {
-        const firstToken = await service.getFirstToken('pair_address_1');
+        const firstToken = await service.getFirstToken(
+            'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc',
+        );
         expect(firstToken).toEqual({
-            identifier: 'WEGLD-88600a',
-            name: 'WEGLD-88600a',
+            identifier: 'WEGLD-073650',
+            name: 'WEGLD-073650',
             type: 'FungibleESDT',
             owner: 'user_address_1',
             minted: '0',
@@ -88,74 +91,70 @@ describe('PairService', () => {
         const allTemporaryFunds = await service.getTemporaryFunds(
             'user_address_1',
         );
-        expect(allTemporaryFunds[0]).toEqual({
-            pairAddress: 'pair_address_1',
-            firstToken: {
-                identifier: 'WEGLD-88600a',
-                name: 'WEGLD-88600a',
-                type: 'FungibleESDT',
-                owner: 'user_address_1',
-                minted: '0',
-                burnt: '0',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-            },
-            firstAmount: '100',
-            secondToken: {
-                identifier: 'MEX-b6bb7d',
-                name: 'MEX-b6bb7d',
-                type: 'FungibleESDT',
-                owner: 'user_address_1',
-                minted: '0',
-                burnt: '0',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-            },
-            secondAmount: '100',
-        });
+        expect(allTemporaryFunds[0]).toEqual(
+            new TemporaryFundsModel({
+                pairAddress:
+                    'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc',
+                firstToken: {
+                    identifier: 'WEGLD-073650',
+                    name: 'WEGLD-073650',
+                    type: 'FungibleESDT',
+                    owner: 'user_address_1',
+                    minted: '0',
+                    burnt: '0',
+                    decimals: 18,
+                    isPaused: false,
+                    canUpgrade: true,
+                    canMint: true,
+                    canBurn: true,
+                    canChangeOwner: true,
+                    canPause: true,
+                    canFreeze: true,
+                    canWipe: true,
+                },
+                firstAmount: '100',
+                secondToken: {
+                    identifier: 'MEX-ec32fa',
+                    name: 'MEX-ec32fa',
+                    type: 'FungibleESDT',
+                    owner: 'user_address_1',
+                    minted: '0',
+                    burnt: '0',
+                    decimals: 18,
+                    isPaused: false,
+                    canUpgrade: true,
+                    canMint: true,
+                    canBurn: true,
+                    canChangeOwner: true,
+                    canPause: true,
+                    canFreeze: true,
+                    canWipe: true,
+                },
+                secondAmount: '100',
+            }),
+        );
     });
 
     it('should get simple token price in USD', async () => {
         const tokenPriceUSD = await service.computeTokenPriceUSD(
-            'pair_address_1',
-            'MEX-b6bb7d',
+            'WEGLD-073650',
         );
-        expect(tokenPriceUSD.toFixed()).toEqual('50');
+        expect(tokenPriceUSD.toFixed()).toEqual('200');
     });
 
     it('should get token price in USD from simple path', async () => {
-        const tokenPriceUSD = await service.computeTokenPriceUSD(
-            'pair_address_3',
-            'BUSD-05b16f',
-        );
+        const tokenPriceUSD = await service.computeTokenPriceUSD('BUSD-f2c46d');
         expect(tokenPriceUSD.toFixed()).toEqual('100');
     });
 
     it('should get token price in USD from multiple path', async () => {
-        const tokenPriceUSD = await service.computeTokenPriceUSD(
-            'pair_address_4',
-            'SPT-f66742',
-        );
-        expect(tokenPriceUSD.toFixed()).toEqual('16.66666666666666665');
+        const tokenPriceUSD = await service.computeTokenPriceUSD('MEX-ec32fa');
+        expect(tokenPriceUSD.toFixed()).toEqual('100');
     });
 
     it('should get liquidity position from pair', async () => {
         const liquidityPosition = await service.getLiquidityPosition(
-            'pair_address_1',
+            'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc',
             '1',
         );
         expect(liquidityPosition).toEqual({
@@ -166,8 +165,8 @@ describe('PairService', () => {
 
     it('should get lpToken Price in USD from pair', async () => {
         const lpTokenPriceUSD = await service.getLpTokenPriceUSD(
-            'pair_address_1',
+            'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc',
         );
-        expect(lpTokenPriceUSD).toEqual('200');
+        expect(lpTokenPriceUSD).toEqual('400');
     });
 });

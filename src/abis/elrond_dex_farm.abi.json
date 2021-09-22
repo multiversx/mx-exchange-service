@@ -200,6 +200,24 @@
             ]
         },
         {
+            "name": "getUndistributedFees",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getCurrentBlockFee",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Option<tuple<u64,BigUint>>"
+                }
+            ]
+        },
+        {
             "name": "set_penalty_percent",
             "inputs": [
                 {
@@ -368,7 +386,7 @@
             ]
         },
         {
-            "name": "getLastRewardEpoch",
+            "name": "getLastRewardBlockNonce",
             "inputs": [],
             "outputs": [
                 {
@@ -382,6 +400,15 @@
             "outputs": [
                 {
                     "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getDivisionSafetyConstant",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },

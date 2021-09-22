@@ -1,17 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContextService } from '../../services/context/context.service';
-import { PairService } from '../pair/pair.service';
-import { FarmService } from './farm.service';
-import { PairServiceMock } from './farm.test-mocks';
-import { AbiFarmService } from './abi-farm.service';
-import { AbiFarmServiceMock } from './abi.farm.service.mock';
-import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
-import { ElrondApiServiceMock } from '../../services/elrond-communication/elrond.api.service.mock';
-import { RewardsModel } from './models/farm.model';
-import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
-import { ContextServiceMock } from '../../services/context/context.service.mocks';
-import { CommonAppModule } from '../../common.app.module';
-import { CachingModule } from '../../services/caching/cache.module';
+import { ContextService } from '../../../services/context/context.service';
+import { PairService } from '../../pair/pair.service';
+import { FarmService } from '../services/farm.service';
+import { PairServiceMock } from '../mocks/farm.test-mocks';
+import { AbiFarmService } from '../services/abi-farm.service';
+import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
+import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
+import { RewardsModel } from '../models/farm.model';
+import { FarmTokenAttributesModel } from '../../farm/models/farmTokenAttributes.model';
+import { ContextServiceMock } from '../../../services/context/context.service.mocks';
+import { CommonAppModule } from '../../../common.app.module';
+import { CachingModule } from '../../../services/caching/cache.module';
+import { FarmGetterService } from '../services/farm.getter.service';
+import { FarmComputeService } from '../services/farm.compute.service';
+import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -19,6 +22,11 @@ describe('FarmService', () => {
     const AbiFarmServiceProvider = {
         provide: AbiFarmService,
         useClass: AbiFarmServiceMock,
+    };
+
+    const FarmGetterServiceProvider = {
+        provide: FarmGetterService,
+        useClass: FarmGetterServiceMock,
     };
 
     const ElrondApiServiceProvider = {
@@ -41,6 +49,8 @@ describe('FarmService', () => {
             imports: [CommonAppModule, CachingModule],
             providers: [
                 AbiFarmServiceProvider,
+                FarmGetterServiceProvider,
+                FarmComputeService,
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
                 PairServiceProvider,
@@ -65,6 +75,7 @@ describe('FarmService', () => {
             identifier: identifier,
             attributes: attributes,
             liquidity: liquidity,
+            vmQuery: true,
         });
 
         expect(rewards).toEqual(

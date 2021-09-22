@@ -4,9 +4,12 @@ import { ElrondCommunicationModule } from '../elrond-communication/elrond-commun
 import { RouterModule } from '../../modules/router/router.module';
 import { CommonAppModule } from '../../common.app.module';
 import { CachingModule } from '../caching/cache.module';
+import { AbiRouterService } from '../../modules/router/abi.router.service';
+import { pairsMetadata } from './context.service.mocks';
 
 describe('ContextService', () => {
     let service: ContextService;
+    let abiRouterService: AbiRouterService;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -20,6 +23,7 @@ describe('ContextService', () => {
         }).compile();
 
         service = module.get<ContextService>(ContextService);
+        abiRouterService = module.get<AbiRouterService>(AbiRouterService);
     });
 
     it('should be defined', () => {
@@ -27,29 +31,63 @@ describe('ContextService', () => {
     });
 
     it('should get pairs graph', async () => {
+        jest.spyOn(abiRouterService, 'getPairsMetadata').mockImplementation(
+            async () => {
+                return pairsMetadata;
+            },
+        );
         const pairsMap = await service.getPairsMap();
 
         const expectedMap = new Map();
-        expectedMap.set('WEGLD-88600a', ['MEX-b6bb7d', 'BUSD-05b16f']);
-        expectedMap.set('MEX-b6bb7d', ['WEGLD-88600a']);
-        expectedMap.set('BUSD-05b16f', ['WEGLD-88600a']);
+        expectedMap.set('WEGLD-073650', ['MEX-ec32fa', 'BUSD-f2c46d']);
+        expectedMap.set('MEX-ec32fa', ['WEGLD-073650']);
+        expectedMap.set('BUSD-f2c46d', ['WEGLD-073650']);
 
         expect(pairsMap).toEqual(expectedMap);
     });
 
     it('should get path between tokens', async () => {
-        let path = await service.getPath('MEX-b6bb7d', 'WEGLD-88600a');
-        expect(path).toEqual(['MEX-b6bb7d', 'WEGLD-88600a']);
+        let path: string[] = [];
+        let discovered = new Map<string, boolean>();
+        const graph = await service.getPairsMap();
 
-        path = await service.getPath('BUSD-05b16f', 'WEGLD-88600a');
-        expect(path).toEqual(['BUSD-05b16f', 'WEGLD-88600a']);
+        service.isConnected(
+            graph,
+            'MEX-ec32fa',
+            'WEGLD-073650',
+            discovered,
+            path,
+        );
+        expect(path).toEqual(['MEX-ec32fa', 'WEGLD-073650']);
 
-        path = await service.getPath('MEX-b6bb7d', 'BUSD-05b16f');
-        expect(path).toEqual(['MEX-b6bb7d', 'WEGLD-88600a', 'BUSD-05b16f']);
+        path = [];
+        discovered = new Map<string, boolean>();
+        service.isConnected(
+            graph,
+            'BUSD-f2c46d',
+            'WEGLD-073650',
+            discovered,
+            path,
+        );
+        expect(path).toEqual(['BUSD-f2c46d', 'WEGLD-073650']);
+
+        path = [];
+        discovered = new Map<string, boolean>();
+        service.isConnected(
+            graph,
+            'MEX-ec32fa',
+            'BUSD-f2c46d',
+            discovered,
+            path,
+        );
+        expect(path).toEqual(['MEX-ec32fa', 'WEGLD-073650', 'BUSD-f2c46d']);
     });
 
     it('should not get a path between tokens', async () => {
-        const path = await service.getPath('MEX-b6bb7d', 'SPT-1111');
+        const path: string[] = [];
+        const discovered = new Map<string, boolean>();
+        const graph = await service.getPairsMap();
+        service.isConnected(graph, 'MEX-ec32fa', 'SPT-1111', discovered, path);
         expect(path).toEqual([]);
     });
 });

@@ -8,7 +8,7 @@ import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { farmsConfig } from '../../config';
-import { FarmService } from '../farm/farm.service';
+import { FarmService } from '../farm/services/farm.service';
 import { PairService } from '../pair/pair.service';
 import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
 import { TransactionInterpreterService } from '../../services/transactions/transaction.interpreter.service';
@@ -30,6 +30,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../services/caching/cache.service';
 import { oneMinute } from '../../helpers/helpers';
+import { FarmGetterService } from '../farm/services/farm.getter.service';
 
 export interface TradingInfoType {
     volumeUSD: BigNumber;
@@ -41,7 +42,7 @@ export class AnalyticsService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly context: ContextService,
-        private readonly farmService: FarmService,
+        private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairAnalytics: PairAnalyticsService,
         private readonly transactionCollector: TransactionCollectorService,
@@ -109,9 +110,9 @@ export class AnalyticsService {
             farmingTokenPriceUSD,
             farmingTokenReserve,
         ] = await Promise.all([
-            this.farmService.getFarmingToken(farmAddress),
-            this.farmService.getFarmingTokenPriceUSD(farmAddress),
-            this.farmService.getFarmingTokenReserve(farmAddress),
+            this.farmGetterService.getFarmingToken(farmAddress),
+            this.farmGetterService.getFarmingTokenPriceUSD(farmAddress),
+            this.farmGetterService.getFarmingTokenReserve(farmAddress),
         ]);
 
         const lockedValue = new BigNumber(farmingTokenReserve)
@@ -201,7 +202,7 @@ export class AnalyticsService {
     async computeTotalAgregatedRewards(days: number): Promise<string> {
         const farmsAddress: [] = farmsConfig;
         const promises = farmsAddress.map(async farmAddress =>
-            this.farmService.getRewardsPerBlock(farmAddress),
+            this.farmGetterService.getRewardsPerBlock(farmAddress),
         );
         const farmsRewardsPerBlock = await Promise.all(promises);
         const blocksNumber = (days * 24 * 60 * 60) / 6;

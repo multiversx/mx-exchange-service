@@ -4,8 +4,6 @@ import BigNumber from 'bignumber.js';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
-import { FarmService } from '../farm/farm.service';
-import { FarmServiceMock } from '../farm/farm.test-mocks';
 import { PairService } from '../pair/pair.service';
 import { AnalyticsService } from './analytics.service';
 import { HyperblockService } from '../../services/transactions/hyperblock.service';
@@ -25,6 +23,8 @@ import {
 } from './models/analytics.model';
 import { CommonAppModule } from '../../common.app.module';
 import { CachingModule } from '../../services/caching/cache.module';
+import { FarmGetterService } from '../farm/services/farm.getter.service';
+import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
 
 describe('FarmStatisticsService', () => {
     let service: AnalyticsService;
@@ -32,9 +32,9 @@ describe('FarmStatisticsService', () => {
     let transactionCollector: TransactionCollectorService;
     let pairService: PairService;
 
-    const FarmServiceProvider = {
-        provide: FarmService,
-        useClass: FarmServiceMock,
+    const FarmGetterServiceProvider = {
+        provide: FarmGetterService,
+        useClass: FarmGetterServiceMock,
     };
 
     const PairServiceProvider = {
@@ -62,7 +62,7 @@ describe('FarmStatisticsService', () => {
             ],
             providers: [
                 ContextServiceProvider,
-                FarmServiceProvider,
+                FarmGetterServiceProvider,
                 PairServiceProvider,
                 PairAnalyticsServiceProvider,
                 AnalyticsService,
@@ -99,17 +99,17 @@ describe('FarmStatisticsService', () => {
         );
 
         const totalMexSupply = await service.computeTotalTokenSupply(
-            'MEX-b6bb7d',
+            'MEX-ec32fa',
         );
         expect(totalMexSupply).toEqual('630');
     });
 
     it('should get trading volumes', async () => {
         jest.spyOn(pairService, 'getFirstTokenID').mockImplementation(
-            async () => 'WEGLD-88600a',
+            async () => 'WEGLD-073650',
         );
         jest.spyOn(pairService, 'getSecondTokenID').mockImplementation(
-            async () => 'MEX-b6bb7d',
+            async () => 'MEX-ec32fa',
         );
         jest.spyOn(pairService, 'getPairInfoMetadata').mockImplementation(
             async () =>
@@ -134,10 +134,10 @@ describe('FarmStatisticsService', () => {
             for (let index = 0; index < 1; index++) {
                 const transaction = new ShardTransaction();
                 transaction.data =
-                    'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDM4MzgzNjMwMzA2MUAwZGUwYjZiM2E3NjQwMDAwQDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzRANGQ0NTU4MmQ2MjM2NjI2MjM3NjRAMGQyZGMwODM0MGQ4ZWUxMDAw';
+                    'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMwMzczMzM2MzUzMEAwZGUwYjZiM2E3NjQwMDAwQDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzRANGQ0NTU4MmQ2NTYzMzMzMjY2NjFAMGQyZGMwODM0MGQ4ZWUxMDAw';
                 transaction.sender = '';
                 transaction.receiver =
-                    'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww';
+                    'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc';
                 transaction.sourceShard = 1;
                 transaction.destinationShard = 1;
                 transaction.hash = '';
@@ -164,7 +164,7 @@ describe('FarmStatisticsService', () => {
                         feesUSD: '0.3',
                         liquidity: '50',
                         pairAddress:
-                            'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww',
+                            'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc',
                         totalValueLockedFirstToken: '5',
                         totalValueLockedSecondToken: '5000',
                         totalValueLockedUSD: '1000',
@@ -174,7 +174,7 @@ describe('FarmStatisticsService', () => {
                         feesUSD: '0',
                         liquidity: '50',
                         pairAddress:
-                            'erd1qqqqqqqqqqqqqpgq3gmttefd840klya8smn7zeae402w2esw0n4sm8m04f',
+                            'erd1qqqqqqqqqqqqqpgqmffr70826epqhdf2ggsmgxgur77g53hr0n4s38y2qe',
                         totalValueLockedFirstToken: '5',
                         totalValueLockedSecondToken: '5000',
                         totalValueLockedUSD: '1000',
@@ -184,7 +184,7 @@ describe('FarmStatisticsService', () => {
                 tokens: [
                     new TokenAnalyticsModel({
                         feesUSD: '0.3',
-                        tokenID: 'WEGLD-88600a',
+                        tokenID: 'WEGLD-073650',
                         totalValueLocked: '5',
                         totalValueLockedUSD: '500',
                         volume: '1000000000000000000',
@@ -192,7 +192,7 @@ describe('FarmStatisticsService', () => {
                     }),
                     new TokenAnalyticsModel({
                         feesUSD: '0',
-                        tokenID: 'MEX-b6bb7d',
+                        tokenID: 'MEX-ec32fa',
                         totalValueLocked: '5000',
                         totalValueLockedUSD: '500',
                         volume: '243104452200000000000',
