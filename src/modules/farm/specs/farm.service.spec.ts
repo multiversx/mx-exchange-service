@@ -12,6 +12,8 @@ import { FarmTokenAttributesModel } from '../../farm/models/farmTokenAttributes.
 import { ContextServiceMock } from '../../../services/context/context.service.mocks';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
+import { FarmGetterService } from '../services/farm.getter.service';
+import { FarmComputeService } from '../services/farm.compute.service';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -41,6 +43,8 @@ describe('FarmService', () => {
             imports: [CommonAppModule, CachingModule],
             providers: [
                 AbiFarmServiceProvider,
+                FarmGetterService,
+                FarmComputeService,
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
                 PairServiceProvider,
@@ -65,6 +69,7 @@ describe('FarmService', () => {
             identifier: identifier,
             attributes: attributes,
             liquidity: liquidity,
+            vmQuery: true,
         });
 
         expect(rewards).toEqual(
