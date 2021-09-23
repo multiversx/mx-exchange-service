@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
     cacheConfig,
+    constantsConfig,
     elrondConfig,
     tokenProviderUSD,
     tokensPriceData,
@@ -236,6 +237,31 @@ export class PairService {
             const logMessage = generateGetLogMessage(
                 PairService.name,
                 this.getPairInfoMetadata.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getTotalFeePercent(pairAddress: string): Promise<number> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'totalFeePercent');
+        const getTotalFeePercent = () =>
+            this.abiService.getTotalFeePercent(pairAddress);
+        try {
+            const totalFeePercent = await this.cachingService.getOrSet(
+                cacheKey,
+                getTotalFeePercent,
+                oneHour(),
+            );
+            return new BigNumber(totalFeePercent)
+                .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+                .toNumber();
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                PairService.name,
+                this.getTotalFeePercent.name,
                 cacheKey,
                 error,
             );

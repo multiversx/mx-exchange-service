@@ -51,6 +51,7 @@ type PairModel {
   liquidityPoolToken: EsdtToken!
   liquidityPoolTokenPriceUSD: String!
   info: PairInfoModel!
+  totalFeePercent: Float!
   state: String!
 }
 
