@@ -1,5 +1,4 @@
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
-import BigNumber from 'bignumber.js';
 import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
 import { pairsMetadata } from '../../services/context/context.service.mocks';
 
@@ -30,6 +29,10 @@ export class FarmServiceMock {
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
         return farmMetadata.farmedTokenID;
+    }
+
+    async getFarmTokenID(farmAddress: string): Promise<string> {
+        return farmMetadata.farmTokenID;
     }
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
@@ -80,47 +83,6 @@ export class FarmServiceMock {
 
     async getFarmTokenPriceUSD(farmAddress: string): Promise<string> {
         return '200';
-    }
-}
-
-export class PairServiceMock {
-    async getLpToken(pairAddress: string): Promise<EsdtToken> {
-        return {
-            identifier: 'LPT-1111',
-            name: 'LiquidityPoolToken',
-            type: 'FungibleESDT',
-            owner: 'user_address_1',
-            minted: '0',
-            burnt: '0',
-            decimals: 18,
-            isPaused: false,
-            canUpgrade: true,
-            canMint: true,
-            canBurn: true,
-            canChangeOwner: true,
-            canPause: true,
-            canFreeze: true,
-            canWipe: true,
-        };
-    }
-
-    async getLpTokenPriceUSD(pairAddress): Promise<string> {
-        return '200';
-    }
-
-    async getPairAddressByLpTokenID(tokenID: string): Promise<string> {
-        if (tokenID === 'LPT-1111') {
-            return 'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww';
-        }
-        return;
-    }
-
-    async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
-        return new BigNumber('100');
-    }
-
-    async isPairEsdtToken(tokenID: string): Promise<boolean> {
-        return true;
     }
 }
 
