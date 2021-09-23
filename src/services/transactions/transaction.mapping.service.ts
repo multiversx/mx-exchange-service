@@ -28,11 +28,13 @@ export class TransactionMappingService {
             secondToken,
             firstTokenPriceUSD,
             secondTokenPriceUSD,
+            totalFeePercent,
         ] = await Promise.all([
             this.pairService.getFirstToken(pairAddress),
             this.pairService.getSecondToken(pairAddress),
             this.pairService.getFirstTokenPriceUSD(pairAddress),
             this.pairService.getSecondTokenPriceUSD(pairAddress),
+            this.pairService.getTotalFeePercent(pairAddress),
         ]);
         const [tokenIn, tokenOut, tokenInPriceUSD, tokenOutPriceUSD] =
             tokenInID === firstToken.identifier
@@ -64,9 +66,7 @@ export class TransactionMappingService {
         const amountTotalUSD = tokenInAmountUSD
             .plus(tokenOutAmountUSD)
             .div(new BigNumber(2));
-        const feesUSD = tokenInAmountUSD
-            .times(new BigNumber(constantsConfig.SWAP_FEE_PERCENT))
-            .div(new BigNumber(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS));
+        const feesUSD = tokenInAmountUSD.times(totalFeePercent);
         return {
             pairAddress: pairAddress,
             volumeUSD: amountTotalUSD,

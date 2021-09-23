@@ -130,6 +130,34 @@ export class AbiPairService {
         }
     }
 
+    async getTotalFeePercent(pairAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+
+        const interaction: Interaction = contract.methods.getTotalFeePercent(
+            [],
+        );
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+
+            return response.firstValue.valueOf().toFixed();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiPairService.name,
+                this.getTotalFeePercent.name,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
     async getTemporaryFunds(
         pairAddress: string,
         callerAddress: string,

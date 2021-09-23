@@ -113,6 +113,15 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async totalFeePercent(@Parent() parent: PairModel) {
+        try {
+            return await this.pairService.getTotalFeePercent(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async state(@Parent() parent: PairModel) {
         try {
             return await this.pairService.getState(parent.address);
