@@ -253,7 +253,7 @@ export class PairService {
             const totalFeePercent = await this.cachingService.getOrSet(
                 cacheKey,
                 getTotalFeePercent,
-                oneHour(),
+                oneMinute(),
             );
             return new BigNumber(totalFeePercent)
                 .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)

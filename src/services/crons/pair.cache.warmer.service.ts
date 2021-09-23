@@ -73,16 +73,6 @@ export class PairCacheWarmerService {
                 .getESDTToken(lpTokenID);
             await this.setContextCache(lpTokenID, lpToken, oneHour());
 
-            const totalFeePercent = await this.abiPairService.getTotalFeePercent(
-                pairMetadata.address,
-            );
-            await this.setPairCache(
-                pairMetadata.address,
-                'totalFeePercent',
-                totalFeePercent,
-                oneHour(),
-            );
-
             const state = await this.abiPairService.getState(
                 pairMetadata.address,
             );
@@ -107,6 +97,16 @@ export class PairCacheWarmerService {
                 pairAddress,
                 'valueLocked',
                 pairInfoMetadata,
+                oneMinute(),
+            );
+
+            const totalFeePercent = await this.abiPairService.getTotalFeePercent(
+                pairAddress,
+            );
+            await this.setPairCache(
+                pairAddress,
+                'totalFeePercent',
+                totalFeePercent,
                 oneMinute(),
             );
         });
