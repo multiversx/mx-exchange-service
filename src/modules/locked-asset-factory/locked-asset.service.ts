@@ -97,7 +97,11 @@ export class LockedAssetService {
         args: DecodeAttributesArgs,
     ): Promise<LockedAssetAttributes[]> {
         const decodedBatchAttributes = [];
-        const currentEpoch = await this.context.getCurrentEpoch();
+        const {
+            monthStartEpoch,
+            currentEpoch,
+        } = await this.getMonthStartEpoch();
+
         for (const lockedAsset of args.batchAttributes) {
             const attributesBuffer = Buffer.from(
                 lockedAsset.attributes,
@@ -114,10 +118,15 @@ export class LockedAssetService {
             const decodedAttributes = decoded.valueOf();
             const unlockSchedule = decodedAttributes.unlockSchedule.map(
                 unlockMilestone => {
-                    const epoch = unlockMilestone.epoch - currentEpoch;
+                    const epoch = unlockMilestone.epoch.toNumber();
                     return new UnlockMileStoneModel({
                         percent: unlockMilestone.percent,
-                        epochs: epoch > 0 ? epoch : 0,
+                        epochs:
+                            epoch <= monthStartEpoch
+                                ? 0
+                                : epoch -
+                                  monthStartEpoch -
+                                  (currentEpoch - monthStartEpoch),
                     });
                 },
             );
@@ -147,5 +156,14 @@ export class LockedAssetService {
             ),
             new StructFieldDefinition('isMerged', '', new BooleanType()),
         ]);
+    }
+
+    private async getMonthStartEpoch(): Promise<any> {
+        const initEpoch = await this.abiService.getInitEpoch();
+        const stats = await this.apiService.getStats();
+        return {
+            monthStartEpoch: stats.epoch - ((stats.epoch - initEpoch) % 30),
+            currentEpoch: stats.epoch,
+        };
     }
 }
