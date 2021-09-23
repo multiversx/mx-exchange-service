@@ -297,11 +297,13 @@ export class PairService {
             firstTokenID,
             secondTokenID,
             pairInfo,
+            totalFeePercent,
         ] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
             this.getPairInfoMetadata(pairAddress),
+            this.getTotalFeePercent(pairAddress),
         ]);
 
         const tokenIn =
@@ -315,12 +317,14 @@ export class PairService {
                     amount,
                     pairInfo.reserves0,
                     pairInfo.reserves1,
+                    totalFeePercent,
                 ).toFixed();
             case secondTokenID:
                 return getAmountOut(
                     amount,
                     pairInfo.reserves1,
                     pairInfo.reserves0,
+                    totalFeePercent,
                 ).toFixed();
             default:
                 return new BigNumber(0).toFixed();
@@ -337,11 +341,13 @@ export class PairService {
             firstTokenID,
             secondTokenID,
             pairInfo,
+            totalFeePercent,
         ] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
             this.getFirstTokenID(pairAddress),
             this.getSecondTokenID(pairAddress),
             this.getPairInfoMetadata(pairAddress),
+            this.getTotalFeePercent(pairAddress),
         ]);
 
         const tokenOut =
@@ -355,12 +361,14 @@ export class PairService {
                     amount,
                     pairInfo.reserves1,
                     pairInfo.reserves0,
+                    totalFeePercent,
                 ).toFixed();
             case secondTokenID:
                 return getAmountIn(
                     amount,
                     pairInfo.reserves0,
                     pairInfo.reserves1,
+                    totalFeePercent,
                 ).toFixed();
             default:
                 return new BigNumber(0).toFixed();
