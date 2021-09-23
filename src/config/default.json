@@ -74,7 +74,7 @@
         "compoundRewardsProxy": 150000000,
         "claimRewardsProxy": 240000000,
         "wrapeGLD": 8000000,
-        "claimLockedAssets": 85000000,
+        "claimLockedAssets": 100000000,
         "unlockAssets": 45000000,
         "depositTokens": 50000000
     },
