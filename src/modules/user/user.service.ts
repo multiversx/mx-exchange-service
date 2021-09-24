@@ -303,6 +303,7 @@ export class UserService {
                 .times(egldPrice)
                 .toFixed(),
             netWorth: userBalanceWorth.toNumber(),
+            nonce: userStats.nonce,
         });
     }
 

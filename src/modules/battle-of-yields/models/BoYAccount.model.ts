@@ -18,6 +18,8 @@ export class BoYAccount {
     netWorth: number;
     @Field({ nullable: true })
     teamMember: boolean;
+    @Field()
+    nonce: string;
 
     constructor(init?: Partial<BoYAccount>) {
         Object.assign(this, init);
