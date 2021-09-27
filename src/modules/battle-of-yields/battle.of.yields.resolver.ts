@@ -2,7 +2,6 @@ import { Inject } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-errors';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
@@ -24,14 +23,8 @@ export class BattleOfYieldsResolver {
             'battleOfYields',
             'leaderBoard',
         );
-        const getLeaderBoard = () => this.boyService.computeLeaderBoard();
         try {
-            throw new ApolloError('');
-            // return this.cachingService.getOrSet(
-            //     cacheKey,
-            //     getLeaderBoard,
-            //     oneSecond(),
-            // );
+            return this.cachingService.getCache(cacheKey);
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 BattleOfYieldsResolver.name,
@@ -40,7 +33,9 @@ export class BattleOfYieldsResolver {
                 error,
             );
             this.logger.error(logMessage);
-            throw error;
+            throw new ApolloError('');
+        }
+    }
         }
     }
 }
