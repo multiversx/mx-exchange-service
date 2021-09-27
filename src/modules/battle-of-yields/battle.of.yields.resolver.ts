@@ -1,5 +1,6 @@
 import { Inject } from '@nestjs/common';
-import { Query, Resolver } from '@nestjs/graphql';
+import { Args, Query, Resolver } from '@nestjs/graphql';
+import { ApolloError } from 'apollo-server-errors';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -25,11 +26,12 @@ export class BattleOfYieldsResolver {
         );
         const getLeaderBoard = () => this.boyService.computeLeaderBoard();
         try {
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getLeaderBoard,
-                oneMinute() * 90,
-            );
+            throw new ApolloError('');
+            // return this.cachingService.getOrSet(
+            //     cacheKey,
+            //     getLeaderBoard,
+            //     oneSecond(),
+            // );
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 BattleOfYieldsResolver.name,
