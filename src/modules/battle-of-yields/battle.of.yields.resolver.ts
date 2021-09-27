@@ -36,6 +36,4 @@ export class BattleOfYieldsResolver {
             throw new ApolloError('');
         }
     }
-        }
-    }
 }
