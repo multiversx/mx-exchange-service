@@ -17,14 +17,20 @@ export class BattleOfYieldsService {
     async computeLeaderBoard(): Promise<BattleOfYieldsModel> {
         const boyAccounts: BoYAccount[] = [];
 
-        let accounts: BoYAccount[];
         try {
-            accounts = await asyncPool(10, battleofyields, async account => {
-                await new Promise(r => setTimeout(r, 2500));
+            await asyncPool(15, battleofyields, async account => {
                 const accountWorth = await this.userService.computeUserWorth(
                     account.playAddress,
                 );
-                return accountWorth;
+
+                if (!(accountWorth instanceof BoYAccount)) {
+                    return;
+                }
+
+                if (team.find(address => accountWorth.address === address)) {
+                    accountWorth.teamMember = true;
+                }
+                boyAccounts.push(accountWorth);
             });
         } catch (error) {
             this.logger.error(
@@ -37,15 +43,6 @@ export class BattleOfYieldsService {
             throw error;
         }
 
-        for (const account of accounts) {
-            if (!account) {
-                continue;
-            }
-            if (team.find(address => account.address === address)) {
-                account.teamMember = true;
-            }
-            boyAccounts.push(account);
-        }
         const sortedBoYAccounts = boyAccounts.sort((a, b) =>
             a.netWorth < b.netWorth ? 1 : -1,
         );
