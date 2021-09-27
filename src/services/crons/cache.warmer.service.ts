@@ -83,7 +83,9 @@ export class CacheWarmerService {
                     'battleOfYields',
                     'leaderBoard',
                 );
-                const leaderBoard = this.cachingService.getCache(cacheKey);
+                const leaderBoard = await this.cachingService.getCache(
+                    cacheKey,
+                );
                 this.cachingService.setCache(
                     cacheKey,
                     leaderBoard,
