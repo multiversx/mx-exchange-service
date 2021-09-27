@@ -5,12 +5,21 @@ import {
     HttpStatus,
     Param,
 } from '@nestjs/common';
+import { oneHour } from 'src/helpers/helpers';
+import { BattleOfYieldsService } from 'src/modules/battle-of-yields/battle.of.yields.service';
+import { BattleOfYieldsModel } from 'src/modules/battle-of-yields/models/battle.of.yields.model';
+import { CachingService } from 'src/services/caching/cache.service';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { MetricsService } from './metrics.service';
 
 @Controller()
 export class MetricsController {
-    constructor(private readonly metricsService: MetricsService) {}
+    constructor(
+        private readonly metricsService: MetricsService,
+        private readonly boyService: BattleOfYieldsService,
+        private readonly cachingService: CachingService,
+    ) {}
 
     @Get('/metrics')
     async getMetrics(): Promise<string> {
@@ -205,6 +214,25 @@ export class MetricsController {
             console.log(error);
             throw new HttpException(
                 'Failed to compute user busd transactions',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    @Get('/battleofyields/computeleaderboard')
+    async computeLeaderboard(): Promise<BattleOfYieldsModel> {
+        try {
+            const cacheKey = generateCacheKeyFromParams(
+                'battleOfYields',
+                'leaderBoard',
+            );
+            const leaderBoard = await this.boyService.computeLeaderBoard();
+            this.cachingService.setCache(cacheKey, leaderBoard, oneHour() * 90);
+            return leaderBoard;
+        } catch (error) {
+            console.log(error);
+            throw new HttpException(
+                'Failed to compute leaderboard',
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
