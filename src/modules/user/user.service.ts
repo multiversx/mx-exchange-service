@@ -50,7 +50,6 @@ export class UserService {
         private apiService: ElrondApiService,
         private cachingService: CachingService,
         private pairService: PairService,
-        private priceFeed: PriceFeedService,
         private proxyPairService: ProxyPairService,
         private proxyFarmService: ProxyFarmService,
         private farmService: FarmService,
@@ -107,11 +106,17 @@ export class UserService {
         args: UserTokensArgs,
     ): Promise<Array<typeof UserNftTokens>> {
         const userStats = await this.apiService.getAccountStats(args.address);
+
+        if (userStats.nonce === undefined) {
+            throw new Error('failed to get user nonce');
+        }
+
         const cacheKey = this.getUserCacheKey(
             args.address,
             userStats.nonce,
             'nfts',
         );
+
         const getUserNfts = () =>
             this.apiService.getNftsForUser(
                 args.address,
@@ -272,9 +277,11 @@ export class UserService {
                 limit: userNftTokensCount,
             }),
         ]);
-        if (!userStats) {
-            return undefined;
+
+        if (userStats.balance === undefined) {
+            throw new Error('failed to get user EGLD balance');
         }
+
         const userBalanceDenom = new BigNumber(userStats.balance).times(
             '1e-18',
         );
