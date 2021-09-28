@@ -6,8 +6,8 @@ import {
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { GasLimit } from '@elrondnetwork/erdjs';
-import { elrondConfig, gasConfig } from '../../config';
-import { TransactionModel } from '../../models/transaction.model';
+import { elrondConfig, gasConfig } from 'src/config';
+import { TransactionModel } from 'src/models/transaction.model';
 import {
     AddLiquidityArgs,
     AddLiquidityBatchArgs,
@@ -16,13 +16,13 @@ import {
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
-} from './models/pair.args';
+} from '../models/pair.args';
 import { PairService } from './pair.service';
 import BigNumber from 'bignumber.js';
-import { ContextService } from '../../services/context/context.service';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
-import { TransactionsWrapService } from '../wrapping/transactions-wrap.service';
-import { WrapService } from '../wrapping/wrap.service';
+import { ContextService } from 'src/services/context/context.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { WrapService } from 'src/modules/wrapping/wrap.service';
 
 @Injectable()
 export class TransactionPairService {

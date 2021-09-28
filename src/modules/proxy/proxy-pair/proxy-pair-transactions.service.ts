@@ -9,7 +9,7 @@ import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction
 import { Address, GasLimit } from '@elrondnetwork/erdjs';
 import { TransactionModel } from '../../../models/transaction.model';
 import BigNumber from 'bignumber.js';
-import { PairService } from '../../pair/pair.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
 import {
     AddLiquidityProxyArgs,
     AddLiquidityProxyBatchArgs,

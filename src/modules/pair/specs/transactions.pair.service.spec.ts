@@ -11,11 +11,11 @@ import {
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { RedisModule } from 'nestjs-redis';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
-import { TransactionsWrapService } from '../wrapping/transactions-wrap.service';
-import { TransactionPairService } from './transactions-pair.service';
-import { PairServiceMock } from './pair.service.mock';
-import { ContextServiceMock } from '../../services/context/context.service.mocks';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { TransactionPairService } from '../services/pair.transactions.service';
+import { PairServiceMock } from '../mocks/pair.service.mock';
+import { ContextServiceMock } from 'src/services/context/context.service.mocks';
 
 describe('TransactionPairService', () => {
     let service: TransactionPairService;

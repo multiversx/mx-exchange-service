@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { PairService } from '../../pair/pair.service';
+import { PairService } from '../../pair/services/pair.service';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';

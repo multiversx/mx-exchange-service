@@ -9,7 +9,7 @@ import { ElrondApiService } from '../../services/elrond-communication/elrond-api
 import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmService } from '../farm/services/farm.service';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
-import { PairService } from '../pair/pair.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyService } from '../proxy/proxy.service';
 import {
     UserFarmToken,

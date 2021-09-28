@@ -2,12 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { Address } from '@elrondnetwork/erdjs';
-import { PairInfoModel } from './models/pair-info.model';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import { PairInfoModel } from '../models/pair-info.model';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateRunQueryLogMessage } from '../../utils/generate-log-message';
+import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 
 @Injectable()
 export class AbiPairService {

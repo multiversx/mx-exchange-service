@@ -1,4 +1,4 @@
-import { PairService } from './pair.service';
+import { PairService } from './services/pair.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { Inject, UseGuards } from '@nestjs/common';
 import {
@@ -16,7 +16,7 @@ import {
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
 } from './models/pair.args';
-import { TransactionPairService } from './transactions-pair.service';
+import { TransactionPairService } from './services/pair.transactions.service';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
 

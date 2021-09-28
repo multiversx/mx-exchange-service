@@ -5,27 +5,27 @@ import {
     elrondConfig,
     tokenProviderUSD,
     tokensPriceData,
-} from '../../config';
+} from 'src/config';
 import { BigNumber } from 'bignumber.js';
-import { PairInfoModel } from './models/pair-info.model';
-import { LiquidityPosition, TemporaryFundsModel } from './models/pair.model';
+import { PairInfoModel } from '../models/pair-info.model';
+import { LiquidityPosition, TemporaryFundsModel } from '../models/pair.model';
 import {
     quote,
     getAmountOut,
     getAmountIn,
     getTokenForGivenPosition,
-} from './pair.utils';
+} from '../pair.utils';
 import { AbiPairService } from './abi-pair.service';
-import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { EsdtToken } from '../../models/tokens/esdtToken.model';
-import { ContextService } from '../../services/context/context.service';
-import { WrapService } from '../wrapping/wrap.service';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { CachingService } from '../../services/caching/cache.service';
+import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
+import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { ContextService } from 'src/services/context/context.service';
+import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { CachingService } from 'src/services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { oneHour, oneMinute, oneSecond } from '../../helpers/helpers';
+import { generateGetLogMessage } from 'src/utils/generate-log-message';
+import { oneHour, oneMinute } from 'src/helpers/helpers';
 
 @Injectable()
 export class PairService {

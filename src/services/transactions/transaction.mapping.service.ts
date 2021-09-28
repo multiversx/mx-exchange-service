@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { constantsConfig } from '../../config';
-import { PairService } from '../../modules/pair/pair.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
 import { ESDTTransferTransaction } from './entities/esdtTransfer.transaction';
 import { SwapAnalytics } from './models/swap.analytics.dto';
 

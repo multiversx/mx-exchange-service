@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
-import { PairService } from 'src/modules/pair/pair.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
 import { ContextService } from 'src/services/context/context.service';
 import { Logger } from 'winston';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';

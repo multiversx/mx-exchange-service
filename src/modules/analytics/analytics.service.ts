@@ -8,8 +8,7 @@ import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { farmsConfig } from '../../config';
-import { FarmService } from '../farm/services/farm.service';
-import { PairService } from '../pair/pair.service';
+import { PairService } from '../pair/services/pair.service';
 import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
 import { TransactionInterpreterService } from '../../services/transactions/transaction.interpreter.service';
 import { TransactionMappingService } from '../../services/transactions/transaction.mapping.service';
@@ -23,7 +22,7 @@ import {
     processPairsAnalytics,
     processTokensAnalytics,
 } from './analytics.processor';
-import { PairAnalyticsService } from '../pair/pair.analytics.service';
+import { PairAnalyticsService } from 'src/modules/pair/services/pair.analytics.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
