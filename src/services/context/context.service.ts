@@ -203,7 +203,7 @@ export class ContextService {
                 cacheKey,
                 getCurrentBlockNonce,
                 oneSecond() * 6,
-                oneHour() * 6,
+                oneSecond() * 6,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
