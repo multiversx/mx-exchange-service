@@ -11,6 +11,7 @@ import { PairAnalyticsService } from './services/pair.analytics.service';
 import { CachingModule } from '../../services/caching/cache.module';
 import { PairGetterService } from './services/pair.getter.service';
 import { PairComputeService } from './services/pair.compute.service';
+import { PairSetterService } from './services/pair.setter.service';
 
 @Module({
     imports: [
@@ -23,6 +24,7 @@ import { PairComputeService } from './services/pair.compute.service';
     providers: [
         PairService,
         PairGetterService,
+        PairSetterService,
         PairComputeService,
         PairAnalyticsService,
         AbiPairService,
@@ -32,6 +34,7 @@ import { PairComputeService } from './services/pair.compute.service';
     exports: [
         PairService,
         PairGetterService,
+        PairSetterService,
         PairComputeService,
         AbiPairService,
         PairAnalyticsService,

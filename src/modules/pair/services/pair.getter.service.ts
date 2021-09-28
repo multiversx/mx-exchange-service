@@ -26,11 +26,11 @@ export class PairGetterService {
 
     private async getData(
         pairAddress: string,
-        cacheKeyArgs: string | string[],
+        key: string,
         createValueFunc: () => any,
         ttl: number,
     ): Promise<any> {
-        const cacheKey = this.getPairCacheKey(pairAddress, ...cacheKeyArgs);
+        const cacheKey = this.getPairCacheKey(pairAddress, key);
         try {
             return this.cachingService.getOrSet(cacheKey, createValueFunc, ttl);
         } catch (error) {
@@ -166,13 +166,21 @@ export class PairGetterService {
         );
     }
 
-    async getTokenReserve(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<string> {
+    async getFirstTokenReserve(pairAddress: string): Promise<string> {
+        const tokenID = await this.getFirstTokenID(pairAddress);
         return this.getData(
             pairAddress,
-            ['tokenReserve', tokenID],
+            'firstTokenReserve',
+            () => this.abiService.getTokenReserve(pairAddress, tokenID),
+            oneMinute(),
+        );
+    }
+
+    async getSecondTokenReserve(pairAddress: string): Promise<string> {
+        const tokenID = await this.getSecondTokenID(pairAddress);
+        return this.getData(
+            pairAddress,
+            'secondTokenReserve',
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
             oneMinute(),
         );
@@ -188,17 +196,13 @@ export class PairGetterService {
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.getFirstTokenID(pairAddress),
-            this.getSecondTokenID(pairAddress),
-        ]);
         const [
             firstTokenReserve,
             secondTokenReserve,
             totalSupply,
         ] = await Promise.all([
-            this.getTokenReserve(pairAddress, firstTokenID),
-            this.getTokenReserve(pairAddress, secondTokenID),
+            this.getFirstTokenReserve(pairAddress),
+            this.getSecondTokenReserve(pairAddress),
             this.getTotalSupply(pairAddress),
         ]);
 
