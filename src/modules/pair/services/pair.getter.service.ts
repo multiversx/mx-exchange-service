@@ -10,7 +10,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
-import { AbiPairService } from './abi-pair.service';
+import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class PairGetterService {
     constructor(
         private readonly context: ContextService,
         private readonly cachingService: CachingService,
-        private readonly abiService: AbiPairService,
+        private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,

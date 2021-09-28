@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
-import { AbiPairService } from '../services/abi-pair.service';
+import { PairAbiService } from '../services/pair.abi.service';
 import { PairService } from '../services/pair.service';
 import {
     AbiPairServiceMock,
@@ -18,7 +18,7 @@ describe('PairService', () => {
     let service: PairService;
 
     const AbiPairServiceProvider = {
-        provide: AbiPairService,
+        provide: PairAbiService,
         useClass: AbiPairServiceMock,
     };
 

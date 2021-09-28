@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { PairService } from './services/pair.service';
 import { PairResolver } from './pair.resolver';
-import { AbiPairService } from './services/abi-pair.service';
-import { TransactionPairService } from './services/pair.transactions.service';
+import { PairAbiService } from './services/pair.abi.service';
+import { PairTransactionService } from './services/pair.transactions.service';
 import { PriceFeedModule } from '../../services/price-feed/price-feed.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
@@ -27,8 +27,8 @@ import { PairSetterService } from './services/pair.setter.service';
         PairSetterService,
         PairComputeService,
         PairAnalyticsService,
-        AbiPairService,
-        TransactionPairService,
+        PairAbiService,
+        PairTransactionService,
         PairResolver,
     ],
     exports: [
@@ -36,7 +36,7 @@ import { PairSetterService } from './services/pair.setter.service';
         PairGetterService,
         PairSetterService,
         PairComputeService,
-        AbiPairService,
+        PairAbiService,
         PairAnalyticsService,
     ],
 })

@@ -26,7 +26,7 @@ import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
 
 @Injectable()
-export class TransactionPairService {
+export class PairTransactionService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly pairService: PairService,

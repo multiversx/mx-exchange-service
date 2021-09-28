@@ -10,7 +10,7 @@ import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 
 @Injectable()
-export class AbiPairService {
+export class PairAbiService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -33,7 +33,7 @@ export class AbiPairService {
             return firstTokenID;
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                AbiPairService.name,
+                PairAbiService.name,
                 this.getFirstTokenID.name,
                 error,
             );
@@ -59,7 +59,7 @@ export class AbiPairService {
             return secondTokenID;
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                AbiPairService.name,
+                PairAbiService.name,
                 this.getSecondTokenID.name,
                 error,
             );
@@ -89,7 +89,7 @@ export class AbiPairService {
             return lpTokenID;
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                AbiPairService.name,
+                PairAbiService.name,
                 this.getLpTokenID.name,
                 error,
             );
@@ -120,7 +120,7 @@ export class AbiPairService {
             return response.firstValue.valueOf().toFixed();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                AbiPairService.name,
+                PairAbiService.name,
                 this.getTokenReserve.name,
                 error,
             );
@@ -146,7 +146,7 @@ export class AbiPairService {
             return response.firstValue.valueOf().toFixed();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                AbiPairService.name,
+                PairAbiService.name,
                 this.getTotalSupply.name,
                 error,
             );
@@ -178,7 +178,7 @@ export class AbiPairService {
             });
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                AbiPairService.name,
+                PairAbiService.name,
                 this.getPairInfoMetadata.name,
                 error,
             );
@@ -206,7 +206,7 @@ export class AbiPairService {
             return response.firstValue.valueOf().toFixed();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                AbiPairService.name,
+                PairAbiService.name,
                 this.getTotalFeePercent.name,
                 error,
             );
@@ -242,7 +242,7 @@ export class AbiPairService {
             return temporaryFunds;
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                AbiPairService.name,
+                PairAbiService.name,
                 this.getTemporaryFunds.name,
                 error,
             );
@@ -267,7 +267,7 @@ export class AbiPairService {
             return state;
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                AbiPairService.name,
+                PairAbiService.name,
                 this.getState.name,
                 error,
             );

@@ -13,12 +13,12 @@ import * as Transport from 'winston-transport';
 import { RedisModule } from 'nestjs-redis';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { TransactionPairService } from '../services/pair.transactions.service';
+import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairServiceMock } from '../mocks/pair.service.mock';
 import { ContextServiceMock } from 'src/services/context/context.service.mocks';
 
 describe('TransactionPairService', () => {
-    let service: TransactionPairService;
+    let service: PairTransactionService;
     let elrondProxy: ElrondProxyService;
 
     const ContextServiceProvider = {
@@ -71,11 +71,11 @@ describe('TransactionPairService', () => {
                 PairServiceProvider,
                 WrapServiceProvider,
                 TransactionsWrapService,
-                TransactionPairService,
+                PairTransactionService,
             ],
         }).compile();
 
-        service = module.get<TransactionPairService>(TransactionPairService);
+        service = module.get<PairTransactionService>(PairTransactionService);
         elrondProxy = module.get<ElrondProxyService>(ElrondProxyService);
     });
 

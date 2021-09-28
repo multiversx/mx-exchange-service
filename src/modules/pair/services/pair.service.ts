@@ -13,13 +13,13 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairGetterService } from './pair.getter.service';
-import { AbiPairService } from './abi-pair.service';
+import { PairAbiService } from './pair.abi.service';
 
 @Injectable()
 export class PairService {
     constructor(
         private readonly context: ContextService,
-        private readonly abiService: AbiPairService,
+        private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,

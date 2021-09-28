@@ -5,7 +5,7 @@ import { ContextService } from '../context/context.service';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { AbiPairService } from 'src/modules/pair/services/abi-pair.service';
+import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { oneHour } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -18,7 +18,7 @@ export class PairCacheWarmerService {
     constructor(
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
-        private readonly abiPairService: AbiPairService,
+        private readonly abiPairService: PairAbiService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
         private readonly cachingService: CachingService,

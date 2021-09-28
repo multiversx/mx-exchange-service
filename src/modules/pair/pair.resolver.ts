@@ -16,7 +16,7 @@ import {
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
 } from './models/pair.args';
-import { TransactionPairService } from './services/pair.transactions.service';
+import { PairTransactionService } from './services/pair.transactions.service';
 import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
 import { PairGetterService } from './services/pair.getter.service';
@@ -26,7 +26,7 @@ export class PairResolver {
     constructor(
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly transactionService: TransactionPairService,
+        private readonly transactionService: PairTransactionService,
     ) {}
 
     @ResolveField()
