@@ -17,7 +17,7 @@ import { Logger } from 'winston';
 import { RouterService } from '../../modules/router/router.service';
 import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { oneHour } from '../../helpers/helpers';
+import { oneHour, oneSecond } from '../../helpers/helpers';
 import { NftToken } from 'src/models/tokens/nftToken.model';
 
 @Injectable()
@@ -185,6 +185,30 @@ export class ContextService {
             const logMessage = generateGetLogMessage(
                 ContextService.name,
                 this.getCurrentEpoch.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+            console.log(error);
+            throw error;
+        }
+    }
+
+    async getShardCurrentBlockNonce(shardID: number): Promise<number> {
+        const cacheKey = this.getContextCacheKey('shardBlockNonce', shardID);
+        try {
+            const getCurrentBlockNonce = () =>
+                this.apiService.getCurrentBlockNonce(shardID);
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getCurrentBlockNonce,
+                oneSecond() * 6,
+                oneSecond() * 6,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                ContextService.name,
+                this.getShardCurrentBlockNonce.name,
                 cacheKey,
                 error,
             );

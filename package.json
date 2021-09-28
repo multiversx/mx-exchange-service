@@ -20,7 +20,7 @@
         "copy-mainnet": "cp .env.mainnet .env",
         "copy-testnet": "cp .env.testnet .env",
         "copy-devnet": "cp .env.devnet .env",
-        "test": "jest --verbose false --forceExit",
+        "test": "jest --verbose false --config ./test/jest-config.json --forceExit",
         "test:watch": "jest --watch",
         "test:cov": "jest --coverage",
         "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -103,19 +103,5 @@
         "ts-node": "^8.6.2",
         "tsconfig-paths": "^3.10.1",
         "typescript": "^3.9.10"
-    },
-    "jest": {
-        "moduleFileExtensions": [
-            "js",
-            "json",
-            "ts"
-        ],
-        "rootDir": "src",
-        "testRegex": ".spec.ts$",
-        "transform": {
-            "^.+\\.(t|j)s$": "ts-jest"
-        },
-        "coverageDirectory": "../coverage",
-        "testEnvironment": "node"
     }
 }

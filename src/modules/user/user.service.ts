@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { farmsConfig } from '../../config';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { FarmService } from '../farm/farm.service';
+import { FarmService } from '../farm/services/farm.service';
 import { NftToken } from '../../models/tokens/nftToken.model';
 import { PairService } from '../pair/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
@@ -24,6 +24,7 @@ import { oneSecond } from '../../helpers/helpers';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { FarmGetterService } from '../farm/services/farm.getter.service';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -50,10 +51,10 @@ export class UserService {
         private cachingService: CachingService,
         private pairService: PairService,
         private priceFeed: PriceFeedService,
-        private proxyService: ProxyService,
         private proxyPairService: ProxyPairService,
         private proxyFarmService: ProxyFarmService,
         private farmService: FarmService,
+        private farmGetterService: FarmGetterService,
         private lockedAssetService: LockedAssetService,
         private wrapService: WrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -221,7 +222,7 @@ export class UserService {
         ]);
         const promises: Promise<string>[] = [];
         for (const farmAddress of farmsConfig) {
-            promises.push(this.farmService.getFarmTokenID(farmAddress));
+            promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
         }
         const farmTokenIDs = await Promise.all(promises);
         switch (tokenID) {

@@ -5,9 +5,9 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { Interaction } from '@elrondnetwork/erdjs';
 import { BigNumber } from 'bignumber.js';
-import { CalculateRewardsArgs } from './models/farm.args';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
-import { generateRunQueryLogMessage } from '../../utils/generate-log-message';
+import { CalculateRewardsArgs } from '../models/farm.args';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { generateRunQueryLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
@@ -221,6 +221,139 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getMinimumFarmingEpochs.name,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getRewardPerShare(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getRewardPerShare([]);
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const rewardPerShare: BigNumber = response.firstValue.valueOf();
+            return rewardPerShare.toFixed();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiFarmService.name,
+                this.getLastRewardBlockNonce.name,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getLastRewardBlockNonce(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getLastRewardBlockNonce(
+            [],
+        );
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const lastRewardBlockNonce: BigNumber = response.firstValue.valueOf();
+            return lastRewardBlockNonce.toFixed();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiFarmService.name,
+                this.getLastRewardBlockNonce.name,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getUndistributedFees(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getUndistributedFees(
+            [],
+        );
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const undistributedFees: BigNumber = response.firstValue.valueOf();
+            return undistributedFees.toFixed();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiFarmService.name,
+                this.getUndistributedFees.name,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getCurrentBlockFee(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getCurrentBlockFee(
+            [],
+        );
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const currentBlockFee = response.firstValue.valueOf();
+            return currentBlockFee ? currentBlockFee[1].toFixed() : '0';
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiFarmService.name,
+                this.getCurrentBlockFee.name,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getDivisionSafetyConstant(
+            [],
+        );
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const divisionSafetyConstant: BigNumber = response.firstValue.valueOf();
+            return divisionSafetyConstant.toFixed();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiFarmService.name,
+                this.getDivisionSafetyConstant.name,
                 error,
             );
             this.logger.error(logMessage);

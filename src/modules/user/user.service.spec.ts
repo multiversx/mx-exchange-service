@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { FarmService } from '../farm/farm.service';
+import { FarmService } from '../farm/services/farm.service';
 import { PairService } from '../pair/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
@@ -32,6 +32,8 @@ import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.mod
 import { UserComputeService } from './user.compute.service';
 import { CachingModule } from '../../services/caching/cache.module';
 import { PairServiceMock } from '../pair/pair.service.mock';
+import { FarmGetterService } from '../farm/services/farm.getter.service';
+import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -44,6 +46,11 @@ describe('UserService', () => {
     const FarmServiceProvider = {
         provide: FarmService,
         useClass: FarmServiceMock,
+    };
+
+    const FarmGetterServiceProvider = {
+        provide: FarmGetterService,
+        useClass: FarmGetterServiceMock,
     };
 
     const ContextServiceProvider = {
@@ -106,6 +113,7 @@ describe('UserService', () => {
                 ProxyPairServiceProvider,
                 ProxyFarmServiceProvider,
                 FarmServiceProvider,
+                FarmGetterServiceProvider,
                 LockedAssetProvider,
                 WrapServiceProvider,
                 UserService,

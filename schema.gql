@@ -138,6 +138,11 @@ type FarmModel {
   farmingTokenReserve: String!
   penaltyPercent: Int!
   minimumFarmingEpochs: Int!
+  rewardPerShare: String!
+  lastRewardBlockNonce: Int!
+  undistributedFees: String!
+  currentBlockFee: String!
+  divisionSafetyConstant: String!
   APR: String!
   nftDepositMaxLen: Int!
   nftDepositAcceptedTokenIDs: [String!]!
@@ -477,8 +482,8 @@ type Query {
   unwrapEgld(amount: String!, sender: String!): TransactionModel!
   farmTokenAttributes(attributes: String!, identifier: String!): FarmTokenAttributesModel!
   farms: [FarmModel!]!
-  getRewardsForPosition(farmAddress: String!, liquidity: String!, identifier: String!, attributes: String!): RewardsModel!
-  getExitFarmTokens(farmAddress: String!, liquidity: String!, identifier: String!, attributes: String!): ExitFarmTokensModel!
+  getRewardsForPosition(farmAddress: String!, liquidity: String!, identifier: String!, attributes: String!, vmQuery: Boolean = false): RewardsModel!
+  getExitFarmTokens(farmAddress: String!, liquidity: String!, identifier: String!, attributes: String!, vmQuery: Boolean = false): ExitFarmTokensModel!
   enterFarm(farmAddress: String!, tokenInID: String!, amount: String!, lockRewards: Boolean): TransactionModel!
   enterFarmBatch(farmAddress: String!, tokenInID: String!, amountIn: String!, lockRewards: Boolean, sender: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): [TransactionModel!]!
   exitFarm(farmAddress: String!, sender: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
@@ -515,6 +520,7 @@ type Query {
   decodeLockedAssetAttributes(args: DecodeAttributesArgs!): [LockedAssetAttributes!]!
   tokens(offset: Int = 0, limit: Int = 10, address: String!): [UserToken!]!
   nfts(offset: Int = 0, limit: Int = 10, address: String!): [UserNftTokens!]!
+  getUserWorth(address: String!): Float!
   getTokenPriceUSD(tokenID: String!): String!
   totalValueLockedUSD: String!
   totalLockedValueUSDFarms: String!

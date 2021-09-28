@@ -1,4 +1,4 @@
-import { TransactionModel } from '../../models/transaction.model';
+import { TransactionModel } from '../../../models/transaction.model';
 import { Injectable } from '@nestjs/common';
 import {
     BigUIntValue,
@@ -6,7 +6,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Address, GasLimit } from '@elrondnetwork/erdjs';
-import { gasConfig } from '../../config';
+import { gasConfig } from '../../../config';
 import { BigNumber } from 'bignumber.js';
 import {
     ClaimRewardsArgs,
@@ -14,9 +14,9 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
     SftFarmInteractionArgs,
-} from './models/farm.args';
-import { ContextService } from '../../services/context/context.service';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+} from '../models/farm.args';
+import { ContextService } from '../../../services/context/context.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class TransactionsFarmService {

@@ -9,7 +9,7 @@ import {
     decodeWrappedLPTokenAttributes,
 } from './utils';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
-import { FarmService } from '../farm/farm.service';
+import { FarmService } from '../farm/services/farm.service';
 import { DecodeAttributesArgs } from './models/proxy.args';
 import { ContextService } from '../../services/context/context.service';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';

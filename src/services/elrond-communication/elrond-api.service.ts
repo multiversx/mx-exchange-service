@@ -154,6 +154,14 @@ export class ElrondApiService {
         );
     }
 
+    async getCurrentBlockNonce(shardId: number): Promise<number> {
+        return this.doGetGeneric(
+            this.getCurrentNonce.name,
+            `blocks/count?shard=${shardId}`,
+            response => response,
+        );
+    }
+
     async getHyperblockByNonce(nonce: number): Promise<any> {
         return this.doGetGeneric(
             this.getHyperblockByNonce.name,
