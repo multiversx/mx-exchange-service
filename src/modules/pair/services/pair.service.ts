@@ -1,13 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
-import {
-    cacheConfig,
-    constantsConfig,
-    elrondConfig,
-    tokenProviderUSD,
-    tokensPriceData,
-} from 'src/config';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { elrondConfig, tokenProviderUSD, tokensPriceData } from 'src/config';
 import { BigNumber } from 'bignumber.js';
-import { PairInfoModel } from '../models/pair-info.model';
 import { LiquidityPosition, TemporaryFundsModel } from '../models/pair.model';
 import {
     quote,
@@ -15,277 +8,23 @@ import {
     getAmountIn,
     getTokenForGivenPosition,
 } from '../pair.utils';
-import { AbiPairService } from './abi-pair.service';
-import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { ContextService } from 'src/services/context/context.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { CachingService } from 'src/services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { PairGetterService } from './pair.getter.service';
+import { AbiPairService } from './abi-pair.service';
 
 @Injectable()
 export class PairService {
     constructor(
-        private abiService: AbiPairService,
-        private cachingService: CachingService,
-        private context: ContextService,
-        private priceFeed: PriceFeedService,
-        private wrapService: WrapService,
+        private readonly context: ContextService,
+        private readonly abiService: AbiPairService,
+        @Inject(forwardRef(() => PairGetterService))
+        private readonly pairGetterService: PairGetterService,
+        private readonly wrapService: WrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
-
-    private async getTokenData(
-        pairAddress: string,
-        tokenCacheKey: string,
-        createValueFunc: () => any,
-        ttl = cacheConfig.token,
-    ): Promise<any> {
-        const cacheKey = this.getPairCacheKey(pairAddress, tokenCacheKey);
-        try {
-            return this.cachingService.getOrSet(cacheKey, createValueFunc, ttl);
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                PairService.name,
-                this.getTokenData.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    async getFirstTokenID(pairAddress: string): Promise<string> {
-        return this.getTokenData(
-            pairAddress,
-            'firstTokenID',
-            () => this.abiService.getFirstTokenID(pairAddress),
-            oneHour(),
-        );
-    }
-
-    async getSecondTokenID(pairAddress: string): Promise<string> {
-        return this.getTokenData(
-            pairAddress,
-            'secondTokenID',
-            () => this.abiService.getSecondTokenID(pairAddress),
-            oneHour(),
-        );
-    }
-
-    async getLpTokenID(pairAddress: string): Promise<string> {
-        return this.getTokenData(
-            pairAddress,
-            'lpTokenID',
-            () => this.abiService.getLpTokenID(pairAddress),
-            oneHour(),
-        );
-    }
-
-    async getFirstToken(pairAddress: string): Promise<EsdtToken> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-        return this.context.getTokenMetadata(firstTokenID);
-    }
-
-    async getSecondToken(pairAddress: string): Promise<EsdtToken> {
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return this.context.getTokenMetadata(secondTokenID);
-    }
-
-    async getLpToken(pairAddress: string): Promise<EsdtToken> {
-        const lpTokenID = await this.getLpTokenID(pairAddress);
-        return this.context.getTokenMetadata(lpTokenID);
-    }
-
-    async getFirstTokenPrice(pairAddress: string): Promise<string> {
-        return this.getTokenData(
-            pairAddress,
-            'firstTokenPrice',
-            () => this.computeFirstTokenPrice(pairAddress),
-            oneMinute(),
-        );
-    }
-
-    async computeFirstTokenPrice(pairAddress: string): Promise<string> {
-        const firstToken = await this.getFirstToken(pairAddress);
-        const firstTokenPrice = await this.getEquivalentForLiquidity(
-            pairAddress,
-            firstToken.identifier,
-            new BigNumber(`1e${firstToken.decimals}`).toFixed(),
-        );
-        return new BigNumber(firstTokenPrice)
-            .multipliedBy(`1e-${firstToken.decimals}`)
-            .toFixed();
-    }
-
-    async getSecondTokenPrice(pairAddress: string): Promise<string> {
-        return this.getTokenData(
-            pairAddress,
-            'secondTokenPrice',
-            () => this.computeSecondTokenPrice(pairAddress),
-            oneMinute(),
-        );
-    }
-
-    async computeSecondTokenPrice(pairAddress: string): Promise<string> {
-        const secondToken = await this.getSecondToken(pairAddress);
-        const secondTokenPrice = await this.getEquivalentForLiquidity(
-            pairAddress,
-            secondToken.identifier,
-            new BigNumber(`1e${secondToken.decimals}`).toFixed(),
-        );
-        return new BigNumber(secondTokenPrice)
-            .multipliedBy(`1e-${secondToken.decimals}`)
-            .toFixed();
-    }
-
-    async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-
-        const tokenPriceUSD = await this.getTokenData(
-            pairAddress,
-            'firstTokenPriceUSD',
-            () => this.computeTokenPriceUSD(firstTokenID),
-            oneMinute(),
-        );
-        return tokenPriceUSD;
-    }
-
-    async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        const tokenPriceUSD = await this.getTokenData(
-            pairAddress,
-            'secondTokenPriceUSD',
-            () => this.computeTokenPriceUSD(secondTokenID),
-            oneMinute(),
-        );
-        return tokenPriceUSD;
-    }
-
-    async getLpTokenPriceUSD(pairAddress: string): Promise<string> {
-        return this.getTokenData(
-            pairAddress,
-            'lpTokenPriceUSD',
-            () => this.computeLpTokenPriceUSD(pairAddress),
-            oneMinute(),
-        );
-    }
-
-    async computeLpTokenPriceUSD(pairAddress: string): Promise<string> {
-        const [secondToken, lpToken, firstTokenPrice] = await Promise.all([
-            this.getSecondToken(pairAddress),
-            this.getLpToken(pairAddress),
-            this.getFirstTokenPrice(pairAddress),
-        ]);
-        const [secondTokenPriceUSD, lpTokenPosition] = await Promise.all([
-            this.computeTokenPriceUSD(secondToken.identifier),
-            this.getLiquidityPosition(
-                pairAddress,
-                new BigNumber(`1e${lpToken.decimals}`).toFixed(),
-            ),
-        ]);
-
-        const lpTokenPrice = new BigNumber(firstTokenPrice)
-            .multipliedBy(new BigNumber(lpTokenPosition.firstTokenAmount))
-            .plus(new BigNumber(lpTokenPosition.secondTokenAmount));
-        const lpTokenPriceDenom = lpTokenPrice
-            .multipliedBy(`1e-${secondToken.decimals}`)
-            .toFixed();
-
-        return new BigNumber(lpTokenPriceDenom)
-            .multipliedBy(secondTokenPriceUSD)
-            .toFixed();
-    }
-
-    async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-
-        switch (tokenID) {
-            case firstTokenID:
-                return await this.getFirstTokenPrice(pairAddress);
-            case secondTokenID:
-                return await this.getSecondTokenPrice(pairAddress);
-        }
-    }
-
-    async computeTokenPriceUSD(tokenID: string): Promise<BigNumber> {
-        if (tokensPriceData.has(tokenID)) {
-            return this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID));
-        }
-
-        const usdPrice = await this.getPriceUSDByPath(tokenID);
-
-        return usdPrice;
-    }
-
-    async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'valueLocked');
-        try {
-            const getValueLocked = () =>
-                this.abiService.getPairInfoMetadata(pairAddress);
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getValueLocked,
-                oneMinute(),
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                PairService.name,
-                this.getPairInfoMetadata.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    async getTotalFeePercent(pairAddress: string): Promise<number> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'totalFeePercent');
-        const getTotalFeePercent = () =>
-            this.abiService.getTotalFeePercent(pairAddress);
-        try {
-            const totalFeePercent = await this.cachingService.getOrSet(
-                cacheKey,
-                getTotalFeePercent,
-                oneHour(),
-            );
-            return new BigNumber(totalFeePercent)
-                .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
-                .toNumber();
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                PairService.name,
-                this.getTotalFeePercent.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    async getState(pairAddress: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'state');
-        try {
-            const getState = () => this.abiService.getState(pairAddress);
-            return this.cachingService.getOrSet(cacheKey, getState, oneHour());
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                PairService.name,
-                this.getState.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
 
     async getAmountOut(
         pairAddress: string,
@@ -300,10 +39,10 @@ export class PairService {
             totalFeePercent,
         ] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
-            this.getFirstTokenID(pairAddress),
-            this.getSecondTokenID(pairAddress),
-            this.getPairInfoMetadata(pairAddress),
-            this.getTotalFeePercent(pairAddress),
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.pairGetterService.getPairInfoMetadata(pairAddress),
+            this.pairGetterService.getTotalFeePercent(pairAddress),
         ]);
 
         const tokenIn =
@@ -344,10 +83,10 @@ export class PairService {
             totalFeePercent,
         ] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
-            this.getFirstTokenID(pairAddress),
-            this.getSecondTokenID(pairAddress),
-            this.getPairInfoMetadata(pairAddress),
-            this.getTotalFeePercent(pairAddress),
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.pairGetterService.getPairInfoMetadata(pairAddress),
+            this.pairGetterService.getTotalFeePercent(pairAddress),
         ]);
 
         const tokenOut =
@@ -387,9 +126,9 @@ export class PairService {
             pairInfo,
         ] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
-            this.getFirstTokenID(pairAddress),
-            this.getSecondTokenID(pairAddress),
-            this.getPairInfoMetadata(pairAddress),
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.pairGetterService.getPairInfoMetadata(pairAddress),
         ]);
 
         const tokenIn =
@@ -429,8 +168,8 @@ export class PairService {
                 temporaryFundsFirstToken,
                 temporaryFundsSecondToken,
             ] = await Promise.all([
-                this.getFirstToken(pairMetadata.address),
-                this.getSecondToken(pairMetadata.address),
+                this.pairGetterService.getFirstToken(pairMetadata.address),
+                this.pairGetterService.getSecondToken(pairMetadata.address),
                 this.abiService.getTemporaryFunds(
                     pairMetadata.address,
                     callerAddress,
@@ -474,7 +213,9 @@ export class PairService {
         pairAddress: string,
         amount: string,
     ): Promise<LiquidityPosition> {
-        const pairInfo = await this.getPairInfoMetadata(pairAddress);
+        const pairInfo = await this.pairGetterService.getPairInfoMetadata(
+            pairAddress,
+        );
 
         const firstTokenAmount = getTokenForGivenPosition(
             amount,
@@ -520,15 +261,23 @@ export class PairService {
             return new BigNumber(0);
         }
         const pair = await this.context.getPairByTokens(tokenID, path[1]);
-        const firstTokenPrice = await this.getTokenPrice(pair.address, tokenID);
-        const secondTokenPriceUSD = await this.computeTokenPriceUSD(path[1]);
+        const firstTokenPrice = await this.pairGetterService.getTokenPrice(
+            pair.address,
+            tokenID,
+        );
+        const secondTokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+            pair.address,
+            path[1],
+        );
         return new BigNumber(firstTokenPrice).multipliedBy(secondTokenPriceUSD);
     }
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
         const pairsAddress = await this.context.getAllPairsAddress();
         const promises = pairsAddress.map(async pairAddress => {
-            const lpTokenID = await this.getLpTokenID(pairAddress);
+            const lpTokenID = await this.pairGetterService.getLpTokenID(
+                pairAddress,
+            );
             return { lpTokenID: lpTokenID, pairAddress: pairAddress };
         });
         const pairs = await Promise.all(promises);
@@ -540,9 +289,9 @@ export class PairService {
         const pairsAddress = await this.context.getAllPairsAddress();
         for (const pairAddress of pairsAddress) {
             const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
-                this.getFirstTokenID(pairAddress),
-                this.getSecondTokenID(pairAddress),
-                this.getLpTokenID(pairAddress),
+                this.pairGetterService.getFirstTokenID(pairAddress),
+                this.pairGetterService.getSecondTokenID(pairAddress),
+                this.pairGetterService.getLpTokenID(pairAddress),
             ]);
 
             if (
@@ -554,9 +303,5 @@ export class PairService {
             }
         }
         return false;
-    }
-
-    private getPairCacheKey(pairAddress: string, ...args: any) {
-        return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }
 }

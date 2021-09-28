@@ -4,8 +4,8 @@ import { cacheConfig } from '../../config';
 import { ContextService } from '../context/context.service';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { AbiPairService } from 'src/modules/pair/services/abi-pair.service';
-import { PairService } from 'src/modules/pair/services/pair.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { oneHour, oneMinute } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -15,7 +15,7 @@ import { PUB_SUB } from '../redis.pubSub.module';
 export class PairCacheWarmerService {
     private invalidatedKeys = [];
     constructor(
-        private readonly pairService: PairService,
+        private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: AbiPairService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
@@ -125,15 +125,21 @@ export class PairCacheWarmerService {
                 secondTokenPriceUSD,
                 lpTokenPriceUSD,
             ] = await Promise.all([
-                this.pairService.computeFirstTokenPrice(pairMetadata.address),
-                this.pairService.computeTokenPriceUSD(
+                this.pairComputeService.computeFirstTokenPrice(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeTokenPriceUSD(
                     pairMetadata.firstTokenID,
                 ),
-                this.pairService.computeSecondTokenPrice(pairMetadata.address),
-                this.pairService.computeTokenPriceUSD(
+                this.pairComputeService.computeSecondTokenPrice(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeTokenPriceUSD(
                     pairMetadata.secondTokenID,
                 ),
-                this.pairService.computeLpTokenPriceUSD(pairMetadata.address),
+                this.pairComputeService.computeLpTokenPriceUSD(
+                    pairMetadata.address,
+                ),
             ]);
 
             await Promise.all([

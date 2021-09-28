@@ -17,18 +17,20 @@ import {
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
 } from '../models/pair.args';
-import { PairService } from './pair.service';
 import BigNumber from 'bignumber.js';
 import { ContextService } from 'src/services/context/context.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { PairGetterService } from './pair.getter.service';
+import { PairService } from './pair.service';
 
 @Injectable()
 export class TransactionPairService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly pairService: PairService,
+        private readonly pairGetterService: PairGetterService,
         private readonly context: ContextService,
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
@@ -180,8 +182,8 @@ export class TransactionPairService {
             contract,
         ] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
-            this.pairService.getFirstTokenID(args.pairAddress),
-            this.pairService.getSecondTokenID(args.pairAddress),
+            this.pairGetterService.getFirstTokenID(args.pairAddress),
+            this.pairGetterService.getSecondTokenID(args.pairAddress),
             this.pairService.getLiquidityPosition(
                 args.pairAddress,
                 args.liquidity,

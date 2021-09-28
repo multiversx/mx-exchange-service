@@ -18,6 +18,7 @@ import {
     UserLockedLPToken,
 } from './models/user.model';
 import { UserNftTokens } from './nfttokens.union';
+import { PairGetterService } from '../pair/services/pair.getter.service';
 
 @Injectable()
 export class UserComputeService {
@@ -26,6 +27,7 @@ export class UserComputeService {
         private farmService: FarmService,
         private farmGetterService: FarmGetterService,
         private pairService: PairService,
+        private pairGetterService: PairGetterService,
         private lockedAssetService: LockedAssetService,
         private proxyService: ProxyService,
     ) {}
@@ -72,7 +74,7 @@ export class UserComputeService {
                 ],
             }),
         ]);
-        const tokenPriceUSD = await this.pairService.getSecondTokenPriceUSD(
+        const tokenPriceUSD = await this.pairGetterService.getSecondTokenPriceUSD(
             scAddress.get(assetToken.identifier),
         );
         nftToken.decimals = assetToken.decimals;
@@ -108,8 +110,8 @@ export class UserComputeService {
         );
         if (pairAddress) {
             const [lpToken, tokenPriceUSD] = await Promise.all([
-                this.pairService.getLpToken(pairAddress),
-                this.pairService.getLpTokenPriceUSD(pairAddress),
+                this.pairGetterService.getLpToken(pairAddress),
+                this.pairGetterService.getLpTokenPriceUSD(pairAddress),
             ]);
 
             const denominator = new BigNumber(`1e-${lpToken.decimals}`);

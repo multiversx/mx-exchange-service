@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { PairService } from './pair.service';
+import { PairGetterService } from './pair.getter.service';
 
 @Injectable()
 export class PairAnalyticsService {
-    constructor(private readonly pairService: PairService) {}
+    constructor(private readonly pairGetterService: PairGetterService) {}
 
     async getFirstTokenValueLocked(pairAddress: string): Promise<string> {
-        const reserves = await this.pairService.getPairInfoMetadata(
+        const reserves = await this.pairGetterService.getPairInfoMetadata(
             pairAddress,
         );
         return reserves.reserves0;
     }
 
     async getSecondTokenValueLocked(pairAddress: string): Promise<string> {
-        const reserves = await this.pairService.getPairInfoMetadata(
+        const reserves = await this.pairGetterService.getPairInfoMetadata(
             pairAddress,
         );
         return reserves.reserves1;
@@ -22,9 +22,9 @@ export class PairAnalyticsService {
 
     async getFirstTokenValueLockedUSD(pairAddress: string): Promise<string> {
         const [firstToken, firstTokenPriceUSD, reserves] = await Promise.all([
-            this.pairService.getFirstToken(pairAddress),
-            this.pairService.getFirstTokenPriceUSD(pairAddress),
-            this.pairService.getPairInfoMetadata(pairAddress),
+            this.pairGetterService.getFirstToken(pairAddress),
+            this.pairGetterService.getFirstTokenPriceUSD(pairAddress),
+            this.pairGetterService.getPairInfoMetadata(pairAddress),
         ]);
 
         return new BigNumber(reserves.reserves0)
@@ -35,9 +35,9 @@ export class PairAnalyticsService {
 
     async getSecondTokenValueLockedUSD(pairAddress: string): Promise<string> {
         const [secondToken, secondTokenPriceUSD, reserves] = await Promise.all([
-            this.pairService.getSecondToken(pairAddress),
-            this.pairService.getSecondTokenPriceUSD(pairAddress),
-            this.pairService.getPairInfoMetadata(pairAddress),
+            this.pairGetterService.getSecondToken(pairAddress),
+            this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
+            this.pairGetterService.getPairInfoMetadata(pairAddress),
         ]);
 
         return new BigNumber(reserves.reserves1)

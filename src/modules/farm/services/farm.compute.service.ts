@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ContextService } from 'src/services/context/context.service';
 import { Logger } from 'winston';
@@ -14,6 +15,7 @@ export class FarmComputeService {
         @Inject(forwardRef(() => FarmGetterService))
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
+        private readonly pairComputeService: PairComputeService,
         private readonly context: ContextService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -23,7 +25,7 @@ export class FarmComputeService {
             farmAddress,
         );
         if (scAddress.has(farmedTokenID)) {
-            const tokenPriceUSD = await this.pairService.computeTokenPriceUSD(
+            const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
                 farmedTokenID,
             );
             return tokenPriceUSD.toFixed();
@@ -40,7 +42,7 @@ export class FarmComputeService {
             farmAddress,
         );
         if (scAddress.has(farmingTokenID)) {
-            const tokenPriceUSD = await this.pairService.computeTokenPriceUSD(
+            const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
                 farmingTokenID,
             );
             return tokenPriceUSD.toFixed();
@@ -49,7 +51,7 @@ export class FarmComputeService {
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             farmingTokenID,
         );
-        return this.pairService.getLpTokenPriceUSD(pairAddress);
+        return this.pairComputeService.computeLpTokenPriceUSD(pairAddress);
     }
 
     async computeFarmRewardsForPosition(

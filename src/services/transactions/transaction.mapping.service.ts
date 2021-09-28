@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { PairService } from 'src/modules/pair/services/pair.service';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ESDTTransferTransaction } from './entities/esdtTransfer.transaction';
 import { SwapAnalytics } from './models/swap.analytics.dto';
 
 @Injectable()
 export class TransactionMappingService {
-    constructor(private readonly pairService: PairService) {}
+    constructor(private readonly pairGetterService: PairGetterService) {}
 
     async handleSwap(
         transaction: ESDTTransferTransaction,
@@ -29,11 +29,11 @@ export class TransactionMappingService {
             secondTokenPriceUSD,
             totalFeePercent,
         ] = await Promise.all([
-            this.pairService.getFirstToken(pairAddress),
-            this.pairService.getSecondToken(pairAddress),
-            this.pairService.getFirstTokenPriceUSD(pairAddress),
-            this.pairService.getSecondTokenPriceUSD(pairAddress),
-            this.pairService.getTotalFeePercent(pairAddress),
+            this.pairGetterService.getFirstToken(pairAddress),
+            this.pairGetterService.getSecondToken(pairAddress),
+            this.pairGetterService.getFirstTokenPriceUSD(pairAddress),
+            this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
+            this.pairGetterService.getTotalFeePercent(pairAddress),
         ]);
         const [tokenIn, tokenOut, tokenInPriceUSD, tokenOutPriceUSD] =
             tokenInID === firstToken.identifier

@@ -21,12 +21,14 @@ import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WrapService } from '../../wrapping/wrap.service';
 import { TransactionsWrapService } from '../../wrapping/transactions-wrap.service';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 
 @Injectable()
 export class TransactionsProxyPairService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly pairService: PairService,
+        private readonly pairGetterService: PairGetterService,
         private readonly context: ContextService,
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
@@ -241,8 +243,8 @@ export class TransactionsProxyPairService {
             contract,
         ] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
-            this.pairService.getFirstTokenID(args.pairAddress),
-            this.pairService.getSecondTokenID(args.pairAddress),
+            this.pairGetterService.getFirstTokenID(args.pairAddress),
+            this.pairGetterService.getSecondTokenID(args.pairAddress),
             this.pairService.getLiquidityPosition(
                 args.pairAddress,
                 args.liquidity,

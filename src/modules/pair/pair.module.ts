@@ -9,6 +9,8 @@ import { ElrondCommunicationModule } from '../../services/elrond-communication/e
 import { WrappingModule } from '../wrapping/wrap.module';
 import { PairAnalyticsService } from './services/pair.analytics.service';
 import { CachingModule } from '../../services/caching/cache.module';
+import { PairGetterService } from './services/pair.getter.service';
+import { PairComputeService } from './services/pair.compute.service';
 
 @Module({
     imports: [
@@ -20,11 +22,19 @@ import { CachingModule } from '../../services/caching/cache.module';
     ],
     providers: [
         PairService,
+        PairGetterService,
+        PairComputeService,
         PairAnalyticsService,
         AbiPairService,
         TransactionPairService,
         PairResolver,
     ],
-    exports: [PairService, AbiPairService, PairAnalyticsService],
+    exports: [
+        PairService,
+        PairGetterService,
+        PairComputeService,
+        AbiPairService,
+        PairAnalyticsService,
+    ],
 })
 export class PairModule {}

@@ -98,6 +98,63 @@ export class AbiPairService {
         }
     }
 
+    async getTokenReserve(
+        pairAddress: string,
+        tokenID: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+
+        const interaction: Interaction = contract.methods.getReserve([
+            BytesValue.fromUTF8(tokenID),
+        ]);
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+
+            return response.firstValue.valueOf().toFixed();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiPairService.name,
+                this.getTokenReserve.name,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getTotalSupply(pairAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+
+        const interaction: Interaction = contract.methods.getTotalSupply([]);
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+
+            return response.firstValue.valueOf().toFixed();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiPairService.name,
+                this.getTotalSupply.name,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,

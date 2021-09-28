@@ -30,6 +30,7 @@ import { Logger } from 'winston';
 import { CachingService } from '../../services/caching/cache.service';
 import { oneMinute } from '../../helpers/helpers';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
+import { PairGetterService } from '../pair/services/pair.getter.service';
 
 export interface TradingInfoType {
     volumeUSD: BigNumber;
@@ -43,6 +44,7 @@ export class AnalyticsService {
         private readonly context: ContextService,
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
+        private readonly pairGetterService: PairGetterService,
         private readonly pairAnalytics: PairAnalyticsService,
         private readonly transactionCollector: TransactionCollectorService,
         private readonly transactionInterpreter: TransactionInterpreterService,
@@ -367,9 +369,9 @@ export class AnalyticsService {
                 secondTokenLockedValueUSD,
                 totalValueLockedUSD,
             ] = await Promise.all([
-                this.pairService.getFirstTokenID(pair.address),
-                this.pairService.getSecondTokenID(pair.address),
-                this.pairService.getPairInfoMetadata(pair.address),
+                this.pairGetterService.getFirstTokenID(pair.address),
+                this.pairGetterService.getSecondTokenID(pair.address),
+                this.pairGetterService.getPairInfoMetadata(pair.address),
                 this.pairAnalytics.getFirstTokenValueLockedUSD(pair.address),
                 this.pairAnalytics.getSecondTokenValueLockedUSD(pair.address),
                 this.pairAnalytics.getPairLockedValueUSD(pair.address),
