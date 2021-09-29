@@ -1,9 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { RedlockService } from '../../services';
-import { PairService } from './pair.service';
-import { RedlockServiceMock, WrapServiceMock } from './pair.test-constants';
-import { ContextService } from '../../services/context/context.service';
-import { WrapService } from '../wrapping/wrap.service';
 import winston from 'winston';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -16,24 +11,35 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairServiceMock } from '../mocks/pair.service.mock';
 import { ContextServiceMock } from 'src/services/context/context.service.mocks';
+import { ContextService } from 'src/services/context/context.service';
+import { PairService } from '../services/pair.service';
+import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
+import { PairGetterService } from '../services/pair.getter.service';
+import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
+import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
-    let elrondProxy: ElrondProxyService;
+
+    const ElrondProxyServiceProvider = {
+        provide: ElrondProxyService,
+        useClass: ElrondProxyServiceMock,
+    };
 
     const ContextServiceProvider = {
         provide: ContextService,
         useClass: ContextServiceMock,
     };
 
-    const RedlockServiceProvider = {
-        provide: RedlockService,
-        useClass: RedlockServiceMock,
-    };
-
     const PairServiceProvider = {
         provide: PairService,
         useClass: PairServiceMock,
+    };
+
+    const PairGetterServiceProvider = {
+        provide: PairGetterService,
+        useClass: PairGetterServiceMock,
     };
 
     const WrapServiceProvider = {
@@ -65,10 +71,10 @@ describe('TransactionPairService', () => {
                 ]),
             ],
             providers: [
-                ElrondProxyService,
+                ElrondProxyServiceProvider,
                 ContextServiceProvider,
-                RedlockServiceProvider,
                 PairServiceProvider,
+                PairGetterServiceProvider,
                 WrapServiceProvider,
                 TransactionsWrapService,
                 PairTransactionService,
@@ -76,7 +82,6 @@ describe('TransactionPairService', () => {
         }).compile();
 
         service = module.get<PairTransactionService>(PairTransactionService);
-        elrondProxy = module.get<ElrondProxyService>(ElrondProxyService);
     });
 
     it('should be defined', () => {
@@ -86,15 +91,12 @@ describe('TransactionPairService', () => {
     it('should get add liquidity batch transaction EGLD first token', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
-        jest.spyOn(elrondProxy, 'getAddressShardID').mockImplementation(
-            async () => 0,
-        );
+
         const liquidityBatchTransactions = await service.addLiquidityBatch({
-            pairAddress:
-                'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww',
+            pairAddress: 'pair_address_1',
             firstTokenID: 'EGLD',
             firstTokenAmount: firstTokenAmount,
-            secondTokenID: 'MEX-1234',
+            secondTokenID: 'TOK2-2222',
             secondTokenAmount: secondTokenAmount,
             sender: 'user_address_1',
             tolerance: 0.01,
@@ -108,10 +110,10 @@ describe('TransactionPairService', () => {
         ] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(firstTokenAmount);
         expect(transferfirstTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMxMzEzMTMxQDBhQDYxNjM2MzY1NzA3NDQ1NzM2NDc0NTA2MTc5NmQ2NTZlNzQ=',
+            'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMwMzczMzM2MzUzMEAwYUA2MTYzNjM2NTcwNzQ0NTczNjQ3NDUwNjE3OTZkNjU2ZTc0',
         );
         expect(transferSecondTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDRkNDU1ODJkMzEzMjMzMzRAMDlANjE2MzYzNjU3MDc0NDU3MzY0NzQ1MDYxNzk2ZDY1NmU3NA==',
+            'RVNEVFRyYW5zZmVyQDU0NGY0YjMyMmQzMjMyMzIzMkAwOUA2MTYzNjM2NTcwNzQ0NTczNjQ3NDUwNjE3OTZkNjU2ZTc0',
         );
         expect(addLiquidity.data).toEqual('YWRkTGlxdWlkaXR5QDBhQDA5QDA5QDA4');
     });
@@ -119,13 +121,10 @@ describe('TransactionPairService', () => {
     it('should get add liquidity batch transaction EGLD second token', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
-        jest.spyOn(elrondProxy, 'getAddressShardID').mockImplementation(
-            async () => 0,
-        );
+
         const liquidityBatchTransactions = await service.addLiquidityBatch({
-            pairAddress:
-                'erd1qqqqqqqqqqqqqpgqyt7u9afy0d9yp70rlg7znsp0u0j8zxq60n4ser3kww',
-            firstTokenID: 'MEX-1234',
+            pairAddress: 'pair_address_1',
+            firstTokenID: 'TOK2-2222',
             firstTokenAmount: firstTokenAmount,
             secondTokenID: 'EGLD',
             secondTokenAmount: secondTokenAmount,
@@ -141,10 +140,10 @@ describe('TransactionPairService', () => {
         ] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
         expect(transferfirstTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMxMzEzMTMxQDA5QDYxNjM2MzY1NzA3NDQ1NzM2NDc0NTA2MTc5NmQ2NTZlNzQ=',
+            'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMwMzczMzM2MzUzMEAwOUA2MTYzNjM2NTcwNzQ0NTczNjQ3NDUwNjE3OTZkNjU2ZTc0',
         );
         expect(transferSecondTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDRkNDU1ODJkMzEzMjMzMzRAMGFANjE2MzYzNjU3MDc0NDU3MzY0NzQ1MDYxNzk2ZDY1NmU3NA==',
+            'RVNEVFRyYW5zZmVyQDU0NGY0YjMyMmQzMjMyMzIzMkAwYUA2MTYzNjM2NTcwNzQ0NTczNjQ3NDUwNjE3OTZkNjU2ZTc0',
         );
         expect(addLiquidity.data).toEqual('YWRkTGlxdWlkaXR5QDA5QDBhQDA4QDA5');
     });
