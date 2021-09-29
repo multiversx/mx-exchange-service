@@ -122,6 +122,15 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async specialFeePercent(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getSpecialFeePercent(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async state(@Parent() parent: PairModel) {
         try {
             return this.pairGetterService.getState(parent.address);

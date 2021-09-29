@@ -225,6 +225,18 @@ export class PairGetterService {
             .toNumber();
     }
 
+    async getSpecialFeePercent(pairAddress: string): Promise<number> {
+        const specialFeePercent = await this.getData(
+            pairAddress,
+            'specialFeePercent',
+            () => this.abiService.getSpecialFeePercent(pairAddress),
+            oneHour(),
+        );
+        return new BigNumber(specialFeePercent)
+            .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
+            .toNumber();
+    }
+
     async getState(pairAddress: string): Promise<string> {
         return this.getData(
             pairAddress,

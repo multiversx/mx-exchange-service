@@ -38,6 +38,7 @@ export class PairCacheWarmerService {
                 secondToken,
                 lpToken,
                 totalFeePercent,
+                specialFeePercent,
                 state,
             ] = await Promise.all([
                 this.apiService
@@ -48,6 +49,7 @@ export class PairCacheWarmerService {
                     .getESDTToken(pairMetadata.secondTokenID),
                 this.apiService.getService().getESDTToken(lpTokenID),
                 this.abiPairService.getTotalFeePercent(pairMetadata.address),
+                this.abiPairService.getSpecialFeePercent(pairMetadata.address),
                 this.abiPairService.getState(pairMetadata.address),
             ]);
 
@@ -67,6 +69,10 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setTotalFeePercent(
                     pairMetadata.address,
                     totalFeePercent,
+                ),
+                this.pairSetterService.setSpecialFeePercent(
+                    pairMetadata.address,
+                    specialFeePercent,
                 ),
                 this.pairSetterService.setState(pairMetadata.address, state),
             ]);

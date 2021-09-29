@@ -55,6 +55,9 @@ export class PairModel {
     totalFeePercent: number;
 
     @Field()
+    specialFeePercent: number;
+
+    @Field()
     state: string;
 
     constructor(init?: Partial<PairModel>) {
