@@ -1,20 +1,16 @@
-import { SmartContract } from '@elrondnetwork/erdjs/out';
 import { Test, TestingModule } from '@nestjs/testing';
 import BigNumber from 'bignumber.js';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { ContextService } from '../../services/context/context.service';
-import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
-import { PairService } from '../pair/pair.service';
+import { PairService } from '../pair/services/pair.service';
 import { AnalyticsService } from './analytics.service';
 import { HyperblockService } from '../../services/transactions/hyperblock.service';
 import { ShardTransaction } from '../../services/transactions/entities/shard.transaction';
-import { TransactionModule } from '../../services/transactions/transaction.module';
 import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
 import { ContextServiceMock } from '../../services/context/context.service.mocks';
-import { PairAnalyticsServiceMock } from '../pair/pair.analytics.service.mock';
-import { PairAnalyticsService } from '../pair/pair.analytics.service';
-import { PairInfoModel } from '../pair/models/pair-info.model';
-import { PairServiceMock } from '../pair/pair.service.mock';
+import { PairAnalyticsServiceMock } from '../pair/mocks/pair.analytics.service.mock';
+import { PairAnalyticsService } from '../pair/services/pair.analytics.service';
+import { PairServiceMock } from '../pair/mocks/pair.service.mock';
 import {
     AnalyticsModel,
     FactoryAnalyticsModel,
@@ -25,12 +21,20 @@ import { CommonAppModule } from '../../common.app.module';
 import { CachingModule } from '../../services/caching/cache.module';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
+import { PairGetterService } from '../pair/services/pair.getter.service';
+import { PairGetterServiceMock } from '../pair/mocks/pair.getter.service.mock';
+import { PairComputeService } from '../pair/services/pair.compute.service';
+import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
+import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
+import { TransactionInterpreterService } from 'src/services/transactions/transaction.interpreter.service';
+import { TransactionMappingService } from 'src/services/transactions/transaction.mapping.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
 
 describe('FarmStatisticsService', () => {
     let service: AnalyticsService;
-    let elrondProxy: ElrondProxyService;
     let transactionCollector: TransactionCollectorService;
-    let pairService: PairService;
 
     const FarmGetterServiceProvider = {
         provide: FarmGetterService,
@@ -40,6 +44,11 @@ describe('FarmStatisticsService', () => {
     const PairServiceProvider = {
         provide: PairService,
         useClass: PairServiceMock,
+    };
+
+    const PairGetterServiceProvider = {
+        provide: PairGetterService,
+        useClass: PairGetterServiceMock,
     };
 
     const PairAnalyticsServiceProvider = {
@@ -52,30 +61,46 @@ describe('FarmStatisticsService', () => {
         useClass: ContextServiceMock,
     };
 
+    const ElrondApiServiceProvider = {
+        provide: ElrondApiService,
+        useClass: ElrondApiServiceMock,
+    };
+
+    const ElrondProxyServiceProvider = {
+        provide: ElrondProxyService,
+        useClass: ElrondProxyServiceMock,
+    };
+
+    const PriceFeedServiceProvider = {
+        provide: PriceFeedService,
+        useClass: PriceFeedServiceMock,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                CommonAppModule,
-                CachingModule,
-                ElrondCommunicationModule,
-                TransactionModule,
-            ],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 ContextServiceProvider,
+                ElrondProxyServiceProvider,
+                ElrondApiServiceProvider,
                 FarmGetterServiceProvider,
                 PairServiceProvider,
+                PairGetterServiceProvider,
+                PairComputeService,
+                PriceFeedServiceProvider,
                 PairAnalyticsServiceProvider,
                 AnalyticsService,
                 HyperblockService,
+                TransactionCollectorService,
+                TransactionInterpreterService,
+                TransactionMappingService,
             ],
         }).compile();
 
         service = module.get<AnalyticsService>(AnalyticsService);
-        elrondProxy = module.get<ElrondProxyService>(ElrondProxyService);
         transactionCollector = module.get<TransactionCollectorService>(
             TransactionCollectorService,
         );
-        pairService = module.get<PairService>(PairService);
     });
 
     it('should be defined', () => {
@@ -88,9 +113,6 @@ describe('FarmStatisticsService', () => {
     });
 
     it('should get total MEX supply', async () => {
-        jest.spyOn(elrondProxy, 'getSmartContract').mockImplementation(
-            async () => new SmartContract({}),
-        );
         jest.spyOn(service, 'getMintedToken').mockImplementation(
             async () => new BigNumber(100),
         );
@@ -99,32 +121,12 @@ describe('FarmStatisticsService', () => {
         );
 
         const totalMexSupply = await service.computeTotalTokenSupply(
-            'MEX-ec32fa',
+            'TOK2-2222',
         );
-        expect(totalMexSupply).toEqual('630');
+        expect(totalMexSupply).toEqual('2000000000000000630');
     });
 
     it('should get trading volumes', async () => {
-        jest.spyOn(pairService, 'getFirstTokenID').mockImplementation(
-            async () => 'WEGLD-073650',
-        );
-        jest.spyOn(pairService, 'getSecondTokenID').mockImplementation(
-            async () => 'MEX-ec32fa',
-        );
-        jest.spyOn(pairService, 'getPairInfoMetadata').mockImplementation(
-            async () =>
-                new PairInfoModel({
-                    reserves0: '5',
-                    reserves1: '500',
-                    totalSupply: '50',
-                }),
-        );
-        jest.spyOn(pairService, 'getFirstTokenPriceUSD').mockImplementation(
-            async () => '100',
-        );
-        jest.spyOn(pairService, 'getSecondTokenPriceUSD').mockImplementation(
-            async () => '0.1',
-        );
         jest.spyOn(
             transactionCollector,
             'getNewTransactions',
@@ -134,10 +136,9 @@ describe('FarmStatisticsService', () => {
             for (let index = 0; index < 1; index++) {
                 const transaction = new ShardTransaction();
                 transaction.data =
-                    'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMwMzczMzM2MzUzMEAwZGUwYjZiM2E3NjQwMDAwQDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzRANGQ0NTU4MmQ2NTYzMzMzMjY2NjFAMGQyZGMwODM0MGQ4ZWUxMDAw';
+                    'RVNEVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUAwZGUwYjZiM2E3NjQwMDAwQDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzRANTQ0ZjRiMzIyZDMyMzIzMjMyQDBkMmRjMDgzNDBkOGVlMTAwMA==';
                 transaction.sender = '';
-                transaction.receiver =
-                    'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc';
+                transaction.receiver = 'pair_address_1';
                 transaction.sourceShard = 1;
                 transaction.destinationShard = 1;
                 transaction.hash = '';
@@ -155,48 +156,54 @@ describe('FarmStatisticsService', () => {
         expect(tradingVolumes).toEqual(
             new AnalyticsModel({
                 factory: new FactoryAnalyticsModel({
-                    totalFeesUSD: '0.3',
-                    totalVolumesUSD: '62.15522261',
+                    totalFeesUSD: '0.6',
+                    totalVolumesUSD: '12255.22261',
                     totalValueLockedUSD: '120002000',
                 }),
                 pairs: [
                     new PairAnalyticsModel({
-                        feesUSD: '0.3',
-                        liquidity: '50',
-                        pairAddress:
-                            'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc',
-                        totalValueLockedFirstToken: '5',
-                        totalValueLockedSecondToken: '5000',
+                        feesUSD: '0.6',
+                        liquidity: '1000000000000000000',
+                        pairAddress: 'pair_address_1',
+                        totalValueLockedFirstToken: '1000000000000000000',
+                        totalValueLockedSecondToken: '2000000000000000000',
                         totalValueLockedUSD: '1000',
-                        volumesUSD: '62.15522261',
+                        volumesUSD: '12255.22261',
                     }),
                     new PairAnalyticsModel({
                         feesUSD: '0',
-                        liquidity: '50',
-                        pairAddress:
-                            'erd1qqqqqqqqqqqqqpgqmffr70826epqhdf2ggsmgxgur77g53hr0n4s38y2qe',
-                        totalValueLockedFirstToken: '5',
-                        totalValueLockedSecondToken: '5000',
+                        liquidity: '1000000000000000000',
+                        pairAddress: 'pair_address_2',
+                        totalValueLockedFirstToken: '1000000000000000000',
+                        totalValueLockedSecondToken: '2000000000000000000',
                         totalValueLockedUSD: '1000',
                         volumesUSD: '0',
                     }),
                 ],
                 tokens: [
                     new TokenAnalyticsModel({
-                        feesUSD: '0.3',
-                        tokenID: 'WEGLD-073650',
-                        totalValueLocked: '5',
+                        feesUSD: '0.6',
+                        tokenID: 'TOK1-1111',
+                        totalValueLocked: '1000000000000000000',
                         totalValueLockedUSD: '500',
                         volume: '1000000000000000000',
-                        volumeUSD: '100',
+                        volumeUSD: '200',
                     }),
                     new TokenAnalyticsModel({
                         feesUSD: '0',
-                        tokenID: 'MEX-ec32fa',
-                        totalValueLocked: '5000',
+                        tokenID: 'TOK2-2222',
+                        totalValueLocked: '2000000000000000000',
                         totalValueLockedUSD: '500',
                         volume: '243104452200000000000',
-                        volumeUSD: '24.31044522',
+                        volumeUSD: '24310.44522',
+                    }),
+                    new TokenAnalyticsModel({
+                        feesUSD: '0',
+                        tokenID: 'TOK3-3333',
+                        totalValueLocked: '2000000000000000000',
+                        totalValueLockedUSD: '500',
+                        volume: '0',
+                        volumeUSD: '0',
                     }),
                 ],
             }),
