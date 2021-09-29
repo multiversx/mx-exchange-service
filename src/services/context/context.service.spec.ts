@@ -39,9 +39,9 @@ describe('ContextService', () => {
         const pairsMap = await service.getPairsMap();
 
         const expectedMap = new Map();
-        expectedMap.set('WEGLD-073650', ['MEX-ec32fa', 'BUSD-f2c46d']);
-        expectedMap.set('MEX-ec32fa', ['WEGLD-073650']);
-        expectedMap.set('BUSD-f2c46d', ['WEGLD-073650']);
+        expectedMap.set('TOK1-1111', ['TOK2-2222', 'TOK3-3333']);
+        expectedMap.set('TOK2-2222', ['TOK1-1111']);
+        expectedMap.set('TOK3-3333', ['TOK1-1111']);
 
         expect(pairsMap).toEqual(expectedMap);
     });
@@ -51,43 +51,25 @@ describe('ContextService', () => {
         let discovered = new Map<string, boolean>();
         const graph = await service.getPairsMap();
 
-        service.isConnected(
-            graph,
-            'MEX-ec32fa',
-            'WEGLD-073650',
-            discovered,
-            path,
-        );
-        expect(path).toEqual(['MEX-ec32fa', 'WEGLD-073650']);
+        service.isConnected(graph, 'TOK2-2222', 'TOK1-1111', discovered, path);
+        expect(path).toEqual(['TOK2-2222', 'TOK1-1111']);
 
         path = [];
         discovered = new Map<string, boolean>();
-        service.isConnected(
-            graph,
-            'BUSD-f2c46d',
-            'WEGLD-073650',
-            discovered,
-            path,
-        );
-        expect(path).toEqual(['BUSD-f2c46d', 'WEGLD-073650']);
+        service.isConnected(graph, 'TOK3-3333', 'TOK1-1111', discovered, path);
+        expect(path).toEqual(['TOK3-3333', 'TOK1-1111']);
 
         path = [];
         discovered = new Map<string, boolean>();
-        service.isConnected(
-            graph,
-            'MEX-ec32fa',
-            'BUSD-f2c46d',
-            discovered,
-            path,
-        );
-        expect(path).toEqual(['MEX-ec32fa', 'WEGLD-073650', 'BUSD-f2c46d']);
+        service.isConnected(graph, 'TOK2-2222', 'TOK3-3333', discovered, path);
+        expect(path).toEqual(['TOK2-2222', 'TOK1-1111', 'TOK3-3333']);
     });
 
     it('should not get a path between tokens', async () => {
         const path: string[] = [];
         const discovered = new Map<string, boolean>();
         const graph = await service.getPairsMap();
-        service.isConnected(graph, 'MEX-ec32fa', 'SPT-1111', discovered, path);
+        service.isConnected(graph, 'TOK2-2222', 'SPT-1111', discovered, path);
         expect(path).toEqual([]);
     });
 });
