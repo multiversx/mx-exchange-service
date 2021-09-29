@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextService } from '../../../services/context/context.service';
-import { PairService } from '../../pair/pair.service';
+import { PairService } from '../../pair/services/pair.service';
 import { FarmService } from '../services/farm.service';
 import { PairServiceMock } from '../mocks/farm.test-mocks';
 import { AbiFarmService } from '../services/abi-farm.service';
@@ -15,6 +15,11 @@ import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';
 import { FarmComputeService } from '../services/farm.compute.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
+import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -44,6 +49,16 @@ describe('FarmService', () => {
         useClass: PairServiceMock,
     };
 
+    const PairGetterServiceProvider = {
+        provide: PairGetterService,
+        useClass: PairGetterServiceMock,
+    };
+
+    const PriceFeedServiceProvider = {
+        provide: PriceFeedService,
+        useClass: PriceFeedServiceMock,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
@@ -54,6 +69,9 @@ describe('FarmService', () => {
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
                 PairServiceProvider,
+                PairGetterServiceProvider,
+                PairComputeService,
+                PriceFeedServiceProvider,
                 FarmService,
             ],
         }).compile();
