@@ -1,67 +1,105 @@
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
-import { PairInfoModel } from '../models/pair-info.model';
+import { Inject } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
+import { tokenProviderUSD, tokensPriceData } from 'src/config';
+import { ContextService } from 'src/services/context/context.service';
+import { LiquidityPosition } from '../models/pair.model';
+import { PairGetterService } from '../services/pair.getter.service';
 
 export class PairServiceMock {
-    async getFirstTokenID(pairAddress: string): Promise<string> {
-        return 'WEGLD-88600a';
-    }
-    async getSecondTokenID(pairAddress: string): Promise<string> {
-        return 'MEX-b6bb7d';
+    constructor(
+        @Inject(ContextService)
+        private readonly context: ContextService,
+        @Inject(PairGetterService)
+        private readonly pairGetterService: PairGetterService,
+    ) {}
+
+    async getEquivalentForLiquidity(
+        pairAddress: string,
+        tokenInID: string,
+        amount: string,
+    ): Promise<string> {
+        return '2000000000000000000';
     }
 
-    async getFirstToken(pairAddress: string): Promise<EsdtToken> {
-        return {
-            identifier: 'WEGLD-88600a',
-            name: 'WEGLD-88600a',
-            type: 'FungibleESDT',
-            owner: 'user_address_1',
-            minted: '0',
-            burnt: '0',
-            decimals: 18,
-            isPaused: false,
-            canUpgrade: true,
-            canMint: true,
-            canBurn: true,
-            canChangeOwner: true,
-            canPause: true,
-            canFreeze: true,
-            canWipe: true,
-        };
-    }
-
-    async getSecondToken(pairAddress: string): Promise<EsdtToken> {
-        return {
-            identifier: 'MEX-b6bb7d',
-            name: 'MEX-b6bb7d',
-            type: 'FungibleESDT',
-            owner: 'user_address_1',
-            minted: '0',
-            burnt: '0',
-            decimals: 18,
-            isPaused: false,
-            canUpgrade: true,
-            canMint: true,
-            canBurn: true,
-            canChangeOwner: true,
-            canPause: true,
-            canFreeze: true,
-            canWipe: true,
-        };
-    }
-
-    async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
-        return '100';
-    }
-
-    async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
-        return '0.1';
-    }
-
-    async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        return new PairInfoModel({
-            reserves0: '5',
-            reserves1: '5000',
-            totalSupply: '50',
+    async getLiquidityPosition(
+        pairAddress: string,
+        amount: string,
+    ): Promise<LiquidityPosition> {
+        return new LiquidityPosition({
+            firstTokenAmount: '1000000000000000000',
+            secondTokenAmount: '2000000000000000000',
         });
+    }
+
+    async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
+        if (!tokensPriceData.has(tokenProviderUSD)) {
+            return new BigNumber(0);
+        }
+
+        const path: string[] = [];
+        const discovered = new Map<string, boolean>();
+        const graph = await this.context.getPairsMap();
+        if (!graph.has(tokenID)) {
+            return new BigNumber(0);
+        }
+
+        for (const edge of graph.keys()) {
+            discovered.set(edge, false);
+        }
+        this.context.isConnected(
+            graph,
+            tokenID,
+            tokenProviderUSD,
+            discovered,
+            path,
+        );
+
+        if (path.length === 0) {
+            return new BigNumber(0);
+        }
+
+        const pair = await this.context.getPairByTokens(tokenID, path[1]);
+        const firstTokenPrice = await this.pairGetterService.getTokenPrice(
+            pair.address,
+            tokenID,
+        );
+        const secondTokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+            pair.address,
+            path[1],
+        );
+        return new BigNumber(firstTokenPrice).multipliedBy(secondTokenPriceUSD);
+    }
+
+    async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
+        const pairsAddress = await this.context.getAllPairsAddress();
+        const promises = pairsAddress.map(async pairAddress => {
+            const lpTokenID = await this.pairGetterService.getLpTokenID(
+                pairAddress,
+            );
+            return { lpTokenID: lpTokenID, pairAddress: pairAddress };
+        });
+        const pairs = await Promise.all(promises);
+        const pair = pairs.find(pair => pair.lpTokenID === tokenID);
+        return pair?.pairAddress;
+    }
+
+    async isPairEsdtToken(tokenID: string): Promise<boolean> {
+        const pairsAddress = await this.context.getAllPairsAddress();
+        for (const pairAddress of pairsAddress) {
+            const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
+                this.pairGetterService.getFirstTokenID(pairAddress),
+                this.pairGetterService.getSecondTokenID(pairAddress),
+                this.pairGetterService.getLpTokenID(pairAddress),
+            ]);
+
+            if (
+                tokenID === firstTokenID ||
+                tokenID === secondTokenID ||
+                tokenID === lpTokenID
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }
