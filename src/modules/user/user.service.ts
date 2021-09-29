@@ -25,6 +25,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { PairGetterService } from '../pair/services/pair.getter.service';
+import { PairComputeService } from '../pair/services/pair.compute.service';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -51,6 +52,7 @@ export class UserService {
         private cachingService: CachingService,
         private pairService: PairService,
         private pairGetterService: PairGetterService,
+        private pairComputeService: PairComputeService,
         private priceFeed: PriceFeedService,
         private proxyPairService: ProxyPairService,
         private proxyFarmService: ProxyFarmService,
@@ -202,13 +204,12 @@ export class UserService {
                 priceUSD: tokenPriceUSD,
             };
         }
-        const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-            pairAddress,
+        const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
             tokenID,
         );
         return {
             type: EsdtTokenType.FungibleToken,
-            priceUSD: tokenPriceUSD,
+            priceUSD: tokenPriceUSD.toFixed(),
         };
     }
 
