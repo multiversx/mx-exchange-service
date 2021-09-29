@@ -1,3 +1,6 @@
 {
-    "someConfigs": {}
+    "tokenProviderUSD": "TOK3-3333",
+    "priceFeeds": {
+        "TOK3-3333": "tok3"
+    }
 }
