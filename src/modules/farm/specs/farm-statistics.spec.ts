@@ -1,13 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextService } from '../../../services/context/context.service';
-import { PairService } from '../../pair/pair.service';
+import { PairService } from '../../pair/services/pair.service';
 import { FarmStatisticsService } from '../services/farm-statistics.service';
-import { PairServiceMock } from '../mocks/farm.test-mocks';
 import { ContextServiceMock } from '../../../services/context/context.service.mocks';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
+import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
+import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import { PairServiceMock } from 'src/modules/pair/mocks/pair.service.mock';
 
 describe('FarmStatisticsService', () => {
     let service: FarmStatisticsService;
@@ -27,6 +32,16 @@ describe('FarmStatisticsService', () => {
         useClass: PairServiceMock,
     };
 
+    const PairGetterServiceProvider = {
+        provide: PairGetterService,
+        useClass: PairGetterServiceMock,
+    };
+
+    const PriceFeedServiceProvider = {
+        provide: PriceFeedService,
+        useClass: PriceFeedServiceMock,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
@@ -34,6 +49,9 @@ describe('FarmStatisticsService', () => {
                 FarmGetterServiceProvider,
                 ContextServiceProvider,
                 PairServiceProvider,
+                PairGetterServiceProvider,
+                PairComputeService,
+                PriceFeedServiceProvider,
                 FarmStatisticsService,
             ],
         }).compile();
