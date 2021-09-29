@@ -1,5 +1,6 @@
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftToken } from 'src/models/tokens/nftToken.model';
+import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 
 export class ElrondApiServiceMock {
     async getCurrentEpoch(): Promise<number> {
@@ -20,22 +21,7 @@ export class ElrondApiServiceMock {
     async getTokensForUser(address: string): Promise<EsdtToken[]> {
         return [
             {
-                identifier: 'MEX-ec32fa',
-                name: 'MaiarExchangeToken',
-                type: 'FungibleESDT',
-                owner:
-                    'erd1x39tc3q3nn72ecjnmcz7x0qp09kp97t080x99dgyhx7zh95j0n4szskhlv',
-                minted: '101000000000000000000000',
-                burnt: '0',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
+                ...Tokens('TOK2-2222'),
                 balance: '1000000000000000000',
             },
         ];
