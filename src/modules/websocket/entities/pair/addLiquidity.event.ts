@@ -48,6 +48,26 @@ export class AddLiquidityEvent extends GenericEvent {
         );
     }
 
+    getFirstTokenAmount(): FftTokenAmountPair {
+        return this.firstTokenAmount;
+    }
+
+    getSecondTokenAmount(): FftTokenAmountPair {
+        return this.secondTokenAmount;
+    }
+
+    getLiquidityPoolTokenAmount(): FftTokenAmountPair {
+        return this.liquidityPoolTokenAmount;
+    }
+
+    getLiquidityPoolSupply(): BigNumber {
+        return this.liquidityPoolSupply;
+    }
+
+    getPairReserves(): FftTokenAmountPair[] {
+        return this.pairReserves;
+    }
+
     toJSON(): AddLiquidityEventType {
         return {
             ...super.toJSON(),

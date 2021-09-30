@@ -44,6 +44,18 @@ export class SwapEvent extends GenericEvent {
         );
     }
 
+    getTokenAmountIn(): FftTokenAmountPair {
+        return this.tokenAmountIn;
+    }
+
+    getTokenAmountOut(): FftTokenAmountPair {
+        return this.tokenAmountOut;
+    }
+
+    getPairReserves(): FftTokenAmountPair[] {
+        return this.pairReserves;
+    }
+
     toJSON(): SwapEventType {
         return {
             ...super.toJSON(),
