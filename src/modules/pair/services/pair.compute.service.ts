@@ -70,12 +70,8 @@ export class PairComputeService {
     }
 
     async computeTokenPriceUSD(tokenID: string): Promise<BigNumber> {
-        if (tokensPriceData.has(tokenID)) {
-            return this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID));
-        }
-
-        const usdPrice = await this.pairService.getPriceUSDByPath(tokenID);
-
-        return usdPrice;
+        return tokensPriceData.has(tokenID)
+            ? this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID))
+            : this.pairService.getPriceUSDByPath(tokenID);
     }
 }
