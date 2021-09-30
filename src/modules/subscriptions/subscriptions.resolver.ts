@@ -26,8 +26,13 @@ export class SubscriptionsResolver {
     constructor(@Inject(PUB_SUB) private pubSub: RedisPubSub) {}
 
     @Subscription(() => SwapEvent)
-    swapEvent() {
-        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP);
+    swapFixedInputEvent() {
+        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_FIXED_INPUT);
+    }
+
+    @Subscription(() => SwapEvent)
+    swapFixedOutputEvent() {
+        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_FIXED_OUTPUT);
     }
 
     @Subscription(() => AddLiquidityEvent)

@@ -44,13 +44,25 @@ export class WebSocketService {
             const rawEvents = JSON.parse(message.toString());
             rawEvents.map(async rawEvent => {
                 switch (rawEvent.identifier) {
-                    case PAIR_EVENTS.SWAP:
-                        const swapEvent = new SwapEvent(rawEvent);
-                        this.logger.info(JSON.stringify(swapEvent.toJSON()));
-                        this.pubSub.publish(PAIR_EVENTS.SWAP, {
-                            swapEvent: swapEvent,
+                    case PAIR_EVENTS.SWAP_FIXED_INPUT:
+                        const swapFixedInputEvent = new SwapEvent(rawEvent);
+                        this.logger.info(
+                            JSON.stringify(swapFixedInputEvent.toJSON()),
+                        );
+                        this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_INPUT, {
+                            swapFixedInputEvent: swapFixedInputEvent,
                         });
                         break;
+                    case PAIR_EVENTS.SWAP_FIXED_OUTPUT:
+                        const swapFixedOutputEvent = new SwapEvent(rawEvent);
+                        this.logger.info(
+                            JSON.stringify(swapFixedOutputEvent.toJSON()),
+                        );
+                        this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_OUTPUT, {
+                            swapFixedOutputEvent: swapFixedOutputEvent,
+                        });
+                        break;
+
                     case PAIR_EVENTS.ADD_LIQUIDITY:
                         const addLiquidityEvent = new AddLiquidityEvent(
                             rawEvent,
