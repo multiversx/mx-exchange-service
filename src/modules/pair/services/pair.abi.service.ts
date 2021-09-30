@@ -46,12 +46,8 @@ export class PairAbiService {
         );
         const interaction: Interaction = contract.methods.getFirstTokenId([]);
 
-        try {
-            const response = await this.getGenericData(contract, interaction);
-            return response.firstValue?.valueOf().toString();
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
     }
 
     async getSecondTokenID(pairAddress: string): Promise<string> {
@@ -60,12 +56,8 @@ export class PairAbiService {
         );
         const interaction: Interaction = contract.methods.getSecondTokenId([]);
 
-        try {
-            const response = await this.getGenericData(contract, interaction);
-            return response.firstValue.valueOf().toString();
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {
@@ -76,12 +68,8 @@ export class PairAbiService {
             [],
         );
 
-        try {
-            const response = await this.getGenericData(contract, interaction);
-            return response.firstValue.valueOf().toString();
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
     }
 
     async getTokenReserve(
@@ -94,15 +82,8 @@ export class PairAbiService {
         const interaction: Interaction = contract.methods.getReserve([
             BytesValue.fromUTF8(tokenID),
         ]);
-        try {
-            const interactionResponse = await this.getGenericData(
-                contract,
-                interaction,
-            );
-            return interactionResponse.firstValue.valueOf().toFixed();
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getTotalSupply(pairAddress: string): Promise<string> {
@@ -111,12 +92,8 @@ export class PairAbiService {
         );
         const interaction: Interaction = contract.methods.getTotalSupply([]);
 
-        try {
-            const response = await this.getGenericData(contract, interaction);
-            return response.firstValue.valueOf().toFixed();
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
@@ -127,16 +104,12 @@ export class PairAbiService {
             [],
         );
 
-        try {
-            const response = await this.getGenericData(contract, interaction);
-            return new PairInfoModel({
-                reserves0: response.values[0].valueOf().toFixed(),
-                reserves1: response.values[1].valueOf().toFixed(),
-                totalSupply: response.values[2].valueOf().toFixed(),
-            });
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return new PairInfoModel({
+            reserves0: response.values[0].valueOf().toFixed(),
+            reserves1: response.values[1].valueOf().toFixed(),
+            totalSupply: response.values[2].valueOf().toFixed(),
+        });
     }
 
     async getTotalFeePercent(pairAddress: string): Promise<string> {
@@ -147,12 +120,8 @@ export class PairAbiService {
             [],
         );
 
-        try {
-            const response = await this.getGenericData(contract, interaction);
-            return response.firstValue.valueOf().toFixed();
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getSpecialFeePercent(pairAddress: string): Promise<string> {
@@ -161,12 +130,8 @@ export class PairAbiService {
         );
         const interaction: Interaction = contract.methods.getSpecialFee([]);
 
-        try {
-            const response = await this.getGenericData(contract, interaction);
-            return response.firstValue.valueOf().toFixed();
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getTemporaryFunds(
@@ -182,12 +147,8 @@ export class PairAbiService {
             BytesValue.fromUTF8(tokenID),
         ]);
 
-        try {
-            const response = await this.getGenericData(contract, interaction);
-            return response.firstValue.valueOf();
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf();
     }
 
     async getState(pairAddress: string): Promise<string> {
@@ -196,11 +157,7 @@ export class PairAbiService {
         );
         const interaction: Interaction = contract.methods.getState([]);
 
-        try {
-            const response = await this.getGenericData(contract, interaction);
-            return response.firstValue.valueOf();
-        } catch (error) {
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf();
     }
 }
