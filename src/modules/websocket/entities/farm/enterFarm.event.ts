@@ -22,6 +22,8 @@ export class EnterFarmEvent extends GenericEvent {
 
     @Field(type => FftTokenAmountPair)
     private farmingToken: FftTokenAmountPair;
+    @Field(type => String)
+    private farmingReserve: BigNumber;
     @Field(type => GenericTokenAmountPair)
     private farmToken: GenericTokenAmountPair;
     @Field(type => String)
@@ -53,10 +55,31 @@ export class EnterFarmEvent extends GenericEvent {
         );
     }
 
+    getFarmingToken(): FftTokenAmountPair {
+        return this.farmingToken;
+    }
+
+    getFarmingReserve(): BigNumber {
+        return this.farmingReserve;
+    }
+
+    getFarmToken(): GenericTokenAmountPair {
+        return this.farmToken;
+    }
+
+    getFarmSupply(): BigNumber {
+        return this.farmSupply;
+    }
+
+    getRewardTokenReserve(): FftTokenAmountPair {
+        return this.rewardTokenReserve;
+    }
+
     toJSON(): EnterFarmEventType {
         return {
             ...super.toJSON(),
             farmingToken: this.farmingToken.toJSON(),
+            farmingReserve: this.farmingReserve.toFixed(),
             farmToken: this.farmToken.toJSON(),
             farmSupply: this.farmSupply.toFixed(),
             rewardTokenReserve: this.rewardTokenReserve.toJSON(),

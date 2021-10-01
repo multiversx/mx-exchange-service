@@ -53,6 +53,30 @@ export class ExitFarmEvent extends GenericEvent {
         );
     }
 
+    getFarmingToken(): FftTokenAmountPair {
+        return this.farmingToken;
+    }
+
+    getFarmingReserve(): BigNumber {
+        return this.farmingReserve;
+    }
+
+    getFarmToken(): GenericTokenAmountPair {
+        return this.farmToken;
+    }
+
+    getFarmSupply(): BigNumber {
+        return this.farmSupply;
+    }
+
+    getRewardToken(): GenericTokenAmountPair {
+        return this.rewardToken;
+    }
+
+    getRewardReserve(): BigNumber {
+        return this.rewardReserve;
+    }
+
     toJSON(): ExitFarmEventType {
         return {
             ...super.toJSON(),

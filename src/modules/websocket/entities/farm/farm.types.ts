@@ -4,6 +4,7 @@ import { GenericEventType } from '../generic.types';
 
 export type FarmEventType = GenericEventType & {
     farmingToken: FftTokenAmountPairType;
+    farmingReserve: string;
     farmToken: GenericTokenAmountPairType;
     farmSupply: string;
     farmAttributes: {
@@ -24,7 +25,6 @@ export type EnterFarmEventType = FarmEventType & {
 };
 
 export type ExitFarmEventType = FarmEventType & {
-    farmingReserve: string;
     rewardToken: GenericTokenAmountPairType;
     rewardReserve: string;
 };
