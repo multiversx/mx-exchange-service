@@ -1,5 +1,4 @@
 import { Inject } from '@nestjs/common';
-import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { EnterFarmEvent } from './entities/farm/enterFarm.event';
 import { ExitFarmEvent } from './entities/farm/exitFarm.event';
 import { RewardsEvent } from './entities/farm/rewards.event';
@@ -14,7 +13,6 @@ import { EnterFarmProxyEvent } from './entities/proxy/enterFarmProxy.event';
 import { ExitFarmProxyEvent } from './entities/proxy/exitFarmProxy.event';
 import { PairProxyEvent } from './entities/proxy/pairProxy.event';
 import WebSocket from 'ws';
-import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { ContextService } from 'src/services/context/context.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { farmsConfig, scAddress } from 'src/config';
@@ -28,6 +26,7 @@ import { Logger } from 'winston';
 import { WebSocketPairHandlerService } from './websocket.pair.handler.service';
 import { SwapFixedOutputEvent } from './entities/pair/swapFixedOutput.event';
 import { WebSocketFarmHandlerService } from './websocket.farm.handler.service';
+import { WebSocketProxyHandlerService } from './websocket.proxy.handler.service';
 
 export class WebSocketService {
     private ws: WebSocket;
@@ -36,11 +35,11 @@ export class WebSocketService {
     };
 
     constructor(
-        @Inject(PUB_SUB) private pubSub: RedisPubSub,
         private readonly context: ContextService,
         private readonly configService: ApiConfigService,
         private readonly wsPairHandler: WebSocketPairHandlerService,
         private readonly wsFarmHandler: WebSocketFarmHandlerService,
+        private readonly wsProxyHandler: WebSocketProxyHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.ws = new WebSocket(this.configService.getNotifierUrl());
@@ -96,75 +95,33 @@ export class WebSocketService {
                         );
                         break;
                     case PROXY_EVENTS.ADD_LIQUIDITY_PROXY:
-                        const addLiquidityProxyEvent = new AddLiquidityProxyEvent(
-                            rawEvent,
+                        await this.wsProxyHandler.handleLiquidityProxyEvent(
+                            new AddLiquidityProxyEvent(rawEvent),
                         );
-                        this.logger.info(
-                            JSON.stringify(addLiquidityProxyEvent.toJSON()),
-                        );
-                        this.pubSub.publish(PROXY_EVENTS.ADD_LIQUIDITY_PROXY, {
-                            addLiquidityProxyEvent: addLiquidityProxyEvent,
-                        });
                         break;
                     case PROXY_EVENTS.REMOVE_LIQUIDITY_PROXY:
-                        const removeLiquidityProxyEvent = new PairProxyEvent(
-                            rawEvent,
-                        );
-                        this.logger.info(
-                            JSON.stringify(removeLiquidityProxyEvent.toJSON()),
-                        );
-                        this.pubSub.publish(
-                            PROXY_EVENTS.REMOVE_LIQUIDITY_PROXY,
-                            {
-                                removeLiquidityProxyEvent: removeLiquidityProxyEvent,
-                            },
+                        await this.wsProxyHandler.handleLiquidityProxyEvent(
+                            new PairProxyEvent(rawEvent),
                         );
                         break;
                     case PROXY_EVENTS.ENTER_FARM_PROXY:
-                        const enterFarmProxyEvent = new EnterFarmProxyEvent(
-                            rawEvent,
+                        await this.wsProxyHandler.handleFarmProxyEvent(
+                            new EnterFarmProxyEvent(rawEvent),
                         );
-                        this.logger.info(
-                            JSON.stringify(enterFarmProxyEvent.toJSON()),
-                        );
-                        this.pubSub.publish(PROXY_EVENTS.ENTER_FARM_PROXY, {
-                            enterFarmProxyEvent: enterFarmProxyEvent,
-                        });
                         break;
                     case PROXY_EVENTS.EXIT_FARM_PROXY:
-                        const exitFarmProxyEvent = new ExitFarmProxyEvent(
-                            rawEvent,
+                        await this.wsProxyHandler.handleFarmProxyEvent(
+                            new ExitFarmProxyEvent(rawEvent),
                         );
-                        this.logger.info(
-                            JSON.stringify(exitFarmProxyEvent.toJSON()),
-                        );
-                        this.pubSub.publish(PROXY_EVENTS.EXIT_FARM_PROXY, {
-                            exitFarmProxyEvent: exitFarmProxyEvent,
-                        });
                         break;
                     case PROXY_EVENTS.CLAIM_REWARDS_PROXY:
-                        const claimRewardsProxyEvent = new ClaimRewardsProxyEvent(
-                            rawEvent,
+                        await this.wsProxyHandler.handleRewardsProxyEvent(
+                            new ClaimRewardsProxyEvent(rawEvent),
                         );
-                        this.logger.info(
-                            JSON.stringify(claimRewardsProxyEvent.toJSON()),
-                        );
-                        this.pubSub.publish(PROXY_EVENTS.CLAIM_REWARDS_PROXY, {
-                            claimRewardsProxyEvent: claimRewardsProxyEvent,
-                        });
                         break;
                     case PROXY_EVENTS.COMPOUND_REWARDS_PROXY:
-                        const compoundRewardsProxyEvent = new CompoundRewardsProxyEvent(
-                            rawEvent,
-                        );
-                        this.logger.info(
-                            JSON.stringify(compoundRewardsProxyEvent.toJSON()),
-                        );
-                        this.pubSub.publish(
-                            PROXY_EVENTS.COMPOUND_REWARDS_PROXY,
-                            {
-                                compoundRewardsProxyEvent: compoundRewardsProxyEvent,
-                            },
+                        await this.wsProxyHandler.handleRewardsProxyEvent(
+                            new CompoundRewardsProxyEvent(rawEvent),
                         );
                         break;
                 }
