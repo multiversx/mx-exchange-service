@@ -292,6 +292,7 @@ type EnterFarmEvent {
   epoch: Int!
   timestamp: Int!
   farmingToken: FftTokenAmountPair!
+  farmingReserve: String!
   farmToken: GenericTokenAmountPair!
   farmSupply: String!
   rewardTokenReserve: FftTokenAmountPair!
@@ -356,7 +357,7 @@ type RemoveLiquidityEvent {
   pairReserves: [FftTokenAmountPair!]!
 }
 
-type SwapEvent {
+type SwapFixedInputEvent {
   address: String!
   caller: String!
   block: Int!
@@ -456,6 +457,18 @@ type ExitFarmProxyEvent {
   wrappedFarmAttributes: WrappedFarmTokenAttributesModel!
   farmingToken: GenericTokenAmountPair!
   rewardToken: GenericTokenAmountPair!
+}
+
+type SwapFixedOutputEvent {
+  address: String!
+  caller: String!
+  block: Int!
+  epoch: Int!
+  timestamp: Int!
+  tokenAmountIn: FftTokenAmountPair!
+  tokenAmountOut: FftTokenAmountPair!
+  feeAmount: String!
+  pairReserves: [FftTokenAmountPair!]!
 }
 
 type Query {
@@ -645,7 +658,8 @@ type UserNftToken {
 }
 
 type Subscription {
-  swapEvent: SwapEvent!
+  swapFixedInputEvent: SwapFixedInputEvent!
+  swapFixedOutputEvent: SwapFixedOutputEvent!
   addLiquidityEvent: AddLiquidityEvent!
   removeLiquidityEvent: RemoveLiquidityEvent!
   swapNoFeeEvent: SwapNoFeeEvent!
