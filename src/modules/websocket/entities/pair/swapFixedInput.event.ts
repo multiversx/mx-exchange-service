@@ -15,7 +15,7 @@ import { PairEventTopics } from './pair.event.topics';
 import { SwapEventType } from './pair.types';
 
 @ObjectType()
-export class SwapEvent extends GenericEvent {
+export class SwapFixedInputEvent extends GenericEvent {
     private decodedTopics: PairEventTopics;
 
     @Field(type => FftTokenAmountPair)

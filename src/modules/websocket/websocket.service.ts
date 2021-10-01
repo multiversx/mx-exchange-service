@@ -5,7 +5,7 @@ import { ExitFarmEvent } from './entities/farm/exitFarm.event';
 import { RewardsEvent } from './entities/farm/rewards.event';
 import { AddLiquidityEvent } from './entities/pair/addLiquidity.event';
 import { RemoveLiquidityEvent } from './entities/pair/removeLiquidity.event';
-import { SwapEvent } from './entities/pair/swap.event';
+import { SwapFixedInputEvent } from './entities/pair/swapFixedInput.event';
 import { SwapNoFeeEvent } from './entities/pair/swapNoFee.event';
 import { AddLiquidityProxyEvent } from './entities/proxy/addLiquidityProxy.event';
 import { ClaimRewardsProxyEvent } from './entities/proxy/claimRewardsProxy.event';
@@ -25,6 +25,8 @@ import {
 } from './entities/generic.types';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { WebSocketPairHandlerService } from './websocket.pair.handler.service';
+import { SwapFixedOutputEvent } from './entities/pair/swapFixedOutput.event';
 
 export class WebSocketService {
     private ws: WebSocket;
@@ -36,6 +38,7 @@ export class WebSocketService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         private readonly context: ContextService,
         private readonly configService: ApiConfigService,
+        private readonly wsPairHandler: WebSocketPairHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.ws = new WebSocket(this.configService.getNotifierUrl());
@@ -45,56 +48,30 @@ export class WebSocketService {
             rawEvents.map(async rawEvent => {
                 switch (rawEvent.identifier) {
                     case PAIR_EVENTS.SWAP_FIXED_INPUT:
-                        const swapFixedInputEvent = new SwapEvent(rawEvent);
-                        this.logger.info(
-                            JSON.stringify(swapFixedInputEvent.toJSON()),
+                        await this.wsPairHandler.handleSwapEvent(
+                            new SwapFixedInputEvent(rawEvent),
                         );
-                        this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_INPUT, {
-                            swapFixedInputEvent: swapFixedInputEvent,
-                        });
                         break;
                     case PAIR_EVENTS.SWAP_FIXED_OUTPUT:
-                        const swapFixedOutputEvent = new SwapEvent(rawEvent);
-                        this.logger.info(
-                            JSON.stringify(swapFixedOutputEvent.toJSON()),
+                        await this.wsPairHandler.handleSwapEvent(
+                            new SwapFixedOutputEvent(rawEvent),
                         );
-                        this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_OUTPUT, {
-                            swapFixedOutputEvent: swapFixedOutputEvent,
-                        });
                         break;
 
                     case PAIR_EVENTS.ADD_LIQUIDITY:
-                        const addLiquidityEvent = new AddLiquidityEvent(
-                            rawEvent,
+                        await this.wsPairHandler.handleLiquidityEvent(
+                            new AddLiquidityEvent(rawEvent),
                         );
-                        this.logger.info(
-                            JSON.stringify(addLiquidityEvent.toJSON()),
-                        );
-                        this.pubSub.publish(PAIR_EVENTS.ADD_LIQUIDITY, {
-                            addLiquidityEvent: addLiquidityEvent,
-                        });
                         break;
                     case PAIR_EVENTS.REMOVE_LIQUIDITY:
-                        const removeLiquidityEvent = new RemoveLiquidityEvent(
-                            rawEvent,
+                        await this.wsPairHandler.handleLiquidityEvent(
+                            new RemoveLiquidityEvent(rawEvent),
                         );
-                        this.logger.info(
-                            JSON.stringify(removeLiquidityEvent.toJSON()),
-                        );
-                        this.pubSub.publish(PAIR_EVENTS.REMOVE_LIQUIDITY, {
-                            removeLiquidityEvent: removeLiquidityEvent,
-                        });
                         break;
                     case PAIR_EVENTS.SWAP_NO_FEE:
-                        const swapNoFeeAndForwardEvent = new SwapNoFeeEvent(
-                            rawEvent,
+                        await this.wsPairHandler.handleSwapNoFeeEvent(
+                            new SwapNoFeeEvent(rawEvent),
                         );
-                        this.logger.info(
-                            JSON.stringify(swapNoFeeAndForwardEvent.toJSON()),
-                        );
-                        this.pubSub.publish(PAIR_EVENTS.SWAP_NO_FEE, {
-                            swapNoFeeAndForwardEvent: swapNoFeeAndForwardEvent,
-                        });
                         break;
                     case FARM_EVENTS.ENTER_FARM:
                         const enterFarmEvent = new EnterFarmEvent(rawEvent);
