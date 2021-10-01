@@ -27,6 +27,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { WebSocketPairHandlerService } from './websocket.pair.handler.service';
 import { SwapFixedOutputEvent } from './entities/pair/swapFixedOutput.event';
+import { WebSocketFarmHandlerService } from './websocket.farm.handler.service';
 
 export class WebSocketService {
     private ws: WebSocket;
@@ -39,6 +40,7 @@ export class WebSocketService {
         private readonly context: ContextService,
         private readonly configService: ApiConfigService,
         private readonly wsPairHandler: WebSocketPairHandlerService,
+        private readonly wsFarmHandler: WebSocketFarmHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.ws = new WebSocket(this.configService.getNotifierUrl());
@@ -74,40 +76,24 @@ export class WebSocketService {
                         );
                         break;
                     case FARM_EVENTS.ENTER_FARM:
-                        const enterFarmEvent = new EnterFarmEvent(rawEvent);
-                        this.logger.info(
-                            JSON.stringify(enterFarmEvent.toJSON()),
+                        await this.wsFarmHandler.handleFarmEvent(
+                            new EnterFarmEvent(rawEvent),
                         );
-                        this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
-                            enterFarmEvent: enterFarmEvent,
-                        });
                         break;
                     case FARM_EVENTS.EXIT_FARM:
-                        const exitFarmEvent = new ExitFarmEvent(rawEvent);
-                        this.logger.info(
-                            JSON.stringify(exitFarmEvent.toJSON()),
+                        await this.wsFarmHandler.handleFarmEvent(
+                            new ExitFarmEvent(rawEvent),
                         );
-                        this.pubSub.publish(FARM_EVENTS.EXIT_FARM, {
-                            exitFarmEvent: exitFarmEvent,
-                        });
                         break;
                     case FARM_EVENTS.CLAIM_REWARDS:
-                        const claimRewardsEvent = new RewardsEvent(rawEvent);
-                        this.logger.info(
-                            JSON.stringify(claimRewardsEvent.toJSON()),
+                        await this.wsFarmHandler.handleRewardsEvent(
+                            new RewardsEvent(rawEvent),
                         );
-                        this.pubSub.publish(FARM_EVENTS.CLAIM_REWARDS, {
-                            claimRewardsEvent: claimRewardsEvent,
-                        });
                         break;
                     case FARM_EVENTS.COMPOUND_REWARDS:
-                        const compoundRewardsEvent = new RewardsEvent(rawEvent);
-                        this.logger.info(
-                            JSON.stringify(compoundRewardsEvent.toJSON()),
+                        await this.wsFarmHandler.handleRewardsEvent(
+                            new RewardsEvent(rawEvent),
                         );
-                        this.pubSub.publish(FARM_EVENTS.COMPOUND_REWARDS, {
-                            compoundRewardsEvent: compoundRewardsEvent,
-                        });
                         break;
                     case PROXY_EVENTS.ADD_LIQUIDITY_PROXY:
                         const addLiquidityProxyEvent = new AddLiquidityProxyEvent(
