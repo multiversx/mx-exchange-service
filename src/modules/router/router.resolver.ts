@@ -47,6 +47,15 @@ export class RouterResolver {
         }
     }
 
+    @ResolveField()
+    async totalValueLockedUSD(@Parent() FactoryModel: FactoryModel) {
+        try {
+            return this.routerGetterService.getTotalLockedValueUSD();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @Query(returns => [String])
     async pairAddresses(): Promise<string[]> {
         try {

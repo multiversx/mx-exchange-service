@@ -55,6 +55,14 @@ export class RouterGetterService {
         );
     }
 
+    async getTotalLockedValueUSD(): Promise<string> {
+        return this.getData(
+            'totalLockedValueUSD',
+            () => this.routerComputeService.computeTotalLockedValueUSD(),
+            oneMinute(),
+        );
+    }
+
     private getRouterCacheKey(...args: any) {
         return generateCacheKeyFromParams('router', ...args);
     }
