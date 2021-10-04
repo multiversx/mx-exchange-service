@@ -22,7 +22,6 @@ import {
     processPairsAnalytics,
     processTokensAnalytics,
 } from './analytics.processor';
-import { PairAnalyticsService } from 'src/modules/pair/services/pair.analytics.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -45,7 +44,6 @@ export class AnalyticsService {
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly pairAnalytics: PairAnalyticsService,
         private readonly transactionCollector: TransactionCollectorService,
         private readonly transactionInterpreter: TransactionInterpreterService,
         private readonly transactionMapping: TransactionMappingService,
@@ -148,7 +146,7 @@ export class AnalyticsService {
         const pairsAddress = await this.context.getAllPairsAddress();
         let totalValueLockedUSD = new BigNumber(0);
         const promises = pairsAddress.map(pairAddress =>
-            this.pairAnalytics.getPairLockedValueUSD(pairAddress),
+            this.pairGetterService.getLockedValueUSD(pairAddress),
         );
 
         const lockedValuesUSD = await Promise.all([
@@ -372,9 +370,13 @@ export class AnalyticsService {
                 this.pairGetterService.getFirstTokenID(pair.address),
                 this.pairGetterService.getSecondTokenID(pair.address),
                 this.pairGetterService.getPairInfoMetadata(pair.address),
-                this.pairAnalytics.getFirstTokenValueLockedUSD(pair.address),
-                this.pairAnalytics.getSecondTokenValueLockedUSD(pair.address),
-                this.pairAnalytics.getPairLockedValueUSD(pair.address),
+                this.pairGetterService.getFirstTokenLockedValueUSD(
+                    pair.address,
+                ),
+                this.pairGetterService.getSecondTokenLockedValueUSD(
+                    pair.address,
+                ),
+                this.pairGetterService.getLockedValueUSD(pair.address),
             ]);
             const pairAnalytics = pairsAnalytics.find(
                 swap => swap.pairAddress === pair.address,
