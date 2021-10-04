@@ -195,6 +195,39 @@ export class PairGetterService {
         );
     }
 
+    async getFirstTokenLockedValueUSD(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'firstTokenLockedValueUSD',
+            () =>
+                this.pairComputeService.computeFirstTokenLockedValueUSD(
+                    pairAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getSecondTokenLockedValueUSD(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'secondTokenLockedValueUSD',
+            () =>
+                this.pairComputeService.computeSecondTokenLockedValueUSD(
+                    pairAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getLockedValueUSD(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'lockedValueUSD',
+            () => this.pairComputeService.computeLockedValueUSD(pairAddress),
+            oneMinute(),
+        );
+    }
+
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         const [
             firstTokenReserve,

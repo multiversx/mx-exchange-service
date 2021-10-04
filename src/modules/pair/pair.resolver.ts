@@ -104,6 +104,37 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async firstTokenLockedValueUSD(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getFirstTokenLockedValueUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async secondTokenLockedValueUSD(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getSecondTokenLockedValueUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async lockedValueUSD(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getLockedValueUSD(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async info(@Parent() parent: PairModel) {
         try {
             return this.pairGetterService.getPairInfoMetadata(parent.address);

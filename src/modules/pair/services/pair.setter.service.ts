@@ -130,6 +130,39 @@ export class PairSetterService {
         return cacheKey;
     }
 
+    async setFirstTokenLockedValueUSD(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'firstTokenLockedValueUSD',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setSecondTokenLockedValueUSD(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'secondTokenLockedValueUSD',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setLockedValueUSD(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'lockedValueUSD');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     private getPairCacheKey(pairAddress: string, ...args: any) {
         return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }

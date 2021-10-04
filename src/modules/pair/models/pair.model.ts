@@ -49,6 +49,15 @@ export class PairModel {
     liquidityPoolTokenPriceUSD: string;
 
     @Field()
+    firstTokenLockedValueUSD: string;
+
+    @Field()
+    secondTokenLockedValueUSD: string;
+
+    @Field()
+    lockedValueUSD: string;
+
+    @Field()
     info: PairInfoModel;
 
     @Field()
