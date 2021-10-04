@@ -6,19 +6,23 @@ import { AbiRouterService } from './abi.router.service';
 import { TransactionRouterService } from './transactions.router.service';
 import { CachingModule } from '../../services/caching/cache.module';
 import { RouterGetterService } from './router.getter.service';
+import { RouterComputeService } from './router.compute.service';
+import { PairModule } from '../pair/pair.module';
 
 @Module({
-    imports: [ElrondCommunicationModule, CachingModule],
+    imports: [ElrondCommunicationModule, CachingModule, PairModule],
     providers: [
         RouterService,
         AbiRouterService,
         RouterGetterService,
+        RouterComputeService,
         TransactionRouterService,
         RouterResolver,
     ],
     exports: [
         RouterService,
         RouterGetterService,
+        RouterComputeService,
     ],
 })
 export class RouterModule {}
