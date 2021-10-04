@@ -8,6 +8,7 @@ import { CachingModule } from '../../services/caching/cache.module';
 import { RouterGetterService } from './router.getter.service';
 import { RouterComputeService } from './router.compute.service';
 import { PairModule } from '../pair/pair.module';
+import { RouterSetterService } from './router.setter.service';
 
 @Module({
     imports: [ElrondCommunicationModule, CachingModule, PairModule],
@@ -15,6 +16,7 @@ import { PairModule } from '../pair/pair.module';
         RouterService,
         AbiRouterService,
         RouterGetterService,
+        RouterSetterService,
         RouterComputeService,
         TransactionRouterService,
         RouterResolver,
@@ -22,6 +24,7 @@ import { PairModule } from '../pair/pair.module';
     exports: [
         RouterService,
         RouterGetterService,
+        RouterSetterService,
         RouterComputeService,
     ],
 })
