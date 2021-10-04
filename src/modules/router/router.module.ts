@@ -5,15 +5,20 @@ import { ElrondCommunicationModule } from '../../services/elrond-communication/e
 import { AbiRouterService } from './abi.router.service';
 import { TransactionRouterService } from './transactions.router.service';
 import { CachingModule } from '../../services/caching/cache.module';
+import { RouterGetterService } from './router.getter.service';
 
 @Module({
     imports: [ElrondCommunicationModule, CachingModule],
     providers: [
         RouterService,
         AbiRouterService,
+        RouterGetterService,
         TransactionRouterService,
         RouterResolver,
     ],
-    exports: [RouterService],
+    exports: [
+        RouterService,
+        RouterGetterService,
+    ],
 })
 export class RouterModule {}

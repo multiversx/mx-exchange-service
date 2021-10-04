@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { elrondConfig } from '../../config';
 import { TypedValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import {
@@ -14,31 +14,32 @@ import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { RouterService } from '../../modules/router/router.service';
 import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { oneHour, oneSecond } from '../../helpers/helpers';
 import { NftToken } from 'src/models/tokens/nftToken.model';
+import { RouterGetterService } from 'src/modules/router/router.getter.service';
 
 @Injectable()
 export class ContextService {
     constructor(
         private readonly apiService: ElrondApiService,
-        private readonly routerService: RouterService,
+        @Inject(forwardRef(() => RouterGetterService))
+        private readonly routerGetterService: RouterGetterService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getAllPairsAddress(): Promise<string[]> {
-        return this.routerService.getAllPairsAddress();
+        return this.routerGetterService.getAllPairsAddress();
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
-        return this.routerService.getPairsMetadata();
+        return this.routerGetterService.getPairsMetadata();
     }
 
     async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
-        const pairs = await this.routerService.getPairsMetadata();
+        const pairs = await this.routerGetterService.getPairsMetadata();
         const pair = pairs.find(pair => pair.address === pairAddress);
 
         return pair;
@@ -48,7 +49,7 @@ export class ContextService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<PairMetadata> {
-        const pairsMetadata = await this.routerService.getPairsMetadata();
+        const pairsMetadata = await this.routerGetterService.getPairsMetadata();
         for (const pair of pairsMetadata) {
             if (
                 (pair.firstTokenID === firstTokenID &&
@@ -63,7 +64,7 @@ export class ContextService {
     }
 
     async getPairsMap(): Promise<Map<string, string[]>> {
-        const pairsMetadata = await this.routerService.getPairsMetadata();
+        const pairsMetadata = await this.routerGetterService.getPairsMetadata();
         const pairsMap = new Map<string, string[]>();
         for (const pairMetadata of pairsMetadata) {
             pairsMap.set(pairMetadata.firstTokenID, []);
