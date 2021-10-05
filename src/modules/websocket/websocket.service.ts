@@ -58,7 +58,6 @@ export class WebSocketService {
                             new SwapFixedOutputEvent(rawEvent),
                         );
                         break;
-
                     case PAIR_EVENTS.ADD_LIQUIDITY:
                         await this.wsPairHandler.handleLiquidityEvent(
                             new AddLiquidityEvent(rawEvent),
