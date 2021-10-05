@@ -1,9 +1,10 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { constantsConfig } from 'src/config';
+import { awsConfig, constantsConfig } from 'src/config';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextService } from 'src/services/context/context.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -21,6 +22,7 @@ export class PairGetterService {
         private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -224,6 +226,62 @@ export class PairGetterService {
             pairAddress,
             'lockedValueUSD',
             () => this.pairComputeService.computeLockedValueUSD(pairAddress),
+            oneMinute(),
+        );
+    }
+
+    async getFirstTokenVolume(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'firstTokenVolume',
+            () =>
+                this.awsTimestreamQuery.getLatestValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'firstTokenVolume',
+                }),
+            oneMinute(),
+        );
+    }
+
+    async getSecondTokenVolume(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'secondTokenVolume',
+            () =>
+                this.awsTimestreamQuery.getLatestValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'secondTokenVolume',
+                }),
+            oneMinute(),
+        );
+    }
+
+    async getVolumeUSD(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'volumeUSD',
+            () =>
+                this.awsTimestreamQuery.getLatestValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'volumeUSD',
+                }),
+            oneMinute(),
+        );
+    }
+
+    async getFeesUSD(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'feesUSD',
+            () =>
+                this.awsTimestreamQuery.getLatestValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'feesUSD',
+                }),
             oneMinute(),
         );
     }

@@ -11,6 +11,7 @@ import { CachingModule } from '../../services/caching/cache.module';
 import { PairGetterService } from './services/pair.getter.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { PairSetterService } from './services/pair.setter.service';
+import { AWSModule } from 'src/services/aws/aws.module';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import { PairSetterService } from './services/pair.setter.service';
         PriceFeedModule,
         WrappingModule,
         CachingModule,
+        AWSModule,
     ],
     providers: [
         PairService,

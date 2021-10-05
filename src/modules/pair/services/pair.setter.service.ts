@@ -163,6 +163,36 @@ export class PairSetterService {
         return cacheKey;
     }
 
+    async setFirstTokenVolume(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'firstTokenVolume');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setSecondTokenVolume(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'secondTokenVolume');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setVolumeUSD(pairAddress: string, value: string): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'volumeUSD');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setFeesUSD(pairAddress: string, value: string): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'feesUSD');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     private getPairCacheKey(pairAddress: string, ...args: any) {
         return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }
