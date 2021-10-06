@@ -20,12 +20,6 @@ export class TokensMergingArgs {
 }
 
 @ArgsType()
-export class UserNftDepositArgs {
-    @Field()
-    userAddress: string;
-}
-
-@ArgsType()
 export class WithdrawTokenFromDepositArgs extends TokensMergingArgs {
     @Field(type => Int)
     tokenIndex: number;
@@ -33,8 +27,6 @@ export class WithdrawTokenFromDepositArgs extends TokensMergingArgs {
 
 @ArgsType()
 export class SftInteractionArgs extends TokensMergingArgs {
-    @Field()
-    sender: string;
     @Field()
     tokenID: string;
     @Field(type => Int)

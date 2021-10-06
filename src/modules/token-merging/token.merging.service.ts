@@ -6,11 +6,7 @@ import {
 } from 'src/modules/proxy/models/proxy.model';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
-import {
-    SmartContractType,
-    TokensMergingArgs,
-    UserNftDepositArgs,
-} from './dto/token.merging.args';
+import { SmartContractType, TokensMergingArgs } from './dto/token.merging.args';
 import { TokenMergingAbiService } from './token.merging.abi.service';
 
 @Injectable()
@@ -21,13 +17,11 @@ export class TokenMergingService {
         private readonly proxyFarmService: ProxyFarmService,
     ) {}
 
-    async getNftDeposit(
-        args: UserNftDepositArgs,
-    ): Promise<GenericEsdtAmountPair[]> {
+    async getNftDeposit(userAddress: string): Promise<GenericEsdtAmountPair[]> {
         const userNftDeposits = [];
         for (const farmAddress of farmsConfig) {
             const depositedNfts = await this.mergeTokensAbi.getNftDeposit(
-                args.userAddress,
+                userAddress,
                 SmartContractType.FARM,
                 farmAddress,
             );
@@ -40,7 +34,7 @@ export class TokenMergingService {
     }
 
     async getNftDepositProxy(
-        args: UserNftDepositArgs,
+        userAddress: string,
     ): Promise<GenericEsdtAmountPair[]> {
         const userNftDeposits = [];
 
@@ -52,7 +46,7 @@ export class TokenMergingService {
             this.proxyPairService.getwrappedLpTokenID(),
             this.proxyFarmService.getwrappedFarmTokenID(),
             this.mergeTokensAbi.getNftDeposit(
-                args.userAddress,
+                userAddress,
                 SmartContractType.PROXY_FARM,
             ),
         ]);

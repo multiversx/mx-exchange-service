@@ -163,13 +163,15 @@ export class ProxyResolver {
                 tokenID: args.lockedLpTokenID,
                 tokenNonce: args.lockedLpTokenNonce,
                 amount: args.lockedLpTokenAmount,
-                sender: user.publicKey,
             };
             const [
                 depositTokensTransaction,
                 addLiquidityProxyBatchTransactions,
             ] = await Promise.all([
-                this.mergeTokensTransactions.depositTokens(depositTokenArgs),
+                this.mergeTokensTransactions.depositTokens(
+                    user.publicKey,
+                    depositTokenArgs,
+                ),
                 this.transactionsProxyPairService.addLiquidityProxyBatch(
                     user.publicKey,
                     args,
@@ -251,7 +253,6 @@ export class ProxyResolver {
             tokenID: args.lockedFarmTokenID,
             tokenNonce: args.lockedFarmTokenNonce,
             amount: args.lockedFarmAmount,
-            sender: user.publicKey,
         };
         const enterFarmProxyArgs: EnterFarmProxyArgs = {
             acceptedLockedTokenID: args.acceptedLockedTokenID,
@@ -261,7 +262,10 @@ export class ProxyResolver {
             lockRewards: args.lockRewards,
         };
         return await Promise.all([
-            this.mergeTokensTransactions.depositTokens(depositTokenArgs),
+            this.mergeTokensTransactions.depositTokens(
+                user.publicKey,
+                depositTokenArgs,
+            ),
             this.transactionsProxyFarmService.enterFarmProxy(
                 user.publicKey,
                 enterFarmProxyArgs,

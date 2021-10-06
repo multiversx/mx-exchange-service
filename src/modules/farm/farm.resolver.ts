@@ -308,7 +308,6 @@ export class FarmResolver {
             tokenID: enterFarmBatchArgs.farmTokenID,
             tokenNonce: enterFarmBatchArgs.farmTokenNonce,
             amount: enterFarmBatchArgs.amount,
-            sender: user.publicKey,
         };
         const enterFarmArgs: EnterFarmArgs = {
             tokenInID: enterFarmBatchArgs.tokenInID,
@@ -318,7 +317,10 @@ export class FarmResolver {
         };
 
         return await Promise.all([
-            this.mergeTokensTransactions.depositTokens(depositTokenArgs),
+            this.mergeTokensTransactions.depositTokens(
+                user.publicKey,
+                depositTokenArgs,
+            ),
             this.transactionsService.enterFarm(enterFarmArgs),
         ]);
     }
