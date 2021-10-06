@@ -10,17 +10,18 @@ import { LockedAssetModule } from './modules/locked-asset-factory/locked-asset.m
 import { UserModule } from './modules/user/user.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { GraphQLError, GraphQLFormattedError } from 'graphql';
-import { loggerMiddleware } from './utils/loggerMiddleware';
 import { CommonAppModule } from './common.app.module';
 import { CachingService } from './services/caching/cache.service';
 import * as winston from 'winston';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
     imports: [
         CommonAppModule,
+        AuthModule,
         CacheModule.register(),
         GraphQLModule.forRoot({
             autoSchemaFile: 'schema.gql',
