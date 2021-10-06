@@ -59,14 +59,12 @@ export class TransactionsProxyPairService {
                         pairAddress: args.pairAddress,
                         amount: args.firstTokenAmount,
                         tokenID: wrappedTokenID,
-                        sender: sender,
                     },
                     {
                         pairAddress: args.pairAddress,
                         amount: args.secondTokenAmount,
                         tokenID: args.secondTokenID,
                         tokenNonce: args.secondTokenNonce,
-                        sender: sender,
                     },
                 ]);
 
@@ -103,13 +101,11 @@ export class TransactionsProxyPairService {
                         amount: args.firstTokenAmount,
                         tokenID: args.firstTokenID,
                         tokenNonce: args.firstTokenNonce,
-                        sender: sender,
                     },
                     {
                         pairAddress: args.pairAddress,
                         amount: args.secondTokenAmount,
                         tokenID: wrappedTokenID,
-                        sender: sender,
                     },
                 ]);
 
@@ -139,14 +135,12 @@ export class TransactionsProxyPairService {
                         amount: args.firstTokenAmount,
                         tokenID: args.firstTokenID,
                         tokenNonce: args.firstTokenNonce,
-                        sender: sender,
                     },
                     {
                         pairAddress: args.pairAddress,
                         amount: args.secondTokenAmount,
                         tokenID: args.secondTokenID,
                         tokenNonce: args.secondTokenNonce,
-                        sender: sender,
                     },
                 ]);
 
@@ -307,7 +301,6 @@ export class TransactionsProxyPairService {
         return batchArgs.map(args =>
             this.esdtTransferProxy(sender, {
                 pairAddress: args.pairAddress,
-                sender: sender,
                 tokenID: args.tokenID,
                 tokenNonce: args.tokenNonce,
                 amount: args.amount,

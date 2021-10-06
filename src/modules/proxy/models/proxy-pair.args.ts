@@ -10,7 +10,6 @@ export class TokensTransferArgs {
     tokenID: string;
     @Field(type => Int, { nullable: true })
     tokenNonce?: number;
-    @Field({ nullable: true }) sender?: string;
 }
 
 @ArgsType()
