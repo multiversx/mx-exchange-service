@@ -37,6 +37,7 @@ export class PairTransactionService {
     ) {}
 
     async addLiquidityBatch(
+        sender: string,
         args: AddLiquidityBatchArgs,
     ): Promise<TransactionModel[]> {
         let eGLDwrapTransaction: Promise<TransactionModel>;
@@ -53,7 +54,7 @@ export class PairTransactionService {
             case args.firstTokenID:
                 firstTokenID = wrappedTokenID;
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
-                    args.sender,
+                    sender,
                     firstTokenAmount,
                 );
                 transactions.push(eGLDwrapTransaction);
@@ -66,7 +67,7 @@ export class PairTransactionService {
                 secondTokenAmount = args.firstTokenAmount;
 
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
-                    args.sender,
+                    sender,
                     firstTokenAmount,
                 );
                 transactions.push(eGLDwrapTransaction);
@@ -134,6 +135,7 @@ export class PairTransactionService {
     }
 
     async reclaimTemporaryFunds(
+        sender: string,
         args: ReclaimTemporaryFundsArgs,
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
@@ -152,7 +154,7 @@ export class PairTransactionService {
             case args.firstTokenID:
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         args.firstTokenAmount,
                     ),
                 );
@@ -160,7 +162,7 @@ export class PairTransactionService {
             case args.secondTokenID:
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         args.secoundTokenAmount,
                     ),
                 );
@@ -171,6 +173,7 @@ export class PairTransactionService {
     }
 
     async removeLiquidity(
+        sender: string,
         args: RemoveLiquidityArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
@@ -217,7 +220,7 @@ export class PairTransactionService {
             case firstTokenID:
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         amount0Min.toString(),
                     ),
                 );
@@ -225,7 +228,7 @@ export class PairTransactionService {
             case secondTokenID:
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         amount1Min.toString(),
                     ),
                 );
@@ -235,6 +238,7 @@ export class PairTransactionService {
     }
 
     async swapTokensFixedInput(
+        sender: string,
         args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
@@ -253,10 +257,7 @@ export class PairTransactionService {
         switch (elrondConfig.EGLDIdentifier) {
             case args.tokenInID:
                 transactions.push(
-                    await this.wrapTransaction.wrapEgld(
-                        args.sender,
-                        args.amountIn,
-                    ),
+                    await this.wrapTransaction.wrapEgld(sender, args.amountIn),
                 );
 
                 transactionArgs = [
@@ -292,7 +293,7 @@ export class PairTransactionService {
                 );
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         amountOutMin.toString(),
                     ),
                 );
@@ -320,6 +321,7 @@ export class PairTransactionService {
     }
 
     async swapTokensFixedOutput(
+        sender: string,
         args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
@@ -339,7 +341,7 @@ export class PairTransactionService {
             case args.tokenInID:
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(
-                        args.sender,
+                        sender,
                         amountInMax.toString(),
                     ),
                 );
@@ -377,7 +379,7 @@ export class PairTransactionService {
                 );
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         args.amountOut,
                     ),
                 );

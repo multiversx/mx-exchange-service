@@ -1,6 +1,6 @@
 import { PairService } from './services/pair.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import {
     LiquidityPosition,
     PairModel,
@@ -17,9 +17,10 @@ import {
     SwapTokensFixedOutputArgs,
 } from './models/pair.args';
 import { PairTransactionService } from './services/pair.transactions.service';
-import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
 import { PairGetterService } from './services/pair.getter.service';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { User } from 'src/helpers/userDecorator';
 
 @Resolver(of => PairModel)
 export class PairResolver {
@@ -257,11 +258,11 @@ export class PairResolver {
         }
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TemporaryFundsModel])
-    async getTemporaryFunds(@Args('callerAddress') callerAddress: string) {
+    async getTemporaryFunds(@User() user: any) {
         try {
-            return this.pairService.getTemporaryFunds(callerAddress);
+            return this.pairService.getTemporaryFunds(user.publicKey);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -282,15 +283,16 @@ export class PairResolver {
         }
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async addLiquidityBatch(
         @Args() args: AddLiquidityBatchArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
-        return this.transactionService.addLiquidityBatch(args);
+        return this.transactionService.addLiquidityBatch(user.publicKey, args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async addLiquidity(
         @Args() args: AddLiquidityArgs,
@@ -298,39 +300,55 @@ export class PairResolver {
         return this.transactionService.addLiquidity(args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async reclaimTemporaryFunds(
         @Args() args: ReclaimTemporaryFundsArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
-        return this.transactionService.reclaimTemporaryFunds(args);
+        return this.transactionService.reclaimTemporaryFunds(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async removeLiquidity(
         @Args() args: RemoveLiquidityArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
-        return await this.transactionService.removeLiquidity(args);
+        return await this.transactionService.removeLiquidity(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
-        return this.transactionService.swapTokensFixedInput(args);
+        return this.transactionService.swapTokensFixedInput(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async swapTokensFixedOutput(
         @Args() args: SwapTokensFixedOutputArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
-        return this.transactionService.swapTokensFixedOutput(args);
+        return this.transactionService.swapTokensFixedOutput(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async tokensTransfer(
         @Args() args: ESDTTransferArgs,
