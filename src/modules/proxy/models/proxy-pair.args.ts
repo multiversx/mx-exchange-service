@@ -29,8 +29,6 @@ export class AddLiquidityProxyArgs {
 
 @ArgsType()
 export class AddLiquidityProxyBatchArgs {
-    @Field()
-    sender: string;
     @Field({ nullable: true })
     lockedLpTokenID?: string;
     @Field(type => Int, { nullable: true })
@@ -57,7 +55,6 @@ export class AddLiquidityProxyBatchArgs {
 
 @ArgsType()
 export class RemoveLiquidityProxyArgs {
-    @Field() sender: string;
     @Field() pairAddress: string;
     @Field() wrappedLpTokenID: string;
     @Field(type => Int)
@@ -68,8 +65,6 @@ export class RemoveLiquidityProxyArgs {
 
 @ArgsType()
 export class ReclaimTemporaryFundsProxyArgs {
-    @Field()
-    sender: string;
     @Field() firstTokenID: string;
     @Field(type => Int, { nullable: true })
     firstTokenNonce?: number;

@@ -2,7 +2,6 @@ import { ArgsType, Field, Int } from '@nestjs/graphql';
 
 @ArgsType()
 export class EnterFarmProxyArgs {
-    @Field() sender: string;
     @Field() farmAddress: string;
     @Field() acceptedLockedTokenID: string;
     @Field(type => Int)
@@ -13,7 +12,6 @@ export class EnterFarmProxyArgs {
 
 @ArgsType()
 export class EnterFarmProxyBatchArgs {
-    @Field() sender: string;
     @Field() farmAddress: string;
     @Field() acceptedLockedTokenID: string;
     @Field(type => Int)
@@ -31,7 +29,6 @@ export class EnterFarmProxyBatchArgs {
 
 @ArgsType()
 export class ExitFarmProxyArgs {
-    @Field() sender: string;
     @Field() farmAddress: string;
     @Field() wrappedFarmTokenID: string;
     @Field(type => Int)
@@ -41,7 +38,6 @@ export class ExitFarmProxyArgs {
 
 @ArgsType()
 export class ClaimFarmRewardsProxyArgs {
-    @Field() sender: string;
     @Field() farmAddress: string;
     @Field() wrappedFarmTokenID: string;
     @Field(type => Int)
@@ -51,8 +47,6 @@ export class ClaimFarmRewardsProxyArgs {
 
 @ArgsType()
 export class CompoundRewardsProxyArgs {
-    @Field()
-    sender: string;
     @Field()
     farmAddress: string;
     @Field()
