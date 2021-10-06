@@ -11,13 +11,13 @@ import { RedisModule } from 'nestjs-redis';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { TransactionsProxyPairService } from './proxy-pair-transactions.service';
 import { ContextServiceMock } from '../../../services/context/context.service.mocks';
-import { WrappingModule } from '../../../modules/wrapping/wrap.module';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairServiceMock } from 'src/modules/pair/mocks/pair.service.mock';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
 import { Address } from '@elrondnetwork/erdjs/out';
+import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
@@ -65,7 +65,6 @@ describe('TransactionProxyPairService', () => {
                         password: process.env.REDIS_PASSWORD,
                     },
                 ]),
-                WrappingModule,
             ],
             providers: [
                 ElrondProxyService,
@@ -73,6 +72,7 @@ describe('TransactionProxyPairService', () => {
                 PairServiceProvider,
                 PairGetterServiceProvider,
                 WrapServiceProvider,
+                TransactionsWrapService,
                 TransactionsProxyPairService,
             ],
         }).compile();
