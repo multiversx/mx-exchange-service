@@ -1,15 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextService } from './context.service';
 import { ElrondCommunicationModule } from '../elrond-communication/elrond-communication.module';
-import { RouterModule } from '../../modules/router/router.module';
 import { CommonAppModule } from '../../common.app.module';
 import { CachingModule } from '../caching/cache.module';
-import { AbiRouterService } from '../../modules/router/abi.router.service';
-import { pairsMetadata } from './context.service.mocks';
+import { RouterGetterService } from 'src/modules/router/router.getter.service';
+import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
 
 describe('ContextService', () => {
     let service: ContextService;
-    let abiRouterService: AbiRouterService;
+
+    const RouterGetterServiceProvider = {
+        provide: RouterGetterService,
+        useClass: RouterGetterServiceMock,
+    };
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -17,13 +20,11 @@ describe('ContextService', () => {
                 CommonAppModule,
                 CachingModule,
                 ElrondCommunicationModule,
-                RouterModule,
             ],
-            providers: [ContextService],
+            providers: [RouterGetterServiceProvider, ContextService],
         }).compile();
 
         service = module.get<ContextService>(ContextService);
-        abiRouterService = module.get<AbiRouterService>(AbiRouterService);
     });
 
     it('should be defined', () => {
@@ -31,11 +32,6 @@ describe('ContextService', () => {
     });
 
     it('should get pairs graph', async () => {
-        jest.spyOn(abiRouterService, 'getPairsMetadata').mockImplementation(
-            async () => {
-                return pairsMetadata;
-            },
-        );
         const pairsMap = await service.getPairsMap();
 
         const expectedMap = new Map();
