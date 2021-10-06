@@ -24,10 +24,11 @@ import {
     DepositTokenArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
-import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 import { FarmGetterService } from './services/farm.getter.service';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { User } from 'src/helpers/userDecorator';
 
 @Resolver(of => FarmModel)
 export class FarmResolver {
@@ -252,7 +253,7 @@ export class FarmResolver {
         }
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => FarmTokenAttributesModel)
     async farmTokenAttributes(
         @Args('identifier') identifier: string,
@@ -269,7 +270,7 @@ export class FarmResolver {
         return this.farmService.getFarms();
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => RewardsModel)
     async getRewardsForPosition(
         @Args() args: CalculateRewardsArgs,
@@ -281,7 +282,7 @@ export class FarmResolver {
         }
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => ExitFarmTokensModel)
     async getExitFarmTokens(
         @Args() args: CalculateRewardsArgs,
@@ -289,16 +290,17 @@ export class FarmResolver {
         return this.farmService.getTokensForExitFarm(args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async enterFarm(@Args() args: EnterFarmArgs): Promise<TransactionModel> {
         return await this.transactionsService.enterFarm(args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async enterFarmBatch(
         @Args() enterFarmBatchArgs: EnterFarmBatchArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
         const depositTokenArgs: DepositTokenArgs = {
             smartContractType: SmartContractType.FARM,
@@ -306,7 +308,7 @@ export class FarmResolver {
             tokenID: enterFarmBatchArgs.farmTokenID,
             tokenNonce: enterFarmBatchArgs.farmTokenNonce,
             amount: enterFarmBatchArgs.amount,
-            sender: enterFarmBatchArgs.sender,
+            sender: user.publicKey,
         };
         const enterFarmArgs: EnterFarmArgs = {
             tokenInID: enterFarmBatchArgs.tokenInID,
@@ -321,29 +323,40 @@ export class FarmResolver {
         ]);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
-    async exitFarm(@Args() args: ExitFarmArgs): Promise<TransactionModel> {
-        return await this.transactionsService.exitFarm(args);
+    async exitFarm(
+        @Args() args: ExitFarmArgs,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        return await this.transactionsService.exitFarm(user.publicKey, args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async claimRewards(
         @Args() args: ClaimRewardsArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.claimRewards(args);
+        return await this.transactionsService.claimRewards(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async compoundRewards(
         @Args() args: CompoundRewardsArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.compoundRewards(args);
+        return await this.transactionsService.compoundRewards(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async mergeFarmTokens(
         @Args() args: TokensMergingArgs,
