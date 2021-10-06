@@ -8,8 +8,6 @@ import { HyperblockService } from '../../services/transactions/hyperblock.servic
 import { ShardTransaction } from '../../services/transactions/entities/shard.transaction';
 import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
 import { ContextServiceMock } from '../../services/context/context.service.mocks';
-import { PairAnalyticsServiceMock } from '../pair/mocks/pair.analytics.service.mock';
-import { PairAnalyticsService } from '../pair/services/pair.analytics.service';
 import { PairServiceMock } from '../pair/mocks/pair.service.mock';
 import {
     AnalyticsModel,
@@ -51,11 +49,6 @@ describe('FarmStatisticsService', () => {
         useClass: PairGetterServiceMock,
     };
 
-    const PairAnalyticsServiceProvider = {
-        provide: PairAnalyticsService,
-        useClass: PairAnalyticsServiceMock,
-    };
-
     const ContextServiceProvider = {
         provide: ContextService,
         useClass: ContextServiceMock,
@@ -88,7 +81,6 @@ describe('FarmStatisticsService', () => {
                 PairGetterServiceProvider,
                 PairComputeService,
                 PriceFeedServiceProvider,
-                PairAnalyticsServiceProvider,
                 AnalyticsService,
                 HyperblockService,
                 TransactionCollectorService,

@@ -113,6 +113,9 @@ export const PairsData = (pairAddress: string) => {
                 secondTokenPrice: '0.5',
                 secondTokenPriceUSD: '100',
                 liquidityPoolTokenPriceUSD: '2',
+                firstTokenLockedValueUSD: '500',
+                secondTokenLockedValueUSD: '500',
+                lockedValueUSD: '1000',
                 totalFeePercent: 0.003,
                 state: 'Active',
             };
@@ -132,6 +135,9 @@ export const PairsData = (pairAddress: string) => {
                 secondTokenPrice: '0.5',
                 secondTokenPriceUSD: '100',
                 liquidityPoolTokenPriceUSD: '2',
+                firstTokenLockedValueUSD: '500',
+                secondTokenLockedValueUSD: '500',
+                lockedValueUSD: '1000',
                 totalFeePercent: 0.003,
                 state: 'Active',
             };

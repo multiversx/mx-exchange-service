@@ -92,6 +92,18 @@ export class PairGetterServiceMock {
         return PairsData(pairAddress).info.totalSupply;
     }
 
+    async getFirstTokenLockedValueUSD(pairAddress: string): Promise<string> {
+        return PairsData(pairAddress).firstTokenLockedValueUSD;
+    }
+
+    async getSecondTokenLockedValueUSD(pairAddress: string): Promise<string> {
+        return PairsData(pairAddress).secondTokenLockedValueUSD;
+    }
+
+    async getLockedValueUSD(pairAddress: string): Promise<string> {
+        return PairsData(pairAddress).lockedValueUSD;
+    }
+
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         const [
             firstTokenReserve,
