@@ -35,10 +35,9 @@ export class UserResolver {
         );
     }
 
+    @UseGuards(GqlAuthGuard)
     @Query(returns => Number)
-    async getUserWorth(
-        @Args('address', { type: () => String }) address: string,
-    ): Promise<number> {
-        return this.userService.computeUserWorth(address);
+    async getUserWorth(@User() user: any): Promise<number> {
+        return this.userService.computeUserWorth(user.publicKey);
     }
 }
