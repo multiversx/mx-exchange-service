@@ -28,11 +28,11 @@ import { AuthModule } from './modules/auth/auth.module';
             installSubscriptionHandlers: true,
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {
-                    message:
-                        error.extensions?.exception?.response?.message ||
-                        error.message,
-                    extensions: error.extensions,
+                    message: error.message,
                     path: error.path,
+                    extensions: {
+                        code: error.extensions.code,
+                    },
                 };
                 const logTransports: Transport[] = [
                     new winston.transports.Console({
@@ -66,7 +66,7 @@ import { AuthModule } from './modules/auth/auth.module';
                     level: 'error',
                     transports: logTransports,
                 });
-                logger.error(graphQLFormattedError);
+                logger.error(error.message, error.extensions);
                 return graphQLFormattedError;
             },
         }),
