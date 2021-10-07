@@ -94,6 +94,7 @@ describe('TransactionProxyPairService', () => {
             async () => 0,
         );
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
+            'user_address_1',
             {
                 pairAddress: Address.Zero().bech32(),
                 firstTokenID: 'EGLD',
@@ -101,7 +102,6 @@ describe('TransactionProxyPairService', () => {
                 secondTokenID: 'LKMEX-1234',
                 secondTokenNonce: 1,
                 secondTokenAmount: secondTokenAmount,
-                sender: 'user_address_1',
                 tolerance: 0.01,
             },
         );
@@ -131,6 +131,7 @@ describe('TransactionProxyPairService', () => {
             async () => 0,
         );
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
+            'user_address_1',
             {
                 pairAddress: Address.Zero().bech32(),
                 firstTokenID: 'LKMEX-1234',
@@ -138,7 +139,6 @@ describe('TransactionProxyPairService', () => {
                 firstTokenAmount: firstTokenAmount,
                 secondTokenID: 'EGLD',
                 secondTokenAmount: secondTokenAmount,
-                sender: 'user_address_1',
                 tolerance: 0.01,
             },
         );
