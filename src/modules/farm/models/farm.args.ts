@@ -1,6 +1,6 @@
-import { ArgsType, Field, Int } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, Int } from '@nestjs/graphql';
 
-@ArgsType()
+@InputType()
 export class CalculateRewardsArgs {
     @Field()
     farmAddress: string;
@@ -12,6 +12,18 @@ export class CalculateRewardsArgs {
     attributes: string;
     @Field(type => Boolean)
     vmQuery = false;
+}
+
+@InputType()
+export class BatchFarmRewardsComputeArgs {
+    @Field(type => [CalculateRewardsArgs])
+    farmsPositions: Array<{
+        farmAddress: string;
+        liquidity: string;
+        identifier: string;
+        attributes: string;
+        vmQuery: boolean;
+    }>;
 }
 
 @ArgsType()

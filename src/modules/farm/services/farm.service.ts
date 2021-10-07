@@ -16,6 +16,7 @@ import { ruleOfThree } from '../../../helpers/helpers';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
+import { CommonAppModule } from 'src/common.app.module';
 
 @Injectable()
 export class FarmService {
@@ -63,29 +64,38 @@ export class FarmService {
         return undefined;
     }
 
+    async getBatchRewardsForPosition(
+        positions: CalculateRewardsArgs[],
+    ): Promise<RewardsModel[]> {
+        const promises = positions.map(async position => {
+            return await this.getRewardsForPosition(position);
+        });
+        return await Promise.all(promises);
+    }
+
     async getRewardsForPosition(
-        args: CalculateRewardsArgs,
+        positon: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
         const farmTokenAttributes = this.decodeFarmTokenAttributes(
-            args.identifier,
-            args.attributes,
+            positon.identifier,
+            positon.attributes,
         );
         let rewards: BigNumber;
-        if (args.vmQuery) {
+        if (positon.vmQuery) {
             rewards = await this.abiService.calculateRewardsForGivenPosition(
-                args,
+                positon,
             );
         } else {
             rewards = await this.farmComputeService.computeFarmRewardsForPosition(
-                args.farmAddress,
-                args.liquidity,
+                positon.farmAddress,
+                positon.liquidity,
                 farmTokenAttributes,
             );
         }
 
         const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
             this.context.getCurrentEpoch(),
-            this.farmGetterService.getMinimumFarmingEpochs(args.farmAddress),
+            this.farmGetterService.getMinimumFarmingEpochs(positon.farmAddress),
         ]);
 
         const remainingFarmingEpochs = Math.max(
@@ -93,6 +103,7 @@ export class FarmService {
             minimumFarmingEpochs -
                 (currentEpoch - farmTokenAttributes.enteringEpoch),
         );
+
         return new RewardsModel({
             decodedAttributes: farmTokenAttributes,
             remainingFarmingEpochs: remainingFarmingEpochs,
