@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { constantsConfig } from 'src/config';
 
 export function quote(
     tokenInAmount: string,
@@ -19,15 +20,19 @@ export function getAmountOut(
     tokenInAmount: string,
     tokenInReserves: string,
     tokenOutReserves: string,
+    fee: number,
 ) {
     const tokenInAmountBig = new BigNumber(tokenInAmount);
     const tokenInReservesBig = new BigNumber(tokenInReserves);
     const tokenOutReservesBig = new BigNumber(tokenOutReserves);
 
-    const amountInWithFee = tokenInAmountBig.multipliedBy(100000 - 300);
+    const amountInWithFee = tokenInAmountBig.multipliedBy(
+        constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS -
+            fee * constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS,
+    );
     const numerator = amountInWithFee.multipliedBy(tokenOutReservesBig);
     const denominator = tokenInReservesBig
-        .multipliedBy(100000)
+        .multipliedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
         .plus(amountInWithFee);
 
     return numerator.dividedBy(denominator).integerValue();
@@ -37,6 +42,7 @@ export function getAmountIn(
     tokenOutAmount: string,
     tokenInReserves: string,
     tokenOutReserves: string,
+    fee: number,
 ) {
     const tokenOutAmountBig = new BigNumber(tokenOutAmount);
     const tokenInReservesBig = new BigNumber(tokenInReserves);
@@ -44,10 +50,13 @@ export function getAmountIn(
 
     const numerator = tokenInReservesBig
         .multipliedBy(tokenOutAmountBig)
-        .multipliedBy(100000);
+        .multipliedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS);
     const denominator = tokenOutReservesBig
         .minus(tokenOutAmountBig)
-        .multipliedBy(100000 - 300);
+        .multipliedBy(
+            constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS -
+                fee * constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS,
+        );
 
     return numerator
         .dividedBy(denominator)

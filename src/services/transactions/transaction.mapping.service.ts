@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { constantsConfig } from '../../config';
-import { PairService } from '../../modules/pair/pair.service';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ESDTTransferTransaction } from './entities/esdtTransfer.transaction';
 import { SwapAnalytics } from './models/swap.analytics.dto';
 
 @Injectable()
 export class TransactionMappingService {
-    constructor(private readonly pairService: PairService) {}
+    constructor(private readonly pairGetterService: PairGetterService) {}
 
     async handleSwap(
         transaction: ESDTTransferTransaction,
@@ -28,11 +27,13 @@ export class TransactionMappingService {
             secondToken,
             firstTokenPriceUSD,
             secondTokenPriceUSD,
+            totalFeePercent,
         ] = await Promise.all([
-            this.pairService.getFirstToken(pairAddress),
-            this.pairService.getSecondToken(pairAddress),
-            this.pairService.getFirstTokenPriceUSD(pairAddress),
-            this.pairService.getSecondTokenPriceUSD(pairAddress),
+            this.pairGetterService.getFirstToken(pairAddress),
+            this.pairGetterService.getSecondToken(pairAddress),
+            this.pairGetterService.getFirstTokenPriceUSD(pairAddress),
+            this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
+            this.pairGetterService.getTotalFeePercent(pairAddress),
         ]);
         const [tokenIn, tokenOut, tokenInPriceUSD, tokenOutPriceUSD] =
             tokenInID === firstToken.identifier
@@ -64,9 +65,7 @@ export class TransactionMappingService {
         const amountTotalUSD = tokenInAmountUSD
             .plus(tokenOutAmountUSD)
             .div(new BigNumber(2));
-        const feesUSD = tokenInAmountUSD
-            .times(new BigNumber(constantsConfig.SWAP_FEE_PERCENT))
-            .div(new BigNumber(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS));
+        const feesUSD = tokenInAmountUSD.times(totalFeePercent);
         return {
             pairAddress: pairAddress,
             volumeUSD: amountTotalUSD,

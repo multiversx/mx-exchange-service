@@ -1,11 +1,12 @@
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { ContextService } from 'src/services/context/context.service';
 
 export class FarmGetterServiceMock {
     constructor(private readonly context: ContextService) {}
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        return 'MEX-ec32fa';
+        return 'TOK2-2222';
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
@@ -13,28 +14,12 @@ export class FarmGetterServiceMock {
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        return 'LPT-1111';
+        return 'LPT-1234';
     }
 
     async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
-        return {
-            identifier: farmedTokenID,
-            name: farmedTokenID,
-            type: 'FungibleESDT',
-            owner: 'user_address_1',
-            minted: '0',
-            burnt: '0',
-            decimals: 18,
-            isPaused: false,
-            canUpgrade: true,
-            canMint: true,
-            canBurn: true,
-            canChangeOwner: true,
-            canPause: true,
-            canFreeze: true,
-            canWipe: true,
-        };
+        return Tokens(farmedTokenID);
     }
 
     async getFarmToken(farmAddress: string): Promise<NftCollection> {
@@ -60,23 +45,7 @@ export class FarmGetterServiceMock {
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.getFarmingTokenID(farmAddress);
-        return {
-            identifier: farmingTokenID,
-            name: farmingTokenID,
-            type: 'FungibleESDT',
-            owner: 'user_address_1',
-            minted: '0',
-            burnt: '0',
-            decimals: 18,
-            isPaused: false,
-            canUpgrade: true,
-            canMint: true,
-            canBurn: true,
-            canChangeOwner: true,
-            canPause: true,
-            canFreeze: true,
-            canWipe: true,
-        };
+        return Tokens(farmingTokenID);
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {

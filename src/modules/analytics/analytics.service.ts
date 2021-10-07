@@ -8,8 +8,7 @@ import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { farmsConfig } from '../../config';
-import { FarmService } from '../farm/services/farm.service';
-import { PairService } from '../pair/pair.service';
+import { PairService } from '../pair/services/pair.service';
 import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
 import { TransactionInterpreterService } from '../../services/transactions/transaction.interpreter.service';
 import { TransactionMappingService } from '../../services/transactions/transaction.mapping.service';
@@ -23,7 +22,7 @@ import {
     processPairsAnalytics,
     processTokensAnalytics,
 } from './analytics.processor';
-import { PairAnalyticsService } from '../pair/pair.analytics.service';
+import { PairAnalyticsService } from 'src/modules/pair/services/pair.analytics.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -31,6 +30,7 @@ import { Logger } from 'winston';
 import { CachingService } from '../../services/caching/cache.service';
 import { oneMinute } from '../../helpers/helpers';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
+import { PairGetterService } from '../pair/services/pair.getter.service';
 
 export interface TradingInfoType {
     volumeUSD: BigNumber;
@@ -44,6 +44,7 @@ export class AnalyticsService {
         private readonly context: ContextService,
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
+        private readonly pairGetterService: PairGetterService,
         private readonly pairAnalytics: PairAnalyticsService,
         private readonly transactionCollector: TransactionCollectorService,
         private readonly transactionInterpreter: TransactionInterpreterService,
@@ -368,9 +369,9 @@ export class AnalyticsService {
                 secondTokenLockedValueUSD,
                 totalValueLockedUSD,
             ] = await Promise.all([
-                this.pairService.getFirstTokenID(pair.address),
-                this.pairService.getSecondTokenID(pair.address),
-                this.pairService.getPairInfoMetadata(pair.address),
+                this.pairGetterService.getFirstTokenID(pair.address),
+                this.pairGetterService.getSecondTokenID(pair.address),
+                this.pairGetterService.getPairInfoMetadata(pair.address),
                 this.pairAnalytics.getFirstTokenValueLockedUSD(pair.address),
                 this.pairAnalytics.getSecondTokenValueLockedUSD(pair.address),
                 this.pairAnalytics.getPairLockedValueUSD(pair.address),

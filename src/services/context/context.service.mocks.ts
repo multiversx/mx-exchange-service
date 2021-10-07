@@ -4,6 +4,7 @@ import {
     SmartContract,
     TypedValue,
 } from '@elrondnetwork/erdjs/out';
+import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { elrondConfig } from '../../config';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { TransactionModel } from '../../models/transaction.model';
@@ -11,16 +12,14 @@ import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
 
 export const pairsMetadata: PairMetadata[] = [
     {
-        firstTokenID: 'WEGLD-073650',
-        secondTokenID: 'MEX-ec32fa',
-        address:
-            'erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc',
+        firstTokenID: 'TOK1-1111',
+        secondTokenID: 'TOK2-2222',
+        address: 'pair_address_1',
     },
     {
-        firstTokenID: 'WEGLD-073650',
-        secondTokenID: 'BUSD-f2c46d',
-        address:
-            'erd1qqqqqqqqqqqqqpgqmffr70826epqhdf2ggsmgxgur77g53hr0n4s38y2qe',
+        firstTokenID: 'TOK1-1111',
+        secondTokenID: 'TOK3-3333',
+        address: 'pair_address_2',
     },
 ];
 
@@ -38,23 +37,7 @@ export class ContextServiceMock {
     }
 
     async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
-        return {
-            identifier: tokenID,
-            name: tokenID,
-            type: 'FungibleESDT',
-            owner: 'user_address_1',
-            minted: '0',
-            burnt: '0',
-            decimals: 18,
-            isPaused: false,
-            canUpgrade: true,
-            canMint: true,
-            canBurn: true,
-            canChangeOwner: true,
-            canPause: true,
-            canFreeze: true,
-            canWipe: true,
-        };
+        return Tokens(tokenID);
     }
 
     async getCurrentEpoch(): Promise<number> {
@@ -80,9 +63,9 @@ export class ContextServiceMock {
 
     async getPairsMap(): Promise<Map<string, string[]>> {
         const pairsMap: Map<string, string[]> = new Map();
-        pairsMap.set('WEGLD-073650', ['MEX-ec32fa', 'BUSD-f2c46d']);
-        pairsMap.set('MEX-ec32fa', ['WEGLD-073650']);
-        pairsMap.set('BUSD-f2c46d', ['WEGLD-073650']);
+        pairsMap.set('TOK1-1111', ['TOK2-2222', 'TOK3-3333']);
+        pairsMap.set('TOK2-2222', ['TOK1-1111']);
+        pairsMap.set('TOK3-3333', ['TOK1-1111']);
 
         return pairsMap;
     }

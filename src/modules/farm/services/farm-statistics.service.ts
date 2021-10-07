@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { PairService } from '../../pair/pair.service';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -8,12 +7,13 @@ import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { oneMinute } from '../../../helpers/helpers';
 import { FarmGetterService } from './farm.getter.service';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 
 @Injectable()
 export class FarmStatisticsService {
     constructor(
         private farmGetterService: FarmGetterService,
-        private pairService: PairService,
+        private pairComputeService: PairComputeService,
         private cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     ) {}
@@ -55,7 +55,7 @@ export class FarmStatisticsService {
             farmingTokenReserve,
             rewardsPerBlock,
         ] = await Promise.all([
-            this.pairService.computeTokenPriceUSD(farmedTokenID),
+            this.pairComputeService.computeTokenPriceUSD(farmedTokenID),
             this.farmGetterService.getFarmingTokenPriceUSD(farmAddress),
             this.farmGetterService.getFarmTokenSupply(farmAddress),
             this.farmGetterService.getFarmingTokenReserve(farmAddress),

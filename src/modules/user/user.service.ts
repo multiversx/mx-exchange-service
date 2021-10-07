@@ -3,10 +3,9 @@ import { farmsConfig } from '../../config';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { FarmService } from '../farm/services/farm.service';
 import { NftToken } from '../../models/tokens/nftToken.model';
-import { PairService } from '../pair/pair.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
-import { ProxyService } from '../proxy/proxy.service';
 import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
@@ -25,6 +24,8 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
+import { PairGetterService } from '../pair/services/pair.getter.service';
+import { PairComputeService } from '../pair/services/pair.compute.service';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -50,6 +51,8 @@ export class UserService {
         private apiService: ElrondApiService,
         private cachingService: CachingService,
         private pairService: PairService,
+        private pairGetterService: PairGetterService,
+        private pairComputeService: PairComputeService,
         private priceFeed: PriceFeedService,
         private proxyPairService: ProxyPairService,
         private proxyFarmService: ProxyFarmService,
@@ -193,7 +196,7 @@ export class UserService {
             tokenID,
         );
         if (pairAddress) {
-            const tokenPriceUSD = await this.pairService.getLpTokenPriceUSD(
+            const tokenPriceUSD = await this.pairGetterService.getLpTokenPriceUSD(
                 pairAddress,
             );
             return {
@@ -201,7 +204,7 @@ export class UserService {
                 priceUSD: tokenPriceUSD,
             };
         }
-        const tokenPriceUSD = await this.pairService.computeTokenPriceUSD(
+        const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
             tokenID,
         );
         return {

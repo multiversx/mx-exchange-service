@@ -1,16 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { FarmService } from '../farm/services/farm.service';
-import { PairService } from '../pair/pair.service';
+import { PairService } from '../pair/services/pair.service';
 import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
 import { ProxyService } from '../proxy/proxy.service';
 import { UserService } from './user.service';
 import {
-    ContextServiceMock,
-    FarmServiceMock,
     LockedAssetMock,
-    PriceFeedServiceMock,
     ProxyFarmServiceMock,
     ProxyPairServiceMock,
     ProxyServiceMock,
@@ -31,9 +28,15 @@ import { UserFarmToken } from './models/user.model';
 import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
 import { UserComputeService } from './user.compute.service';
 import { CachingModule } from '../../services/caching/cache.module';
-import { PairServiceMock } from '../pair/pair.service.mock';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
+import { FarmServiceMock } from '../farm/mocks/farm.service.mock';
+import { ContextServiceMock } from 'src/services/context/context.service.mocks';
+import { PairServiceMock } from '../pair/mocks/pair.service.mock';
+import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
+import { PairGetterService } from '../pair/services/pair.getter.service';
+import { PairGetterServiceMock } from '../pair/mocks/pair.getter.service.mock';
+import { PairComputeService } from '../pair/services/pair.compute.service';
 
 describe('UserService', () => {
     let service: UserService;
@@ -61,6 +64,11 @@ describe('UserService', () => {
     const PairServiceProvider = {
         provide: PairService,
         useClass: PairServiceMock,
+    };
+
+    const PairGetterServiceProvider = {
+        provide: PairGetterService,
+        useClass: PairGetterServiceMock,
     };
 
     const PriceFeedServiceProvider = {
@@ -108,6 +116,8 @@ describe('UserService', () => {
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
                 PairServiceProvider,
+                PairGetterServiceProvider,
+                PairComputeService,
                 PriceFeedServiceProvider,
                 ProxyServiceProvider,
                 ProxyPairServiceProvider,
@@ -143,12 +153,11 @@ describe('UserService', () => {
             }),
         ).toEqual([
             {
-                identifier: 'MEX-ec32fa',
-                name: 'MaiarExchangeToken',
+                identifier: 'TOK2-2222',
+                name: 'SecondToken',
                 type: 'FungibleESDT',
-                owner:
-                    'erd1x39tc3q3nn72ecjnmcz7x0qp09kp97t080x99dgyhx7zh95j0n4szskhlv',
-                minted: '101000000000000000000000',
+                owner: 'owner_address',
+                minted: '2000000000000000000',
                 burnt: '0',
                 decimals: 18,
                 isPaused: false,
