@@ -105,7 +105,6 @@ export class AnalyticsEventHandlerService {
 
         await this.awsTimestreamWrite.ingest({
             TableName: awsConfig.timestream.tableName,
-            Time: event.timestamp,
             data,
         });
     }
@@ -163,7 +162,6 @@ export class AnalyticsEventHandlerService {
 
         await this.awsTimestreamWrite.ingest({
             TableName: awsConfig.timestream.tableName,
-            Time: event.timestamp,
             data,
         });
     }
