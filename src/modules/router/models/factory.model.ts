@@ -9,11 +9,11 @@ export class FactoryModel {
     @Field()
     totalTxCount: number;
     @Field()
-    totalVolume: number;
-    @Field()
-    totalLiquidity: number;
-    @Field()
     totalValueLockedUSD: string;
+    @Field()
+    totalVolumeUSD24h: string;
+    @Field()
+    totalFeesUSD24h: string;
 
     constructor(init?: Partial<FactoryModel>) {
         Object.assign(this, init);

@@ -63,6 +63,22 @@ export class RouterGetterService {
         );
     }
 
+    async getTotalVolumeUSD(time: string): Promise<string> {
+        return this.getData(
+            `totalVolumeUSD.${time}`,
+            () => this.routerComputeService.computeTotalVolumeUSD(time),
+            oneMinute(),
+        );
+    }
+
+    async getTotalFeesUSD(time: string): Promise<string> {
+        return this.getData(
+            `totalFeesUSD.${time}`,
+            () => this.routerComputeService.computeTotalFeesUSD(time),
+            oneMinute(),
+        );
+    }
+
     private getRouterCacheKey(...args: any) {
         return generateCacheKeyFromParams('router', ...args);
     }

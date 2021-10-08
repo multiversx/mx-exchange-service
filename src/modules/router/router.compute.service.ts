@@ -1,5 +1,12 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+    BadGatewayException,
+    forwardRef,
+    Inject,
+    Injectable,
+} from '@nestjs/common';
 import BigNumber from 'bignumber.js';
+import { awsConfig } from 'src/config';
+import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { RouterGetterService } from './router.getter.service';
 
@@ -9,6 +16,7 @@ export class RouterComputeService {
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetterService: RouterGetterService,
         private readonly pairComputeService: PairComputeService,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
     ) {}
 
     async computeTotalLockedValueUSD(): Promise<BigNumber> {
@@ -25,5 +33,47 @@ export class RouterComputeService {
         }
 
         return totalValueLockedUSD;
+    }
+
+    async computeTotalVolumeUSD(time: string): Promise<BigNumber> {
+        const pairsAddress = await this.routerGetterService.getAllPairsAddress();
+        let totalVolumeUSD = new BigNumber(0);
+
+        const promises = pairsAddress.map(pairAddress =>
+            this.awsTimestreamQuery.getAgregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'volumeUSD',
+                time,
+            }),
+        );
+
+        const volumesUSD = await Promise.all(promises);
+        for (const volumeUSD of volumesUSD) {
+            totalVolumeUSD = totalVolumeUSD.plus(volumeUSD);
+        }
+
+        return totalVolumeUSD;
+    }
+
+    async computeTotalFeesUSD(time: string): Promise<BigNumber> {
+        const pairsAddress = await this.routerGetterService.getAllPairsAddress();
+        let totalFeesUSD = new BigNumber(0);
+
+        const promises = pairsAddress.map(pairAddress =>
+            this.awsTimestreamQuery.getAgregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'feesUSD',
+                time,
+            }),
+        );
+
+        const feesUSD = await Promise.all(promises);
+        for (const feeUSD of feesUSD) {
+            totalFeesUSD = totalFeesUSD.plus(feeUSD);
+        }
+
+        return totalFeesUSD;
     }
 }
