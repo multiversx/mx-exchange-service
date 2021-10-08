@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig } from 'src/config';
+import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { convertTokenToDecimal } from 'src/utils/token.converters';
@@ -10,6 +11,7 @@ import { Logger } from 'winston';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairSetterService } from '../pair/services/pair.setter.service';
+import { RouterComputeService } from '../router/router.compute.service';
 import { RouterGetterService } from '../router/router.getter.service';
 import { RouterSetterService } from '../router/router.setter.service';
 import { PAIR_EVENTS } from '../websocket/entities/generic.types';
@@ -28,7 +30,9 @@ export class AnalyticsEventHandlerService {
         private readonly pairComputeService: PairComputeService,
         private readonly routerGetterService: RouterGetterService,
         private readonly routerSetterService: RouterSetterService,
+        private readonly routerComputeService: RouterComputeService,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -164,6 +168,71 @@ export class AnalyticsEventHandlerService {
             TableName: awsConfig.timestream.tableName,
             data,
         });
+
+        const [
+            firstTokenVolume24h,
+            secondTokenVolume24h,
+            volumeUSD24h,
+            feesUSD24h,
+            totalVolumeUSD24h,
+            totalFeesUSD24h,
+        ] = await Promise.all([
+            this.awsTimestreamQuery.getAgregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: event.address,
+                metric: 'firstTokenVolume',
+                time: '24h',
+            }),
+            this.awsTimestreamQuery.getAgregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: event.address,
+                metric: 'secondTokenVolume',
+                time: '24h',
+            }),
+            this.awsTimestreamQuery.getAgregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: event.address,
+                metric: 'volumeUSD',
+                time: '24h',
+            }),
+            this.awsTimestreamQuery.getAgregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: event.address,
+                metric: 'feesUSD',
+                time: '24h',
+            }),
+            this.routerComputeService.computeTotalVolumeUSD('24h'),
+            this.routerComputeService.computeTotalFeesUSD('24h'),
+        ]);
+
+        const cacheKeys = await Promise.all([
+            this.pairSetterService.setFirstTokenVolume(
+                event.address,
+                firstTokenVolume24h,
+                '24h',
+            ),
+            this.pairSetterService.setSecondTokenVolume(
+                event.address,
+                secondTokenVolume24h,
+                '24h',
+            ),
+            this.pairSetterService.setVolumeUSD(
+                event.address,
+                volumeUSD24h,
+                '24h',
+            ),
+            this.pairSetterService.setFeesUSD(event.address, feesUSD24h, '24h'),
+            this.routerSetterService.setTotalVolumeUSD(
+                totalVolumeUSD24h.toFixed(),
+                '24h',
+            ),
+            this.routerSetterService.setTotalFeesUSD(
+                totalFeesUSD24h.toFixed(),
+                '24h',
+            ),
+        ]);
+        this.invalidatedKeys.push(cacheKeys);
+        await this.deleteCacheKeys();
     }
 
     private async updatePairLockedValueUSD(pairAddress: string): Promise<void> {
