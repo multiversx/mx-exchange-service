@@ -32,7 +32,7 @@ export class RouterResolver {
     @ResolveField(returns => Int!)
     async pairCount(@Parent() factoryModel: FactoryModel) {
         try {
-            return this.routerService.getPairCount();
+            return await this.routerService.getPairCount();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -41,7 +41,7 @@ export class RouterResolver {
     @ResolveField(returns => Int!)
     async totalTxCount(@Parent() factoryModel: FactoryModel) {
         try {
-            return this.routerService.getTotalTxCount();
+            return await this.routerService.getTotalTxCount();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -50,7 +50,7 @@ export class RouterResolver {
     @ResolveField()
     async totalValueLockedUSD(@Parent() FactoryModel: FactoryModel) {
         try {
-            return this.routerGetterService.getTotalLockedValueUSD();
+            return await this.routerGetterService.getTotalLockedValueUSD();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -59,7 +59,7 @@ export class RouterResolver {
     @Query(returns => [String])
     async pairAddresses(): Promise<string[]> {
         try {
-            return this.routerGetterService.getAllPairsAddress();
+            return await this.routerGetterService.getAllPairsAddress();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -68,7 +68,10 @@ export class RouterResolver {
     @Query(returns => [PairModel])
     async pairs(@Args() page: GetPairsArgs): Promise<PairModel[]> {
         try {
-            return this.routerService.getAllPairs(page.offset, page.limit);
+            return await this.routerService.getAllPairs(
+                page.offset,
+                page.limit,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
