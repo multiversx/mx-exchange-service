@@ -9,17 +9,17 @@ import * as Transport from 'winston-transport';
 import { ApiConfigService } from './helpers/api.config.service';
 import { RedisPubSubModule } from './services/redis.pubSub.module';
 
+const loglevel = !!process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 'error';
+
 const logTransports: Transport[] = [
     new winston.transports.Console({
         format: winston.format.combine(
             winston.format.timestamp(),
             nestWinstonModuleUtilities.format.nestLike(),
         ),
-        level: 'debug',
+        level: loglevel,
     }),
 ];
-
-const loglevel = !!process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 'error';
 
 if (!!process.env.LOG_FILE) {
     logTransports.push(
