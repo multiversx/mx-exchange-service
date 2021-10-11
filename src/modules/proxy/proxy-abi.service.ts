@@ -28,7 +28,7 @@ export class AbiProxyService {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyService.name,
                 this.getAssetTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -53,7 +53,7 @@ export class AbiProxyService {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyService.name,
                 this.getLockedAssetTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;

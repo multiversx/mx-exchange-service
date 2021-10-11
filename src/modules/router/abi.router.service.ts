@@ -26,21 +26,12 @@ export class AbiRouterService {
             const response = interaction.interpretQueryResponse(queryResponse);
             return response;
         } catch (error) {
-            if (error.inner?.isAxiosError === true) {
-                const logMessage = generateRunQueryLogMessage(
-                    AbiRouterService.name,
-                    interaction.getFunction().name,
-                    error.message,
-                );
-                this.logger.error(logMessage);
-            } else {
-                const logMessage = generateRunQueryLogMessage(
-                    AbiRouterService.name,
-                    interaction.getFunction().name,
-                    error,
-                );
-                this.logger.error(logMessage);
-            }
+            const logMessage = generateRunQueryLogMessage(
+                AbiRouterService.name,
+                interaction.getFunction().name,
+                error.message,
+            );
+            this.logger.error(logMessage);
             throw error;
         }
     }

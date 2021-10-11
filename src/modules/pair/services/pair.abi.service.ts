@@ -30,21 +30,13 @@ export class PairAbiService {
 
             return response;
         } catch (error) {
-            if (error.inner?.isAxiosError === true) {
-                const logMessage = generateRunQueryLogMessage(
-                    PairAbiService.name,
-                    interaction.getFunction().name,
-                    error.inner.toJSON(),
-                );
-                this.logger.error(logMessage);
-            } else {
-                const logMessage = generateRunQueryLogMessage(
-                    PairAbiService.name,
-                    interaction.getFunction().name,
-                    error,
-                );
-                this.logger.error(logMessage);
-            }
+            const logMessage = generateRunQueryLogMessage(
+                PairAbiService.name,
+                interaction.getFunction().name,
+                error.message,
+            );
+            this.logger.error(logMessage);
+
             throw error;
         }
     }

@@ -33,7 +33,7 @@ export class AbiProxyPairService {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyPairService.name,
                 this.getWrappedLpTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -61,7 +61,7 @@ export class AbiProxyPairService {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyPairService.name,
                 this.getWrappedLpTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -96,7 +96,7 @@ export class AbiProxyPairService {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyPairService.name,
                 this.getTemporaryFundsProxy.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
         }
