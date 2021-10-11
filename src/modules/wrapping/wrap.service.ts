@@ -42,7 +42,7 @@ export class WrapService {
     ): Promise<string> {
         const cacheKey = this.getWrapCacheKey(tokenCacheKey);
         try {
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 createValueFunc,
                 cacheConfig.token,

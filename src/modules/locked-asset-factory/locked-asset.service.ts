@@ -43,7 +43,7 @@ export class LockedAssetService {
         const cacheKey = this.getLockedAssetFactoryCacheKey('lockedTokenID');
         try {
             const getLockedTokenID = () => this.abiService.getLockedTokenID();
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getLockedTokenID,
                 cacheConfig.token,
@@ -72,7 +72,7 @@ export class LockedAssetService {
         try {
             const getDefaultUnlockPeriod = () =>
                 this.abiService.getDefaultUnlockPeriod();
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getDefaultUnlockPeriod,
                 cacheConfig.default,

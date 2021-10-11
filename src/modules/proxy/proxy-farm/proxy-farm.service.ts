@@ -24,7 +24,7 @@ export class ProxyFarmService {
     ): Promise<string> {
         const cacheKey = this.getProxyFarmCacheKey(tokenCacheKey);
         try {
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 createValueFunc,
                 oneHour(),
@@ -57,7 +57,7 @@ export class ProxyFarmService {
         try {
             const getIntermediatedFarms = () =>
                 this.abiService.getIntermediatedFarmsAddress();
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getIntermediatedFarms,
                 oneHour(),

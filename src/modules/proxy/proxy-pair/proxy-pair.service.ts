@@ -24,7 +24,7 @@ export class ProxyPairService {
     ): Promise<string> {
         const cacheKey = this.getProxyPairCacheKey(tokenCacheKey);
         try {
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 createValueFunc,
                 oneHour(),
@@ -57,7 +57,7 @@ export class ProxyPairService {
         try {
             const getIntermediatedPairs = () =>
                 this.abiService.getIntermediatedPairsAddress();
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getIntermediatedPairs,
                 oneHour(),

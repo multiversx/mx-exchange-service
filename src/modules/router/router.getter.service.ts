@@ -26,13 +26,17 @@ export class RouterGetterService {
     ): Promise<any> {
         const cacheKey = this.getRouterCacheKey(key);
         try {
-            return this.cachingService.getOrSet(cacheKey, createValueFunc, ttl);
+            return await this.cachingService.getOrSet(
+                cacheKey,
+                createValueFunc,
+                ttl,
+            );
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 RouterGetterService.name,
                 this.getData.name,
                 cacheKey,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;

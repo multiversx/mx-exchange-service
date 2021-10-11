@@ -31,13 +31,17 @@ export class FarmGetterService {
     ): Promise<any> {
         const cacheKey = this.getFarmCacheKey(farmAddress, tokenCacheKey);
         try {
-            return this.cachingService.getOrSet(cacheKey, createValueFunc, ttl);
+            return await this.cachingService.getOrSet(
+                cacheKey,
+                createValueFunc,
+                ttl,
+            );
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 FarmGetterService.name,
                 createValueFunc.name,
                 cacheKey,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
