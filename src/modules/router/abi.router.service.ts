@@ -1,10 +1,11 @@
-import { Interaction } from '@elrondnetwork/erdjs/out';
+import { Interaction, QueryResponseBundle } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateRunQueryLogMessage } from '../../utils/generate-log-message';
 import { Logger } from 'winston';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { PairMetadata } from './models/pair.metadata.model';
+import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 
 @Injectable()
 export class AbiRouterService {
@@ -13,69 +14,66 @@ export class AbiRouterService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    async getGenericData(
+        contract: SmartContractProfiler,
+        interaction: Interaction,
+    ): Promise<QueryResponseBundle> {
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            return response;
+        } catch (error) {
+            if (error.inner?.isAxiosError === true) {
+                const logMessage = generateRunQueryLogMessage(
+                    AbiRouterService.name,
+                    interaction.getFunction().name,
+                    error.message,
+                );
+                this.logger.error(logMessage);
+            } else {
+                const logMessage = generateRunQueryLogMessage(
+                    AbiRouterService.name,
+                    interaction.getFunction().name,
+                    error,
+                );
+                this.logger.error(logMessage);
+            }
+            throw error;
+        }
+    }
+
     async getAllPairsAddress(): Promise<string[]> {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction = contract.methods.getAllPairsAddresses(
             [],
         );
 
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const result = interaction.interpretQueryResponse(queryResponse);
+        const response = await this.getGenericData(contract, interaction);
+        const pairsAddress = response.firstValue.valueOf().map(pairAddress => {
+            return pairAddress.toString();
+        });
 
-            const pairsAddress = result.firstValue
-                .valueOf()
-                .map(pairAddress => {
-                    return pairAddress.toString();
-                });
-
-            return pairsAddress;
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiRouterService.name,
-                this.getAllPairsAddress.name,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        return pairsAddress;
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const getAllPairsInteraction: Interaction = contract.methods.getAllPairContractMetadata(
+        const interaction: Interaction = contract.methods.getAllPairContractMetadata(
             [],
         );
 
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                getAllPairsInteraction.buildQuery(),
-            );
-            const result = getAllPairsInteraction.interpretQueryResponse(
-                queryResponse,
-            );
-
-            const pairsMetadata = result.firstValue.valueOf().map(v => {
-                return new PairMetadata({
-                    firstTokenID: v.first_token_id.toString(),
-                    secondTokenID: v.second_token_id.toString(),
-                    address: v.address.toString(),
-                });
+        const response = await this.getGenericData(contract, interaction);
+        const pairsMetadata = response.firstValue.valueOf().map(v => {
+            return new PairMetadata({
+                firstTokenID: v.first_token_id.toString(),
+                secondTokenID: v.second_token_id.toString(),
+                address: v.address.toString(),
             });
+        });
 
-            return pairsMetadata;
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiRouterService.name,
-                this.getPairsMetadata.name,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        return pairsMetadata;
     }
 }
