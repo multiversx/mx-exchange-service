@@ -48,6 +48,7 @@
         "apollo-cache-control": "^0.12.0",
         "apollo-server-cache-redis": "^1.5.0",
         "apollo-server-express": "^2.25.2",
+        "aws-sdk": "^2.1000.0",
         "axios": "^0.21.1",
         "bignumber.js": "^9.0.1",
         "cache-manager": "^3.4.4",

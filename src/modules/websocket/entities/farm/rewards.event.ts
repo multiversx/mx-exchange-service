@@ -58,6 +58,26 @@ export class RewardsEvent extends GenericEvent {
         );
     }
 
+    getOldFarmToken(): GenericTokenAmountPair {
+        return this.oldFarmToken;
+    }
+
+    getNewFarmToken(): GenericTokenAmountPair {
+        return this.newFarmToken;
+    }
+
+    getFarmSupply(): BigNumber {
+        return this.farmSupply;
+    }
+
+    getRewardToken(): GenericTokenAmountPair {
+        return this.rewardToken;
+    }
+
+    getRewardTokenReserve(): BigNumber {
+        return this.rewardTokenReserve;
+    }
+
     toJSON(): RewardsEventType {
         return {
             ...super.toJSON(),

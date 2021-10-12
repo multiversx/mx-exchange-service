@@ -7,19 +7,20 @@ import {
     Args,
     Int,
 } from '@nestjs/graphql';
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './transactions.router.service';
 import { JwtAdminGuard } from '../../helpers/guards/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
+import { RouterGetterService } from './router.getter.service';
 
 @Resolver(of => FactoryModel)
 export class RouterResolver {
     constructor(
-        @Inject(RouterService) private routerService: RouterService,
-        @Inject(TransactionRouterService)
+        private readonly routerService: RouterService,
+        private readonly routerGetterService: RouterGetterService,
         private readonly transactionService: TransactionRouterService,
     ) {}
 
@@ -46,10 +47,37 @@ export class RouterResolver {
         }
     }
 
+    @ResolveField()
+    async totalValueLockedUSD(@Parent() factoryModel: FactoryModel) {
+        try {
+            return this.routerGetterService.getTotalLockedValueUSD();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async totalVolumeUSD24h(@Parent() factoryModel: FactoryModel) {
+        try {
+            return this.routerGetterService.getTotalVolumeUSD('24h');
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async totalFeesUSD24h(@Parent() factoryModel: FactoryModel) {
+        try {
+            return this.routerGetterService.getTotalFeesUSD('24h');
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @Query(returns => [String])
     async pairAddresses(): Promise<string[]> {
         try {
-            return this.routerService.getAllPairsAddress();
+            return this.routerGetterService.getAllPairsAddress();
         } catch (error) {
             throw new ApolloError(error);
         }

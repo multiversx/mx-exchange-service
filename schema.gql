@@ -6,8 +6,9 @@ type FactoryModel {
   address: String!
   pairCount: Float!
   totalTxCount: Float!
-  totalVolume: Float!
-  totalLiquidity: Float!
+  totalValueLockedUSD: String!
+  totalVolumeUSD24h: String!
+  totalFeesUSD24h: String!
 }
 
 type EsdtToken {
@@ -50,6 +51,13 @@ type PairModel {
   secondTokenPriceUSD: String!
   liquidityPoolToken: EsdtToken!
   liquidityPoolTokenPriceUSD: String!
+  firstTokenLockedValueUSD: String!
+  secondTokenLockedValueUSD: String!
+  lockedValueUSD: String!
+  firstTokenVolume24h: String!
+  secondTokenVolume24h: String!
+  volumeUSD24h: String!
+  feesUSD24h: String!
   info: PairInfoModel!
   totalFeePercent: Float!
   specialFeePercent: Float!
@@ -62,21 +70,6 @@ type TemporaryFundsModel {
   firstAmount: String
   secondToken: EsdtToken
   secondAmount: String
-}
-
-type TransactionModel {
-  nonce: Float!
-  value: String!
-  sender: String!
-  receiver: String!
-  gasPrice: Float!
-  gasLimit: Float!
-  data: String!
-  chainID: String!
-  version: Float!
-  options: Float
-  status: String
-  signature: String
 }
 
 type NftCollection {
@@ -101,6 +94,21 @@ type WrapModel {
   address: String!
   shard: Int!
   wrappedToken: EsdtToken!
+}
+
+type TransactionModel {
+  nonce: Float!
+  value: String!
+  sender: String!
+  receiver: String!
+  gasPrice: Float!
+  gasLimit: Float!
+  data: String!
+  chainID: String!
+  version: Float!
+  options: Float
+  status: String
+  signature: String
 }
 
 type FarmTokenAttributesModel {
@@ -292,6 +300,7 @@ type EnterFarmEvent {
   epoch: Int!
   timestamp: Int!
   farmingToken: FftTokenAmountPair!
+  farmingReserve: String!
   farmToken: GenericTokenAmountPair!
   farmSupply: String!
   rewardTokenReserve: FftTokenAmountPair!
@@ -356,7 +365,7 @@ type RemoveLiquidityEvent {
   pairReserves: [FftTokenAmountPair!]!
 }
 
-type SwapEvent {
+type SwapFixedInputEvent {
   address: String!
   caller: String!
   block: Int!
@@ -456,6 +465,18 @@ type ExitFarmProxyEvent {
   wrappedFarmAttributes: WrappedFarmTokenAttributesModel!
   farmingToken: GenericTokenAmountPair!
   rewardToken: GenericTokenAmountPair!
+}
+
+type SwapFixedOutputEvent {
+  address: String!
+  caller: String!
+  block: Int!
+  epoch: Int!
+  timestamp: Int!
+  tokenAmountIn: FftTokenAmountPair!
+  tokenAmountOut: FftTokenAmountPair!
+  feeAmount: String!
+  pairReserves: [FftTokenAmountPair!]!
 }
 
 type Query {
@@ -645,7 +666,8 @@ type UserNftToken {
 }
 
 type Subscription {
-  swapEvent: SwapEvent!
+  swapFixedInputEvent: SwapFixedInputEvent!
+  swapFixedOutputEvent: SwapFixedOutputEvent!
   addLiquidityEvent: AddLiquidityEvent!
   removeLiquidityEvent: RemoveLiquidityEvent!
   swapNoFeeEvent: SwapNoFeeEvent!

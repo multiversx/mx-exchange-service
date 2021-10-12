@@ -32,6 +32,10 @@ export class GenericEvent {
         return this.identifier;
     }
 
+    getTimestamp(): BigNumber {
+        return this.timestamp;
+    }
+
     toJSON(): GenericEventType {
         return {
             address: this.address,

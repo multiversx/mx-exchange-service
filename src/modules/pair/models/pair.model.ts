@@ -49,6 +49,27 @@ export class PairModel {
     liquidityPoolTokenPriceUSD: string;
 
     @Field()
+    firstTokenLockedValueUSD: string;
+
+    @Field()
+    secondTokenLockedValueUSD: string;
+
+    @Field()
+    lockedValueUSD: string;
+
+    @Field()
+    firstTokenVolume24h: string;
+
+    @Field()
+    secondTokenVolume24h: string;
+
+    @Field()
+    volumeUSD24h: string;
+
+    @Field()
+    feesUSD24h: string;
+
+    @Field()
     info: PairInfoModel;
 
     @Field()

@@ -31,6 +31,14 @@ export class SwapNoFeeEvent extends GenericEvent {
         );
     }
 
+    getTokenAmountOut(): FftTokenAmountPair {
+        return this.tokenAmountOut;
+    }
+
+    getDestination(): Address {
+        return this.destination;
+    }
+
     toJSON(): SwapNoFeeEventType {
         return {
             ...super.toJSON(),

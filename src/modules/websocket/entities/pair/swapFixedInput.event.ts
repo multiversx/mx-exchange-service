@@ -15,7 +15,7 @@ import { PairEventTopics } from './pair.event.topics';
 import { SwapEventType } from './pair.types';
 
 @ObjectType()
-export class SwapEvent extends GenericEvent {
+export class SwapFixedInputEvent extends GenericEvent {
     private decodedTopics: PairEventTopics;
 
     @Field(type => FftTokenAmountPair)
@@ -42,6 +42,18 @@ export class SwapEvent extends GenericEvent {
         this.pairReserves = decodedEvent.pairReserves.map(reserve =>
             FftTokenAmountPair.fromDecodedAttributes(reserve),
         );
+    }
+
+    getTokenAmountIn(): FftTokenAmountPair {
+        return this.tokenAmountIn;
+    }
+
+    getTokenAmountOut(): FftTokenAmountPair {
+        return this.tokenAmountOut;
+    }
+
+    getPairReserves(): FftTokenAmountPair[] {
+        return this.pairReserves;
     }
 
     toJSON(): SwapEventType {

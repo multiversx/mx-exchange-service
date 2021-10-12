@@ -1,9 +1,10 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { constantsConfig } from 'src/config';
+import { awsConfig, constantsConfig } from 'src/config';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextService } from 'src/services/context/context.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -21,6 +22,7 @@ export class PairGetterService {
         private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -191,6 +193,105 @@ export class PairGetterService {
             pairAddress,
             'totalSupply',
             () => this.abiService.getTotalSupply(pairAddress),
+            oneMinute(),
+        );
+    }
+
+    async getFirstTokenLockedValueUSD(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'firstTokenLockedValueUSD',
+            () =>
+                this.pairComputeService.computeFirstTokenLockedValueUSD(
+                    pairAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getSecondTokenLockedValueUSD(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'secondTokenLockedValueUSD',
+            () =>
+                this.pairComputeService.computeSecondTokenLockedValueUSD(
+                    pairAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getLockedValueUSD(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'lockedValueUSD',
+            () => this.pairComputeService.computeLockedValueUSD(pairAddress),
+            oneMinute(),
+        );
+    }
+
+    async getFirstTokenVolume(
+        pairAddress: string,
+        time: string,
+    ): Promise<string> {
+        return this.getData(
+            pairAddress,
+            `firstTokenVolume.${time}`,
+            () =>
+                this.awsTimestreamQuery.getAgregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'firstTokenVolume',
+                    time,
+                }),
+            oneMinute(),
+        );
+    }
+
+    async getSecondTokenVolume(
+        pairAddress: string,
+        time: string,
+    ): Promise<string> {
+        return this.getData(
+            pairAddress,
+            `secondTokenVolume.${time}`,
+            () =>
+                this.awsTimestreamQuery.getAgregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'secondTokenVolume',
+                    time,
+                }),
+            oneMinute(),
+        );
+    }
+
+    async getVolumeUSD(pairAddress: string, time: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            `volumeUSD.${time}`,
+            () =>
+                this.awsTimestreamQuery.getAgregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'volumeUSD',
+                    time,
+                }),
+            oneMinute(),
+        );
+    }
+
+    async getFeesUSD(pairAddress: string, time: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            `feesUSD.${time}`,
+            () =>
+                this.awsTimestreamQuery.getAgregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'feesUSD',
+                    time,
+                }),
             oneMinute(),
         );
     }

@@ -6,7 +6,7 @@ import { ExitFarmEvent } from '../websocket/entities/farm/exitFarm.event';
 import { RewardsEvent } from '../websocket/entities/farm/rewards.event';
 import { AddLiquidityEvent } from '../websocket/entities/pair/addLiquidity.event';
 import { RemoveLiquidityEvent } from '../websocket/entities/pair/removeLiquidity.event';
-import { SwapEvent } from '../websocket/entities/pair/swap.event';
+import { SwapFixedInputEvent } from '../websocket/entities/pair/swapFixedInput.event';
 import { SwapNoFeeEvent } from '../websocket/entities/pair/swapNoFee.event';
 import { AddLiquidityProxyEvent } from '../websocket/entities/proxy/addLiquidityProxy.event';
 import { ClaimRewardsProxyEvent } from '../websocket/entities/proxy/claimRewardsProxy.event';
@@ -20,14 +20,20 @@ import {
     PAIR_EVENTS,
     PROXY_EVENTS,
 } from '../websocket/entities/generic.types';
+import { SwapFixedOutputEvent } from '../websocket/entities/pair/swapFixedOutput.event';
 
 @Resolver()
 export class SubscriptionsResolver {
     constructor(@Inject(PUB_SUB) private pubSub: RedisPubSub) {}
 
-    @Subscription(() => SwapEvent)
-    swapEvent() {
-        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP);
+    @Subscription(() => SwapFixedInputEvent)
+    swapFixedInputEvent() {
+        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_FIXED_INPUT);
+    }
+
+    @Subscription(() => SwapFixedOutputEvent)
+    swapFixedOutputEvent() {
+        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_FIXED_OUTPUT);
     }
 
     @Subscription(() => AddLiquidityEvent)

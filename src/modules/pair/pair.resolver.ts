@@ -104,6 +104,79 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async firstTokenLockedValueUSD(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getFirstTokenLockedValueUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async secondTokenLockedValueUSD(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getSecondTokenLockedValueUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async lockedValueUSD(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getLockedValueUSD(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async firstTokenVolume24h(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getFirstTokenVolume(
+                parent.address,
+                '24h',
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async secondTokenVolume24h(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getSecondTokenVolume(
+                parent.address,
+                '24h',
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async volumeUSD24h(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getVolumeUSD(parent.address, '24h');
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async feesUSD24h(@Parent() parent: PairModel) {
+        try {
+            return this.pairGetterService.getFeesUSD(parent.address, '24h');
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async info(@Parent() parent: PairModel) {
         try {
             return this.pairGetterService.getPairInfoMetadata(parent.address);

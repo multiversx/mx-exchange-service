@@ -6,22 +6,20 @@ import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { AbiRouterService } from './abi.router.service';
-import { PairMetadata } from './models/pair.metadata.model';
 import { PairModel } from '../pair/models/pair.model';
 import {
     generateComputeLogMessage,
     generateGetLogMessage,
 } from '../../utils/generate-log-message';
-import { oneSecond } from '../../helpers/helpers';
+import { RouterGetterService } from './router.getter.service';
 
 @Injectable()
 export class RouterService {
     private readonly elasticClient: Client;
 
     constructor(
-        private readonly abiService: AbiRouterService,
         private readonly cachingService: CachingService,
+        private readonly routerGetterService: RouterGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.elasticClient = new Client({
@@ -35,50 +33,8 @@ export class RouterService {
         });
     }
 
-    async getAllPairsAddress(): Promise<string[]> {
-        const cacheKey = this.getRouterCacheKey('pairsAddress');
-        try {
-            const getPairsAddress = () => this.abiService.getAllPairsAddress();
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getPairsAddress,
-                oneSecond() * 10,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                RouterService.name,
-                this.getAllPairsAddress.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    async getPairsMetadata(): Promise<PairMetadata[]> {
-        const cacheKey = this.getRouterCacheKey('pairsMetadata');
-        try {
-            const getPairsMetadata = () => this.abiService.getPairsMetadata();
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getPairsMetadata,
-                cacheConfig.pairsMetadata,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                RouterService.name,
-                this.getPairsMetadata.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
     async getAllPairs(offset: number, limit: number): Promise<PairModel[]> {
-        const pairsAddress = await this.getAllPairsAddress();
+        const pairsAddress = await this.routerGetterService.getAllPairsAddress();
         const pairs: PairModel[] = [];
         for (const pairAddress of pairsAddress) {
             pairs.push(
@@ -134,13 +90,13 @@ export class RouterService {
     }
 
     private async computePairCount(): Promise<number> {
-        const pairs = await this.getAllPairsAddress();
+        const pairs = await this.routerGetterService.getAllPairsAddress();
         return pairs.length;
     }
 
     private async computeTotalTxCount(): Promise<number> {
         let totalTxCount = 0;
-        const pairs = await this.getPairsMetadata();
+        const pairs = await this.routerGetterService.getPairsMetadata();
 
         for (const pair of pairs) {
             const body = {

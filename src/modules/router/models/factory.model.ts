@@ -4,18 +4,16 @@ import { ObjectType, Field } from '@nestjs/graphql';
 export class FactoryModel {
     @Field()
     address: string;
-
     @Field()
     pairCount: number;
-
     @Field()
     totalTxCount: number;
-
     @Field()
-    totalVolume: number;
-
+    totalValueLockedUSD: string;
     @Field()
-    totalLiquidity: number;
+    totalVolumeUSD24h: string;
+    @Field()
+    totalFeesUSD24h: string;
 
     constructor(init?: Partial<FactoryModel>) {
         Object.assign(this, init);

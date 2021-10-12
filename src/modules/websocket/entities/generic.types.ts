@@ -1,24 +1,25 @@
 import BigNumber from 'bignumber.js';
 
 export enum PAIR_EVENTS {
-    SWAP = 'swap',
-    ADD_LIQUIDITY = 'add_liquidity',
-    REMOVE_LIQUIDITY = 'remove_liquidity',
-    SWAP_NO_FEE = 'swap_no_fee_and_forward',
+    SWAP_FIXED_INPUT = 'swapTokensFixedInput',
+    SWAP_FIXED_OUTPUT = 'swapTokensFixedOutput',
+    ADD_LIQUIDITY = 'addLiquidity',
+    REMOVE_LIQUIDITY = 'removeLiquidity',
+    SWAP_NO_FEE = 'swapNoFeeAndForward',
 }
 export enum FARM_EVENTS {
-    ENTER_FARM = 'enter_farm',
-    EXIT_FARM = 'exit_farm',
-    CLAIM_REWARDS = 'claim_rewards',
-    COMPOUND_REWARDS = 'compound_rewards',
+    ENTER_FARM = 'enterFarm',
+    EXIT_FARM = 'exitFarm',
+    CLAIM_REWARDS = 'claimRewards',
+    COMPOUND_REWARDS = 'compoundRewards',
 }
 export enum PROXY_EVENTS {
-    ADD_LIQUIDITY_PROXY = 'add_liquidity_proxy',
-    REMOVE_LIQUIDITY_PROXY = 'remove_liquidity_proxy',
-    ENTER_FARM_PROXY = 'enter_farm_proxy',
-    EXIT_FARM_PROXY = 'exit_farm_proxy',
-    CLAIM_REWARDS_PROXY = 'claim_rewards_farm_proxy',
-    COMPOUND_REWARDS_PROXY = 'compound_rewards_farm_proxy',
+    ADD_LIQUIDITY_PROXY = 'addLiquidityProxy',
+    REMOVE_LIQUIDITY_PROXY = 'removeLiquidityProxy',
+    ENTER_FARM_PROXY = 'enterFarmProxy',
+    EXIT_FARM_PROXY = 'exitFarmProxy',
+    CLAIM_REWARDS_PROXY = 'claimRewardsFarmProxy',
+    COMPOUND_REWARDS_PROXY = 'compoundRewardsFarmProxy',
 }
 
 export type GenericEventType = {

@@ -9,6 +9,7 @@ import { LoggingInterceptor } from './utils/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
 import { WebSocketService } from './modules/websocket/websocket.service';
 import { WebSocketModule } from './modules/websocket/websocket.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -69,6 +70,24 @@ async function bootstrap() {
         await webSocketService.subscribe();
         eventsNotifierApp.listen(() =>
             console.log('Started events notifier microservice'),
+        );
+
+        const analyticsApp = await NestFactory.createMicroservice<
+            MicroserviceOptions
+        >(AnalyticsModule, {
+            transport: Transport.REDIS,
+            options: {
+                port: 3001,
+                url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
+                retryDelay: 1000,
+                retryAttempts: 10,
+                retry_strategy: function(_: any) {
+                    return 1000;
+                },
+            },
+        });
+        analyticsApp.listen(() =>
+            console.log('Started analytics microservice'),
         );
     }
 }
