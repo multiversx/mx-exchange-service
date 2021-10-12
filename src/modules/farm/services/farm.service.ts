@@ -143,12 +143,6 @@ export class FarmService {
                     .dividedBy(constantsConfig.MAX_PENALTY_PERCENT)
                     .integerValue(),
             );
-            rewards = rewards.minus(
-                rewards
-                    .multipliedBy(penaltyPercent)
-                    .dividedBy(constantsConfig.MAX_PENALTY_PERCENT)
-                    .integerValue(),
-            );
         }
 
         return new ExitFarmTokensModel({
