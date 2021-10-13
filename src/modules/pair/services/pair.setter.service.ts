@@ -166,8 +166,12 @@ export class PairSetterService {
     async setFirstTokenVolume(
         pairAddress: string,
         value: string,
+        time: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'firstTokenVolume');
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            `firstTokenVolume.${time}`,
+        );
         await this.cachingService.setCache(cacheKey, value, oneMinute());
         return cacheKey;
     }
@@ -175,20 +179,32 @@ export class PairSetterService {
     async setSecondTokenVolume(
         pairAddress: string,
         value: string,
+        time: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'secondTokenVolume');
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            `secondTokenVolume.${time}`,
+        );
         await this.cachingService.setCache(cacheKey, value, oneMinute());
         return cacheKey;
     }
 
-    async setVolumeUSD(pairAddress: string, value: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'volumeUSD');
+    async setVolumeUSD(
+        pairAddress: string,
+        value: string,
+        time: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, `volumeUSD.${time}`);
         await this.cachingService.setCache(cacheKey, value, oneMinute());
         return cacheKey;
     }
 
-    async setFeesUSD(pairAddress: string, value: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'feesUSD');
+    async setFeesUSD(
+        pairAddress: string,
+        value: string,
+        time: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, `feesUSD.${time}`);
         await this.cachingService.setCache(cacheKey, value, oneMinute());
         return cacheKey;
     }

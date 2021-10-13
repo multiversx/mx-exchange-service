@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { HttpsAgent } from 'agentkeepalive';
 import AWS, { TimestreamQuery } from 'aws-sdk';
+import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig } from 'src/config';
 import { Logger } from 'winston';
@@ -28,9 +29,23 @@ export class AWSTimestreamQueryService {
     }
 
     async getLatestValue({ table, series, metric }): Promise<string> {
-        const QueryString = `SELECT measure_value::double FROM "${this.DatabaseName}"."${table}" WHERE series = '${series}' AND measure_name = '${metric}' ORDER BY time DESC LIMIT 1`;
+        const QueryString = `SELECT measure_value::double FROM "${this.DatabaseName}"."${table}"
+                             WHERE series = '${series}' AND measure_name = '${metric}'
+                             ORDER BY time DESC
+                             LIMIT 1`;
+
         const params = { QueryString };
         const { Rows } = await this.queryClient.query(params).promise();
-        return Rows[0] ? Rows[0]?.Data[0]?.ScalarValue : '0';
+        const value = Rows[0] ? Rows[0]?.Data[0]?.ScalarValue : '0';
+        return new BigNumber(value).toFixed();
+    }
+
+    async getAgregatedValue({ table, series, metric, time }): Promise<string> {
+        const QueryString = `SELECT sum(measure_value::double) FROM "${this.DatabaseName}"."${table}"
+                             WHERE series = '${series}' AND measure_name = '${metric}' AND time between ago(${time}) and now()`;
+        const params = { QueryString };
+        const { Rows } = await this.queryClient.query(params).promise();
+        const value = Rows[0] ? Rows[0]?.Data[0]?.ScalarValue : '0';
+        return new BigNumber(value).toFixed();
     }
 }

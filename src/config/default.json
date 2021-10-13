@@ -13,26 +13,26 @@
     },
     "scAddress": {
         "routerAddress": "erd1qqqqqqqqqqqqqpgqnhlmwqvpt0r3uurlyg2p2f4q33q05cut0n4s325q26",
-        "MEX-ec32fa": "erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc",
-        "distributionAddress": "erd1qqqqqqqqqqqqqpgqz4tlrm2f5g5n67x2tq40s4q3zd6w3j2m0n4shdf27n",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgq78y09lw93f3udvsplshdv2vk957l5vl70n4splrad2",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqlauj5h3wdqnmtrlljxh87f6u992jtlj80n4sjpnl56",
+        "MEX-10e788": "erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqkafk4cszkkdq66g5v9wfmdewhqrd2uzd0n4skvmjwz",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqwjmsvyqrdggp9yv5lpr57tmruj0r7gxw0n4sduux5q",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqkpj2crmx6gza8s9qklfnat6vjlpyz3df0n4sg2vru7",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
-            "shardID-1": "erd1qqqqqqqqqqqqqpgq0nr7dkfjwlqvt4hcz3adqzhnl0lqpn2w0n4sjecg6m",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqmcmcerf4phjqglgfghsswe5a2ylecd8v0n4szcj3pe",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         }
     },
-    "tokenProviderUSD": "BUSD-f2c46d",
+    "tokenProviderUSD": "BUSD-661065",
     "priceFeeds": {
-        "BUSD-f2c46d": "busd"
+        "BUSD-661065": "busd"
     },
-    "tokensSupply": ["MEX-ec32fa"],
-    "cachedTokensPrice": ["MEX-ec32fa"],
+    "tokensSupply": ["MEX-10e788"],
+    "cachedTokensPrice": ["MEX-10e788"],
     "farms": [
-        "erd1qqqqqqqqqqqqqpgqpfekajgprpwzfqfctzqfqe5j2n38t3ev0n4shhyhy5",
-        "erd1qqqqqqqqqqqqqpgqwe7relwdmhg52ra4d9t72nt5hk0qhjrd0n4spy0wnx",
-        "erd1qqqqqqqqqqqqqpgqfau7c39mzvmjkkkfmxtdwjgjparkgfmz0n4sfe8er6"
+        "erd1qqqqqqqqqqqqqpgqwp4l049lhutgv79hgj2d0kpqavjc46nr0n4sjxg37u",
+        "erd1qqqqqqqqqqqqqpgq3attym8u33fqmjae6ew9gwc52fc3an0m0n4s56gf7y",
+        "erd1qqqqqqqqqqqqqpgqv6yn5dljf4jqlupwqgfpve9lcf9hpgc00n4sms7t87"
     ],
     "caching": {
         "pairsMetadata": 300,

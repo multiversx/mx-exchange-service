@@ -18,6 +18,18 @@ export class RouterSetterService {
         return cacheKey;
     }
 
+    async setTotalVolumeUSD(value: string, time: string): Promise<string> {
+        const cacheKey = this.getRouterCacheKey(`totalVolumeUSD.${time}`);
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setTotalFeesUSD(value: string, time: string): Promise<string> {
+        const cacheKey = this.getRouterCacheKey(`totalFeesUSD.${time}`);
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     private getRouterCacheKey(...args: any) {
         return generateCacheKeyFromParams('router', ...args);
     }

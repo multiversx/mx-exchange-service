@@ -136,36 +136,42 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async firstTokenVolume(@Parent() parent: PairModel) {
+    async firstTokenVolume24h(@Parent() parent: PairModel) {
         try {
-            return this.pairGetterService.getFirstTokenVolume(parent.address);
+            return this.pairGetterService.getFirstTokenVolume(
+                parent.address,
+                '24h',
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
     @ResolveField()
-    async secondTokenVolume(@Parent() parent: PairModel) {
+    async secondTokenVolume24h(@Parent() parent: PairModel) {
         try {
-            return this.pairGetterService.getSecondTokenVolume(parent.address);
+            return this.pairGetterService.getSecondTokenVolume(
+                parent.address,
+                '24h',
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
     @ResolveField()
-    async volumeUSD(@Parent() parent: PairModel) {
+    async volumeUSD24h(@Parent() parent: PairModel) {
         try {
-            return this.pairGetterService.getVolumeUSD(parent.address);
+            return this.pairGetterService.getVolumeUSD(parent.address, '24h');
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
     @ResolveField()
-    async feesUSD(@Parent() parent: PairModel) {
+    async feesUSD24h(@Parent() parent: PairModel) {
         try {
-            return this.pairGetterService.getFeesUSD(parent.address);
+            return this.pairGetterService.getFeesUSD(parent.address, '24h');
         } catch (error) {
             throw new ApolloError(error);
         }
