@@ -9,9 +9,10 @@ import { RouterGetterService } from './router.getter.service';
 import { RouterComputeService } from './router.compute.service';
 import { PairModule } from '../pair/pair.module';
 import { RouterSetterService } from './router.setter.service';
+import { AWSModule } from 'src/services/aws/aws.module';
 
 @Module({
-    imports: [ElrondCommunicationModule, CachingModule, PairModule],
+    imports: [ElrondCommunicationModule, CachingModule, PairModule, AWSModule],
     providers: [
         RouterService,
         AbiRouterService,

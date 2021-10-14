@@ -58,16 +58,16 @@ export class PairModel {
     lockedValueUSD: string;
 
     @Field()
-    firstTokenVolume: string;
+    firstTokenVolume24h: string;
 
     @Field()
-    secondTokenVolume: string;
+    secondTokenVolume24h: string;
 
     @Field()
-    volumeUSD: string;
+    volumeUSD24h: string;
 
     @Field()
-    feesUSD: string;
+    feesUSD24h: string;
 
     @Field()
     info: PairInfoModel;

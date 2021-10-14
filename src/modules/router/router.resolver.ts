@@ -48,9 +48,27 @@ export class RouterResolver {
     }
 
     @ResolveField()
-    async totalValueLockedUSD(@Parent() FactoryModel: FactoryModel) {
+    async totalValueLockedUSD(@Parent() factoryModel: FactoryModel) {
         try {
             return await this.routerGetterService.getTotalLockedValueUSD();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async totalVolumeUSD24h(@Parent() factoryModel: FactoryModel) {
+        try {
+            return this.routerGetterService.getTotalVolumeUSD('24h');
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async totalFeesUSD24h(@Parent() factoryModel: FactoryModel) {
+        try {
+            return this.routerGetterService.getTotalFeesUSD('24h');
         } catch (error) {
             throw new ApolloError(error);
         }

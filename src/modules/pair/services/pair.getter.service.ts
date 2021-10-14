@@ -234,57 +234,67 @@ export class PairGetterService {
         );
     }
 
-    async getFirstTokenVolume(pairAddress: string): Promise<string> {
+    async getFirstTokenVolume(
+        pairAddress: string,
+        time: string,
+    ): Promise<string> {
         return this.getData(
             pairAddress,
-            'firstTokenVolume',
+            `firstTokenVolume.${time}`,
             () =>
-                this.awsTimestreamQuery.getLatestValue({
+                this.awsTimestreamQuery.getAgregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'firstTokenVolume',
+                    time,
                 }),
             oneMinute(),
         );
     }
 
-    async getSecondTokenVolume(pairAddress: string): Promise<string> {
+    async getSecondTokenVolume(
+        pairAddress: string,
+        time: string,
+    ): Promise<string> {
         return this.getData(
             pairAddress,
-            'secondTokenVolume',
+            `secondTokenVolume.${time}`,
             () =>
-                this.awsTimestreamQuery.getLatestValue({
+                this.awsTimestreamQuery.getAgregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'secondTokenVolume',
+                    time,
                 }),
             oneMinute(),
         );
     }
 
-    async getVolumeUSD(pairAddress: string): Promise<string> {
+    async getVolumeUSD(pairAddress: string, time: string): Promise<string> {
         return this.getData(
             pairAddress,
-            'volumeUSD',
+            `volumeUSD.${time}`,
             () =>
-                this.awsTimestreamQuery.getLatestValue({
+                this.awsTimestreamQuery.getAgregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'volumeUSD',
+                    time,
                 }),
             oneMinute(),
         );
     }
 
-    async getFeesUSD(pairAddress: string): Promise<string> {
+    async getFeesUSD(pairAddress: string, time: string): Promise<string> {
         return this.getData(
             pairAddress,
-            'feesUSD',
+            `feesUSD.${time}`,
             () =>
-                this.awsTimestreamQuery.getLatestValue({
+                this.awsTimestreamQuery.getAgregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'feesUSD',
+                    time,
                 }),
             oneMinute(),
         );
