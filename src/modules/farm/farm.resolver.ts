@@ -9,6 +9,7 @@ import {
 } from './models/farm.model';
 import { TransactionsFarmService } from './services/transactions-farm.service';
 import {
+    BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,
     ClaimRewardsArgs,
     CompoundRewardsArgs,
@@ -271,12 +272,14 @@ export class FarmResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => RewardsModel)
+    @Query(returns => [RewardsModel])
     async getRewardsForPosition(
-        @Args() args: CalculateRewardsArgs,
-    ): Promise<RewardsModel> {
+        @Args('farmsPositions') args: BatchFarmRewardsComputeArgs,
+    ): Promise<RewardsModel[]> {
         try {
-            return this.farmService.getRewardsForPosition(args);
+            return this.farmService.getBatchRewardsForPosition(
+                args.farmsPositions,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -285,7 +288,7 @@ export class FarmResolver {
     @UseGuards(GqlAuthGuard)
     @Query(returns => ExitFarmTokensModel)
     async getExitFarmTokens(
-        @Args() args: CalculateRewardsArgs,
+        @Args('args') args: CalculateRewardsArgs,
     ): Promise<ExitFarmTokensModel> {
         return this.farmService.getTokensForExitFarm(args);
     }
