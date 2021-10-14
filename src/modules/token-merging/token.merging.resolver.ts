@@ -5,12 +5,12 @@ import { TransactionModel } from 'src/models/transaction.model';
 import {
     DepositTokenArgs,
     TokensMergingArgs,
-    UserNftDepositArgs,
     WithdrawTokenFromDepositArgs,
 } from './dto/token.merging.args';
 import { TokenMergingService } from './token.merging.service';
 import { TokenMergingTransactionsService } from './token.merging.transactions.service';
-import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { User } from 'src/helpers/userDecorator';
 
 @Resolver()
 export class TokenMergingResolver {
@@ -21,31 +21,33 @@ export class TokenMergingResolver {
         private readonly mergeTokensService: TokenMergingService,
     ) {}
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [GenericEsdtAmountPair])
-    async userNftDeposit(
-        @Args() args: UserNftDepositArgs,
-    ): Promise<GenericEsdtAmountPair[]> {
-        return await this.mergeTokensService.getNftDeposit(args);
+    async userNftDeposit(@User() user: any): Promise<GenericEsdtAmountPair[]> {
+        return await this.mergeTokensService.getNftDeposit(user.publicKey);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [GenericEsdtAmountPair])
     async userNftDepositProxy(
-        @Args() args: UserNftDepositArgs,
+        @User() user: any,
     ): Promise<GenericEsdtAmountPair[]> {
-        return await this.mergeTokensService.getNftDepositProxy(args);
+        return await this.mergeTokensService.getNftDepositProxy(user.publicKey);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async depositTokens(
         @Args() args: DepositTokenArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.depositTokens(args);
+        return await this.mergeTokensTransactions.depositTokens(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async withdrawAllTokensFromDeposit(
         @Args() args: TokensMergingArgs,
@@ -55,7 +57,7 @@ export class TokenMergingResolver {
         );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async withdrawTokenFromDeposit(
         @Args() args: WithdrawTokenFromDepositArgs,

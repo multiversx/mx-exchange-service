@@ -19,7 +19,10 @@ export class TransactionsLockedAssetService {
         private readonly context: ContextService,
     ) {}
 
-    async unlockAssets(args: UnlockAssetsArs): Promise<TransactionModel> {
+    async unlockAssets(
+        sender: string,
+        args: UnlockAssetsArs,
+    ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
 
         const transactionArgs = [
@@ -36,7 +39,7 @@ export class TransactionsLockedAssetService {
             new GasLimit(gasConfig.unlockAssets),
         );
 
-        transaction.receiver = args.sender;
+        transaction.receiver = sender;
 
         return transaction;
     }

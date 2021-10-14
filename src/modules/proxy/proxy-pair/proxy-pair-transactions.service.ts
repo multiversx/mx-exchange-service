@@ -35,6 +35,7 @@ export class TransactionsProxyPairService {
     ) {}
 
     async addLiquidityProxyBatch(
+        sender: string,
         args: AddLiquidityProxyBatchArgs,
         mergeTokens = false,
     ): Promise<TransactionModel[]> {
@@ -48,24 +49,22 @@ export class TransactionsProxyPairService {
         switch (elrondConfig.EGLDIdentifier) {
             case args.firstTokenID:
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
-                    args.sender,
+                    sender,
                     args.firstTokenAmount,
                 );
                 transactions.push(eGLDwrapTransaction);
 
-                esdtTransferTransactions = this.esdtTransferProxyBatch([
+                esdtTransferTransactions = this.esdtTransferProxyBatch(sender, [
                     {
                         pairAddress: args.pairAddress,
                         amount: args.firstTokenAmount,
                         tokenID: wrappedTokenID,
-                        sender: args.sender,
                     },
                     {
                         pairAddress: args.pairAddress,
                         amount: args.secondTokenAmount,
                         tokenID: args.secondTokenID,
                         tokenNonce: args.secondTokenNonce,
-                        sender: args.sender,
                     },
                 ]);
 
@@ -91,24 +90,22 @@ export class TransactionsProxyPairService {
                 break;
             case args.secondTokenID:
                 eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
-                    args.sender,
+                    sender,
                     args.secondTokenAmount,
                 );
                 transactions.push(eGLDwrapTransaction);
 
-                esdtTransferTransactions = this.esdtTransferProxyBatch([
+                esdtTransferTransactions = this.esdtTransferProxyBatch(sender, [
                     {
                         pairAddress: args.pairAddress,
                         amount: args.firstTokenAmount,
                         tokenID: args.firstTokenID,
                         tokenNonce: args.firstTokenNonce,
-                        sender: args.sender,
                     },
                     {
                         pairAddress: args.pairAddress,
                         amount: args.secondTokenAmount,
                         tokenID: wrappedTokenID,
-                        sender: args.sender,
                     },
                 ]);
 
@@ -132,20 +129,18 @@ export class TransactionsProxyPairService {
                 transactions.push(addLiquidityProxyTransaction);
                 break;
             default:
-                esdtTransferTransactions = this.esdtTransferProxyBatch([
+                esdtTransferTransactions = this.esdtTransferProxyBatch(sender, [
                     {
                         pairAddress: args.pairAddress,
                         amount: args.firstTokenAmount,
                         tokenID: args.firstTokenID,
                         tokenNonce: args.firstTokenNonce,
-                        sender: args.sender,
                     },
                     {
                         pairAddress: args.pairAddress,
                         amount: args.secondTokenAmount,
                         tokenID: args.secondTokenID,
                         tokenNonce: args.secondTokenNonce,
-                        sender: args.sender,
                     },
                 ]);
 
@@ -232,6 +227,7 @@ export class TransactionsProxyPairService {
     }
 
     async removeLiquidityProxy(
+        sender: string,
         args: RemoveLiquidityProxyArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
@@ -274,14 +270,14 @@ export class TransactionsProxyPairService {
             transactionArgs,
             new GasLimit(gasConfig.removeLiquidityProxy),
         );
-        transaction.receiver = args.sender;
+        transaction.receiver = sender;
         transactions.push(transaction);
 
         switch (wrappedTokenID) {
             case firstTokenID:
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         amount0Min.toString(),
                     ),
                 );
@@ -289,7 +285,7 @@ export class TransactionsProxyPairService {
             case secondTokenID:
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         amount1Min.toString(),
                     ),
                 );
@@ -299,12 +295,12 @@ export class TransactionsProxyPairService {
     }
 
     esdtTransferProxyBatch(
+        sender: string,
         batchArgs: TokensTransferArgs[],
     ): Promise<TransactionModel>[] {
         return batchArgs.map(args =>
-            this.esdtTransferProxy({
+            this.esdtTransferProxy(sender, {
                 pairAddress: args.pairAddress,
-                sender: args.sender,
                 tokenID: args.tokenID,
                 tokenNonce: args.tokenNonce,
                 amount: args.amount,
@@ -313,6 +309,7 @@ export class TransactionsProxyPairService {
     }
 
     async esdtTransferProxy(
+        sender: string,
         args: TokensTransferArgs,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
@@ -347,12 +344,13 @@ export class TransactionsProxyPairService {
             new GasLimit(gasConfig.acceptEsdtPaymentProxy),
         );
 
-        transaction.receiver = args.sender;
+        transaction.receiver = sender;
 
         return transaction;
     }
 
     async reclaimTemporaryFundsProxy(
+        sender: string,
         args: ReclaimTemporaryFundsProxyArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
@@ -378,7 +376,7 @@ export class TransactionsProxyPairService {
             case args.firstTokenID:
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         args.firstTokenAmount,
                     ),
                 );
@@ -386,7 +384,7 @@ export class TransactionsProxyPairService {
             case args.secondTokenID:
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
-                        args.sender,
+                        sender,
                         args.secondTokenAmount,
                     ),
                 );

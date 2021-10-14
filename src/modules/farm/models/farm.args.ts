@@ -31,8 +31,6 @@ export class SftFarmInteractionArgs {
     @Field()
     farmAddress: string;
     @Field()
-    sender: string;
-    @Field()
     farmTokenID: string;
     @Field(type => Int)
     farmTokenNonce: number;
@@ -51,8 +49,6 @@ export class EnterFarmBatchArgs {
     amountIn: string;
     @Field({ nullable: true })
     lockRewards: boolean;
-    @Field()
-    sender: string;
 
     @Field()
     farmTokenID: string;

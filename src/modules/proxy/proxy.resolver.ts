@@ -33,8 +33,9 @@ import {
 } from '../token-merging/dto/token.merging.args';
 import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
 import { TokenMergingService } from '../token-merging/token.merging.service';
-import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { User } from 'src/helpers/userDecorator';
 
 @Resolver(of => ProxyModel)
 export class ProxyResolver {
@@ -134,18 +135,23 @@ export class ProxyResolver {
         return await this.proxyService.getProxyInfo();
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async tokensTransferProxy(
         @Args() args: TokensTransferArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsProxyPairService.esdtTransferProxy(args);
+        return await this.transactionsProxyPairService.esdtTransferProxy(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async addLiquidityProxyBatch(
         @Args() args: AddLiquidityProxyBatchArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
         if (
             args.lockedLpTokenID &&
@@ -157,14 +163,17 @@ export class ProxyResolver {
                 tokenID: args.lockedLpTokenID,
                 tokenNonce: args.lockedLpTokenNonce,
                 amount: args.lockedLpTokenAmount,
-                sender: args.sender,
             };
             const [
                 depositTokensTransaction,
                 addLiquidityProxyBatchTransactions,
             ] = await Promise.all([
-                this.mergeTokensTransactions.depositTokens(depositTokenArgs),
+                this.mergeTokensTransactions.depositTokens(
+                    user.publicKey,
+                    depositTokenArgs,
+                ),
                 this.transactionsProxyPairService.addLiquidityProxyBatch(
+                    user.publicKey,
                     args,
                     true,
                 ),
@@ -175,12 +184,13 @@ export class ProxyResolver {
             ];
         } else {
             return this.transactionsProxyPairService.addLiquidityProxyBatch(
+                user.publicKey,
                 args,
             );
         }
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async addLiquidityProxy(
         @Args() args: AddLiquidityProxyArgs,
@@ -188,56 +198,63 @@ export class ProxyResolver {
         return await this.transactionsProxyPairService.addLiquidityProxy(args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [GenericEsdtAmountPair])
     async getTemporaryFundsProxy(
-        @Args('userAddress') userAddress: string,
+        @User() user: any,
     ): Promise<GenericEsdtAmountPair[]> {
-        return this.proxyPairService.getTemporaryFundsProxy(userAddress);
+        return this.proxyPairService.getTemporaryFundsProxy(user.publicKey);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async reclaimTemporaryFundsProxy(
         @Args() args: ReclaimTemporaryFundsProxyArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
         return await this.transactionsProxyPairService.reclaimTemporaryFundsProxy(
+            user.publicKey,
             args,
         );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async removeLiquidityProxy(
         @Args() args: RemoveLiquidityProxyArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
         return await this.transactionsProxyPairService.removeLiquidityProxy(
+            user.publicKey,
             args,
         );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async enterFarmProxy(
         @Args() args: EnterFarmProxyArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsProxyFarmService.enterFarmProxy(args);
+        return await this.transactionsProxyFarmService.enterFarmProxy(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async enterFarmProxyBatch(
         @Args() args: EnterFarmProxyBatchArgs,
+        @User() user: any,
     ): Promise<TransactionModel[]> {
         const depositTokenArgs: DepositTokenArgs = {
             smartContractType: SmartContractType.PROXY_FARM,
             tokenID: args.lockedFarmTokenID,
             tokenNonce: args.lockedFarmTokenNonce,
             amount: args.lockedFarmAmount,
-            sender: args.sender,
         };
         const enterFarmProxyArgs: EnterFarmProxyArgs = {
-            sender: args.sender,
             acceptedLockedTokenID: args.acceptedLockedTokenID,
             acceptedLockedTokenNonce: args.acceptedLockedTokenNonce,
             farmAddress: args.farmAddress,
@@ -245,33 +262,43 @@ export class ProxyResolver {
             lockRewards: args.lockRewards,
         };
         return await Promise.all([
-            this.mergeTokensTransactions.depositTokens(depositTokenArgs),
+            this.mergeTokensTransactions.depositTokens(
+                user.publicKey,
+                depositTokenArgs,
+            ),
             this.transactionsProxyFarmService.enterFarmProxy(
+                user.publicKey,
                 enterFarmProxyArgs,
                 true,
             ),
         ]);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async exitFarmProxy(
         @Args() args: ExitFarmProxyArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsProxyFarmService.exitFarmProxy(args);
-    }
-
-    @UseGuards(JwtAuthenticateGuard)
-    @Query(returns => TransactionModel)
-    async claimFarmRewardsProxy(
-        @Args() args: ClaimFarmRewardsProxyArgs,
-    ): Promise<TransactionModel> {
-        return await this.transactionsProxyFarmService.claimFarmRewardsProxy(
+        return await this.transactionsProxyFarmService.exitFarmProxy(
+            user.publicKey,
             args,
         );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
+    @Query(returns => TransactionModel)
+    async claimFarmRewardsProxy(
+        @Args() args: ClaimFarmRewardsProxyArgs,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        return await this.transactionsProxyFarmService.claimFarmRewardsProxy(
+            user.publicKey,
+            args,
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async mergeWrappedLpTokens(
         @Args() args: TokensMergingArgs,
@@ -279,7 +306,7 @@ export class ProxyResolver {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async mergeWrappedFarmTokens(
         @Args() args: TokensMergingArgs,
@@ -287,17 +314,19 @@ export class ProxyResolver {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async compoundRewardsProxy(
         @Args() args: CompoundRewardsProxyArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
         return await this.transactionsProxyFarmService.compoundRewardsProxy(
+            user.publicKey,
             args,
         );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [WrappedLpTokenAttributesModel])
     async wrappedLpTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
@@ -305,7 +334,7 @@ export class ProxyResolver {
         return this.proxyService.getWrappedLpTokenAttributes(args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [WrappedFarmTokenAttributesModel])
     async wrappedFarmTokenAttributes(
         @Args('args')

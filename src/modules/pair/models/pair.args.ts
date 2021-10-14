@@ -17,8 +17,6 @@ export class AddLiquidityBatchArgs {
     @Field()
     pairAddress: string;
     @Field()
-    sender: string;
-    @Field()
     firstTokenID: string;
     @Field()
     firstTokenAmount: string;
@@ -34,8 +32,6 @@ export class AddLiquidityBatchArgs {
 export class ReclaimTemporaryFundsArgs {
     @Field()
     pairAddress: string;
-    @Field()
-    sender: string;
     @Field({ nullable: true })
     firstTokenID?: string;
     @Field({ nullable: true })
@@ -51,8 +47,6 @@ export class RemoveLiquidityArgs {
     @Field()
     pairAddress: string;
     @Field()
-    sender: string;
-    @Field()
     liquidity: string;
     @Field()
     liquidityTokenID: string;
@@ -64,8 +58,6 @@ export class RemoveLiquidityArgs {
 export class SwapTokensFixedInputArgs {
     @Field()
     pairAddress: string;
-    @Field()
-    sender: string;
     @Field()
     tokenInID: string;
     @Field()
@@ -82,8 +74,6 @@ export class SwapTokensFixedInputArgs {
 export class SwapTokensFixedOutputArgs {
     @Field()
     pairAddress: string;
-    @Field()
-    sender: string;
     @Field()
     tokenInID: string;
     @Field()

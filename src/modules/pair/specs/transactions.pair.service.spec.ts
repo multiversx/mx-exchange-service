@@ -92,15 +92,17 @@ describe('TransactionPairService', () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
 
-        const liquidityBatchTransactions = await service.addLiquidityBatch({
-            pairAddress: 'pair_address_1',
-            firstTokenID: 'EGLD',
-            firstTokenAmount: firstTokenAmount,
-            secondTokenID: 'TOK2-2222',
-            secondTokenAmount: secondTokenAmount,
-            sender: 'user_address_1',
-            tolerance: 0.01,
-        });
+        const liquidityBatchTransactions = await service.addLiquidityBatch(
+            'user_address_1',
+            {
+                pairAddress: 'pair_address_1',
+                firstTokenID: 'EGLD',
+                firstTokenAmount: firstTokenAmount,
+                secondTokenID: 'TOK2-2222',
+                secondTokenAmount: secondTokenAmount,
+                tolerance: 0.01,
+            },
+        );
 
         const [
             wrapEgldTransaction,
@@ -122,15 +124,17 @@ describe('TransactionPairService', () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
 
-        const liquidityBatchTransactions = await service.addLiquidityBatch({
-            pairAddress: 'pair_address_1',
-            firstTokenID: 'TOK2-2222',
-            firstTokenAmount: firstTokenAmount,
-            secondTokenID: 'EGLD',
-            secondTokenAmount: secondTokenAmount,
-            sender: 'user_address_1',
-            tolerance: 0.01,
-        });
+        const liquidityBatchTransactions = await service.addLiquidityBatch(
+            'user_address_1',
+            {
+                pairAddress: 'pair_address_1',
+                firstTokenID: 'TOK2-2222',
+                firstTokenAmount: firstTokenAmount,
+                secondTokenID: 'EGLD',
+                secondTokenAmount: secondTokenAmount,
+                tolerance: 0.01,
+            },
+        );
 
         const [
             wrapEgldTransaction,

@@ -146,8 +146,7 @@ describe('UserService', () => {
 
     it('should get user esdt tokens', async () => {
         expect(
-            await service.getAllEsdtTokens({
-                address: 'user_address_1',
+            await service.getAllEsdtTokens('user_address_1', {
                 offset: 0,
                 limit: 10,
             }),
@@ -176,8 +175,7 @@ describe('UserService', () => {
 
     it('should get user nfts tokens', async () => {
         expect(
-            await service.getAllNftTokens({
-                address: 'user_address_1',
+            await service.getAllNftTokens('user_address_1', {
                 offset: 0,
                 limit: 10,
             }),

@@ -5,8 +5,9 @@ import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { WrapModel } from './models/wrapping.model';
 import { WrapService } from './wrap.service';
 import { TransactionsWrapService } from './transactions-wrap.service';
-import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { User } from 'src/helpers/userDecorator';
 
 @Resolver(of => WrapModel)
 export class WrapResolver {
@@ -31,21 +32,21 @@ export class WrapResolver {
         return this.wrapService.getWrappingInfo();
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async wrapEgld(
-        @Args('sender') sender: string,
         @Args('amount') amount: string,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.wrapEgld(sender, amount);
+        return this.transactionService.wrapEgld(user.publicKey, amount);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async unwrapEgld(
-        @Args('sender') sender: string,
         @Args('amount') amount: string,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.unwrapEgld(sender, amount);
+        return this.transactionService.unwrapEgld(user.publicKey, amount);
     }
 }
