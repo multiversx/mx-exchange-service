@@ -17,8 +17,9 @@ import {
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
-import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { User } from 'src/helpers/userDecorator';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {
@@ -78,15 +79,19 @@ export class LockedAssetResolver {
         return await this.lockedAssetService.getLockedAssetInfo();
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async unlockAssets(
         @Args() args: UnlockAssetsArs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.unlockAssets(args);
+        return await this.transactionsService.unlockAssets(
+            user.publicKey,
+            args,
+        );
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async mergeLockedAssetTokens(
         @Args() args: TokensMergingArgs,
@@ -94,7 +99,7 @@ export class LockedAssetResolver {
         return await this.mergeTokensTransactions.mergeTokens(args);
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => [LockedAssetAttributes])
     async decodeLockedAssetAttributes(
         @Args('args') args: DecodeAttributesArgs,

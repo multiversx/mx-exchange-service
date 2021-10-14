@@ -47,12 +47,24 @@ export class TransactionsFarmService {
         );
     }
 
-    async exitFarm(args: ExitFarmArgs): Promise<TransactionModel> {
-        return this.SftFarmInteraction(args, 'exitFarm', gasConfig.exitFarm);
+    async exitFarm(
+        sender: string,
+        args: ExitFarmArgs,
+    ): Promise<TransactionModel> {
+        return this.SftFarmInteraction(
+            sender,
+            args,
+            'exitFarm',
+            gasConfig.exitFarm,
+        );
     }
 
-    async claimRewards(args: ClaimRewardsArgs): Promise<TransactionModel> {
+    async claimRewards(
+        sender: string,
+        args: ClaimRewardsArgs,
+    ): Promise<TransactionModel> {
         return this.SftFarmInteraction(
+            sender,
             args,
             'claimRewards',
             gasConfig.claimRewards,
@@ -60,9 +72,11 @@ export class TransactionsFarmService {
     }
 
     async compoundRewards(
+        sender: string,
         args: CompoundRewardsArgs,
     ): Promise<TransactionModel> {
         return this.SftFarmInteraction(
+            sender,
             args,
             'compoundRewards',
             gasConfig.compoundRewards,
@@ -70,6 +84,7 @@ export class TransactionsFarmService {
     }
 
     private async SftFarmInteraction(
+        sender: string,
         args: SftFarmInteractionArgs,
         method: string,
         gasLimit: number,
@@ -92,7 +107,7 @@ export class TransactionsFarmService {
             new GasLimit(gasLimit),
         );
 
-        transaction.receiver = args.sender;
+        transaction.receiver = sender;
 
         return transaction;
     }

@@ -26,6 +26,7 @@ export class TransactionsProxyFarmService {
     ) {}
 
     async enterFarmProxy(
+        sender: string,
         args: EnterFarmProxyArgs,
         mergeTokens = false,
     ): Promise<TransactionModel> {
@@ -53,12 +54,15 @@ export class TransactionsProxyFarmService {
             ),
         );
 
-        transaction.receiver = args.sender;
+        transaction.receiver = sender;
 
         return transaction;
     }
 
-    async exitFarmProxy(args: ExitFarmProxyArgs): Promise<TransactionModel> {
+    async exitFarmProxy(
+        sender: string,
+        args: ExitFarmProxyArgs,
+    ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
 
         const transactionArgs = [
@@ -76,12 +80,13 @@ export class TransactionsProxyFarmService {
             new GasLimit(gasConfig.exitFarmProxy),
         );
 
-        transaction.receiver = args.sender;
+        transaction.receiver = sender;
 
         return transaction;
     }
 
     async claimFarmRewardsProxy(
+        sender: string,
         args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
@@ -101,12 +106,13 @@ export class TransactionsProxyFarmService {
             new GasLimit(gasConfig.claimRewardsProxy),
         );
 
-        transaction.receiver = args.sender;
+        transaction.receiver = sender;
 
         return transaction;
     }
 
     async compoundRewardsProxy(
+        sender: string,
         args: CompoundRewardsProxyArgs,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
@@ -126,7 +132,7 @@ export class TransactionsProxyFarmService {
             new GasLimit(gasConfig.compoundRewardsProxy),
         );
 
-        transaction.receiver = args.sender;
+        transaction.receiver = sender;
 
         return transaction;
     }

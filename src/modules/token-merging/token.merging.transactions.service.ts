@@ -97,11 +97,15 @@ export class TokenMergingTransactionsService {
         };
     }
 
-    async depositTokens(args: DepositTokenArgs): Promise<TransactionModel> {
-        return this.SftInteraction(args, 'depositTokens');
+    async depositTokens(
+        sender: string,
+        args: DepositTokenArgs,
+    ): Promise<TransactionModel> {
+        return this.SftInteraction(sender, args, 'depositTokens');
     }
 
     private async SftInteraction(
+        sender: string,
         args: SftInteractionArgs,
         method: string,
         methodArgs?: TypedValue[],
@@ -128,7 +132,7 @@ export class TokenMergingTransactionsService {
             new GasLimit(gasConfig.depositTokens),
         );
 
-        transaction.receiver = args.sender;
+        transaction.receiver = sender;
 
         return transaction;
     }

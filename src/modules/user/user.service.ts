@@ -10,7 +10,6 @@ import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { UserNftTokens } from './nfttokens.union';
-import { UserTokensArgs } from './models/user.args';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 import { WrapService } from '../wrapping/wrap.service';
 import { UserComputeService } from './user.compute.service';
@@ -26,6 +25,7 @@ import { Logger } from 'winston';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
+import { PaginationArgs } from '../dex.model';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -63,13 +63,16 @@ export class UserService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getAllEsdtTokens(args: UserTokensArgs): Promise<UserToken[]> {
+    async getAllEsdtTokens(
+        userAddress: string,
+        pagination: PaginationArgs,
+    ): Promise<UserToken[]> {
         const [wrappedEGLDTokenID, userTokens] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
             this.apiService.getTokensForUser(
-                args.address,
-                args.offset,
-                args.limit,
+                userAddress,
+                pagination.offset,
+                pagination.limit,
             ),
         ]);
         const userPairEsdtTokens = [];
@@ -107,19 +110,20 @@ export class UserService {
     }
 
     async getAllNftTokens(
-        args: UserTokensArgs,
+        userAddress: string,
+        pagination: PaginationArgs,
     ): Promise<Array<typeof UserNftTokens>> {
-        const userStats = await this.apiService.getAccountStats(args.address);
+        const userStats = await this.apiService.getAccountStats(userAddress);
         const cacheKey = this.getUserCacheKey(
-            args.address,
+            userAddress,
             userStats.nonce,
             'nfts',
         );
         const getUserNfts = () =>
             this.apiService.getNftsForUser(
-                args.address,
-                args.offset,
-                args.limit,
+                userAddress,
+                pagination.offset,
+                pagination.limit,
             );
 
         let userNFTs: NftToken[];
@@ -259,13 +263,11 @@ export class UserService {
         ] = await Promise.all([
             this.priceFeed.getTokenPrice('egld'),
             this.apiService.getAccountStats(address),
-            this.getAllEsdtTokens({
-                address: address,
+            this.getAllEsdtTokens(address, {
                 offset: 0,
                 limit: userEsdtTokensCount,
             }),
-            this.getAllNftTokens({
-                address: address,
+            this.getAllNftTokens(address, {
                 offset: 0,
                 limit: userNftTokensCount,
             }),

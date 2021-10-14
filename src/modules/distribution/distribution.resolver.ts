@@ -1,4 +1,4 @@
-import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
+import { Resolver, Query, ResolveField } from '@nestjs/graphql';
 import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { DistributionService } from './distribution.service';
@@ -7,8 +7,9 @@ import {
     DistributionModel,
 } from './models/distribution.model';
 import { TransactionsDistributionService } from './transaction-distribution.service';
-import { JwtAuthenticateGuard } from '../../helpers/guards/jwt.authenticate.guard';
 import { ApolloError } from 'apollo-server-express';
+import { User } from 'src/helpers/userDecorator';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
 
 @Resolver(of => DistributionModel)
 export class DistributionResolver {
@@ -37,19 +38,17 @@ export class DistributionResolver {
         }
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async claimLockedAssets(): Promise<TransactionModel> {
         return await this.transactionsService.claimLockedAssets();
     }
 
-    @UseGuards(JwtAuthenticateGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(returns => String)
-    async distributedLockedAssets(
-        @Args('userAddress') userAddress: string,
-    ): Promise<string> {
+    async distributedLockedAssets(@User() user: any): Promise<string> {
         return await this.distributionService.getDistributedLockedAssets(
-            userAddress,
+            user.publicKey,
         );
     }
 }
