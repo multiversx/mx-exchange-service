@@ -333,22 +333,19 @@ export class PairTransactionService {
 
         const amountIn = new BigNumber(args.amountIn);
         const amountOut = new BigNumber(args.amountOut);
-        const amountInMax = amountIn
-            .multipliedBy(1 + args.tolerance)
-            .integerValue();
 
         switch (elrondConfig.EGLDIdentifier) {
             case args.tokenInID:
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(
                         sender,
-                        amountInMax.toString(),
+                        amountIn.toString(),
                     ),
                 );
 
                 transactionArgs = [
                     BytesValue.fromUTF8(wrappedTokenID),
-                    new BigUIntValue(amountInMax),
+                    new BigUIntValue(amountIn),
                     BytesValue.fromUTF8('swapTokensFixedOutput'),
                     BytesValue.fromUTF8(args.tokenOutID),
                     new BigUIntValue(amountOut),
@@ -365,7 +362,7 @@ export class PairTransactionService {
             case args.tokenOutID:
                 transactionArgs = [
                     BytesValue.fromUTF8(args.tokenInID),
-                    new BigUIntValue(amountInMax),
+                    new BigUIntValue(amountIn),
                     BytesValue.fromUTF8('swapTokensFixedOutput'),
                     BytesValue.fromUTF8(wrappedTokenID),
                     new BigUIntValue(amountOut),
@@ -387,7 +384,7 @@ export class PairTransactionService {
             default:
                 transactionArgs = [
                     BytesValue.fromUTF8(args.tokenInID),
-                    new BigUIntValue(amountInMax),
+                    new BigUIntValue(amountIn),
                     BytesValue.fromUTF8('swapTokensFixedOutput'),
                     BytesValue.fromUTF8(args.tokenOutID),
                     new BigUIntValue(amountOut),
