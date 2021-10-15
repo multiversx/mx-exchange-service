@@ -21,7 +21,7 @@ export class WrapResolver {
     @ResolveField()
     async wrappedToken(): Promise<EsdtToken> {
         try {
-            return this.wrapService.getWrappedEgldToken();
+            return await this.wrapService.getWrappedEgldToken();
         } catch (error) {
             throw new ApolloError(error);
         }

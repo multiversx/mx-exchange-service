@@ -17,7 +17,11 @@ export const generateLogMessage = (
     const message = logType
         ? `An error occurred while ${logType} ${messageKey}`
         : `An error occurred while ${messageKey}`;
-    return [message, error, path];
+    return {
+        message,
+        path,
+        error,
+    };
 };
 
 export const generateGetLogMessage = (
@@ -88,8 +92,8 @@ export const generateRunQueryLogMessage = (
     return generateLogMessage(
         className,
         methodName,
-        error,
         '',
+        error,
         LogType.RUN_QUERY,
     );
 };

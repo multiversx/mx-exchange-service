@@ -222,7 +222,7 @@ export class CachingService {
                 CachingService.name,
                 this.getOrSet.name,
                 key,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;

@@ -36,7 +36,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getFarmedTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -62,7 +62,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getFarmTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -88,7 +88,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getFarmingTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -115,7 +115,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getFarmTokenSupply.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -142,7 +142,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getFarmingTokenReserve.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -169,7 +169,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getRewardsPerBlock.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -194,7 +194,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getPenaltyPercent.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -221,7 +221,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getMinimumFarmingEpochs.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -246,7 +246,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getLastRewardBlockNonce.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -273,7 +273,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getLastRewardBlockNonce.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -300,7 +300,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getUndistributedFees.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -327,7 +327,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getCurrentBlockFee.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -354,7 +354,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getDivisionSafetyConstant.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -389,7 +389,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.calculateRewardsForGivenPosition.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -414,7 +414,7 @@ export class AbiFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
                 this.getState.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;

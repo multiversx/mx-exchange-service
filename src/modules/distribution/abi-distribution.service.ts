@@ -37,7 +37,7 @@ export class AbiDistributionService {
             const logMessage = generateRunQueryLogMessage(
                 AbiDistributionService.name,
                 this.getCommunityDistribution.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -62,7 +62,7 @@ export class AbiDistributionService {
             const logMessage = generateRunQueryLogMessage(
                 AbiDistributionService.name,
                 this.getDistributedLockedAssets.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;

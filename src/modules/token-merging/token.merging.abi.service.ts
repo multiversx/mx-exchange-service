@@ -50,7 +50,7 @@ export class TokenMergingAbiService {
             const logMessage = generateRunQueryLogMessage(
                 TokenMergingAbiService.name,
                 this.getNftDeposit.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -78,7 +78,7 @@ export class TokenMergingAbiService {
             const logMessage = generateRunQueryLogMessage(
                 TokenMergingAbiService.name,
                 this.getnftDepositMaxLen.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -108,7 +108,7 @@ export class TokenMergingAbiService {
             const logMessage = generateRunQueryLogMessage(
                 TokenMergingAbiService.name,
                 this.getNftDepositAcceptedTokenIds.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;

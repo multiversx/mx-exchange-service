@@ -31,7 +31,7 @@ export class AbiProxyFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyFarmService.name,
                 this.getWrappedFarmTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -60,7 +60,7 @@ export class AbiProxyFarmService {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyFarmService.name,
                 this.getIntermediatedFarmsAddress.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;

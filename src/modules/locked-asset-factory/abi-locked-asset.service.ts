@@ -33,7 +33,7 @@ export class AbiLockedAssetService {
             const logMessage = generateRunQueryLogMessage(
                 AbiLockedAssetService.name,
                 this.getLockedTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -68,7 +68,7 @@ export class AbiLockedAssetService {
             const logMessage = generateRunQueryLogMessage(
                 AbiLockedAssetService.name,
                 this.getDefaultUnlockPeriod.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -94,7 +94,7 @@ export class AbiLockedAssetService {
             const logMessage = generateRunQueryLogMessage(
                 AbiLockedAssetService.name,
                 this.getDefaultUnlockPeriod.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
