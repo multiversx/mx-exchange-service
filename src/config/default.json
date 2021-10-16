@@ -75,7 +75,7 @@
         "claimRewardsProxy": 250000000,
         "wrapeGLD": 8000000,
         "claimLockedAssets": 37500000,
-        "unlockAssets": 23500000,
+        "unlockAssets": 27500000,
         "depositTokens": 50000000
     },
     "abi": {
