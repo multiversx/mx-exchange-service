@@ -118,7 +118,7 @@ export class ContextService {
         try {
             const getTokenMetadata = () =>
                 this.apiService.getService().getESDTToken(tokenID);
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getTokenMetadata,
                 oneHour(),
@@ -140,7 +140,7 @@ export class ContextService {
         try {
             const getNftCollectionMetadata = () =>
                 this.apiService.getNftCollection(collection);
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getNftCollectionMetadata,
                 oneHour(),
@@ -162,7 +162,7 @@ export class ContextService {
         try {
             const getNftMetadata = () =>
                 this.apiService.getService().getNFTToken(nftTokenID);
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getNftMetadata,
                 oneHour(),
@@ -185,7 +185,7 @@ export class ContextService {
         try {
             const getCurrentEpoch = async () =>
                 (await this.apiService.getStats()).epoch;
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getCurrentEpoch,
                 oneHour(),
@@ -208,7 +208,7 @@ export class ContextService {
         try {
             const getCurrentBlockNonce = () =>
                 this.apiService.getCurrentBlockNonce(shardID);
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getCurrentBlockNonce,
                 oneSecond() * 6,

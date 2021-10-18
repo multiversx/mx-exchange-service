@@ -277,7 +277,7 @@ export class FarmResolver {
         @Args('farmsPositions') args: BatchFarmRewardsComputeArgs,
     ): Promise<RewardsModel[]> {
         try {
-            return this.farmService.getBatchRewardsForPosition(
+            return await this.farmService.getBatchRewardsForPosition(
                 args.farmsPositions,
             );
         } catch (error) {

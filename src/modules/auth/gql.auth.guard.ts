@@ -1,11 +1,8 @@
-import {
-    ExecutionContext,
-    ForbiddenException,
-    Injectable,
-} from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
+import { ForbiddenError } from 'apollo-server-errors';
 
 @Injectable()
 export class GqlAuthGuard extends AuthGuard('jwt') {
@@ -21,15 +18,13 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
         }
 
         if (info?.name === 'TokenExpiredError') {
-            throw new ForbiddenException('token expired');
+            throw new ForbiddenError('token expired');
         }
 
         if (info?.name === 'JsonWebTokenError') {
-            throw new ForbiddenException('invalid token');
+            throw new ForbiddenError('invalid token');
         }
 
-        throw new ForbiddenException(
-            'You are not authorized to make this request',
-        );
+        throw new ForbiddenError('You are not authorized to make this request');
     }
 }

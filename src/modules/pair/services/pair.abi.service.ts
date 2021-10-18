@@ -32,9 +32,10 @@ export class PairAbiService {
             const logMessage = generateRunQueryLogMessage(
                 PairAbiService.name,
                 interaction.getFunction().name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
+
             throw error;
         }
     }

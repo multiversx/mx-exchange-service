@@ -42,7 +42,7 @@ export class ProxyService {
     ): Promise<string> {
         const cacheKey = this.getProxyCacheKey(tokenCacheKey);
         try {
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 createValueFunc,
                 oneHour(),

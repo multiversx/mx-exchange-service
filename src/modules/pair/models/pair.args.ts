@@ -51,6 +51,4 @@ export class SwapTokensFixedOutputArgs {
     tokenOutID: string;
     @Field()
     amountOut: string;
-    @Field()
-    tolerance: number;
 }

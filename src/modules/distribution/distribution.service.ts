@@ -30,7 +30,7 @@ export class DistributionService {
         try {
             const getCommunityDistribution = () =>
                 this.abiService.getCommunityDistribution();
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
                 getCommunityDistribution,
                 cacheConfig.default,
@@ -40,7 +40,7 @@ export class DistributionService {
                 DistributionService.name,
                 this.getCommunityDistribution.name,
                 cacheKey,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
@@ -58,7 +58,7 @@ export class DistributionService {
                 DistributionService.name,
                 this.getCommunityDistribution.name,
                 '',
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;

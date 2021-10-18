@@ -30,7 +30,7 @@ export class AbiWrapService {
             const logMessage = generateRunQueryLogMessage(
                 AbiWrapService.name,
                 this.getWrappedEgldTokenID.name,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
             throw error;
