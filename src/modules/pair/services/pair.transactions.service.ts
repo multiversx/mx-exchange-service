@@ -1,18 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
     BigUIntValue,
     TypedValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { GasLimit } from '@elrondnetwork/erdjs';
+import { Address, GasLimit } from '@elrondnetwork/erdjs';
 import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     AddLiquidityArgs,
-    AddLiquidityBatchArgs,
-    ESDTTransferArgs,
-    ReclaimTemporaryFundsArgs,
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
@@ -24,6 +20,10 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
+import { InputTokenModel } from 'src/models/inputToken.model';
+import { generateLogMessage } from 'src/utils/generate-log-message';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class PairTransactionService {
@@ -34,79 +34,64 @@ export class PairTransactionService {
         private readonly context: ContextService,
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async addLiquidityBatch(
         sender: string,
-        args: AddLiquidityBatchArgs,
+        args: AddLiquidityArgs,
     ): Promise<TransactionModel[]> {
-        let eGLDwrapTransaction: Promise<TransactionModel>;
-        const transactions: Promise<TransactionModel>[] = [];
-
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
-
-        let firstTokenID = args.firstTokenID;
-        let secondTokenID = args.secondTokenID;
-        let firstTokenAmount = args.firstTokenAmount;
-        let secondTokenAmount = args.secondTokenAmount;
+        const transactions: TransactionModel[] = [];
 
         switch (elrondConfig.EGLDIdentifier) {
-            case args.firstTokenID:
-                firstTokenID = wrappedTokenID;
-                eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
-                    sender,
-                    firstTokenAmount,
+            case args.tokens[0].tokenID:
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        sender,
+                        args.tokens[0].amount,
+                    ),
                 );
-                transactions.push(eGLDwrapTransaction);
-
                 break;
-            case args.secondTokenID:
-                firstTokenID = wrappedTokenID;
-                firstTokenAmount = args.secondTokenAmount;
-                secondTokenID = args.firstTokenID;
-                secondTokenAmount = args.firstTokenAmount;
-
-                eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
-                    sender,
-                    firstTokenAmount,
+            case args.tokens[1].tokenID:
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        sender,
+                        args.tokens[1].amount,
+                    ),
                 );
-                transactions.push(eGLDwrapTransaction);
                 break;
             default:
                 break;
         }
 
-        const esdtTransferTransactions = this.esdtTransferBatch([
-            {
-                pairAddress: args.pairAddress,
-                token: firstTokenID,
-                amount: firstTokenAmount,
-            },
-            {
-                pairAddress: args.pairAddress,
-                token: secondTokenID,
-                amount: secondTokenAmount,
-            },
-        ]);
+        transactions.push(await this.addLiquidity(sender, args));
 
-        esdtTransferTransactions.map(transaction =>
-            transactions.push(transaction),
-        );
-
-        const addLiquidityTransaction = this.addLiquidity({
-            pairAddress: args.pairAddress,
-            amount0: firstTokenAmount,
-            amount1: secondTokenAmount,
-            tolerance: args.tolerance,
-        });
-        transactions.push(addLiquidityTransaction);
-
-        return Promise.all(transactions);
+        return transactions;
     }
 
-    async addLiquidity(args: AddLiquidityArgs): Promise<TransactionModel> {
-        const amount0 = new BigNumber(args.amount0);
-        const amount1 = new BigNumber(args.amount1);
+    async addLiquidity(
+        sender: string,
+        args: AddLiquidityArgs,
+    ): Promise<TransactionModel> {
+        let firstTokenInput, secondTokenInput: InputTokenModel;
+        try {
+            [firstTokenInput, secondTokenInput] = await this.validateTokens(
+                args.pairAddress,
+                args.tokens,
+            );
+        } catch (error) {
+            const logMessage = generateLogMessage(
+                PairTransactionService.name,
+                this.addLiquidity.name,
+                '',
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+
+        const amount0 = new BigNumber(firstTokenInput.amount);
+        const amount1 = new BigNumber(secondTokenInput.amount);
 
         const amount0Min = amount0
             .multipliedBy(1 - args.tolerance)
@@ -118,58 +103,20 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             args.pairAddress,
         );
-        const interaction: Interaction = contract.methods.addLiquidity([
-            new BigUIntValue(amount0),
-            new BigUIntValue(amount1),
+
+        const endpointArgs: TypedValue[] = [
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
-        ]);
+        ];
 
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.addLiquidity));
-
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
-    }
-
-    async reclaimTemporaryFunds(
-        sender: string,
-        args: ReclaimTemporaryFundsArgs,
-    ): Promise<TransactionModel[]> {
-        const transactions: TransactionModel[] = [];
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
-        const contract = await this.elrondProxy.getPairSmartContract(
-            args.pairAddress,
+        return this.context.multiESDTNFTTransfer(
+            new Address(sender),
+            contract,
+            [firstTokenInput, secondTokenInput],
+            'addLiquidity',
+            endpointArgs,
+            new GasLimit(gasConfig.addLiquidity),
         );
-        const interaction: Interaction = contract.methods.reclaimTemporaryFunds(
-            [],
-        );
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.reclaimTemporaryFunds));
-        transactions.push(TransactionModel.fromTransaction(transaction));
-
-        switch (wrappedTokenID) {
-            case args.firstTokenID:
-                transactions.push(
-                    await this.wrapTransaction.unwrapEgld(
-                        sender,
-                        args.firstTokenAmount,
-                    ),
-                );
-                break;
-            case args.secondTokenID:
-                transactions.push(
-                    await this.wrapTransaction.unwrapEgld(
-                        sender,
-                        args.secoundTokenAmount,
-                    ),
-                );
-                break;
-        }
-
-        return transactions;
     }
 
     async removeLiquidity(
@@ -406,33 +353,66 @@ export class PairTransactionService {
         return transactions;
     }
 
-    esdtTransferBatch(
-        batchArgs: ESDTTransferArgs[],
-    ): Promise<TransactionModel>[] {
-        return batchArgs.map(args =>
-            this.esdtTransfer({
-                pairAddress: args.pairAddress,
-                token: args.token,
-                amount: args.amount,
-            }),
-        );
-    }
+    async validateTokens(
+        pairAddress: string,
+        tokens: InputTokenModel[],
+    ): Promise<InputTokenModel[]> {
+        const [
+            firstTokenID,
+            secondTokenID,
+            wrappedTokenID,
+        ] = await Promise.all([
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.wrapService.getWrappedEgldTokenID(),
+        ]);
 
-    async esdtTransfer(args: ESDTTransferArgs): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            args.pairAddress,
-        );
+        if (tokens[0].nonce > 0 || tokens[1].nonce > 0) {
+            throw new Error('Only ESDT tokens allowed!');
+        }
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.token),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromUTF8('acceptEsdtPayment'),
-        ];
+        if (
+            tokens[0].tokenID === elrondConfig.EGLDIdentifier &&
+            tokens[1].tokenID === secondTokenID
+        ) {
+            return [
+                new InputTokenModel({
+                    tokenID: wrappedTokenID,
+                    amount: tokens[0].amount,
+                    nonce: tokens[0].nonce,
+                }),
+                tokens[1],
+            ];
+        }
 
-        return this.context.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.esdtTransfer),
-        );
+        if (
+            tokens[1].tokenID === elrondConfig.EGLDIdentifier &&
+            tokens[0].tokenID === secondTokenID
+        ) {
+            return [
+                new InputTokenModel({
+                    tokenID: wrappedTokenID,
+                    amount: tokens[1].amount,
+                    nonce: tokens[1].nonce,
+                }),
+                tokens[0],
+            ];
+        }
+
+        if (
+            tokens[0].tokenID === firstTokenID &&
+            tokens[1].tokenID === secondTokenID
+        ) {
+            return tokens;
+        }
+
+        if (
+            tokens[1].tokenID === firstTokenID &&
+            tokens[0].tokenID === secondTokenID
+        ) {
+            return [tokens[1], tokens[0]];
+        }
+
+        throw new Error('invalid tokens received');
     }
 }
