@@ -1,11 +1,7 @@
 import { PairService } from './services/pair.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import {
-    LiquidityPosition,
-    PairModel,
-    TemporaryFundsModel,
-} from './models/pair.model';
+import { LiquidityPosition, PairModel } from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -259,16 +255,6 @@ export class PairResolver {
                 tokenInID,
                 amount,
             );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [TemporaryFundsModel])
-    async getTemporaryFunds(@User() user: any) {
-        try {
-            return this.pairService.getTemporaryFunds(user.publicKey);
         } catch (error) {
             throw new ApolloError(error);
         }

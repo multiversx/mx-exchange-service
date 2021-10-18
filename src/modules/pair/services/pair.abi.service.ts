@@ -1,10 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { Address, QueryResponseBundle } from '@elrondnetwork/erdjs';
+import { QueryResponseBundle } from '@elrondnetwork/erdjs';
 import { PairInfoModel } from '../models/pair-info.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
@@ -132,23 +131,6 @@ export class PairAbiService {
 
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
-    }
-
-    async getTemporaryFunds(
-        pairAddress: string,
-        callerAddress: string,
-        tokenID: string,
-    ): Promise<BigNumber> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getTemporaryFunds([
-            BytesValue.fromHex(new Address(callerAddress).hex()),
-            BytesValue.fromUTF8(tokenID),
-        ]);
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf();
     }
 
     async getState(pairAddress: string): Promise<string> {

@@ -85,25 +85,3 @@ export class PairModel {
         Object.assign(this, init);
     }
 }
-
-@ObjectType()
-export class TemporaryFundsModel {
-    @Field()
-    pairAddress: string;
-
-    @Field(type => EsdtToken, { nullable: true })
-    firstToken?: EsdtToken;
-
-    @Field({ nullable: true })
-    firstAmount?: string;
-
-    @Field(type => EsdtToken, { nullable: true })
-    secondToken?: EsdtToken;
-
-    @Field({ nullable: true })
-    secondAmount?: string;
-
-    constructor(init?: Partial<TemporaryFundsModel>) {
-        Object.assign(this, init);
-    }
-}
