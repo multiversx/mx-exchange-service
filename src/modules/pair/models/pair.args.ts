@@ -1,45 +1,14 @@
 import { ArgsType, Field } from '@nestjs/graphql';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 @ArgsType()
 export class AddLiquidityArgs {
     @Field()
     pairAddress: string;
-    @Field()
-    amount0: string;
-    @Field()
-    amount1: string;
+    @Field(type => [InputTokenModel])
+    tokens: Array<InputTokenModel>;
     @Field()
     tolerance: number;
-}
-
-@ArgsType()
-export class AddLiquidityBatchArgs {
-    @Field()
-    pairAddress: string;
-    @Field()
-    firstTokenID: string;
-    @Field()
-    firstTokenAmount: string;
-    @Field()
-    secondTokenID: string;
-    @Field()
-    secondTokenAmount: string;
-    @Field()
-    tolerance: number;
-}
-
-@ArgsType()
-export class ReclaimTemporaryFundsArgs {
-    @Field()
-    pairAddress: string;
-    @Field({ nullable: true })
-    firstTokenID?: string;
-    @Field({ nullable: true })
-    firstTokenAmount?: string;
-    @Field({ nullable: true })
-    secondTokenID?: string;
-    @Field({ nullable: true })
-    secoundTokenAmount?: string;
 }
 
 @ArgsType()
@@ -82,14 +51,4 @@ export class SwapTokensFixedOutputArgs {
     tokenOutID: string;
     @Field()
     amountOut: string;
-}
-
-@ArgsType()
-export class ESDTTransferArgs {
-    @Field()
-    pairAddress: string;
-    @Field()
-    token: string;
-    @Field()
-    amount: string;
 }
