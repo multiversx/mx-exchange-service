@@ -1,10 +1,16 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { elrondConfig } from '../../config';
-import { TypedValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
+import {
+    BigUIntValue,
+    BytesValue,
+    TypedValue,
+    U32Value,
+} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import {
     SmartContract,
     GasLimit,
     ContractFunction,
+    Address,
 } from '@elrondnetwork/erdjs';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { TransactionModel } from '../../models/transaction.model';
@@ -19,6 +25,8 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { oneHour, oneSecond } from '../../helpers/helpers';
 import { NftToken } from 'src/models/tokens/nftToken.model';
 import { RouterGetterService } from 'src/modules/router/router.getter.service';
+import { BigNumber } from 'bignumber.js';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 @Injectable()
 export class ContextService {
@@ -231,6 +239,41 @@ export class ContextService {
         });
         return {
             ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
+    }
+
+    multiESDTNFTTransfer(
+        sender: Address,
+        contract: SmartContract,
+        tokens: InputTokenModel[],
+        funcName: string,
+        args: TypedValue[],
+        gasLimit: GasLimit,
+    ): TransactionModel {
+        const receiverAddress = contract.getAddress();
+        const transactionArgs: TypedValue[] = [];
+        transactionArgs.push(BytesValue.fromHex(receiverAddress.hex()));
+
+        transactionArgs.push(new U32Value(tokens.length));
+        for (const token of tokens) {
+            transactionArgs.push(BytesValue.fromUTF8(token.tokenID));
+            transactionArgs.push(new U32Value(token.nonce));
+            transactionArgs.push(new BigUIntValue(new BigNumber(token.amount)));
+        }
+
+        transactionArgs.push(BytesValue.fromUTF8(funcName));
+        transactionArgs.push(...args);
+
+        const transaction = contract.call({
+            func: new ContractFunction('MultiESDTNFTTransfer'),
+            args: transactionArgs,
+            gasLimit: gasLimit,
+        });
+
+        return {
+            ...transaction.toPlainObject(),
+            receiver: sender.bech32(),
             chainID: elrondConfig.chainID,
         };
     }
