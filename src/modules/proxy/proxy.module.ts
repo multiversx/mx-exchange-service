@@ -7,7 +7,6 @@ import { ProxyFarmModule } from './proxy-farm/proxy-farm.module';
 import { ProxyPairModule } from './proxy-pair/proxy-pair.module';
 import { ProxyResolver } from './proxy.resolver';
 import { ProxyService } from './proxy.service';
-import { TokenMergingModule } from '../token-merging/token.merging.module';
 import { CachingModule } from '../../services/caching/cache.module';
 
 @Module({
@@ -18,7 +17,6 @@ import { CachingModule } from '../../services/caching/cache.module';
         forwardRef(() => ProxyPairModule),
         forwardRef(() => ProxyFarmModule),
         forwardRef(() => FarmModule),
-        forwardRef(() => TokenMergingModule),
     ],
     providers: [AbiProxyService, ProxyService, ProxyResolver],
     exports: [ProxyService, AbiProxyService, ProxyResolver],

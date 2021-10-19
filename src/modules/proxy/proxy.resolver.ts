@@ -22,16 +22,10 @@ import { ProxyService } from './proxy.service';
 import { DecodeAttributesArgs } from './models/proxy.args';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import {
-    TokensMergingArgs,
-    DepositTokenArgs,
-    SmartContractType,
-} from '../token-merging/dto/token.merging.args';
-import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
-import { TokenMergingService } from '../token-merging/token.merging.service';
 import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 @Resolver(of => ProxyModel)
 export class ProxyResolver {
@@ -44,10 +38,6 @@ export class ProxyResolver {
         private transactionsProxyPairService: TransactionsProxyPairService,
         @Inject(TransactionsProxyFarmService)
         private transactionsProxyFarmService: TransactionsProxyFarmService,
-        @Inject(TokenMergingTransactionsService)
-        private readonly mergeTokensTransactions: TokenMergingTransactionsService,
-        @Inject(TokenMergingService)
-        private readonly mergeTokensService: TokenMergingService,
     ) {}
 
     @ResolveField()
@@ -99,28 +89,6 @@ export class ProxyResolver {
     async intermediatedFarms(): Promise<string[]> {
         try {
             return await this.proxyFarmService.getIntermediatedFarms();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async nftDepositMaxLen() {
-        try {
-            return await this.mergeTokensService.getNftDepositMaxLen({
-                smartContractType: SmartContractType.PROXY_PAIR,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField(type => [String])
-    async nftDepositAcceptedTokenIDs() {
-        try {
-            return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
-                smartContractType: SmartContractType.PROXY_PAIR,
-            });
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -218,17 +186,37 @@ export class ProxyResolver {
     @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async mergeWrappedLpTokens(
-        @Args() args: TokensMergingArgs,
+        @Args('tokens', { type: () => [InputTokenModel] })
+        tokens: InputTokenModel[],
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.mergeTokens(args);
+        try {
+            return await this.transactionsProxyPairService.mergeWrappedLPTokens(
+                user.publicKey,
+                tokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async mergeWrappedFarmTokens(
-        @Args() args: TokensMergingArgs,
+        @Args('farmAddress') farmAddress: string,
+        @Args('tokens', { type: () => [InputTokenModel] })
+        tokens: InputTokenModel[],
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.mergeTokens(args);
+        try {
+            return await this.transactionsProxyFarmService.mergeWrappedFarmTokens(
+                user.publicKey,
+                farmAddress,
+                tokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)

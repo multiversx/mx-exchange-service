@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { elrondConfig, gasConfig } from '../../../config';
+import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import {
     BigUIntValue,
     BytesValue,
@@ -85,6 +85,8 @@ export class TransactionsProxyPairService {
                 args.pairAddress,
                 inputTokens,
             );
+
+            await this.validateInputWrappedLpTokens(inputTokens.slice(2));
         } catch (error) {
             const logMessage = generateLogMessage(
                 TransactionsProxyPairService.name,
@@ -195,6 +197,41 @@ export class TransactionsProxyPairService {
         return transactions;
     }
 
+    async mergeWrappedLPTokens(
+        sender: string,
+        tokens: InputTokenModel[],
+    ): Promise<TransactionModel> {
+        if (
+            gasConfig.defaultMergeWLPT * tokens.length >
+            constantsConfig.MAX_GAS_LIMIT
+        ) {
+            throw new Error('Number of merge tokens exeeds maximum gas limit!');
+        }
+
+        try {
+            await this.validateInputWrappedLpTokens(tokens);
+        } catch (error) {
+            const logMessage = generateLogMessage(
+                TransactionsProxyPairService.name,
+                this.mergeWrappedLPTokens.name,
+                '',
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
+
+        return this.context.multiESDTNFTTransfer(
+            new Address(sender),
+            contract,
+            tokens,
+            'mergeWrappedLpTokens',
+            [],
+            new GasLimit(gasConfig.defaultMergeWLPT * tokens.length),
+        );
+    }
+
     private async convertInputTokenstoESDTTokens(
         tokens: InputTokenModel[],
     ): Promise<InputTokenModel[]> {
@@ -231,19 +268,10 @@ export class TransactionsProxyPairService {
         }
     }
 
-    private async validateInputTokens(
-        pairAddress: string,
+    private async validateInputWrappedLpTokens(
         tokens: InputTokenModel[],
-    ): Promise<InputTokenModel[]> {
-        const [
-            firstTokenID,
-            secondTokenID,
-            wrappedLpTokenID,
-        ] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.proxyService.getLockedAssetTokenID(),
-            this.proxyPairService.getwrappedLpTokenID(),
-        ]);
+    ): Promise<void> {
+        const wrappedLpTokenID = await this.proxyPairService.getwrappedLpTokenID();
 
         for (const wrappedLpToken of tokens.slice(2)) {
             if (
@@ -253,6 +281,16 @@ export class TransactionsProxyPairService {
                 throw new Error('Invalid wrapped LP Token to merge!');
             }
         }
+    }
+
+    private async validateInputTokens(
+        pairAddress: string,
+        tokens: InputTokenModel[],
+    ): Promise<InputTokenModel[]> {
+        const [firstTokenID, secondTokenID] = await Promise.all([
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.proxyService.getLockedAssetTokenID(),
+        ]);
 
         switch (firstTokenID) {
             case tokens[0].tokenID:

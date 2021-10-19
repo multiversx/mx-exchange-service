@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { gasConfig } from '../../../config';
+import { constantsConfig, gasConfig } from '../../../config';
 import {
     BigUIntValue,
     BytesValue,
@@ -42,6 +42,7 @@ export class TransactionsProxyFarmService {
     ): Promise<TransactionModel> {
         try {
             await this.validateInputTokens(args.tokens);
+            await this.validateWFMTInputTokens(args.tokens.slice(1));
         } catch (error) {
             const logMessage = generateLogMessage(
                 TransactionsProxyFarmService.name,
@@ -154,17 +155,68 @@ export class TransactionsProxyFarmService {
         return transaction;
     }
 
+    async mergeWrappedFarmTokens(
+        sender: string,
+        farmAddress: string,
+        tokens: InputTokenModel[],
+    ): Promise<TransactionModel> {
+        if (
+            gasConfig.defaultMergeWFMT * tokens.length >
+            constantsConfig.MAX_GAS_LIMIT
+        ) {
+            throw new Error('Number of merge tokens exeeds maximum gas limit!');
+        }
+
+        try {
+            await this.validateWFMTInputTokens(tokens);
+        } catch (error) {
+            const logMessage = generateLogMessage(
+                TransactionsProxyFarmService.name,
+                this.mergeWrappedFarmTokens.name,
+                '',
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
+
+        const endpointArgs = [
+            BytesValue.fromHex(new Address(farmAddress).hex()),
+        ];
+
+        return this.context.multiESDTNFTTransfer(
+            new Address(sender),
+            contract,
+            tokens,
+            'mergeWrappedFarmTokens',
+            endpointArgs,
+            new GasLimit(gasConfig.defaultMergeWFMT * tokens.length),
+        );
+    }
+
+    private async validateWFMTInputTokens(
+        tokens: InputTokenModel[],
+    ): Promise<void> {
+        const wrappedFarmTokenID = await this.proxyFarmService.getwrappedFarmTokenID();
+
+        for (const wrappedFarmToken of tokens) {
+            if (
+                wrappedFarmToken.tokenID !== wrappedFarmTokenID ||
+                wrappedFarmToken.nonce < 1
+            ) {
+                throw new Error('Invalid tokens for merge!');
+            }
+        }
+    }
+
     private async validateInputTokens(
         tokens: InputTokenModel[],
     ): Promise<void> {
-        const [
-            lockedAssetTokenID,
-            wrappedLPTokenID,
-            wrappedFarmTokenID,
-        ] = await Promise.all([
+        const [lockedAssetTokenID, wrappedLPTokenID] = await Promise.all([
             this.proxyService.getLockedAssetTokenID(),
             this.proxyPairService.getwrappedLpTokenID(),
-            this.proxyFarmService.getwrappedFarmTokenID(),
         ]);
 
         if (
@@ -173,15 +225,6 @@ export class TransactionsProxyFarmService {
             tokens[0].nonce < 1
         ) {
             throw new Error('Invalid farming token received!');
-        }
-
-        for (const wrappedFarmToken of tokens.slice(1)) {
-            if (
-                wrappedFarmToken.tokenID !== wrappedFarmTokenID ||
-                wrappedFarmToken.nonce < 1
-            ) {
-                throw new Error('Invalid tokens for merge!');
-            }
         }
     }
 }
