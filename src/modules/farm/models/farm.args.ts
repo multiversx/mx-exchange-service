@@ -1,4 +1,5 @@
 import { ArgsType, Field, InputType, Int } from '@nestjs/graphql';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 @InputType()
 export class CalculateRewardsArgs {
@@ -30,10 +31,8 @@ export class BatchFarmRewardsComputeArgs {
 export class EnterFarmArgs {
     @Field()
     farmAddress: string;
-    @Field()
-    tokenInID: string;
-    @Field()
-    amount: string;
+    @Field(type => [InputTokenModel])
+    tokens: Array<InputTokenModel>;
     @Field({ nullable: true })
     lockRewards: boolean;
 }
@@ -50,25 +49,6 @@ export class SftFarmInteractionArgs {
     amount: string;
 }
 
-@ArgsType()
-export class EnterFarmBatchArgs {
-    @Field()
-    farmAddress: string;
-
-    @Field()
-    tokenInID: string;
-    @Field()
-    amountIn: string;
-    @Field({ nullable: true })
-    lockRewards: boolean;
-
-    @Field()
-    farmTokenID: string;
-    @Field(type => Int)
-    farmTokenNonce: number;
-    @Field()
-    amount: string;
-}
 @ArgsType()
 export class ExitFarmArgs extends SftFarmInteractionArgs {}
 

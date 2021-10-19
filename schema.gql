@@ -488,7 +488,7 @@ type Query {
   addLiquidity(pairAddress: String!, tokens: [InputTokenModel!]!, tolerance: Float!): TransactionModel!
   removeLiquidity(pairAddress: String!, liquidity: String!, liquidityTokenID: String!, tolerance: Float!): [TransactionModel!]!
   swapTokensFixedInput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): [TransactionModel!]!
-  swapTokensFixedOutput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!, tolerance: Float!): [TransactionModel!]!
+  swapTokensFixedOutput(pairAddress: String!, tokenInID: String!, amountIn: String!, tokenOutID: String!, amountOut: String!): [TransactionModel!]!
   wrappingInfo: [WrapModel!]!
   wrapEgld(amount: String!): TransactionModel!
   unwrapEgld(amount: String!): TransactionModel!
@@ -496,8 +496,7 @@ type Query {
   farms: [FarmModel!]!
   getRewardsForPosition(farmsPositions: BatchFarmRewardsComputeArgs!): [RewardsModel!]!
   getExitFarmTokens(args: CalculateRewardsArgs!): ExitFarmTokensModel!
-  enterFarm(farmAddress: String!, tokenInID: String!, amount: String!, lockRewards: Boolean): TransactionModel!
-  enterFarmBatch(farmAddress: String!, tokenInID: String!, amountIn: String!, lockRewards: Boolean, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): [TransactionModel!]!
+  enterFarm(farmAddress: String!, tokens: [InputTokenModel!]!, lockRewards: Boolean): TransactionModel!
   exitFarm(farmAddress: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
   claimRewards(farmAddress: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
   compoundRewards(farmAddress: String!, farmTokenID: String!, farmTokenNonce: Int!, amount: String!): TransactionModel!
