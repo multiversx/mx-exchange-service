@@ -3,10 +3,7 @@ import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityProxyArgs,
-    AddLiquidityProxyBatchArgs,
-    ReclaimTemporaryFundsProxyArgs,
     RemoveLiquidityProxyArgs,
-    TokensTransferArgs,
 } from './models/proxy-pair.args';
 import {
     ClaimFarmRewardsProxyArgs,
@@ -16,7 +13,7 @@ import {
     ExitFarmProxyArgs,
 } from './models/proxy-farm.args';
 import { ProxyPairService } from './proxy-pair/proxy-pair.service';
-import { GenericEsdtAmountPair, ProxyModel } from './models/proxy.model';
+import { ProxyModel } from './models/proxy.model';
 import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
 import { WrappedFarmTokenAttributesModel } from './models/wrappedFarmTokenAttributes.model';
 import { ProxyFarmService } from './proxy-farm/proxy-farm.service';
@@ -136,57 +133,18 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
-    async tokensTransferProxy(
-        @Args() args: TokensTransferArgs,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        return await this.transactionsProxyPairService.esdtTransferProxy(
-            user.publicKey,
-            args,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async addLiquidityProxyBatch(
-        @Args() args: AddLiquidityProxyBatchArgs,
+        @Args() args: AddLiquidityProxyArgs,
         @User() user: any,
     ): Promise<TransactionModel[]> {
-        if (
-            args.lockedLpTokenID &&
-            args.lockedLpTokenNonce &&
-            args.lockedLpTokenAmount
-        ) {
-            const depositTokenArgs: DepositTokenArgs = {
-                smartContractType: SmartContractType.PROXY_PAIR,
-                tokenID: args.lockedLpTokenID,
-                tokenNonce: args.lockedLpTokenNonce,
-                amount: args.lockedLpTokenAmount,
-            };
-            const [
-                depositTokensTransaction,
-                addLiquidityProxyBatchTransactions,
-            ] = await Promise.all([
-                this.mergeTokensTransactions.depositTokens(
-                    user.publicKey,
-                    depositTokenArgs,
-                ),
-                this.transactionsProxyPairService.addLiquidityProxyBatch(
-                    user.publicKey,
-                    args,
-                    true,
-                ),
-            ]);
-            return [
-                depositTokensTransaction,
-                ...addLiquidityProxyBatchTransactions,
-            ];
-        } else {
-            return this.transactionsProxyPairService.addLiquidityProxyBatch(
+        try {
+            return await this.transactionsProxyPairService.addLiquidityProxyBatch(
                 user.publicKey,
                 args,
             );
+        } catch (error) {
+            throw new ApolloError(error);
         }
     }
 
@@ -194,28 +152,16 @@ export class ProxyResolver {
     @Query(returns => TransactionModel)
     async addLiquidityProxy(
         @Args() args: AddLiquidityProxyArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsProxyPairService.addLiquidityProxy(args);
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [GenericEsdtAmountPair])
-    async getTemporaryFundsProxy(
-        @User() user: any,
-    ): Promise<GenericEsdtAmountPair[]> {
-        return this.proxyPairService.getTemporaryFundsProxy(user.publicKey);
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
-    async reclaimTemporaryFundsProxy(
-        @Args() args: ReclaimTemporaryFundsProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel[]> {
-        return await this.transactionsProxyPairService.reclaimTemporaryFundsProxy(
-            user.publicKey,
-            args,
-        );
+        try {
+            return await this.transactionsProxyPairService.addLiquidityProxy(
+                user.publicKey,
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)

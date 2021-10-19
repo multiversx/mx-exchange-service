@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { FarmModule } from '../farm/farm.module';
@@ -15,10 +15,10 @@ import { CachingModule } from '../../services/caching/cache.module';
         ElrondCommunicationModule,
         CachingModule,
         ContextModule,
-        ProxyPairModule,
-        ProxyFarmModule,
-        FarmModule,
-        TokenMergingModule,
+        forwardRef(() => ProxyPairModule),
+        forwardRef(() => ProxyFarmModule),
+        forwardRef(() => FarmModule),
+        forwardRef(() => TokenMergingModule),
     ],
     providers: [AbiProxyService, ProxyService, ProxyResolver],
     exports: [ProxyService, AbiProxyService, ProxyResolver],

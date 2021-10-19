@@ -1,196 +1,103 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { elrondConfig, gasConfig } from '../../../config';
 import {
     BigUIntValue,
     BytesValue,
+    TypedValue,
     U32Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { Address, GasLimit } from '@elrondnetwork/erdjs';
 import { TransactionModel } from '../../../models/transaction.model';
 import BigNumber from 'bignumber.js';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import {
     AddLiquidityProxyArgs,
-    AddLiquidityProxyBatchArgs,
-    ReclaimTemporaryFundsProxyArgs,
     RemoveLiquidityProxyArgs,
-    TokensTransferArgs,
 } from '../models/proxy-pair.args';
 import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WrapService } from '../../wrapping/wrap.service';
 import { TransactionsWrapService } from '../../wrapping/transactions-wrap.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { InputTokenModel } from 'src/models/inputToken.model';
+import { ProxyService } from '../proxy.service';
+import { ProxyPairService } from './proxy-pair.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { generateLogMessage } from 'src/utils/generate-log-message';
 
 @Injectable()
 export class TransactionsProxyPairService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
+        private readonly context: ContextService,
+        private readonly proxyService: ProxyService,
+        private readonly proxyPairService: ProxyPairService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly context: ContextService,
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async addLiquidityProxyBatch(
         sender: string,
-        args: AddLiquidityProxyBatchArgs,
-        mergeTokens = false,
+        args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel[]> {
-        let eGLDwrapTransaction: Promise<TransactionModel>;
-        let esdtTransferTransactions: Promise<TransactionModel>[];
-        let addLiquidityProxyTransaction: Promise<TransactionModel>;
-        const transactions: Promise<TransactionModel>[] = [];
-
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
+        const transactions: TransactionModel[] = [];
 
         switch (elrondConfig.EGLDIdentifier) {
-            case args.firstTokenID:
-                eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
-                    sender,
-                    args.firstTokenAmount,
+            case args.tokens[0].tokenID:
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        sender,
+                        args.tokens[0].amount,
+                    ),
                 );
-                transactions.push(eGLDwrapTransaction);
-
-                esdtTransferTransactions = this.esdtTransferProxyBatch(sender, [
-                    {
-                        pairAddress: args.pairAddress,
-                        amount: args.firstTokenAmount,
-                        tokenID: wrappedTokenID,
-                    },
-                    {
-                        pairAddress: args.pairAddress,
-                        amount: args.secondTokenAmount,
-                        tokenID: args.secondTokenID,
-                        tokenNonce: args.secondTokenNonce,
-                    },
-                ]);
-
-                esdtTransferTransactions.map(transaction =>
-                    transactions.push(transaction),
-                );
-
-                addLiquidityProxyTransaction = this.addLiquidityProxy(
-                    {
-                        pairAddress: args.pairAddress,
-                        amount0: args.firstTokenAmount,
-                        amount1: args.secondTokenAmount,
-                        token0ID: wrappedTokenID,
-                        token0Nonce: args.firstTokenNonce,
-                        token1ID: args.secondTokenID,
-                        token1Nonce: args.secondTokenNonce,
-                        tolerance: args.tolerance,
-                    },
-                    mergeTokens,
-                );
-                transactions.push(addLiquidityProxyTransaction);
-
                 break;
-            case args.secondTokenID:
-                eGLDwrapTransaction = this.wrapTransaction.wrapEgld(
-                    sender,
-                    args.secondTokenAmount,
+            case args.tokens[1].tokenID:
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        sender,
+                        args.tokens[1].amount,
+                    ),
                 );
-                transactions.push(eGLDwrapTransaction);
-
-                esdtTransferTransactions = this.esdtTransferProxyBatch(sender, [
-                    {
-                        pairAddress: args.pairAddress,
-                        amount: args.firstTokenAmount,
-                        tokenID: args.firstTokenID,
-                        tokenNonce: args.firstTokenNonce,
-                    },
-                    {
-                        pairAddress: args.pairAddress,
-                        amount: args.secondTokenAmount,
-                        tokenID: wrappedTokenID,
-                    },
-                ]);
-
-                esdtTransferTransactions.map(transaction =>
-                    transactions.push(transaction),
-                );
-
-                addLiquidityProxyTransaction = this.addLiquidityProxy(
-                    {
-                        pairAddress: args.pairAddress,
-                        amount0: args.secondTokenAmount,
-                        amount1: args.firstTokenAmount,
-                        token0ID: wrappedTokenID,
-                        token0Nonce: args.secondTokenNonce,
-                        token1ID: args.firstTokenID,
-                        token1Nonce: args.firstTokenNonce,
-                        tolerance: args.tolerance,
-                    },
-                    mergeTokens,
-                );
-                transactions.push(addLiquidityProxyTransaction);
                 break;
             default:
-                esdtTransferTransactions = this.esdtTransferProxyBatch(sender, [
-                    {
-                        pairAddress: args.pairAddress,
-                        amount: args.firstTokenAmount,
-                        tokenID: args.firstTokenID,
-                        tokenNonce: args.firstTokenNonce,
-                    },
-                    {
-                        pairAddress: args.pairAddress,
-                        amount: args.secondTokenAmount,
-                        tokenID: args.secondTokenID,
-                        tokenNonce: args.secondTokenNonce,
-                    },
-                ]);
-
-                esdtTransferTransactions.map(transaction =>
-                    transactions.push(transaction),
-                );
-                if (!args.firstTokenNonce && args.secondTokenNonce) {
-                    addLiquidityProxyTransaction = this.addLiquidityProxy(
-                        {
-                            pairAddress: args.pairAddress,
-                            amount0: args.firstTokenAmount,
-                            amount1: args.secondTokenAmount,
-                            token0ID: args.firstTokenID,
-                            token0Nonce: args.firstTokenNonce,
-                            token1ID: args.secondTokenID,
-                            token1Nonce: args.secondTokenNonce,
-                            tolerance: args.tolerance,
-                        },
-                        mergeTokens,
-                    );
-                    transactions.push(addLiquidityProxyTransaction);
-                } else if (args.firstTokenNonce && !args.secondTokenNonce) {
-                    addLiquidityProxyTransaction = this.addLiquidityProxy(
-                        {
-                            pairAddress: args.pairAddress,
-                            amount0: args.secondTokenAmount,
-                            amount1: args.firstTokenAmount,
-                            token0ID: args.secondTokenID,
-                            token0Nonce: args.secondTokenNonce,
-                            token1ID: args.firstTokenID,
-                            token1Nonce: args.firstTokenNonce,
-                            tolerance: args.tolerance,
-                        },
-                        mergeTokens,
-                    );
-                    transactions.push(addLiquidityProxyTransaction);
-                }
-                break;
+                throw new Error('No EGLD to wrap found!');
         }
 
-        return Promise.all(transactions);
+        transactions.push(await this.addLiquidityProxy(sender, args));
+
+        return transactions;
     }
 
     async addLiquidityProxy(
+        sender: string,
         args: AddLiquidityProxyArgs,
-        mergeTokens = false,
     ): Promise<TransactionModel> {
+        let inputTokens: InputTokenModel[];
+        try {
+            inputTokens = await this.convertInputTokenstoESDTTokens(
+                args.tokens,
+            );
+            inputTokens = await this.validateInputTokens(
+                args.pairAddress,
+                inputTokens,
+            );
+        } catch (error) {
+            const logMessage = generateLogMessage(
+                TransactionsProxyPairService.name,
+                this.addLiquidityProxy.name,
+                '',
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
         const contract = await this.elrondProxy.getProxyDexSmartContract();
-        const amount0 = new BigNumber(args.amount0);
-        const amount1 = new BigNumber(args.amount1);
+        const amount0 = new BigNumber(inputTokens[0].amount);
+        const amount1 = new BigNumber(inputTokens[1].amount);
 
         const amount0Min = amount0
             .multipliedBy(1 - args.tolerance)
@@ -199,31 +106,25 @@ export class TransactionsProxyPairService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const interaction: Interaction = contract.methods.addLiquidityProxy([
+        const endpointArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(args.pairAddress).hex()),
-            BytesValue.fromUTF8(args.token0ID),
-            new U32Value(args.token0Nonce ? args.token0Nonce : 0),
-            new BigUIntValue(amount0),
             new BigUIntValue(amount0Min),
-            BytesValue.fromUTF8(args.token1ID),
-            new U32Value(args.token1Nonce ? args.token1Nonce : 0),
-            new BigUIntValue(amount1),
             new BigUIntValue(amount1Min),
-        ]);
+        ];
 
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(
-            new GasLimit(
-                mergeTokens
-                    ? gasConfig.addLiquidityProxyMerge
-                    : gasConfig.addLiquidityProxy,
-            ),
+        const gasLimit: GasLimit = new GasLimit(
+            inputTokens.length > 2
+                ? gasConfig.addLiquidityProxyMerge
+                : gasConfig.addLiquidityProxy,
         );
-
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+        return this.context.multiESDTNFTTransfer(
+            new Address(sender),
+            contract,
+            inputTokens,
+            'addLiquidityProxy',
+            endpointArgs,
+            gasLimit,
+        );
     }
 
     async removeLiquidityProxy(
@@ -294,104 +195,86 @@ export class TransactionsProxyPairService {
         return transactions;
     }
 
-    esdtTransferProxyBatch(
-        sender: string,
-        batchArgs: TokensTransferArgs[],
-    ): Promise<TransactionModel>[] {
-        return batchArgs.map(args =>
-            this.esdtTransferProxy(sender, {
-                pairAddress: args.pairAddress,
-                tokenID: args.tokenID,
-                tokenNonce: args.tokenNonce,
-                amount: args.amount,
-            }),
-        );
+    private async convertInputTokenstoESDTTokens(
+        tokens: InputTokenModel[],
+    ): Promise<InputTokenModel[]> {
+        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
+
+        switch (elrondConfig.EGLDIdentifier) {
+            case tokens[0].tokenID:
+                if (tokens[0].nonce > 0) {
+                    throw new Error('Invalid nonce for EGLD token!');
+                }
+                return [
+                    new InputTokenModel({
+                        tokenID: wrappedTokenID,
+                        nonce: 0,
+                        amount: tokens[0].amount,
+                    }),
+                    ...tokens.slice(1),
+                ];
+            case tokens[1].tokenID:
+                if (tokens[1].nonce > 0) {
+                    throw new Error('Invalid nonce for EGLD token!');
+                }
+                return [
+                    tokens[0],
+                    new InputTokenModel({
+                        tokenID: wrappedTokenID,
+                        nonce: 0,
+                        amount: tokens[1].amount,
+                    }),
+                    ...tokens.slice(2),
+                ];
+            default:
+                return tokens;
+        }
     }
 
-    async esdtTransferProxy(
-        sender: string,
-        args: TokensTransferArgs,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+    private async validateInputTokens(
+        pairAddress: string,
+        tokens: InputTokenModel[],
+    ): Promise<InputTokenModel[]> {
+        const [
+            firstTokenID,
+            secondTokenID,
+            wrappedLpTokenID,
+        ] = await Promise.all([
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.proxyService.getLockedAssetTokenID(),
+            this.proxyPairService.getwrappedLpTokenID(),
+        ]);
 
-        if (!args.tokenNonce) {
-            const transactionArgs = [
-                BytesValue.fromUTF8(args.tokenID),
-                new BigUIntValue(new BigNumber(args.amount)),
-                BytesValue.fromUTF8('acceptEsdtPaymentProxy'),
-                BytesValue.fromHex(new Address(args.pairAddress).hex()),
-            ];
-
-            return this.context.esdtTransfer(
-                contract,
-                transactionArgs,
-                new GasLimit(gasConfig.acceptEsdtPaymentProxy),
-            );
+        for (const wrappedLpToken of tokens.slice(2)) {
+            if (
+                wrappedLpToken.tokenID !== wrappedLpTokenID ||
+                wrappedLpToken.nonce < 1
+            ) {
+                throw new Error('Invalid wrapped LP Token to merge!');
+            }
         }
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenID),
-            new U32Value(args.tokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('acceptEsdtPaymentProxy'),
-            BytesValue.fromHex(new Address(args.pairAddress).hex()),
-        ];
-
-        const transaction = this.context.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.acceptEsdtPaymentProxy),
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
-    }
-
-    async reclaimTemporaryFundsProxy(
-        sender: string,
-        args: ReclaimTemporaryFundsProxyArgs,
-    ): Promise<TransactionModel[]> {
-        const transactions = [];
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
-        const interaction: Interaction = contract.methods.reclaimTemporaryFundsProxy(
-            [
-                BytesValue.fromUTF8(args.firstTokenID),
-                new U32Value(args.firstTokenNonce ? args.firstTokenNonce : 0),
-                BytesValue.fromUTF8(args.secondTokenID),
-                new U32Value(args.secondTokenNonce ? args.secondTokenNonce : 0),
-            ],
-        );
-
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.reclaimTemporaryFundsProxy),
-        );
-
-        transactions.push(TransactionModel.fromTransaction(transaction));
-
-        switch (wrappedTokenID) {
-            case args.firstTokenID:
-                transactions.push(
-                    await this.wrapTransaction.unwrapEgld(
-                        sender,
-                        args.firstTokenAmount,
-                    ),
-                );
-                break;
-            case args.secondTokenID:
-                transactions.push(
-                    await this.wrapTransaction.unwrapEgld(
-                        sender,
-                        args.secondTokenAmount,
-                    ),
-                );
+        switch (firstTokenID) {
+            case tokens[0].tokenID:
+                if (tokens[1].tokenID !== secondTokenID) {
+                    throw new Error('Invalid tokens received!');
+                }
+                if (tokens[0].nonce > 0 || tokens[1].nonce < 1) {
+                    throw new Error('Invalid tokens nonce received!');
+                }
+                return tokens;
+            case tokens[1].tokenID:
+                if (tokens[0].tokenID !== secondTokenID) {
+                    throw new Error('Invalid tokens received!');
+                }
+                if (tokens[1].nonce > 0 || tokens[0].nonce < 1) {
+                    throw new Error('Invalid tokens nonce received!');
+                }
+                return [tokens[1], tokens[0], ...tokens.slice(2)];
             default:
                 break;
         }
 
-        return transactions;
+        throw new Error('Invalid tokens received!');
     }
 }
