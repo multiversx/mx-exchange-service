@@ -9,7 +9,6 @@ import {
     ClaimFarmRewardsProxyArgs,
     CompoundRewardsProxyArgs,
     EnterFarmProxyArgs,
-    EnterFarmProxyBatchArgs,
     ExitFarmProxyArgs,
 } from './models/proxy-farm.args';
 import { ProxyPairService } from './proxy-pair/proxy-pair.service';
@@ -182,42 +181,14 @@ export class ProxyResolver {
         @Args() args: EnterFarmProxyArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsProxyFarmService.enterFarmProxy(
-            user.publicKey,
-            args,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
-    async enterFarmProxyBatch(
-        @Args() args: EnterFarmProxyBatchArgs,
-        @User() user: any,
-    ): Promise<TransactionModel[]> {
-        const depositTokenArgs: DepositTokenArgs = {
-            smartContractType: SmartContractType.PROXY_FARM,
-            tokenID: args.lockedFarmTokenID,
-            tokenNonce: args.lockedFarmTokenNonce,
-            amount: args.lockedFarmAmount,
-        };
-        const enterFarmProxyArgs: EnterFarmProxyArgs = {
-            acceptedLockedTokenID: args.acceptedLockedTokenID,
-            acceptedLockedTokenNonce: args.acceptedLockedTokenNonce,
-            farmAddress: args.farmAddress,
-            amount: args.amount,
-            lockRewards: args.lockRewards,
-        };
-        return await Promise.all([
-            this.mergeTokensTransactions.depositTokens(
+        try {
+            return await this.transactionsProxyFarmService.enterFarmProxy(
                 user.publicKey,
-                depositTokenArgs,
-            ),
-            this.transactionsProxyFarmService.enterFarmProxy(
-                user.publicKey,
-                enterFarmProxyArgs,
-                true,
-            ),
-        ]);
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
