@@ -78,7 +78,8 @@
         "unlockAssets": 13500000,
         "depositTokens": 17000000,
         "defaultMergeWLPT": 20000000,
-        "defaultMergeWFMT": 20000000
+        "defaultMergeWFMT": 20000000,
+        "defaultMergeLockedAssets": 20000000
     },
     "abi": {
         "router": "./src/abis/elrond_dex_router.abi.json",

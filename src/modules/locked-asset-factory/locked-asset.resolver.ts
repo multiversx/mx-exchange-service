@@ -10,28 +10,17 @@ import {
 import { UnlockAssetsArs } from './models/locked-asset.args';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import { TokenMergingService } from '../token-merging/token.merging.service';
-import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
-import {
-    TokensMergingArgs,
-    SmartContractType,
-} from '../token-merging/dto/token.merging.args';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 @Resolver(of => LockedAssetModel)
 export class LockedAssetResolver {
     constructor(
-        @Inject(LockedAssetService)
         private readonly lockedAssetService: LockedAssetService,
-        @Inject(TransactionsLockedAssetService)
         private readonly transactionsService: TransactionsLockedAssetService,
-        @Inject(TokenMergingService)
-        private readonly mergeTokensService: TokenMergingService,
-        @Inject(TokenMergingTransactionsService)
-        private readonly mergeTokensTransactions: TokenMergingTransactionsService,
     ) {}
 
     @ResolveField()
@@ -47,28 +36,6 @@ export class LockedAssetResolver {
     async unlockMilestones(): Promise<UnlockMileStoneModel[]> {
         try {
             return await this.lockedAssetService.getDefaultUnlockPeriod();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async nftDepositMaxLen() {
-        try {
-            return await this.mergeTokensService.getNftDepositMaxLen({
-                smartContractType: SmartContractType.LOCKED_ASSET_FACTORY,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField(type => [String])
-    async nftDepositAcceptedTokenIDs() {
-        try {
-            return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
-                smartContractType: SmartContractType.LOCKED_ASSET_FACTORY,
-            });
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -94,9 +61,18 @@ export class LockedAssetResolver {
     @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async mergeLockedAssetTokens(
-        @Args() args: TokensMergingArgs,
+        @Args('tokens', { type: () => [InputTokenModel] })
+        tokens: InputTokenModel[],
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.mergeTokens(args);
+        try {
+            return await this.transactionsService.mergeLockedAssetTokens(
+                user.publicKey,
+                tokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
