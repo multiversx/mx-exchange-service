@@ -85,12 +85,6 @@ export class FarmModel {
     @Field()
     APR: string;
 
-    @Field(type => Int)
-    nftDepositMaxLen: number;
-
-    @Field(type => [String])
-    nftDepositAcceptedTokenIDs: string[];
-
     @Field()
     state: string;
 

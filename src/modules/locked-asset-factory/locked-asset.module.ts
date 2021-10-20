@@ -6,7 +6,6 @@ import { AbiLockedAssetService } from './abi-locked-asset.service';
 import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
-import { TokenMergingModule } from '../../modules/token-merging/token.merging.module';
 import { CachingModule } from '../../services/caching/cache.module';
 
 @Module({
@@ -15,7 +14,6 @@ import { CachingModule } from '../../services/caching/cache.module';
         CachingModule,
         ContextModule,
         ProxyModule,
-        TokenMergingModule,
     ],
     providers: [
         AbiLockedAssetService,

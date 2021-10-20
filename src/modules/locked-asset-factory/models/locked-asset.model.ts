@@ -40,12 +40,6 @@ export class LockedAssetModel {
     @Field(type => [UnlockMileStoneModel])
     unlockMilestones: UnlockMileStoneModel[];
 
-    @Field(type => Int)
-    nftDepositMaxLen: number;
-
-    @Field(type => [String])
-    nftDepositAcceptedTokenIDs: string[];
-
     constructor(init?: Partial<LockedAssetModel>) {
         Object.assign(this, init);
     }

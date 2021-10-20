@@ -17,12 +17,6 @@ import {
     ExitFarmArgs,
 } from './models/farm.args';
 import { FarmStatisticsService } from './services/farm-statistics.service';
-import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
-import { TokenMergingService } from '../token-merging/token.merging.service';
-import {
-    TokensMergingArgs,
-    SmartContractType,
-} from '../token-merging/dto/token.merging.args';
 import { ApolloError } from 'apollo-server-express';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 import { FarmGetterService } from './services/farm.getter.service';
@@ -35,8 +29,6 @@ export class FarmResolver {
         private readonly farmService: FarmService,
         private readonly farmGetterService: FarmGetterService,
         private readonly transactionsService: TransactionsFarmService,
-        private readonly mergeTokensTransactions: TokenMergingTransactionsService,
-        private readonly mergeTokensService: TokenMergingService,
         private readonly statisticsService: FarmStatisticsService,
     ) {}
 
@@ -220,30 +212,6 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async nftDepositMaxLen(@Parent() parent: FarmModel) {
-        try {
-            return await this.mergeTokensService.getNftDepositMaxLen({
-                smartContractType: SmartContractType.FARM,
-                address: parent.address,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField(type => [String])
-    async nftDepositAcceptedTokenIDs(@Parent() parent: FarmModel) {
-        try {
-            return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
-                smartContractType: SmartContractType.FARM,
-                address: parent.address,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
     async state(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getState(parent.address);
@@ -338,13 +306,5 @@ export class FarmResolver {
             user.publicKey,
             args,
         );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
-    async mergeFarmTokens(
-        @Args() args: TokensMergingArgs,
-    ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.mergeTokens(args);
     }
 }
