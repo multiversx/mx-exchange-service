@@ -12,7 +12,7 @@ import { SwapFixedOutputEvent } from './entities/pair/swapFixedOutput.event';
 import { SwapNoFeeEvent } from './entities/pair/swapNoFee.event';
 
 @Injectable()
-export class WebSocketPairHandlerService {
+export class RabbitMQPairHandlerService {
     private invalidatedKeys = [];
     constructor(
         private readonly pairSetterService: PairSetterService,
