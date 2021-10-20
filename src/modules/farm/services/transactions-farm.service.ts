@@ -1,5 +1,5 @@
 import { TransactionModel } from '../../../models/transaction.model';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
     BigUIntValue,
     U32Value,
@@ -17,15 +17,38 @@ import {
 } from '../models/farm.args';
 import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { InputTokenModel } from 'src/models/inputToken.model';
+import { FarmGetterService } from './farm.getter.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { generateLogMessage } from 'src/utils/generate-log-message';
 
 @Injectable()
 export class TransactionsFarmService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly context: ContextService,
+        private readonly farmGetterService: FarmGetterService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async enterFarm(args: EnterFarmArgs): Promise<TransactionModel> {
+    async enterFarm(
+        sender: string,
+        args: EnterFarmArgs,
+    ): Promise<TransactionModel> {
+        try {
+            await this.validateInputTokens(args.farmAddress, args.tokens);
+        } catch (error) {
+            const logMessage = generateLogMessage(
+                TransactionsFarmService.name,
+                this.enterFarm.name,
+                '',
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+
         const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
@@ -34,15 +57,12 @@ export class TransactionsFarmService {
             ? 'enterFarmAndLockRewards'
             : 'enterFarm';
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromUTF8(method),
-        ];
-
-        return this.context.esdtTransfer(
+        return this.context.multiESDTNFTTransfer(
+            new Address(sender),
             contract,
-            transactionArgs,
+            args.tokens,
+            method,
+            [],
             new GasLimit(gasConfig.enterFarm),
         );
     }
@@ -110,5 +130,25 @@ export class TransactionsFarmService {
         transaction.receiver = sender;
 
         return transaction;
+    }
+
+    private async validateInputTokens(
+        farmAddress: string,
+        tokens: InputTokenModel[],
+    ): Promise<void> {
+        const [farmTokenID, farmingTokenID] = await Promise.all([
+            this.farmGetterService.getFarmTokenID(farmAddress),
+            this.farmGetterService.getFarmingTokenID(farmAddress),
+        ]);
+
+        if (tokens[0].tokenID !== farmingTokenID || tokens[0].nonce > 0) {
+            throw new Error('invalid farming token provided');
+        }
+
+        for (const inputToken of tokens.slice(1)) {
+            if (inputToken.tokenID !== farmTokenID || inputToken.nonce === 0) {
+                throw new Error('invalid farm token provided');
+            }
+        }
     }
 }
