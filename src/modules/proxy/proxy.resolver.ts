@@ -3,20 +3,16 @@ import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityProxyArgs,
-    AddLiquidityProxyBatchArgs,
-    ReclaimTemporaryFundsProxyArgs,
     RemoveLiquidityProxyArgs,
-    TokensTransferArgs,
 } from './models/proxy-pair.args';
 import {
     ClaimFarmRewardsProxyArgs,
     CompoundRewardsProxyArgs,
     EnterFarmProxyArgs,
-    EnterFarmProxyBatchArgs,
     ExitFarmProxyArgs,
 } from './models/proxy-farm.args';
 import { ProxyPairService } from './proxy-pair/proxy-pair.service';
-import { GenericEsdtAmountPair, ProxyModel } from './models/proxy.model';
+import { ProxyModel } from './models/proxy.model';
 import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
 import { WrappedFarmTokenAttributesModel } from './models/wrappedFarmTokenAttributes.model';
 import { ProxyFarmService } from './proxy-farm/proxy-farm.service';
@@ -26,16 +22,10 @@ import { ProxyService } from './proxy.service';
 import { DecodeAttributesArgs } from './models/proxy.args';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import {
-    TokensMergingArgs,
-    DepositTokenArgs,
-    SmartContractType,
-} from '../token-merging/dto/token.merging.args';
-import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
-import { TokenMergingService } from '../token-merging/token.merging.service';
 import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 @Resolver(of => ProxyModel)
 export class ProxyResolver {
@@ -48,10 +38,6 @@ export class ProxyResolver {
         private transactionsProxyPairService: TransactionsProxyPairService,
         @Inject(TransactionsProxyFarmService)
         private transactionsProxyFarmService: TransactionsProxyFarmService,
-        @Inject(TokenMergingTransactionsService)
-        private readonly mergeTokensTransactions: TokenMergingTransactionsService,
-        @Inject(TokenMergingService)
-        private readonly mergeTokensService: TokenMergingService,
     ) {}
 
     @ResolveField()
@@ -108,85 +94,24 @@ export class ProxyResolver {
         }
     }
 
-    @ResolveField()
-    async nftDepositMaxLen() {
-        try {
-            return await this.mergeTokensService.getNftDepositMaxLen({
-                smartContractType: SmartContractType.PROXY_PAIR,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField(type => [String])
-    async nftDepositAcceptedTokenIDs() {
-        try {
-            return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
-                smartContractType: SmartContractType.PROXY_PAIR,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
     @Query(returns => ProxyModel)
     async proxy(): Promise<ProxyModel> {
         return await this.proxyService.getProxyInfo();
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
-    async tokensTransferProxy(
-        @Args() args: TokensTransferArgs,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        return await this.transactionsProxyPairService.esdtTransferProxy(
-            user.publicKey,
-            args,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async addLiquidityProxyBatch(
-        @Args() args: AddLiquidityProxyBatchArgs,
+        @Args() args: AddLiquidityProxyArgs,
         @User() user: any,
     ): Promise<TransactionModel[]> {
-        if (
-            args.lockedLpTokenID &&
-            args.lockedLpTokenNonce &&
-            args.lockedLpTokenAmount
-        ) {
-            const depositTokenArgs: DepositTokenArgs = {
-                smartContractType: SmartContractType.PROXY_PAIR,
-                tokenID: args.lockedLpTokenID,
-                tokenNonce: args.lockedLpTokenNonce,
-                amount: args.lockedLpTokenAmount,
-            };
-            const [
-                depositTokensTransaction,
-                addLiquidityProxyBatchTransactions,
-            ] = await Promise.all([
-                this.mergeTokensTransactions.depositTokens(
-                    user.publicKey,
-                    depositTokenArgs,
-                ),
-                this.transactionsProxyPairService.addLiquidityProxyBatch(
-                    user.publicKey,
-                    args,
-                    true,
-                ),
-            ]);
-            return [
-                depositTokensTransaction,
-                ...addLiquidityProxyBatchTransactions,
-            ];
-        } else {
-            return this.transactionsProxyPairService.addLiquidityProxyBatch(
+        try {
+            return await this.transactionsProxyPairService.addLiquidityProxyBatch(
                 user.publicKey,
                 args,
             );
+        } catch (error) {
+            throw new ApolloError(error);
         }
     }
 
@@ -194,28 +119,16 @@ export class ProxyResolver {
     @Query(returns => TransactionModel)
     async addLiquidityProxy(
         @Args() args: AddLiquidityProxyArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsProxyPairService.addLiquidityProxy(args);
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [GenericEsdtAmountPair])
-    async getTemporaryFundsProxy(
-        @User() user: any,
-    ): Promise<GenericEsdtAmountPair[]> {
-        return this.proxyPairService.getTemporaryFundsProxy(user.publicKey);
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
-    async reclaimTemporaryFundsProxy(
-        @Args() args: ReclaimTemporaryFundsProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel[]> {
-        return await this.transactionsProxyPairService.reclaimTemporaryFundsProxy(
-            user.publicKey,
-            args,
-        );
+        try {
+            return await this.transactionsProxyPairService.addLiquidityProxy(
+                user.publicKey,
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
@@ -236,42 +149,14 @@ export class ProxyResolver {
         @Args() args: EnterFarmProxyArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsProxyFarmService.enterFarmProxy(
-            user.publicKey,
-            args,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
-    async enterFarmProxyBatch(
-        @Args() args: EnterFarmProxyBatchArgs,
-        @User() user: any,
-    ): Promise<TransactionModel[]> {
-        const depositTokenArgs: DepositTokenArgs = {
-            smartContractType: SmartContractType.PROXY_FARM,
-            tokenID: args.lockedFarmTokenID,
-            tokenNonce: args.lockedFarmTokenNonce,
-            amount: args.lockedFarmAmount,
-        };
-        const enterFarmProxyArgs: EnterFarmProxyArgs = {
-            acceptedLockedTokenID: args.acceptedLockedTokenID,
-            acceptedLockedTokenNonce: args.acceptedLockedTokenNonce,
-            farmAddress: args.farmAddress,
-            amount: args.amount,
-            lockRewards: args.lockRewards,
-        };
-        return await Promise.all([
-            this.mergeTokensTransactions.depositTokens(
+        try {
+            return await this.transactionsProxyFarmService.enterFarmProxy(
                 user.publicKey,
-                depositTokenArgs,
-            ),
-            this.transactionsProxyFarmService.enterFarmProxy(
-                user.publicKey,
-                enterFarmProxyArgs,
-                true,
-            ),
-        ]);
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
@@ -301,17 +186,37 @@ export class ProxyResolver {
     @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async mergeWrappedLpTokens(
-        @Args() args: TokensMergingArgs,
+        @Args('tokens', { type: () => [InputTokenModel] })
+        tokens: InputTokenModel[],
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.mergeTokens(args);
+        try {
+            return await this.transactionsProxyPairService.mergeWrappedLPTokens(
+                user.publicKey,
+                tokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async mergeWrappedFarmTokens(
-        @Args() args: TokensMergingArgs,
+        @Args('farmAddress') farmAddress: string,
+        @Args('tokens', { type: () => [InputTokenModel] })
+        tokens: InputTokenModel[],
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.mergeTokens(args);
+        try {
+            return await this.transactionsProxyFarmService.mergeWrappedFarmTokens(
+                user.publicKey,
+                farmAddress,
+                tokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)

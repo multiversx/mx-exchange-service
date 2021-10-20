@@ -171,16 +171,6 @@ type GenericEsdtAmountPair {
   address: String
 }
 
-type CommunityDistributionModel {
-  epoch: Float!
-  amount: String!
-}
-
-type DistributionModel {
-  address: String!
-  communityDistribution: CommunityDistributionModel!
-}
-
 type WrappedLpTokenAttributesModel {
   identifier: String!
   attributes: String!
@@ -201,6 +191,16 @@ type WrappedFarmTokenAttributesModel {
   farmingTokenID: String!
   farmingTokenNonce: Int!
   farmingTokenAmount: String!
+}
+
+type CommunityDistributionModel {
+  epoch: Float!
+  amount: String!
+}
+
+type DistributionModel {
+  address: String!
+  communityDistribution: CommunityDistributionModel!
 }
 
 type UnlockMileStoneModel {
@@ -506,25 +506,21 @@ type Query {
   depositTokens(tokenID: String!, tokenNonce: Int!, amount: String!, smartContractType: SmartContractType!, address: String): TransactionModel!
   withdrawAllTokensFromDeposit(smartContractType: SmartContractType!, address: String): TransactionModel!
   withdrawTokenFromDeposit(smartContractType: SmartContractType!, address: String, tokenIndex: Int!): TransactionModel!
-  distribution: DistributionModel!
-  claimLockedAssets: TransactionModel!
-  distributedLockedAssets: String!
   proxy: ProxyModel!
-  tokensTransferProxy(pairAddress: String!, amount: String!, tokenID: String!, tokenNonce: Int): TransactionModel!
-  addLiquidityProxyBatch(lockedLpTokenID: String, lockedLpTokenNonce: Int, lockedLpTokenAmount: String, pairAddress: String!, firstTokenAmount: String!, firstTokenID: String!, firstTokenNonce: Int, secondTokenAmount: String!, secondTokenID: String!, secondTokenNonce: Int, tolerance: Float!): [TransactionModel!]!
-  addLiquidityProxy(pairAddress: String!, amount0: String!, amount1: String!, tolerance: Float!, token0ID: String!, token1ID: String!, token0Nonce: Int, token1Nonce: Int): TransactionModel!
-  getTemporaryFundsProxy: [GenericEsdtAmountPair!]!
-  reclaimTemporaryFundsProxy(firstTokenID: String!, firstTokenNonce: Int, firstTokenAmount: String, secondTokenID: String!, secondTokenNonce: Int, secondTokenAmount: String): [TransactionModel!]!
+  addLiquidityProxyBatch(pairAddress: String!, tokens: [InputTokenModel!]!, tolerance: Float!): [TransactionModel!]!
+  addLiquidityProxy(pairAddress: String!, tokens: [InputTokenModel!]!, tolerance: Float!): TransactionModel!
   removeLiquidityProxy(pairAddress: String!, wrappedLpTokenID: String!, wrappedLpTokenNonce: Int!, liquidity: String!, tolerance: Float!): [TransactionModel!]!
-  enterFarmProxy(farmAddress: String!, acceptedLockedTokenID: String!, acceptedLockedTokenNonce: Int!, amount: String!, lockRewards: Boolean): TransactionModel!
-  enterFarmProxyBatch(farmAddress: String!, acceptedLockedTokenID: String!, acceptedLockedTokenNonce: Int!, amount: String!, lockRewards: Boolean, lockedFarmTokenID: String!, lockedFarmTokenNonce: Int!, lockedFarmAmount: String!): [TransactionModel!]!
+  enterFarmProxy(farmAddress: String!, tokens: [InputTokenModel!]!, lockRewards: Boolean): TransactionModel!
   exitFarmProxy(farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
   claimFarmRewardsProxy(farmAddress: String!, wrappedFarmTokenID: String!, wrappedFarmTokenNonce: Int!, amount: String!): TransactionModel!
-  mergeWrappedLpTokens(smartContractType: SmartContractType!, address: String): TransactionModel!
-  mergeWrappedFarmTokens(smartContractType: SmartContractType!, address: String): TransactionModel!
+  mergeWrappedLpTokens(tokens: [InputTokenModel!]!): TransactionModel!
+  mergeWrappedFarmTokens(tokens: [InputTokenModel!]!, farmAddress: String!): TransactionModel!
   compoundRewardsProxy(farmAddress: String!, tokenID: String!, tokenNonce: Int!, amount: String!): TransactionModel!
   wrappedLpTokenAttributes(args: DecodeAttributesArgs!): [WrappedLpTokenAttributesModel!]!
   wrappedFarmTokenAttributes(args: DecodeAttributesArgs!): [WrappedFarmTokenAttributesModel!]!
+  distribution: DistributionModel!
+  claimLockedAssets: TransactionModel!
+  distributedLockedAssets: String!
   lockedAssetFactory: LockedAssetModel!
   unlockAssets(lockedTokenID: String!, lockedTokenNonce: Int!, amount: String!): TransactionModel!
   mergeLockedAssetTokens(smartContractType: SmartContractType!, address: String): TransactionModel!

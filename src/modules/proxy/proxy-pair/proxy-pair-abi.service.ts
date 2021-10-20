@@ -1,7 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Address, BytesValue } from '@elrondnetwork/erdjs';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { GenericEsdtAmountPair } from '../models/proxy.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -65,40 +63,6 @@ export class AbiProxyPairService {
             );
             this.logger.error(logMessage);
             throw error;
-        }
-    }
-
-    async getTemporaryFundsProxy(
-        userAddress: string,
-    ): Promise<GenericEsdtAmountPair[]> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
-
-        const interaction: Interaction = contract.methods.getTemporaryFunds([
-            BytesValue.fromHex(new Address(userAddress).hex()),
-        ]);
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const result = interaction.interpretQueryResponse(queryResponse);
-
-            return result.firstValue.valueOf().map(value => {
-                const temporaryFunds = value.valueOf();
-                return {
-                    tokenID: temporaryFunds.token_id.toString(),
-                    tokenNonce: temporaryFunds.token_nonce.toString(),
-                    amount: temporaryFunds.amount.toFixed(),
-                };
-            });
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiProxyPairService.name,
-                this.getTemporaryFundsProxy.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
         }
     }
 }
