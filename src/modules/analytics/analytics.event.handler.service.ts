@@ -98,7 +98,6 @@ export class AnalyticsEventHandlerService {
 
         const data = [];
         data[event.address] = {
-            timestamp: event.timestamp,
             firstTokenLocked: event.pairReserves[0].amount,
             firstTokenLockedValueUSD: firstTokenLockedValueUSD,
             secondTokenLocked: event.pairReserves[1].amount,
