@@ -34,12 +34,6 @@ export class ProxyModel {
     @Field(type => [String])
     intermediatedFarms: string[];
 
-    @Field(type => Int)
-    nftDepositMaxLen: number;
-
-    @Field(type => [String])
-    nftDepositAcceptedTokenIDs: string[];
-
     constructor(init?: Partial<ProxyModel>) {
         Object.assign(this, init);
     }
