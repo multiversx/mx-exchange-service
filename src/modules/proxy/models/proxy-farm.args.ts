@@ -1,30 +1,14 @@
 import { ArgsType, Field, Int } from '@nestjs/graphql';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 @ArgsType()
 export class EnterFarmProxyArgs {
-    @Field() farmAddress: string;
-    @Field() acceptedLockedTokenID: string;
-    @Field(type => Int)
-    acceptedLockedTokenNonce: number;
-    @Field() amount: string;
-    @Field({ nullable: true }) lockRewards: boolean;
-}
-
-@ArgsType()
-export class EnterFarmProxyBatchArgs {
-    @Field() farmAddress: string;
-    @Field() acceptedLockedTokenID: string;
-    @Field(type => Int)
-    acceptedLockedTokenNonce: number;
-    @Field() amount: string;
-    @Field({ nullable: true }) lockRewards: boolean;
-
     @Field()
-    lockedFarmTokenID: string;
-    @Field(type => Int)
-    lockedFarmTokenNonce: number;
-    @Field()
-    lockedFarmAmount: string;
+    farmAddress: string;
+    @Field(type => [InputTokenModel])
+    tokens: Array<InputTokenModel>;
+    @Field({ nullable: true })
+    lockRewards: boolean;
 }
 
 @ArgsType()

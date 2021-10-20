@@ -14,7 +14,6 @@ import {
     ClaimRewardsArgs,
     CompoundRewardsArgs,
     EnterFarmArgs,
-    EnterFarmBatchArgs,
     ExitFarmArgs,
 } from './models/farm.args';
 import { FarmStatisticsService } from './services/farm-statistics.service';
@@ -22,7 +21,6 @@ import { TokenMergingTransactionsService } from '../token-merging/token.merging.
 import { TokenMergingService } from '../token-merging/token.merging.service';
 import {
     TokensMergingArgs,
-    DepositTokenArgs,
     SmartContractType,
 } from '../token-merging/dto/token.merging.args';
 import { ApolloError } from 'apollo-server-express';
@@ -295,37 +293,18 @@ export class FarmResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
-    async enterFarm(@Args() args: EnterFarmArgs): Promise<TransactionModel> {
-        return await this.transactionsService.enterFarm(args);
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
-    async enterFarmBatch(
-        @Args() enterFarmBatchArgs: EnterFarmBatchArgs,
+    async enterFarm(
+        @Args() args: EnterFarmArgs,
         @User() user: any,
-    ): Promise<TransactionModel[]> {
-        const depositTokenArgs: DepositTokenArgs = {
-            smartContractType: SmartContractType.FARM,
-            address: enterFarmBatchArgs.farmAddress,
-            tokenID: enterFarmBatchArgs.farmTokenID,
-            tokenNonce: enterFarmBatchArgs.farmTokenNonce,
-            amount: enterFarmBatchArgs.amount,
-        };
-        const enterFarmArgs: EnterFarmArgs = {
-            tokenInID: enterFarmBatchArgs.tokenInID,
-            farmAddress: enterFarmBatchArgs.farmAddress,
-            amount: enterFarmBatchArgs.amountIn,
-            lockRewards: enterFarmBatchArgs.lockRewards,
-        };
-
-        return await Promise.all([
-            this.mergeTokensTransactions.depositTokens(
+    ): Promise<TransactionModel> {
+        try {
+            return await this.transactionsService.enterFarm(
                 user.publicKey,
-                depositTokenArgs,
-            ),
-            this.transactionsService.enterFarm(enterFarmArgs),
-        ]);
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)

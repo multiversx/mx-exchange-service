@@ -74,12 +74,6 @@ export class ProxyPairService {
         }
     }
 
-    async getTemporaryFundsProxy(
-        userAddress: string,
-    ): Promise<GenericEsdtAmountPair[]> {
-        return this.abiService.getTemporaryFundsProxy(userAddress);
-    }
-
     private getProxyPairCacheKey(...args: any) {
         return generateCacheKeyFromParams('proxyPair', ...args);
     }
