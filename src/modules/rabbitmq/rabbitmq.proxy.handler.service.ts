@@ -12,7 +12,7 @@ import { ExitFarmProxyEvent } from './entities/proxy/exitFarmProxy.event';
 import { PairProxyEvent } from './entities/proxy/pairProxy.event';
 
 @Injectable()
-export class WebSocketProxyHandlerService {
+export class RabbitMQProxyHandlerService {
     constructor(
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,

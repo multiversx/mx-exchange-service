@@ -14,11 +14,11 @@ import { PairSetterService } from '../pair/services/pair.setter.service';
 import { RouterComputeService } from '../router/router.compute.service';
 import { RouterGetterService } from '../router/router.getter.service';
 import { RouterSetterService } from '../router/router.setter.service';
-import { PAIR_EVENTS } from '../websocket/entities/generic.types';
+import { PAIR_EVENTS } from '../rabbitmq/entities/generic.types';
 import {
     AddLiquidityEventType,
     SwapEventType,
-} from '../websocket/entities/pair/pair.types';
+} from '../rabbitmq/entities/pair/pair.types';
 
 @Injectable()
 export class AnalyticsEventHandlerService {
@@ -98,7 +98,6 @@ export class AnalyticsEventHandlerService {
 
         const data = [];
         data[event.address] = {
-            timestamp: event.timestamp,
             firstTokenLocked: event.pairReserves[0].amount,
             firstTokenLockedValueUSD: firstTokenLockedValueUSD,
             secondTokenLocked: event.pairReserves[1].amount,

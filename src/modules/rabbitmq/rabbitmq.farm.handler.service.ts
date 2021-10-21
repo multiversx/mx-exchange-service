@@ -4,7 +4,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import { AbiFarmService } from '../farm/services/abi-farm.service';
-import { FarmComputeService } from '../farm/services/farm.compute.service';
 import { FarmSetterService } from '../farm/services/farm.setter.service';
 import { EnterFarmEvent } from './entities/farm/enterFarm.event';
 import { ExitFarmEvent } from './entities/farm/exitFarm.event';
@@ -12,7 +11,7 @@ import { RewardsEvent } from './entities/farm/rewards.event';
 import { FARM_EVENTS } from './entities/generic.types';
 
 @Injectable()
-export class WebSocketFarmHandlerService {
+export class RabbitMQFarmHandlerService {
     private invalidatedKeys = [];
 
     constructor(
