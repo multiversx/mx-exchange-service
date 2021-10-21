@@ -7,12 +7,12 @@ import { PairModule } from '../pair/pair.module';
 import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQPairHandlerService } from './rabbitmq.pair.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
-import { RabbitMqService } from './rabbitmq.service';
+import { RabbitMqConsumer } from './rabbitmq.consumer';
 
 @Module({
     imports: [CommonAppModule, ContextModule, PairModule, FarmModule],
     providers: [
-        RabbitMqService,
+        RabbitMqConsumer,
         RabbitMQPairHandlerService,
         RabbitMQFarmHandlerService,
         RabbitMQProxyHandlerService,

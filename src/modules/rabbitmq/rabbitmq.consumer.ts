@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EnterFarmEvent } from './entities/farm/enterFarm.event';
 import { ExitFarmEvent } from './entities/farm/exitFarm.event';
 import { RewardsEvent } from './entities/farm/rewards.event';
@@ -27,7 +27,8 @@ import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { farmsConfig, scAddress } from 'src/config';
 import { ContextService } from 'src/services/context/context.service';
 
-export class RabbitMqService {
+@Injectable()
+export class RabbitMqConsumer {
     private filterAddresses: string[];
 
     constructor(
@@ -42,7 +43,7 @@ export class RabbitMqService {
         queueName: process.env.RABBITMQ_QUEUE,
         exchange: process.env.RABBITMQ_EXCHANGE,
     })
-    async handleEvents(rawEvents: any): Promise<void> {
+    async consumeEvents(rawEvents: any) {
         const events = rawEvents?.events?.filter(
             (rawEvent: { address: any }) =>
                 this.filterAddresses.find(

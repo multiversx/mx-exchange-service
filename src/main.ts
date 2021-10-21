@@ -9,7 +9,7 @@ import { LoggingInterceptor } from './utils/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
-import { RabbitMqService } from './modules/rabbitmq/rabbitmq.service';
+import { RabbitMqConsumer } from './modules/rabbitmq/rabbitmq.consumer';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -64,8 +64,8 @@ async function bootstrap() {
         const eventsNotifierApp = await NestFactory.create(
             RabbitMqProcessorModule,
         );
-        const rabbitMqService = eventsNotifierApp.get<RabbitMqService>(
-            RabbitMqService,
+        const rabbitMqService = eventsNotifierApp.get<RabbitMqConsumer>(
+            RabbitMqConsumer,
         );
         await rabbitMqService.getFilterAddresses();
         eventsNotifierApp.listen(5673, '0.0.0.0');
