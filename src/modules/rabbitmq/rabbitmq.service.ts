@@ -12,7 +12,6 @@ import { CompoundRewardsProxyEvent } from './entities/proxy/compoundRewardsProxy
 import { EnterFarmProxyEvent } from './entities/proxy/enterFarmProxy.event';
 import { ExitFarmProxyEvent } from './entities/proxy/exitFarmProxy.event';
 import { PairProxyEvent } from './entities/proxy/pairProxy.event';
-import { ContextService } from 'src/services/context/context.service';
 import {
     FARM_EVENTS,
     PAIR_EVENTS,
@@ -25,8 +24,12 @@ import { SwapFixedOutputEvent } from './entities/pair/swapFixedOutput.event';
 import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
+import { farmsConfig, scAddress } from 'src/config';
+import { ContextService } from 'src/services/context/context.service';
 
-export class RabbitMqConsumer {
+export class RabbitMqService {
+    private filterAddresses: string[];
+
     constructor(
         private readonly context: ContextService,
         private readonly wsPairHandler: RabbitMQPairHandlerService,
@@ -39,9 +42,15 @@ export class RabbitMqConsumer {
         queueName: process.env.RABBITMQ_QUEUE,
         exchange: process.env.RABBITMQ_EXCHANGE,
     })
-    async handleEvents(events: any): Promise<void> {
-        console.log(events);
-        for (const rawEvent of events.events) {
+    async handleEvents(rawEvents: any): Promise<void> {
+        const events = rawEvents?.events?.filter(
+            (rawEvent: { address: any }) =>
+                this.filterAddresses.find(
+                    filterAddress => rawEvent.address === filterAddress,
+                ) !== undefined,
+        );
+
+        for (const rawEvent of events) {
             switch (rawEvent.identifier) {
                 case PAIR_EVENTS.SWAP_FIXED_INPUT:
                     await this.wsPairHandler.handleSwapEvent(
@@ -120,5 +129,11 @@ export class RabbitMqConsumer {
                     break;
             }
         }
+    }
+
+    async getFilterAddresses(): Promise<void> {
+        this.filterAddresses = await this.context.getAllPairsAddress();
+        this.filterAddresses.push(...farmsConfig);
+        this.filterAddresses.push(scAddress.proxyDexAddress);
     }
 }
