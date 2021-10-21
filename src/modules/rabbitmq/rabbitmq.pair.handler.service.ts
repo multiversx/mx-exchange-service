@@ -38,8 +38,12 @@ export class RabbitMQPairHandlerService {
         await this.deleteCacheKeys();
 
         event instanceof SwapFixedInputEvent
-            ? this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_INPUT, event)
-            : this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_OUTPUT, event);
+            ? this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_INPUT, {
+                  swapFixedInputEvent: event,
+              })
+            : this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_OUTPUT, {
+                  swapFixedOutputEvent: event,
+              });
     }
 
     async handleLiquidityEvent(
@@ -63,12 +67,16 @@ export class RabbitMQPairHandlerService {
 
         await this.deleteCacheKeys();
         event instanceof AddLiquidityEvent
-            ? this.pubSub.publish(PAIR_EVENTS.ADD_LIQUIDITY, event)
-            : this.pubSub.publish(PAIR_EVENTS.REMOVE_LIQUIDITY, event);
+            ? this.pubSub.publish(PAIR_EVENTS.ADD_LIQUIDITY, {
+                  addLiquidityEvent: event,
+              })
+            : this.pubSub.publish(PAIR_EVENTS.REMOVE_LIQUIDITY, {
+                  removeLiquidityEvent: event,
+              });
     }
 
     async handleSwapNoFeeEvent(event: SwapNoFeeEvent): Promise<void> {
-        this.pubSub.publish(PAIR_EVENTS.SWAP_NO_FEE, event);
+        this.pubSub.publish(PAIR_EVENTS.SWAP_NO_FEE, { swapNoFeeEvent: event });
     }
 
     private async deleteCacheKeys() {
