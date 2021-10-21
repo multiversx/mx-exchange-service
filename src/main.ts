@@ -9,6 +9,7 @@ import { LoggingInterceptor } from './utils/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
+import { RabbitMqService } from './modules/rabbitmq/rabbitmq.service';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -60,12 +61,14 @@ async function bootstrap() {
     }
 
     if (apiConfigService.isEventsNotifierAppActive()) {
-        const eventsNotifierApp = await NestFactory.createMicroservice<
-            MicroserviceOptions
-        >(RabbitMqProcessorModule);
-        eventsNotifierApp.listen(() =>
-            console.log('Started events notifier microservice'),
+        const eventsNotifierApp = await NestFactory.create(
+            RabbitMqProcessorModule,
         );
+        const rabbitMqService = eventsNotifierApp.get<RabbitMqService>(
+            RabbitMqService,
+        );
+        await rabbitMqService.getFilterAddresses();
+        eventsNotifierApp.listen(5673, '0.0.0.0');
 
         const analyticsApp = await NestFactory.createMicroservice<
             MicroserviceOptions
