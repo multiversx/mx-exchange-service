@@ -17,7 +17,8 @@ export const CompetingRabbitConsumer = (config: {
                 autoDelete: false,
                 durable: true,
                 arguments: {
-                    'x-queue-type': 'quorum',
+                    'x-queue-type': 'classic',
+                    'x-queue-mode': 'lazy',
                     'x-single-active-consumer': true,
                 },
             },
