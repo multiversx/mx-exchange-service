@@ -1,4 +1,21 @@
 {
+    "buildInfo": {
+        "rustc": {
+            "version": "1.56.0-nightly",
+            "commitHash": "29ef6cf1637aa8317f8911f93f14e18d404c1b0e",
+            "commitDate": "2021-08-31",
+            "channel": "Nightly",
+            "short": "rustc 1.56.0-nightly (29ef6cf16 2021-08-31)"
+        },
+        "contractCrate": {
+            "name": "farm",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "elrond-wasm",
+            "version": "0.20.1"
+        }
+    },
     "name": "Farm",
     "constructor": {
         "inputs": [
@@ -32,6 +49,7 @@
     "endpoints": [
         {
             "name": "enterFarm",
+            "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
@@ -44,12 +62,13 @@
             ],
             "outputs": [
                 {
-                    "type": "GenericTokenAmountPair"
+                    "type": "EsdtTokenPayment"
                 }
             ]
         },
         {
             "name": "enterFarmAndLockRewards",
+            "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
@@ -62,12 +81,13 @@
             ],
             "outputs": [
                 {
-                    "type": "GenericTokenAmountPair"
+                    "type": "EsdtTokenPayment"
                 }
             ]
         },
         {
             "name": "exitFarm",
+            "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
@@ -80,15 +100,16 @@
             ],
             "outputs": [
                 {
-                    "type": "FftTokenAmountPair"
+                    "type": "EsdtTokenPayment"
                 },
                 {
-                    "type": "GenericTokenAmountPair"
+                    "type": "EsdtTokenPayment"
                 }
             ]
         },
         {
             "name": "claimRewards",
+            "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
@@ -101,15 +122,16 @@
             ],
             "outputs": [
                 {
-                    "type": "GenericTokenAmountPair"
+                    "type": "EsdtTokenPayment"
                 },
                 {
-                    "type": "GenericTokenAmountPair"
+                    "type": "EsdtTokenPayment"
                 }
             ]
         },
         {
             "name": "compoundRewards",
+            "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
@@ -122,12 +144,13 @@
             ],
             "outputs": [
                 {
-                    "type": "GenericTokenAmountPair"
+                    "type": "EsdtTokenPayment"
                 }
             ]
         },
         {
             "name": "acceptFee",
+            "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
@@ -136,6 +159,7 @@
         },
         {
             "name": "calculateRewardsForGivenPosition",
+            "mutability": "readonly",
             "inputs": [
                 {
                     "name": "amount",
@@ -154,6 +178,7 @@
         },
         {
             "name": "getFarmingTokenReserve",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -163,16 +188,19 @@
         },
         {
             "name": "start_produce_rewards",
+            "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "end_produce_rewards",
+            "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "setPerBlockRewardAmount",
+            "mutability": "mutable",
             "inputs": [
                 {
                     "name": "per_block_amount",
@@ -183,6 +211,7 @@
         },
         {
             "name": "getRewardPerShare",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -192,6 +221,7 @@
         },
         {
             "name": "getRewardReserve",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -201,6 +231,7 @@
         },
         {
             "name": "getUndistributedFees",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -210,6 +241,7 @@
         },
         {
             "name": "getCurrentBlockFee",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -219,6 +251,7 @@
         },
         {
             "name": "set_penalty_percent",
+            "mutability": "mutable",
             "inputs": [
                 {
                     "name": "percent",
@@ -229,6 +262,7 @@
         },
         {
             "name": "set_locked_rewards_apr_multiplier",
+            "mutability": "mutable",
             "inputs": [
                 {
                     "name": "muliplier",
@@ -239,6 +273,7 @@
         },
         {
             "name": "set_minimum_farming_epochs",
+            "mutability": "mutable",
             "inputs": [
                 {
                     "name": "epochs",
@@ -249,6 +284,7 @@
         },
         {
             "name": "set_transfer_exec_gas_limit",
+            "mutability": "mutable",
             "inputs": [
                 {
                     "name": "gas_limit",
@@ -258,27 +294,20 @@
             "outputs": []
         },
         {
-            "name": "setNftDepositMaxLen",
-            "inputs": [
-                {
-                    "name": "max_len",
-                    "type": "u32"
-                }
-            ],
-            "outputs": []
-        },
-        {
             "name": "pause",
+            "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "resume",
+            "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "getFarmTokenSupply",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -288,6 +317,7 @@
         },
         {
             "name": "getLastErrorMessage",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -296,7 +326,8 @@
             ]
         },
         {
-            "name": "getRouterAddress",
+            "name": "getRouterManagedAddress",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -306,6 +337,7 @@
         },
         {
             "name": "getState",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -315,6 +347,7 @@
         },
         {
             "name": "getOwner",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -324,6 +357,7 @@
         },
         {
             "name": "getFarmingTokenId",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -333,6 +367,7 @@
         },
         {
             "name": "getRewardTokenId",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -341,7 +376,8 @@
             ]
         },
         {
-            "name": "getLockedAssetFactoryAddress",
+            "name": "getLockedAssetFactoryManagedAddress",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -351,6 +387,7 @@
         },
         {
             "name": "getPenaltyPercent",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -360,6 +397,7 @@
         },
         {
             "name": "getLockedRewardAprMuliplier",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -369,6 +407,7 @@
         },
         {
             "name": "getMinimumFarmingEpoch",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -378,6 +417,7 @@
         },
         {
             "name": "getPerBlockRewardAmount",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -387,6 +427,7 @@
         },
         {
             "name": "getLastRewardBlockNonce",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -396,6 +437,7 @@
         },
         {
             "name": "getFarmTokenId",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -405,6 +447,7 @@
         },
         {
             "name": "getDivisionSafetyConstant",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -413,7 +456,8 @@
             ]
         },
         {
-            "name": "getPairContractAddress",
+            "name": "getPairContractManagedAddress",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -423,6 +467,7 @@
         },
         {
             "name": "getGeneratedTokenAmountList",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -433,6 +478,7 @@
         },
         {
             "name": "getBurnedTokenAmountList",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -443,6 +489,7 @@
         },
         {
             "name": "getGeneratedTokenAmount",
+            "mutability": "readonly",
             "inputs": [
                 {
                     "name": "token_id",
@@ -457,6 +504,7 @@
         },
         {
             "name": "getBurnedTokenAmount",
+            "mutability": "readonly",
             "inputs": [
                 {
                     "name": "token_id",
@@ -470,74 +518,8 @@
             ]
         },
         {
-            "name": "depositTokens",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "withdrawAllTokensFromDeposit",
-            "inputs": [
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "withdrawTokenFromDeposit",
-            "inputs": [
-                {
-                    "name": "index",
-                    "type": "u32"
-                },
-                {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "getnftDeposit",
-            "inputs": [
-                {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "List<GenericTokenAmountPair>"
-                }
-            ]
-        },
-        {
-            "name": "getnftDepositMaxLen",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u32"
-                }
-            ]
-        },
-        {
-            "name": "getNftDepositAcceptedTokenIds",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<TokenIdentifier>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
             "name": "getTransferExecGasLimit",
+            "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
@@ -547,6 +529,7 @@
         },
         {
             "name": "issueFarmToken",
+            "mutability": "mutable",
             "payableInTokens": [
                 "EGLD"
             ],
@@ -564,11 +547,16 @@
         },
         {
             "name": "setLocalRolesFarmToken",
+            "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "mergeFarmTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
             "inputs": [
                 {
                     "name": "opt_accept_funds_func",
@@ -578,42 +566,12 @@
             ],
             "outputs": [
                 {
-                    "type": "GenericTokenAmountPair"
+                    "type": "EsdtTokenPayment"
                 }
             ]
         }
     ],
     "types": {
-        "FftTokenAmountPair": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "amount",
-                    "type": "BigUint"
-                }
-            ]
-        },
-        "GenericTokenAmountPair": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "amount",
-                    "type": "BigUint"
-                }
-            ]
-        },
         "State": {
             "type": "enum",
             "variants": [
