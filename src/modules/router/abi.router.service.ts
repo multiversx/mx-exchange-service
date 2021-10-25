@@ -38,7 +38,7 @@ export class AbiRouterService {
 
     async getAllPairsAddress(): Promise<string[]> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const interaction: Interaction = contract.methods.getAllPairsAddresses(
+        const interaction: Interaction = contract.methods.getAllPairsManagedAddresses(
             [],
         );
 
