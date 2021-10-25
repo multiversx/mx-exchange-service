@@ -5,11 +5,12 @@ import {
     BooleanType,
     StructFieldDefinition,
     StructType,
+    TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
-import { GenericToken } from 'src/models/genericToken.model
+import { GenericToken } from 'src/models/genericToken.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { FarmEventsTopics } from './farm.event.topics';
@@ -41,15 +42,21 @@ export class RewardsEvent extends GenericEvent {
         this.decodedTopics = new FarmEventsTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.oldFarmToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.oldFarmToken,
-        );
-        this.newFarmToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.newFarmToken,
-        );
-        this.rewardToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.rewardToken,
-        );
+        this.oldFarmToken = new GenericToken({
+            tokenID: decodedEvent.oldFarmTokenID,
+            nonce: decodedEvent.oldFarmTokenNonce,
+            amount: decodedEvent.oldFarmTokenAmount,
+        });
+        this.newFarmToken = new GenericToken({
+            tokenID: decodedEvent.newFarmTokenID,
+            nonce: decodedEvent.newFarmTokenNonce,
+            amount: decodedEvent.newFarmTokenAmount,
+        });
+        this.rewardToken = new GenericToken({
+            tokenID: decodedEvent.rewardTokenID,
+            nonce: decodedEvent.rewardTokenNonce,
+            amount: decodedEvent.rewardTokenAmount,
+        });
         this.oldFarmAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.oldFarmAttributes,
         );
@@ -110,23 +117,41 @@ export class RewardsEvent extends GenericEvent {
         return new StructType('ClaimRewardsEvent', [
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition(
-                'oldFarmToken',
+                'oldFarmTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('oldFarmTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'oldFarmTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
-                'newFarmToken',
+                'newFarmTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('newFarmTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'newFarmTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition('farmSupply', '', new BigUIntType()),
             new StructFieldDefinition(
-                'rewardToken',
+                'rewardTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('rewardTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'rewardTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
-                'rewardTokenReserve',
+                'rewardTokenReserves',
                 '',
                 new BigUIntType(),
             ),

@@ -4,23 +4,24 @@ import {
     BinaryCodec,
     StructFieldDefinition,
     StructType,
+    TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { FftTokenAmountPair } from 'src/models/fftTokenAmountPair.model';
-import { GenericToken } from 'src/models/genericToken.model
+import { GenericToken } from 'src/models/genericToken.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { FarmEventsTopics } from './farm.event.topics';
-import { ExitFarmEventType } from './farm.types';
+import { FarmEventType } from './farm.types';
 
 @ObjectType()
 export class ExitFarmEvent extends GenericEvent {
     private decodedTopics: FarmEventsTopics;
 
-    @Field(type => FftTokenAmountPair)
-    private farmingToken: FftTokenAmountPair;
+    @Field(type => GenericToken)
+    private farmingToken: GenericToken;
     @Field(type => String)
     private farmingReserve: BigNumber;
     @Field(type => GenericToken)
@@ -30,7 +31,7 @@ export class ExitFarmEvent extends GenericEvent {
     @Field(type => GenericToken)
     private rewardToken: GenericToken;
     @Field(type => String)
-    private rewardReserve: BigNumber;
+    private rewardTokenReserves: BigNumber;
     @Field(type => FarmTokenAttributesModel)
     private farmAttributes: FarmTokenAttributesModel;
 
@@ -39,15 +40,20 @@ export class ExitFarmEvent extends GenericEvent {
         this.decodedTopics = new FarmEventsTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.farmingToken = FftTokenAmountPair.fromDecodedAttributes(
-            decodedEvent.farmingToken,
-        );
-        this.farmToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.farmToken,
-        );
-        this.rewardToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.rewardToken,
-        );
+        this.farmingToken = new GenericToken({
+            tokenID: decodedEvent.farmingTokenID,
+            amount: decodedEvent.farmingTokenAmount,
+        });
+        this.farmToken = new GenericToken({
+            tokenID: decodedEvent.farmTokenID,
+            nonce: decodedEvent.farmTokenNonce,
+            amount: decodedEvent.farmTokenAmount,
+        });
+        this.rewardToken = new GenericToken({
+            tokenID: decodedEvent.rewardTokenID,
+            nonce: decodedEvent.rewardTokenNonce,
+            amount: decodedEvent.rewardTokenAmount,
+        });
         this.farmAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.farmAttributes,
         );
@@ -74,10 +80,10 @@ export class ExitFarmEvent extends GenericEvent {
     }
 
     getRewardReserve(): BigNumber {
-        return this.rewardReserve;
+        return this.rewardTokenReserves;
     }
 
-    toJSON(): ExitFarmEventType {
+    toJSON(): FarmEventType {
         return {
             ...super.toJSON(),
             farmingToken: this.farmingToken.toJSON(),
@@ -85,7 +91,7 @@ export class ExitFarmEvent extends GenericEvent {
             farmToken: this.farmToken.toJSON(),
             farmSupply: this.farmSupply.toFixed(),
             rewardToken: this.rewardToken.toJSON(),
-            rewardReserve: this.rewardReserve.toFixed(),
+            rewardTokenReserves: this.rewardTokenReserves.toFixed(),
             farmAttributes: this.farmAttributes.toPlainObject(),
         };
     }
@@ -108,23 +114,40 @@ export class ExitFarmEvent extends GenericEvent {
         return new StructType('ExitFarmEvent', [
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition(
-                'farmingToken',
+                'farmingTokenID',
                 '',
-                FftTokenAmountPair.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition(
+                'farmingTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition('farmingReserve', '', new BigUIntType()),
             new StructFieldDefinition(
-                'farmToken',
+                'farmTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
             ),
+            new StructFieldDefinition('farmTokenNonce', '', new U64Type()),
+            new StructFieldDefinition('farmTokenAmount', '', new BigUIntType()),
             new StructFieldDefinition('farmSupply', '', new BigUIntType()),
             new StructFieldDefinition(
-                'rewardToken',
+                'rewardTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
             ),
-            new StructFieldDefinition('rewardReserve', '', new BigUIntType()),
+            new StructFieldDefinition('rewardTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'rewardTokenAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'rewardTokenReserves',
+                '',
+                new BigUIntType(),
+            ),
             new StructFieldDefinition(
                 'farmAttributes',
                 '',
