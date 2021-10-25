@@ -29,19 +29,25 @@ export class FactoryAnalyticsModel {
 @ObjectType()
 export class PairAnalyticsModel {
     @Field()
-    pairAddress: string;
+    firstTokenLocked: string;
     @Field()
-    volumesUSD: string;
+    firstTokenLockedValueUSD: string;
     @Field()
-    feesUSD: string;
+    secondTokenLocked: string;
     @Field()
-    totalValueLockedUSD: string;
+    secondTokenLockedValueUSD: string;
     @Field()
-    totalValueLockedFirstToken: string;
-    @Field()
-    totalValueLockedSecondToken: string;
+    lockedValueUSD: string;
     @Field()
     liquidity: string;
+    @Field()
+    firstTokenVolume: string;
+    @Field()
+    secondTokenVolume: string;
+    @Field()
+    volumeUSD: string;
+    @Field()
+    feesUSD: string;
 
     constructor(init?: Partial<PairAnalyticsModel>) {
         Object.assign(this, init);
@@ -53,15 +59,17 @@ export class TokenAnalyticsModel {
     @Field()
     tokenID: string;
     @Field()
+    priceUSD: string;
+    @Field()
     volume: string;
     @Field()
     volumeUSD: string;
     @Field()
     feesUSD: string;
     @Field()
-    totalValueLocked: string;
+    valueLocked: string;
     @Field()
-    totalValueLockedUSD: string;
+    valueLockedUSD: string;
 
     constructor(init?: Partial<TokenAnalyticsModel>) {
         Object.assign(this, init);
