@@ -63,11 +63,11 @@ export class AnalyticsEventHandlerService {
         ]);
 
         const firstAmountDenom = convertTokenToDecimal(
-            event.firstTokenAmount.amount,
+            event.firstToken.amount,
             firstToken.decimals,
         );
         const secondAmountDenom = convertTokenToDecimal(
-            event.secondTokenAmount.amount,
+            event.secondToken.amount,
             secondtoken.decimals,
         );
         const firstAmountUSD = firstAmountDenom.multipliedBy(
@@ -98,9 +98,9 @@ export class AnalyticsEventHandlerService {
 
         const data = [];
         data[event.address] = {
-            firstTokenLocked: event.pairReserves[0].amount,
+            firstTokenLocked: event.firstTokenReserves,
             firstTokenLockedValueUSD: firstTokenLockedValueUSD,
-            secondTokenLocked: event.pairReserves[1].amount,
+            secondTokenLocked: event.secondTokenReserves,
             secondTokenLockedValueUSD: secondTokenLockedValueUSD,
             lockedValueUSD: pairLockedValueUSD,
             liquidity: event.liquidityPoolSupply,
@@ -130,10 +130,25 @@ export class AnalyticsEventHandlerService {
             this.pairGetterService.getTotalFeePercent(event.address),
         ]);
 
-        const [firstTokenAmount, secondTokenAmount] =
-            firstToken.identifier === event.tokenAmountIn.tokenID
-                ? [event.tokenAmountIn.amount, event.tokenAmountOut.amount]
-                : [event.tokenAmountOut.amount, event.tokenAmountIn.amount];
+        const [
+            firstTokenAmount,
+            secondTokenAmount,
+            firstTokenReserves,
+            secondTokenReserves,
+        ] =
+            firstToken.identifier === event.tokenIn.tokenID
+                ? [
+                      event.tokenIn.amount,
+                      event.tokenOut.amount,
+                      event.tokenInReserves,
+                      event.tokenOutReserves,
+                  ]
+                : [
+                      event.tokenOut.amount,
+                      event.tokenIn.amount,
+                      event.tokenOutReserves,
+                      event.tokenInReserves,
+                  ];
         const [firstTokenAmountDenom, secondTokenAmountDenom] = [
             convertTokenToDecimal(firstTokenAmount, firstToken.decimals),
             convertTokenToDecimal(secondTokenAmount, secondToken.decimals),
@@ -155,8 +170,8 @@ export class AnalyticsEventHandlerService {
         data[event.address] = {
             firstTokenPriceUSD: firstTokenPriceUSD,
             secondTokenPriceUSD: secondTokenPriceUSD,
-            firstTokenLockedValue: event.pairReserves[0].amount,
-            secondTokenLockedValue: event.pairReserves[1].amount,
+            firstTokenLockedValue: firstTokenReserves,
+            secondTokenLockedValue: secondTokenReserves,
             firstTokenVolume: firstTokenAmount,
             secondTokenVolume: secondTokenAmount,
             volumeUSD: volumeUSD,

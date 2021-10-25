@@ -35,17 +35,17 @@ export class RabbitMQPairHandlerService {
         let secondTokenReserves: BigNumber;
 
         if (
-            event.getPairReserves()[0].tokenID === firstTokenID &&
-            event.getPairReserves()[1].tokenID === secondTokenID
+            event.getTokenIn().tokenID === firstTokenID &&
+            event.getTokenOut().tokenID === secondTokenID
         ) {
-            firstTokenReserves = event.getPairReserves()[0].amount;
-            secondTokenReserves = event.getPairReserves()[1].amount;
+            firstTokenReserves = event.getTokenInReserves();
+            secondTokenReserves = event.getTokenOutReserves();
         } else if (
-            event.getPairReserves()[1].tokenID === firstTokenID &&
-            event.getPairReserves()[0].tokenID === secondTokenID
+            event.getTokenOut().tokenID === firstTokenID &&
+            event.getTokenIn().tokenID === secondTokenID
         ) {
-            firstTokenReserves = event.getPairReserves()[1].amount;
-            secondTokenReserves = event.getPairReserves()[0].amount;
+            firstTokenReserves = event.getTokenOutReserves();
+            secondTokenReserves = event.getTokenInReserves();
         }
         this.invalidatedKeys.push(
             await this.pairSetterService.setFirstTokenReserve(
@@ -74,36 +74,14 @@ export class RabbitMQPairHandlerService {
     async handleLiquidityEvent(
         event: AddLiquidityEvent | RemoveLiquidityEvent,
     ): Promise<void> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(event.getAddress()),
-            this.pairGetterService.getSecondTokenID(event.getAddress()),
-        ]);
-
-        let firstTokenReserves: BigNumber;
-        let secondTokenReserves: BigNumber;
-
-        if (
-            event.getPairReserves()[0].tokenID === firstTokenID &&
-            event.getPairReserves()[1].tokenID === secondTokenID
-        ) {
-            firstTokenReserves = event.getPairReserves()[0].amount;
-            secondTokenReserves = event.getPairReserves()[1].amount;
-        } else if (
-            event.getPairReserves()[1].tokenID === firstTokenID &&
-            event.getPairReserves()[0].tokenID === secondTokenID
-        ) {
-            firstTokenReserves = event.getPairReserves()[1].amount;
-            secondTokenReserves = event.getPairReserves()[0].amount;
-        }
-
         const cacheKeys = await Promise.all([
             this.pairSetterService.setFirstTokenReserve(
                 event.getAddress(),
-                firstTokenReserves.toFixed(),
+                event.getFirstTokenReserves().toFixed(),
             ),
             this.pairSetterService.setSecondTokenReserve(
                 event.getAddress(),
-                secondTokenReserves.toFixed(),
+                event.getSecondTokenReserves().toFixed(),
             ),
             this.pairSetterService.setTotalSupply(
                 event.getAddress(),
