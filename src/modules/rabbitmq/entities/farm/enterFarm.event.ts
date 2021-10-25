@@ -10,7 +10,7 @@ import {
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { FftTokenAmountPair } from 'src/models/fftTokenAmountPair.model';
-import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
+import { GenericToken } from 'src/models/genericToken.model
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { FarmEventsTopics } from './farm.event.topics';
@@ -24,8 +24,8 @@ export class EnterFarmEvent extends GenericEvent {
     private farmingToken: FftTokenAmountPair;
     @Field(type => String)
     private farmingReserve: BigNumber;
-    @Field(type => GenericTokenAmountPair)
-    private farmToken: GenericTokenAmountPair;
+    @Field(type => GenericToken)
+    private farmToken: GenericToken;
     @Field(type => String)
     private farmSupply: BigNumber;
     @Field(type => FftTokenAmountPair)
@@ -44,7 +44,7 @@ export class EnterFarmEvent extends GenericEvent {
         this.farmingToken = FftTokenAmountPair.fromDecodedAttributes(
             decodedEvent.farmingToken,
         );
-        this.farmToken = GenericTokenAmountPair.fromDecodedAttributes(
+        this.farmToken = GenericToken.fromDecodedAttributes(
             decodedEvent.farmToken,
         );
         this.rewardTokenReserve = FftTokenAmountPair.fromDecodedAttributes(
@@ -63,7 +63,7 @@ export class EnterFarmEvent extends GenericEvent {
         return this.farmingReserve;
     }
 
-    getFarmToken(): GenericTokenAmountPair {
+    getFarmToken(): GenericToken {
         return this.farmToken;
     }
 
@@ -114,7 +114,7 @@ export class EnterFarmEvent extends GenericEvent {
             new StructFieldDefinition(
                 'farmToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition('farmSupply', '', new BigUIntType()),
             new StructFieldDefinition(

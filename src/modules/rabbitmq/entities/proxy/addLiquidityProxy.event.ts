@@ -10,7 +10,7 @@ import { GenericEvent } from '../generic.event';
 import { PairProxyEvent } from './pairProxy.event';
 import { AddLiquidityProxyEventType } from './pair.proxy.types';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
+import { GenericToken } from 'src/models/genericToken.model
 
 @ObjectType()
 export class AddLiquidityProxyEvent extends PairProxyEvent {
@@ -40,17 +40,17 @@ export class AddLiquidityProxyEvent extends PairProxyEvent {
             new StructFieldDefinition(
                 'firstToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition(
                 'secondToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedLpToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedLpAttributes',

@@ -9,7 +9,7 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
-import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
+import { GenericToken } from 'src/models/genericToken.model
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { FarmEventsTopics } from './farm.event.topics';
@@ -19,14 +19,14 @@ import { RewardsEventType } from './rewards.types';
 export class RewardsEvent extends GenericEvent {
     private decodedTopics: FarmEventsTopics;
 
-    @Field(type => GenericTokenAmountPair)
-    private oldFarmToken: GenericTokenAmountPair;
-    @Field(type => GenericTokenAmountPair)
-    private newFarmToken: GenericTokenAmountPair;
+    @Field(type => GenericToken)
+    private oldFarmToken: GenericToken;
+    @Field(type => GenericToken)
+    private newFarmToken: GenericToken;
     @Field(type => String)
     private farmSupply: BigNumber;
-    @Field(type => GenericTokenAmountPair)
-    private rewardToken: GenericTokenAmountPair;
+    @Field(type => GenericToken)
+    private rewardToken: GenericToken;
     @Field(type => String)
     private rewardTokenReserve: BigNumber;
     @Field(type => FarmTokenAttributesModel)
@@ -41,13 +41,13 @@ export class RewardsEvent extends GenericEvent {
         this.decodedTopics = new FarmEventsTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.oldFarmToken = GenericTokenAmountPair.fromDecodedAttributes(
+        this.oldFarmToken = GenericToken.fromDecodedAttributes(
             decodedEvent.oldFarmToken,
         );
-        this.newFarmToken = GenericTokenAmountPair.fromDecodedAttributes(
+        this.newFarmToken = GenericToken.fromDecodedAttributes(
             decodedEvent.newFarmToken,
         );
-        this.rewardToken = GenericTokenAmountPair.fromDecodedAttributes(
+        this.rewardToken = GenericToken.fromDecodedAttributes(
             decodedEvent.rewardToken,
         );
         this.oldFarmAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
@@ -58,11 +58,11 @@ export class RewardsEvent extends GenericEvent {
         );
     }
 
-    getOldFarmToken(): GenericTokenAmountPair {
+    getOldFarmToken(): GenericToken {
         return this.oldFarmToken;
     }
 
-    getNewFarmToken(): GenericTokenAmountPair {
+    getNewFarmToken(): GenericToken {
         return this.newFarmToken;
     }
 
@@ -70,7 +70,7 @@ export class RewardsEvent extends GenericEvent {
         return this.farmSupply;
     }
 
-    getRewardToken(): GenericTokenAmountPair {
+    getRewardToken(): GenericToken {
         return this.rewardToken;
     }
 
@@ -112,18 +112,18 @@ export class RewardsEvent extends GenericEvent {
             new StructFieldDefinition(
                 'oldFarmToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition(
                 'newFarmToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition('farmSupply', '', new BigUIntType()),
             new StructFieldDefinition(
                 'rewardToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition(
                 'rewardTokenReserve',

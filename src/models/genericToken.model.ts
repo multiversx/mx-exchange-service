@@ -8,14 +8,14 @@ import {
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 
-export type GenericTokenAmountPairType = {
+export type GenericTokenType = {
     tokenID: string;
     tokenNonce: number;
     amount: string;
 };
 
 @ObjectType()
-export class GenericTokenAmountPair {
+export class GenericToken {
     @Field()
     tokenID: string;
     @Field(type => Int)
@@ -23,7 +23,7 @@ export class GenericTokenAmountPair {
     @Field(type => String)
     amount: BigNumber;
 
-    constructor(init?: Partial<GenericTokenAmountPair>) {
+    constructor(init?: Partial<GenericToken>) {
         Object.assign(this, init);
     }
 
@@ -36,7 +36,7 @@ export class GenericTokenAmountPair {
     }
 
     static fromDecodedAttributes(decodedAttributes: any) {
-        return new GenericTokenAmountPair({
+        return new GenericToken({
             tokenID: decodedAttributes.tokenID.toString(),
             tokenNonce: decodedAttributes.tokenNonce,
             amount: decodedAttributes.amount,

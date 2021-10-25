@@ -6,7 +6,7 @@ import {
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
+import { GenericToken } from 'src/models/genericToken.model
 import { WrappedLpTokenAttributesModel } from 'src/modules/proxy/models/wrappedLpTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { PairProxyEventType } from './pair.proxy.types';
@@ -16,12 +16,12 @@ import { PairProxyTopics } from './proxy.event.topics';
 export class PairProxyEvent extends GenericEvent {
     protected decodedTopics: PairProxyTopics;
 
-    @Field(type => GenericTokenAmountPair)
-    protected firstToken: GenericTokenAmountPair;
-    @Field(type => GenericTokenAmountPair)
-    protected secondToken: GenericTokenAmountPair;
-    @Field(type => GenericTokenAmountPair)
-    protected wrappedLpToken: GenericTokenAmountPair;
+    @Field(type => GenericToken)
+    protected firstToken: GenericToken;
+    @Field(type => GenericToken)
+    protected secondToken: GenericToken;
+    @Field(type => GenericToken)
+    protected wrappedLpToken: GenericToken;
     @Field(type => WrappedLpTokenAttributesModel)
     protected wrappedLpAttributes: WrappedLpTokenAttributesModel;
 
@@ -30,13 +30,13 @@ export class PairProxyEvent extends GenericEvent {
         this.decodedTopics = new PairProxyTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.firstToken = GenericTokenAmountPair.fromDecodedAttributes(
+        this.firstToken = GenericToken.fromDecodedAttributes(
             decodedEvent.firstToken,
         );
-        this.secondToken = GenericTokenAmountPair.fromDecodedAttributes(
+        this.secondToken = GenericToken.fromDecodedAttributes(
             decodedEvent.secondToken,
         );
-        this.wrappedLpToken = GenericTokenAmountPair.fromDecodedAttributes(
+        this.wrappedLpToken = GenericToken.fromDecodedAttributes(
             decodedEvent.wrappedLpToken,
         );
         this.wrappedLpAttributes = WrappedLpTokenAttributesModel.fromDecodedAttributes(
@@ -79,7 +79,7 @@ export class PairProxyEvent extends GenericEvent {
             new StructFieldDefinition(
                 'wrappedLpToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedLpAttributes',
@@ -89,12 +89,12 @@ export class PairProxyEvent extends GenericEvent {
             new StructFieldDefinition(
                 'firstToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition(
                 'secondToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition('block', '', new U64Type()),
             new StructFieldDefinition('epoch', '', new U64Type()),

@@ -8,7 +8,7 @@ import {
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
+import { GenericToken } from 'src/models/genericToken.model
 import { WrappedFarmTokenAttributesModel } from 'src/modules/proxy/models/wrappedFarmTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { EnterFarmProxyEventType } from './farm.proxy.types';
@@ -20,10 +20,10 @@ export class EnterFarmProxyEvent extends GenericEvent {
 
     @Field(type => String)
     private farmAddress: Address;
-    @Field(type => GenericTokenAmountPair)
-    private farmingToken: GenericTokenAmountPair;
-    @Field(type => GenericTokenAmountPair)
-    private wrappedFarmToken: GenericTokenAmountPair;
+    @Field(type => GenericToken)
+    private farmingToken: GenericToken;
+    @Field(type => GenericToken)
+    private wrappedFarmToken: GenericToken;
     @Field(type => WrappedFarmTokenAttributesModel)
     private wrappedFarmAttributes: WrappedFarmTokenAttributesModel;
     @Field()
@@ -34,10 +34,10 @@ export class EnterFarmProxyEvent extends GenericEvent {
         this.decodedTopics = new FarmProxyTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.farmingToken = GenericTokenAmountPair.fromDecodedAttributes(
+        this.farmingToken = GenericToken.fromDecodedAttributes(
             decodedEvent.farmingToken,
         );
-        this.wrappedFarmToken = GenericTokenAmountPair.fromDecodedAttributes(
+        this.wrappedFarmToken = GenericToken.fromDecodedAttributes(
             decodedEvent.wrappedFarmToken,
         );
         this.wrappedFarmAttributes = WrappedFarmTokenAttributesModel.fromDecodedAttributes(
@@ -80,12 +80,12 @@ export class EnterFarmProxyEvent extends GenericEvent {
             new StructFieldDefinition(
                 'farmingToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedFarmToken',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                GenericToken.getStructure(),
             ),
             new StructFieldDefinition(
                 'wrappedFarmAttributes',
