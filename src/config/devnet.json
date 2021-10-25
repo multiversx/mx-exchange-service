@@ -1,15 +1,25 @@
 {
-    "caching": {
-        "pairsMetadata": 300,
-        "pairs": 300,
-        "state": 300,
-        "txTotalCount": 10,
-        "pairCount": 10,
-        "token": 300,
-        "tokenPrice": 30,
-        "priceFeed": 30,
-        "reserves": 30,
-        "apr": 60,
-        "default": 120
-    }
+    "scAddress": {
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqvz749aqquckr5hwvpu2kwvcewjkwk8ud0n4sfl9jgj",
+        "MEX-b6bb7d": "erd1qqqqqqqqqqqqqpgqcvyf54zu95dxsxeyslyvdryec0l4mrnz0n4sq4ryjp",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqy7gwk022nnrywfmhup3gn7kkfscw66a30n4sy2zaxx",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqqvtnuaqyrkj4pled6xguwk54qjk0heta0n4s5uzufw",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq646juuvw4659tns8z88h5zmn9n0a9dma0n4shrqrca",
+        "wrappingAddress": {
+            "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
+            "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
+        }
+    },
+    "tokenProviderUSD": "BUSD-05b16f",
+    "priceFeeds": {
+        "BUSD-05b16f": "busd"
+    },
+    "tokensSupply": ["MEX-b6bb7d"],
+    "cachedTokensPrice": ["MEX-b6bb7d"],
+    "farms": [
+        "erd1qqqqqqqqqqqqqpgqaqy488ga3l4u2n05umlgym7u32mv3r8s0n4sca93mz",
+        "erd1qqqqqqqqqqqqqpgqndwuvku5pxe6sw0lgnewvde0tzue6upe0n4satrnk6",
+        "erd1qqqqqqqqqqqqqpgq2a2wfa46pw2wl4c6pexafq2wuf897aff0n4s25ky7c"
+    ]
 }
