@@ -1,6 +1,18 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
+export class HistoricDataModel {
+    @Field()
+    timestamp: string;
+    @Field()
+    value: string;
+
+    constructor(init?: Partial<HistoricDataModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class FactoryAnalyticsModel {
     @Field()
     totalVolumesUSD: string;

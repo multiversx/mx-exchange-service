@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
-import { farmsConfig } from '../../config';
+import { awsConfig, farmsConfig } from '../../config';
 import { PairService } from '../pair/services/pair.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
@@ -17,6 +17,8 @@ import { CachingService } from '../../services/caching/cache.service';
 import { oneMinute } from '../../helpers/helpers';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { PairGetterService } from '../pair/services/pair.getter.service';
+import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
+import { HistoricDataModel } from './models/analytics.model';
 
 export interface TradingInfoType {
     volumeUSD: BigNumber;
@@ -31,6 +33,7 @@ export class AnalyticsService {
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -320,6 +323,19 @@ export class AnalyticsService {
         }
 
         return burnedMex;
+    }
+
+    async getHistoricData(
+        series: string,
+        metric: string,
+        time: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.awsTimestreamQuery.getValues({
+            table: awsConfig.timestream.tableName,
+            series,
+            metric,
+            time,
+        });
     }
 
     private getAnalyticsCacheKey(...args: any) {
