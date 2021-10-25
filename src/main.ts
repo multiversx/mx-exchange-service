@@ -7,9 +7,9 @@ import { CacheWarmerModule } from './services/cache.warmer.module';
 import { PubSubModule } from './services/pub.sub.module';
 import { LoggingInterceptor } from './utils/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
-import { WebSocketService } from './modules/websocket/websocket.service';
-import { WebSocketModule } from './modules/websocket/websocket.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
+import { RabbitMqConsumer } from './modules/rabbitmq/rabbitmq.consumer';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -61,16 +61,14 @@ async function bootstrap() {
     }
 
     if (apiConfigService.isEventsNotifierAppActive()) {
-        const eventsNotifierApp = await NestFactory.createMicroservice<
-            MicroserviceOptions
-        >(WebSocketModule);
-        const webSocketService = eventsNotifierApp.get<WebSocketService>(
-            WebSocketService,
+        const eventsNotifierApp = await NestFactory.create(
+            RabbitMqProcessorModule,
         );
-        await webSocketService.subscribe();
-        eventsNotifierApp.listen(() =>
-            console.log('Started events notifier microservice'),
+        const rabbitMqService = eventsNotifierApp.get<RabbitMqConsumer>(
+            RabbitMqConsumer,
         );
+        await rabbitMqService.getFilterAddresses();
+        eventsNotifierApp.listen(5673, '0.0.0.0');
 
         const analyticsApp = await NestFactory.createMicroservice<
             MicroserviceOptions
