@@ -1,14 +1,16 @@
 import {
     Address,
     AddressType,
+    BigUIntType,
     BinaryCodec,
     BooleanType,
     StructFieldDefinition,
     StructType,
+    TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { GenericToken } from 'src/models/genericToken.model
+import { GenericToken } from 'src/models/genericToken.model';
 import { WrappedFarmTokenAttributesModel } from 'src/modules/proxy/models/wrappedFarmTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { ClaimRewardsProxyEventType } from './farm.proxy.types';
@@ -38,15 +40,21 @@ export class ClaimRewardsProxyEvent extends GenericEvent {
         this.decodedTopics = new FarmProxyTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.oldWrappedFarmToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.oldWrappedFarmToken,
-        );
-        this.newWrappedFarmToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.newWrappedFarmToken,
-        );
-        this.rewardToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.rewardToken,
-        );
+        this.oldWrappedFarmToken = new GenericToken({
+            tokenID: decodedEvent.oldWrappedFarmTokenID,
+            nonce: decodedEvent.oldWrappedFarmTokenNonce,
+            amount: decodedEvent.oldWrappedFarmTokenAmount,
+        });
+        this.newWrappedFarmToken = new GenericToken({
+            tokenID: decodedEvent.newWrappedFarmTokenID,
+            nonce: decodedEvent.newWrappedFarmTokenNonce,
+            amount: decodedEvent.newWrappedFarmTokenAmount,
+        });
+        this.rewardToken = new GenericToken({
+            tokenID: decodedEvent.rewardTokenID,
+            nonce: decodedEvent.rewardTokenNonce,
+            amount: decodedEvent.rewardTokenAmount,
+        });
         this.oldWrappedFarmAttributes = WrappedFarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.oldWrappedFarmAttributes,
         );
@@ -90,19 +98,45 @@ export class ClaimRewardsProxyEvent extends GenericEvent {
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition('farmAddress', '', new AddressType()),
             new StructFieldDefinition(
-                'oldWrappedFarmToken',
+                'oldWrappedFarmTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
             ),
             new StructFieldDefinition(
-                'newWrappedFarmToken',
+                'oldWrappedFarmTokenNonce',
                 '',
-                GenericToken.getStructure(),
+                new U64Type(),
             ),
             new StructFieldDefinition(
-                'rewardToken',
+                'oldWrappedFarmTokenAmount',
                 '',
-                GenericToken.getStructure(),
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'newWrappedFarmTokenID',
+                '',
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition(
+                'newWrappedFarmTokenNonce',
+                '',
+                new U64Type(),
+            ),
+            new StructFieldDefinition(
+                'newWrappedFarmTokenAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'rewardTokenID',
+                '',
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('rewardTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'rewardTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
                 'oldWrappedFarmAttributes',

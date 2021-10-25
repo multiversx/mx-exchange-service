@@ -1,13 +1,15 @@
 import {
     Address,
     AddressType,
+    BigUIntType,
     BinaryCodec,
     StructFieldDefinition,
     StructType,
+    TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { GenericToken } from 'src/models/genericToken.model
+import { GenericToken } from 'src/models/genericToken.model';
 import { WrappedFarmTokenAttributesModel } from 'src/modules/proxy/models/wrappedFarmTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { ExitFarmProxyEventType } from './farm.proxy.types';
@@ -33,18 +35,24 @@ export class ExitFarmProxyEvent extends GenericEvent {
         this.decodedTopics = new FarmProxyTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.wrappedFarmToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.wrappedFarmToken,
-        );
+        this.wrappedFarmToken = new GenericToken({
+            tokenID: decodedEvent.wrappedFarmTokenID,
+            nonce: decodedEvent.wrappedFarmTokenNonce,
+            amount: decodedEvent.wrappedFarmTokenAmount,
+        });
         this.wrappedFarmAttributes = WrappedFarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.wrappedFarmAttributes,
         );
-        this.farmingToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.farmingToken,
-        );
-        this.rewardToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.rewardToken,
-        );
+        this.farmingToken = new GenericToken({
+            tokenID: decodedEvent.farmingTokenID,
+            nonce: decodedEvent.farmingTokenNonce,
+            amount: decodedEvent.farmingTokenAmount,
+        });
+        this.rewardToken = new GenericToken({
+            tokenID: decodedEvent.rewardTokenID,
+            nonce: decodedEvent.rewardTokenNonce,
+            amount: decodedEvent.rewardTokenAmount,
+        });
     }
 
     toJSON(): ExitFarmProxyEventType {
@@ -80,9 +88,19 @@ export class ExitFarmProxyEvent extends GenericEvent {
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition('farmAddress', '', new AddressType()),
             new StructFieldDefinition(
-                'wrappedFarmToken',
+                'wrappedFarmTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition(
+                'wrappedFarmTokenNonce',
+                '',
+                new U64Type(),
+            ),
+            new StructFieldDefinition(
+                'wrappedFarmTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
                 'wrappedFarmAttributes',
@@ -90,14 +108,26 @@ export class ExitFarmProxyEvent extends GenericEvent {
                 WrappedFarmTokenAttributesModel.getStructure(),
             ),
             new StructFieldDefinition(
-                'farmingToken',
+                'farmingTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('farmingTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'farmingTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
-                'rewardToken',
+                'rewardTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('rewardTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'rewardTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition('block', '', new U64Type()),
             new StructFieldDefinition('epoch', '', new U64Type()),

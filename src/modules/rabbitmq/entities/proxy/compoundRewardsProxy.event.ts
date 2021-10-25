@@ -1,14 +1,16 @@
 import {
     Address,
     AddressType,
+    BigUIntType,
     BinaryCodec,
     BooleanType,
     StructFieldDefinition,
     StructType,
+    TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { GenericToken } from 'src/models/genericToken.model
+import { GenericToken } from 'src/models/genericToken.model';
 import { WrappedFarmTokenAttributesModel } from 'src/modules/proxy/models/wrappedFarmTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { RewardsProxyEventType } from './farm.proxy.types';
@@ -36,12 +38,16 @@ export class CompoundRewardsProxyEvent extends GenericEvent {
         this.decodedTopics = new FarmProxyTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.oldWrappedFarmToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.oldWrappedFarmToken,
-        );
-        this.newWrappedFarmToken = GenericToken.fromDecodedAttributes(
-            decodedEvent.newWrappedFarmToken,
-        );
+        this.oldWrappedFarmToken = new GenericToken({
+            tokenID: decodedEvent.oldWrappedFarmTokenID,
+            nonce: decodedEvent.oldWrappedFarmTokenNonce,
+            amount: decodedEvent.oldWrappedFarmTokenAmount,
+        });
+        this.newWrappedFarmToken = new GenericToken({
+            tokenID: decodedEvent.newWrappedFarmTokenID,
+            nonce: decodedEvent.newWrappedFarmTokenNonce,
+            amount: decodedEvent.newWrappedFarmTokenAmount,
+        });
         this.oldWrappedFarmAttributes = WrappedFarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.oldWrappedFarmAttributes,
         );
@@ -84,14 +90,34 @@ export class CompoundRewardsProxyEvent extends GenericEvent {
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition('farmAddress', '', new AddressType()),
             new StructFieldDefinition(
-                'oldWrappedFarmToken',
+                'oldWrappedFarmTokenID',
                 '',
-                GenericToken.getStructure(),
+                new TokenIdentifierType(),
             ),
             new StructFieldDefinition(
-                'newWrappedFarmToken',
+                'oldWrappedFarmTokenNonce',
                 '',
-                GenericToken.getStructure(),
+                new U64Type(),
+            ),
+            new StructFieldDefinition(
+                'oldWrappedFarmTokenAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'newWrappedFarmTokenID',
+                '',
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition(
+                'newWrappedFarmTokenNonce',
+                '',
+                new U64Type(),
+            ),
+            new StructFieldDefinition(
+                'newWrappedFarmTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
                 'oldWrappedFarmAttributes',
