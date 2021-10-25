@@ -1,4 +1,4 @@
-import { GenericTokenType } from 'src/models/genericToken.model
+import { GenericTokenType } from 'src/models/genericToken.model';
 import { GenericEventType } from '../generic.types';
 
 export type PairProxyEventType = GenericEventType & {
