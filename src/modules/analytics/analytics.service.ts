@@ -9,19 +9,6 @@ import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { farmsConfig } from '../../config';
 import { PairService } from '../pair/services/pair.service';
-import { TransactionCollectorService } from '../../services/transactions/transaction.collector.service';
-import { TransactionInterpreterService } from '../../services/transactions/transaction.interpreter.service';
-import { TransactionMappingService } from '../../services/transactions/transaction.mapping.service';
-import {
-    AnalyticsModel,
-    PairAnalyticsModel,
-    TokenAnalyticsModel,
-} from './models/analytics.model';
-import {
-    processFactoryAnalytics,
-    processPairsAnalytics,
-    processTokensAnalytics,
-} from './analytics.processor';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -44,9 +31,6 @@ export class AnalyticsService {
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly transactionCollector: TransactionCollectorService,
-        private readonly transactionInterpreter: TransactionInterpreterService,
-        private readonly transactionMapping: TransactionMappingService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -336,116 +320,6 @@ export class AnalyticsService {
         }
 
         return burnedMex;
-    }
-
-    async getAnalytics(): Promise<AnalyticsModel> {
-        const transactions = await this.transactionCollector.getNewTransactions();
-        const esdtTransferTransactions = this.transactionInterpreter.getESDTTransferTransactions(
-            transactions,
-        );
-        const swapTransactions = this.transactionInterpreter.getSwapTransactions(
-            esdtTransferTransactions,
-        );
-
-        const promises = swapTransactions.map(swapTransaction => {
-            return this.transactionMapping.handleSwap(swapTransaction);
-        });
-
-        const swapTradingInfos = await Promise.all(promises);
-        const factoryAnalytics = processFactoryAnalytics(swapTradingInfos);
-        const pairsAnalytics = processPairsAnalytics(swapTradingInfos);
-        const tokensAnalytics = processTokensAnalytics(swapTradingInfos);
-
-        factoryAnalytics.totalValueLockedUSD = await this.computeTotalValueLockedUSD();
-        const pairsAddress = await this.context.getPairsMetadata();
-        for (const pair of pairsAddress) {
-            const [
-                firstTokenID,
-                secondTokenID,
-                pairReserves,
-                firstTokenLockedValueUSD,
-                secondTokenLockedValueUSD,
-                totalValueLockedUSD,
-            ] = await Promise.all([
-                this.pairGetterService.getFirstTokenID(pair.address),
-                this.pairGetterService.getSecondTokenID(pair.address),
-                this.pairGetterService.getPairInfoMetadata(pair.address),
-                this.pairGetterService.getFirstTokenLockedValueUSD(
-                    pair.address,
-                ),
-                this.pairGetterService.getSecondTokenLockedValueUSD(
-                    pair.address,
-                ),
-                this.pairGetterService.getLockedValueUSD(pair.address),
-            ]);
-            const pairAnalytics = pairsAnalytics.find(
-                swap => swap.pairAddress === pair.address,
-            );
-            if (pairAnalytics) {
-                pairAnalytics.totalValueLockedUSD = totalValueLockedUSD;
-                pairAnalytics.totalValueLockedFirstToken =
-                    pairReserves.reserves0;
-                pairAnalytics.totalValueLockedSecondToken =
-                    pairReserves.reserves1;
-                pairAnalytics.liquidity = pairReserves.totalSupply;
-            } else {
-                pairsAnalytics.push(
-                    new PairAnalyticsModel({
-                        pairAddress: pair.address,
-                        totalValueLockedUSD: totalValueLockedUSD,
-                        totalValueLockedFirstToken: pairReserves.reserves0,
-                        totalValueLockedSecondToken: pairReserves.reserves1,
-                        liquidity: pairReserves.totalSupply,
-                        feesUSD: '0',
-                        volumesUSD: '0',
-                    }),
-                );
-            }
-
-            const firstToken = tokensAnalytics.find(
-                token => token.tokenID === firstTokenID,
-            );
-            if (firstToken) {
-                firstToken.totalValueLocked = pairReserves.reserves0;
-                firstToken.totalValueLockedUSD = firstTokenLockedValueUSD;
-            } else {
-                tokensAnalytics.push(
-                    new TokenAnalyticsModel({
-                        tokenID: firstTokenID,
-                        totalValueLocked: pairReserves.reserves0,
-                        totalValueLockedUSD: firstTokenLockedValueUSD,
-                        volume: '0',
-                        volumeUSD: '0',
-                        feesUSD: '0',
-                    }),
-                );
-            }
-
-            const secondToken = tokensAnalytics.find(
-                token => token.tokenID === secondTokenID,
-            );
-            if (secondToken) {
-                secondToken.totalValueLocked = pairReserves.reserves1;
-                secondToken.totalValueLockedUSD = secondTokenLockedValueUSD;
-            } else {
-                tokensAnalytics.push(
-                    new TokenAnalyticsModel({
-                        tokenID: secondTokenID,
-                        totalValueLocked: pairReserves.reserves1,
-                        totalValueLockedUSD: secondTokenLockedValueUSD,
-                        volume: '0',
-                        volumeUSD: '0',
-                        feesUSD: '0',
-                    }),
-                );
-            }
-        }
-
-        return new AnalyticsModel({
-            factory: factoryAnalytics,
-            pairs: pairsAnalytics,
-            tokens: tokensAnalytics,
-        });
     }
 
     private getAnalyticsCacheKey(...args: any) {
