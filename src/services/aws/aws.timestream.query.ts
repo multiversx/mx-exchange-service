@@ -53,7 +53,6 @@ export class AWSTimestreamQueryService {
 
         const params = { QueryString };
         const { Rows } = await this.queryClient.query(params).promise();
-        console.log(Rows.map(Row => Row.Data[0]));
         const values = Rows.map(
             Row =>
                 new HistoricDataModel({
