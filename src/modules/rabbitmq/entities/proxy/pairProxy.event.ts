@@ -85,6 +85,22 @@ export class PairProxyEvent extends GenericEvent {
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition('pairAddress', '', new AddressType()),
             new StructFieldDefinition(
+                'wrappedLpTokenID',
+                '',
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('wrappedLpTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'wrappedLpTokenAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'wrappedLpAttributes',
+                '',
+                WrappedLpTokenAttributesModel.getStructure(),
+            ),
+            new StructFieldDefinition(
                 'firstTokenID',
                 '',
                 new TokenIdentifierType(),
@@ -105,22 +121,6 @@ export class PairProxyEvent extends GenericEvent {
                 'secondTokenAmount',
                 '',
                 new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'wrappedLpTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition('wrappedLpTokenNonce', '', new U64Type()),
-            new StructFieldDefinition(
-                'wrappedLpTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'wrappedLpAttributes',
-                '',
-                WrappedLpTokenAttributesModel.getStructure(),
             ),
             new StructFieldDefinition('block', '', new U64Type()),
             new StructFieldDefinition('epoch', '', new U64Type()),
