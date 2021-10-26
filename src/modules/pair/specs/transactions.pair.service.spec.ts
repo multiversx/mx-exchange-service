@@ -93,31 +93,30 @@ describe('TransactionPairService', () => {
         const secondTokenAmount = '9';
 
         const liquidityBatchTransactions = await service.addLiquidityBatch(
-            'user_address_1',
+            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress: 'pair_address_1',
-                firstTokenID: 'EGLD',
-                firstTokenAmount: firstTokenAmount,
-                secondTokenID: 'TOK2-2222',
-                secondTokenAmount: secondTokenAmount,
+                tokens: [
+                    {
+                        tokenID: 'EGLD',
+                        nonce: 0,
+                        amount: firstTokenAmount,
+                    },
+                    {
+                        tokenID: 'TOK2-2222',
+                        nonce: 0,
+                        amount: secondTokenAmount,
+                    },
+                ],
                 tolerance: 0.01,
             },
         );
 
-        const [
-            wrapEgldTransaction,
-            transferfirstTokenTransaction,
-            transferSecondTokenTransaction,
-            addLiquidity,
-        ] = liquidityBatchTransactions;
+        const [wrapEgldTransaction, addLiquidity] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(firstTokenAmount);
-        expect(transferfirstTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMwMzczMzM2MzUzMEAwYUA2MTYzNjM2NTcwNzQ0NTczNjQ3NDUwNjE3OTZkNjU2ZTc0',
+        expect(addLiquidity.data).toEqual(
+            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDBhQDU0NGY0YjMyMmQzMjMyMzIzMkBAMDlANjE2NDY0NGM2OTcxNzU2OTY0Njk3NDc5QDA5QDA4',
         );
-        expect(transferSecondTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU0NGY0YjMyMmQzMjMyMzIzMkAwOUA2MTYzNjM2NTcwNzQ0NTczNjQ3NDUwNjE3OTZkNjU2ZTc0',
-        );
-        expect(addLiquidity.data).toEqual('YWRkTGlxdWlkaXR5QDBhQDA5QDA5QDA4');
     });
 
     it('should get add liquidity batch transaction EGLD second token', async () => {
@@ -125,30 +124,29 @@ describe('TransactionPairService', () => {
         const secondTokenAmount = '9';
 
         const liquidityBatchTransactions = await service.addLiquidityBatch(
-            'user_address_1',
+            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress: 'pair_address_1',
-                firstTokenID: 'TOK2-2222',
-                firstTokenAmount: firstTokenAmount,
-                secondTokenID: 'EGLD',
-                secondTokenAmount: secondTokenAmount,
+                tokens: [
+                    {
+                        tokenID: 'TOK2-2222',
+                        nonce: 0,
+                        amount: firstTokenAmount,
+                    },
+                    {
+                        tokenID: 'EGLD',
+                        nonce: 0,
+                        amount: secondTokenAmount,
+                    },
+                ],
                 tolerance: 0.01,
             },
         );
 
-        const [
-            wrapEgldTransaction,
-            transferfirstTokenTransaction,
-            transferSecondTokenTransaction,
-            addLiquidity,
-        ] = liquidityBatchTransactions;
+        const [wrapEgldTransaction, addLiquidity] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
-        expect(transferfirstTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU3NDU0NzRjNDQyZDMwMzczMzM2MzUzMEAwOUA2MTYzNjM2NTcwNzQ0NTczNjQ3NDUwNjE3OTZkNjU2ZTc0',
+        expect(addLiquidity.data).toEqual(
+            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDU0NGY0YjMyMmQzMjMyMzIzMkBAMGFANjE2NDY0NGM2OTcxNzU2OTY0Njk3NDc5QDA4QDA5',
         );
-        expect(transferSecondTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU0NGY0YjMyMmQzMjMyMzIzMkAwYUA2MTYzNjM2NTcwNzQ0NTczNjQ3NDUwNjE3OTZkNjU2ZTc0',
-        );
-        expect(addLiquidity.data).toEqual('YWRkTGlxdWlkaXR5QDA5QDBhQDA4QDA5');
     });
 });
