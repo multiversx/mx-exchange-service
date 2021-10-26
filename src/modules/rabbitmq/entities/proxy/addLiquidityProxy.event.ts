@@ -1,8 +1,10 @@
 import {
     AddressType,
+    BigUIntType,
     BooleanType,
     StructFieldDefinition,
     StructType,
+    TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { WrappedLpTokenAttributesModel } from 'src/modules/proxy/models/wrappedLpTokenAttributes.model';
@@ -10,7 +12,6 @@ import { GenericEvent } from '../generic.event';
 import { PairProxyEvent } from './pairProxy.event';
 import { AddLiquidityProxyEventType } from './pair.proxy.types';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
 
 @ObjectType()
 export class AddLiquidityProxyEvent extends PairProxyEvent {
@@ -38,19 +39,37 @@ export class AddLiquidityProxyEvent extends PairProxyEvent {
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition('pairAddress', '', new AddressType()),
             new StructFieldDefinition(
-                'firstToken',
+                'firstTokenID',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('firstTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'firstTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
-                'secondToken',
+                'secondTokenID',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('secondTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'secondTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
-                'wrappedLpToken',
+                'wrappedLpTokenID',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('wrappedLpTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'wrappedLpTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
                 'wrappedLpAttributes',

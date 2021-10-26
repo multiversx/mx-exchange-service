@@ -1,12 +1,14 @@
 import {
     AddressType,
+    BigUIntType,
     BinaryCodec,
     StructFieldDefinition,
     StructType,
+    TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
-import { GenericTokenAmountPair } from 'src/models/genericTokenAmountPair.model';
+import { GenericToken } from 'src/models/genericToken.model';
 import { WrappedLpTokenAttributesModel } from 'src/modules/proxy/models/wrappedLpTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
 import { PairProxyEventType } from './pair.proxy.types';
@@ -16,12 +18,12 @@ import { PairProxyTopics } from './proxy.event.topics';
 export class PairProxyEvent extends GenericEvent {
     protected decodedTopics: PairProxyTopics;
 
-    @Field(type => GenericTokenAmountPair)
-    protected firstToken: GenericTokenAmountPair;
-    @Field(type => GenericTokenAmountPair)
-    protected secondToken: GenericTokenAmountPair;
-    @Field(type => GenericTokenAmountPair)
-    protected wrappedLpToken: GenericTokenAmountPair;
+    @Field(type => GenericToken)
+    protected firstToken: GenericToken;
+    @Field(type => GenericToken)
+    protected secondToken: GenericToken;
+    @Field(type => GenericToken)
+    protected wrappedLpToken: GenericToken;
     @Field(type => WrappedLpTokenAttributesModel)
     protected wrappedLpAttributes: WrappedLpTokenAttributesModel;
 
@@ -30,15 +32,21 @@ export class PairProxyEvent extends GenericEvent {
         this.decodedTopics = new PairProxyTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.firstToken = GenericTokenAmountPair.fromDecodedAttributes(
-            decodedEvent.firstToken,
-        );
-        this.secondToken = GenericTokenAmountPair.fromDecodedAttributes(
-            decodedEvent.secondToken,
-        );
-        this.wrappedLpToken = GenericTokenAmountPair.fromDecodedAttributes(
-            decodedEvent.wrappedLpToken,
-        );
+        this.firstToken = new GenericToken({
+            tokenID: decodedEvent.firstTokenID.toString(),
+            nonce: decodedEvent.firstTokenNonce,
+            amount: decodedEvent.firstTokenAmount,
+        });
+        this.secondToken = new GenericToken({
+            tokenID: decodedEvent.secondTokenID.toString(),
+            nonce: decodedEvent.secondTokenNonce,
+            amount: decodedEvent.secondTokenAmount,
+        });
+        this.wrappedLpToken = new GenericToken({
+            tokenID: decodedEvent.wrappedLpTokenID.toString(),
+            nonce: decodedEvent.wrappedLpTokenNonce,
+            amount: decodedEvent.wrappedLpTokenAmount,
+        });
         this.wrappedLpAttributes = WrappedLpTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.wrappedLpAttributes,
         );
@@ -77,24 +85,42 @@ export class PairProxyEvent extends GenericEvent {
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition('pairAddress', '', new AddressType()),
             new StructFieldDefinition(
-                'wrappedLpToken',
+                'firstTokenID',
                 '',
-                GenericTokenAmountPair.getStructure(),
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('firstTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'firstTokenAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'secondTokenID',
+                '',
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('secondTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'secondTokenAmount',
+                '',
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'wrappedLpTokenID',
+                '',
+                new TokenIdentifierType(),
+            ),
+            new StructFieldDefinition('wrappedLpTokenNonce', '', new U64Type()),
+            new StructFieldDefinition(
+                'wrappedLpTokenAmount',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
                 'wrappedLpAttributes',
                 '',
                 WrappedLpTokenAttributesModel.getStructure(),
-            ),
-            new StructFieldDefinition(
-                'firstToken',
-                '',
-                GenericTokenAmountPair.getStructure(),
-            ),
-            new StructFieldDefinition(
-                'secondToken',
-                '',
-                GenericTokenAmountPair.getStructure(),
             ),
             new StructFieldDefinition('block', '', new U64Type()),
             new StructFieldDefinition('epoch', '', new U64Type()),

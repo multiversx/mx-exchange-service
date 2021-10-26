@@ -82,12 +82,12 @@
         "defaultMergeLockedAssets": 20000000
     },
     "abi": {
-        "router": "./src/abis/elrond_dex_router.abi.json",
-        "pair": "./src/abis/elrond_dex_pair.abi.json",
-        "farm": "./src/abis/elrond_dex_farm.abi.json",
-        "distribution": "./src/abis/sc_distribution_rs.abi.json",
-        "lockedAssetFactory": "./src/abis/sc-locked-asset-factory.abi.json",
-        "proxy": "./src/abis/sc-proxy-dex.abi.json",
+        "router": "./src/abis/router.abi.json",
+        "pair": "./src/abis/pair.abi.json",
+        "farm": "./src/abis/farm.abi.json",
+        "distribution": "./src/abis/distribution.abi.json",
+        "lockedAssetFactory": "./src/abis/factory.abi.json",
+        "proxy": "./src/abis/proxy-dex.abi.json",
         "wrap": "./src/abis/egld-esdt-swap.abi.json"
     },
     "cron": {

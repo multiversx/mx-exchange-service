@@ -2,14 +2,14 @@ import {
     AddressType,
     BigUIntType,
     BinaryCodec,
-    ListType,
     StructFieldDefinition,
     StructType,
+    TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
-import { FftTokenAmountPair } from 'src/models/fftTokenAmountPair.model';
+import { GenericToken } from 'src/models/genericToken.model';
 import { GenericEvent } from '../generic.event';
 import { PairEventTopics } from './pair.event.topics';
 import { AddLiquidityEventType } from './pair.types';
@@ -18,64 +18,71 @@ import { AddLiquidityEventType } from './pair.types';
 export class AddLiquidityEvent extends GenericEvent {
     private decodedTopics: PairEventTopics;
 
-    @Field(type => FftTokenAmountPair)
-    private firstTokenAmount: FftTokenAmountPair;
-    @Field(type => FftTokenAmountPair)
-    private secondTokenAmount: FftTokenAmountPair;
-    @Field(type => FftTokenAmountPair)
-    private liquidityPoolTokenAmount: FftTokenAmountPair;
+    @Field(type => GenericToken)
+    private firstToken: GenericToken;
+    @Field(type => GenericToken)
+    private secondToken: GenericToken;
+    @Field(type => GenericToken)
+    private liquidityPoolToken: GenericToken;
     @Field(type => String)
     private liquidityPoolSupply: BigNumber;
-    @Field(type => [FftTokenAmountPair])
-    private pairReserves: FftTokenAmountPair[];
+    @Field(type => String)
+    private firstTokenReserves: BigNumber;
+    @Field(type => String)
+    private secondTokenReserves: BigNumber;
 
     constructor(init?: Partial<GenericEvent>) {
         super(init);
         this.decodedTopics = new PairEventTopics(this.topics);
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
-        this.firstTokenAmount = FftTokenAmountPair.fromDecodedAttributes(
-            decodedEvent.firstTokenAmount,
-        );
-        this.secondTokenAmount = FftTokenAmountPair.fromDecodedAttributes(
-            decodedEvent.secondTokenAmount,
-        );
-        this.liquidityPoolTokenAmount = FftTokenAmountPair.fromDecodedAttributes(
-            decodedEvent.liquidityPoolTokenAmount,
-        );
-        this.pairReserves = decodedEvent.pairReserves.map(reserve =>
-            FftTokenAmountPair.fromDecodedAttributes(reserve),
-        );
+        this.firstToken = new GenericToken({
+            tokenID: decodedEvent.firstTokenID.toString(),
+            amount: decodedEvent.firstTokenAmount,
+        });
+        this.secondToken = new GenericToken({
+            tokenID: decodedEvent.secondTokenID.toString(),
+            amount: decodedEvent.secondTokenAmount,
+        });
+        this.liquidityPoolToken = new GenericToken({
+            tokenID: decodedEvent.lpTokenID.toString(),
+            amount: decodedEvent.lpTokenAmount,
+        });
     }
 
-    getFirstTokenAmount(): FftTokenAmountPair {
-        return this.firstTokenAmount;
+    getFirstToken(): GenericToken {
+        return this.firstToken;
     }
 
-    getSecondTokenAmount(): FftTokenAmountPair {
-        return this.secondTokenAmount;
+    getSecondToken(): GenericToken {
+        return this.secondToken;
     }
 
-    getLiquidityPoolTokenAmount(): FftTokenAmountPair {
-        return this.liquidityPoolTokenAmount;
+    getLiquidityPoolToken(): GenericToken {
+        return this.liquidityPoolToken;
     }
 
     getLiquidityPoolSupply(): BigNumber {
         return this.liquidityPoolSupply;
     }
 
-    getPairReserves(): FftTokenAmountPair[] {
-        return this.pairReserves;
+    getFirstTokenReserves(): BigNumber {
+        return this.firstTokenReserves;
+    }
+
+    getSecondTokenReserves(): BigNumber {
+        return this.secondTokenReserves;
     }
 
     toJSON(): AddLiquidityEventType {
         return {
             ...super.toJSON(),
-            firstTokenAmount: this.firstTokenAmount.toJSON(),
-            secondTokenAmount: this.secondTokenAmount.toJSON(),
-            liquidityPoolTokenAmount: this.liquidityPoolTokenAmount.toJSON(),
+            firstToken: this.firstToken.toJSON(),
+            secondToken: this.secondToken.toJSON(),
+            liquidityPoolToken: this.liquidityPoolToken.toJSON(),
             liquidityPoolSupply: this.liquidityPoolSupply.toFixed(),
-            pairReserves: this.pairReserves.map(reserve => reserve.toJSON()),
+            firstTokenReserves: this.firstTokenReserves.toFixed(),
+            secondTokenReserves: this.secondTokenReserves.toFixed(),
         };
     }
 
@@ -94,32 +101,48 @@ export class AddLiquidityEvent extends GenericEvent {
     }
 
     private getStructure(): StructType {
-        return new StructType('SwapEvent', [
+        return new StructType('LiquidityEvent', [
             new StructFieldDefinition('caller', '', new AddressType()),
+            new StructFieldDefinition(
+                'firstTokenID',
+                '',
+                new TokenIdentifierType(),
+            ),
             new StructFieldDefinition(
                 'firstTokenAmount',
                 '',
-                FftTokenAmountPair.getStructure(),
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'secondTokenID',
+                '',
+                new TokenIdentifierType(),
             ),
             new StructFieldDefinition(
                 'secondTokenAmount',
                 '',
-                FftTokenAmountPair.getStructure(),
+                new BigUIntType(),
             ),
             new StructFieldDefinition(
-                'liquidityPoolTokenAmount',
+                'lpTokenID',
                 '',
-                FftTokenAmountPair.getStructure(),
+                new TokenIdentifierType(),
             ),
+            new StructFieldDefinition('lpTokenAmount', '', new BigUIntType()),
             new StructFieldDefinition(
                 'liquidityPoolSupply',
                 '',
                 new BigUIntType(),
             ),
             new StructFieldDefinition(
-                'pairReserves',
+                'firstTokenReserves',
                 '',
-                new ListType(FftTokenAmountPair.getStructure()),
+                new BigUIntType(),
+            ),
+            new StructFieldDefinition(
+                'secondTokenReserves',
+                '',
+                new BigUIntType(),
             ),
             new StructFieldDefinition('block', '', new U64Type()),
             new StructFieldDefinition('epoch', '', new U64Type()),
