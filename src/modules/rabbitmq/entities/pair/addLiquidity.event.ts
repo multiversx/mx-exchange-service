@@ -9,7 +9,6 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
-import { FftTokenAmountPair } from 'src/models/fftTokenAmountPair.model';
 import { GenericToken } from 'src/models/genericToken.model';
 import { GenericEvent } from '../generic.event';
 import { PairEventTopics } from './pair.event.topics';

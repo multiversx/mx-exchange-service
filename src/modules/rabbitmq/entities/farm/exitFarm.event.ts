@@ -9,7 +9,6 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
-import { FftTokenAmountPair } from 'src/models/fftTokenAmountPair.model';
 import { GenericToken } from 'src/models/genericToken.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { GenericEvent } from '../generic.event';
@@ -59,7 +58,7 @@ export class ExitFarmEvent extends GenericEvent {
         );
     }
 
-    getFarmingToken(): FftTokenAmountPair {
+    getFarmingToken(): GenericToken {
         return this.farmingToken;
     }
 
