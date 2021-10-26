@@ -12,8 +12,8 @@
         "keepAliveMaxFreeSockets": 10
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqnhlmwqvpt0r3uurlyg2p2f4q33q05cut0n4s325q26",
-        "MEX-10e788": "erd1qqqqqqqqqqqqqpgquh2r06qrjesfv5xj6v8plrqm93c6xvw70n4sfuzpmc",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqp8c763u69ctvshmjtp06qzzcwmleqcpu0n4s2e893l",
+        "MEX-10e788": "erd1qqqqqqqqqqqqqpgqu5sdpdcd0tac8472a4jvpxan3fw696g80n4sl4qxrj",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqkafk4cszkkdq66g5v9wfmdewhqrd2uzd0n4skvmjwz",
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqwjmsvyqrdggp9yv5lpr57tmruj0r7gxw0n4sduux5q",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqkpj2crmx6gza8s9qklfnat6vjlpyz3df0n4sg2vru7",
@@ -30,9 +30,9 @@
     "tokensSupply": ["MEX-10e788"],
     "cachedTokensPrice": ["MEX-10e788"],
     "farms": [
-        "erd1qqqqqqqqqqqqqpgqwp4l049lhutgv79hgj2d0kpqavjc46nr0n4sjxg37u",
-        "erd1qqqqqqqqqqqqqpgq3attym8u33fqmjae6ew9gwc52fc3an0m0n4s56gf7y",
-        "erd1qqqqqqqqqqqqqpgqv6yn5dljf4jqlupwqgfpve9lcf9hpgc00n4sms7t87"
+        "erd1qqqqqqqqqqqqqpgqyvs4ayscjazlsnlyzlj0swj8ye33yvk30n4szvfgt3",
+        "erd1qqqqqqqqqqqqqpgqt2wjr6h6c7m5urysgjnlygxeum6wqz5r0n4sz8rggh",
+        "erd1qqqqqqqqqqqqqpgq2he0a4k0nfxle2mxemtg2c0rr23jzvem0n4sw270r6"
     ],
     "caching": {
         "pairsMetadata": 300,
