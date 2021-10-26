@@ -6,7 +6,7 @@ export type RewardsEventType = GenericEventType & {
     newFarmToken: GenericTokenType;
     farmSupply: string;
     rewardToken: GenericTokenType;
-    rewardTokenReserve: string;
+    rewardTokenReserves: string;
     oldFarmAttributes: {
         rewardPerShare: string;
         originalEnteringEpoch: number;

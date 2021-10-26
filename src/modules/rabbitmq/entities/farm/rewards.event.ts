@@ -29,7 +29,7 @@ export class RewardsEvent extends GenericEvent {
     @Field(type => GenericToken)
     private rewardToken: GenericToken;
     @Field(type => String)
-    private rewardTokenReserve: BigNumber;
+    private rewardTokenReserves: BigNumber;
     @Field(type => FarmTokenAttributesModel)
     private oldFarmAttributes: FarmTokenAttributesModel;
     @Field(type => FarmTokenAttributesModel)
@@ -82,7 +82,7 @@ export class RewardsEvent extends GenericEvent {
     }
 
     getRewardTokenReserve(): BigNumber {
-        return this.rewardTokenReserve;
+        return this.rewardTokenReserves;
     }
 
     toJSON(): RewardsEventType {
@@ -92,7 +92,7 @@ export class RewardsEvent extends GenericEvent {
             newFarmToken: this.newFarmToken.toJSON(),
             farmSupply: this.farmSupply.toFixed(),
             rewardToken: this.rewardToken.toJSON(),
-            rewardTokenReserve: this.rewardTokenReserve.toFixed(),
+            rewardTokenReserves: this.rewardTokenReserves.toFixed(),
             oldFarmAttributes: this.oldFarmAttributes.toPlainObject(),
             newFarmAttributes: this.newFarmAttributes.toPlainObject(),
             createdWithMerge: this.createdWithMerge,
