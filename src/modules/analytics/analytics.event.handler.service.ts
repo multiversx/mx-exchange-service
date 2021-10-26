@@ -12,23 +12,23 @@ import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairSetterService } from '../pair/services/pair.setter.service';
 import { RouterComputeService } from '../router/router.compute.service';
-import { RouterGetterService } from '../router/router.getter.service';
 import { RouterSetterService } from '../router/router.setter.service';
 import { PAIR_EVENTS } from '../rabbitmq/entities/generic.types';
 import {
     AddLiquidityEventType,
     SwapEventType,
 } from '../rabbitmq/entities/pair/pair.types';
+import { ContextService } from 'src/services/context/context.service';
 
 @Injectable()
 export class AnalyticsEventHandlerService {
     private invalidatedKeys = [];
 
     constructor(
+        private readonly context: ContextService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
-        private readonly routerGetterService: RouterGetterService,
         private readonly routerSetterService: RouterSetterService,
         private readonly routerComputeService: RouterComputeService,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
@@ -50,7 +50,6 @@ export class AnalyticsEventHandlerService {
             firstTokenLockedValueUSD,
             secondTokenLockedValueUSD,
             pairLockedValueUSD,
-            totalLockedValueUSD,
         ] = await Promise.all([
             this.pairGetterService.getFirstToken(event.address),
             this.pairGetterService.getSecondToken(event.address),
@@ -59,44 +58,38 @@ export class AnalyticsEventHandlerService {
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
             this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
             this.pairGetterService.getLockedValueUSD(event.address),
-            this.routerGetterService.getTotalLockedValueUSD(),
         ]);
 
-        const firstAmountDenom = convertTokenToDecimal(
-            event.firstToken.amount,
-            firstToken.decimals,
+        const totalLockedValueUSD = await this.awsTimestreamQuery.getLatestValue(
+            {
+                table: awsConfig.timestream.tableName,
+                series: 'factory',
+                metric: 'totalLockedValueUSD',
+            },
         );
-        const secondAmountDenom = convertTokenToDecimal(
-            event.secondToken.amount,
-            secondtoken.decimals,
-        );
-        const firstAmountUSD = firstAmountDenom.multipliedBy(
-            firstTokenPriceUSD,
-        );
-        const secondAmountUSD = secondAmountDenom.multipliedBy(
-            secondTokenPriceUSD,
-        );
+
+        const [firstAmountDenom, secondAmountDenom] = [
+            convertTokenToDecimal(event.firstToken.amount, firstToken.decimals),
+            convertTokenToDecimal(
+                event.secondToken.amount,
+                secondtoken.decimals,
+            ),
+        ];
+        const [firstAmountUSD, secondAmountUSD] = [
+            firstAmountDenom.multipliedBy(firstTokenPriceUSD),
+            secondAmountDenom.multipliedBy(secondTokenPriceUSD),
+        ];
         const lockedAmountUSD = firstAmountUSD.plus(secondAmountUSD);
 
-        if (eventType === PAIR_EVENTS.ADD_LIQUIDITY) {
-            this.invalidatedKeys.push(
-                this.routerSetterService.setTotalLockedValueUSD(
-                    new BigNumber(totalLockedValueUSD)
-                        .plus(lockedAmountUSD)
-                        .toFixed(),
-                ),
-            );
-        } else {
-            this.invalidatedKeys.push(
-                this.routerSetterService.setTotalLockedValueUSD(
-                    new BigNumber(totalLockedValueUSD)
-                        .minus(lockedAmountUSD)
-                        .toFixed(),
-                ),
-            );
-        }
-
+        const newTotalLockedValueUSD =
+            eventType === PAIR_EVENTS.ADD_LIQUIDITY
+                ? new BigNumber(totalLockedValueUSD).plus(lockedAmountUSD)
+                : new BigNumber(totalLockedValueUSD).minus(lockedAmountUSD);
         const data = [];
+
+        data['factory'] = {
+            totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
+        };
         data[event.address] = {
             firstTokenLocked: event.firstTokenReserves,
             firstTokenLockedValueUSD: firstTokenLockedValueUSD,
@@ -105,11 +98,30 @@ export class AnalyticsEventHandlerService {
             lockedValueUSD: pairLockedValueUSD,
             liquidity: event.liquidityPoolSupply,
         };
+        data[event.firstToken.tokenID] = await this.getTokenLiquidityData(
+            event.address,
+            event.firstToken.tokenID,
+            event.firstToken.amount,
+            eventType,
+        );
+        data[event.secondToken.tokenID] = await this.getTokenLiquidityData(
+            event.address,
+            event.secondToken.tokenID,
+            event.secondToken.amount,
+            eventType,
+        );
 
         await this.awsTimestreamWrite.ingest({
             TableName: awsConfig.timestream.tableName,
             data,
         });
+
+        this.invalidatedKeys.push(
+            this.routerSetterService.setTotalLockedValueUSD(
+                newTotalLockedValueUSD.toFixed(),
+            ),
+        );
+        this.deleteCacheKeys();
     }
 
     async handleSwapEvents(event: SwapEventType): Promise<void> {
@@ -117,65 +129,94 @@ export class AnalyticsEventHandlerService {
         await this.updatePairLockedValueUSD(event.address);
 
         const [
-            firstToken,
-            secondToken,
-            firstTokenPriceUSD,
-            secondTokenPriceUSD,
+            firstTokenID,
+            secondTokenID,
+            tokenIn,
+            tokenOut,
+            tokenInPriceUSD,
+            tokenOutPriceUSD,
+            firstTokenLockedValueUSD,
+            secondTokenLockedValueUSD,
             totalFeePercent,
         ] = await Promise.all([
-            this.pairGetterService.getFirstToken(event.address),
-            this.pairGetterService.getSecondToken(event.address),
-            this.pairGetterService.getFirstTokenPriceUSD(event.address),
-            this.pairGetterService.getSecondTokenPriceUSD(event.address),
+            this.pairGetterService.getFirstTokenID(event.address),
+            this.pairGetterService.getSecondTokenID(event.address),
+            this.context.getTokenMetadata(event.tokenIn.tokenID),
+            this.context.getTokenMetadata(event.tokenOut.tokenID),
+            this.pairGetterService.getTokenPriceUSD(
+                event.address,
+                event.tokenIn.tokenID,
+            ),
+            this.pairGetterService.getTokenPriceUSD(
+                event.address,
+                event.tokenOut.tokenID,
+            ),
+            this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
+            this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
             this.pairGetterService.getTotalFeePercent(event.address),
         ]);
 
-        const [
-            firstTokenAmount,
-            secondTokenAmount,
-            firstTokenReserves,
-            secondTokenReserves,
-        ] =
-            firstToken.identifier === event.tokenIn.tokenID
-                ? [
-                      event.tokenIn.amount,
-                      event.tokenOut.amount,
-                      event.tokenInReserves,
-                      event.tokenOutReserves,
-                  ]
-                : [
-                      event.tokenOut.amount,
-                      event.tokenIn.amount,
-                      event.tokenOutReserves,
-                      event.tokenInReserves,
-                  ];
-        const [firstTokenAmountDenom, secondTokenAmountDenom] = [
-            convertTokenToDecimal(firstTokenAmount, firstToken.decimals),
-            convertTokenToDecimal(secondTokenAmount, secondToken.decimals),
+        const totalLockedValueUSD = await this.awsTimestreamQuery.getLatestValue(
+            {
+                table: awsConfig.timestream.tableName,
+                series: 'factory',
+                metric: 'totalLockedValueUSD',
+            },
+        );
+
+        const [tokenInAmountDenom, tokenOutAmountDenom] = [
+            convertTokenToDecimal(event.tokenIn.amount, tokenIn.decimals),
+            convertTokenToDecimal(event.tokenOut.amount, tokenOut.decimals),
         ];
 
-        const [firstTokenAmountUSD, secondTokenAmountUSD] = [
-            firstTokenAmountDenom.multipliedBy(firstTokenPriceUSD),
-            secondTokenAmountDenom.multipliedBy(secondTokenPriceUSD),
+        const [tokenInAmountUSD, tokenOutAmountUSD] = [
+            tokenInAmountDenom.times(tokenInPriceUSD),
+            tokenOutAmountDenom.times(tokenOutPriceUSD),
         ];
 
-        const volumeUSD = firstTokenAmountUSD
-            .plus(secondTokenAmountUSD)
-            .dividedBy(2);
-        const feesUSD = firstTokenAmountUSD
-            .plus(secondTokenAmountUSD)
-            .multipliedBy(totalFeePercent);
+        const volumeUSD = tokenInAmountUSD.plus(tokenOutAmountUSD).dividedBy(2);
+        const feesUSD = tokenInAmountUSD.times(totalFeePercent);
 
         const data = [];
         data[event.address] = {
-            firstTokenPriceUSD: firstTokenPriceUSD,
-            secondTokenPriceUSD: secondTokenPriceUSD,
-            firstTokenLockedValue: firstTokenReserves,
-            secondTokenLockedValue: secondTokenReserves,
-            firstTokenVolume: firstTokenAmount,
-            secondTokenVolume: secondTokenAmount,
+            firstTokenLocked:
+                event.tokenIn.tokenID === firstTokenID
+                    ? event.tokenInReserves
+                    : event.tokenOutReserves,
+            firstTokenLockedValueUSD: firstTokenLockedValueUSD,
+            secondTokenLocked:
+                event.tokenOut.tokenID === secondTokenID
+                    ? event.tokenOutReserves
+                    : event.tokenInReserves,
+            secondTokenLockedValueUSD: secondTokenLockedValueUSD,
+            firstTokenVolume:
+                firstTokenID === tokenIn.identifier
+                    ? event.tokenIn.amount
+                    : event.tokenOut.amount,
+            secondTokenVolume:
+                secondTokenID === tokenOut.identifier
+                    ? event.tokenOut.amount
+                    : event.tokenIn.amount,
             volumeUSD: volumeUSD,
             feesUSD: feesUSD,
+        };
+
+        data[event.tokenIn.tokenID] = await this.getTokenSwapData(
+            event.address,
+            event.tokenIn.tokenID,
+            event.tokenIn.amount,
+        );
+        data[event.tokenOut.tokenID] = await this.getTokenSwapData(
+            event.address,
+            event.tokenOut.tokenID,
+            event.tokenOut.amount,
+        );
+
+        data['factory'] = {
+            totalLockedValueUSD: new BigNumber(totalLockedValueUSD)
+                .plus(tokenInAmountUSD)
+                .minus(tokenOutAmountUSD)
+                .toFixed(),
         };
 
         await this.awsTimestreamWrite.ingest({
@@ -323,6 +364,67 @@ export class AnalyticsEventHandlerService {
         ]);
         this.invalidatedKeys.push(cacheKeys);
         await this.deleteCacheKeys();
+    }
+
+    private async getTokenLiquidityData(
+        pairAddress: string,
+        tokenID: string,
+        amount: string,
+        eventType: string,
+    ): Promise<any> {
+        const [token, priceUSD, lockedValue] = await Promise.all([
+            this.context.getTokenMetadata(tokenID),
+            this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
+            this.awsTimestreamQuery.getLatestValue({
+                table: awsConfig.timestream.tableName,
+                series: tokenID,
+                metric: 'lockedValue',
+            }),
+        ]);
+        const newLockedValue =
+            eventType === PAIR_EVENTS.ADD_LIQUIDITY
+                ? new BigNumber(lockedValue).plus(amount)
+                : new BigNumber(lockedValue).minus(amount);
+        const lockedValueDenom = convertTokenToDecimal(
+            newLockedValue.toFixed(),
+            token.decimals,
+        );
+        return {
+            lockedValue: newLockedValue.toFixed(),
+            lockedValueUSD: lockedValueDenom.times(priceUSD).toFixed(),
+        };
+    }
+
+    private async getTokenSwapData(
+        pairAddress: string,
+        tokenID: string,
+        amount: string,
+    ): Promise<any> {
+        const [token, priceUSD, latestLockedValue] = await Promise.all([
+            this.context.getTokenMetadata(tokenID),
+            this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
+            this.awsTimestreamQuery.getLatestValue({
+                table: awsConfig.timestream.tableName,
+                series: tokenID,
+                metric: 'lockedValue',
+            }),
+        ]);
+        return {
+            lockedValue: new BigNumber(latestLockedValue)
+                .minus(amount)
+                .toFixed(),
+            lockedValueUSD: convertTokenToDecimal(
+                new BigNumber(latestLockedValue).minus(amount).toFixed(),
+                token.decimals,
+            )
+                .times(priceUSD)
+                .toFixed(),
+            priceUSD: priceUSD,
+            volume: amount,
+            volumeUSD: convertTokenToDecimal(amount, token.decimals)
+                .times(priceUSD)
+                .toFixed(),
+        };
     }
 
     private async deleteCacheKeys() {

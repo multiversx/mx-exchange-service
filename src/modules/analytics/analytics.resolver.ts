@@ -1,6 +1,9 @@
 import { Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
-import { AnalyticsModel } from 'src/modules/analytics/models/analytics.model';
+import {
+    AnalyticsModel,
+    HistoricDataModel,
+} from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsService } from './analytics.service';
 
 @Resolver(of => AnalyticsModel)
@@ -34,8 +37,16 @@ export class AnalyticsResolver {
         return this.analyticsService.getTotalAgregatedRewards(days);
     }
 
-    @Query(returns => AnalyticsModel)
-    async tradingInfo(): Promise<AnalyticsModel> {
-        return this.analyticsService.getAnalytics();
+    @Query(returns => [HistoricDataModel])
+    async historicData(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+        @Args('time') time: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getHistoricData(
+            series,
+            metric,
+            time,
+        );
     }
 }
