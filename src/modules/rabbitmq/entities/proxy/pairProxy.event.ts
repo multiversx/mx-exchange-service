@@ -33,17 +33,17 @@ export class PairProxyEvent extends GenericEvent {
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
         this.firstToken = new GenericToken({
-            tokenID: decodedEvent.firstTokenID,
+            tokenID: decodedEvent.firstTokenID.toString(),
             nonce: decodedEvent.firstTokenNonce,
             amount: decodedEvent.firstTokenAmount,
         });
         this.secondToken = new GenericToken({
-            tokenID: decodedEvent.secondTokenID,
+            tokenID: decodedEvent.secondTokenID.toString(),
             nonce: decodedEvent.secondTokenNonce,
             amount: decodedEvent.secondTokenAmount,
         });
         this.wrappedLpToken = new GenericToken({
-            tokenID: decodedEvent.wrappedLpTokenID,
+            tokenID: decodedEvent.wrappedLpTokenID.toString(),
             nonce: decodedEvent.wrappedLpTokenNonce,
             amount: decodedEvent.wrappedLpTokenAmount,
         });

@@ -39,12 +39,12 @@ export class CompoundRewardsProxyEvent extends GenericEvent {
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
         this.oldWrappedFarmToken = new GenericToken({
-            tokenID: decodedEvent.oldWrappedFarmTokenID,
+            tokenID: decodedEvent.oldWrappedFarmTokenID.toString(),
             nonce: decodedEvent.oldWrappedFarmTokenNonce,
             amount: decodedEvent.oldWrappedFarmTokenAmount,
         });
         this.newWrappedFarmToken = new GenericToken({
-            tokenID: decodedEvent.newWrappedFarmTokenID,
+            tokenID: decodedEvent.newWrappedFarmTokenID.toString(),
             nonce: decodedEvent.newWrappedFarmTokenNonce,
             amount: decodedEvent.newWrappedFarmTokenAmount,
         });

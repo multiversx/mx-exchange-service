@@ -37,12 +37,12 @@ export class EnterFarmProxyEvent extends GenericEvent {
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
         this.farmingToken = new GenericToken({
-            tokenID: decodedEvent.farmingTokenID,
+            tokenID: decodedEvent.farmingTokenID.toString(),
             nonce: decodedEvent.farmingTokenNonce,
             amount: decodedEvent.farmingTokenAmount,
         });
         this.wrappedFarmToken = new GenericToken({
-            tokenID: decodedEvent.wrappedFarmTokenID,
+            tokenID: decodedEvent.wrappedFarmTokenID.toString(),
             nonce: decodedEvent.wrappedFarmTokenNonce,
             amount: decodedEvent.wrappedFarmTokenAmount,
         });

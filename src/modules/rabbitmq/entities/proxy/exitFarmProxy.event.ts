@@ -36,7 +36,7 @@ export class ExitFarmProxyEvent extends GenericEvent {
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
         this.wrappedFarmToken = new GenericToken({
-            tokenID: decodedEvent.wrappedFarmTokenID,
+            tokenID: decodedEvent.wrappedFarmTokenID.toString(),
             nonce: decodedEvent.wrappedFarmTokenNonce,
             amount: decodedEvent.wrappedFarmTokenAmount,
         });
@@ -44,12 +44,12 @@ export class ExitFarmProxyEvent extends GenericEvent {
             decodedEvent.wrappedFarmAttributes,
         );
         this.farmingToken = new GenericToken({
-            tokenID: decodedEvent.farmingTokenID,
+            tokenID: decodedEvent.farmingTokenID.toString(),
             nonce: decodedEvent.farmingTokenNonce,
             amount: decodedEvent.farmingTokenAmount,
         });
         this.rewardToken = new GenericToken({
-            tokenID: decodedEvent.rewardTokenID,
+            tokenID: decodedEvent.rewardTokenID.toString(),
             nonce: decodedEvent.rewardTokenNonce,
             amount: decodedEvent.rewardTokenAmount,
         });

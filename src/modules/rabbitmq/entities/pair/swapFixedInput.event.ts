@@ -36,11 +36,11 @@ export class SwapFixedInputEvent extends GenericEvent {
 
         Object.assign(this, decodedEvent);
         this.tokenIn = new GenericToken({
-            tokenID: decodedEvent.tokenInID,
+            tokenID: decodedEvent.tokenInID.toString(),
             amount: decodedEvent.tokenInAmount,
         });
         this.tokenOut = new GenericToken({
-            tokenID: decodedEvent.tokenOutID,
+            tokenID: decodedEvent.tokenOutID.toString(),
             amount: decodedEvent.tokenOutAmount,
         });
     }

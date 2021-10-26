@@ -62,7 +62,7 @@ export class RabbitMQPairHandlerService {
 
         await this.deleteCacheKeys();
 
-        event instanceof SwapFixedInputEvent
+        event.getIdentifier() === PAIR_EVENTS.SWAP_FIXED_INPUT
             ? this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_INPUT, {
                   swapFixedInputEvent: event,
               })
@@ -91,7 +91,7 @@ export class RabbitMQPairHandlerService {
         this.invalidatedKeys.push(cacheKeys);
 
         await this.deleteCacheKeys();
-        event instanceof AddLiquidityEvent
+        event.getIdentifier() === PAIR_EVENTS.ADD_LIQUIDITY
             ? this.pubSub.publish(PAIR_EVENTS.ADD_LIQUIDITY, {
                   addLiquidityEvent: event,
               })

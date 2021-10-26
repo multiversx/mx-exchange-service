@@ -38,15 +38,15 @@ export class AddLiquidityEvent extends GenericEvent {
         const decodedEvent = this.decodeEvent();
         Object.assign(this, decodedEvent);
         this.firstToken = new GenericToken({
-            tokenID: decodedEvent.firstTokenID,
+            tokenID: decodedEvent.firstTokenID.toString(),
             amount: decodedEvent.firstTokenAmount,
         });
         this.secondToken = new GenericToken({
-            tokenID: decodedEvent.secondTokenID,
+            tokenID: decodedEvent.secondTokenID.toString(),
             amount: decodedEvent.secondTokenAmount,
         });
         this.liquidityPoolToken = new GenericToken({
-            tokenID: decodedEvent.lpTokenID,
+            tokenID: decodedEvent.lpTokenID.toString(),
             amount: decodedEvent.lpTokenAmount,
         });
     }
