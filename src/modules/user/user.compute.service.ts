@@ -19,6 +19,7 @@ import {
 } from './models/user.model';
 import { UserNftTokens } from './nfttokens.union';
 import { PairGetterService } from '../pair/services/pair.getter.service';
+import { computeValueUSD } from '../../utils/token.converters';
 
 @Injectable()
 export class UserComputeService {
@@ -41,21 +42,19 @@ export class UserComputeService {
             nftToken.attributes,
         );
 
-        const [lpToken, tokenPriceUSD] = await Promise.all([
-            this.farmGetterService.getFarmingToken(farmAddress),
-            this.farmGetterService.getFarmTokenPriceUSD(farmAddress),
-        ]);
-
-        const denominator = new BigNumber(`1e-${lpToken.decimals}`);
-        const valueUSD = new BigNumber(nftToken.balance)
-            .dividedBy(decodedFarmAttributes.aprMultiplier)
-            .multipliedBy(denominator)
-            .multipliedBy(new BigNumber(tokenPriceUSD));
+        const tokenPriceUSD = await this.farmGetterService.getFarmTokenPriceUSD(
+            farmAddress,
+        );
 
         return new UserFarmToken({
             ...nftToken,
-            decimals: lpToken.decimals,
-            valueUSD: valueUSD.toFixed(),
+            valueUSD: computeValueUSD(
+                new BigNumber(nftToken.balance)
+                    .dividedBy(decodedFarmAttributes.aprMultiplier)
+                    .toFixed(),
+                nftToken.decimals,
+                tokenPriceUSD,
+            ).toFixed(),
             decodedAttributes: decodedFarmAttributes,
         });
     }
@@ -77,17 +76,14 @@ export class UserComputeService {
         const tokenPriceUSD = await this.pairGetterService.getSecondTokenPriceUSD(
             scAddress.get(assetToken.identifier),
         );
-        nftToken.decimals = assetToken.decimals;
-
-        const denominator = new BigNumber(`1e-${nftToken.decimals}`);
-        const valueUSD = new BigNumber(nftToken.balance)
-            .multipliedBy(denominator)
-            .multipliedBy(new BigNumber(tokenPriceUSD));
 
         return new UserLockedAssetToken({
             ...nftToken,
-            decimals: nftToken.decimals,
-            valueUSD: valueUSD.toFixed(),
+            valueUSD: computeValueUSD(
+                nftToken.balance,
+                nftToken.decimals,
+                tokenPriceUSD,
+            ).toFixed(),
             decodedAttributes: decodedAttributes[0],
         });
     }
@@ -109,19 +105,17 @@ export class UserComputeService {
             decodedWLPTAttributes[0].lpTokenID,
         );
         if (pairAddress) {
-            const [lpToken, tokenPriceUSD] = await Promise.all([
-                this.pairGetterService.getLpToken(pairAddress),
-                this.pairGetterService.getLpTokenPriceUSD(pairAddress),
-            ]);
+            const tokenPriceUSD = await this.pairGetterService.getLpTokenPriceUSD(
+                pairAddress,
+            );
 
-            const denominator = new BigNumber(`1e-${lpToken.decimals}`);
-            const valueUSD = new BigNumber(nftToken.balance)
-                .multipliedBy(denominator)
-                .multipliedBy(new BigNumber(tokenPriceUSD));
             return new UserLockedLPToken({
                 ...nftToken,
-                decimals: lpToken.decimals,
-                valueUSD: valueUSD.toFixed(),
+                valueUSD: computeValueUSD(
+                    nftToken.balance,
+                    nftToken.decimals,
+                    tokenPriceUSD,
+                ).toFixed(),
                 decodedAttributes: decodedWLPTAttributes[0],
             });
         }
@@ -152,7 +146,6 @@ export class UserComputeService {
         const userFarmToken = await this.farmTokenUSD(farmToken, farmAddress);
         return new UserLockedFarmToken({
             ...nftToken,
-            decimals: userFarmToken.decimals,
             valueUSD: userFarmToken.valueUSD,
             decodedAttributes: decodedWFMTAttributes[0],
         });

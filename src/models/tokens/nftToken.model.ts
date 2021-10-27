@@ -4,6 +4,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 export class NftToken {
     @Field() identifier: string;
     @Field() collection: string;
+    @Field(type => Int) decimals: number;
     @Field(type => Int) timestamp: number;
     @Field() attributes: string;
     @Field(type => Int) nonce: number;

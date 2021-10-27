@@ -1,8 +1,12 @@
 import BigNumber from 'bignumber.js';
 
-export function convertTokenToDecimal(
+export const denominateAmount = (
     tokenAmount: string,
     decimals: number,
-): BigNumber {
-    return new BigNumber(tokenAmount).multipliedBy(`1e-${decimals}`);
-}
+): BigNumber => new BigNumber(tokenAmount).multipliedBy(`1e-${decimals}`);
+
+export const computeValueUSD = (
+    amount: string,
+    decimals: number,
+    priceUSD: string,
+): BigNumber => denominateAmount(amount, decimals).times(priceUSD);
