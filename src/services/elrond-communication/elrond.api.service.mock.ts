@@ -33,6 +33,7 @@ export class ElrondApiServiceMock {
                 collection: 'FMT-1234',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
+                decimals: 18,
                 balance: '1000000000000000000',
                 identifier: 'FMT-1234-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',

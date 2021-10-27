@@ -27,6 +27,7 @@ export class FarmGetterServiceMock {
         return {
             collection: farmTokenID,
             name: farmTokenID,
+            decimals: 18,
             NFTCreateStopped: false,
             canAddSpecialRoles: true,
             canBurn: true,
