@@ -1,17 +1,10 @@
 import { PairService } from './services/pair.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import {
-    LiquidityPosition,
-    PairModel,
-    TemporaryFundsModel,
-} from './models/pair.model';
+import { LiquidityPosition, PairModel } from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
-    AddLiquidityBatchArgs,
-    ESDTTransferArgs,
-    ReclaimTemporaryFundsArgs,
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
@@ -286,16 +279,6 @@ export class PairResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [TemporaryFundsModel])
-    async getTemporaryFunds(@User() user: any) {
-        try {
-            return await this.pairService.getTemporaryFunds(user.publicKey);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
     @Query(returns => LiquidityPosition)
     async getLiquidityPosition(
         @Args('pairAddress') pairAddress: string,
@@ -314,30 +297,33 @@ export class PairResolver {
     @UseGuards(GqlAuthGuard)
     @Query(returns => [TransactionModel])
     async addLiquidityBatch(
-        @Args() args: AddLiquidityBatchArgs,
+        @Args() args: AddLiquidityArgs,
         @User() user: any,
     ): Promise<TransactionModel[]> {
-        return this.transactionService.addLiquidityBatch(user.publicKey, args);
+        try {
+            return await this.transactionService.addLiquidityBatch(
+                user.publicKey,
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
     async addLiquidity(
         @Args() args: AddLiquidityArgs,
-    ): Promise<TransactionModel> {
-        return this.transactionService.addLiquidity(args);
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
-    async reclaimTemporaryFunds(
-        @Args() args: ReclaimTemporaryFundsArgs,
         @User() user: any,
-    ): Promise<TransactionModel[]> {
-        return this.transactionService.reclaimTemporaryFunds(
-            user.publicKey,
-            args,
-        );
+    ): Promise<TransactionModel> {
+        try {
+            return await this.transactionService.addLiquidity(
+                user.publicKey,
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
@@ -374,13 +360,5 @@ export class PairResolver {
             user.publicKey,
             args,
         );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
-    async tokensTransfer(
-        @Args() args: ESDTTransferArgs,
-    ): Promise<TransactionModel> {
-        return this.transactionService.esdtTransfer(args);
     }
 }

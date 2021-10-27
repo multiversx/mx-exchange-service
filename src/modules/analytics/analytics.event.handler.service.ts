@@ -69,12 +69,9 @@ export class AnalyticsEventHandlerService {
         );
 
         const [firstAmountDenom, secondAmountDenom] = [
+            convertTokenToDecimal(event.firstToken.amount, firstToken.decimals),
             convertTokenToDecimal(
-                event.firstTokenAmount.amount,
-                firstToken.decimals,
-            ),
-            convertTokenToDecimal(
-                event.secondTokenAmount.amount,
+                event.secondToken.amount,
                 secondtoken.decimals,
             ),
         ];
@@ -94,25 +91,23 @@ export class AnalyticsEventHandlerService {
             totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
         };
         data[event.address] = {
-            firstTokenLocked: event.pairReserves[0].amount,
+            firstTokenLocked: event.firstTokenReserves,
             firstTokenLockedValueUSD: firstTokenLockedValueUSD,
-            secondTokenLocked: event.pairReserves[1].amount,
+            secondTokenLocked: event.secondTokenReserves,
             secondTokenLockedValueUSD: secondTokenLockedValueUSD,
             lockedValueUSD: pairLockedValueUSD,
             liquidity: event.liquidityPoolSupply,
         };
-        data[event.firstTokenAmount.tokenID] = await this.getTokenLiquidityData(
+        data[event.firstToken.tokenID] = await this.getTokenLiquidityData(
             event.address,
-            event.firstTokenAmount.tokenID,
-            event.firstTokenAmount.amount,
+            event.firstToken.tokenID,
+            event.firstToken.amount,
             eventType,
         );
-        data[
-            event.secondTokenAmount.tokenID
-        ] = await this.getTokenLiquidityData(
+        data[event.secondToken.tokenID] = await this.getTokenLiquidityData(
             event.address,
-            event.secondTokenAmount.tokenID,
-            event.secondTokenAmount.amount,
+            event.secondToken.tokenID,
+            event.secondToken.amount,
             eventType,
         );
 
@@ -146,15 +141,15 @@ export class AnalyticsEventHandlerService {
         ] = await Promise.all([
             this.pairGetterService.getFirstTokenID(event.address),
             this.pairGetterService.getSecondTokenID(event.address),
-            this.context.getTokenMetadata(event.tokenAmountIn.tokenID),
-            this.context.getTokenMetadata(event.tokenAmountOut.tokenID),
+            this.context.getTokenMetadata(event.tokenIn.tokenID),
+            this.context.getTokenMetadata(event.tokenOut.tokenID),
             this.pairGetterService.getTokenPriceUSD(
                 event.address,
-                event.tokenAmountIn.tokenID,
+                event.tokenIn.tokenID,
             ),
             this.pairGetterService.getTokenPriceUSD(
                 event.address,
-                event.tokenAmountOut.tokenID,
+                event.tokenOut.tokenID,
             ),
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
             this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
@@ -170,11 +165,8 @@ export class AnalyticsEventHandlerService {
         );
 
         const [tokenInAmountDenom, tokenOutAmountDenom] = [
-            convertTokenToDecimal(event.tokenAmountIn.amount, tokenIn.decimals),
-            convertTokenToDecimal(
-                event.tokenAmountOut.amount,
-                tokenOut.decimals,
-            ),
+            convertTokenToDecimal(event.tokenIn.amount, tokenIn.decimals),
+            convertTokenToDecimal(event.tokenOut.amount, tokenOut.decimals),
         ];
 
         const [tokenInAmountUSD, tokenOutAmountUSD] = [
@@ -187,31 +179,37 @@ export class AnalyticsEventHandlerService {
 
         const data = [];
         data[event.address] = {
-            firstTokenLocked: event.pairReserves[0].amount,
+            firstTokenLocked:
+                event.tokenIn.tokenID === firstTokenID
+                    ? event.tokenInReserves
+                    : event.tokenOutReserves,
             firstTokenLockedValueUSD: firstTokenLockedValueUSD,
-            secondTokenLocked: event.pairReserves[1].amount,
+            secondTokenLocked:
+                event.tokenOut.tokenID === secondTokenID
+                    ? event.tokenOutReserves
+                    : event.tokenInReserves,
             secondTokenLockedValueUSD: secondTokenLockedValueUSD,
             firstTokenVolume:
                 firstTokenID === tokenIn.identifier
-                    ? event.tokenAmountIn.amount
-                    : event.tokenAmountOut.amount,
+                    ? event.tokenIn.amount
+                    : event.tokenOut.amount,
             secondTokenVolume:
                 secondTokenID === tokenOut.identifier
-                    ? event.tokenAmountOut.amount
-                    : event.tokenAmountIn.amount,
+                    ? event.tokenOut.amount
+                    : event.tokenIn.amount,
             volumeUSD: volumeUSD,
             feesUSD: feesUSD,
         };
 
-        data[event.tokenAmountIn.tokenID] = await this.getTokenSwapData(
+        data[event.tokenIn.tokenID] = await this.getTokenSwapData(
             event.address,
-            event.tokenAmountIn.tokenID,
-            event.tokenAmountIn.amount,
+            event.tokenIn.tokenID,
+            event.tokenIn.amount,
         );
-        data[event.tokenAmountOut.tokenID] = await this.getTokenSwapData(
+        data[event.tokenOut.tokenID] = await this.getTokenSwapData(
             event.address,
-            event.tokenAmountOut.tokenID,
-            event.tokenAmountOut.amount,
+            event.tokenOut.tokenID,
+            event.tokenOut.amount,
         );
 
         data['factory'] = {

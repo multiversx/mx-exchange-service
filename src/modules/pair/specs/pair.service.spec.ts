@@ -53,51 +53,6 @@ describe('PairService', () => {
         expect(service).toBeDefined();
     });
 
-    it('should get all temporary funds for user', async () => {
-        const allTemporaryFunds = await service.getTemporaryFunds(
-            'user_address_1',
-        );
-        expect(allTemporaryFunds[0]).toEqual({
-            pairAddress: 'pair_address_1',
-            firstToken: {
-                identifier: 'TOK1-1111',
-                name: 'FirstToken',
-                owner: 'owner_address',
-                minted: '1000000000000000000',
-                burnt: '0',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-                type: '',
-            },
-            firstAmount: '100',
-            secondToken: {
-                identifier: 'TOK2-2222',
-                name: 'SecondToken',
-                owner: 'owner_address',
-                minted: '2000000000000000000',
-                burnt: '0',
-                decimals: 18,
-                isPaused: false,
-                canUpgrade: true,
-                canMint: true,
-                canBurn: true,
-                canChangeOwner: true,
-                canPause: true,
-                canFreeze: true,
-                canWipe: true,
-                type: '',
-            },
-            secondAmount: '100',
-        });
-    });
-
     it('should get liquidity position from pair', async () => {
         const liquidityPosition = await service.getLiquidityPosition(
             'pair_address_1',

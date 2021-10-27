@@ -21,7 +21,7 @@ export class RabbitMQProxyHandlerService {
     async handleLiquidityProxyEvent(
         event: AddLiquidityProxyEvent | PairProxyEvent,
     ): Promise<void> {
-        event instanceof AddLiquidityProxyEvent
+        event.getIdentifier() === PROXY_EVENTS.ADD_LIQUIDITY_PROXY
             ? this.pubSub.publish(PROXY_EVENTS.ADD_LIQUIDITY_PROXY, {
                   addLiquidityProxyEvent: event,
               })
@@ -33,7 +33,7 @@ export class RabbitMQProxyHandlerService {
     async handleFarmProxyEvent(
         event: EnterFarmProxyEvent | ExitFarmProxyEvent,
     ): Promise<void> {
-        event instanceof EnterFarmProxyEvent
+        event.getIdentifier() === PROXY_EVENTS.ENTER_FARM_PROXY
             ? this.pubSub.publish(PROXY_EVENTS.ENTER_FARM_PROXY, {
                   enterFarmProxyEvent: event,
               })
@@ -45,7 +45,7 @@ export class RabbitMQProxyHandlerService {
     async handleRewardsProxyEvent(
         event: ClaimRewardsProxyEvent | CompoundRewardsProxyEvent,
     ): Promise<void> {
-        event instanceof ClaimRewardsProxyEvent
+        event.getIdentifier() === PROXY_EVENTS.CLAIM_REWARDS_PROXY
             ? this.pubSub.publish(PROXY_EVENTS.CLAIM_REWARDS_PROXY, {
                   claimRewardsProxyEvent: event,
               })

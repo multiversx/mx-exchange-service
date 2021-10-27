@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { elrondConfig, tokenProviderUSD, tokensPriceData } from 'src/config';
 import { BigNumber } from 'bignumber.js';
-import { LiquidityPosition, TemporaryFundsModel } from '../models/pair.model';
+import { LiquidityPosition } from '../models/pair.model';
 import {
     quote,
     getAmountOut,
@@ -13,13 +13,11 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairGetterService } from './pair.getter.service';
-import { PairAbiService } from './pair.abi.service';
 
 @Injectable()
 export class PairService {
     constructor(
         private readonly context: ContextService,
-        private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,
@@ -152,61 +150,6 @@ export class PairService {
             default:
                 return new BigNumber(0).toFixed();
         }
-    }
-
-    async getTemporaryFunds(
-        callerAddress: string,
-    ): Promise<TemporaryFundsModel[]> {
-        const pairsMetadata = await this.context.getPairsMetadata();
-
-        const temporaryFunds: TemporaryFundsModel[] = [];
-
-        for (const pairMetadata of pairsMetadata) {
-            const [
-                firstToken,
-                secondToken,
-                temporaryFundsFirstToken,
-                temporaryFundsSecondToken,
-            ] = await Promise.all([
-                this.pairGetterService.getFirstToken(pairMetadata.address),
-                this.pairGetterService.getSecondToken(pairMetadata.address),
-                this.abiService.getTemporaryFunds(
-                    pairMetadata.address,
-                    callerAddress,
-                    pairMetadata.firstTokenID,
-                ),
-                this.abiService.getTemporaryFunds(
-                    pairMetadata.address,
-                    callerAddress,
-                    pairMetadata.secondTokenID,
-                ),
-            ]);
-
-            if (
-                temporaryFundsFirstToken.isZero() &&
-                temporaryFundsSecondToken.isZero()
-            ) {
-                continue;
-            }
-
-            const temporaryFundsPair = new TemporaryFundsModel({
-                pairAddress: pairMetadata.address,
-            });
-
-            if (!temporaryFundsFirstToken.isZero()) {
-                temporaryFundsPair.firstToken = firstToken;
-                temporaryFundsPair.firstAmount = temporaryFundsFirstToken.toFixed();
-            }
-
-            if (!temporaryFundsSecondToken.isZero()) {
-                temporaryFundsPair.secondToken = secondToken;
-                temporaryFundsPair.secondAmount = temporaryFundsSecondToken.toFixed();
-            }
-
-            temporaryFunds.push(temporaryFundsPair);
-        }
-
-        return temporaryFunds;
     }
 
     async getLiquidityPosition(

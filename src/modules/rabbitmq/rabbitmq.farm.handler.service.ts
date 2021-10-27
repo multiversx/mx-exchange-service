@@ -64,7 +64,7 @@ export class RabbitMQFarmHandlerService {
         ]);
         this.invalidatedKeys.push(cacheKeys);
         await this.deleteCacheKeys();
-        event instanceof EnterFarmEvent
+        event.getIdentifier() === FARM_EVENTS.ENTER_FARM
             ? this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
                   enterFarmEvent: event,
               })

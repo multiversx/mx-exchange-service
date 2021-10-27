@@ -14,17 +14,9 @@ import {
     ClaimRewardsArgs,
     CompoundRewardsArgs,
     EnterFarmArgs,
-    EnterFarmBatchArgs,
     ExitFarmArgs,
 } from './models/farm.args';
 import { FarmStatisticsService } from './services/farm-statistics.service';
-import { TokenMergingTransactionsService } from '../token-merging/token.merging.transactions.service';
-import { TokenMergingService } from '../token-merging/token.merging.service';
-import {
-    TokensMergingArgs,
-    DepositTokenArgs,
-    SmartContractType,
-} from '../token-merging/dto/token.merging.args';
 import { ApolloError } from 'apollo-server-express';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 import { FarmGetterService } from './services/farm.getter.service';
@@ -37,8 +29,6 @@ export class FarmResolver {
         private readonly farmService: FarmService,
         private readonly farmGetterService: FarmGetterService,
         private readonly transactionsService: TransactionsFarmService,
-        private readonly mergeTokensTransactions: TokenMergingTransactionsService,
-        private readonly mergeTokensService: TokenMergingService,
         private readonly statisticsService: FarmStatisticsService,
     ) {}
 
@@ -222,30 +212,6 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async nftDepositMaxLen(@Parent() parent: FarmModel) {
-        try {
-            return await this.mergeTokensService.getNftDepositMaxLen({
-                smartContractType: SmartContractType.FARM,
-                address: parent.address,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField(type => [String])
-    async nftDepositAcceptedTokenIDs(@Parent() parent: FarmModel) {
-        try {
-            return await this.mergeTokensService.getNftDepositAcceptedTokenIDs({
-                smartContractType: SmartContractType.FARM,
-                address: parent.address,
-            });
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
     async state(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getState(parent.address);
@@ -295,37 +261,18 @@ export class FarmResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(returns => TransactionModel)
-    async enterFarm(@Args() args: EnterFarmArgs): Promise<TransactionModel> {
-        return await this.transactionsService.enterFarm(args);
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
-    async enterFarmBatch(
-        @Args() enterFarmBatchArgs: EnterFarmBatchArgs,
+    async enterFarm(
+        @Args() args: EnterFarmArgs,
         @User() user: any,
-    ): Promise<TransactionModel[]> {
-        const depositTokenArgs: DepositTokenArgs = {
-            smartContractType: SmartContractType.FARM,
-            address: enterFarmBatchArgs.farmAddress,
-            tokenID: enterFarmBatchArgs.farmTokenID,
-            tokenNonce: enterFarmBatchArgs.farmTokenNonce,
-            amount: enterFarmBatchArgs.amount,
-        };
-        const enterFarmArgs: EnterFarmArgs = {
-            tokenInID: enterFarmBatchArgs.tokenInID,
-            farmAddress: enterFarmBatchArgs.farmAddress,
-            amount: enterFarmBatchArgs.amountIn,
-            lockRewards: enterFarmBatchArgs.lockRewards,
-        };
-
-        return await Promise.all([
-            this.mergeTokensTransactions.depositTokens(
+    ): Promise<TransactionModel> {
+        try {
+            return await this.transactionsService.enterFarm(
                 user.publicKey,
-                depositTokenArgs,
-            ),
-            this.transactionsService.enterFarm(enterFarmArgs),
-        ]);
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
@@ -359,13 +306,5 @@ export class FarmResolver {
             user.publicKey,
             args,
         );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
-    async mergeFarmTokens(
-        @Args() args: TokensMergingArgs,
-    ): Promise<TransactionModel> {
-        return await this.mergeTokensTransactions.mergeTokens(args);
     }
 }

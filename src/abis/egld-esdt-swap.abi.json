@@ -12,19 +12,37 @@
     "endpoints": [
         {
             "name": "wrapEgld",
-            "payableInTokens": [
-                "EGLD"
+            "payableInTokens": ["EGLD"],
+            "inputs": [
+                {
+                    "name": "accept_funds_endpoint_name",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
             ],
-            "inputs": [],
-            "outputs": []
+            "outputs": [
+                {
+                    "type": "optional<AsyncCall>",
+                    "multi_result": true
+                }
+            ]
         },
         {
             "name": "unwrapEgld",
-            "payableInTokens": [
-                "*"
+            "payableInTokens": ["*"],
+            "inputs": [
+                {
+                    "name": "accept_funds_endpoint_name",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
             ],
-            "inputs": [],
-            "outputs": []
+            "outputs": [
+                {
+                    "type": "optional<AsyncCall>",
+                    "multi_result": true
+                }
+            ]
         },
         {
             "name": "getLockedEgldBalance",
@@ -45,5 +63,10 @@
             ]
         }
     ],
-    "types": {}
+    "types": {
+        "AsyncCall": {
+            "type": "struct",
+            "fields": []
+        }
+    }
 }

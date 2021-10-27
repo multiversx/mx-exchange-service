@@ -1,10 +1,10 @@
-import { GenericTokenAmountPairType } from 'src/models/genericTokenAmountPair.model';
+import { GenericTokenType } from 'src/models/genericToken.model';
 import { GenericEventType } from '../generic.types';
 
 export type FarmProxyEventType = GenericEventType & {
     farmAddress: string;
-    farmingToken: GenericTokenAmountPairType;
-    wrappedFarmToken: GenericTokenAmountPairType;
+    farmingToken: GenericTokenType;
+    wrappedFarmToken: GenericTokenType;
     wrappedFarmAttributes: {
         farmTokenID: string;
         farmTokenNonce: number;
@@ -20,13 +20,13 @@ export type EnterFarmProxyEventType = FarmProxyEventType & {
 };
 
 export type ExitFarmProxyEventType = FarmProxyEventType & {
-    rewardToken: GenericTokenAmountPairType;
+    rewardToken: GenericTokenType;
 };
 
 export type RewardsProxyEventType = GenericEventType & {
     farmAddress: string;
-    oldWrappedFarmToken: GenericTokenAmountPairType;
-    newWrappedFarmToken: GenericTokenAmountPairType;
+    oldWrappedFarmToken: GenericTokenType;
+    newWrappedFarmToken: GenericTokenType;
     oldWrappedFarmAttributes: {
         farmTokenID: string;
         farmTokenNonce: number;
@@ -47,5 +47,5 @@ export type RewardsProxyEventType = GenericEventType & {
 };
 
 export type ClaimRewardsProxyEventType = RewardsProxyEventType & {
-    rewardToken: GenericTokenAmountPairType;
+    rewardToken: GenericTokenType;
 };
