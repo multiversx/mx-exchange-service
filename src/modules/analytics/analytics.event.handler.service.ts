@@ -6,7 +6,7 @@ import { awsConfig } from 'src/config';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
-import { convertTokenToDecimal } from 'src/utils/token.converters';
+import { denominateAmount } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PairGetterService } from '../pair/services/pair.getter.service';
@@ -69,11 +69,8 @@ export class AnalyticsEventHandlerService {
         );
 
         const [firstAmountDenom, secondAmountDenom] = [
-            convertTokenToDecimal(event.firstToken.amount, firstToken.decimals),
-            convertTokenToDecimal(
-                event.secondToken.amount,
-                secondtoken.decimals,
-            ),
+            denominateAmount(event.firstToken.amount, firstToken.decimals),
+            denominateAmount(event.secondToken.amount, secondtoken.decimals),
         ];
         const [firstAmountUSD, secondAmountUSD] = [
             firstAmountDenom.multipliedBy(firstTokenPriceUSD),
@@ -165,8 +162,8 @@ export class AnalyticsEventHandlerService {
         );
 
         const [tokenInAmountDenom, tokenOutAmountDenom] = [
-            convertTokenToDecimal(event.tokenIn.amount, tokenIn.decimals),
-            convertTokenToDecimal(event.tokenOut.amount, tokenOut.decimals),
+            denominateAmount(event.tokenIn.amount, tokenIn.decimals),
+            denominateAmount(event.tokenOut.amount, tokenOut.decimals),
         ];
 
         const [tokenInAmountUSD, tokenOutAmountUSD] = [
@@ -385,7 +382,7 @@ export class AnalyticsEventHandlerService {
             eventType === PAIR_EVENTS.ADD_LIQUIDITY
                 ? new BigNumber(lockedValue).plus(amount)
                 : new BigNumber(lockedValue).minus(amount);
-        const lockedValueDenom = convertTokenToDecimal(
+        const lockedValueDenom = denominateAmount(
             newLockedValue.toFixed(),
             token.decimals,
         );
@@ -413,7 +410,7 @@ export class AnalyticsEventHandlerService {
             lockedValue: new BigNumber(latestLockedValue)
                 .minus(amount)
                 .toFixed(),
-            lockedValueUSD: convertTokenToDecimal(
+            lockedValueUSD: denominateAmount(
                 new BigNumber(latestLockedValue).minus(amount).toFixed(),
                 token.decimals,
             )
@@ -421,7 +418,7 @@ export class AnalyticsEventHandlerService {
                 .toFixed(),
             priceUSD: priceUSD,
             volume: amount,
-            volumeUSD: convertTokenToDecimal(amount, token.decimals)
+            volumeUSD: denominateAmount(amount, token.decimals)
                 .times(priceUSD)
                 .toFixed(),
         };
