@@ -20,11 +20,6 @@ import { PairGetterService } from '../pair/services/pair.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { HistoricDataModel } from './models/analytics.model';
 
-export interface TradingInfoType {
-    volumeUSD: BigNumber;
-    feesUSD: BigNumber;
-}
-
 @Injectable()
 export class AnalyticsService {
     constructor(
@@ -62,32 +57,6 @@ export class AnalyticsService {
     async computeTokenPriceUSD(tokenID: string): Promise<string> {
         const tokenPriceUSD = await this.pairService.getPriceUSDByPath(tokenID);
         return tokenPriceUSD.toFixed();
-    }
-
-    async getFarmLockedValueUSD(farmAddress: string): Promise<string> {
-        const cacheKey = generateCacheKeyFromParams(
-            'farm',
-            farmAddress,
-            'lockedValueUSD',
-        );
-        try {
-            const getFarmLockedValueUSD = () =>
-                this.computeFarmLockedValueUSD(farmAddress);
-
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getFarmLockedValueUSD,
-                oneMinute() * 2,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getFarmLockedValueUSD.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
     }
 
     async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {

@@ -16,7 +16,6 @@ import { ruleOfThree } from '../../../helpers/helpers';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
-import { CommonAppModule } from 'src/common.app.module';
 
 @Injectable()
 export class FarmService {
@@ -160,10 +159,7 @@ export class FarmService {
 
         const structType = FarmTokenAttributesModel.getStructure();
 
-        const [decoded, decodedLength] = codec.decodeNested(
-            attributesBuffer,
-            structType,
-        );
+        const [decoded] = codec.decodeNested(attributesBuffer, structType);
 
         const decodedAttributes = decoded.valueOf();
         const farmTokenAttributes = FarmTokenAttributesModel.fromDecodedAttributes(

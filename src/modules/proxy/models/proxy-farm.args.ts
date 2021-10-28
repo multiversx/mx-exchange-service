@@ -5,7 +5,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 export class EnterFarmProxyArgs {
     @Field()
     farmAddress: string;
-    @Field(type => [InputTokenModel])
+    @Field(() => [InputTokenModel])
     tokens: Array<InputTokenModel>;
     @Field({ nullable: true })
     lockRewards: boolean;
@@ -15,7 +15,7 @@ export class EnterFarmProxyArgs {
 export class ExitFarmProxyArgs {
     @Field() farmAddress: string;
     @Field() wrappedFarmTokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     wrappedFarmTokenNonce: number;
     @Field() amount: string;
 }
@@ -24,7 +24,7 @@ export class ExitFarmProxyArgs {
 export class ClaimFarmRewardsProxyArgs {
     @Field() farmAddress: string;
     @Field() wrappedFarmTokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     wrappedFarmTokenNonce: number;
     @Field() amount: string;
 }
@@ -35,7 +35,7 @@ export class CompoundRewardsProxyArgs {
     farmAddress: string;
     @Field()
     tokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     tokenNonce: number;
     @Field()
     amount: string;

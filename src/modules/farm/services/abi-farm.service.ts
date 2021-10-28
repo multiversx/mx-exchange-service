@@ -30,8 +30,7 @@ export class AbiFarmService {
             );
             const response = interaction.interpretQueryResponse(queryResponse);
 
-            const farmedTokenID = response.firstValue.valueOf().toString();
-            return farmedTokenID;
+            return response.firstValue.valueOf().toString();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
@@ -56,8 +55,7 @@ export class AbiFarmService {
             );
             const response = interaction.interpretQueryResponse(queryResponse);
 
-            const farmTokenID = response.firstValue.valueOf().toString();
-            return farmTokenID;
+            return response.firstValue.valueOf().toString();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
@@ -82,8 +80,7 @@ export class AbiFarmService {
             );
             const response = interaction.interpretQueryResponse(queryResponse);
 
-            const farmingTokenID = response.firstValue.valueOf().toString();
-            return farmingTokenID;
+            return response.firstValue.valueOf().toString();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
@@ -382,9 +379,7 @@ export class AbiFarmService {
                 interaction.buildQuery(),
             );
             const response = interaction.interpretQueryResponse(queryResponse);
-            const rewards = response.firstValue.valueOf();
-
-            return rewards;
+            return response.firstValue.valueOf();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
@@ -408,8 +403,7 @@ export class AbiFarmService {
                 interaction.buildQuery(),
             );
             const response = interaction.interpretQueryResponse(queryResponse);
-            const state = response.firstValue.valueOf();
-            return state;
+            return response.firstValue.valueOf();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,

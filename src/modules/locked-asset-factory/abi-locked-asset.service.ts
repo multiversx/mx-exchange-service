@@ -26,9 +26,7 @@ export class AbiLockedAssetService {
             );
             const result = interaction.interpretQueryResponse(queryResponse);
 
-            const lockedTokenID = result.firstValue.valueOf().toString();
-
-            return lockedTokenID;
+            return result.firstValue.valueOf().toString();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiLockedAssetService.name,
@@ -54,16 +52,12 @@ export class AbiLockedAssetService {
 
             const result = interaction.interpretQueryResponse(queryResponse);
 
-            const unlockMilestones: UnlockMileStoneModel[] = result.firstValue
-                .valueOf()
-                .map(unlockMilestone => {
-                    return new UnlockMileStoneModel({
-                        epochs: unlockMilestone.unlock_epoch.toNumber(),
-                        percent: unlockMilestone.unlock_percent.toNumber(),
-                    });
+            return result.firstValue.valueOf().map(unlockMilestone => {
+                return new UnlockMileStoneModel({
+                    epochs: unlockMilestone.unlock_epoch.toNumber(),
+                    percent: unlockMilestone.unlock_percent.toNumber(),
                 });
-
-            return unlockMilestones;
+            });
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiLockedAssetService.name,

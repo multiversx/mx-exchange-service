@@ -1,7 +1,7 @@
 import { QueryOperator } from './query.operator';
 
 export abstract class AbstractQuery {
-    private query: any;
+    private readonly query: any;
 
     constructor(
         key: string,

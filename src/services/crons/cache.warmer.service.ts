@@ -30,7 +30,7 @@ export class CacheWarmerService {
                 'priceFeed',
                 tokensPriceData.get(priceFeed),
             );
-            this.cachingService.setCache(cacheKey, tokenPrice, oneMinute());
+            await this.cachingService.setCache(cacheKey, tokenPrice, oneMinute());
 
             this.invalidatedKeys.push(cacheKey);
             await this.deleteCacheKeys();
@@ -42,7 +42,7 @@ export class CacheWarmerService {
         const stats = await this.apiService.getStats();
         const ttl = (stats.roundsPerEpoch - stats.roundsPassed) * 6;
         const cacheKey = generateCacheKeyFromParams('context', 'currentEpoch');
-        this.cachingService.setCache(cacheKey, stats.epoch, ttl);
+        await this.cachingService.setCache(cacheKey, stats.epoch, ttl);
 
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();

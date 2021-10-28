@@ -4,6 +4,6 @@ import { NftToken } from './nftToken.model';
 
 @ObjectType()
 export class LockedLpToken extends NftToken {
-    @Field(type => WrappedLpTokenAttributesModel)
+    @Field(() => WrappedLpTokenAttributesModel)
     decodedAttributes: WrappedLpTokenAttributesModel;
 }

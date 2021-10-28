@@ -4,7 +4,7 @@ import { Field, InputType, Int } from '@nestjs/graphql';
 export class InputTokenModel {
     @Field()
     tokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     nonce: number;
     @Field()
     amount: string;

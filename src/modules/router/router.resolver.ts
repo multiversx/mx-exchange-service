@@ -1,12 +1,5 @@
 import { RouterService } from './router.service';
-import {
-    Resolver,
-    Query,
-    ResolveField,
-    Parent,
-    Args,
-    Int,
-} from '@nestjs/graphql';
+import { Resolver, Query, ResolveField, Args, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
@@ -16,7 +9,7 @@ import { JwtAdminGuard } from '../../helpers/guards/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './router.getter.service';
 
-@Resolver(of => FactoryModel)
+@Resolver(() => FactoryModel)
 export class RouterResolver {
     constructor(
         private readonly routerService: RouterService,
@@ -24,13 +17,13 @@ export class RouterResolver {
         private readonly transactionService: TransactionRouterService,
     ) {}
 
-    @Query(returns => FactoryModel)
+    @Query(() => FactoryModel)
     async factory() {
         return this.routerService.getFactory();
     }
 
-    @ResolveField(returns => Int!)
-    async pairCount(@Parent() factoryModel: FactoryModel) {
+    @ResolveField(() => Int)
+    async pairCount() {
         try {
             return await this.routerService.getPairCount();
         } catch (error) {
@@ -38,8 +31,8 @@ export class RouterResolver {
         }
     }
 
-    @ResolveField(returns => Int!)
-    async totalTxCount(@Parent() factoryModel: FactoryModel) {
+    @ResolveField(() => Int)
+    async totalTxCount() {
         try {
             return await this.routerService.getTotalTxCount();
         } catch (error) {
@@ -48,7 +41,7 @@ export class RouterResolver {
     }
 
     @ResolveField()
-    async totalValueLockedUSD(@Parent() factoryModel: FactoryModel) {
+    async totalValueLockedUSD() {
         try {
             return await this.routerGetterService.getTotalLockedValueUSD();
         } catch (error) {
@@ -57,7 +50,7 @@ export class RouterResolver {
     }
 
     @ResolveField()
-    async totalVolumeUSD24h(@Parent() factoryModel: FactoryModel) {
+    async totalVolumeUSD24h() {
         try {
             return this.routerGetterService.getTotalVolumeUSD('24h');
         } catch (error) {
@@ -66,7 +59,7 @@ export class RouterResolver {
     }
 
     @ResolveField()
-    async totalFeesUSD24h(@Parent() factoryModel: FactoryModel) {
+    async totalFeesUSD24h() {
         try {
             return this.routerGetterService.getTotalFeesUSD('24h');
         } catch (error) {
@@ -74,7 +67,7 @@ export class RouterResolver {
         }
     }
 
-    @Query(returns => [String])
+    @Query(() => [String])
     async pairAddresses(): Promise<string[]> {
         try {
             return await this.routerGetterService.getAllPairsAddress();
@@ -83,7 +76,7 @@ export class RouterResolver {
         }
     }
 
-    @Query(returns => [PairModel])
+    @Query(() => [PairModel])
     async pairs(@Args() page: GetPairsArgs): Promise<PairModel[]> {
         try {
             return await this.routerService.getAllPairs(
@@ -96,7 +89,7 @@ export class RouterResolver {
     }
 
     @UseGuards(JwtAdminGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async createPair(
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
@@ -105,7 +98,7 @@ export class RouterResolver {
     }
 
     @UseGuards(JwtAdminGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async issueLPToken(
         @Args('address') address: string,
         @Args('lpTokenName') lpTokenName: string,
@@ -119,7 +112,7 @@ export class RouterResolver {
     }
 
     @UseGuards(JwtAdminGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async setLocalRoles(
         @Args('address') address: string,
     ): Promise<TransactionModel> {
@@ -127,7 +120,7 @@ export class RouterResolver {
     }
 
     @UseGuards(JwtAdminGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async setState(
         @Args('address') address: string,
         @Args('enable') enable: boolean,
@@ -136,7 +129,7 @@ export class RouterResolver {
     }
 
     @UseGuards(JwtAdminGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async setFee(
         @Args('pairAddress') pairAddress: string,
         @Args('feeToAddress') feeToAddress: string,

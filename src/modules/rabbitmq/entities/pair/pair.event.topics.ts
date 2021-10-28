@@ -1,11 +1,11 @@
 import { Address } from '@elrondnetwork/erdjs/out';
 
 export class PairEventTopics {
-    private eventName: string;
-    private firstTokenID: string;
-    private secondTokenID: string;
+    private readonly eventName: string;
+    private readonly firstTokenID: string;
+    private readonly secondTokenID: string;
     private caller: Address;
-    private epoch: number;
+    private readonly epoch: number;
 
     constructor(rawTopics: string[]) {
         this.eventName = Buffer.from(rawTopics[0], 'base64').toString();
@@ -30,10 +30,10 @@ export class PairEventTopics {
 }
 
 export class SwapNoFeeTopics {
-    private eventName: string;
-    private tokenOutID: string;
-    private caller: Address;
-    private epoch: number;
+    private readonly eventName: string;
+    private readonly tokenOutID: string;
+    private readonly caller: Address;
+    private readonly epoch: number;
 
     constructor(rawTopics: string[]) {
         this.eventName = Buffer.from(rawTopics[0], 'base64').toString();

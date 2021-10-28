@@ -18,13 +18,13 @@ import { PairProxyTopics } from './proxy.event.topics';
 export class PairProxyEvent extends GenericEvent {
     protected decodedTopics: PairProxyTopics;
 
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     protected firstToken: GenericToken;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     protected secondToken: GenericToken;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     protected wrappedLpToken: GenericToken;
-    @Field(type => WrappedLpTokenAttributesModel)
+    @Field(() => WrappedLpTokenAttributesModel)
     protected wrappedLpAttributes: WrappedLpTokenAttributesModel;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -72,10 +72,7 @@ export class PairProxyEvent extends GenericEvent {
 
         const eventStructure = this.getStructure();
 
-        const [decoded, decodedLength] = codec.decodeNested(
-            data,
-            eventStructure,
-        );
+        const [decoded] = codec.decodeNested(data, eventStructure);
 
         return decoded.valueOf();
     }

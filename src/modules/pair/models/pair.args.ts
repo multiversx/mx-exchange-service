@@ -5,7 +5,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 export class AddLiquidityArgs {
     @Field()
     pairAddress: string;
-    @Field(type => [InputTokenModel])
+    @Field(() => [InputTokenModel])
     tokens: Array<InputTokenModel>;
     @Field()
     tolerance: number;

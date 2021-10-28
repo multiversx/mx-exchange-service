@@ -8,7 +8,7 @@ import { awsConfig } from 'src/config';
 @Injectable()
 export class AWSTimestreamWriteService {
     private writeClient: TimestreamWrite;
-    private DatabaseName: string;
+    private readonly DatabaseName: string;
 
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,

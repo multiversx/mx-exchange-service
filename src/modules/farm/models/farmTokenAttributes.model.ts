@@ -16,11 +16,11 @@ export class FarmTokenAttributesModel {
     attributes?: string;
     @Field()
     rewardPerShare: string;
-    @Field(type => Int)
+    @Field(() => Int)
     originalEnteringEpoch: number;
-    @Field(type => Int)
+    @Field(() => Int)
     enteringEpoch: number;
-    @Field(type => Int)
+    @Field(() => Int)
     aprMultiplier: number;
     @Field()
     lockedRewards: boolean;

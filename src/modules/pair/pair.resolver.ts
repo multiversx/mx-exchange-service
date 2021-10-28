@@ -15,7 +15,7 @@ import { PairGetterService } from './services/pair.getter.service';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 
-@Resolver(of => PairModel)
+@Resolver(() => PairModel)
 export class PairResolver {
     constructor(
         private readonly pairService: PairService,
@@ -228,7 +228,7 @@ export class PairResolver {
         }
     }
 
-    @Query(returns => String)
+    @Query(() => String)
     async getAmountOut(
         @Args('pairAddress') pairAddress: string,
         @Args('tokenInID') tokenInID: string,
@@ -245,7 +245,7 @@ export class PairResolver {
         }
     }
 
-    @Query(returns => String)
+    @Query(() => String)
     async getAmountIn(
         @Args('pairAddress') pairAddress: string,
         @Args('tokenOutID') tokenOutID: string,
@@ -262,7 +262,7 @@ export class PairResolver {
         }
     }
 
-    @Query(returns => String)
+    @Query(() => String)
     async getEquivalent(
         @Args('pairAddress') pairAddress: string,
         @Args('tokenInID') tokenInID: string,
@@ -279,7 +279,7 @@ export class PairResolver {
         }
     }
 
-    @Query(returns => LiquidityPosition)
+    @Query(() => LiquidityPosition)
     async getLiquidityPosition(
         @Args('pairAddress') pairAddress: string,
         @Args('liquidityAmount') liquidityAmount: string,
@@ -295,7 +295,7 @@ export class PairResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
+    @Query(() => [TransactionModel])
     async addLiquidityBatch(
         @Args() args: AddLiquidityArgs,
         @User() user: any,
@@ -311,7 +311,7 @@ export class PairResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async addLiquidity(
         @Args() args: AddLiquidityArgs,
         @User() user: any,
@@ -327,7 +327,7 @@ export class PairResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
+    @Query(() => [TransactionModel])
     async removeLiquidity(
         @Args() args: RemoveLiquidityArgs,
         @User() user: any,
@@ -339,7 +339,7 @@ export class PairResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
+    @Query(() => [TransactionModel])
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
         @User() user: any,
@@ -351,7 +351,7 @@ export class PairResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
+    @Query(() => [TransactionModel])
     async swapTokensFixedOutput(
         @Args() args: SwapTokensFixedOutputArgs,
         @User() user: any,

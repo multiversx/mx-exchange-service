@@ -65,10 +65,10 @@ export class RabbitMQFarmHandlerService {
         this.invalidatedKeys.push(cacheKeys);
         await this.deleteCacheKeys();
         event.getIdentifier() === FARM_EVENTS.ENTER_FARM
-            ? this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
+            ? await this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
                   enterFarmEvent: event,
               })
-            : this.pubSub.publish(FARM_EVENTS.EXIT_FARM, {
+            : await this.pubSub.publish(FARM_EVENTS.EXIT_FARM, {
                   exitFarmEvent: event,
               });
     }
@@ -107,7 +107,7 @@ export class RabbitMQFarmHandlerService {
         this.invalidatedKeys.push(cacheKeys);
         await this.deleteCacheKeys();
 
-        this.pubSub.publish(FARM_EVENTS.CLAIM_REWARDS, {
+        await this.pubSub.publish(FARM_EVENTS.CLAIM_REWARDS, {
             rewardsEvent: event,
         });
     }

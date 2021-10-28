@@ -27,7 +27,7 @@ async function bootstrap() {
                 url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
                 retryDelay: 1000,
                 retryAttempts: 10,
-                retry_strategy: function(_: any) {
+                retry_strategy: function() {
                     return 1000;
                 },
             },
@@ -68,7 +68,7 @@ async function bootstrap() {
             RabbitMqConsumer,
         );
         await rabbitMqService.getFilterAddresses();
-        eventsNotifierApp.listen(5673, '0.0.0.0');
+        await eventsNotifierApp.listen(5673, '0.0.0.0');
 
         const analyticsApp = await NestFactory.createMicroservice<
             MicroserviceOptions
@@ -79,7 +79,7 @@ async function bootstrap() {
                 url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
                 retryDelay: 1000,
                 retryAttempts: 10,
-                retry_strategy: function(_: any) {
+                retry_strategy: function() {
                     return 1000;
                 },
             },

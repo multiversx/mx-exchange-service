@@ -12,10 +12,7 @@ export function decodeWrappedLPTokenAttributes(attributes: string) {
     const codec = new BinaryCodec();
     const structType = WrappedLpTokenAttributesModel.getStructure();
 
-    const [decoded, decodedLength] = codec.decodeNested(
-        attributesBuffer,
-        structType,
-    );
+    const [decoded] = codec.decodeNested(attributesBuffer, structType);
 
     return decoded.valueOf();
 }
@@ -25,10 +22,7 @@ export function decodeWrappedFarmTokenAttributes(attributes: string) {
     const codec = new BinaryCodec();
     const structType = WrappedFarmTokenAttributesModel.getStructure();
 
-    const [decoded, decodedLength] = codec.decodeNested(
-        attributesBuffer,
-        structType,
-    );
+    const [decoded] = codec.decodeNested(attributesBuffer, structType);
     const decodedAttributes: WrappedFarmTokenAttributesModel = decoded.valueOf();
     const farmTokenIdentifier = `${
         decodedAttributes.farmTokenID

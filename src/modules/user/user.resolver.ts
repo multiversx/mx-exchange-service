@@ -12,7 +12,7 @@ export class UserResolver {
     constructor(@Inject(UserService) private userService: UserService) {}
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [UserToken])
+    @Query(() => [UserToken])
     async tokens(
         @Args() pagination: PaginationArgs,
         @User() user: any,
@@ -24,7 +24,7 @@ export class UserResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [UserNftTokens])
+    @Query(() => [UserNftTokens])
     async nfts(
         @Args() pagination: PaginationArgs,
         @User() user: any,
@@ -36,7 +36,7 @@ export class UserResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => Number)
+    @Query(() => Number)
     async getUserWorth(@User() user: any): Promise<number> {
         return this.userService.computeUserWorth(user.publicKey);
     }

@@ -105,7 +105,7 @@ export class LockedAssetService {
 
             const lockedAssetAttributesStructure = this.getLockedAssetAttributesStructure();
 
-            const [decoded, decodedLength] = codec.decodeNested(
+            const [decoded] = codec.decodeNested(
                 attributesBuffer,
                 lockedAssetAttributesStructure,
             );
@@ -164,7 +164,6 @@ export class LockedAssetService {
 
     private async getMonthStartEpoch(unlockEpoch: number): Promise<number> {
         const initEpoch = await this.abiService.getInitEpoch();
-        const monthStartEpoch = unlockEpoch - ((unlockEpoch - initEpoch) % 30);
-        return monthStartEpoch;
+        return unlockEpoch - ((unlockEpoch - initEpoch) % 30);
     }
 }

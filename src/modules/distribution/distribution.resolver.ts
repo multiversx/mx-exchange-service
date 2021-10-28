@@ -11,7 +11,7 @@ import { ApolloError } from 'apollo-server-express';
 import { User } from 'src/helpers/userDecorator';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 
-@Resolver(of => DistributionModel)
+@Resolver(() => DistributionModel)
 export class DistributionResolver {
     constructor(
         @Inject(DistributionService)
@@ -29,7 +29,7 @@ export class DistributionResolver {
         }
     }
 
-    @Query(returns => DistributionModel)
+    @Query(() => DistributionModel)
     async distribution(): Promise<DistributionModel> {
         try {
             return await this.distributionService.getDistributionInfo();
@@ -39,13 +39,13 @@ export class DistributionResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async claimLockedAssets(): Promise<TransactionModel> {
         return await this.transactionsService.claimLockedAssets();
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => String)
+    @Query(() => String)
     async distributedLockedAssets(@User() user: any): Promise<string> {
         return await this.distributionService.getDistributedLockedAssets(
             user.publicKey,

@@ -14,7 +14,7 @@ import {
 } from '@elrondnetwork/erdjs';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { TransactionModel } from '../../models/transaction.model';
-import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
@@ -48,9 +48,7 @@ export class ContextService {
 
     async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
         const pairs = await this.routerGetterService.getPairsMetadata();
-        const pair = pairs.find(pair => pair.address === pairAddress);
-
-        return pair;
+        return  pairs.find(pair => pair.address === pairAddress);
     }
 
     async getPairByTokens(

@@ -27,7 +27,7 @@ import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 
-@Resolver(of => ProxyModel)
+@Resolver(() => ProxyModel)
 export class ProxyResolver {
     constructor(
         @Inject(ProxyService) private proxyService: ProxyService,
@@ -94,13 +94,13 @@ export class ProxyResolver {
         }
     }
 
-    @Query(returns => ProxyModel)
+    @Query(() => ProxyModel)
     async proxy(): Promise<ProxyModel> {
         return await this.proxyService.getProxyInfo();
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
+    @Query(() => [TransactionModel])
     async addLiquidityProxyBatch(
         @Args() args: AddLiquidityProxyArgs,
         @User() user: any,
@@ -116,7 +116,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async addLiquidityProxy(
         @Args() args: AddLiquidityProxyArgs,
         @User() user: any,
@@ -132,7 +132,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [TransactionModel])
+    @Query(() => [TransactionModel])
     async removeLiquidityProxy(
         @Args() args: RemoveLiquidityProxyArgs,
         @User() user: any,
@@ -144,7 +144,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async enterFarmProxy(
         @Args() args: EnterFarmProxyArgs,
         @User() user: any,
@@ -160,7 +160,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async exitFarmProxy(
         @Args() args: ExitFarmProxyArgs,
         @User() user: any,
@@ -172,7 +172,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async claimFarmRewardsProxy(
         @Args() args: ClaimFarmRewardsProxyArgs,
         @User() user: any,
@@ -184,7 +184,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async mergeWrappedLpTokens(
         @Args('tokens', { type: () => [InputTokenModel] })
         tokens: InputTokenModel[],
@@ -201,7 +201,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async mergeWrappedFarmTokens(
         @Args('farmAddress') farmAddress: string,
         @Args('tokens', { type: () => [InputTokenModel] })
@@ -220,7 +220,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async compoundRewardsProxy(
         @Args() args: CompoundRewardsProxyArgs,
         @User() user: any,
@@ -232,7 +232,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [WrappedLpTokenAttributesModel])
+    @Query(() => [WrappedLpTokenAttributesModel])
     async wrappedLpTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
     ): Promise<WrappedLpTokenAttributesModel[]> {
@@ -240,7 +240,7 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [WrappedFarmTokenAttributesModel])
+    @Query(() => [WrappedFarmTokenAttributesModel])
     async wrappedFarmTokenAttributes(
         @Args('args')
         args: DecodeAttributesArgs,

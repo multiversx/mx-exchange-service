@@ -9,7 +9,7 @@ import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 
-@Resolver(of => WrapModel)
+@Resolver(() => WrapModel)
 export class WrapResolver {
     constructor(
         @Inject(WrapService)
@@ -27,13 +27,13 @@ export class WrapResolver {
         }
     }
 
-    @Query(returns => [WrapModel])
+    @Query(() => [WrapModel])
     async wrappingInfo(): Promise<WrapModel[]> {
         return this.wrapService.getWrappingInfo();
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async wrapEgld(
         @Args('amount') amount: string,
         @User() user: any,
@@ -42,7 +42,7 @@ export class WrapResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async unwrapEgld(
         @Args('amount') amount: string,
         @User() user: any,

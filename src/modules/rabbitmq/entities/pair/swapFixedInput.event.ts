@@ -18,15 +18,15 @@ import { SwapEventType } from './pair.types';
 export class SwapFixedInputEvent extends GenericEvent {
     private decodedTopics: PairEventTopics;
 
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private tokenIn: GenericToken;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private tokenOut: GenericToken;
-    @Field(type => String)
+    @Field(() => String)
     feeAmount: BigNumber;
-    @Field(type => String)
+    @Field(() => String)
     tokenInReserves: BigNumber;
-    @Field(type => String)
+    @Field(() => String)
     tokenOutReserves: BigNumber;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -82,10 +82,7 @@ export class SwapFixedInputEvent extends GenericEvent {
 
         const swapEventStructure = this.getStructure();
 
-        const [decoded, decodedLength] = codec.decodeNested(
-            data,
-            swapEventStructure,
-        );
+        const [decoded] = codec.decodeNested(data, swapEventStructure);
 
         return decoded.valueOf();
     }

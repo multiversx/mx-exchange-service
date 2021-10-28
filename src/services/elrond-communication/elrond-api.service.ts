@@ -13,7 +13,7 @@ import { Stats } from '../../models/stats.model';
 
 @Injectable()
 export class ElrondApiService {
-    private apiProvider: ApiProvider;
+    private readonly apiProvider: ApiProvider;
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
@@ -78,13 +78,11 @@ export class ElrondApiService {
     }
 
     async getAccountStats(address: string): Promise<any | undefined> {
-        const account = await this.doGetGeneric(
+        return await this.doGetGeneric(
             this.getAccountStats.name,
             `accounts/${address}`,
             response => response,
         );
-
-        return account;
     }
 
     async getNftCollection(tokenID: string): Promise<NftCollection> {
@@ -158,22 +156,6 @@ export class ElrondApiService {
         return this.doGetGeneric(
             this.getCurrentNonce.name,
             `blocks/count?shard=${shardId}`,
-            response => response,
-        );
-    }
-
-    async getHyperblockByNonce(nonce: number): Promise<any> {
-        return this.doGetGeneric(
-            this.getHyperblockByNonce.name,
-            `hyperblock/by-nonce/${nonce}`,
-            response => response,
-        );
-    }
-
-    async getTransaction(hash: string, withResults = false): Promise<any> {
-        return this.doGetGeneric(
-            this.getTransaction.name,
-            `transaction/${hash}?withResults=${withResults}`,
             response => response,
         );
     }

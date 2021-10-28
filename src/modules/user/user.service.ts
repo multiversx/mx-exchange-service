@@ -104,9 +104,7 @@ export class UserService {
             };
         });
 
-        const esdtTokens: UserToken[] = await Promise.all(promises);
-
-        return esdtTokens;
+        return await Promise.all(promises);
     }
 
     async getAllNftTokens(
@@ -189,8 +187,7 @@ export class UserService {
             }
         }
 
-        const nftTokens = await Promise.all(promises);
-        return nftTokens;
+        return await Promise.all(promises);
     }
 
     private async getEsdtTokenDetails(

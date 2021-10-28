@@ -176,7 +176,7 @@ export class FarmCacheWarmerService {
                 'apr',
             );
 
-            this.cachingService.setCache(cacheKey, apr, oneMinute());
+            await this.cachingService.setCache(cacheKey, apr, oneMinute());
             this.invalidatedKeys.push(cacheKey);
             await this.deleteCacheKeys();
         }

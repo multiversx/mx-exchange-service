@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AbiProxyPairService } from './proxy-pair-abi.service';
-import { GenericEsdtAmountPair } from '../models/proxy.model';
 import { ContextService } from '../../../services/context/context.service';
 import { NftCollection } from '../../../models/tokens/nftCollection.model';
 import { CachingService } from '../../../services/caching/cache.service';

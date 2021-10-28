@@ -105,10 +105,9 @@ export class ElrondProxyService {
         });
         const abi = new SmartContractAbi(abiRegistry, [contractInterface]);
 
-        const contract = new SmartContractProfiler({
+        return new SmartContractProfiler({
             address: new Address(contractAddress),
             abi: abi,
         });
-        return contract;
     }
 }

@@ -5,19 +5,19 @@ import { GenericEventType } from './generic.types';
 
 @ObjectType()
 export class GenericEvent {
-    @Field(type => String)
+    @Field(() => String)
     private address = '';
     private identifier = '';
     protected topics = [];
     protected data = '';
 
-    @Field(type => String)
+    @Field(() => String)
     protected caller: Address;
-    @Field(type => Int)
+    @Field(() => Int)
     protected block: BigNumber;
-    @Field(type => Int)
+    @Field(() => Int)
     protected epoch: BigNumber;
-    @Field(type => Int)
+    @Field(() => Int)
     protected timestamp: BigNumber;
 
     constructor(init?: Partial<GenericEvent>) {

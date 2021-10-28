@@ -10,7 +10,7 @@ import { Logger } from 'winston';
 @Injectable()
 export class AWSTimestreamQueryService {
     private queryClient: TimestreamQuery;
-    private DatabaseName: string;
+    private readonly DatabaseName: string;
 
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -53,14 +53,13 @@ export class AWSTimestreamQueryService {
 
         const params = { QueryString };
         const { Rows } = await this.queryClient.query(params).promise();
-        const values = Rows.map(
+        return Rows.map(
             Row =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
                 }),
         );
-        return values;
     }
 
     async getAgregatedValue({ table, series, metric, time }): Promise<string> {
