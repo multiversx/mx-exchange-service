@@ -79,7 +79,8 @@
         "depositTokens": 17000000,
         "defaultMergeWLPT": 20000000,
         "defaultMergeWFMT": 20000000,
-        "defaultMergeLockedAssets": 20000000
+        "defaultMergeLockedAssets": 10000000,
+        "lockedAssetMerge": 500000
     },
     "abi": {
         "router": "./src/abis/router.abi.json",
