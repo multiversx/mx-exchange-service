@@ -1,12 +1,24 @@
 version: '3.1'
 
 services:
-  db:
-    image: postgres
-    restart: always
-    environment:
-      POSTGRES_USER: godwinekuma
-      POSTGRES_PASSWORD: example
-      POSTGRES_DB: invoiceapp
+  redis:
+    image: redis
+    container_name: redis
+    command: redis-server
     ports:
-      - "5432:5432"
+      - '6379:6379'
+    expose:
+      - '6379'
+  rabbitmq:
+    image: 331leo/rabbitmq3-management-mqtt
+    hostname: rabbitmq
+    environment:
+      HOSTNAME: rabbitmq
+      RABBITMQ_NODENAME: rabbitmq
+      RABBITMQ_DEFAULT_USER: 'guest'
+      RABBITMQ_DEFAULT_PASS: 'guest'
+    volumes:
+      - /var/lib/rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
