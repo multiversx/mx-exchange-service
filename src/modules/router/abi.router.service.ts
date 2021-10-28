@@ -28,7 +28,7 @@ export class AbiRouterService {
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiRouterService.name,
-                interaction.getFunction().name,
+                interaction.getEndpoint().name,
                 error.message,
             );
             this.logger.error(logMessage);

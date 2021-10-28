@@ -117,7 +117,7 @@ export class ContextService {
         const cacheKey = this.getContextCacheKey(tokenID);
         try {
             const getTokenMetadata = () =>
-                this.apiService.getService().getESDTToken(tokenID);
+                this.apiService.getService().getToken(tokenID);
             return await this.cachingService.getOrSet(
                 cacheKey,
                 getTokenMetadata,
