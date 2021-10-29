@@ -18,11 +18,11 @@ import { SwapNoFeeEventType } from './pair.types';
 export class SwapNoFeeEvent extends GenericEvent {
     private decodedTopics: SwapNoFeeTopics;
 
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private tokenIn: GenericToken;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private tokenOut: GenericToken;
-    @Field(type => String)
+    @Field(() => String)
     private destination: Address;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -67,7 +67,7 @@ export class SwapNoFeeEvent extends GenericEvent {
 
         const eventStruct = this.getStructure();
 
-        const [decoded, decodedLength] = codec.decodeNested(data, eventStruct);
+        const [decoded] = codec.decodeNested(data, eventStruct);
         return decoded.valueOf();
     }
 

@@ -20,19 +20,19 @@ import { EnterFarmEventType } from './farm.types';
 export class EnterFarmEvent extends GenericEvent {
     private decodedTopics: FarmEventsTopics;
 
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private farmingToken: GenericToken;
-    @Field(type => String)
+    @Field(() => String)
     private farmingReserve: BigNumber;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private farmToken: GenericToken;
-    @Field(type => String)
+    @Field(() => String)
     private farmSupply: BigNumber;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private rewardToken: GenericToken;
-    @Field(type => String)
+    @Field(() => String)
     private rewardTokenReserves: BigNumber;
-    @Field(type => FarmTokenAttributesModel)
+    @Field(() => FarmTokenAttributesModel)
     private farmAttributes: FarmTokenAttributesModel;
     @Field()
     private createdWithMerge: boolean;
@@ -105,7 +105,7 @@ export class EnterFarmEvent extends GenericEvent {
 
         const eventStruct = this.getStructure();
 
-        const [decoded, decodedLength] = codec.decodeNested(data, eventStruct);
+        const [decoded] = codec.decodeNested(data, eventStruct);
         return decoded.valueOf();
     }
 

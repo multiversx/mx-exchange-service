@@ -5,11 +5,11 @@ import { FarmTokenAttributesModel } from './farmTokenAttributes.model';
 
 @ObjectType()
 export class RewardsModel {
-    @Field(type => FarmTokenAttributesModel)
+    @Field(() => FarmTokenAttributesModel)
     decodedAttributes: FarmTokenAttributesModel;
     @Field()
     rewards: string;
-    @Field(type => Int, { nullable: true })
+    @Field(() => Int, { nullable: true })
     remainingFarmingEpochs?: number;
 
     constructor(init?: Partial<RewardsModel>) {
@@ -61,16 +61,16 @@ export class FarmModel {
     @Field()
     farmingTokenReserve: string;
 
-    @Field(type => Int)
+    @Field(() => Int)
     penaltyPercent: number;
 
-    @Field(type => Int)
+    @Field(() => Int)
     minimumFarmingEpochs: number;
 
     @Field()
     rewardPerShare: string;
 
-    @Field(type => Int)
+    @Field(() => Int)
     lastRewardBlockNonce: number;
 
     @Field()

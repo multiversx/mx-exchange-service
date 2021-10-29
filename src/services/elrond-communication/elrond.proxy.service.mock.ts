@@ -22,10 +22,9 @@ export class ElrondProxyServiceMock extends ElrondProxyService {
         });
         const abi = new SmartContractAbi(abiRegistry, [contractInterface]);
 
-        const contract = new SmartContractProfiler({
+        return  new SmartContractProfiler({
             address: Address.Zero(),
             abi: abi,
         });
-        return contract;
     }
 }

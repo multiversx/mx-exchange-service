@@ -5,7 +5,7 @@ import { EsdtToken } from '../../../models/tokens/esdtToken.model';
 export class WrapModel {
     @Field()
     address: string;
-    @Field(type => Int)
+    @Field(() => Int)
     shard: number;
     @Field()
     wrappedToken: EsdtToken;

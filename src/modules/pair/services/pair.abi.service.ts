@@ -25,13 +25,11 @@ export class PairAbiService {
                 this.elrondProxy.getService(),
                 interaction.buildQuery(),
             );
-            const response = interaction.interpretQueryResponse(queryResponse);
-
-            return response;
+            return interaction.interpretQueryResponse(queryResponse);
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 PairAbiService.name,
-                interaction.getFunction().name,
+                interaction.getEndpoint().name,
                 error.message,
             );
             this.logger.error(logMessage);

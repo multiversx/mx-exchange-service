@@ -22,8 +22,7 @@ export class AbiProxyService {
                 interaction.buildQuery(),
             );
             const response = interaction.interpretQueryResponse(queryResponse);
-            const assetTokenID = response.firstValue.valueOf().toString();
-            return assetTokenID;
+            return response.firstValue.valueOf().toString();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyService.name,
@@ -47,8 +46,7 @@ export class AbiProxyService {
                 interaction.buildQuery(),
             );
             const response = interaction.interpretQueryResponse(queryResponse);
-            const lockedAssetTokenID = response.firstValue.valueOf().toString();
-            return lockedAssetTokenID;
+            return response.firstValue.valueOf().toString();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyService.name,

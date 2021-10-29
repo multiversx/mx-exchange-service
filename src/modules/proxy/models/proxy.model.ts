@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
+import { ObjectType, Field, registerEnumType } from '@nestjs/graphql';
 import { EsdtToken } from '../../../models/tokens/esdtToken.model';
 import { NftCollection } from '../../../models/tokens/nftCollection.model';
 
@@ -28,10 +28,10 @@ export class ProxyModel {
     @Field()
     lockedAssetToken: NftCollection;
 
-    @Field(type => [String])
+    @Field(() => [String])
     intermediatedPairs: string[];
 
-    @Field(type => [String])
+    @Field(() => [String])
     intermediatedFarms: string[];
 
     constructor(init?: Partial<ProxyModel>) {

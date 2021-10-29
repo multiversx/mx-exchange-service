@@ -4,7 +4,7 @@ import { ArgsType, Field, Int } from '@nestjs/graphql';
 export class UnlockAssetsArs {
     @Field()
     lockedTokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     lockedTokenNonce: number;
     @Field()
     amount: string;

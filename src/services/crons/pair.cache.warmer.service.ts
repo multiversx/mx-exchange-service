@@ -43,11 +43,11 @@ export class PairCacheWarmerService {
             ] = await Promise.all([
                 this.apiService
                     .getService()
-                    .getESDTToken(pairMetadata.firstTokenID),
+                    .getToken(pairMetadata.firstTokenID),
                 this.apiService
                     .getService()
-                    .getESDTToken(pairMetadata.secondTokenID),
-                this.apiService.getService().getESDTToken(lpTokenID),
+                    .getToken(pairMetadata.secondTokenID),
+                this.apiService.getService().getToken(lpTokenID),
                 this.abiPairService.getTotalFeePercent(pairMetadata.address),
                 this.abiPairService.getSpecialFeePercent(pairMetadata.address),
                 this.abiPairService.getState(pairMetadata.address),

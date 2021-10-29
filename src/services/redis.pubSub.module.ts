@@ -20,7 +20,7 @@ export const PUB_SUB = 'PUB_SUB';
                 const options: Redis.RedisOptions = {
                     host: configService.getRedisUrl(),
                     port: configService.getRedisPort(),
-                    retryStrategy: function(_: any) {
+                    retryStrategy: function() {
                         return 1000;
                     },
                 };

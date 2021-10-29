@@ -18,17 +18,17 @@ import { AddLiquidityEventType } from './pair.types';
 export class AddLiquidityEvent extends GenericEvent {
     private decodedTopics: PairEventTopics;
 
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private firstToken: GenericToken;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private secondToken: GenericToken;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private liquidityPoolToken: GenericToken;
-    @Field(type => String)
+    @Field(() => String)
     private liquidityPoolSupply: BigNumber;
-    @Field(type => String)
+    @Field(() => String)
     private firstTokenReserves: BigNumber;
-    @Field(type => String)
+    @Field(() => String)
     private secondTokenReserves: BigNumber;
 
     constructor(init?: Partial<GenericEvent>) {
@@ -96,7 +96,7 @@ export class AddLiquidityEvent extends GenericEvent {
 
         const eventStruct = this.getStructure();
 
-        const [decoded, decodedLength] = codec.decodeNested(data, eventStruct);
+        const [decoded] = codec.decodeNested(data, eventStruct);
         return decoded.valueOf();
     }
 

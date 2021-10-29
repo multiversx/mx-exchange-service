@@ -78,11 +78,11 @@ export class TokenAnalyticsModel {
 
 @ObjectType()
 export class AnalyticsModel {
-    @Field(type => FactoryAnalyticsModel)
+    @Field(() => FactoryAnalyticsModel)
     factory: FactoryAnalyticsModel;
-    @Field(type => [PairAnalyticsModel])
+    @Field(() => [PairAnalyticsModel])
     pairs: PairAnalyticsModel[];
-    @Field(type => [TokenAnalyticsModel])
+    @Field(() => [TokenAnalyticsModel])
     tokens: TokenAnalyticsModel[];
 
     constructor(init?: Partial<AnalyticsModel>) {

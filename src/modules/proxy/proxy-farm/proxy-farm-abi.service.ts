@@ -24,9 +24,7 @@ export class AbiProxyFarmService {
                 interaction.buildQuery(),
             );
             const result = interaction.interpretQueryResponse(queryResponse);
-            const wrappedFarmTokenID = result.firstValue.valueOf().toString();
-
-            return wrappedFarmTokenID;
+            return result.firstValue.valueOf().toString();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyFarmService.name,
@@ -51,11 +49,9 @@ export class AbiProxyFarmService {
             );
 
             const result = interaction.interpretQueryResponse(queryResponse);
-            const farms = result.firstValue.valueOf().map(farmAddress => {
+            return result.firstValue.valueOf().map(farmAddress => {
                 return farmAddress.valueOf().toString();
             });
-
-            return farms;
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyFarmService.name,

@@ -8,7 +8,7 @@ export class DecodeAttributesModel {
 
 @InputType()
 export class DecodeAttributesArgs {
-    @Field(type => [DecodeAttributesModel])
+    @Field(() => [DecodeAttributesModel])
     batchAttributes: Array<{
         identifier: string;
         attributes: string;

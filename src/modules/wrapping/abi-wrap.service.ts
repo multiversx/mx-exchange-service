@@ -23,9 +23,7 @@ export class AbiWrapService {
                 interaction.buildQuery(),
             );
             const result = interaction.interpretQueryResponse(queryResponse);
-            const wrappedEgldTokenID = result.firstValue.valueOf().toString();
-
-            return wrappedEgldTokenID;
+            return result.firstValue.valueOf().toString();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiWrapService.name,

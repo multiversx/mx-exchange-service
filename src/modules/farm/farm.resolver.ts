@@ -23,7 +23,7 @@ import { FarmGetterService } from './services/farm.getter.service';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 
-@Resolver(of => FarmModel)
+@Resolver(() => FarmModel)
 export class FarmResolver {
     constructor(
         private readonly farmService: FarmService,
@@ -221,7 +221,7 @@ export class FarmResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => FarmTokenAttributesModel)
+    @Query(() => FarmTokenAttributesModel)
     async farmTokenAttributes(
         @Args('identifier') identifier: string,
         @Args('attributes') attributes: string,
@@ -232,13 +232,13 @@ export class FarmResolver {
         );
     }
 
-    @Query(returns => [FarmModel])
+    @Query(() => [FarmModel])
     async farms(): Promise<FarmModel[]> {
         return this.farmService.getFarms();
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [RewardsModel])
+    @Query(() => [RewardsModel])
     async getRewardsForPosition(
         @Args('farmsPositions') args: BatchFarmRewardsComputeArgs,
     ): Promise<RewardsModel[]> {
@@ -252,7 +252,7 @@ export class FarmResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => ExitFarmTokensModel)
+    @Query(() => ExitFarmTokensModel)
     async getExitFarmTokens(
         @Args('args') args: CalculateRewardsArgs,
     ): Promise<ExitFarmTokensModel> {
@@ -260,7 +260,7 @@ export class FarmResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async enterFarm(
         @Args() args: EnterFarmArgs,
         @User() user: any,
@@ -276,7 +276,7 @@ export class FarmResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async exitFarm(
         @Args() args: ExitFarmArgs,
         @User() user: any,
@@ -285,7 +285,7 @@ export class FarmResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async claimRewards(
         @Args() args: ClaimRewardsArgs,
         @User() user: any,
@@ -297,7 +297,7 @@ export class FarmResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async compoundRewards(
         @Args() args: CompoundRewardsArgs,
         @User() user: any,

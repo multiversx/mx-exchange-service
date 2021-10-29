@@ -20,15 +20,15 @@ import { FarmProxyTopics } from './proxy.event.topics';
 export class CompoundRewardsProxyEvent extends GenericEvent {
     private decodedTopics: FarmProxyTopics;
 
-    @Field(type => String)
+    @Field(() => String)
     private farmAddress: Address;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private oldWrappedFarmToken: GenericToken;
-    @Field(type => GenericToken)
+    @Field(() => GenericToken)
     private newWrappedFarmToken: GenericToken;
-    @Field(type => WrappedFarmTokenAttributesModel)
+    @Field(() => WrappedFarmTokenAttributesModel)
     private oldWrappedFarmAttributes: WrappedFarmTokenAttributesModel;
-    @Field(type => WrappedFarmTokenAttributesModel)
+    @Field(() => WrappedFarmTokenAttributesModel)
     private newWrappedFarmAttributes: WrappedFarmTokenAttributesModel;
     @Field()
     private createdWithMerge: boolean;
@@ -78,10 +78,7 @@ export class CompoundRewardsProxyEvent extends GenericEvent {
 
         const eventStructure = this.getStructure();
 
-        const [decoded, decodedLength] = codec.decodeNested(
-            data,
-            eventStructure,
-        );
+        const [decoded] = codec.decodeNested(data, eventStructure);
         return decoded.valueOf();
     }
 

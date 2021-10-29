@@ -11,9 +11,9 @@ export type GenericTokenType = {
 export class GenericToken {
     @Field()
     tokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     nonce = new BigNumber(0);
-    @Field(type => String)
+    @Field(() => String)
     amount: BigNumber;
 
     constructor(init?: Partial<GenericToken>) {

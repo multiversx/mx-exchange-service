@@ -5,7 +5,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 export class AddLiquidityProxyArgs {
     @Field()
     pairAddress: string;
-    @Field(type => [InputTokenModel])
+    @Field(() => [InputTokenModel])
     tokens: Array<InputTokenModel>;
     @Field()
     tolerance: number;
@@ -15,7 +15,7 @@ export class AddLiquidityProxyArgs {
 export class RemoveLiquidityProxyArgs {
     @Field() pairAddress: string;
     @Field() wrappedLpTokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     wrappedLpTokenNonce: number;
     @Field() liquidity: string;
     @Field() tolerance: number;

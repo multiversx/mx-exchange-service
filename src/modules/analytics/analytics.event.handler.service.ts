@@ -118,7 +118,7 @@ export class AnalyticsEventHandlerService {
                 newTotalLockedValueUSD.toFixed(),
             ),
         );
-        this.deleteCacheKeys();
+        await this.deleteCacheKeys();
     }
 
     async handleSwapEvents(event: SwapEventType): Promise<void> {

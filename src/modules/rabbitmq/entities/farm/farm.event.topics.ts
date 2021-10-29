@@ -1,11 +1,11 @@
 import { Address } from '@elrondnetwork/erdjs/out';
 
 export class FarmEventsTopics {
-    private eventName: string;
+    private readonly eventName: string;
     private caller: Address;
-    private tokenID: string;
-    private lockedRewards: boolean;
-    private epoch: number;
+    private readonly tokenID: string;
+    private readonly lockedRewards: boolean;
+    private readonly epoch: number;
 
     constructor(rawTopics: string[]) {
         this.eventName = Buffer.from(rawTopics[0], 'base64').toString();

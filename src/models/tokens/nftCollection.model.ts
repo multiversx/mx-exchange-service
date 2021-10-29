@@ -5,7 +5,7 @@ export class NftCollection {
     @Field() collection: string;
     @Field() name: string;
     @Field() ticker: string;
-    @Field(type => Int) decimals: number;
+    @Field(() => Int) decimals: number;
     @Field() issuer: string;
     @Field() timestamp: number;
     @Field() canUpgrade: boolean;

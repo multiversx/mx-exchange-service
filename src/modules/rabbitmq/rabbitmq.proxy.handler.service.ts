@@ -22,10 +22,10 @@ export class RabbitMQProxyHandlerService {
         event: AddLiquidityProxyEvent | PairProxyEvent,
     ): Promise<void> {
         event.getIdentifier() === PROXY_EVENTS.ADD_LIQUIDITY_PROXY
-            ? this.pubSub.publish(PROXY_EVENTS.ADD_LIQUIDITY_PROXY, {
+            ? await this.pubSub.publish(PROXY_EVENTS.ADD_LIQUIDITY_PROXY, {
                   addLiquidityProxyEvent: event,
               })
-            : this.pubSub.publish(PROXY_EVENTS.REMOVE_LIQUIDITY_PROXY, {
+            : await this.pubSub.publish(PROXY_EVENTS.REMOVE_LIQUIDITY_PROXY, {
                   removeLiquidityProxyEvent: event,
               });
     }
@@ -34,10 +34,10 @@ export class RabbitMQProxyHandlerService {
         event: EnterFarmProxyEvent | ExitFarmProxyEvent,
     ): Promise<void> {
         event.getIdentifier() === PROXY_EVENTS.ENTER_FARM_PROXY
-            ? this.pubSub.publish(PROXY_EVENTS.ENTER_FARM_PROXY, {
+            ? await this.pubSub.publish(PROXY_EVENTS.ENTER_FARM_PROXY, {
                   enterFarmProxyEvent: event,
               })
-            : this.pubSub.publish(PROXY_EVENTS.EXIT_FARM_PROXY, {
+            : await this.pubSub.publish(PROXY_EVENTS.EXIT_FARM_PROXY, {
                   exitFarmProxyEvent: event,
               });
     }
@@ -46,10 +46,10 @@ export class RabbitMQProxyHandlerService {
         event: ClaimRewardsProxyEvent | CompoundRewardsProxyEvent,
     ): Promise<void> {
         event.getIdentifier() === PROXY_EVENTS.CLAIM_REWARDS_PROXY
-            ? this.pubSub.publish(PROXY_EVENTS.CLAIM_REWARDS_PROXY, {
+            ? await this.pubSub.publish(PROXY_EVENTS.CLAIM_REWARDS_PROXY, {
                   claimRewardsProxyEvent: event,
               })
-            : this.pubSub.publish(PROXY_EVENTS.COMPOUND_REWARDS_PROXY, {
+            : await this.pubSub.publish(PROXY_EVENTS.COMPOUND_REWARDS_PROXY, {
                   compoundRewardsProxyEvent: event,
               });
     }

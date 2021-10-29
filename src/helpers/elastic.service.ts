@@ -35,8 +35,7 @@ export class ElasticService {
                     query: elasticQuery.query,
                 },
             });
-            const count = result.body.count;
-            return count;
+            return result.body.count;
         } catch (error) {
             const logMessage = generateComputeLogMessage(
                 ElasticService.name,
@@ -83,7 +82,7 @@ export class ElasticService {
         const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
         try {
-            const documents = await this.scrollSearch({
+            return  await this.scrollSearch({
                 index: collection,
                 size: 10000,
                 scroll: '5s',
@@ -92,8 +91,6 @@ export class ElasticService {
                     query: elasticQuery.query,
                 },
             });
-
-            return documents;
         } catch (error) {
             const logMessage = generateComputeLogMessage(
                 ElasticService.name,

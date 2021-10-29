@@ -1,5 +1,5 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { LockedAssetService } from './locked-asset.service';
 import {
@@ -16,7 +16,7 @@ import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 
-@Resolver(of => LockedAssetModel)
+@Resolver(() => LockedAssetModel)
 export class LockedAssetResolver {
     constructor(
         private readonly lockedAssetService: LockedAssetService,
@@ -41,13 +41,13 @@ export class LockedAssetResolver {
         }
     }
 
-    @Query(returns => LockedAssetModel)
+    @Query(() => LockedAssetModel)
     async lockedAssetFactory(): Promise<LockedAssetModel> {
         return await this.lockedAssetService.getLockedAssetInfo();
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async unlockAssets(
         @Args() args: UnlockAssetsArs,
         @User() user: any,
@@ -59,7 +59,7 @@ export class LockedAssetResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => TransactionModel)
+    @Query(() => TransactionModel)
     async mergeLockedAssetTokens(
         @Args('tokens', { type: () => [InputTokenModel] })
         tokens: InputTokenModel[],
@@ -76,7 +76,7 @@ export class LockedAssetResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(returns => [LockedAssetAttributes])
+    @Query(() => [LockedAssetAttributes])
     async decodeLockedAssetAttributes(
         @Args('args') args: DecodeAttributesArgs,
     ): Promise<LockedAssetAttributes[]> {

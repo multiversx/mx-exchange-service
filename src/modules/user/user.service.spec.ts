@@ -6,12 +6,6 @@ import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
 import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
 import { ProxyService } from '../proxy/proxy.service';
 import { UserService } from './user.service';
-import {
-    LockedAssetMock,
-    ProxyFarmServiceMock,
-    ProxyPairServiceMock,
-    ProxyServiceMock,
-} from './user.test-mocks';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ContextService } from '../../services/context/context.service';
 import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
@@ -37,6 +31,10 @@ import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../pair/services/pair.compute.service';
+import { ProxyServiceMock } from '../proxy/proxy.service.mock';
+import { ProxyPairServiceMock } from '../proxy/proxy-pair/proxy.pair.service.mock';
+import { ProxyFarmServiceMock } from '../proxy/proxy-farm/proxy.farm.service.mock';
+import { LockedAssetServiceMock } from '../locked-asset-factory/locked.asset.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -93,7 +91,7 @@ describe('UserService', () => {
 
     const LockedAssetProvider = {
         provide: LockedAssetService,
-        useClass: LockedAssetMock,
+        useClass: LockedAssetServiceMock,
     };
 
     const WrapServiceProvider = {

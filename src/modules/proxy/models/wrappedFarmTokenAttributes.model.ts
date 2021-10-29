@@ -6,7 +6,7 @@ import {
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { FarmTokenAttributesModel } from '../../../modules/farm/models/farmTokenAttributes.model';
+import { FarmTokenAttributesModel } from '../../farm/models/farmTokenAttributes.model';
 
 @ObjectType()
 export class WrappedFarmTokenAttributesModel {
@@ -16,17 +16,17 @@ export class WrappedFarmTokenAttributesModel {
     attributes: string;
     @Field()
     farmTokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     farmTokenNonce: number;
     @Field()
     farmTokenAmount: string;
     @Field()
     farmTokenIdentifier: string;
-    @Field(type => FarmTokenAttributesModel)
+    @Field(() => FarmTokenAttributesModel)
     farmTokenAttributes: FarmTokenAttributesModel;
     @Field()
     farmingTokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     farmingTokenNonce: number;
     @Field()
     farmingTokenAmount: string;

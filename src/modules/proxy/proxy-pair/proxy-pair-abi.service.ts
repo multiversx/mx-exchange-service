@@ -24,9 +24,7 @@ export class AbiProxyPairService {
                 interaction.buildQuery(),
             );
             const result = interaction.interpretQueryResponse(queryResponse);
-            const wrappedLpTokenID = result.firstValue.valueOf().toString();
-
-            return wrappedLpTokenID;
+            return result.firstValue.valueOf().toString();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyPairService.name,
@@ -51,10 +49,9 @@ export class AbiProxyPairService {
             );
 
             const result = interaction.interpretQueryResponse(queryResponse);
-            const pairs = result.firstValue.valueOf().map(pairAddress => {
+            return result.firstValue.valueOf().map(pairAddress => {
                 return pairAddress.valueOf().toString();
             });
-            return pairs;
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyPairService.name,

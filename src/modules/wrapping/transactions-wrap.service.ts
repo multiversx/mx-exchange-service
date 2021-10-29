@@ -26,7 +26,7 @@ export class TransactionsWrapService {
         const contract = await this.elrondProxy.getWrapSmartContract(shardID);
         const interaction: Interaction = contract.methods.wrapEgld([]);
         const transaction = interaction.buildTransaction();
-        transaction.setValue(new Balance(amount));
+        transaction.setValue(Balance.fromString(amount));
         transaction.setGasLimit(new GasLimit(gasConfig.wrapeGLD));
 
         return {

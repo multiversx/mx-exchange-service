@@ -1,12 +1,12 @@
 import { Address } from '@elrondnetwork/erdjs/out';
 
 export class PairProxyTopics {
-    private eventName: string;
+    private readonly eventName: string;
     private caller: Address;
-    private firstTokenID: string;
-    private secondTokenID: string;
+    private readonly firstTokenID: string;
+    private readonly secondTokenID: string;
     private pairAddress: Address;
-    private epoch: number;
+    private readonly epoch: number;
 
     constructor(rawTopics: string[]) {
         this.eventName = Buffer.from(rawTopics[0], 'base64').toString();
@@ -33,11 +33,11 @@ export class PairProxyTopics {
 }
 
 export class FarmProxyTopics {
-    private eventName: string;
-    private tokenID: string;
+    private readonly eventName: string;
+    private readonly tokenID: string;
     private caller: Address;
     private farmAddress: Address;
-    private epoch: number;
+    private readonly epoch: number;
 
     constructor(rawTopics: string[]) {
         this.eventName = Buffer.from(rawTopics[0], 'base64').toString();

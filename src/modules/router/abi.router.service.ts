@@ -23,12 +23,11 @@ export class AbiRouterService {
                 this.elrondProxy.getService(),
                 interaction.buildQuery(),
             );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            return response;
+            return interaction.interpretQueryResponse(queryResponse);
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiRouterService.name,
-                interaction.getFunction().name,
+                interaction.getEndpoint().name,
                 error.message,
             );
             this.logger.error(logMessage);
@@ -43,11 +42,9 @@ export class AbiRouterService {
         );
 
         const response = await this.getGenericData(contract, interaction);
-        const pairsAddress = response.firstValue.valueOf().map(pairAddress => {
+        return response.firstValue.valueOf().map(pairAddress => {
             return pairAddress.toString();
         });
-
-        return pairsAddress;
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
@@ -57,14 +54,12 @@ export class AbiRouterService {
         );
 
         const response = await this.getGenericData(contract, interaction);
-        const pairsMetadata = response.firstValue.valueOf().map(v => {
+        return response.firstValue.valueOf().map(v => {
             return new PairMetadata({
                 firstTokenID: v.first_token_id.toString(),
                 secondTokenID: v.second_token_id.toString(),
                 address: v.address.toString(),
             });
         });
-
-        return pairsMetadata;
     }
 }

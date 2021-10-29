@@ -17,11 +17,10 @@ export class MetricsService {
         elasticQueryAdapter.condition.must = [
             QueryType.Match('receiver', address),
         ];
-        const txCount = await this.elasticService.getCount(
+        return  await this.elasticService.getCount(
             'transactions',
             elasticQueryAdapter,
         );
-        return txCount;
     }
 
     async computePairSwapCount(address: string): Promise<number> {
@@ -66,12 +65,10 @@ export class MetricsService {
             QueryType.Wildcard('data', 'YWRkTGlxdWlkaXR*'),
         ];
 
-        const txCount = await this.elasticService.getCount(
+        return  await this.elasticService.getCount(
             'transactions',
             elasticQueryAdapter,
         );
-
-        return txCount;
     }
 
     async computePairRemoveLiquidityCount(address: string): Promise<number> {
@@ -84,12 +81,11 @@ export class MetricsService {
             ),
         ];
 
-        const txCount = await this.elasticService.getCount(
+        return await this.elasticService.getCount(
             'transactions',
             elasticQueryAdapter,
         );
 
-        return txCount;
     }
 
     async computeUniqueUsers(address: string): Promise<number> {

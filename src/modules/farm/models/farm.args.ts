@@ -11,13 +11,13 @@ export class CalculateRewardsArgs {
     identifier: string;
     @Field()
     attributes: string;
-    @Field(type => Boolean)
+    @Field(() => Boolean)
     vmQuery = false;
 }
 
 @InputType()
 export class BatchFarmRewardsComputeArgs {
-    @Field(type => [CalculateRewardsArgs])
+    @Field(() => [CalculateRewardsArgs])
     farmsPositions: Array<{
         farmAddress: string;
         liquidity: string;
@@ -31,7 +31,7 @@ export class BatchFarmRewardsComputeArgs {
 export class EnterFarmArgs {
     @Field()
     farmAddress: string;
-    @Field(type => [InputTokenModel])
+    @Field(() => [InputTokenModel])
     tokens: Array<InputTokenModel>;
     @Field({ nullable: true })
     lockRewards: boolean;
@@ -43,7 +43,7 @@ export class SftFarmInteractionArgs {
     farmAddress: string;
     @Field()
     farmTokenID: string;
-    @Field(type => Int)
+    @Field(() => Int)
     farmTokenNonce: number;
     @Field()
     amount: string;

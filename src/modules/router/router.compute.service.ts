@@ -1,9 +1,4 @@
-import {
-    BadGatewayException,
-    forwardRef,
-    Inject,
-    Injectable,
-} from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { awsConfig } from 'src/config';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';

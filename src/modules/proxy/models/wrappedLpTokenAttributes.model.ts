@@ -19,7 +19,7 @@ export class WrappedLpTokenAttributesModel {
     lpTokenTotalAmount: string;
     @Field()
     lockedAssetsInvested: string;
-    @Field(type => Int)
+    @Field(() => Int)
     lockedAssetsNonce: number;
 
     constructor(init?: Partial<WrappedLpTokenAttributesModel>) {

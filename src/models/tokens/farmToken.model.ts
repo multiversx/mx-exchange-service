@@ -4,6 +4,6 @@ import { NftToken } from './nftToken.model';
 
 @ObjectType()
 export class FarmToken extends NftToken {
-    @Field(type => FarmTokenAttributesModel)
+    @Field(() => FarmTokenAttributesModel)
     decodedAttributes: FarmTokenAttributesModel;
 }
