@@ -56,8 +56,10 @@ export class TransactionsLockedAssetService {
         tokens: InputTokenModel[],
     ): Promise<TransactionModel> {
         if (
-            gasConfig.defaultMergeLockedAsset * tokens.length >
-            constantsConfig.MAX_GAS_LIMIT
+            new BigNumber(gasConfig.lockedAssetMerge)
+                .times(tokens.length)
+                .plus(gasConfig.defaultMergeLockedAssets)
+                .isGreaterThan(constantsConfig.MAX_GAS_LIMIT)
         ) {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
         }
@@ -82,7 +84,12 @@ export class TransactionsLockedAssetService {
             tokens,
             'mergeLockedAssetTokens',
             [],
-            new GasLimit(gasConfig.addLiquidity),
+            new GasLimit(
+                new BigNumber(gasConfig.lockedAssetMerge)
+                    .times(tokens.length)
+                    .plus(gasConfig.defaultMergeLockedAssets)
+                    .toNumber(),
+            ),
         );
     }
 
