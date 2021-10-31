@@ -111,6 +111,7 @@ export class AnalyticsEventHandlerService {
         await this.awsTimestreamWrite.ingest({
             TableName: awsConfig.timestream.tableName,
             data,
+            Time: event.timestamp,
         });
 
         this.invalidatedKeys.push(
@@ -219,6 +220,7 @@ export class AnalyticsEventHandlerService {
         await this.awsTimestreamWrite.ingest({
             TableName: awsConfig.timestream.tableName,
             data,
+            Time: event.timestamp,
         });
 
         const [

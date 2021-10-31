@@ -63,7 +63,7 @@ export class AWSTimestreamWriteService {
         }
     }
 
-    createRecords({ data }): TimestreamWrite.Records {
+    createRecords({ data, Time }): TimestreamWrite.Records {
         const MeasureValueType = 'DOUBLE';
         const Records: TimestreamWrite.Records = [];
         Object.keys(data).forEach(series => {
@@ -76,7 +76,9 @@ export class AWSTimestreamWriteService {
                     MeasureName,
                     MeasureValue,
                     MeasureValueType,
-                    Time: Date.now().toString(),
+                    Time: Time.toString(),
+                    TimeUnit: 'SECONDS',
+                    Version: Date.now(),
                 });
             });
         });
@@ -98,12 +100,12 @@ export class AWSTimestreamWriteService {
         }
     }
 
-    async ingest({ TableName, data }) {
+    async ingest({ TableName, data, Time }) {
         if (!(await this.describeTable({ TableName }))) {
             await this.createTable({ TableName });
         }
 
-        const Records = this.createRecords({ data });
+        const Records = this.createRecords({ data, Time });
         await this.writeRecords({ TableName, Records });
     }
 }
