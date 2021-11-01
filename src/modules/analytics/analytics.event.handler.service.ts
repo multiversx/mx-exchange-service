@@ -404,25 +404,14 @@ export class AnalyticsEventHandlerService {
         tokenID: string,
         amount: string,
     ): Promise<any> {
-        const [token, priceUSD, latestLockedValue] = await Promise.all([
+        const [token, priceUSD, lockedData] = await Promise.all([
             this.context.getTokenMetadata(tokenID),
             this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
-            this.awsTimestreamQuery.getLatestValue({
-                table: awsConfig.timestream.tableName,
-                series: tokenID,
-                metric: 'lockedValue',
-            }),
+            this.getTokenLiquidityData(pairAddress, tokenID),
         ]);
         return {
-            lockedValue: new BigNumber(latestLockedValue)
-                .minus(amount)
-                .toFixed(),
-            lockedValueUSD: denominateAmount(
-                new BigNumber(latestLockedValue).minus(amount).toFixed(),
-                token.decimals,
-            )
-                .times(priceUSD)
-                .toFixed(),
+            lockedValue: lockedData.lockedValue,
+            lockedValueUSD: lockedData.lockedValueUSD,
             priceUSD: priceUSD,
             volume: amount,
             volumeUSD: denominateAmount(amount, token.decimals)
