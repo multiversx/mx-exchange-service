@@ -93,7 +93,7 @@ export class AWSTimestreamWriteService {
                 TableName,
                 Records,
             };
-            await this.writeClient.writeRecords(params).promise();
+            // await this.writeClient.writeRecords(params).promise();
         } catch (error) {
             this.logger.error('writeRecords error', error);
             throw error;
