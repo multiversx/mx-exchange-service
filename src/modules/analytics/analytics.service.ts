@@ -307,6 +307,74 @@ export class AnalyticsService {
         });
     }
 
+    async getClosingValue(
+        series: string,
+        metric: string,
+        time: string,
+    ): Promise<string> {
+        return await this.awsTimestreamQuery.getClosingValue({
+            table: awsConfig.timestream.tableName,
+            series,
+            metric,
+            time,
+        });
+    }
+
+    async getCompleteValues(
+        series: string,
+        metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.awsTimestreamQuery.getCompleteValues({
+            table: awsConfig.timestream.tableName,
+            series,
+            metric,
+        });
+    }
+
+    async getLatestCompleteValues(
+        series: string,
+        metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.awsTimestreamQuery.getLatestCompleteValues({
+            table: awsConfig.timestream.tableName,
+            series,
+            metric,
+        });
+    }
+
+    async getLatestValues(
+        series: string,
+        metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.awsTimestreamQuery.getLatestValues({
+            table: awsConfig.timestream.tableName,
+            series,
+            metric,
+        });
+    }
+
+    async getMarketValues(
+        series: string,
+        metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.awsTimestreamQuery.getMarketValues({
+            table: awsConfig.timestream.tableName,
+            series,
+            metric,
+        });
+    }
+
+    async getMarketCompleteValues(
+        series: string,
+        metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.awsTimestreamQuery.getMarketCompleteValues({
+            table: awsConfig.timestream.tableName,
+            series,
+            metric,
+        });
+    }
+
     private getAnalyticsCacheKey(...args: any) {
         return generateCacheKeyFromParams('analytics', ...args);
     }

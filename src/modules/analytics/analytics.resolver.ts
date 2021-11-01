@@ -5,6 +5,7 @@ import {
     HistoricDataModel,
 } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsService } from './analytics.service';
+import { awsConfig } from '../../config';
 
 @Resolver(() => AnalyticsModel)
 export class AnalyticsResolver {
@@ -47,6 +48,65 @@ export class AnalyticsResolver {
             series,
             metric,
             time,
+        );
+    }
+
+    @Query(() => String)
+    async closingValue(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+        @Args('time') time: string,
+    ): Promise<string> {
+        return await this.analyticsService.getClosingValue(
+            series,
+            metric,
+            time,
+        );
+    }
+
+    @Query(() => [HistoricDataModel])
+    async completeValues(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getCompleteValues(series, metric);
+    }
+
+    @Query(() => [HistoricDataModel])
+    async latestCompleteValues(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getLatestCompleteValues(
+            series,
+            metric,
+        );
+    }
+
+    @Query(() => [HistoricDataModel])
+    async latestValues(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getLatestValues(series, metric);
+    }
+
+    @Query(() => [HistoricDataModel])
+    async marketValues(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getMarketValues(series, metric);
+    }
+
+    @Query(() => [HistoricDataModel])
+    async marketCompleteValues(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getMarketCompleteValues(
+            series,
+            metric,
         );
     }
 }

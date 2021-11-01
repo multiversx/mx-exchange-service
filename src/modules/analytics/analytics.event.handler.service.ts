@@ -98,19 +98,16 @@ export class AnalyticsEventHandlerService {
         data[event.firstToken.tokenID] = await this.getTokenLiquidityData(
             event.address,
             event.firstToken.tokenID,
-            event.firstToken.amount,
-            eventType,
         );
         data[event.secondToken.tokenID] = await this.getTokenLiquidityData(
             event.address,
             event.secondToken.tokenID,
-            event.secondToken.amount,
-            eventType,
         );
 
         await this.awsTimestreamWrite.ingest({
             TableName: awsConfig.timestream.tableName,
             data,
+            Time: event.timestamp,
         });
 
         this.invalidatedKeys.push(
@@ -219,6 +216,7 @@ export class AnalyticsEventHandlerService {
         await this.awsTimestreamWrite.ingest({
             TableName: awsConfig.timestream.tableName,
             data,
+            Time: event.timestamp,
         });
 
         const [
@@ -366,26 +364,39 @@ export class AnalyticsEventHandlerService {
     private async getTokenLiquidityData(
         pairAddress: string,
         tokenID: string,
-        amount: string,
-        eventType: string,
     ): Promise<any> {
-        const [token, priceUSD, lockedValue] = await Promise.all([
+        const [token, priceUSD, pairs] = await Promise.all([
             this.context.getTokenMetadata(tokenID),
             this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
-            this.awsTimestreamQuery.getLatestValue({
-                table: awsConfig.timestream.tableName,
-                series: tokenID,
-                metric: 'lockedValue',
-            }),
+            this.context.getPairsMetadata(),
         ]);
-        const newLockedValue =
-            eventType === PAIR_EVENTS.ADD_LIQUIDITY
-                ? new BigNumber(lockedValue).plus(amount)
-                : new BigNumber(lockedValue).minus(amount);
+
+        let newLockedValue = new BigNumber(0);
+
+        for (const pair of pairs) {
+            let lockedValue = '0';
+            switch (tokenID) {
+                case pair.firstTokenID:
+                    lockedValue = await this.pairGetterService.getFirstTokenReserve(
+                        pair.address,
+                    );
+                    break;
+                case pair.secondTokenID:
+                    lockedValue = await this.pairGetterService.getSecondTokenReserve(
+                        pair.address,
+                    );
+                    break;
+            }
+            newLockedValue = newLockedValue.plus(lockedValue);
+        }
         const lockedValueDenom = denominateAmount(
             newLockedValue.toFixed(),
             token.decimals,
         );
+        console.log({
+            tokenID: tokenID,
+            lockedValue: lockedValueDenom.toFixed(),
+        });
         return {
             lockedValue: newLockedValue.toFixed(),
             lockedValueUSD: lockedValueDenom.times(priceUSD).toFixed(),
