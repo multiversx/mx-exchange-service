@@ -393,10 +393,6 @@ export class AnalyticsEventHandlerService {
             newLockedValue.toFixed(),
             token.decimals,
         );
-        console.log({
-            tokenID: tokenID,
-            lockedValue: lockedValueDenom.toFixed(),
-        });
         return {
             lockedValue: newLockedValue.toFixed(),
             lockedValueUSD: lockedValueDenom.times(priceUSD).toFixed(),
