@@ -87,16 +87,19 @@ export class AWSTimestreamWriteService {
     }
 
     async writeRecords({ TableName, Records }): Promise<void> {
+        let request: AWS.Request<{}, AWS.AWSError>;
         try {
             const params: TimestreamWrite.WriteRecordsRequest = {
                 DatabaseName: this.DatabaseName,
                 TableName,
                 Records,
             };
-            await this.writeClient.writeRecords(params).promise();
+            request = this.writeClient.writeRecords(params);
+            await request.promise();
         } catch (error) {
-            this.logger.error('writeRecords error', error);
-            throw error;
+            if (error.code === 'RejectedRecordsException') {
+                this.printRejectedRecordsException(request, Records);
+            }
         }
     }
 
@@ -107,5 +110,16 @@ export class AWSTimestreamWriteService {
 
         const Records = this.createRecords({ data, Time });
         await this.writeRecords({ TableName, Records });
+    }
+
+    private printRejectedRecordsException(request, Records) {
+        const responsePayload = JSON.parse(
+            request.response.httpResponse.body.toString(),
+        );
+        for (const rejectedRecord of responsePayload.RejectedRecords) {
+            this.logger.error(rejectedRecord.Reason, [
+                JSON.stringify(Records[rejectedRecord.RecordIndex]),
+            ]);
+        }
     }
 }
