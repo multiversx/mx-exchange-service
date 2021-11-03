@@ -299,12 +299,34 @@ export class AnalyticsService {
         metric: string,
         time: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.awsTimestreamQuery.getValues({
-            table: awsConfig.timestream.tableName,
+        const cacheKey = this.getAnalyticsCacheKey(
+            'historicData',
             series,
             metric,
             time,
-        });
+        );
+        try {
+            const getHistoricData = () =>
+                this.awsTimestreamQuery.getValues({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                    time,
+                });
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getHistoricData,
+                oneMinute() * 5,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getHistoricData.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getClosingValue(
@@ -312,67 +334,194 @@ export class AnalyticsService {
         metric: string,
         time: string,
     ): Promise<string> {
-        return await this.awsTimestreamQuery.getClosingValue({
-            table: awsConfig.timestream.tableName,
+        const cacheKey = this.getAnalyticsCacheKey(
+            'closingValue',
             series,
             metric,
             time,
-        });
+        );
+        try {
+            const getClosingValue = () =>
+                this.awsTimestreamQuery.getClosingValue({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                    time,
+                });
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getClosingValue,
+                oneMinute() * 5,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getClosingValue.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getCompleteValues(
         series: string,
         metric: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.awsTimestreamQuery.getCompleteValues({
-            table: awsConfig.timestream.tableName,
+        const cacheKey = this.getAnalyticsCacheKey(
+            'completeValues',
             series,
             metric,
-        });
+        );
+        try {
+            const getCompleteValues = () =>
+                this.awsTimestreamQuery.getCompleteValues({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                });
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getCompleteValues,
+                oneMinute() * 5,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getCompleteValues.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getLatestCompleteValues(
         series: string,
         metric: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.awsTimestreamQuery.getLatestCompleteValues({
-            table: awsConfig.timestream.tableName,
+        const cacheKey = this.getAnalyticsCacheKey(
+            'latestCompleteValues',
             series,
             metric,
-        });
+        );
+        try {
+            const getLatestCompleteValues = () =>
+                this.awsTimestreamQuery.getLatestCompleteValues({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                });
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getLatestCompleteValues,
+                oneMinute() * 5,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getLatestCompleteValues.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getLatestValues(
         series: string,
         metric: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.awsTimestreamQuery.getLatestValues({
-            table: awsConfig.timestream.tableName,
+        const cacheKey = this.getAnalyticsCacheKey(
+            'latestValues',
             series,
             metric,
-        });
+        );
+        try {
+            const getLatestValues = () =>
+                this.awsTimestreamQuery.getLatestValues({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                });
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getLatestValues,
+                oneMinute() * 5,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getLatestValues.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getMarketValues(
         series: string,
         metric: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.awsTimestreamQuery.getMarketValues({
-            table: awsConfig.timestream.tableName,
+        const cacheKey = this.getAnalyticsCacheKey(
+            'marketValues',
             series,
             metric,
-        });
+        );
+        try {
+            const getMarketValues = () =>
+                this.awsTimestreamQuery.getMarketValues({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                });
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getMarketValues,
+                oneMinute() * 5,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getMarketValues.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     async getMarketCompleteValues(
         series: string,
         metric: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.awsTimestreamQuery.getMarketCompleteValues({
-            table: awsConfig.timestream.tableName,
+        const cacheKey = this.getAnalyticsCacheKey(
+            'marketCompleteValues',
             series,
             metric,
-        });
+        );
+        try {
+            const getMarketCompleteValues = () =>
+                this.awsTimestreamQuery.getMarketCompleteValues({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                });
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getMarketCompleteValues,
+                oneMinute() * 5,
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getMarketCompleteValues.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     private getAnalyticsCacheKey(...args: any) {
