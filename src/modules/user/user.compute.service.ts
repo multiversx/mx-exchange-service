@@ -62,28 +62,34 @@ export class UserComputeService {
     async lockedAssetTokenUSD(
         nftToken: LockedAssetToken,
     ): Promise<typeof UserNftTokens> {
-        const [assetToken, decodedAttributes] = await Promise.all([
-            this.proxyService.getAssetToken(),
-            this.lockedAssetService.decodeLockedAssetAttributes({
+        // TODO: uncomment for Maiar Exchange release
+        // const [assetToken, decodedAttributes] = await Promise.all([
+        //     this.proxyService.getAssetToken(),
+        //     this.lockedAssetService.decodeLockedAssetAttributes({
+        //         batchAttributes: [
+        //             {
+        //                 identifier: nftToken.identifier,
+        //                 attributes: nftToken.attributes,
+        //             },
+        //         ],
+        //     }),
+        // ]);
+        // const tokenPriceUSD = await this.pairGetterService.getSecondTokenPriceUSD(
+        //     scAddress.get(assetToken.identifier),
+        // );
+        const decodedAttributes = await this.lockedAssetService.decodeLockedAssetAttributes(
+            {
                 batchAttributes: [
                     {
                         identifier: nftToken.identifier,
                         attributes: nftToken.attributes,
                     },
                 ],
-            }),
-        ]);
-        const tokenPriceUSD = await this.pairGetterService.getSecondTokenPriceUSD(
-            scAddress.get(assetToken.identifier),
+            },
         );
-
         return new UserLockedAssetToken({
             ...nftToken,
-            valueUSD: computeValueUSD(
-                nftToken.balance,
-                nftToken.decimals,
-                tokenPriceUSD,
-            ).toFixed(),
+            valueUSD: '0',
             decodedAttributes: decodedAttributes[0],
         });
     }
