@@ -1,32 +1,18 @@
 {
     "elrond": {
-        "chainID": "1",
-        "version": 1,
-        "proxyTimeout": 60000,
-        "timeoutLimit": 10000
+        "chainID": "1"
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgq9s7ft5fj72zyt8qn8yd24xcl8rxu9v4m0n4sjlh528",
-        "MEX-115f3c": "erd1qqqqqqqqqqqqqpgqf6sv2d3a0jwcxdlwuk7jlap88ca788yg0n4smqq56j",
-        "distributionAddress": "erd1qqqqqqqqqqqqqpgqc8relmv973g34dytgd55p3hmaaljvka30n4s6n64q6",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqdhtgx8pvmjtzkdpykjl570dll33sasze0n4sy76g6e",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqhpu9gztn7tmznxc46q46uk6f23ttnern0n4sar7l79",
-        "wrappingAddress": "erd1qqqqqqqqqqqqqpgq4axqc749vuqr27snr8d8qgvlmz44chsr0n4sm4a72g"
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqp8c763u69ctvshmjtp06qzzcwmleqcpu0n4s2e893l",
+        "MEX-455c57": "erd1qqqqqqqqqqqqqpgqu5sdpdcd0tac8472a4jvpxan3fw696g80n4sl4qxrj",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqxn2363rvx4zgm24ajtl45aawe6y4qsy00n4s2wysj7",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqjpt0qqgsrdhp2xqygpjtfrpwf76f9nvg2jpsg4q7th",
+        "wrappingAddress": {
+            "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqmcmcerf4phjqglgfghsswe5a2ylecd8v0n4szcj3pe",
+            "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
+        }
     },
-    "priceFeeds": {
-        "WEGLD-ccae2d": "egld"
-    },
-    "farms": [
-        "erd1qqqqqqqqqqqqqpgqaay956lvtchydr40tnwmtsmgaz7d83c20n4s4rgv56",
-        "erd1qqqqqqqqqqqqqpgq78y09lw93f3udvsplshdv2vk957l5vl70n4splrad2",
-        "erd1qqqqqqqqqqqqqpgqu6s4e5mndgf37psxw9mdlmjavp2er3f00n4snwyk3q"
-    ],
-    "caching": {
-        "pairsMetadata": 10,
-        "pairs": 60,
-        "txTotalCount": 60,
-        "pairCount": 60,
-        "token": 600,
-        "default": 20
-    }
+    "tokensSupply": ["MEX-455c57"]
 }
