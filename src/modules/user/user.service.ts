@@ -215,33 +215,35 @@ export class UserService {
     }
 
     private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
-        const [
-            lockedMEXTokenID,
-            lockedLpTokenID,
-            lockedFarmTokenID,
-        ] = await Promise.all([
-            this.lockedAssetService.getLockedTokenID(),
-            this.proxyPairService.getwrappedLpTokenID(),
-            this.proxyFarmService.getwrappedFarmTokenID(),
-        ]);
-        const promises: Promise<string>[] = [];
-        for (const farmAddress of farmsConfig) {
-            promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
-        }
-        const farmTokenIDs = await Promise.all(promises);
-        switch (tokenID) {
-            case lockedMEXTokenID:
-                return NftTokenType.LockedAssetToken;
-            case lockedLpTokenID:
-                return NftTokenType.LockedLpToken;
-            case lockedFarmTokenID:
-                return NftTokenType.LockedFarmToken;
-            default:
-                if (farmTokenIDs.find(farmTokenID => farmTokenID === tokenID)) {
-                    return NftTokenType.FarmToken;
-                }
-                return undefined;
-        }
+        return NftTokenType.LockedAssetToken;
+        // TODO: Uncomment for Maiar Exchange launch
+        // const [
+        //     lockedMEXTokenID,
+        //     lockedLpTokenID,
+        //     lockedFarmTokenID,
+        // ] = await Promise.all([
+        //     this.lockedAssetService.getLockedTokenID(),
+        //     this.proxyPairService.getwrappedLpTokenID(),
+        //     this.proxyFarmService.getwrappedFarmTokenID(),
+        // ]);
+        // const promises: Promise<string>[] = [];
+        // for (const farmAddress of farmsConfig) {
+        //     promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
+        // }
+        // const farmTokenIDs = await Promise.all(promises);
+        // switch (tokenID) {
+        //     case lockedMEXTokenID:
+        //         return NftTokenType.LockedAssetToken;
+        //     case lockedLpTokenID:
+        //         return NftTokenType.LockedLpToken;
+        //     case lockedFarmTokenID:
+        //         return NftTokenType.LockedFarmToken;
+        //     default:
+        //         if (farmTokenIDs.find(farmTokenID => farmTokenID === tokenID)) {
+        //             return NftTokenType.FarmToken;
+        //         }
+        //         return undefined;
+        // }
     }
 
     async computeUserWorth(address: string): Promise<number | undefined> {
