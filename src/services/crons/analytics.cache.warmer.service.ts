@@ -38,14 +38,7 @@ export class AnalyticsCacheWarmerService {
         }
 
         for (const token of tokensSupplyConfig) {
-            const totalTokenSupply = await this.analyticsService.computeTotalTokenSupply(
-                token,
-            );
-            await this.setAnalyticsCache(
-                [token, 'totalTokenSupply'],
-                totalTokenSupply,
-                oneMinute() * 2,
-            );
+            await this.analyticsService.getTotalTokenSupply(token);
         }
         const [totalValueLockedUSD, totalAgregatedRewards] = await Promise.all([
             this.analyticsService.computeTotalValueLockedUSD(),
