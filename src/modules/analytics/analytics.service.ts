@@ -229,9 +229,6 @@ export class AnalyticsService {
         for (const tokenSupply of tokenSupplies) {
             totalTokenSupply = totalTokenSupply.plus(tokenSupply);
         }
-        totalTokenSupply = totalTokenSupply
-            .plus(token.minted)
-            .minus(token.burnt);
 
         return totalTokenSupply.toFixed();
     }

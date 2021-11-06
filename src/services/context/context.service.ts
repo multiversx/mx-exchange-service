@@ -48,7 +48,7 @@ export class ContextService {
 
     async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
         const pairs = await this.routerGetterService.getPairsMetadata();
-        return  pairs.find(pair => pair.address === pairAddress);
+        return pairs.find(pair => pair.address === pairAddress);
     }
 
     async getPairByTokens(
