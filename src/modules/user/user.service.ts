@@ -215,7 +215,11 @@ export class UserService {
     }
 
     private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
-        return NftTokenType.LockedAssetToken;
+        const lockedMEXTokenID = await this.lockedAssetService.getLockedTokenID();
+        return tokenID === lockedMEXTokenID
+            ? NftTokenType.LockedAssetToken
+            : -1;
+
         // TODO: Uncomment for Maiar Exchange launch
         // const [
         //     lockedMEXTokenID,
