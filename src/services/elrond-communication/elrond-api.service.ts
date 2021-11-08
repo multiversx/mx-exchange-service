@@ -125,10 +125,11 @@ export class ElrondApiService {
         address: string,
         from = 0,
         size = 100,
+        type = 'MetaESDT',
     ): Promise<NftToken[]> {
         return this.doGetGeneric(
             this.getNftsForUser.name,
-            `accounts/${address}/nfts?from=${from}&size=${size}`,
+            `accounts/${address}/nfts?from=${from}&size=${size}&type=${type}`,
             response => response,
         );
     }
