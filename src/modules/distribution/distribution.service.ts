@@ -56,7 +56,7 @@ export class DistributionService {
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 DistributionService.name,
-                this.getCommunityDistribution.name,
+                this.getDistributedLockedAssets.name,
                 '',
                 error.message,
             );
