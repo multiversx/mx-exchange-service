@@ -54,6 +54,28 @@ export class AnalyticsService {
         }
     }
 
+    async getTotalTokenSupply(tokenID: string): Promise<string> {
+        const cacheKey = this.getAnalyticsCacheKey(tokenID, 'totalTokenSupply');
+        try {
+            const getTokenSupply = async () =>
+                (await this.context.getTokenMetadata(tokenID)).supply;
+
+            return this.cachingService.getOrSet(
+                cacheKey,
+                getTokenSupply,
+                oneMinute(),
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                AnalyticsService.name,
+                this.getTokenPriceUSD.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+        }
+    }
+
     async computeTokenPriceUSD(tokenID: string): Promise<string> {
         const tokenPriceUSD = await this.pairService.getPriceUSDByPath(tokenID);
         return tokenPriceUSD.toFixed();
@@ -171,127 +193,7 @@ export class AnalyticsService {
                 agregatedRewards,
             );
         }
-
         return totalAgregatedRewards.toFixed();
-    }
-
-    async getTotalTokenSupply(tokenID: string): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(tokenID, 'totalTokenSupply');
-        try {
-            const getTotalTokenSupply = () =>
-                this.computeTotalTokenSupply(tokenID);
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getTotalTokenSupply,
-                oneMinute() * 2,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getTotalTokenSupply.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
-    }
-
-    async computeTotalTokenSupply(tokenID: string): Promise<string> {
-        const pairsAddress = await this.context.getAllPairsAddress();
-        const farmsAddress = farmsConfig;
-        const contractsPromises: Promise<SmartContract>[] = [];
-
-        for (const pairAddress of pairsAddress) {
-            contractsPromises.push(
-                this.elrondProxy.getPairSmartContract(pairAddress),
-            );
-        }
-
-        for (const farmAddress of farmsAddress) {
-            contractsPromises.push(
-                this.elrondProxy.getFarmSmartContract(farmAddress),
-            );
-        }
-
-        contractsPromises.push(this.elrondProxy.getProxyDexSmartContract());
-        contractsPromises.push(
-            this.elrondProxy.getLockedAssetFactorySmartContract(),
-        );
-
-        const contracts = await Promise.all(contractsPromises);
-        const tokenSuppliesPromises = contracts.map(async contract => {
-            return this.getTokenSupply(contract, tokenID);
-        });
-        const tokenSupplies = await Promise.all(tokenSuppliesPromises);
-        const token = await this.context.getTokenMetadata(tokenID);
-
-        let totalTokenSupply = new BigNumber(0);
-        for (const tokenSupply of tokenSupplies) {
-            totalTokenSupply = totalTokenSupply.plus(tokenSupply);
-        }
-        totalTokenSupply = totalTokenSupply
-            .plus(token.minted)
-            .minus(token.burnt);
-
-        return totalTokenSupply.toFixed();
-    }
-
-    async getTokenSupply(
-        contract: SmartContract,
-        tokenID: string,
-    ): Promise<BigNumber> {
-        const [mintedToken, burnedToken] = await Promise.all([
-            this.getMintedToken(contract, tokenID),
-            this.getBurnedToken(contract, tokenID),
-        ]);
-
-        return mintedToken.minus(burnedToken);
-    }
-
-    async getMintedToken(
-        contract: SmartContract,
-        tokenID: string,
-    ): Promise<BigNumber> {
-        let mintedMex: BigNumber;
-        try {
-            const interaction: Interaction = contract.methods.getGeneratedTokenAmount(
-                [BytesValue.fromUTF8(tokenID)],
-            );
-
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            mintedMex = response.firstValue.valueOf();
-        } catch (error) {
-            mintedMex = new BigNumber(0);
-            console.log(error);
-        }
-        return mintedMex;
-    }
-
-    async getBurnedToken(
-        contract: SmartContract,
-        tokenID: string,
-    ): Promise<BigNumber> {
-        let burnedMex: BigNumber;
-        try {
-            const interaction: Interaction = contract.methods.getBurnedTokenAmount(
-                [BytesValue.fromUTF8(tokenID)],
-            );
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            burnedMex = response.firstValue.valueOf();
-        } catch (error) {
-            burnedMex = new BigNumber(0);
-            console.log(error);
-        }
-
-        return burnedMex;
     }
 
     async getHistoricData(
