@@ -41,14 +41,22 @@ export class DistributionResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async claimLockedAssets(): Promise<TransactionModel> {
-        return await this.transactionsService.claimLockedAssets();
+        try {
+            return await this.transactionsService.claimLockedAssets();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
     @Query(() => String)
     async distributedLockedAssets(@User() user: any): Promise<string> {
-        return await this.distributionService.getDistributedLockedAssets(
-            user.publicKey,
-        );
+        try {
+            return await this.distributionService.getDistributedLockedAssets(
+                user.publicKey,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }
