@@ -87,16 +87,7 @@ describe('AnalyticsService', () => {
     });
 
     it('should get total MEX supply', async () => {
-        jest.spyOn(service, 'getMintedToken').mockImplementation(
-            async () => new BigNumber(100),
-        );
-        jest.spyOn(service, 'getBurnedToken').mockImplementation(
-            async () => new BigNumber(10),
-        );
-
-        const totalMexSupply = await service.computeTotalTokenSupply(
-            'TOK2-2222',
-        );
-        expect(totalMexSupply).toEqual('2000000000000000630');
+        const totalMexSupply = await service.getTotalTokenSupply('TOK2-2222');
+        expect(totalMexSupply).toEqual('2000000000000000000');
     });
 });
