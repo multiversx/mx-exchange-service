@@ -8,7 +8,8 @@ import {
     farmsConfig,
     tokensSupplyConfig,
 } from 'src/config';
-import { AnalyticsService } from 'src/modules/analytics/services/analytics.service';
+import { AnalyticsComputeService } from 'src/modules/analytics/services/analytics.compute.service';
+import { AnalyticsGetterService } from 'src/modules/analytics/services/analytics.getter.service';
 import { oneMinute } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
@@ -18,7 +19,8 @@ export class AnalyticsCacheWarmerService {
     private invalidatedKeys = [];
 
     constructor(
-        private readonly analyticsService: AnalyticsService,
+        private readonly analyticsGetterService: AnalyticsGetterService,
+        private readonly analyticsCompute: AnalyticsComputeService,
         private readonly cachingService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -26,7 +28,7 @@ export class AnalyticsCacheWarmerService {
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheAnalytics(): Promise<void> {
         for (const farmAddress of farmsConfig) {
-            const farmLockedValueUSD = await this.analyticsService.computeFarmLockedValueUSD(
+            const farmLockedValueUSD = await this.analyticsCompute.computeFarmLockedValueUSD(
                 farmAddress,
             );
             await this.setFarmCache(
@@ -38,11 +40,11 @@ export class AnalyticsCacheWarmerService {
         }
 
         for (const token of tokensSupplyConfig) {
-            await this.analyticsService.getTotalTokenSupply(token);
+            await this.analyticsGetterService.getTotalTokenSupply(token);
         }
         const [totalValueLockedUSD, totalAgregatedRewards] = await Promise.all([
-            this.analyticsService.computeTotalValueLockedUSD(),
-            this.analyticsService.computeTotalAgregatedRewards(30),
+            this.analyticsCompute.computeTotalValueLockedUSD(),
+            this.analyticsCompute.computeTotalAgregatedRewards(30),
         ]);
         await Promise.all([
             this.setAnalyticsCache(
@@ -63,7 +65,7 @@ export class AnalyticsCacheWarmerService {
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheTokenPriceUSD(): Promise<void> {
         for (const token of cachedTokensPriceConfig) {
-            const tokenPriceUSD = await this.analyticsService.computeTokenPriceUSD(
+            const tokenPriceUSD = await this.analyticsCompute.computeTokenPriceUSD(
                 token,
             );
             await this.setAnalyticsCache(

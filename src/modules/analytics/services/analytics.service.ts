@@ -1,193 +1,44 @@
 import { Inject, Injectable } from '@nestjs/common';
-import BigNumber from 'bignumber.js';
-import * as contextService from '../../../services/context/context.service';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { awsConfig, farmsConfig } from '../../../config';
-import { PairService } from '../../pair/services/pair.service';
+import { awsConfig } from '../../../config';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../../services/caching/cache.service';
 import { oneMinute } from '../../../helpers/helpers';
-import { FarmGetterService } from '../../farm/services/farm.getter.service';
-import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { HistoricDataModel } from '../models/analytics.model';
 
 @Injectable()
 export class AnalyticsService {
     constructor(
-        private readonly context: contextService.ContextService,
-        private readonly farmGetterService: FarmGetterService,
-        private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getTokenPriceUSD(tokenID: string): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(tokenID, 'tokenPriceUSD');
+    private async getData(
+        key: string,
+        createValueFunc: () => any,
+        ttl: number,
+    ): Promise<any> {
+        const cacheKey = this.getAnalyticsCacheKey(key);
         try {
-            const getTokenPriceUSD = () => this.computeTokenPriceUSD(tokenID);
-
-            return this.cachingService.getOrSet(
+            return await this.cachingService.getOrSet(
                 cacheKey,
-                getTokenPriceUSD,
-                oneMinute(),
+                createValueFunc,
+                ttl,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
                 AnalyticsService.name,
-                this.getTokenPriceUSD.name,
+                this.getData.name,
                 cacheKey,
-                error,
+                error.message,
             );
             this.logger.error(logMessage);
+            throw error;
         }
-    }
-
-    async getTotalTokenSupply(tokenID: string): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(tokenID, 'totalTokenSupply');
-        try {
-            const getTokenSupply = async () =>
-                (await this.context.getTokenMetadata(tokenID)).supply;
-
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getTokenSupply,
-                oneMinute(),
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getTokenPriceUSD.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
-    }
-
-    async computeTokenPriceUSD(tokenID: string): Promise<string> {
-        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(tokenID);
-        return tokenPriceUSD.toFixed();
-    }
-
-    async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
-        const [
-            farmingToken,
-            farmingTokenPriceUSD,
-            farmingTokenReserve,
-        ] = await Promise.all([
-            this.farmGetterService.getFarmingToken(farmAddress),
-            this.farmGetterService.getFarmingTokenPriceUSD(farmAddress),
-            this.farmGetterService.getFarmingTokenReserve(farmAddress),
-        ]);
-
-        const lockedValue = new BigNumber(farmingTokenReserve)
-            .multipliedBy(`1e-${farmingToken.decimals}`)
-            .multipliedBy(farmingTokenPriceUSD);
-
-        return lockedValue.toFixed();
-    }
-
-    async getTotalValueLockedUSD(): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey('totalValueLockedUSD');
-        try {
-            const getTotalValueLockedUSD = () =>
-                this.computeTotalValueLockedUSD();
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getTotalValueLockedUSD,
-                oneMinute() * 2,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getTotalValueLockedUSD.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
-    }
-
-    async computeTotalValueLockedUSD(): Promise<string> {
-        const pairsAddress = await this.context.getAllPairsAddress();
-        let totalValueLockedUSD = new BigNumber(0);
-        const promises = pairsAddress.map(pairAddress =>
-            this.pairGetterService.getLockedValueUSD(pairAddress),
-        );
-
-        const lockedValuesUSD = await Promise.all([
-            ...promises,
-            this.computeFarmLockedValueUSD(farmsConfig[2]),
-        ]);
-
-        for (const lockedValueUSD of lockedValuesUSD) {
-            totalValueLockedUSD = totalValueLockedUSD.plus(lockedValueUSD);
-        }
-
-        return totalValueLockedUSD.toFixed();
-    }
-
-    async getLockedValueUSDFarms(): Promise<string> {
-        let totalLockedValue = new BigNumber(0);
-        const promises: Promise<string>[] = farmsConfig.map(farmAddress =>
-            this.computeFarmLockedValueUSD(farmAddress),
-        );
-        const farmsLockedValueUSD = await Promise.all(promises);
-        for (const farmLockedValueUSD of farmsLockedValueUSD) {
-            totalLockedValue = totalLockedValue.plus(farmLockedValueUSD);
-        }
-
-        return totalLockedValue.toFixed();
-    }
-
-    async getTotalAgregatedRewards(days: number): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            days,
-            'totalAgregatedRewards',
-        );
-        try {
-            const getTotalAgregatedRewards = () =>
-                this.computeTotalAgregatedRewards(days);
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getTotalAgregatedRewards,
-                oneMinute() * 2,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getTotalAgregatedRewards.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
-    }
-
-    async computeTotalAgregatedRewards(days: number): Promise<string> {
-        const farmsAddress: [] = farmsConfig;
-        const promises = farmsAddress.map(async farmAddress =>
-            this.farmGetterService.getRewardsPerBlock(farmAddress),
-        );
-        const farmsRewardsPerBlock = await Promise.all(promises);
-        const blocksNumber = (days * 24 * 60 * 60) / 6;
-
-        let totalAgregatedRewards = new BigNumber(0);
-        for (const rewardsPerBlock of farmsRewardsPerBlock) {
-            const agregatedRewards = new BigNumber(
-                rewardsPerBlock,
-            ).multipliedBy(blocksNumber);
-            totalAgregatedRewards = totalAgregatedRewards.plus(
-                agregatedRewards,
-            );
-        }
-        return totalAgregatedRewards.toFixed();
     }
 
     async getHistoricData(
@@ -201,28 +52,17 @@ export class AnalyticsService {
             metric,
             time,
         );
-        try {
-            const getHistoricData = () =>
+        return await this.getData(
+            cacheKey,
+            () =>
                 this.awsTimestreamQuery.getValues({
                     table: awsConfig.timestream.tableName,
                     series,
                     metric,
                     time,
-                });
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getHistoricData,
-                oneMinute() * 5,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getHistoricData.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
+                }),
+            oneMinute() * 5,
+        );
     }
 
     async getClosingValue(
@@ -236,28 +76,17 @@ export class AnalyticsService {
             metric,
             time,
         );
-        try {
-            const getClosingValue = () =>
+        return await this.getData(
+            cacheKey,
+            () =>
                 this.awsTimestreamQuery.getClosingValue({
                     table: awsConfig.timestream.tableName,
                     series,
                     metric,
                     time,
-                });
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getClosingValue,
-                oneMinute() * 5,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getClosingValue.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
+                }),
+            oneMinute() * 5,
+        );
     }
 
     async getCompleteValues(
@@ -269,27 +98,16 @@ export class AnalyticsService {
             series,
             metric,
         );
-        try {
-            const getCompleteValues = () =>
+        return await this.getData(
+            cacheKey,
+            () =>
                 this.awsTimestreamQuery.getCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series,
                     metric,
-                });
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getCompleteValues,
-                oneMinute() * 5,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getCompleteValues.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
+                }),
+            oneMinute() * 5,
+        );
     }
 
     async getLatestCompleteValues(
@@ -301,27 +119,16 @@ export class AnalyticsService {
             series,
             metric,
         );
-        try {
-            const getLatestCompleteValues = () =>
+        return await this.getData(
+            cacheKey,
+            () =>
                 this.awsTimestreamQuery.getLatestCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series,
                     metric,
-                });
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getLatestCompleteValues,
-                oneMinute() * 5,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getLatestCompleteValues.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
+                }),
+            oneMinute() * 5,
+        );
     }
 
     async getLatestValues(
@@ -333,27 +140,16 @@ export class AnalyticsService {
             series,
             metric,
         );
-        try {
-            const getLatestValues = () =>
+        return await this.getData(
+            cacheKey,
+            () =>
                 this.awsTimestreamQuery.getLatestValues({
                     table: awsConfig.timestream.tableName,
                     series,
                     metric,
-                });
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getLatestValues,
-                oneMinute() * 5,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getLatestValues.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
+                }),
+            oneMinute() * 5,
+        );
     }
 
     async getMarketValues(
@@ -365,27 +161,16 @@ export class AnalyticsService {
             series,
             metric,
         );
-        try {
-            const getMarketValues = () =>
+        return await this.getData(
+            cacheKey,
+            () =>
                 this.awsTimestreamQuery.getMarketValues({
                     table: awsConfig.timestream.tableName,
                     series,
                     metric,
-                });
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getMarketValues,
-                oneMinute() * 5,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getMarketValues.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
+                }),
+            oneMinute() * 5,
+        );
     }
 
     async getMarketCompleteValues(
@@ -397,27 +182,16 @@ export class AnalyticsService {
             series,
             metric,
         );
-        try {
-            const getMarketCompleteValues = () =>
+        return await this.getData(
+            cacheKey,
+            () =>
                 this.awsTimestreamQuery.getMarketCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series,
                     metric,
-                });
-            return this.cachingService.getOrSet(
-                cacheKey,
-                getMarketCompleteValues,
-                oneMinute() * 5,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getMarketCompleteValues.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-        }
+                }),
+            oneMinute() * 5,
+        );
     }
 
     private getAnalyticsCacheKey(...args: any) {

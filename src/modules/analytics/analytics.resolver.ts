@@ -4,37 +4,41 @@ import {
     AnalyticsModel,
     HistoricDataModel,
 } from 'src/modules/analytics/models/analytics.model';
+import { AnalyticsGetterService } from './services/analytics.getter.service';
 import { AnalyticsService } from './services/analytics.service';
 
 @Resolver(() => AnalyticsModel)
 export class AnalyticsResolver {
-    constructor(private readonly analyticsService: AnalyticsService) {}
+    constructor(
+        private readonly analyticsService: AnalyticsService,
+        private readonly analyticsGetterService: AnalyticsGetterService,
+    ) {}
 
     @Query(() => String)
     async getTokenPriceUSD(@Args('tokenID') tokenID: string): Promise<string> {
-        return this.analyticsService.getTokenPriceUSD(tokenID);
+        return this.analyticsGetterService.getTokenPriceUSD(tokenID);
     }
 
     @Query(() => String)
     async totalValueLockedUSD(): Promise<string> {
-        return this.analyticsService.getTotalValueLockedUSD();
+        return this.analyticsGetterService.getTotalValueLockedUSD();
     }
 
     @Query(() => String)
     async totalLockedValueUSDFarms(): Promise<string> {
-        return this.analyticsService.getLockedValueUSDFarms();
+        return this.analyticsGetterService.getLockedValueUSDFarms();
     }
 
     @Query(() => String)
     async totalTokenSupply(@Args('tokenID') tokenID: string): Promise<string> {
-        return this.analyticsService.getTotalTokenSupply(tokenID);
+        return this.analyticsGetterService.getTotalTokenSupply(tokenID);
     }
 
     @Query(() => String)
     async totalAgregatedRewards(
         @Args('days', { type: () => Int }) days: number,
     ) {
-        return this.analyticsService.getTotalAgregatedRewards(days);
+        return this.analyticsGetterService.getTotalAgregatedRewards(days);
     }
 
     @Query(() => [HistoricDataModel])

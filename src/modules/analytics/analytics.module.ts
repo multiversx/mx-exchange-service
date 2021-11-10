@@ -10,6 +10,8 @@ import { AnalyticsController } from './analytics.controller';
 import { AnalyticsEventHandlerService } from './services/analytics.event.handler.service';
 import { AnalyticsResolver } from './analytics.resolver';
 import { AnalyticsService } from './services/analytics.service';
+import { AnalyticsComputeService } from './services/analytics.compute.service';
+import { AnalyticsGetterService } from './services/analytics.getter.service';
 
 @Module({
     imports: [
@@ -24,9 +26,15 @@ import { AnalyticsService } from './services/analytics.service';
     providers: [
         AnalyticsResolver,
         AnalyticsService,
+        AnalyticsGetterService,
+        AnalyticsComputeService,
         AnalyticsEventHandlerService,
     ],
-    exports: [AnalyticsService, AnalyticsEventHandlerService],
+    exports: [
+        AnalyticsService,
+        AnalyticsGetterService,
+        AnalyticsEventHandlerService,
+    ],
     controllers: [AnalyticsController],
 })
 export class AnalyticsModule {}
