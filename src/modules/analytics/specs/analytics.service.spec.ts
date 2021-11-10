@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
-import { AnalyticsService } from '../services/analytics.service';
 import { ContextServiceMock } from '../../../services/context/context.service.mocks';
 import { PairServiceMock } from '../../pair/mocks/pair.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
@@ -18,9 +17,10 @@ import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
 import { AWSModule } from 'src/services/aws/aws.module';
+import { AnalyticsComputeService } from '../services/analytics.compute.service';
 
 describe('AnalyticsService', () => {
-    let service: AnalyticsService;
+    let service: AnalyticsComputeService;
 
     const FarmGetterServiceProvider = {
         provide: FarmGetterService,
@@ -69,11 +69,11 @@ describe('AnalyticsService', () => {
                 PairGetterServiceProvider,
                 PairComputeService,
                 PriceFeedServiceProvider,
-                AnalyticsService,
+                AnalyticsComputeService,
             ],
         }).compile();
 
-        service = module.get<AnalyticsService>(AnalyticsService);
+        service = module.get<AnalyticsComputeService>(AnalyticsComputeService);
     });
 
     it('should be defined', () => {
@@ -81,12 +81,7 @@ describe('AnalyticsService', () => {
     });
 
     it('should get total value locked in farms', async () => {
-        const totalLockedValueUSDFarms = await service.getLockedValueUSDFarms();
+        const totalLockedValueUSDFarms = await service.computeLockedValueUSDFarms();
         expect(totalLockedValueUSDFarms.toString()).toEqual('360000000');
-    });
-
-    it('should get total MEX supply', async () => {
-        const totalMexSupply = await service.getTotalTokenSupply('TOK2-2222');
-        expect(totalMexSupply).toEqual('2000000000000000000');
     });
 });
