@@ -8,7 +8,7 @@ import {
     farmsConfig,
     tokensSupplyConfig,
 } from 'src/config';
-import { AnalyticsService } from 'src/modules/analytics/analytics.service';
+import { AnalyticsService } from 'src/modules/analytics/services/analytics.service';
 import { oneMinute } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';

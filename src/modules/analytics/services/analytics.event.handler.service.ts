@@ -8,16 +8,16 @@ import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { denominateAmount } from 'src/utils/token.converters';
 import { Logger } from 'winston';
-import { PairComputeService } from '../pair/services/pair.compute.service';
-import { PairGetterService } from '../pair/services/pair.getter.service';
-import { PairSetterService } from '../pair/services/pair.setter.service';
-import { RouterComputeService } from '../router/router.compute.service';
-import { RouterSetterService } from '../router/router.setter.service';
-import { PAIR_EVENTS } from '../rabbitmq/entities/generic.types';
+import { PairComputeService } from '../../pair/services/pair.compute.service';
+import { PairGetterService } from '../../pair/services/pair.getter.service';
+import { PairSetterService } from '../../pair/services/pair.setter.service';
+import { RouterComputeService } from '../../router/router.compute.service';
+import { RouterSetterService } from '../../router/router.setter.service';
+import { PAIR_EVENTS } from '../../rabbitmq/entities/generic.types';
 import {
     AddLiquidityEventType,
     SwapEventType,
-} from '../rabbitmq/entities/pair/pair.types';
+} from '../../rabbitmq/entities/pair/pair.types';
 import { ContextService } from 'src/services/context/context.service';
 
 @Injectable()

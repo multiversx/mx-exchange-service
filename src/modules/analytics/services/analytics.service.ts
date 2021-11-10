@@ -1,30 +1,24 @@
-import {
-    BytesValue,
-    Interaction,
-    SmartContract,
-} from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { ContextService } from '../../services/context/context.service';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
-import { awsConfig, farmsConfig } from '../../config';
-import { PairService } from '../pair/services/pair.service';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { generateGetLogMessage } from '../../utils/generate-log-message';
+import * as contextService from '../../../services/context/context.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { awsConfig, farmsConfig } from '../../../config';
+import { PairService } from '../../pair/services/pair.service';
+import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
+import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { CachingService } from '../../services/caching/cache.service';
-import { oneMinute } from '../../helpers/helpers';
-import { FarmGetterService } from '../farm/services/farm.getter.service';
-import { PairGetterService } from '../pair/services/pair.getter.service';
+import { CachingService } from '../../../services/caching/cache.service';
+import { oneMinute } from '../../../helpers/helpers';
+import { FarmGetterService } from '../../farm/services/farm.getter.service';
+import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
-import { HistoricDataModel } from './models/analytics.model';
+import { HistoricDataModel } from '../models/analytics.model';
 
 @Injectable()
 export class AnalyticsService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
-        private readonly context: ContextService,
+        private readonly context: contextService.ContextService,
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,

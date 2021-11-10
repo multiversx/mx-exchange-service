@@ -4,8 +4,7 @@ import {
     AnalyticsModel,
     HistoricDataModel,
 } from 'src/modules/analytics/models/analytics.model';
-import { AnalyticsService } from './analytics.service';
-import { awsConfig } from '../../config';
+import { AnalyticsService } from './services/analytics.service';
 
 @Resolver(() => AnalyticsModel)
 export class AnalyticsResolver {

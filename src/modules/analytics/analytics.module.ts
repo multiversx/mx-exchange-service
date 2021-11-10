@@ -7,9 +7,9 @@ import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
 import { AnalyticsController } from './analytics.controller';
-import { AnalyticsEventHandlerService } from './analytics.event.handler.service';
+import { AnalyticsEventHandlerService } from './services/analytics.event.handler.service';
 import { AnalyticsResolver } from './analytics.resolver';
-import { AnalyticsService } from './analytics.service';
+import { AnalyticsService } from './services/analytics.service';
 
 @Module({
     imports: [
