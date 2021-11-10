@@ -77,14 +77,14 @@ export class AnalyticsGetterService {
         );
     }
 
-    async getTotalAgregatedRewards(days: number): Promise<string> {
+    async getTotalAggregatedRewards(days: number): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             days,
-            'totalAgregatedRewards',
+            'totalAggregatedRewards',
         );
         return this.getData(
             cacheKey,
-            () => this.analyticsCompute.computeTotalAgregatedRewards(days),
+            () => this.analyticsCompute.computeTotalAggregatedRewards(days),
             oneMinute() * 2,
         );
     }

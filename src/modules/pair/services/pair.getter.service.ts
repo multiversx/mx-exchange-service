@@ -242,7 +242,7 @@ export class PairGetterService {
             pairAddress,
             `firstTokenVolume.${time}`,
             () =>
-                this.awsTimestreamQuery.getAgregatedValue({
+                this.awsTimestreamQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'firstTokenVolume',
@@ -260,7 +260,7 @@ export class PairGetterService {
             pairAddress,
             `secondTokenVolume.${time}`,
             () =>
-                this.awsTimestreamQuery.getAgregatedValue({
+                this.awsTimestreamQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'secondTokenVolume',
@@ -275,7 +275,7 @@ export class PairGetterService {
             pairAddress,
             `volumeUSD.${time}`,
             () =>
-                this.awsTimestreamQuery.getAgregatedValue({
+                this.awsTimestreamQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'volumeUSD',
@@ -290,7 +290,7 @@ export class PairGetterService {
             pairAddress,
             `feesUSD.${time}`,
             () =>
-                this.awsTimestreamQuery.getAgregatedValue({
+                this.awsTimestreamQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'feesUSD',

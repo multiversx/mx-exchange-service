@@ -35,10 +35,10 @@ export class AnalyticsResolver {
     }
 
     @Query(() => String)
-    async totalAgregatedRewards(
+    async totalAggregatedRewards(
         @Args('days', { type: () => Int }) days: number,
     ) {
-        return this.analyticsGetterService.getTotalAgregatedRewards(days);
+        return this.analyticsGetterService.getTotalAggregatedRewards(days);
     }
 
     @Query(() => [HistoricDataModel])

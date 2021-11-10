@@ -227,25 +227,25 @@ export class AnalyticsEventHandlerService {
             totalVolumeUSD24h,
             totalFeesUSD24h,
         ] = await Promise.all([
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: event.address,
                 metric: 'firstTokenVolume',
                 time: '24h',
             }),
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: event.address,
                 metric: 'secondTokenVolume',
                 time: '24h',
             }),
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: event.address,
                 metric: 'volumeUSD',
                 time: '24h',
             }),
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: event.address,
                 metric: 'feesUSD',

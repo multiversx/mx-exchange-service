@@ -71,7 +71,7 @@ export class AnalyticsComputeService {
         return totalValueLockedUSD.toFixed();
     }
 
-    async computeTotalAgregatedRewards(days: number): Promise<string> {
+    async computeTotalAggregatedRewards(days: number): Promise<string> {
         const farmsAddress: [] = farmsConfig;
         const promises = farmsAddress.map(async farmAddress =>
             this.farmGetterService.getRewardsPerBlock(farmAddress),
@@ -79,15 +79,15 @@ export class AnalyticsComputeService {
         const farmsRewardsPerBlock = await Promise.all(promises);
         const blocksNumber = (days * 24 * 60 * 60) / 6;
 
-        let totalAgregatedRewards = new BigNumber(0);
+        let totalAggregatedRewards = new BigNumber(0);
         for (const rewardsPerBlock of farmsRewardsPerBlock) {
-            const agregatedRewards = new BigNumber(
+            const aggregatedRewards = new BigNumber(
                 rewardsPerBlock,
             ).multipliedBy(blocksNumber);
-            totalAgregatedRewards = totalAgregatedRewards.plus(
-                agregatedRewards,
+            totalAggregatedRewards = totalAggregatedRewards.plus(
+                aggregatedRewards,
             );
         }
-        return totalAgregatedRewards.toFixed();
+        return totalAggregatedRewards.toFixed();
     }
 }

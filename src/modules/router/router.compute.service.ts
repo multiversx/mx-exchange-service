@@ -35,7 +35,7 @@ export class RouterComputeService {
         let totalVolumeUSD = new BigNumber(0);
 
         const promises = pairsAddress.map(pairAddress =>
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: pairAddress,
                 metric: 'volumeUSD',
@@ -56,7 +56,7 @@ export class RouterComputeService {
         let totalFeesUSD = new BigNumber(0);
 
         const promises = pairsAddress.map(pairAddress =>
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: pairAddress,
                 metric: 'feesUSD',
