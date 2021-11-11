@@ -87,6 +87,14 @@ export class AnalyticsResolver {
     }
 
     @Query(() => [HistoricDataModel])
+    async sumCompleteValues(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getSumCompleteValues(series, metric);
+    }
+
+    @Query(() => [HistoricDataModel])
     async latestValues(
         @Args('series') series: string,
         @Args('metric') metric: string,

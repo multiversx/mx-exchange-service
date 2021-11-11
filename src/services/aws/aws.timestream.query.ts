@@ -188,6 +188,41 @@ export class AWSTimestreamQueryService {
         );
     }
 
+    async getSumCompleteValues({
+        table,
+        series,
+        metric,
+    }): Promise<HistoricDataModel[]> {
+        const QueryString = `
+            WITH binned_timeseries AS (
+                SELECT series, BIN(time, 24h) AS binned_timestamp, ROUND(SUM(measure_value::double), 2) AS sum
+                FROM "${this.DatabaseName}".${table}
+                WHERE measure_name = '${metric}'
+                    AND series = '${series}'
+                GROUP BY series, BIN(time, 24h)
+            ), interpolated_timeseries AS (
+                SELECT series,
+                    INTERPOLATE_LOCF(
+                        CREATE_TIME_SERIES(binned_timestamp, sum),
+                            SEQUENCE(min(binned_timestamp), max(binned_timestamp), 24h)) AS interpolated_sum
+                FROM binned_timeseries
+                GROUP BY series
+            )
+            SELECT time, ROUND(value, 2) AS value
+            FROM interpolated_timeseries
+            CROSS JOIN UNNEST(interpolated_sum)
+      `;
+        const params = { QueryString };
+        const { Rows } = await this.queryClient.query(params).promise();
+        return Rows.map(
+            Row =>
+                new HistoricDataModel({
+                    timestamp: Row.Data[0].ScalarValue,
+                    value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
+                }),
+        );
+    }
+
     async getLatestValues({
         table,
         series,
