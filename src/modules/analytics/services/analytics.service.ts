@@ -5,7 +5,7 @@ import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../../services/caching/cache.service';
-import { oneMinute } from '../../../helpers/helpers';
+import { oneMinute, oneSecond } from '../../../helpers/helpers';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { HistoricDataModel } from '../models/analytics.model';
 
@@ -123,6 +123,27 @@ export class AnalyticsService {
             cacheKey,
             () =>
                 this.awsTimestreamQuery.getLatestCompleteValues({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                }),
+            oneMinute() * 5,
+        );
+    }
+
+    async getSumCompleteValues(
+        series: string,
+        metric: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'sumCompleteValues',
+            series,
+            metric,
+        );
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.awsTimestreamQuery.getSumCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series,
                     metric,
