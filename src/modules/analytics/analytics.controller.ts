@@ -7,7 +7,7 @@ import {
     AddLiquidityEventType,
     SwapEventType,
 } from '../rabbitmq/entities/pair/pair.types';
-import { AnalyticsEventHandlerService } from './analytics.event.handler.service';
+import { AnalyticsEventHandlerService } from './services/analytics.event.handler.service';
 
 @Controller()
 export class AnalyticsController {

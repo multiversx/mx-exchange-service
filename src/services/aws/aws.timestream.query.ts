@@ -63,7 +63,7 @@ export class AWSTimestreamQueryService {
         );
     }
 
-    async getAgregatedValue({ table, series, metric, time }): Promise<string> {
+    async getAggregatedValue({ table, series, metric, time }): Promise<string> {
         const QueryString = `SELECT sum(measure_value::double) FROM "${this.DatabaseName}"."${table}"
                              WHERE series = '${series}' AND measure_name = '${metric}' AND time between ago(${time}) and now()`;
         const params = { QueryString };
