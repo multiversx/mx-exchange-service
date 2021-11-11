@@ -148,7 +148,7 @@ export class AnalyticsService {
                     series,
                     metric,
                 }),
-            oneSecond(),
+            oneMinute() * 5,
         );
     }
 
