@@ -33,6 +33,7 @@ import { AnalyticsGetterService } from './services/analytics.getter.service';
     exports: [
         AnalyticsService,
         AnalyticsGetterService,
+        AnalyticsComputeService,
         AnalyticsEventHandlerService,
     ],
     controllers: [AnalyticsController],
