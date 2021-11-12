@@ -63,7 +63,11 @@ export class TransactionsFarmService {
             args.tokens,
             method,
             [],
-            new GasLimit(gasConfig.enterFarm),
+            new GasLimit(
+                args.tokens.length > 1
+                    ? gasConfig.enterFarmMerge
+                    : gasConfig.enterFarm,
+            ),
         );
     }
 

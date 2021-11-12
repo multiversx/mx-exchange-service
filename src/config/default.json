@@ -12,27 +12,27 @@
         "keepAliveMaxFreeSockets": 10
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqp8c763u69ctvshmjtp06qzzcwmleqcpu0n4s2e893l",
-        "MEX-10e788": "erd1qqqqqqqqqqqqqpgqu5sdpdcd0tac8472a4jvpxan3fw696g80n4sl4qxrj",
-        "distributionAddress": "erd1qqqqqqqqqqqqqpgq7h0lyuzxzaczz40t403ecxyh5kzvrrpg0n4srhwcey",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqxn2363rvx4zgm24ajtl45aawe6y4qsy00n4s2wysj7",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqkpj2crmx6gza8s9qklfnat6vjlpyz3df0n4sg2vru7",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqwkrxc5gveu3zxldpuex90v622f8t8pes2jpsfpvl0f",
+        "MEX-45ebaa": "erd1qqqqqqqqqqqqqpgqr82hqynfa7e2hvg4e4kyekuhy9j2739m2jpspjljhd",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqq0utpwehuwen54y5a2ev4r08j4gthy962jps0vpx2l",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqjpt0qqgsrdhp2xqygpjtfrpwf76f9nvg2jpsg4q7th",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqmcmcerf4phjqglgfghsswe5a2ylecd8v0n4szcj3pe",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         }
     },
-    "tokenProviderUSD": "BUSD-661065",
+    "tokenProviderUSD": "WUSDC-067a5e",
     "priceFeeds": {
-        "BUSD-661065": "busd"
+        "WUSDC-067a5e": "busd"
     },
-    "tokensSupply": ["MEX-10e788"],
-    "cachedTokensPrice": ["MEX-10e788"],
+    "tokensSupply": ["MEX-45ebaa"],
+    "cachedTokensPrice": ["MEX-45ebaa"],
     "farms": [
-        "erd1qqqqqqqqqqqqqpgqyvs4ayscjazlsnlyzlj0swj8ye33yvk30n4szvfgt3",
-        "erd1qqqqqqqqqqqqqpgqt2wjr6h6c7m5urysgjnlygxeum6wqz5r0n4sz8rggh",
-        "erd1qqqqqqqqqqqqqpgq2he0a4k0nfxle2mxemtg2c0rr23jzvem0n4sw270r6"
+        "erd1qqqqqqqqqqqqqpgq3kvuacqw9thy6jttskvq8xxu7h4f8c6v2jpsptvnf9",
+        "erd1qqqqqqqqqqqqqpgqy62ntx752n6jl42ecvap90ad79cgazqc2jps2au88m",
+        "erd1qqqqqqqqqqqqqpgqztxqkfp47p2maveng4rmnkvu7286kpdj2jpsgj7p4k"
     ],
     "caching": {
         "pairsMetadata": 300,
@@ -60,8 +60,9 @@
         "addLiquidityProxyMerge": 53500000,
         "removeLiquidityProxy": 38500000,
         "enterFarm": 16500000,
+        "enterFarmMerge": 17500000,
         "exitFarm": 53000000,
-        "claimRewards": 25500000,
+        "claimRewards": 40500000,
         "compoundRewards": 16500000,
         "enterFarmProxy": 36000000,
         "enterFarmProxyMerge": 80500000,
