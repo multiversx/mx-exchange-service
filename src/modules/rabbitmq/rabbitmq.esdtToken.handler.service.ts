@@ -34,7 +34,6 @@ export class RabbitMQEsdtTokenHandlerService {
         await this.cachingService.setCache(cacheKey, token, oneHour());
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
-        console.log(event.getTopics());
     }
 
     private async deleteCacheKeys() {
