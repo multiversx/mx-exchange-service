@@ -13,6 +13,7 @@ import { EnterFarmProxyEvent } from './entities/proxy/enterFarmProxy.event';
 import { ExitFarmProxyEvent } from './entities/proxy/exitFarmProxy.event';
 import { PairProxyEvent } from './entities/proxy/pairProxy.event';
 import {
+    ESDT_EVENTS,
     FARM_EVENTS,
     PAIR_EVENTS,
     PROXY_EVENTS,
@@ -26,6 +27,9 @@ import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { farmsConfig, scAddress } from 'src/config';
 import { ContextService } from 'src/services/context/context.service';
+import { EsdtLocalBurnEvent } from './entities/esdtToken/esdtLocalBurn.event';
+import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
+import { EsdtLocalMintEvent } from './entities/esdtToken/esdtLocalMint.event';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -36,6 +40,7 @@ export class RabbitMqConsumer {
         private readonly wsPairHandler: RabbitMQPairHandlerService,
         private readonly wsFarmHandler: RabbitMQFarmHandlerService,
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
+        private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -45,9 +50,12 @@ export class RabbitMqConsumer {
     })
     async consumeEvents(rawEvents: any) {
         const events = rawEvents?.events?.filter(
-            (rawEvent: { address: any }) =>
+            (rawEvent: { address: string; identifier: string }) =>
                 this.filterAddresses.find(
-                    filterAddress => rawEvent.address === filterAddress,
+                    filterAddress =>
+                        rawEvent.address === filterAddress ||
+                        rawEvent.identifier === ESDT_EVENTS.ESDT_LOCAL_BURN ||
+                        rawEvent.identifier === ESDT_EVENTS.ESDT_LOCAL_MINT,
                 ) !== undefined,
         );
 
@@ -126,6 +134,16 @@ export class RabbitMqConsumer {
                 case PROXY_EVENTS.COMPOUND_REWARDS_PROXY:
                     await this.wsProxyHandler.handleRewardsProxyEvent(
                         new CompoundRewardsProxyEvent(rawEvent),
+                    );
+                    break;
+                case ESDT_EVENTS.ESDT_LOCAL_MINT:
+                    await this.wsEsdtTokenHandler.handleEsdtTokenEvent(
+                        new EsdtLocalMintEvent(rawEvent),
+                    );
+                    break;
+                case ESDT_EVENTS.ESDT_LOCAL_BURN:
+                    await this.wsEsdtTokenHandler.handleEsdtTokenEvent(
+                        new EsdtLocalBurnEvent(rawEvent),
                     );
                     break;
             }
