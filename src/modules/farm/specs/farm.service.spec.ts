@@ -8,7 +8,7 @@ import { ElrondApiService } from '../../../services/elrond-communication/elrond-
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { RewardsModel } from '../models/farm.model';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
-import { ContextServiceMock } from '../../../services/context/context.service.mocks';
+import { ContextServiceMock } from '../../../services/context/mocks/context.service.mocks';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';

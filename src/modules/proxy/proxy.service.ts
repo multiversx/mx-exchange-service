@@ -8,10 +8,8 @@ import {
     decodeWrappedFarmTokenAttributes,
     decodeWrappedLPTokenAttributes,
 } from './utils';
-import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { FarmService } from '../farm/services/farm.service';
 import { DecodeAttributesArgs } from './models/proxy.args';
-import { ContextService } from '../../services/context/context.service';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
 import { CachingService } from '../../services/caching/cache.service';
@@ -20,13 +18,13 @@ import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { oneHour } from '../../helpers/helpers';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class ProxyService {
     constructor(
-        private apiService: ElrondApiService,
         private abiService: AbiProxyService,
-        private context: ContextService,
+        private contextGetter: ContextGetterService,
         private farmService: FarmService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -73,12 +71,12 @@ export class ProxyService {
 
     async getAssetToken(): Promise<EsdtToken> {
         const assetTokenID = await this.getAssetTokenID();
-        return this.context.getTokenMetadata(assetTokenID);
+        return this.contextGetter.getTokenMetadata(assetTokenID);
     }
 
     async getlockedAssetToken(): Promise<NftCollection> {
         const lockedAssetTokenID = await this.getLockedAssetTokenID();
-        return this.context.getNftCollectionMetadata(lockedAssetTokenID);
+        return this.contextGetter.getNftCollectionMetadata(lockedAssetTokenID);
     }
 
     getWrappedLpTokenAttributes(
@@ -108,7 +106,7 @@ export class ProxyService {
                 arg.attributes,
             );
 
-            const farmToken = await this.context.getNftMetadata(
+            const farmToken = await this.contextGetter.getNftMetadata(
                 decodedAttributes.farmTokenIdentifier,
             );
             const decodedFarmAttributes = this.farmService.decodeFarmTokenAttributes(

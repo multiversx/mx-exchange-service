@@ -8,7 +8,6 @@ import {
 } from '../models/farm.model';
 import { AbiFarmService } from './abi-farm.service';
 import { CalculateRewardsArgs } from '../models/farm.args';
-import { ContextService } from '../../../services/context/context.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import BigNumber from 'bignumber.js';
@@ -16,6 +15,7 @@ import { ruleOfThree } from '../../../helpers/helpers';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class FarmService {
@@ -24,7 +24,7 @@ export class FarmService {
         @Inject(forwardRef(() => FarmGetterService))
         private readonly farmGetterService: FarmGetterService,
         private readonly farmComputeService: FarmComputeService,
-        private readonly context: ContextService,
+        private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -93,7 +93,7 @@ export class FarmService {
         }
 
         const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
-            this.context.getCurrentEpoch(),
+            this.contextGetter.getCurrentEpoch(),
             this.farmGetterService.getMinimumFarmingEpochs(positon.farmAddress),
         ]);
 

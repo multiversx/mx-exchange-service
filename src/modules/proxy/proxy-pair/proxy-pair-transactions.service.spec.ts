@@ -10,7 +10,7 @@ import * as Transport from 'winston-transport';
 import { RedisModule } from 'nestjs-redis';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { TransactionsProxyPairService } from './proxy-pair-transactions.service';
-import { ContextServiceMock } from '../../../services/context/context.service.mocks';
+import { ContextServiceMock } from '../../../services/context/mocks/context.service.mocks';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairServiceMock } from 'src/modules/pair/mocks/pair.service.mock';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';

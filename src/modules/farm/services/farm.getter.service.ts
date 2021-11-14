@@ -5,7 +5,7 @@ import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ContextService } from 'src/services/context/context.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -19,7 +19,7 @@ export class FarmGetterService {
         @Inject(forwardRef(() => FarmComputeService))
         private readonly computeService: FarmComputeService,
         private readonly cachingService: CachingService,
-        private readonly context: ContextService,
+        private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -77,17 +77,17 @@ export class FarmGetterService {
 
     async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
         const farmedTokenID = await this.getFarmedTokenID(farmAddress);
-        return this.context.getTokenMetadata(farmedTokenID);
+        return this.contextGetter.getTokenMetadata(farmedTokenID);
     }
 
     async getFarmToken(farmAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.getFarmTokenID(farmAddress);
-        return this.context.getNftCollectionMetadata(farmTokenID);
+        return this.contextGetter.getNftCollectionMetadata(farmTokenID);
     }
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.getFarmingTokenID(farmAddress);
-        return this.context.getTokenMetadata(farmingTokenID);
+        return this.contextGetter.getTokenMetadata(farmingTokenID);
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {

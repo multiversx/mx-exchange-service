@@ -6,7 +6,6 @@ import {
     UnlockMileStoneModel,
 } from './models/locked-asset.model';
 import { cacheConfig, scAddress } from '../../config';
-import { ContextService } from '../../services/context/context.service';
 import { NftCollection } from '../../models/tokens/nftCollection.model';
 import { CachingService } from '../../services/caching/cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
@@ -23,13 +22,14 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class LockedAssetService {
     constructor(
         private readonly abiService: AbiLockedAssetService,
         private readonly cachingService: CachingService,
-        private context: ContextService,
+        private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -60,7 +60,7 @@ export class LockedAssetService {
 
     async getLockedToken(): Promise<NftCollection> {
         const lockedTokenID = await this.getLockedTokenID();
-        return await this.context.getNftCollectionMetadata(lockedTokenID);
+        return await this.contextGetter.getNftCollectionMetadata(lockedTokenID);
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
@@ -95,7 +95,7 @@ export class LockedAssetService {
         args: DecodeAttributesArgs,
     ): Promise<LockedAssetAttributes[]> {
         const decodedBatchAttributes = [];
-        const currentEpoch = await this.context.getCurrentEpoch();
+        const currentEpoch = await this.contextGetter.getCurrentEpoch();
         for (const lockedAsset of args.batchAttributes) {
             const attributesBuffer = Buffer.from(
                 lockedAsset.attributes,

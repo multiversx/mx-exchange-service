@@ -11,10 +11,10 @@ import {
 import { BigNumber } from 'bignumber.js';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
-import { elrondConfig } from '../../config';
-import { EsdtToken } from '../../models/tokens/esdtToken.model';
-import { TransactionModel } from '../../models/transaction.model';
-import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
+import { elrondConfig } from '../../../config';
+import { EsdtToken } from '../../../models/tokens/esdtToken.model';
+import { TransactionModel } from '../../../models/transaction.model';
+import { PairMetadata } from '../../../modules/router/models/pair.metadata.model';
 
 export const pairsMetadata: PairMetadata[] = [
     {

@@ -10,15 +10,15 @@ import { TransactionModel } from '../../models/transaction.model';
 import { elrondConfig, gasConfig } from '../../config';
 import { WrapService } from './wrap.service';
 import BigNumber from 'bignumber.js';
-import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 @Injectable()
 export class TransactionsWrapService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly wrapService: WrapService,
-        private readonly context: ContextService,
+        private readonly contextTransacions: ContextTransactionsService,
     ) {}
 
     async wrapEgld(sender: string, amount: string): Promise<TransactionModel> {
@@ -50,7 +50,7 @@ export class TransactionsWrapService {
             BytesValue.fromUTF8('unwrapEgld'),
         ];
 
-        return this.context.esdtTransfer(
+        return this.contextTransacions.esdtTransfer(
             contract,
             args,
             new GasLimit(gasConfig.wrapeGLD),

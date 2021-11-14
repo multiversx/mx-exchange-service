@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ContextService } from 'src/services/context/context.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -11,7 +11,7 @@ import { AnalyticsComputeService } from './analytics.compute.service';
 @Injectable()
 export class AnalyticsGetterService {
     constructor(
-        private readonly context: ContextService,
+        private readonly contextGetter: ContextGetterService,
         private readonly cachingService: CachingService,
         private readonly analyticsCompute: AnalyticsComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -54,7 +54,8 @@ export class AnalyticsGetterService {
         const cacheKey = this.getAnalyticsCacheKey(tokenID, 'totalTokenSupply');
         return await this.getData(
             cacheKey,
-            async () => (await this.context.getTokenMetadata(tokenID)).supply,
+            async () =>
+                (await this.contextGetter.getTokenMetadata(tokenID)).supply,
             oneMinute(),
         );
     }
