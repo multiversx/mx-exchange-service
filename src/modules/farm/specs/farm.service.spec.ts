@@ -8,7 +8,7 @@ import { ElrondApiService } from '../../../services/elrond-communication/elrond-
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { RewardsModel } from '../models/farm.model';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
-import { ContextServiceMock } from '../../../services/context/mocks/context.service.mocks';
+import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';
@@ -20,6 +20,8 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { PairServiceMock } from 'src/modules/pair/mocks/pair.service.mock';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -42,6 +44,11 @@ describe('FarmService', () => {
     const ContextServiceProvider = {
         provide: ContextService,
         useClass: ContextServiceMock,
+    };
+
+    const ContextGetterServiceProvider = {
+        provide: ContextGetterService,
+        useClass: ContextGetterServiceMock,
     };
 
     const PairServiceProvider = {
@@ -68,6 +75,7 @@ describe('FarmService', () => {
                 FarmComputeService,
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
+                ContextGetterServiceProvider,
                 PairServiceProvider,
                 PairGetterServiceProvider,
                 PairComputeService,

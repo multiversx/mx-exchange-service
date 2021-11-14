@@ -1,8 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextService } from 'src/services/context/context.service';
-import { ContextServiceMock } from 'src/services/context/context.service.mocks';
+import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
+import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
+import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from './abi.locked.asset.service.mock';
 import { LockedAssetService } from './locked-asset.service';
@@ -13,11 +16,16 @@ import {
 
 describe('FarmService', () => {
     let service: LockedAssetService;
-    let context: ContextService;
+    let contextGetter: ContextGetterService;
 
     const ContextServiceProvider = {
         provide: ContextService,
         useClass: ContextServiceMock,
+    };
+
+    const ContextGetterServiceProvider = {
+        provide: ContextGetterService,
+        useClass: ContextGetterServiceMock,
     };
 
     const AbiLockedAssetServiceProvider = {
@@ -27,16 +35,21 @@ describe('FarmService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [
+                CommonAppModule,
+                CachingModule,
+                ElrondCommunicationModule,
+            ],
             providers: [
                 ContextServiceProvider,
+                ContextGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetService,
             ],
         }).compile();
 
         service = module.get<LockedAssetService>(LockedAssetService);
-        context = module.get<ContextService>(ContextService);
+        contextGetter = module.get<ContextGetterService>(ContextGetterService);
     });
 
     it('should be defined', () => {
@@ -72,9 +85,11 @@ describe('FarmService', () => {
     });
 
     it('should get unlock schedule2', async () => {
-        jest.spyOn(context, 'getCurrentEpoch').mockImplementation(async () => {
-            return 2;
-        });
+        jest.spyOn(contextGetter, 'getCurrentEpoch').mockImplementation(
+            async () => {
+                return 2;
+            },
+        );
         const decodedLockedMEX = await service.decodeLockedAssetAttributes({
             batchAttributes: [
                 {
@@ -103,9 +118,11 @@ describe('FarmService', () => {
     });
 
     it('should get unlock schedule3', async () => {
-        jest.spyOn(context, 'getCurrentEpoch').mockImplementation(async () => {
-            return 10;
-        });
+        jest.spyOn(contextGetter, 'getCurrentEpoch').mockImplementation(
+            async () => {
+                return 10;
+            },
+        );
         const decodedLockedMEX = await service.decodeLockedAssetAttributes({
             batchAttributes: [
                 {

@@ -5,7 +5,7 @@ import { ContextService } from 'src/services/context/context.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ContextServiceMock } from 'src/services/context/context.service.mocks';
+import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairAbiServiceMock } from '../mocks/pair.abi.service.mock';
 import { PairGetterService } from '../services/pair.getter.service';
