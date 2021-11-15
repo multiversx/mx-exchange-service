@@ -13,8 +13,9 @@ import {
     LockedAssetAttributes,
     UnlockMileStoneModel,
 } from '../models/locked-asset.model';
+import { LockedAssetGetterService } from '../services/locked.asset.getter.service';
 
-describe('FarmService', () => {
+describe('LockedAssetService', () => {
     let service: LockedAssetService;
     let contextGetter: ContextGetterService;
 
@@ -45,6 +46,7 @@ describe('FarmService', () => {
                 ContextGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetService,
+                LockedAssetGetterService,
             ],
         }).compile();
 
