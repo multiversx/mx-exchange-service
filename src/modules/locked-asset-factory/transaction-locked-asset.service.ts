@@ -9,19 +9,19 @@ import {
 import { TransactionModel } from '../../models/transaction.model';
 import { BigNumber } from 'bignumber.js';
 import { UnlockAssetsArs } from './models/locked-asset.args';
-import { ContextService } from '../../services/context/context.service';
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { LockedAssetService } from './locked-asset.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 @Injectable()
 export class TransactionsLockedAssetService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly context: ContextService,
+        private readonly contextTransactions: ContextTransactionsService,
         private readonly lockedAssetService: LockedAssetService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -40,7 +40,7 @@ export class TransactionsLockedAssetService {
             BytesValue.fromUTF8('unlockAssets'),
         ];
 
-        const transaction = this.context.nftTransfer(
+        const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.unlockAssets),
@@ -78,7 +78,7 @@ export class TransactionsLockedAssetService {
 
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
 
-        return this.context.multiESDTNFTTransfer(
+        return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
             tokens,

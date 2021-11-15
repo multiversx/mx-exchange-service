@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AbiProxyPairService } from './proxy-pair-abi.service';
-import { ContextService } from '../../../services/context/context.service';
 import { NftCollection } from '../../../models/tokens/nftCollection.model';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -8,12 +7,13 @@ import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { oneHour } from '../../../helpers/helpers';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class ProxyPairService {
     constructor(
         private abiService: AbiProxyPairService,
-        private context: ContextService,
+        private contextGetter: ContextGetterService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -48,7 +48,9 @@ export class ProxyPairService {
 
     async getwrappedLpToken(): Promise<NftCollection> {
         const wrappedLpTokenID = await this.getwrappedLpTokenID();
-        return await this.context.getNftCollectionMetadata(wrappedLpTokenID);
+        return await this.contextGetter.getNftCollectionMetadata(
+            wrappedLpTokenID,
+        );
     }
 
     async getIntermediatedPairs(): Promise<string[]> {

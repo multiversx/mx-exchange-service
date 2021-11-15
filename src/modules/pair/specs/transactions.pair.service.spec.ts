@@ -10,7 +10,7 @@ import { ElrondProxyService } from 'src/services/elrond-communication/elrond-pro
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairServiceMock } from '../mocks/pair.service.mock';
-import { ContextServiceMock } from 'src/services/context/context.service.mocks';
+import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { ContextService } from 'src/services/context/context.service';
 import { PairService } from '../services/pair.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
@@ -18,6 +18,9 @@ import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
@@ -30,6 +33,11 @@ describe('TransactionPairService', () => {
     const ContextServiceProvider = {
         provide: ContextService,
         useClass: ContextServiceMock,
+    };
+
+    const ContextGetterServiceProvider = {
+        provide: ContextGetterService,
+        useClass: ContextGetterServiceMock,
     };
 
     const PairServiceProvider = {
@@ -73,6 +81,8 @@ describe('TransactionPairService', () => {
             providers: [
                 ElrondProxyServiceProvider,
                 ContextServiceProvider,
+                ContextGetterServiceProvider,
+                ContextTransactionsService,
                 PairServiceProvider,
                 PairGetterServiceProvider,
                 WrapServiceProvider,
