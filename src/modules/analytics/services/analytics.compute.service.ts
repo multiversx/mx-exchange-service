@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { farmsConfig } from 'src/config';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
+import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairService } from 'src/modules/pair/services/pair.service';
 import { ContextService } from 'src/services/context/context.service';
 
 @Injectable()
@@ -11,12 +11,14 @@ export class AnalyticsComputeService {
     constructor(
         private readonly context: ContextService,
         private readonly farmGetterService: FarmGetterService,
-        private readonly pairService: PairService,
+        private readonly pairCompute: PairComputeService,
         private readonly pairGetterService: PairGetterService,
     ) {}
 
     async computeTokenPriceUSD(tokenID: string): Promise<string> {
-        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(tokenID);
+        const tokenPriceUSD = await this.pairCompute.computeTokenPriceUSD(
+            tokenID,
+        );
         return tokenPriceUSD.toFixed();
     }
 
