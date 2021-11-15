@@ -19,9 +19,9 @@
         "erd1qqqqqqqqqqqqqpgqsw9pssy8rchjeyfh8jfafvl3ynum0p9k2jps6lwewp",
         "erd1qqqqqqqqqqqqqpgqv4ks4nzn2cw96mm06lt7s2l3xfrsznmp2jpsszdry5"
     ],
-    "tokenProviderUSD": "USDC-c76f1f",
+    "tokenProviderUSD": "WEGLD-bd4d79",
     "priceFeeds": {
-        "USDC-c76f1f": "usdc"
+        "WEGLD-bd4d79": "egld"
     },
     "tokensSupply": ["MEX-455c57"],
     "cachedTokensPrice": ["MEX-455c57"]
