@@ -1,10 +1,10 @@
 import { Interaction, QueryResponseBundle } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { generateRunQueryLogMessage } from '../../utils/generate-log-message';
+import { generateRunQueryLogMessage } from '../../../utils/generate-log-message';
 import { Logger } from 'winston';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
-import { PairMetadata } from './models/pair.metadata.model';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { PairMetadata } from '../models/pair.metadata.model';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 
 @Injectable()

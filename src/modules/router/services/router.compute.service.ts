@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { awsConfig } from 'src/config';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
-import { PairComputeService } from '../pair/services/pair.compute.service';
+import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { RouterGetterService } from './router.getter.service';
 
 @Injectable()

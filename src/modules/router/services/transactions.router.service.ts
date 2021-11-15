@@ -5,9 +5,9 @@ import {
     Interaction,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
-import { gasConfig } from '../../config';
-import { TransactionModel } from '../../models/transaction.model';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import { gasConfig } from '../../../config';
+import { TransactionModel } from '../../../models/transaction.model';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class TransactionRouterService {
