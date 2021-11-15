@@ -1,14 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AbiLockedAssetService } from './abi-locked-asset.service';
 import {
     LockedAssetAttributes,
     LockedAssetModel,
     UnlockMileStoneModel,
 } from '../models/locked-asset.model';
-import { cacheConfig, scAddress } from '../../../config';
-import { NftCollection } from '../../../models/tokens/nftCollection.model';
-import { CachingService } from '../../../services/caching/cache.service';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
+import { scAddress } from '../../../config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import {
@@ -21,74 +17,20 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out';
 import { DecodeAttributesArgs } from '../../proxy/models/proxy.args';
-import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { LockedAssetGetterService } from './locked.asset.getter.service';
 
 @Injectable()
 export class LockedAssetService {
     constructor(
-        private readonly abiService: AbiLockedAssetService,
-        private readonly cachingService: CachingService,
+        private readonly lockedAssetGetter: LockedAssetGetterService,
+
         private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getLockedAssetInfo(): Promise<LockedAssetModel> {
         return new LockedAssetModel({ address: scAddress.lockedAssetAddress });
-    }
-
-    async getLockedTokenID(): Promise<string> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey('lockedTokenID');
-        try {
-            const getLockedTokenID = () => this.abiService.getLockedTokenID();
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                getLockedTokenID,
-                cacheConfig.token,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                LockedAssetService.name,
-                this.getLockedTokenID.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    async getLockedToken(): Promise<NftCollection> {
-        const lockedTokenID = await this.getLockedTokenID();
-        return await this.contextGetter.getNftCollectionMetadata(lockedTokenID);
-    }
-
-    async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey(
-            'defaultUnlockPeriod',
-        );
-        try {
-            const getDefaultUnlockPeriod = () =>
-                this.abiService.getDefaultUnlockPeriod();
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                getDefaultUnlockPeriod,
-                cacheConfig.default,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                LockedAssetService.name,
-                this.getLockedTokenID.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    private getLockedAssetFactoryCacheKey(...args: any) {
-        return generateCacheKeyFromParams('lockedAssetFactory', ...args);
     }
 
     async decodeLockedAssetAttributes(
@@ -163,7 +105,7 @@ export class LockedAssetService {
     }
 
     private async getMonthStartEpoch(unlockEpoch: number): Promise<number> {
-        const initEpoch = await this.abiService.getInitEpoch();
+        const initEpoch = await this.lockedAssetGetter.getInitEpoch();
         return unlockEpoch - ((unlockEpoch - initEpoch) % 30);
     }
 }

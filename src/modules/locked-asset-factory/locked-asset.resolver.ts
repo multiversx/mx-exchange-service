@@ -15,18 +15,20 @@ import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
+import { LockedAssetGetterService } from './services/locked.asset.getter.service';
 
 @Resolver(() => LockedAssetModel)
 export class LockedAssetResolver {
     constructor(
         private readonly lockedAssetService: LockedAssetService,
+        private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly transactionsService: TransactionsLockedAssetService,
     ) {}
 
     @ResolveField()
     async lockedToken(): Promise<NftCollection> {
         try {
-            return await this.lockedAssetService.getLockedToken();
+            return await this.lockedAssetGetter.getLockedToken();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -35,7 +37,7 @@ export class LockedAssetResolver {
     @ResolveField()
     async unlockMilestones(): Promise<UnlockMileStoneModel[]> {
         try {
-            return await this.lockedAssetService.getDefaultUnlockPeriod();
+            return await this.lockedAssetGetter.getDefaultUnlockPeriod();
         } catch (error) {
             throw new ApolloError(error);
         }

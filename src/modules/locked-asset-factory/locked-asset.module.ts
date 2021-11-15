@@ -7,6 +7,7 @@ import { TransactionsLockedAssetService } from './services/transaction-locked-as
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { CachingModule } from '../../services/caching/cache.module';
+import { LockedAssetGetterService } from './services/locked.asset.getter.service';
 
 @Module({
     imports: [
@@ -19,8 +20,9 @@ import { CachingModule } from '../../services/caching/cache.module';
         AbiLockedAssetService,
         TransactionsLockedAssetService,
         LockedAssetService,
+        LockedAssetGetterService,
         LockedAssetResolver,
     ],
-    exports: [LockedAssetService],
+    exports: [LockedAssetService, LockedAssetGetterService],
 })
 export class LockedAssetModule {}

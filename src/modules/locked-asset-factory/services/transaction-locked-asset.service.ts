@@ -11,18 +11,18 @@ import { BigNumber } from 'bignumber.js';
 import { UnlockAssetsArs } from '../models/locked-asset.args';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { LockedAssetService } from './locked-asset.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
+import { LockedAssetGetterService } from './locked.asset.getter.service';
 
 @Injectable()
 export class TransactionsLockedAssetService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly contextTransactions: ContextTransactionsService,
-        private readonly lockedAssetService: LockedAssetService,
+        private readonly lockedAssetGetter: LockedAssetGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -94,7 +94,7 @@ export class TransactionsLockedAssetService {
     }
 
     async validateInputTokens(tokens: InputTokenModel[]): Promise<void> {
-        const lockedAssetTokenID = await this.lockedAssetService.getLockedTokenID();
+        const lockedAssetTokenID = await this.lockedAssetGetter.getLockedTokenID();
 
         for (const lockedAssetToken of tokens) {
             if (
