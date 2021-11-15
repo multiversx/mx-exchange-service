@@ -51,13 +51,15 @@ export class AbiLockedAssetService {
             );
 
             const result = interaction.interpretQueryResponse(queryResponse);
-
-            return result.firstValue.valueOf().map(unlockMilestone => {
-                return new UnlockMileStoneModel({
-                    epochs: unlockMilestone.unlock_epoch.toNumber(),
-                    percent: unlockMilestone.unlock_percent.toNumber(),
+            console.log(result.firstValue.valueOf().unlock_milestones);
+            return result.firstValue
+                .valueOf()
+                .unlock_milestones.map(unlockMilestone => {
+                    return new UnlockMileStoneModel({
+                        epochs: unlockMilestone.unlock_epoch.toNumber(),
+                        percent: unlockMilestone.unlock_percent.toNumber(),
+                    });
                 });
-            });
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiLockedAssetService.name,
