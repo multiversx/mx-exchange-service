@@ -34,18 +34,10 @@ export class FarmCacheWarmerService {
                 farmTokenID,
                 farmingTokenID,
                 farmedTokenID,
-                minimumFarmingEpochs,
-                penaltyPercent,
-                rewardsPerBlock,
-                state,
             ] = await Promise.all([
                 this.abiFarmService.getFarmTokenID(farmAddress),
                 this.abiFarmService.getFarmingTokenID(farmAddress),
                 this.abiFarmService.getFarmedTokenID(farmAddress),
-                this.abiFarmService.getMinimumFarmingEpochs(farmAddress),
-                this.abiFarmService.getPenaltyPercent(farmAddress),
-                this.abiFarmService.getRewardsPerBlock(farmAddress),
-                this.abiFarmService.getState(farmAddress),
             ]);
 
             const [farmToken, farmingToken, farmedToken] = await Promise.all([
@@ -64,6 +56,33 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     farmedTokenID,
                 ),
+                this.setContextCache(farmTokenID, farmToken, oneHour()),
+                this.setContextCache(farmingTokenID, farmingToken, oneHour()),
+                this.setContextCache(farmedTokenID, farmedToken, oneHour()),
+            ]);
+            this.invalidatedKeys.push(cacheKeys);
+            await this.deleteCacheKeys();
+        });
+
+        await Promise.all(promises);
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async cacheFarmInfo(): Promise<void> {
+        for (const farmAddress of farmsConfig) {
+            const [
+                minimumFarmingEpochs,
+                penaltyPercent,
+                rewardsPerBlock,
+                state,
+            ] = await Promise.all([
+                this.abiFarmService.getMinimumFarmingEpochs(farmAddress),
+                this.abiFarmService.getPenaltyPercent(farmAddress),
+                this.abiFarmService.getRewardsPerBlock(farmAddress),
+                this.abiFarmService.getState(farmAddress),
+            ]);
+
+            const cacheKeys = await Promise.all([
                 this.farmSetterService.setMinimumFarmingEpochs(
                     farmAddress,
                     minimumFarmingEpochs,
@@ -77,15 +96,10 @@ export class FarmCacheWarmerService {
                     rewardsPerBlock,
                 ),
                 this.farmSetterService.setState(farmAddress, state),
-                this.setContextCache(farmTokenID, farmToken, oneHour()),
-                this.setContextCache(farmingTokenID, farmingToken, oneHour()),
-                this.setContextCache(farmedTokenID, farmedToken, oneHour()),
             ]);
             this.invalidatedKeys.push(cacheKeys);
             await this.deleteCacheKeys();
-        });
-
-        await Promise.all(promises);
+        }
     }
 
     @Cron(CronExpression.EVERY_30_SECONDS)
