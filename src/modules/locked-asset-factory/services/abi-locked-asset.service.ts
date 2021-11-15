@@ -5,6 +5,8 @@ import { ElrondProxyService } from 'src/services/elrond-communication/elrond-pro
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
+import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
+import { QueryResponseBundle } from '@elrondnetwork/erdjs/out';
 
 @Injectable()
 export class AbiLockedAssetService {
@@ -13,29 +15,35 @@ export class AbiLockedAssetService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getLockedTokenID(): Promise<string> {
-        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction = contract.methods.getLockedAssetTokenId(
-            [],
-        );
-
+    async getGenericData(
+        contract: SmartContractProfiler,
+        interaction: Interaction,
+    ): Promise<QueryResponseBundle> {
         try {
             const queryResponse = await contract.runQuery(
                 this.elrondProxy.getService(),
                 interaction.buildQuery(),
             );
-            const result = interaction.interpretQueryResponse(queryResponse);
-
-            return result.firstValue.valueOf().toString();
+            return interaction.interpretQueryResponse(queryResponse);
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiLockedAssetService.name,
-                this.getLockedTokenID.name,
+                interaction.getEndpoint().name,
                 error.message,
             );
             this.logger.error(logMessage);
+
             throw error;
         }
+    }
+
+    async getLockedTokenID(): Promise<string> {
+        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const interaction: Interaction = contract.methods.getLockedAssetTokenId(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
@@ -43,57 +51,21 @@ export class AbiLockedAssetService {
         const interaction: Interaction = contract.methods.getDefaultUnlockPeriod(
             [],
         );
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-
-            const result = interaction.interpretQueryResponse(queryResponse);
-            console.log(result.firstValue.valueOf().unlock_milestones);
-            return result.firstValue
-                .valueOf()
-                .unlock_milestones.map(unlockMilestone => {
-                    return new UnlockMileStoneModel({
-                        epochs: unlockMilestone.unlock_epoch.toNumber(),
-                        percent: unlockMilestone.unlock_percent.toNumber(),
-                    });
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue
+            .valueOf()
+            .unlock_milestones.map(unlockMilestone => {
+                return new UnlockMileStoneModel({
+                    epochs: unlockMilestone.unlock_epoch.toNumber(),
+                    percent: unlockMilestone.unlock_percent.toNumber(),
                 });
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiLockedAssetService.name,
-                this.getDefaultUnlockPeriod.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+            });
     }
 
     async getInitEpoch(): Promise<number> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction = contract.methods.getInitEpoch([]);
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-
-            const result = interaction.interpretQueryResponse(queryResponse);
-
-            const initEpoch = result.firstValue.valueOf();
-
-            return initEpoch.toNumber();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiLockedAssetService.name,
-                this.getDefaultUnlockPeriod.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toNumber();
     }
 }
