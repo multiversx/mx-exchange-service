@@ -8,7 +8,7 @@ import { ProxyService } from '../proxy/proxy.service';
 import { UserService } from './user.service';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ContextService } from '../../services/context/context.service';
-import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
+import { LockedAssetService } from '../locked-asset-factory/services/locked-asset.service';
 import {
     utilities as nestWinstonModuleUtilities,
     WinstonModule,
@@ -34,7 +34,7 @@ import { PairComputeService } from '../pair/services/pair.compute.service';
 import { ProxyServiceMock } from '../proxy/proxy.service.mock';
 import { ProxyPairServiceMock } from '../proxy/proxy-pair/proxy.pair.service.mock';
 import { ProxyFarmServiceMock } from '../proxy/proxy-farm/proxy.farm.service.mock';
-import { LockedAssetServiceMock } from '../locked-asset-factory/locked.asset.service.mock';
+import { LockedAssetServiceMock } from '../locked-asset-factory/mocks/locked.asset.service.mock';
 
 describe('UserService', () => {
     let service: UserService;

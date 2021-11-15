@@ -4,11 +4,11 @@ import {
     LockedAssetAttributes,
     LockedAssetModel,
     UnlockMileStoneModel,
-} from './models/locked-asset.model';
-import { cacheConfig, scAddress } from '../../config';
-import { NftCollection } from '../../models/tokens/nftCollection.model';
-import { CachingService } from '../../services/caching/cache.service';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+} from '../models/locked-asset.model';
+import { cacheConfig, scAddress } from '../../../config';
+import { NftCollection } from '../../../models/tokens/nftCollection.model';
+import { CachingService } from '../../../services/caching/cache.service';
+import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import {
@@ -20,8 +20,8 @@ import {
     U64Type,
     U8Type,
 } from '@elrondnetwork/erdjs/out';
-import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
-import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { DecodeAttributesArgs } from '../../proxy/models/proxy.args';
+import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()

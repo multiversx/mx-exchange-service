@@ -10,7 +10,7 @@ import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { UserNftTokens } from './nfttokens.union';
-import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
+import { LockedAssetService } from '../locked-asset-factory/services/locked-asset.service';
 import { WrapService } from '../wrapping/wrap.service';
 import { UserComputeService } from './user.compute.service';
 import { LockedAssetToken } from '../../models/tokens/lockedAssetToken.model';

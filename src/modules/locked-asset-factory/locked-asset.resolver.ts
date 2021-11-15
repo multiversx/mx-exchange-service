@@ -1,14 +1,14 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { LockedAssetService } from './locked-asset.service';
+import { LockedAssetService } from './services/locked-asset.service';
 import {
     LockedAssetAttributes,
     LockedAssetModel,
     UnlockMileStoneModel,
 } from './models/locked-asset.model';
 import { UnlockAssetsArs } from './models/locked-asset.args';
-import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
+import { TransactionsLockedAssetService } from './services/transaction-locked-asset.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { ApolloError } from 'apollo-server-express';
