@@ -215,6 +215,44 @@ export class AnalyticsService {
         );
     }
 
+    async getValues24hSum(
+        series: string,
+        metric: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'values24hSum',
+            series,
+            metric,
+        );
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.awsTimestreamQuery.getValues24hSum({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                }),
+            oneMinute() * 5,
+        );
+    }
+
+    async getValues24h(
+        series: string,
+        metric: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey('values24h', series, metric);
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.awsTimestreamQuery.getValues24h({
+                    table: awsConfig.timestream.tableName,
+                    series,
+                    metric,
+                }),
+            oneMinute() * 5,
+        );
+    }
+
     private getAnalyticsCacheKey(...args: any) {
         return generateCacheKeyFromParams('analytics', ...args);
     }

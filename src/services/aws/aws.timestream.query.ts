@@ -85,7 +85,7 @@ export class AWSTimestreamQueryService {
             .format('yyyy-MM-DD HH:mm:ss');
 
         const QueryString = `
-            SELECT ROUND(a.measure_value::double, 2) AS value
+            SELECT a.measure_value::double AS value
             FROM "${this.DatabaseName}"."${table}" a INNER JOIN
             (
                 SELECT max(time) as max 
@@ -100,7 +100,7 @@ export class AWSTimestreamQueryService {
                 AND measure_name = '${metric}'
                 AND time >= '${gte}' 
                 AND time <= '${lte}'  
-            GROUP by a.time,  ROUND(a.measure_value::double, 2)
+            GROUP by a.time, a.measure_value::double
             ORDER BY a.time ASC
         `;
         const params = { QueryString };
@@ -116,7 +116,7 @@ export class AWSTimestreamQueryService {
     }): Promise<HistoricDataModel[]> {
         const QueryString = `
             WITH binned_timeseries AS (
-                SELECT series, BIN(time, 24h) AS binned_timestamp, ROUND(AVG(measure_value::double), 2) AS avg_value
+                SELECT series, BIN(time, 24h) AS binned_timestamp, AVG(measure_value::double) AS avg_value
                 FROM "${this.DatabaseName}".${table}
                 WHERE measure_name = '${metric}'
                     AND series = '${series}'
@@ -129,7 +129,7 @@ export class AWSTimestreamQueryService {
                 FROM binned_timeseries
                 GROUP BY series
             )
-            SELECT time, ROUND(value, 2) AS value
+            SELECT time, value
             FROM interpolated_timeseries
             CROSS JOIN UNNEST(interpolated_avg_value)
       `;
@@ -156,7 +156,7 @@ export class AWSTimestreamQueryService {
               (
                 SELECT 
                   time,
-                  ROUND(a.measure_value::double, 2) AS value
+                  a.measure_value::double AS value
                 FROM "${this.DatabaseName}".${table} a
                 INNER JOIN
                   (
@@ -169,7 +169,7 @@ export class AWSTimestreamQueryService {
                   on a.time = b.max
                 WHERE series = '${series}'
                 AND measure_name = '${metric}'   
-                GROUP by a.time,  ROUND(a.measure_value::double, 2)
+                GROUP by a.time, a.measure_value::double
                 ORDER BY a.time ASC
               )
             ) 
@@ -195,7 +195,7 @@ export class AWSTimestreamQueryService {
     }): Promise<HistoricDataModel[]> {
         const QueryString = `
             WITH binned_timeseries AS (
-                SELECT series, BIN(time, 24h) AS binned_timestamp, ROUND(SUM(measure_value::double), 2) AS sum
+                SELECT series, BIN(time, 24h) AS binned_timestamp, SUM(measure_value::double) AS sum
                 FROM "${this.DatabaseName}".${table}
                 WHERE measure_name = '${metric}'
                     AND series = '${series}'
@@ -208,7 +208,7 @@ export class AWSTimestreamQueryService {
                 FROM binned_timeseries
                 GROUP BY series
             )
-            SELECT time, ROUND(value, 2) AS value
+            SELECT time, value
             FROM interpolated_timeseries
             CROSS JOIN UNNEST(interpolated_sum)
       `;
@@ -234,7 +234,7 @@ export class AWSTimestreamQueryService {
               (
                 SELECT 
                   time,
-                  ROUND(a.measure_value::double, 2) AS value
+                  a.measure_value::double AS value
                 FROM "${this.DatabaseName}".${table} a
                 INNER JOIN
                   (
@@ -249,7 +249,7 @@ export class AWSTimestreamQueryService {
                 WHERE series = '${series}'
                 AND measure_name = '${metric}'
                 AND time > ago(30d)   
-                GROUP by a.time,  ROUND(a.measure_value::double, 2)
+                GROUP by a.time, a.measure_value::double
                 ORDER BY a.time ASC
               )
             ) 
@@ -270,7 +270,7 @@ export class AWSTimestreamQueryService {
     async getSeries({ table, series, metric }): Promise<HistoricDataModel[]> {
         const QueryString = `
             WITH binned_timeseries AS (
-                SELECT series, BIN(time, 24h) AS binned_timestamp, ROUND(AVG(measure_value::double), 2) AS avg_value
+                SELECT series, BIN(time, 24h) AS binned_timestamp, AVG(measure_value::double) AS avg_value
                 FROM "${this.DatabaseName}".${table}
                 WHERE measure_name = '${metric}'
                     AND series = '${series}'
@@ -284,7 +284,7 @@ export class AWSTimestreamQueryService {
                 FROM binned_timeseries
                 GROUP BY series
             )
-            SELECT time, ROUND(value, 2) AS value
+            SELECT time, value
             FROM interpolated_timeseries
             CROSS JOIN UNNEST(interpolated_avg_value)
       `;
@@ -310,7 +310,7 @@ export class AWSTimestreamQueryService {
               (
                 SELECT 
                   TIMESTAMPADD('DAY', -1, time) as time,
-                  ROUND(a.measure_value::double, 2) AS value
+                  a.measure_value::double AS value
                 FROM "${this.DatabaseName}".${table} a
                 INNER JOIN
                   (
@@ -325,12 +325,12 @@ export class AWSTimestreamQueryService {
                 WHERE series = '${series}'
                 AND measure_name = '${metric}'
                 AND time > ago(29d)   
-                GROUP by a.time,  ROUND(a.measure_value::double, 2)
+                GROUP by a.time, a.measure_value::double
                 ORDER BY a.time ASC
               )
               UNION
               (
-                SELECT time, ROUND(measure_value::double, 2) as value
+                SELECT time, measure_value::double as value
                     FROM "${this.DatabaseName}".${table} 
                 WHERE series = '${series}'
                   AND measure_name = '${metric}'
@@ -363,7 +363,7 @@ export class AWSTimestreamQueryService {
               (
                 SELECT 
                   TIMESTAMPADD('DAY', -1, time) as time,
-                  ROUND(a.measure_value::double, 2) AS value
+                  a.measure_value::double AS value
                 FROM "${this.DatabaseName}".${table} a
                 INNER JOIN
                   (
@@ -376,12 +376,12 @@ export class AWSTimestreamQueryService {
                   on a.time = b.min
                 WHERE series = '${series}'
                 AND measure_name = '${metric}'
-                GROUP by a.time,  ROUND(a.measure_value::double, 2)
+                GROUP by a.time, a.measure_value::double
                 ORDER BY a.time ASC
               )
               UNION
               (
-                SELECT time, ROUND(measure_value::double, 2) as value
+                SELECT time, measure_value::double as value
                     FROM "${this.DatabaseName}".${table} 
                 WHERE series = '${series}'
                   AND measure_name = '${metric}'
@@ -392,6 +392,88 @@ export class AWSTimestreamQueryService {
             GROUP BY date_trunc('day', time)
             ORDER BY time ASC
         `;
+        const params = { QueryString };
+        const { Rows } = await this.queryClient.query(params).promise();
+        return Rows.map(
+            Row =>
+                new HistoricDataModel({
+                    timestamp: Row.Data[0].ScalarValue,
+                    value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
+                }),
+        );
+    }
+
+    async getValues24h({
+        table,
+        series,
+        metric,
+    }): Promise<HistoricDataModel[]> {
+        const QueryString = `
+            SELECT date_trunc('hour', time) as time, value 
+            FROM (
+              (
+                SELECT 
+                time,
+                a.measure_value::double AS value
+                FROM "${this.DatabaseName}".${table} a
+                INNER JOIN
+                    (
+                        SELECT max(time) as max 
+                        FROM "${this.DatabaseName}".${table} 
+                        WHERE series = '${series}'
+                        AND measure_name = '${metric}'
+                        AND time >= ago(24h)
+                        GROUP BY date_trunc('hour', time)
+                    ) b
+                    on a.time = b.max
+                WHERE series = '${series}'
+                AND measure_name = '${metric}'
+                AND time >= ago(24h)   
+                GROUP by a.time,  a.measure_value::double
+                ORDER BY a.time ASC
+              )
+            ) 
+            GROUP BY date_trunc('hour', time), value
+            ORDER BY time ASC
+        `;
+
+        const params = { QueryString };
+        const { Rows } = await this.queryClient.query(params).promise();
+        return Rows.map(
+            Row =>
+                new HistoricDataModel({
+                    timestamp: Row.Data[0].ScalarValue,
+                    value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
+                }),
+        );
+    }
+
+    async getValues24hSum({
+        table,
+        series,
+        metric,
+    }): Promise<HistoricDataModel[]> {
+        const QueryString = `
+             WITH binned_timeseries AS (
+                SELECT series, BIN(time, 1h) AS binned_timestamp, SUM(measure_value::double) AS sum
+                FROM "${this.DatabaseName}".${table}
+                WHERE measure_name = '${metric}'
+                    AND series = '${series}'
+                    AND time > ago(24h)
+                GROUP BY series, BIN(time, 1h)
+            ), interpolated_timeseries AS (
+                SELECT series,
+                    INTERPOLATE_LOCF(
+                        CREATE_TIME_SERIES(binned_timestamp, sum),
+                            SEQUENCE(min(binned_timestamp), max(binned_timestamp), 1h)) AS interpolated_sum
+                FROM binned_timeseries
+                GROUP BY series
+            )
+            SELECT time, value AS value
+            FROM interpolated_timeseries
+            CROSS JOIN UNNEST(interpolated_sum)
+        `;
+
         const params = { QueryString };
         const { Rows } = await this.queryClient.query(params).promise();
         return Rows.map(

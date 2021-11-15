@@ -120,4 +120,20 @@ export class AnalyticsResolver {
             metric,
         );
     }
+
+    @Query(() => [HistoricDataModel])
+    async values24h(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getValues24h(series, metric);
+    }
+
+    @Query(() => [HistoricDataModel])
+    async values24hSum(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getValues24hSum(series, metric);
+    }
 }
