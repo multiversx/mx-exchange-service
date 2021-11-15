@@ -1,13 +1,13 @@
-import { RouterService } from './router.service';
+import { RouterService } from './services/router.service';
 import { Resolver, Query, ResolveField, Args, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from './models/factory.model';
-import { TransactionRouterService } from './transactions.router.service';
+import { TransactionRouterService } from './services/transactions.router.service';
 import { JwtAdminGuard } from '../../helpers/guards/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
-import { RouterGetterService } from './router.getter.service';
+import { RouterGetterService } from './services/router.getter.service';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {

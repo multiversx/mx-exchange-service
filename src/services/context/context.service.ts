@@ -1,24 +1,8 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { elrondConfig } from '../../config';
-import {
-    BigUIntValue,
-    BytesValue,
-    TypedValue,
-    U32Value,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import {
-    SmartContract,
-    GasLimit,
-    ContractFunction,
-    Address,
-} from '@elrondnetwork/erdjs';
-import { TransactionModel } from '../../models/transaction.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
-import { RouterGetterService } from 'src/modules/router/router.getter.service';
-import { BigNumber } from 'bignumber.js';
-import { InputTokenModel } from 'src/models/inputToken.model';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 
 @Injectable()
 export class ContextService {
