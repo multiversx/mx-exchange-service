@@ -116,7 +116,7 @@ export class AWSTimestreamQueryService {
     }): Promise<HistoricDataModel[]> {
         const QueryString = `
             WITH binned_timeseries AS (
-                SELECT series, BIN(time, 24h) AS binned_timestamp, AVG(measure_value::double), 8) AS avg_value
+                SELECT series, BIN(time, 24h) AS binned_timestamp, AVG(measure_value::double) AS avg_value
                 FROM "${this.DatabaseName}".${table}
                 WHERE measure_name = '${metric}'
                     AND series = '${series}'
@@ -270,7 +270,7 @@ export class AWSTimestreamQueryService {
     async getSeries({ table, series, metric }): Promise<HistoricDataModel[]> {
         const QueryString = `
             WITH binned_timeseries AS (
-                SELECT series, BIN(time, 24h) AS binned_timestamp, AVG(measure_value::double), 8) AS avg_value
+                SELECT series, BIN(time, 24h) AS binned_timestamp, AVG(measure_value::double) AS avg_value
                 FROM "${this.DatabaseName}".${table}
                 WHERE measure_name = '${metric}'
                     AND series = '${series}'
