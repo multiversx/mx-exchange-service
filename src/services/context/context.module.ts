@@ -3,6 +3,8 @@ import { ElrondCommunicationModule } from '../elrond-communication/elrond-commun
 import { ContextService } from './context.service';
 import { RouterModule } from '../../modules/router/router.module';
 import { CachingModule } from '../caching/cache.module';
+import { ContextGetterService } from './context.getter.service';
+import { ContextTransactionsService } from './context.transactions.service';
 
 @Module({
     imports: [
@@ -10,7 +12,11 @@ import { CachingModule } from '../caching/cache.module';
         CachingModule,
         forwardRef(() => RouterModule),
     ],
-    providers: [ContextService],
-    exports: [ContextService],
+    providers: [
+        ContextService,
+        ContextGetterService,
+        ContextTransactionsService,
+    ],
+    exports: [ContextService, ContextGetterService, ContextTransactionsService],
 })
 export class ContextModule {}

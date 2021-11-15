@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
-import { ContextServiceMock } from '../../../services/context/context.service.mocks';
+import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { PairServiceMock } from '../../pair/mocks/pair.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';

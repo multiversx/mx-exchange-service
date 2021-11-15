@@ -25,7 +25,7 @@ import { CachingModule } from '../../services/caching/cache.module';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
 import { FarmServiceMock } from '../farm/mocks/farm.service.mock';
-import { ContextServiceMock } from 'src/services/context/context.service.mocks';
+import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { PairServiceMock } from '../pair/mocks/pair.service.mock';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { PairGetterService } from '../pair/services/pair.getter.service';

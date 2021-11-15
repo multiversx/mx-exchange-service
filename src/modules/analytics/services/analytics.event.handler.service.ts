@@ -18,6 +18,7 @@ import {
     AddLiquidityEventType,
     SwapEventType,
 } from '../../rabbitmq/entities/pair/pair.types';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextService } from 'src/services/context/context.service';
 
 @Injectable()
@@ -26,6 +27,7 @@ export class AnalyticsEventHandlerService {
 
     constructor(
         private readonly context: ContextService,
+        private readonly contextGetter: ContextGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
@@ -135,8 +137,8 @@ export class AnalyticsEventHandlerService {
         ] = await Promise.all([
             this.pairGetterService.getFirstTokenID(event.address),
             this.pairGetterService.getSecondTokenID(event.address),
-            this.context.getTokenMetadata(event.tokenIn.tokenID),
-            this.context.getTokenMetadata(event.tokenOut.tokenID),
+            this.contextGetter.getTokenMetadata(event.tokenIn.tokenID),
+            this.contextGetter.getTokenMetadata(event.tokenOut.tokenID),
             this.pairGetterService.getTokenPriceUSD(
                 event.address,
                 event.tokenIn.tokenID,
@@ -366,7 +368,7 @@ export class AnalyticsEventHandlerService {
         tokenID: string,
     ): Promise<any> {
         const [token, priceUSD, pairs] = await Promise.all([
-            this.context.getTokenMetadata(tokenID),
+            this.contextGetter.getTokenMetadata(tokenID),
             this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
             this.context.getPairsMetadata(),
         ]);
@@ -405,7 +407,7 @@ export class AnalyticsEventHandlerService {
         amount: string,
     ): Promise<any> {
         const [token, priceUSD, lockedData] = await Promise.all([
-            this.context.getTokenMetadata(tokenID),
+            this.contextGetter.getTokenMetadata(tokenID),
             this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
             this.getTokenLiquidityData(pairAddress, tokenID),
         ]);

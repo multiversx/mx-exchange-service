@@ -14,7 +14,6 @@ import {
     AddLiquidityProxyArgs,
     RemoveLiquidityProxyArgs,
 } from '../models/proxy-pair.args';
-import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WrapService } from '../../wrapping/wrap.service';
 import { TransactionsWrapService } from '../../wrapping/transactions-wrap.service';
@@ -25,12 +24,13 @@ import { ProxyPairService } from './proxy-pair.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 @Injectable()
 export class TransactionsProxyPairService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly context: ContextService,
+        private readonly contextTransactions: ContextTransactionsService,
         private readonly proxyService: ProxyService,
         private readonly proxyPairService: ProxyPairService,
         private readonly pairService: PairService,
@@ -119,7 +119,7 @@ export class TransactionsProxyPairService {
                 ? gasConfig.addLiquidityProxyMerge
                 : gasConfig.addLiquidityProxy,
         );
-        return this.context.multiESDTNFTTransfer(
+        return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
             inputTokens,
@@ -168,7 +168,7 @@ export class TransactionsProxyPairService {
             new BigUIntValue(amount1Min),
         ];
 
-        const transaction = this.context.nftTransfer(
+        const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.removeLiquidityProxy),
@@ -222,7 +222,7 @@ export class TransactionsProxyPairService {
         }
         const contract = await this.elrondProxy.getProxyDexSmartContract();
 
-        return this.context.multiESDTNFTTransfer(
+        return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
             tokens,
