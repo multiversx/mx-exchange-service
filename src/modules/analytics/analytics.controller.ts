@@ -22,7 +22,6 @@ export class AnalyticsController {
     ) {
         await this.eventHandler.handleAddLiquidityEvent(
             event.addLiquidityEvent,
-            PAIR_EVENTS.ADD_LIQUIDITY,
         );
     }
 
@@ -32,7 +31,6 @@ export class AnalyticsController {
     ) {
         await this.eventHandler.handleAddLiquidityEvent(
             event.removeLiquidityEvent,
-            PAIR_EVENTS.REMOVE_LIQUIDITY,
         );
     }
 
