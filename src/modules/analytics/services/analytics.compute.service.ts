@@ -48,7 +48,10 @@ export class AnalyticsComputeService {
         );
         const farmsLockedValueUSD = await Promise.all(promises);
         for (const farmLockedValueUSD of farmsLockedValueUSD) {
-            totalLockedValue = totalLockedValue.plus(farmLockedValueUSD);
+            const farmLockedValueUSDBig = new BigNumber(farmLockedValueUSD);
+            totalLockedValue = !farmLockedValueUSDBig.isNaN()
+                ? totalLockedValue.plus(farmLockedValueUSD)
+                : totalLockedValue;
         }
 
         return totalLockedValue.toFixed();
