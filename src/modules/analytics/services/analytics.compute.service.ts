@@ -67,7 +67,10 @@ export class AnalyticsComputeService {
         ]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
-            totalValueLockedUSD = totalValueLockedUSD.plus(lockedValueUSD);
+            const lockedValuesUSDBig = new BigNumber(lockedValueUSD);
+            totalValueLockedUSD = !lockedValuesUSDBig.isNaN()
+                ? totalValueLockedUSD.plus(lockedValuesUSDBig)
+                : totalValueLockedUSD;
         }
 
         return totalValueLockedUSD.toFixed();
