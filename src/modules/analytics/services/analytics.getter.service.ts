@@ -22,10 +22,9 @@ export class AnalyticsGetterService {
         createValueFunc: () => any,
         ttl: number,
     ): Promise<any> {
-        const cacheKey = this.getAnalyticsCacheKey(key);
         try {
             return await this.cachingService.getOrSet(
-                cacheKey,
+                key,
                 createValueFunc,
                 ttl,
             );
@@ -33,7 +32,7 @@ export class AnalyticsGetterService {
             const logMessage = generateGetLogMessage(
                 AnalyticsGetterService.name,
                 this.getData.name,
-                cacheKey,
+                key,
                 error.message,
             );
             this.logger.error(logMessage);
