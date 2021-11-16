@@ -24,5 +24,14 @@
         "WEGLD-bd4d79": "egld"
     },
     "tokensSupply": ["MEX-455c57"],
-    "cachedTokensPrice": ["MEX-455c57", "WEGLD-bd4d79"]
+    "cachedTokensPrice": ["MEX-455c57", "WEGLD-bd4d79"],
+    "aws": {
+        "region": "eu-central-1",
+        "timestream": {
+            "databaseName": "maiar-exchange-timestream",
+            "tableName": "tradingInfo",
+            "MemoryStoreRetentionPeriodInHours": 768,
+            "MagneticStoreRetentionPeriodInDays": 73000
+        }
+    }
 }
