@@ -14,8 +14,8 @@ else
   STACK_NAME=$1-maiar-exchange
 fi
 
-REGION=us-east-1
-S3_BUCKET=us-east-1-sam-bucket
+REGION=eu-central-1
+S3_BUCKET=eu-central-1-sam-bucket
 TEMPLATE=template.yaml
 
 rm build.yaml
