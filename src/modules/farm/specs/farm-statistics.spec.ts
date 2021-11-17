@@ -65,6 +65,6 @@ describe('FarmStatisticsService', () => {
 
     it('should get farmAPR', async () => {
         const farmAPR = await service.computeFarmAPR('farm_address_1');
-        expect(farmAPR).toEqual('2.628');
+        expect(farmAPR).toEqual('4.38');
     });
 });
