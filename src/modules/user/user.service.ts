@@ -67,23 +67,17 @@ export class UserService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserToken[]> {
-        const [wrappedEGLDTokenID, userTokens] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
-            this.apiService.getTokensForUser(
-                userAddress,
-                pagination.offset,
-                pagination.limit,
-            ),
-        ]);
+        const userTokens = await this.apiService.getTokensForUser(
+            userAddress,
+            pagination.offset,
+            pagination.limit,
+        );
         const userPairEsdtTokens = [];
         for (const userToken of userTokens) {
             const isPairEsdtToken = await this.pairService.isPairEsdtToken(
                 userToken.identifier,
             );
-            if (
-                isPairEsdtToken &&
-                userToken.identifier !== wrappedEGLDTokenID
-            ) {
+            if (isPairEsdtToken) {
                 userPairEsdtTokens.push(userToken);
             }
         }
