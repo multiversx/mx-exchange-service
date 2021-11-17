@@ -8,7 +8,7 @@ import { ProxyService } from '../proxy/proxy.service';
 import { UserService } from './user.service';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ContextService } from '../../services/context/context.service';
-import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
+import { LockedAssetService } from '../locked-asset-factory/services/locked-asset.service';
 import {
     utilities as nestWinstonModuleUtilities,
     WinstonModule,
@@ -25,7 +25,7 @@ import { CachingModule } from '../../services/caching/cache.module';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
 import { FarmServiceMock } from '../farm/mocks/farm.service.mock';
-import { ContextServiceMock } from 'src/services/context/context.service.mocks';
+import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { PairServiceMock } from '../pair/mocks/pair.service.mock';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { PairGetterService } from '../pair/services/pair.getter.service';
@@ -34,7 +34,12 @@ import { PairComputeService } from '../pair/services/pair.compute.service';
 import { ProxyServiceMock } from '../proxy/proxy.service.mock';
 import { ProxyPairServiceMock } from '../proxy/proxy-pair/proxy.pair.service.mock';
 import { ProxyFarmServiceMock } from '../proxy/proxy-farm/proxy.farm.service.mock';
-import { LockedAssetServiceMock } from '../locked-asset-factory/locked.asset.service.mock';
+import { LockedAssetServiceMock } from '../locked-asset-factory/mocks/locked.asset.service.mock';
+import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
+import { AbiLockedAssetService } from '../locked-asset-factory/services/abi-locked-asset.service';
+import { AbiLockedAssetServiceMock } from '../locked-asset-factory/mocks/abi.locked.asset.service.mock';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -57,6 +62,11 @@ describe('UserService', () => {
     const ContextServiceProvider = {
         provide: ContextService,
         useClass: ContextServiceMock,
+    };
+
+    const ContextGetterServiceProvider = {
+        provide: ContextGetterService,
+        useClass: ContextGetterServiceMock,
     };
 
     const PairServiceProvider = {
@@ -94,6 +104,11 @@ describe('UserService', () => {
         useClass: LockedAssetServiceMock,
     };
 
+    const AbiLockedAssetServiceProvider = {
+        provide: AbiLockedAssetService,
+        useClass: AbiLockedAssetServiceMock,
+    };
+
     const WrapServiceProvider = {
         provide: WrapService,
         useClass: WrapServiceMock,
@@ -113,6 +128,7 @@ describe('UserService', () => {
             providers: [
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
+                ContextGetterServiceProvider,
                 PairServiceProvider,
                 PairGetterServiceProvider,
                 PairComputeService,
@@ -123,6 +139,8 @@ describe('UserService', () => {
                 FarmServiceProvider,
                 FarmGetterServiceProvider,
                 LockedAssetProvider,
+                AbiLockedAssetServiceProvider,
+                LockedAssetGetterService,
                 WrapServiceProvider,
                 UserService,
                 UserComputeService,
@@ -154,8 +172,7 @@ describe('UserService', () => {
                 name: 'SecondToken',
                 type: 'FungibleESDT',
                 owner: 'owner_address',
-                minted: '2000000000000000000',
-                burnt: '0',
+                supply: '2000000000000000000',
                 decimals: 18,
                 isPaused: false,
                 canUpgrade: true,

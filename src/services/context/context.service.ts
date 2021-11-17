@@ -1,40 +1,14 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { elrondConfig } from '../../config';
-import {
-    BigUIntValue,
-    BytesValue,
-    TypedValue,
-    U32Value,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import {
-    SmartContract,
-    GasLimit,
-    ContractFunction,
-    Address,
-} from '@elrondnetwork/erdjs';
-import { EsdtToken } from '../../models/tokens/esdtToken.model';
-import { TransactionModel } from '../../models/transaction.model';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { CachingService } from '../caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairMetadata } from '../../modules/router/models/pair.metadata.model';
-import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { oneHour, oneSecond } from '../../helpers/helpers';
-import { NftToken } from 'src/models/tokens/nftToken.model';
-import { RouterGetterService } from 'src/modules/router/router.getter.service';
-import { BigNumber } from 'bignumber.js';
-import { InputTokenModel } from 'src/models/inputToken.model';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 
 @Injectable()
 export class ContextService {
     constructor(
-        private readonly apiService: ElrondApiService,
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetterService: RouterGetterService,
-        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -48,7 +22,7 @@ export class ContextService {
 
     async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
         const pairs = await this.routerGetterService.getPairsMetadata();
-        return  pairs.find(pair => pair.address === pairAddress);
+        return pairs.find(pair => pair.address === pairAddress);
     }
 
     async getPairByTokens(
@@ -109,191 +83,5 @@ export class ContextService {
 
         path.pop();
         return false;
-    }
-
-    async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
-        const cacheKey = this.getContextCacheKey(tokenID);
-        try {
-            const getTokenMetadata = () =>
-                this.apiService.getService().getToken(tokenID);
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                getTokenMetadata,
-                oneHour(),
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                ContextService.name,
-                this.getTokenMetadata.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
-        const cacheKey = this.getContextCacheKey(collection);
-        try {
-            const getNftCollectionMetadata = () =>
-                this.apiService.getNftCollection(collection);
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                getNftCollectionMetadata,
-                oneHour(),
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                ContextService.name,
-                this.getTokenMetadata.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    async getNftMetadata(nftTokenID: string): Promise<NftToken> {
-        const cacheKey = this.getContextCacheKey(nftTokenID);
-        try {
-            const getNftMetadata = () =>
-                this.apiService.getService().getNFTToken(nftTokenID);
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                getNftMetadata,
-                oneHour(),
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                ContextService.name,
-                this.getNftMetadata.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            console.log(error);
-            throw error;
-        }
-    }
-
-    async getCurrentEpoch(): Promise<number> {
-        const cacheKey = this.getContextCacheKey('currentEpoch');
-        try {
-            const getCurrentEpoch = async () =>
-                (await this.apiService.getStats()).epoch;
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                getCurrentEpoch,
-                oneHour(),
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                ContextService.name,
-                this.getCurrentEpoch.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            console.log(error);
-            throw error;
-        }
-    }
-
-    async getShardCurrentBlockNonce(shardID: number): Promise<number> {
-        const cacheKey = this.getContextCacheKey('shardBlockNonce', shardID);
-        try {
-            const getCurrentBlockNonce = () =>
-                this.apiService.getCurrentBlockNonce(shardID);
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                getCurrentBlockNonce,
-                oneSecond() * 6,
-                oneSecond() * 6,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                ContextService.name,
-                this.getShardCurrentBlockNonce.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            console.log(error);
-            throw error;
-        }
-    }
-
-    esdtTransfer(
-        contract: SmartContract,
-        args: TypedValue[],
-        gasLimit: GasLimit,
-    ): TransactionModel {
-        const transaction = contract.call({
-            func: new ContractFunction('ESDTTransfer'),
-            args: args,
-            gasLimit: gasLimit,
-        });
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
-    }
-
-    multiESDTNFTTransfer(
-        sender: Address,
-        contract: SmartContract,
-        tokens: InputTokenModel[],
-        funcName: string,
-        args: TypedValue[],
-        gasLimit: GasLimit,
-    ): TransactionModel {
-        const receiverAddress = contract.getAddress();
-        const transactionArgs: TypedValue[] = [];
-        transactionArgs.push(BytesValue.fromHex(receiverAddress.hex()));
-
-        transactionArgs.push(new U32Value(tokens.length));
-        for (const token of tokens) {
-            transactionArgs.push(BytesValue.fromUTF8(token.tokenID));
-            transactionArgs.push(new U32Value(token.nonce));
-            transactionArgs.push(new BigUIntValue(new BigNumber(token.amount)));
-        }
-
-        transactionArgs.push(BytesValue.fromUTF8(funcName));
-        transactionArgs.push(...args);
-
-        const transaction = contract.call({
-            func: new ContractFunction('MultiESDTNFTTransfer'),
-            args: transactionArgs,
-            gasLimit: gasLimit,
-        });
-
-        return {
-            ...transaction.toPlainObject(),
-            receiver: sender.bech32(),
-            chainID: elrondConfig.chainID,
-        };
-    }
-
-    nftTransfer(
-        contract: SmartContract,
-        args: TypedValue[],
-        gasLimit: GasLimit,
-    ): TransactionModel {
-        const transaction = contract.call({
-            func: new ContractFunction('ESDTNFTTransfer'),
-            args: args,
-            gasLimit: gasLimit,
-        });
-
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
-    }
-
-    private getContextCacheKey(...args: any) {
-        return generateCacheKeyFromParams('context', ...args);
     }
 }

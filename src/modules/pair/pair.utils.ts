@@ -47,7 +47,9 @@ export function getAmountIn(
     const tokenOutAmountBig = new BigNumber(tokenOutAmount);
     const tokenInReservesBig = new BigNumber(tokenInReserves);
     const tokenOutReservesBig = new BigNumber(tokenOutReserves);
-
+    if (tokenOutReservesBig.isLessThan(tokenOutAmountBig)) {
+        return new BigNumber(0).integerValue();
+    }
     const numerator = tokenInReservesBig
         .multipliedBy(tokenOutAmountBig)
         .multipliedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS);

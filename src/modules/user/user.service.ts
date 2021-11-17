@@ -10,7 +10,6 @@ import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { UserNftTokens } from './nfttokens.union';
-import { LockedAssetService } from '../locked-asset-factory/locked-asset.service';
 import { WrapService } from '../wrapping/wrap.service';
 import { UserComputeService } from './user.compute.service';
 import { LockedAssetToken } from '../../models/tokens/lockedAssetToken.model';
@@ -26,6 +25,7 @@ import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PaginationArgs } from '../dex.model';
+import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -58,7 +58,7 @@ export class UserService {
         private proxyFarmService: ProxyFarmService,
         private farmService: FarmService,
         private farmGetterService: FarmGetterService,
-        private lockedAssetService: LockedAssetService,
+        private lockedAssetGetter: LockedAssetGetterService,
         private wrapService: WrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -214,7 +214,7 @@ export class UserService {
             lockedLpTokenID,
             lockedFarmTokenID,
         ] = await Promise.all([
-            this.lockedAssetService.getLockedTokenID(),
+            this.lockedAssetGetter.getLockedTokenID(),
             this.proxyPairService.getwrappedLpTokenID(),
             this.proxyFarmService.getwrappedFarmTokenID(),
         ]);

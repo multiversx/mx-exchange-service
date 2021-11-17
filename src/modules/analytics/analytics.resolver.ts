@@ -4,38 +4,41 @@ import {
     AnalyticsModel,
     HistoricDataModel,
 } from 'src/modules/analytics/models/analytics.model';
-import { AnalyticsService } from './analytics.service';
-import { awsConfig } from '../../config';
+import { AnalyticsGetterService } from './services/analytics.getter.service';
+import { AnalyticsService } from './services/analytics.service';
 
 @Resolver(() => AnalyticsModel)
 export class AnalyticsResolver {
-    constructor(private readonly analyticsService: AnalyticsService) {}
+    constructor(
+        private readonly analyticsService: AnalyticsService,
+        private readonly analyticsGetterService: AnalyticsGetterService,
+    ) {}
 
     @Query(() => String)
     async getTokenPriceUSD(@Args('tokenID') tokenID: string): Promise<string> {
-        return this.analyticsService.getTokenPriceUSD(tokenID);
+        return this.analyticsGetterService.getTokenPriceUSD(tokenID);
     }
 
     @Query(() => String)
     async totalValueLockedUSD(): Promise<string> {
-        return this.analyticsService.getTotalValueLockedUSD();
+        return this.analyticsGetterService.getTotalValueLockedUSD();
     }
 
     @Query(() => String)
     async totalLockedValueUSDFarms(): Promise<string> {
-        return this.analyticsService.getLockedValueUSDFarms();
+        return this.analyticsGetterService.getLockedValueUSDFarms();
     }
 
     @Query(() => String)
     async totalTokenSupply(@Args('tokenID') tokenID: string): Promise<string> {
-        return this.analyticsService.getTotalTokenSupply(tokenID);
+        return this.analyticsGetterService.getTotalTokenSupply(tokenID);
     }
 
     @Query(() => String)
-    async totalAgregatedRewards(
+    async totalAggregatedRewards(
         @Args('days', { type: () => Int }) days: number,
     ) {
-        return this.analyticsService.getTotalAgregatedRewards(days);
+        return this.analyticsGetterService.getTotalAggregatedRewards(days);
     }
 
     @Query(() => [HistoricDataModel])
@@ -84,6 +87,14 @@ export class AnalyticsResolver {
     }
 
     @Query(() => [HistoricDataModel])
+    async sumCompleteValues(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getSumCompleteValues(series, metric);
+    }
+
+    @Query(() => [HistoricDataModel])
     async latestValues(
         @Args('series') series: string,
         @Args('metric') metric: string,
@@ -108,5 +119,21 @@ export class AnalyticsResolver {
             series,
             metric,
         );
+    }
+
+    @Query(() => [HistoricDataModel])
+    async values24h(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getValues24h(series, metric);
+    }
+
+    @Query(() => [HistoricDataModel])
+    async values24hSum(
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getValues24hSum(series, metric);
     }
 }

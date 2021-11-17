@@ -6,7 +6,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { AbiRouterService } from './abi.router.service';
-import { PairMetadata } from './models/pair.metadata.model';
+import { PairMetadata } from '../models/pair.metadata.model';
 import { RouterComputeService } from './router.compute.service';
 
 @Injectable()

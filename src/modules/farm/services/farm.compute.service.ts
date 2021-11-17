@@ -4,7 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ContextService } from 'src/services/context/context.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { Logger } from 'winston';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
@@ -16,7 +16,7 @@ export class FarmComputeService {
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairComputeService: PairComputeService,
-        private readonly context: ContextService,
+        private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -69,7 +69,7 @@ export class FarmComputeService {
             farmTokenSupply,
             farmRewardPerShare,
         ] = await Promise.all([
-            this.context.getShardCurrentBlockNonce(1),
+            this.contextGetter.getShardCurrentBlockNonce(1),
             this.farmGetterService.getLastRewardBlockNonce(farmAddress),
             this.farmGetterService.getRewardsPerBlock(farmAddress),
             this.farmGetterService.getUndistributedFees(farmAddress),

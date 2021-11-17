@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
 import { FarmStatisticsService } from '../services/farm-statistics.service';
-import { ContextServiceMock } from '../../../services/context/context.service.mocks';
+import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';
@@ -65,6 +65,6 @@ describe('FarmStatisticsService', () => {
 
     it('should get farmAPR', async () => {
         const farmAPR = await service.computeFarmAPR('farm_address_1');
-        expect(farmAPR).toEqual('2.628');
+        expect(farmAPR).toEqual('4.38');
     });
 });

@@ -1,32 +1,34 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { LockedAssetService } from './locked-asset.service';
+import { LockedAssetService } from './services/locked-asset.service';
 import {
     LockedAssetAttributes,
     LockedAssetModel,
     UnlockMileStoneModel,
 } from './models/locked-asset.model';
 import { UnlockAssetsArs } from './models/locked-asset.args';
-import { TransactionsLockedAssetService } from './transaction-locked-asset.service';
+import { TransactionsLockedAssetService } from './services/transaction-locked-asset.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
+import { LockedAssetGetterService } from './services/locked.asset.getter.service';
 
 @Resolver(() => LockedAssetModel)
 export class LockedAssetResolver {
     constructor(
         private readonly lockedAssetService: LockedAssetService,
+        private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly transactionsService: TransactionsLockedAssetService,
     ) {}
 
     @ResolveField()
     async lockedToken(): Promise<NftCollection> {
         try {
-            return await this.lockedAssetService.getLockedToken();
+            return await this.lockedAssetGetter.getLockedToken();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -35,7 +37,7 @@ export class LockedAssetResolver {
     @ResolveField()
     async unlockMilestones(): Promise<UnlockMileStoneModel[]> {
         try {
-            return await this.lockedAssetService.getDefaultUnlockPeriod();
+            return await this.lockedAssetGetter.getDefaultUnlockPeriod();
         } catch (error) {
             throw new ApolloError(error);
         }

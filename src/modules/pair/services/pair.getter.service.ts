@@ -6,7 +6,7 @@ import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ContextService } from 'src/services/context/context.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -17,7 +17,7 @@ import { PairComputeService } from './pair.compute.service';
 @Injectable()
 export class PairGetterService {
     constructor(
-        private readonly context: ContextService,
+        private readonly contextGetter: ContextGetterService,
         private readonly cachingService: CachingService,
         private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
@@ -80,17 +80,17 @@ export class PairGetterService {
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
-        return this.context.getTokenMetadata(firstTokenID);
+        return this.contextGetter.getTokenMetadata(firstTokenID);
     }
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return this.context.getTokenMetadata(secondTokenID);
+        return this.contextGetter.getTokenMetadata(secondTokenID);
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.getLpTokenID(pairAddress);
-        return this.context.getTokenMetadata(lpTokenID);
+        return this.contextGetter.getTokenMetadata(lpTokenID);
     }
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -242,7 +242,7 @@ export class PairGetterService {
             pairAddress,
             `firstTokenVolume.${time}`,
             () =>
-                this.awsTimestreamQuery.getAgregatedValue({
+                this.awsTimestreamQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'firstTokenVolume',
@@ -260,7 +260,7 @@ export class PairGetterService {
             pairAddress,
             `secondTokenVolume.${time}`,
             () =>
-                this.awsTimestreamQuery.getAgregatedValue({
+                this.awsTimestreamQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'secondTokenVolume',
@@ -275,7 +275,7 @@ export class PairGetterService {
             pairAddress,
             `volumeUSD.${time}`,
             () =>
-                this.awsTimestreamQuery.getAgregatedValue({
+                this.awsTimestreamQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'volumeUSD',
@@ -290,7 +290,7 @@ export class PairGetterService {
             pairAddress,
             `feesUSD.${time}`,
             () =>
-                this.awsTimestreamQuery.getAgregatedValue({
+                this.awsTimestreamQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'feesUSD',

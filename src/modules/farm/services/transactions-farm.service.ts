@@ -15,19 +15,19 @@ import {
     ExitFarmArgs,
     SftFarmInteractionArgs,
 } from '../models/farm.args';
-import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { FarmGetterService } from './farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 @Injectable()
 export class TransactionsFarmService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly context: ContextService,
+        private readonly contextTransactions: ContextTransactionsService,
         private readonly farmGetterService: FarmGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -57,13 +57,17 @@ export class TransactionsFarmService {
             ? 'enterFarmAndLockRewards'
             : 'enterFarm';
 
-        return this.context.multiESDTNFTTransfer(
+        return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
             args.tokens,
             method,
             [],
-            new GasLimit(gasConfig.enterFarm),
+            new GasLimit(
+                args.tokens.length > 1
+                    ? gasConfig.enterFarmMerge
+                    : gasConfig.enterFarm,
+            ),
         );
     }
 
@@ -121,7 +125,7 @@ export class TransactionsFarmService {
             BytesValue.fromUTF8(method),
         ];
 
-        const transaction = this.context.nftTransfer(
+        const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasLimit),

@@ -8,16 +8,16 @@ import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { denominateAmount } from 'src/utils/token.converters';
 import { Logger } from 'winston';
-import { PairComputeService } from '../pair/services/pair.compute.service';
-import { PairGetterService } from '../pair/services/pair.getter.service';
-import { PairSetterService } from '../pair/services/pair.setter.service';
-import { RouterComputeService } from '../router/router.compute.service';
-import { RouterSetterService } from '../router/router.setter.service';
-import { PAIR_EVENTS } from '../rabbitmq/entities/generic.types';
+import { PairComputeService } from '../../pair/services/pair.compute.service';
+import { PairGetterService } from '../../pair/services/pair.getter.service';
+import { PairSetterService } from '../../pair/services/pair.setter.service';
+import { RouterComputeService } from '../../router/services/router.compute.service';
+import { RouterSetterService } from '../../router/services/router.setter.service';
 import {
     AddLiquidityEventType,
     SwapEventType,
-} from '../rabbitmq/entities/pair/pair.types';
+} from '../../rabbitmq/entities/pair/pair.types';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextService } from 'src/services/context/context.service';
 
 @Injectable()
@@ -26,6 +26,7 @@ export class AnalyticsEventHandlerService {
 
     constructor(
         private readonly context: ContextService,
+        private readonly contextGetter: ContextGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
@@ -37,53 +38,21 @@ export class AnalyticsEventHandlerService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async handleAddLiquidityEvent(
-        event: AddLiquidityEventType,
-        eventType: string,
-    ): Promise<void> {
+    async handleAddLiquidityEvent(event: AddLiquidityEventType): Promise<void> {
         await this.updatePairLockedValueUSD(event.address);
         const [
-            firstToken,
-            secondtoken,
-            firstTokenPriceUSD,
-            secondTokenPriceUSD,
             firstTokenLockedValueUSD,
             secondTokenLockedValueUSD,
             pairLockedValueUSD,
+            newTotalLockedValueUSD,
         ] = await Promise.all([
-            this.pairGetterService.getFirstToken(event.address),
-            this.pairGetterService.getSecondToken(event.address),
-            this.pairGetterService.getFirstTokenPriceUSD(event.address),
-            this.pairGetterService.getSecondTokenPriceUSD(event.address),
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
             this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
             this.pairGetterService.getLockedValueUSD(event.address),
+            this.routerComputeService.computeTotalLockedValueUSD(),
         ]);
 
-        const totalLockedValueUSD = await this.awsTimestreamQuery.getLatestValue(
-            {
-                table: awsConfig.timestream.tableName,
-                series: 'factory',
-                metric: 'totalLockedValueUSD',
-            },
-        );
-
-        const [firstAmountDenom, secondAmountDenom] = [
-            denominateAmount(event.firstToken.amount, firstToken.decimals),
-            denominateAmount(event.secondToken.amount, secondtoken.decimals),
-        ];
-        const [firstAmountUSD, secondAmountUSD] = [
-            firstAmountDenom.multipliedBy(firstTokenPriceUSD),
-            secondAmountDenom.multipliedBy(secondTokenPriceUSD),
-        ];
-        const lockedAmountUSD = firstAmountUSD.plus(secondAmountUSD);
-
-        const newTotalLockedValueUSD =
-            eventType === PAIR_EVENTS.ADD_LIQUIDITY
-                ? new BigNumber(totalLockedValueUSD).plus(lockedAmountUSD)
-                : new BigNumber(totalLockedValueUSD).minus(lockedAmountUSD);
         const data = [];
-
         data['factory'] = {
             totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
         };
@@ -132,11 +101,12 @@ export class AnalyticsEventHandlerService {
             firstTokenLockedValueUSD,
             secondTokenLockedValueUSD,
             totalFeePercent,
+            newTotalLockedValueUSD,
         ] = await Promise.all([
             this.pairGetterService.getFirstTokenID(event.address),
             this.pairGetterService.getSecondTokenID(event.address),
-            this.context.getTokenMetadata(event.tokenIn.tokenID),
-            this.context.getTokenMetadata(event.tokenOut.tokenID),
+            this.contextGetter.getTokenMetadata(event.tokenIn.tokenID),
+            this.contextGetter.getTokenMetadata(event.tokenOut.tokenID),
             this.pairGetterService.getTokenPriceUSD(
                 event.address,
                 event.tokenIn.tokenID,
@@ -148,15 +118,8 @@ export class AnalyticsEventHandlerService {
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
             this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
             this.pairGetterService.getTotalFeePercent(event.address),
+            this.routerComputeService.computeTotalLockedValueUSD(),
         ]);
-
-        const totalLockedValueUSD = await this.awsTimestreamQuery.getLatestValue(
-            {
-                table: awsConfig.timestream.tableName,
-                series: 'factory',
-                metric: 'totalLockedValueUSD',
-            },
-        );
 
         const [tokenInAmountDenom, tokenOutAmountDenom] = [
             denominateAmount(event.tokenIn.amount, tokenIn.decimals),
@@ -207,10 +170,7 @@ export class AnalyticsEventHandlerService {
         );
 
         data['factory'] = {
-            totalLockedValueUSD: new BigNumber(totalLockedValueUSD)
-                .plus(tokenInAmountUSD)
-                .minus(tokenOutAmountUSD)
-                .toFixed(),
+            totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
         };
 
         await this.awsTimestreamWrite.ingest({
@@ -227,25 +187,25 @@ export class AnalyticsEventHandlerService {
             totalVolumeUSD24h,
             totalFeesUSD24h,
         ] = await Promise.all([
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: event.address,
                 metric: 'firstTokenVolume',
                 time: '24h',
             }),
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: event.address,
                 metric: 'secondTokenVolume',
                 time: '24h',
             }),
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: event.address,
                 metric: 'volumeUSD',
                 time: '24h',
             }),
-            this.awsTimestreamQuery.getAgregatedValue({
+            this.awsTimestreamQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: event.address,
                 metric: 'feesUSD',
@@ -366,7 +326,7 @@ export class AnalyticsEventHandlerService {
         tokenID: string,
     ): Promise<any> {
         const [token, priceUSD, pairs] = await Promise.all([
-            this.context.getTokenMetadata(tokenID),
+            this.contextGetter.getTokenMetadata(tokenID),
             this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
             this.context.getPairsMetadata(),
         ]);
@@ -405,7 +365,7 @@ export class AnalyticsEventHandlerService {
         amount: string,
     ): Promise<any> {
         const [token, priceUSD, lockedData] = await Promise.all([
-            this.context.getTokenMetadata(tokenID),
+            this.contextGetter.getTokenMetadata(tokenID),
             this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
             this.getTokenLiquidityData(pairAddress, tokenID),
         ]);

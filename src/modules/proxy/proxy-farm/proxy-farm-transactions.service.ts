@@ -15,7 +15,6 @@ import {
     EnterFarmProxyArgs,
     ExitFarmProxyArgs,
 } from '../models/proxy-farm.args';
-import { ContextService } from '../../../services/context/context.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { ProxyFarmService } from './proxy-farm.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -24,12 +23,13 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { ProxyPairService } from '../proxy-pair/proxy-pair.service';
 import { ProxyService } from '../proxy.service';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 @Injectable()
 export class TransactionsProxyFarmService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly context: ContextService,
+        private readonly contextTransactions: ContextTransactionsService,
         private readonly proxyFarmService: ProxyFarmService,
         private readonly proxyPairService: ProxyPairService,
         private readonly proxyService: ProxyService,
@@ -63,7 +63,7 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
-        return this.context.multiESDTNFTTransfer(
+        return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
             args.tokens,
@@ -92,7 +92,7 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
-        const transaction = this.context.nftTransfer(
+        const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.exitFarmProxy),
@@ -118,7 +118,7 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
-        const transaction = this.context.nftTransfer(
+        const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.claimRewardsProxy),
@@ -144,7 +144,7 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
-        const transaction = this.context.nftTransfer(
+        const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
             new GasLimit(gasConfig.compoundRewardsProxy),
@@ -186,7 +186,7 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(farmAddress).hex()),
         ];
 
-        return this.context.multiESDTNFTTransfer(
+        return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
             tokens,

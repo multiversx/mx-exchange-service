@@ -99,9 +99,11 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.context.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const pairInfo = await this.abiPairService.getPairInfoMetadata(
-                pairAddress,
-            );
+            const [pairInfo, state] = await Promise.all([
+                this.abiPairService.getPairInfoMetadata(pairAddress),
+                this.abiPairService.getState(pairAddress),
+            ]);
+
             this.invalidatedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenReserve(
                     pairAddress,
@@ -115,6 +117,7 @@ export class PairCacheWarmerService {
                     pairAddress,
                     pairInfo.totalSupply,
                 ),
+                this.pairSetterService.setState(pairAddress, state),
             ]);
             await this.deleteCacheKeys();
         }

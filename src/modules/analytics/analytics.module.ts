@@ -7,9 +7,11 @@ import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
 import { AnalyticsController } from './analytics.controller';
-import { AnalyticsEventHandlerService } from './analytics.event.handler.service';
+import { AnalyticsEventHandlerService } from './services/analytics.event.handler.service';
 import { AnalyticsResolver } from './analytics.resolver';
-import { AnalyticsService } from './analytics.service';
+import { AnalyticsService } from './services/analytics.service';
+import { AnalyticsComputeService } from './services/analytics.compute.service';
+import { AnalyticsGetterService } from './services/analytics.getter.service';
 
 @Module({
     imports: [
@@ -24,9 +26,16 @@ import { AnalyticsService } from './analytics.service';
     providers: [
         AnalyticsResolver,
         AnalyticsService,
+        AnalyticsGetterService,
+        AnalyticsComputeService,
         AnalyticsEventHandlerService,
     ],
-    exports: [AnalyticsService, AnalyticsEventHandlerService],
+    exports: [
+        AnalyticsService,
+        AnalyticsGetterService,
+        AnalyticsComputeService,
+        AnalyticsEventHandlerService,
+    ],
     controllers: [AnalyticsController],
 })
 export class AnalyticsModule {}

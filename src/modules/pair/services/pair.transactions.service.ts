@@ -14,7 +14,6 @@ import {
     SwapTokensFixedOutputArgs,
 } from '../models/pair.args';
 import BigNumber from 'bignumber.js';
-import { ContextService } from 'src/services/context/context.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
@@ -24,6 +23,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 @Injectable()
 export class PairTransactionService {
@@ -31,7 +31,7 @@ export class PairTransactionService {
         private readonly elrondProxy: ElrondProxyService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly context: ContextService,
+        private readonly contextTransactions: ContextTransactionsService,
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -109,7 +109,7 @@ export class PairTransactionService {
             new BigUIntValue(amount1Min),
         ];
 
-        return this.context.multiESDTNFTTransfer(
+        return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
             [firstTokenInput, secondTokenInput],
@@ -156,7 +156,7 @@ export class PairTransactionService {
             new BigUIntValue(amount1Min),
         ];
         transactions.push(
-            this.context.esdtTransfer(
+            this.contextTransactions.esdtTransfer(
                 contract,
                 transactionArgs,
                 new GasLimit(gasConfig.removeLiquidity),
@@ -216,7 +216,7 @@ export class PairTransactionService {
                 ];
 
                 transactions.push(
-                    this.context.esdtTransfer(
+                    this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
                         new GasLimit(gasConfig.swapTokens),
@@ -232,7 +232,7 @@ export class PairTransactionService {
                     new BigUIntValue(amountOutMin),
                 ];
                 transactions.push(
-                    this.context.esdtTransfer(
+                    this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
                         new GasLimit(gasConfig.swapTokens),
@@ -255,7 +255,7 @@ export class PairTransactionService {
                 ];
 
                 transactions.push(
-                    this.context.esdtTransfer(
+                    this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
                         new GasLimit(gasConfig.swapTokens),
@@ -299,7 +299,7 @@ export class PairTransactionService {
                 ];
 
                 transactions.push(
-                    this.context.esdtTransfer(
+                    this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
                         new GasLimit(gasConfig.swapTokens),
@@ -315,7 +315,7 @@ export class PairTransactionService {
                     new BigUIntValue(amountOut),
                 ];
                 transactions.push(
-                    this.context.esdtTransfer(
+                    this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
                         new GasLimit(gasConfig.swapTokens),
@@ -338,7 +338,7 @@ export class PairTransactionService {
                 ];
 
                 transactions.push(
-                    this.context.esdtTransfer(
+                    this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
                         new GasLimit(gasConfig.swapTokens),

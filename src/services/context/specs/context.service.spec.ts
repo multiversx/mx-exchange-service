@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContextService } from './context.service';
-import { ElrondCommunicationModule } from '../elrond-communication/elrond-communication.module';
-import { CommonAppModule } from '../../common.app.module';
-import { CachingModule } from '../caching/cache.module';
-import { RouterGetterService } from 'src/modules/router/router.getter.service';
+import { ContextService } from '../context.service';
+import { ElrondCommunicationModule } from '../../elrond-communication/elrond-communication.module';
+import { CommonAppModule } from '../../../common.app.module';
+import { CachingModule } from '../../caching/cache.module';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
 
 describe('ContextService', () => {

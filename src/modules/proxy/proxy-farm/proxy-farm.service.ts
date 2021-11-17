@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ContextService } from '../../../services/context/context.service';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from '../../../services/caching/cache.service';
@@ -8,12 +7,13 @@ import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { oneHour } from '../../../helpers/helpers';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
 export class ProxyFarmService {
     constructor(
         private abiService: AbiProxyFarmService,
-        private context: ContextService,
+        private contextGetter: ContextGetterService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -49,7 +49,7 @@ export class ProxyFarmService {
 
     async getwrappedFarmToken(): Promise<NftCollection> {
         const wrappedFarmTokenID = await this.getwrappedFarmTokenID();
-        return this.context.getNftCollectionMetadata(wrappedFarmTokenID);
+        return this.contextGetter.getNftCollectionMetadata(wrappedFarmTokenID);
     }
 
     async getIntermediatedFarms(): Promise<string[]> {

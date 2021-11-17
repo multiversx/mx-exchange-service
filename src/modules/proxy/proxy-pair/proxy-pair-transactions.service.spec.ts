@@ -10,7 +10,7 @@ import * as Transport from 'winston-transport';
 import { RedisModule } from 'nestjs-redis';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { TransactionsProxyPairService } from './proxy-pair-transactions.service';
-import { ContextServiceMock } from '../../../services/context/context.service.mocks';
+import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairServiceMock } from 'src/modules/pair/mocks/pair.service.mock';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
@@ -22,6 +22,7 @@ import { ProxyService } from '../proxy.service';
 import { ProxyServiceMock } from '../proxy.service.mock';
 import { ProxyPairService } from './proxy-pair.service';
 import { ProxyPairServiceMock } from './proxy.pair.service.mock';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
@@ -84,6 +85,7 @@ describe('TransactionProxyPairService', () => {
             providers: [
                 ElrondProxyService,
                 ContextServiceProvider,
+                ContextTransactionsService,
                 ProxyServiceProvider,
                 ProxyPairServiceProvider,
                 PairServiceProvider,
@@ -143,7 +145,7 @@ describe('TransactionProxyPairService', () => {
         ] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(firstTokenAmount);
         expect(addLiquidityProxy.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAzNGQ1MWQ0NDZjMzU0NDhkYWFiZDkyZmY1YTc3YWVjZTg5NTA0MDhmN2NlYkAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDBhQDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDA5QDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOUAwOA==',
+            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAwM2Y4YjBiYjM3ZTNiMzNhNTQ5NGVhYjJjYThkZTc5NTUwYmI5MGJhNTQ4M0AwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDBhQDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDA5QDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOUAwOA==',
         );
     });
 
@@ -185,7 +187,7 @@ describe('TransactionProxyPairService', () => {
         ] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
         expect(addLiquidityProxy.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAzNGQ1MWQ0NDZjMzU0NDhkYWFiZDkyZmY1YTc3YWVjZTg5NTA0MDhmN2NlYkAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDBhQDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOEAwOQ==',
+            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAwM2Y4YjBiYjM3ZTNiMzNhNTQ5NGVhYjJjYThkZTc5NTUwYmI5MGJhNTQ4M0AwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDBhQDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOEAwOQ==',
         );
     });
 });

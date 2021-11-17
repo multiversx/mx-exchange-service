@@ -5,8 +5,7 @@ export class EsdtToken {
     @Field() identifier: string;
     @Field() name: string;
     @Field() owner: string;
-    @Field() minted: string;
-    @Field() burnt: string;
+    @Field() supply: string;
     @Field() decimals: number;
     @Field() isPaused: boolean;
     @Field() canUpgrade: boolean;

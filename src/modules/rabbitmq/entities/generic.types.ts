@@ -20,6 +20,11 @@ export enum PROXY_EVENTS {
     COMPOUND_REWARDS_PROXY = 'compoundRewardsFarmProxy',
 }
 
+export enum ESDT_EVENTS {
+    ESDT_LOCAL_MINT = 'ESDTLocalMint',
+    ESDT_LOCAL_BURN = 'ESDTLocalBurn',
+}
+
 export type GenericEventType = {
     address: string;
     caller: string;
