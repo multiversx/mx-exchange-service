@@ -8,6 +8,7 @@ import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { oneMinute } from '../../../helpers/helpers';
 import { FarmGetterService } from './farm.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import { computeValueUSD } from 'src/utils/token.converters';
 
 @Injectable()
 export class FarmStatisticsService {
@@ -44,36 +45,24 @@ export class FarmStatisticsService {
     }
 
     async computeFarmAPR(farmAddress: string): Promise<string> {
-        const farmedTokenID = await this.farmGetterService.getFarmedTokenID(
-            farmAddress,
-        );
+        const [farmedToken, farmingToken] = await Promise.all([
+            this.farmGetterService.getFarmedToken(farmAddress),
+            this.farmGetterService.getFarmingToken(farmAddress),
+        ]);
 
         const [
             farmedTokenPriceUSD,
             farmingTokenPriceUSD,
-            farmTokenSupply,
             farmingTokenReserve,
             rewardsPerBlock,
         ] = await Promise.all([
-            this.pairComputeService.computeTokenPriceUSD(farmedTokenID),
+            this.pairComputeService.computeTokenPriceUSD(
+                farmedToken.identifier,
+            ),
             this.farmGetterService.getFarmingTokenPriceUSD(farmAddress),
-            this.farmGetterService.getFarmTokenSupply(farmAddress),
             this.farmGetterService.getFarmingTokenReserve(farmAddress),
             this.farmGetterService.getRewardsPerBlock(farmAddress),
         ]);
-
-        const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
-        const farmingTokenReserveBig = new BigNumber(farmingTokenReserve);
-
-        const farmingTokenValue = new BigNumber(farmingTokenPriceUSD).dividedBy(
-            new BigNumber(farmedTokenPriceUSD),
-        );
-        const unlockedFarmingTokens = farmingTokenReserveBig
-            .multipliedBy(2)
-            .minus(farmTokenSupplyBig);
-        const unlockedFarmingTokensValue = unlockedFarmingTokens.multipliedBy(
-            farmingTokenValue,
-        );
 
         // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
         const blocksPerYear = (365 * 24 * 60 * 60) / 6;
@@ -81,13 +70,19 @@ export class FarmStatisticsService {
             blocksPerYear,
         );
 
-        const unlockedFarmingTokensRewards = totalRewardsPerYear
-            .multipliedBy(unlockedFarmingTokens)
-            .dividedBy(farmTokenSupplyBig);
-        const farmAPR = unlockedFarmingTokensRewards.dividedBy(
-            unlockedFarmingTokensValue,
+        const totalFarmingTokenValueUSD = computeValueUSD(
+            farmingTokenReserve,
+            farmingToken.decimals,
+            farmingTokenPriceUSD,
+        );
+        const totalRewardsPerYearUSD = computeValueUSD(
+            totalRewardsPerYear.toFixed(),
+            farmedToken.decimals,
+            farmedTokenPriceUSD.toFixed(),
         );
 
-        return farmAPR.toFixed();
+        const apr = totalRewardsPerYearUSD.div(totalFarmingTokenValueUSD);
+
+        return apr.toFixed();
     }
 }
