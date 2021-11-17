@@ -89,7 +89,7 @@ export class RabbitMQPairHandlerService {
             ),
         ]);
         this.invalidatedKeys.push(cacheKeys);
-
+        this.logger.error('liquidity event', [JSON.stringify(event.toJSON())]);
         await this.deleteCacheKeys();
         event.getIdentifier() === PAIR_EVENTS.ADD_LIQUIDITY
             ? await this.pubSub.publish(PAIR_EVENTS.ADD_LIQUIDITY, {
