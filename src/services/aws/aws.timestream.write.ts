@@ -101,6 +101,10 @@ export class AWSTimestreamWriteService {
                 Records,
             );
         } catch (error) {
+            this.logger.error(
+                `${AWSTimestreamWriteService.name}.${this.writeRecords.name}`,
+                [JSON.stringify(error)],
+            );
             if (error.code === 'RejectedRecordsException') {
                 this.printRejectedRecordsException(request, Records);
             }

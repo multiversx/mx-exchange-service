@@ -24,7 +24,10 @@ export class RouterComputeService {
         const pairsLockedValueUSD = await Promise.all(promises);
 
         for (const lockedValueUSD of pairsLockedValueUSD) {
-            totalValueLockedUSD = totalValueLockedUSD.plus(lockedValueUSD);
+            const lockedValueUSDBig = new BigNumber(lockedValueUSD);
+            totalValueLockedUSD = !lockedValueUSDBig.isNaN()
+                ? totalValueLockedUSD.plus(lockedValueUSD)
+                : totalValueLockedUSD;
         }
 
         return totalValueLockedUSD;

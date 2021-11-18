@@ -89,8 +89,8 @@ export class RabbitMQPairHandlerService {
             ),
         ]);
         this.invalidatedKeys.push(cacheKeys);
-
         await this.deleteCacheKeys();
+
         event.getIdentifier() === PAIR_EVENTS.ADD_LIQUIDITY
             ? await this.pubSub.publish(PAIR_EVENTS.ADD_LIQUIDITY, {
                   addLiquidityEvent: event,
