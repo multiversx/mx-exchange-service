@@ -39,7 +39,6 @@ export class AnalyticsEventHandlerService {
     ) {}
 
     async handleAddLiquidityEvent(event: AddLiquidityEventType): Promise<void> {
-        this.logger.error('analytics event', [JSON.stringify(event)]);
         await this.updatePairLockedValueUSD(event.address);
         const [
             firstTokenLockedValueUSD,
