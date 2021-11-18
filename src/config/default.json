@@ -1,15 +1,111 @@
 {
     "elrond": {
-        "elastic": "https://testnet-index.elrond.com",
-        "elrondApi": "https://testnet-api.elrond.com",
-        "gateway": "https://testnet-gateway.elrond.com",
-        "explorer": "https://testnet-explorer.elrond.com",
         "chainID": "T",
+        "EGLDIdentifier": "EGLD",
         "version": 1,
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqmc6lkxzn7cmj2c3ztczapds9ch2c4w9h0n4stl2uq7"
+        "proxyTimeout": 60000,
+        "timeoutLimit": 10000,
+        "keepAlive": true,
+        "keepAliveTimeout": 50000,
+        "keepAliveFreeSocketTimeout": 30000,
+        "keepAliveMaxSockets": 100,
+        "keepAliveMaxFreeSockets": 10
     },
+    "scAddress": {
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqwkrxc5gveu3zxldpuex90v622f8t8pes2jpsfpvl0f",
+        "MEX-45ebaa": "erd1qqqqqqqqqqqqqpgqr82hqynfa7e2hvg4e4kyekuhy9j2739m2jpspjljhd",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqq0utpwehuwen54y5a2ev4r08j4gthy962jps0vpx2l",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqjpt0qqgsrdhp2xqygpjtfrpwf76f9nvg2jpsg4q7th",
+        "wrappingAddress": {
+            "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqmcmcerf4phjqglgfghsswe5a2ylecd8v0n4szcj3pe",
+            "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
+        }
+    },
+    "tokenProviderUSD": "WUSDC-067a5e",
+    "priceFeeds": {
+        "WUSDC-067a5e": "busd"
+    },
+    "tokensSupply": ["MEX-45ebaa"],
+    "cachedTokensPrice": ["MEX-45ebaa"],
+    "farms": [
+        "erd1qqqqqqqqqqqqqpgq3kvuacqw9thy6jttskvq8xxu7h4f8c6v2jpsptvnf9",
+        "erd1qqqqqqqqqqqqqpgqy62ntx752n6jl42ecvap90ad79cgazqc2jps2au88m",
+        "erd1qqqqqqqqqqqqqpgqztxqkfp47p2maveng4rmnkvu7286kpdj2jpsgj7p4k"
+    ],
     "caching": {
-        "networkConfig": 1,
-        "pairs": 1
+        "pairsMetadata": 300,
+        "pairs": 300,
+        "state": 300,
+        "txTotalCount": 10,
+        "pairCount": 10,
+        "token": 300,
+        "tokenPrice": 60,
+        "priceFeed": 60,
+        "reserves": 60,
+        "apr": 60,
+        "default": 120
+    },
+    "gas": {
+        "addLiquidity": 12000000,
+        "removeLiquidity": 11500000,
+        "swapTokens": 21500000,
+        "createPair": 1400000000,
+        "issueToken": 200000000,
+        "setLocalRoles": 200000000,
+        "setState": 200000000,
+        "setFee": 200000000,
+        "addLiquidityProxy": 35000000,
+        "addLiquidityProxyMerge": 55500000,
+        "removeLiquidityProxy": 38500000,
+        "enterFarm": 16500000,
+        "enterFarmMerge": 17500000,
+        "exitFarm": 53000000,
+        "claimRewards": 40500000,
+        "compoundRewards": 16500000,
+        "enterFarmProxy": 36000000,
+        "enterFarmProxyMerge": 83500000,
+        "exitFarmProxy": 61500000,
+        "compoundRewardsProxy": 38000000,
+        "claimRewardsProxy": 55000000,
+        "wrapeGLD": 4000000,
+        "claimLockedAssets": 45500000,
+        "unlockAssets": 17500000,
+        "defaultMergeWLPT": 20000000,
+        "defaultMergeWFMT": 20000000,
+        "defaultMergeLockedAssets": 10000000,
+        "lockedAssetMerge": 1500000
+    },
+    "abi": {
+        "router": "./src/abis/router.abi.json",
+        "pair": "./src/abis/pair.abi.json",
+        "farm": "./src/abis/farm.abi.json",
+        "distribution": "./src/abis/distribution.abi.json",
+        "lockedAssetFactory": "./src/abis/factory.abi.json",
+        "proxy": "./src/abis/proxy-dex.abi.json",
+        "wrap": "./src/abis/egld-esdt-swap.abi.json"
+    },
+    "cron": {
+        "transactionCollectorMaxHyperblocks": 10,
+        "transactionCollectorMaxLookBehind": 100
+    },
+    "constants": {
+        "MAX_PENALTY_PERCENT": 10000,
+        "SWAP_FEE_PERCENT": 300,
+        "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
+        "MAX_GAS_LIMIT": 750000000
+    },
+    "security": {
+        "admins": []
+    },
+    "aws": {
+        "region": "us-east-1",
+        "timestream": {
+            "databaseName": "devnet-data-timestream",
+            "tableName": "tradingInfo",
+            "MemoryStoreRetentionPeriodInHours": 768,
+            "MagneticStoreRetentionPeriodInDays": 73000
+        }
     }
 }

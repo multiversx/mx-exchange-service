@@ -1,0 +1,37 @@
+{
+    "elrond": {
+        "chainID": "1"
+    },
+    "scAddress": {
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p",
+        "MEX-455c57": "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqjpt0qqgsrdhp2xqygpjtfrpwf76f9nvg2jpsg4q7th",
+        "wrappingAddress": {
+            "shardID-0": "erd1qqqqqqqqqqqqqpgqvc7gdl0p4s97guh498wgz75k8sav6sjfjlwqh679jy",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqhe8t5jewej70zupmh44jurgn29psua5l2jps3ntjj3",
+            "shardID-2": "erd1qqqqqqqqqqqqqpgqmuk0q2saj0mgutxm4teywre6dl8wqf58xamqdrukln"
+        }
+    },
+    "farms": [
+        "erd1qqqqqqqqqqqqqpgqye633y7k0zd7nedfnp3m48h24qygm5jl2jpslxallh",
+        "erd1qqqqqqqqqqqqqpgqsw9pssy8rchjeyfh8jfafvl3ynum0p9k2jps6lwewp",
+        "erd1qqqqqqqqqqqqqpgqv4ks4nzn2cw96mm06lt7s2l3xfrsznmp2jpsszdry5"
+    ],
+    "tokenProviderUSD": "WEGLD-bd4d79",
+    "priceFeeds": {
+        "WEGLD-bd4d79": "egld"
+    },
+    "tokensSupply": ["MEX-455c57"],
+    "cachedTokensPrice": ["MEX-455c57", "WEGLD-bd4d79"],
+    "aws": {
+        "region": "eu-central-1",
+        "timestream": {
+            "databaseName": "maiar-exchange-timestream",
+            "tableName": "tradingInfo",
+            "MemoryStoreRetentionPeriodInHours": 768,
+            "MagneticStoreRetentionPeriodInDays": 73000
+        }
+    }
+}

@@ -1,0 +1,72 @@
+{
+    "name": "EgldEsdtSwap",
+    "constructor": {
+        "inputs": [
+            {
+                "name": "wrapped_egld_token_id",
+                "type": "TokenIdentifier"
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "wrapEgld",
+            "payableInTokens": ["EGLD"],
+            "inputs": [
+                {
+                    "name": "accept_funds_endpoint_name",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "optional<AsyncCall>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "unwrapEgld",
+            "payableInTokens": ["*"],
+            "inputs": [
+                {
+                    "name": "accept_funds_endpoint_name",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "optional<AsyncCall>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getLockedEgldBalance",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getWrappedEgldTokenId",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        }
+    ],
+    "types": {
+        "AsyncCall": {
+            "type": "struct",
+            "fields": []
+        }
+    }
+}
