@@ -25,8 +25,7 @@
     },
     "tokenProviderUSD": "WUSDC-c5ce71",
     "priceFeeds": {
-        "WUSDC-c5ce71": "usdc",
-        "LUSDC-59f647": "usdc"
+        "WUSDC-c5ce71": "usdc"
     },
     "tokensSupply": ["MEX-45ebaa"],
     "cachedTokensPrice": ["MEX-45ebaa"],
