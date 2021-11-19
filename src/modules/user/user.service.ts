@@ -87,7 +87,6 @@ export class UserService {
             return await this.getEsdtTokenDetails(token);
         });
         const tokens = await Promise.all(promises);
-        console.log(tokens);
         return tokens;
     }
 
