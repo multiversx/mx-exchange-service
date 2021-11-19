@@ -25,13 +25,14 @@
     },
     "tokenProviderUSD": "WUSDC-c5ce71",
     "priceFeeds": {
-        "WUSDC-c5ce71": "usdc"
+        "WUSDC-c5ce71": "usdc",
+        "LUSDC-59f647": "usdc"
     },
     "tokensSupply": ["MEX-45ebaa"],
     "cachedTokensPrice": ["MEX-45ebaa"],
     "farms": [
         "erd1qqqqqqqqqqqqqpgq3kvuacqw9thy6jttskvq8xxu7h4f8c6v2jpsptvnf9",
-        "erd1qqqqqqqqqqqqqpgqy62ntx752n6jl42ecvap90ad79cgazqc2jps2au88m",
+        "erd1qqqqqqqqqqqqqpgq4mmmfxqyupx5tfwyrc2wvagtlwl3mcn52jpsjkc08h",
         "erd1qqqqqqqqqqqqqpgqztxqkfp47p2maveng4rmnkvu7286kpdj2jpsgj7p4k"
     ],
     "caching": {
