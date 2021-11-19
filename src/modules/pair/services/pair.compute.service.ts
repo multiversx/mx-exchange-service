@@ -16,30 +16,34 @@ export class PairComputeService {
     ) {}
 
     async computeFirstTokenPrice(pairAddress: string): Promise<string> {
-        const firstToken = await this.pairGetterService.getFirstToken(
-            pairAddress,
-        );
+        const [firstToken, secondToken] = await Promise.all([
+            this.pairGetterService.getFirstToken(pairAddress),
+            this.pairGetterService.getSecondToken(pairAddress),
+        ]);
+
         const firstTokenPrice = await this.pairService.getEquivalentForLiquidity(
             pairAddress,
             firstToken.identifier,
             new BigNumber(`1e${firstToken.decimals}`).toFixed(),
         );
         return new BigNumber(firstTokenPrice)
-            .multipliedBy(`1e-${firstToken.decimals}`)
+            .multipliedBy(`1e-${secondToken.decimals}`)
             .toFixed();
     }
 
     async computeSecondTokenPrice(pairAddress: string): Promise<string> {
-        const secondToken = await this.pairGetterService.getSecondToken(
-            pairAddress,
-        );
+        const [firstToken, secondToken] = await Promise.all([
+            this.pairGetterService.getFirstToken(pairAddress),
+            this.pairGetterService.getSecondToken(pairAddress),
+        ]);
+
         const secondTokenPrice = await this.pairService.getEquivalentForLiquidity(
             pairAddress,
             secondToken.identifier,
             new BigNumber(`1e${secondToken.decimals}`).toFixed(),
         );
         return new BigNumber(secondTokenPrice)
-            .multipliedBy(`1e-${secondToken.decimals}`)
+            .multipliedBy(`1e-${firstToken.decimals}`)
             .toFixed();
     }
 
