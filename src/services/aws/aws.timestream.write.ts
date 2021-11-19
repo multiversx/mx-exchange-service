@@ -96,7 +96,15 @@ export class AWSTimestreamWriteService {
             };
             request = this.writeClient.writeRecords(params);
             await request.promise();
+            this.logger.error(
+                `pushed records to aws timestream in table ${TableName}`,
+                Records,
+            );
         } catch (error) {
+            this.logger.error(
+                `${AWSTimestreamWriteService.name}.${this.writeRecords.name}`,
+                [JSON.stringify(error)],
+            );
             if (error.code === 'RejectedRecordsException') {
                 this.printRejectedRecordsException(request, Records);
             }

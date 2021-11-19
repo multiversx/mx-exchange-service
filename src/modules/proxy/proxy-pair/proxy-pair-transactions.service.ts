@@ -152,10 +152,14 @@ export class TransactionsProxyPairService {
         ]);
         const amount0Min = new BigNumber(
             liquidityPosition.firstTokenAmount.toString(),
-        ).multipliedBy(1 - args.tolerance);
+        )
+            .multipliedBy(1 - args.tolerance)
+            .integerValue();
         const amount1Min = new BigNumber(
             liquidityPosition.secondTokenAmount.toString(),
-        ).multipliedBy(1 - args.tolerance);
+        )
+            .multipliedBy(1 - args.tolerance)
+            .integerValue();
 
         const transactionArgs = [
             BytesValue.fromUTF8(args.wrappedLpTokenID),
@@ -181,7 +185,7 @@ export class TransactionsProxyPairService {
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
                         sender,
-                        amount0Min.toString(),
+                        amount0Min.toFixed(),
                     ),
                 );
                 break;
@@ -189,7 +193,7 @@ export class TransactionsProxyPairService {
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
                         sender,
-                        amount1Min.toString(),
+                        amount1Min.toFixed(),
                     ),
                 );
         }

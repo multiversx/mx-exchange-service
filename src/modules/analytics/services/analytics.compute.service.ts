@@ -48,7 +48,10 @@ export class AnalyticsComputeService {
         );
         const farmsLockedValueUSD = await Promise.all(promises);
         for (const farmLockedValueUSD of farmsLockedValueUSD) {
-            totalLockedValue = totalLockedValue.plus(farmLockedValueUSD);
+            const farmLockedValueUSDBig = new BigNumber(farmLockedValueUSD);
+            totalLockedValue = !farmLockedValueUSDBig.isNaN()
+                ? totalLockedValue.plus(farmLockedValueUSD)
+                : totalLockedValue;
         }
 
         return totalLockedValue.toFixed();
@@ -67,7 +70,10 @@ export class AnalyticsComputeService {
         ]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
-            totalValueLockedUSD = totalValueLockedUSD.plus(lockedValueUSD);
+            const lockedValuesUSDBig = new BigNumber(lockedValueUSD);
+            totalValueLockedUSD = !lockedValuesUSDBig.isNaN()
+                ? totalValueLockedUSD.plus(lockedValuesUSDBig)
+                : totalValueLockedUSD;
         }
 
         return totalValueLockedUSD.toFixed();

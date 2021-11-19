@@ -13,7 +13,6 @@ import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairSetterService } from '../../pair/services/pair.setter.service';
 import { RouterComputeService } from '../../router/services/router.compute.service';
 import { RouterSetterService } from '../../router/services/router.setter.service';
-import { PAIR_EVENTS } from '../../rabbitmq/entities/generic.types';
 import {
     AddLiquidityEventType,
     SwapEventType,
@@ -39,53 +38,21 @@ export class AnalyticsEventHandlerService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async handleAddLiquidityEvent(
-        event: AddLiquidityEventType,
-        eventType: string,
-    ): Promise<void> {
+    async handleAddLiquidityEvent(event: AddLiquidityEventType): Promise<void> {
         await this.updatePairLockedValueUSD(event.address);
         const [
-            firstToken,
-            secondtoken,
-            firstTokenPriceUSD,
-            secondTokenPriceUSD,
             firstTokenLockedValueUSD,
             secondTokenLockedValueUSD,
             pairLockedValueUSD,
+            newTotalLockedValueUSD,
         ] = await Promise.all([
-            this.pairGetterService.getFirstToken(event.address),
-            this.pairGetterService.getSecondToken(event.address),
-            this.pairGetterService.getFirstTokenPriceUSD(event.address),
-            this.pairGetterService.getSecondTokenPriceUSD(event.address),
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
             this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
             this.pairGetterService.getLockedValueUSD(event.address),
+            this.routerComputeService.computeTotalLockedValueUSD(),
         ]);
 
-        const totalLockedValueUSD = await this.awsTimestreamQuery.getLatestValue(
-            {
-                table: awsConfig.timestream.tableName,
-                series: 'factory',
-                metric: 'totalLockedValueUSD',
-            },
-        );
-
-        const [firstAmountDenom, secondAmountDenom] = [
-            denominateAmount(event.firstToken.amount, firstToken.decimals),
-            denominateAmount(event.secondToken.amount, secondtoken.decimals),
-        ];
-        const [firstAmountUSD, secondAmountUSD] = [
-            firstAmountDenom.multipliedBy(firstTokenPriceUSD),
-            secondAmountDenom.multipliedBy(secondTokenPriceUSD),
-        ];
-        const lockedAmountUSD = firstAmountUSD.plus(secondAmountUSD);
-
-        const newTotalLockedValueUSD =
-            eventType === PAIR_EVENTS.ADD_LIQUIDITY
-                ? new BigNumber(totalLockedValueUSD).plus(lockedAmountUSD)
-                : new BigNumber(totalLockedValueUSD).minus(lockedAmountUSD);
         const data = [];
-
         data['factory'] = {
             totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
         };
@@ -134,6 +101,7 @@ export class AnalyticsEventHandlerService {
             firstTokenLockedValueUSD,
             secondTokenLockedValueUSD,
             totalFeePercent,
+            newTotalLockedValueUSD,
         ] = await Promise.all([
             this.pairGetterService.getFirstTokenID(event.address),
             this.pairGetterService.getSecondTokenID(event.address),
@@ -150,15 +118,8 @@ export class AnalyticsEventHandlerService {
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
             this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
             this.pairGetterService.getTotalFeePercent(event.address),
+            this.routerComputeService.computeTotalLockedValueUSD(),
         ]);
-
-        const totalLockedValueUSD = await this.awsTimestreamQuery.getLatestValue(
-            {
-                table: awsConfig.timestream.tableName,
-                series: 'factory',
-                metric: 'totalLockedValueUSD',
-            },
-        );
 
         const [tokenInAmountDenom, tokenOutAmountDenom] = [
             denominateAmount(event.tokenIn.amount, tokenIn.decimals),
@@ -209,10 +170,7 @@ export class AnalyticsEventHandlerService {
         );
 
         data['factory'] = {
-            totalLockedValueUSD: new BigNumber(totalLockedValueUSD)
-                .plus(tokenInAmountUSD)
-                .minus(tokenOutAmountUSD)
-                .toFixed(),
+            totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
         };
 
         await this.awsTimestreamWrite.ingest({

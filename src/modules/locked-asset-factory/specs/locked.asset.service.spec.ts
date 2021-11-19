@@ -6,15 +6,16 @@ import { ContextService } from 'src/services/context/context.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
-import { AbiLockedAssetService } from './abi-locked-asset.service';
-import { AbiLockedAssetServiceMock } from './abi.locked.asset.service.mock';
-import { LockedAssetService } from './locked-asset.service';
+import { AbiLockedAssetService } from '../services/abi-locked-asset.service';
+import { AbiLockedAssetServiceMock } from '../mocks/abi.locked.asset.service.mock';
+import { LockedAssetService } from '../services/locked-asset.service';
 import {
     LockedAssetAttributes,
     UnlockMileStoneModel,
-} from './models/locked-asset.model';
+} from '../models/locked-asset.model';
+import { LockedAssetGetterService } from '../services/locked.asset.getter.service';
 
-describe('FarmService', () => {
+describe('LockedAssetService', () => {
     let service: LockedAssetService;
     let contextGetter: ContextGetterService;
 
@@ -45,6 +46,7 @@ describe('FarmService', () => {
                 ContextGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetService,
+                LockedAssetGetterService,
             ],
         }).compile();
 
