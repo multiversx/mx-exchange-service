@@ -37,24 +37,43 @@ export class UserComputeService {
         nftToken: NftToken,
         farmAddress: string,
     ): Promise<typeof UserNftTokens> {
+        const farmingTokenID = await this.farmGetterService.getFarmingTokenID(
+            farmAddress,
+        );
         const decodedFarmAttributes = this.farmService.decodeFarmTokenAttributes(
             nftToken.identifier,
             nftToken.attributes,
         );
 
-        const tokenPriceUSD = await this.farmGetterService.getFarmTokenPriceUSD(
-            farmAddress,
+        const farmTokenBalance = new BigNumber(nftToken.balance).dividedBy(
+            decodedFarmAttributes.aprMultiplier,
         );
+        if (scAddress.has(farmingTokenID)) {
+            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+                scAddress.get(farmingTokenID),
+                farmingTokenID,
+            );
+            return new UserFarmToken({
+                ...nftToken,
+                valueUSD: computeValueUSD(
+                    farmTokenBalance.toFixed(),
+                    nftToken.decimals,
+                    tokenPriceUSD,
+                ).toFixed(),
+                decodedAttributes: decodedFarmAttributes,
+            });
+        }
 
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingTokenID,
+        );
+        const farmTokenBalanceUSD = await this.pairService.getLiquidityPositionUSD(
+            pairAddress,
+            farmTokenBalance.toFixed(),
+        );
         return new UserFarmToken({
             ...nftToken,
-            valueUSD: computeValueUSD(
-                new BigNumber(nftToken.balance)
-                    .dividedBy(decodedFarmAttributes.aprMultiplier)
-                    .toFixed(),
-                nftToken.decimals,
-                tokenPriceUSD,
-            ).toFixed(),
+            valueUSD: farmTokenBalanceUSD,
             decodedAttributes: decodedFarmAttributes,
         });
     }
@@ -105,17 +124,13 @@ export class UserComputeService {
             decodedWLPTAttributes[0].lpTokenID,
         );
         if (pairAddress) {
-            const tokenPriceUSD = await this.pairGetterService.getLpTokenPriceUSD(
+            const valueUSD = await this.pairService.getLiquidityPositionUSD(
                 pairAddress,
+                nftToken.balance,
             );
-
             return new UserLockedLPToken({
                 ...nftToken,
-                valueUSD: computeValueUSD(
-                    nftToken.balance,
-                    nftToken.decimals,
-                    tokenPriceUSD,
-                ).toFixed(),
+                valueUSD: valueUSD,
                 decodedAttributes: decodedWLPTAttributes[0],
             });
         }
