@@ -5,7 +5,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
-import { oneMinute, oneSecond } from '../../../helpers/helpers';
+import { oneMinute } from '../../../helpers/helpers';
 import { FarmGetterService } from './farm.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { computeValueUSD } from 'src/utils/token.converters';
@@ -73,11 +73,7 @@ export class FarmStatisticsService {
             farmedToken.decimals,
             farmedTokenPriceUSD.toFixed(),
         );
-        console.log({
-            farmAddress: farmAddress,
-            totalFarmingTokenValueUSD: totalFarmingTokenValueUSD,
-            totalRewardsPerYearUSD: totalRewardsPerYearUSD.toFixed(),
-        });
+
         const apr = totalRewardsPerYearUSD.div(totalFarmingTokenValueUSD);
 
         return apr.toFixed();
