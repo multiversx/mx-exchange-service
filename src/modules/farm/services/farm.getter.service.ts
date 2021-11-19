@@ -211,6 +211,15 @@ export class FarmGetterService {
         );
     }
 
+    async getTotalValueLockedUSD(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'totalValueLockedUSD',
+            () => this.computeService.computeFarmLockedValueUSD(farmAddress),
+            oneMinute(),
+        );
+    }
+
     private getFarmCacheKey(farmAddress: string, ...args: any) {
         return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }

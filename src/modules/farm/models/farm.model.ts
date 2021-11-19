@@ -86,6 +86,9 @@ export class FarmModel {
     APR: string;
 
     @Field()
+    totalValueLockedUSD: string;
+
+    @Field()
     state: string;
 
     constructor(init?: Partial<FarmModel>) {

@@ -5,15 +5,17 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
-import { oneMinute } from '../../../helpers/helpers';
+import { oneMinute, oneSecond } from '../../../helpers/helpers';
 import { FarmGetterService } from './farm.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { FarmComputeService } from './farm.compute.service';
 
 @Injectable()
 export class FarmStatisticsService {
     constructor(
         private farmGetterService: FarmGetterService,
+        private farmComputeService: FarmComputeService,
         private pairComputeService: PairComputeService,
         private cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
@@ -45,22 +47,14 @@ export class FarmStatisticsService {
     }
 
     async computeFarmAPR(farmAddress: string): Promise<string> {
-        const [farmedToken, farmingToken] = await Promise.all([
-            this.farmGetterService.getFarmedToken(farmAddress),
-            this.farmGetterService.getFarmingToken(farmAddress),
-        ]);
+        const farmedToken = await this.farmGetterService.getFarmedToken(
+            farmAddress,
+        );
 
-        const [
-            farmedTokenPriceUSD,
-            farmingTokenPriceUSD,
-            farmingTokenReserve,
-            rewardsPerBlock,
-        ] = await Promise.all([
+        const [farmedTokenPriceUSD, rewardsPerBlock] = await Promise.all([
             this.pairComputeService.computeTokenPriceUSD(
                 farmedToken.identifier,
             ),
-            this.farmGetterService.getFarmingTokenPriceUSD(farmAddress),
-            this.farmGetterService.getFarmingTokenReserve(farmAddress),
             this.farmGetterService.getRewardsPerBlock(farmAddress),
         ]);
 
@@ -70,17 +64,20 @@ export class FarmStatisticsService {
             blocksPerYear,
         );
 
-        const totalFarmingTokenValueUSD = computeValueUSD(
-            farmingTokenReserve,
-            farmingToken.decimals,
-            farmingTokenPriceUSD,
+        const totalFarmingTokenValueUSD = await this.farmComputeService.computeFarmLockedValueUSD(
+            farmAddress,
         );
+
         const totalRewardsPerYearUSD = computeValueUSD(
             totalRewardsPerYear.toFixed(),
             farmedToken.decimals,
             farmedTokenPriceUSD.toFixed(),
         );
-
+        console.log({
+            farmAddress: farmAddress,
+            totalFarmingTokenValueUSD: totalFarmingTokenValueUSD,
+            totalRewardsPerYearUSD: totalRewardsPerYearUSD.toFixed(),
+        });
         const apr = totalRewardsPerYearUSD.div(totalFarmingTokenValueUSD);
 
         return apr.toFixed();
