@@ -50,7 +50,7 @@
     "gas": {
         "addLiquidity": 12000000,
         "removeLiquidity": 11500000,
-        "swapTokens": 25500000,
+        "swapTokens": 100000000,
         "createPair": 1400000000,
         "issueToken": 200000000,
         "setLocalRoles": 200000000,
