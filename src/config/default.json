@@ -23,9 +23,9 @@
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         }
     },
-    "tokenProviderUSD": "WUSDC-067a5e",
+    "tokenProviderUSD": "WUSDC-c5ce71",
     "priceFeeds": {
-        "WUSDC-067a5e": "busd"
+        "WUSDC-c5ce71": "usdc"
     },
     "tokensSupply": ["MEX-45ebaa"],
     "cachedTokensPrice": ["MEX-45ebaa"],
