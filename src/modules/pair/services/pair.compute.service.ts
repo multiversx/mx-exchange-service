@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { tokensPriceData } from 'src/config';
+import { tokenProviderUSD } from 'src/config';
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
@@ -74,8 +74,8 @@ export class PairComputeService {
     }
 
     async computeTokenPriceUSD(tokenID: string): Promise<BigNumber> {
-        return tokensPriceData.has(tokenID)
-            ? this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID))
+        return tokenProviderUSD === tokenID
+            ? new BigNumber(1)
             : this.pairService.getPriceUSDByPath(tokenID);
     }
 
