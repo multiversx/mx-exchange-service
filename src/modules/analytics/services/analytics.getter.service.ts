@@ -89,6 +89,18 @@ export class AnalyticsGetterService {
         );
     }
 
+    async getTotalBurnedTokenAmount(tokenID: string): Promise<string> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            tokenID,
+            'totalBurnedTokenAmount',
+        );
+        return this.getData(
+            cacheKey,
+            () => this.analyticsCompute.computeTotalBurnedTokenAmount(tokenID),
+            oneMinute(),
+        );
+    }
+
     private getAnalyticsCacheKey(...args: any) {
         return generateCacheKeyFromParams('analytics', ...args);
     }

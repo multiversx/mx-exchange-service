@@ -432,7 +432,7 @@ export class AbiFarmService {
                 interaction.buildQuery(),
             );
             const response = interaction.interpretQueryResponse(queryResponse);
-            return response.firstValue.valueOf();
+            return response.firstValue.valueOf().toFixed();
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,

@@ -12,6 +12,8 @@ import { AnalyticsResolver } from './analytics.resolver';
 import { AnalyticsService } from './services/analytics.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
+import { ProxyModule } from '../proxy/proxy.module';
+import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 
 @Module({
     imports: [
@@ -22,6 +24,8 @@ import { AnalyticsGetterService } from './services/analytics.getter.service';
         RouterModule,
         PairModule,
         FarmModule,
+        ProxyModule,
+        LockedAssetModule,
     ],
     providers: [
         AnalyticsResolver,

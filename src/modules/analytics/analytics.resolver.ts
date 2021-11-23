@@ -41,6 +41,13 @@ export class AnalyticsResolver {
         return this.analyticsGetterService.getTotalAggregatedRewards(days);
     }
 
+    @Query(() => String)
+    async totalBurnedTokenAmount(
+        @Args('tokenID', { type: () => String }) tokenID: string,
+    ) {
+        return this.analyticsGetterService.getTotalBurnedTokenAmount(tokenID);
+    }
+
     @Query(() => [HistoricDataModel])
     async historicData(
         @Args('series') series: string,

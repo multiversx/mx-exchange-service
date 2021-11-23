@@ -154,6 +154,6 @@ export class PairAbiService {
         ]);
 
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf();
+        return response.firstValue.valueOf().toFixed();
     }
 }
