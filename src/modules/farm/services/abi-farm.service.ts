@@ -414,4 +414,33 @@ export class AbiFarmService {
             throw error;
         }
     }
+
+    async getBurnedTokenAmount(
+        farmAddress: string,
+        tokenID: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getBurnedTokenAmount([
+            BytesValue.fromUTF8(tokenID),
+        ]);
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            return response.firstValue.valueOf();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiFarmService.name,
+                this.getState.name,
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
 }
