@@ -13,6 +13,9 @@ import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairServiceMock } from 'src/modules/pair/mocks/pair.service.mock';
+import { FarmComputeService } from '../services/farm.compute.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 
 describe('FarmStatisticsService', () => {
     let service: FarmStatisticsService;
@@ -25,6 +28,11 @@ describe('FarmStatisticsService', () => {
     const ContextServiceProvider = {
         provide: ContextService,
         useClass: ContextServiceMock,
+    };
+
+    const ContextGetterServiceProvider = {
+        provide: ContextGetterService,
+        useClass: ContextGetterServiceMock,
     };
 
     const PairServiceProvider = {
@@ -47,7 +55,9 @@ describe('FarmStatisticsService', () => {
             imports: [CommonAppModule, CachingModule],
             providers: [
                 FarmGetterServiceProvider,
+                FarmComputeService,
                 ContextServiceProvider,
+                ContextGetterServiceProvider,
                 PairServiceProvider,
                 PairGetterServiceProvider,
                 PairComputeService,
@@ -65,6 +75,6 @@ describe('FarmStatisticsService', () => {
 
     it('should get farmAPR', async () => {
         const farmAPR = await service.computeFarmAPR('farm_address_1');
-        expect(farmAPR).toEqual('4.38');
+        expect(farmAPR).toEqual('3504000');
     });
 });
