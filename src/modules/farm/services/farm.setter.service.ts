@@ -175,7 +175,7 @@ export class FarmSetterService {
         return cacheKey;
     }
 
-    async getBurnedTokenAmount(
+    async setBurnedTokenAmount(
         farmAddress: string,
         tokenID: string,
         value: string,

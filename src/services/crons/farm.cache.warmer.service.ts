@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { cacheConfig, farmsConfig } from '../../config';
+import { cacheConfig, constantsConfig, farmsConfig } from '../../config';
 import { FarmStatisticsService } from 'src/modules/farm/services/farm-statistics.service';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -74,11 +74,16 @@ export class FarmCacheWarmerService {
                 minimumFarmingEpochs,
                 penaltyPercent,
                 rewardsPerBlock,
+                burnedToken,
                 state,
             ] = await Promise.all([
                 this.abiFarmService.getMinimumFarmingEpochs(farmAddress),
                 this.abiFarmService.getPenaltyPercent(farmAddress),
                 this.abiFarmService.getRewardsPerBlock(farmAddress),
+                this.abiFarmService.getBurnedTokenAmount(
+                    farmAddress,
+                    constantsConfig.MEX_TOKEN_ID,
+                ),
                 this.abiFarmService.getState(farmAddress),
             ]);
 
@@ -94,6 +99,11 @@ export class FarmCacheWarmerService {
                 this.farmSetterService.setRewardsPerBlock(
                     farmAddress,
                     rewardsPerBlock,
+                ),
+                this.farmSetterService.setBurnedTokenAmount(
+                    farmAddress,
+                    constantsConfig.MEX_TOKEN_ID,
+                    burnedToken,
                 ),
                 this.farmSetterService.setState(farmAddress, state),
             ]);
