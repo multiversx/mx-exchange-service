@@ -17,7 +17,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { oneHour } from '../../helpers/helpers';
+import { oneHour, oneMinute } from '../../helpers/helpers';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 @Injectable()
@@ -77,6 +77,26 @@ export class ProxyService {
     async getlockedAssetToken(): Promise<NftCollection> {
         const lockedAssetTokenID = await this.getLockedAssetTokenID();
         return this.contextGetter.getNftCollectionMetadata(lockedAssetTokenID);
+    }
+
+    async getBurnedTokenAmount(tokenID: string): Promise<string> {
+        const cacheKey = this.getProxyCacheKey(`${tokenID}.burnedTokenAmount`);
+        try {
+            return await this.cachingService.getOrSet(
+                cacheKey,
+                () => this.abiService.getBurnedTokenAmount(tokenID),
+                oneMinute(),
+            );
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                ProxyService.name,
+                this.getBurnedTokenAmount.name,
+                cacheKey,
+                error,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
     }
 
     getWrappedLpTokenAttributes(

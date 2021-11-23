@@ -4,6 +4,7 @@ import { ElrondProxyService } from '../../services/elrond-communication/elrond-p
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from '../../utils/generate-log-message';
+import { BytesValue } from '@elrondnetwork/erdjs/out';
 
 @Injectable()
 export class AbiProxyService {
@@ -51,6 +52,30 @@ export class AbiProxyService {
             const logMessage = generateRunQueryLogMessage(
                 AbiProxyService.name,
                 this.getLockedAssetTokenID.name,
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getBurnedTokenAmount(tokenID: string): Promise<string> {
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const interaction: Interaction = contract.methods.getBurnedTokenAmount([
+            BytesValue.fromUTF8(tokenID),
+        ]);
+
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            return response.firstValue.valueOf().toFixed();
+        } catch (error) {
+            const logMessage = generateRunQueryLogMessage(
+                AbiProxyService.name,
+                this.getBurnedTokenAmount.name,
                 error.message,
             );
             this.logger.error(logMessage);
