@@ -1,4 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
+import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 
 @ObjectType()
 export class HistoricDataModel {
@@ -13,79 +14,32 @@ export class HistoricDataModel {
 }
 
 @ObjectType()
-export class FactoryAnalyticsModel {
+export class PairDayDataModel {
     @Field()
-    totalVolumesUSD: string;
-    @Field()
-    totalFeesUSD: string;
-    @Field()
-    totalValueLockedUSD: string;
+    timestamp: string;
 
-    constructor(init?: Partial<FactoryAnalyticsModel>) {
-        Object.assign(this, init);
-    }
-}
+    @Field()
+    address: string;
 
-@ObjectType()
-export class PairAnalyticsModel {
     @Field()
-    firstTokenLocked: string;
+    firstToken: EsdtToken;
+
     @Field()
-    firstTokenLockedValueUSD: string;
-    @Field()
-    secondTokenLocked: string;
-    @Field()
-    secondTokenLockedValueUSD: string;
+    secondToken: EsdtToken;
+
     @Field()
     lockedValueUSD: string;
-    @Field()
-    liquidity: string;
-    @Field()
-    firstTokenVolume: string;
-    @Field()
-    secondTokenVolume: string;
-    @Field()
-    volumeUSD: string;
-    @Field()
-    feesUSD: string;
 
-    constructor(init?: Partial<PairAnalyticsModel>) {
-        Object.assign(this, init);
-    }
-}
+    @Field()
+    firstTokenPriceUSD: string;
 
-@ObjectType()
-export class TokenAnalyticsModel {
     @Field()
-    tokenID: string;
-    @Field()
-    priceUSD: string;
-    @Field()
-    volume: string;
-    @Field()
-    volumeUSD: string;
-    @Field()
-    feesUSD: string;
-    @Field()
-    valueLocked: string;
-    @Field()
-    valueLockedUSD: string;
+    secondTokenPriceUSD: string;
 
-    constructor(init?: Partial<TokenAnalyticsModel>) {
-        Object.assign(this, init);
-    }
-}
+    @Field()
+    volumeUSD24h: string;
 
-@ObjectType()
-export class AnalyticsModel {
-    @Field(() => FactoryAnalyticsModel)
-    factory: FactoryAnalyticsModel;
-    @Field(() => [PairAnalyticsModel])
-    pairs: PairAnalyticsModel[];
-    @Field(() => [TokenAnalyticsModel])
-    tokens: TokenAnalyticsModel[];
-
-    constructor(init?: Partial<AnalyticsModel>) {
+    constructor(init?: Partial<PairDayDataModel>) {
         Object.assign(this, init);
     }
 }
