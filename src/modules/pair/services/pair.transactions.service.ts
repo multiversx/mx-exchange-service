@@ -5,7 +5,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Address, GasLimit } from '@elrondnetwork/erdjs';
-import { elrondConfig, gasConfig } from 'src/config';
+import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -219,7 +219,11 @@ export class PairTransactionService {
                     this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
-                        new GasLimit(gasConfig.swapTokens),
+                        new GasLimit(
+                            args.tokenOutID === constantsConfig.MEX_TOKEN_ID
+                                ? gasConfig.swapMexTokens
+                                : gasConfig.swapTokens,
+                        ),
                     ),
                 );
                 break;
@@ -235,7 +239,11 @@ export class PairTransactionService {
                     this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
-                        new GasLimit(gasConfig.swapTokens),
+                        new GasLimit(
+                            args.tokenInID === constantsConfig.MEX_TOKEN_ID
+                                ? gasConfig.swapMexTokens
+                                : gasConfig.swapTokens,
+                        ),
                     ),
                 );
                 transactions.push(
@@ -258,7 +266,12 @@ export class PairTransactionService {
                     this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
-                        new GasLimit(gasConfig.swapTokens),
+                        new GasLimit(
+                            args.tokenInID === constantsConfig.MEX_TOKEN_ID ||
+                            args.tokenOutID === constantsConfig.MEX_TOKEN_ID
+                                ? gasConfig.swapMexTokens
+                                : gasConfig.swapTokens,
+                        ),
                     ),
                 );
                 break;
@@ -302,7 +315,11 @@ export class PairTransactionService {
                     this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
-                        new GasLimit(gasConfig.swapTokens),
+                        new GasLimit(
+                            args.tokenOutID === constantsConfig.MEX_TOKEN_ID
+                                ? gasConfig.swapMexTokens
+                                : gasConfig.swapTokens,
+                        ),
                     ),
                 );
                 break;
@@ -318,7 +335,11 @@ export class PairTransactionService {
                     this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
-                        new GasLimit(gasConfig.swapTokens),
+                        new GasLimit(
+                            args.tokenInID === constantsConfig.MEX_TOKEN_ID
+                                ? gasConfig.swapMexTokens
+                                : gasConfig.swapTokens,
+                        ),
                     ),
                 );
                 transactions.push(
@@ -341,7 +362,12 @@ export class PairTransactionService {
                     this.contextTransactions.esdtTransfer(
                         contract,
                         transactionArgs,
-                        new GasLimit(gasConfig.swapTokens),
+                        new GasLimit(
+                            args.tokenInID === constantsConfig.MEX_TOKEN_ID ||
+                            args.tokenOutID === constantsConfig.MEX_TOKEN_ID
+                                ? gasConfig.swapMexTokens
+                                : gasConfig.swapTokens,
+                        ),
                     ),
                 );
                 break;

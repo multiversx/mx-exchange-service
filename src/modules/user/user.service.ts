@@ -26,6 +26,7 @@ import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PaginationArgs } from '../dex.model';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
+import { computeValueUSD } from 'src/utils/token.converters';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -83,22 +84,10 @@ export class UserService {
         }
 
         const promises = userPairEsdtTokens.map(async token => {
-            const esdtTokenDetails = await this.getEsdtTokenDetails(
-                token.identifier,
-            );
-            const denominator = new BigNumber(`1e-${token.decimals}`);
-            const valueUSD = new BigNumber(token.balance)
-                .multipliedBy(denominator)
-                .multipliedBy(new BigNumber(esdtTokenDetails.priceUSD))
-                .toFixed();
-            return {
-                ...token,
-                type: esdtTokenDetails.type,
-                valueUSD: valueUSD,
-            };
+            return await this.getEsdtTokenDetails(token);
         });
-
-        return await Promise.all(promises);
+        const tokens = await Promise.all(promises);
+        return tokens;
     }
 
     async getAllNftTokens(
@@ -184,27 +173,32 @@ export class UserService {
         return await Promise.all(promises);
     }
 
-    private async getEsdtTokenDetails(
-        tokenID: string,
-    ): Promise<EsdtTokenDetails> {
+    private async getEsdtTokenDetails(token: UserToken): Promise<UserToken> {
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            tokenID,
+            token.identifier,
         );
         if (pairAddress) {
-            const tokenPriceUSD = await this.pairGetterService.getLpTokenPriceUSD(
+            const valueUSD = await this.pairService.getLiquidityPositionUSD(
                 pairAddress,
+                token.balance,
             );
             return {
+                ...token,
                 type: EsdtTokenType.FungibleLpToken,
-                priceUSD: tokenPriceUSD,
+                valueUSD: valueUSD,
             };
         }
         const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
-            tokenID,
+            token.identifier,
         );
         return {
+            ...token,
             type: EsdtTokenType.FungibleToken,
-            priceUSD: tokenPriceUSD.toFixed(),
+            valueUSD: computeValueUSD(
+                token.balance,
+                token.decimals,
+                tokenPriceUSD.toFixed(),
+            ).toFixed(),
         };
     }
 

@@ -3,8 +3,10 @@ import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
@@ -15,6 +17,7 @@ export class FarmComputeService {
         @Inject(forwardRef(() => FarmGetterService))
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
+        private readonly pairGetterService: PairGetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -52,6 +55,34 @@ export class FarmComputeService {
             farmingTokenID,
         );
         return this.pairComputeService.computeLpTokenPriceUSD(pairAddress);
+    }
+
+    async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
+        const [farmingToken, farmingTokenReserve] = await Promise.all([
+            this.farmGetterService.getFarmingToken(farmAddress),
+            this.farmGetterService.getFarmingTokenReserve(farmAddress),
+        ]);
+
+        if (scAddress.has(farmingToken.identifier)) {
+            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+                scAddress.get(farmingToken.identifier),
+                farmingToken.identifier,
+            );
+            return computeValueUSD(
+                farmingTokenReserve,
+                farmingToken.decimals,
+                tokenPriceUSD,
+            ).toFixed();
+        }
+
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingToken.identifier,
+        );
+        const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
+            pairAddress,
+            farmingTokenReserve,
+        );
+        return lockedValuesUSD;
     }
 
     async computeFarmRewardsForPosition(

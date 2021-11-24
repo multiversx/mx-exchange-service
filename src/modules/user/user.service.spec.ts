@@ -206,7 +206,7 @@ describe('UserService', () => {
                 creator: 'farm_address_1',
                 nonce: 1,
                 royalties: 0,
-                valueUSD: '200',
+                valueUSD: '150',
                 decodedAttributes: new FarmTokenAttributesModel({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
