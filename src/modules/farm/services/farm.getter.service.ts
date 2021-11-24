@@ -220,6 +220,15 @@ export class FarmGetterService {
         );
     }
 
+    async getFarmAPR(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'apr',
+            () => this.computeService.computeFarmAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
     private getFarmCacheKey(farmAddress: string, ...args: any) {
         return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }

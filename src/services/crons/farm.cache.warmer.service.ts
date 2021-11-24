@@ -1,14 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { cacheConfig, farmsConfig } from '../../config';
-import { FarmStatisticsService } from 'src/modules/farm/services/farm-statistics.service';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { AbiFarmService } from 'src/modules/farm/services/abi-farm.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
-import { oneHour, oneMinute } from '../../helpers/helpers';
+import { oneHour } from '../../helpers/helpers';
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { FarmSetterService } from 'src/modules/farm/services/farm.setter.service';
 
@@ -20,7 +19,6 @@ export class FarmCacheWarmerService {
         private readonly abiFarmService: AbiFarmService,
         private readonly farmSetterService: FarmSetterService,
         private readonly farmComputeService: FarmComputeService,
-        private readonly farmStatisticsService: FarmStatisticsService,
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -158,12 +156,14 @@ export class FarmCacheWarmerService {
                 farmedTokenPriceUSD,
                 farmingTokenPriceUSD,
                 totalValueLockedUSD,
+                apr,
             ] = await Promise.all([
                 this.farmComputeService.computeFarmedTokenPriceUSD(farmAddress),
                 this.farmComputeService.computeFarmingTokenPriceUSD(
                     farmAddress,
                 ),
                 this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
+                this.farmComputeService.computeFarmAPR(farmAddress),
             ]);
             const cacheKeys = await Promise.all([
                 this.farmSetterService.setFarmedTokenPriceUSD(
@@ -178,26 +178,9 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     totalValueLockedUSD,
                 ),
+                this.farmSetterService.setFarmAPR(farmAddress, apr),
             ]);
             this.invalidatedKeys.push(cacheKeys);
-            await this.deleteCacheKeys();
-        }
-    }
-
-    @Cron('*/45 * * * * *')
-    async cacheApr(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
-            const apr = await this.farmStatisticsService.computeFarmAPR(
-                farmAddress,
-            );
-            const cacheKey = generateCacheKeyFromParams(
-                'farmStatistics',
-                farmAddress,
-                'apr',
-            );
-
-            await this.cachingService.setCache(cacheKey, apr, oneMinute());
-            this.invalidatedKeys.push(cacheKey);
             await this.deleteCacheKeys();
         }
     }

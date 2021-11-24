@@ -16,7 +16,6 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
 } from './models/farm.args';
-import { FarmStatisticsService } from './services/farm-statistics.service';
 import { ApolloError } from 'apollo-server-express';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 import { FarmGetterService } from './services/farm.getter.service';
@@ -29,7 +28,6 @@ export class FarmResolver {
         private readonly farmService: FarmService,
         private readonly farmGetterService: FarmGetterService,
         private readonly transactionsService: TransactionsFarmService,
-        private readonly statisticsService: FarmStatisticsService,
     ) {}
 
     @ResolveField()
@@ -205,7 +203,7 @@ export class FarmResolver {
     @ResolveField()
     async APR(@Parent() parent: FarmModel) {
         try {
-            return await this.statisticsService.getFarmAPR(parent.address);
+            return await this.farmGetterService.getFarmAPR(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
