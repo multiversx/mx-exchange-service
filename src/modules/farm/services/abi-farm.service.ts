@@ -202,4 +202,18 @@ export class AbiFarmService {
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf();
     }
+
+    async getBurnedTokenAmount(
+        farmAddress: string,
+        tokenID: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getBurnedTokenAmount([
+            BytesValue.fromUTF8(tokenID),
+        ]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
 }

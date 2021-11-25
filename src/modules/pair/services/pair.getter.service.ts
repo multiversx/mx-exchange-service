@@ -351,6 +351,18 @@ export class PairGetterService {
         );
     }
 
+    async getBurnedTokenAmount(
+        pairAddress: string,
+        tokenID: string,
+    ): Promise<string> {
+        return this.getData(
+            pairAddress,
+            `${tokenID}.burnedTokenAmount`,
+            () => this.abiService.getBurnedTokenAmount(pairAddress, tokenID),
+            oneMinute(),
+        );
+    }
+
     private getPairCacheKey(pairAddress: string, ...args: any) {
         return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }

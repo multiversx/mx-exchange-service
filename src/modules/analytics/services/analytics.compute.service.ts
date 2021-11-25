@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { farmsConfig, scAddress } from 'src/config';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
+import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
+import { ProxyGetterService } from 'src/modules/proxy/services/proxy.getter.service';
 import { ContextService } from 'src/services/context/context.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 
@@ -16,6 +18,8 @@ export class AnalyticsComputeService {
         private readonly pairCompute: PairComputeService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairService: PairService,
+        private readonly proxyGetter: ProxyGetterService,
+        private readonly lockedAssetGetter: LockedAssetGetterService,
     ) {}
 
     async computeTokenPriceUSD(tokenID: string): Promise<string> {
@@ -110,5 +114,36 @@ export class AnalyticsComputeService {
             );
         }
         return totalAggregatedRewards.toFixed();
+    }
+
+    async computeTotalBurnedTokenAmount(tokenID: string): Promise<string> {
+        const promises = [];
+        const pairsAddresses = await this.context.getAllPairsAddress();
+        for (const pairAddress of pairsAddresses) {
+            promises.push(
+                this.pairGetterService.getBurnedTokenAmount(
+                    pairAddress,
+                    tokenID,
+                ),
+            );
+        }
+        for (const farmAddress of farmsConfig) {
+            promises.push(
+                this.farmGetterService.getBurnedTokenAmount(
+                    farmAddress,
+                    tokenID,
+                ),
+            );
+        }
+        promises.push(this.proxyGetter.getBurnedTokenAmount(tokenID));
+        promises.push(this.lockedAssetGetter.getBurnedTokenAmount(tokenID));
+
+        const burnedTokenAmounts = await Promise.all(promises);
+        let burnedTokenAmount = new BigNumber(0);
+        for (const burnedToken of burnedTokenAmounts) {
+            burnedTokenAmount = burnedTokenAmount.plus(burnedToken);
+        }
+
+        return burnedTokenAmount.toFixed();
     }
 }

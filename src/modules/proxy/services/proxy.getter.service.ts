@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from 'src/config';
-import { oneHour } from 'src/helpers/helpers';
+import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -68,6 +68,14 @@ export class ProxyGetterService {
     async getlockedAssetToken(): Promise<NftCollection> {
         const lockedAssetTokenID = await this.getLockedAssetTokenID();
         return this.contextGetter.getNftCollectionMetadata(lockedAssetTokenID);
+    }
+
+    async getBurnedTokenAmount(tokenID: string): Promise<string> {
+        return await this.getData(
+            `${tokenID}.burnedTokenAmount`,
+            () => this.abiService.getBurnedTokenAmount(tokenID),
+            oneMinute(),
+        );
     }
 
     private getProxyCacheKey(...args: any) {

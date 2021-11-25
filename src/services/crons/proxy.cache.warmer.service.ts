@@ -5,11 +5,11 @@ import { AbiProxyPairService } from 'src/modules/proxy/services/proxy-pair/proxy
 import { AbiProxyFarmService } from 'src/modules/proxy/services/proxy-farm/proxy-farm-abi.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
-import { cacheConfig } from 'src/config';
+import { cacheConfig, constantsConfig } from 'src/config';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
-import { oneHour } from '../../helpers/helpers';
+import { oneHour, oneMinute } from '../../helpers/helpers';
 
 @Injectable()
 export class ProxyCacheWarmerService {
@@ -104,6 +104,20 @@ export class ProxyCacheWarmerService {
                 oneHour(),
             ),
         ]);
+        await this.deleteCacheKeys();
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
+    async cacheProxyInfo(): Promise<void> {
+        const burnedToken = await this.abiProxyService.getBurnedTokenAmount(
+            constantsConfig.MEX_TOKEN_ID,
+        );
+        await this.setProxyCache(
+            'proxy',
+            `${constantsConfig.MEX_TOKEN_ID}.burnedTokenAmount`,
+            burnedToken,
+            oneMinute(),
+        );
         await this.deleteCacheKeys();
     }
 

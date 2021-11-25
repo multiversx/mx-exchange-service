@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { cacheConfig } from '../../config';
+import { cacheConfig, constantsConfig } from '../../config';
 import { ContextService } from '../context/context.service';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -99,8 +99,12 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.context.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [pairInfo, state] = await Promise.all([
+            const [pairInfo, burnedToken, state] = await Promise.all([
                 this.abiPairService.getPairInfoMetadata(pairAddress),
+                this.abiPairService.getBurnedTokenAmount(
+                    pairAddress,
+                    constantsConfig.MEX_TOKEN_ID,
+                ),
                 this.abiPairService.getState(pairAddress),
             ]);
 
@@ -112,6 +116,11 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setSecondTokenReserve(
                     pairAddress,
                     pairInfo.reserves1,
+                ),
+                this.pairSetterService.setBurnedTokenAmount(
+                    pairAddress,
+                    constantsConfig.MEX_TOKEN_ID,
+                    burnedToken,
                 ),
                 this.pairSetterService.setTotalSupply(
                     pairAddress,

@@ -6,7 +6,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
-import { QueryResponseBundle } from '@elrondnetwork/erdjs/out';
+import { BytesValue, QueryResponseBundle } from '@elrondnetwork/erdjs/out';
 
 @Injectable()
 export class AbiLockedAssetService {
@@ -67,5 +67,14 @@ export class AbiLockedAssetService {
         const interaction: Interaction = contract.methods.getInitEpoch([]);
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toNumber();
+    }
+
+    async getBurnedTokenAmount(tokenID: string): Promise<string> {
+        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const interaction: Interaction = contract.methods.getBurnedTokenAmount([
+            BytesValue.fromUTF8(tokenID),
+        ]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 }
