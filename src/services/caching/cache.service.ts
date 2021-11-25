@@ -25,6 +25,7 @@ export class CachingService {
             const delay = Math.min(times * 50, 2000);
             return delay;
         },
+        enableAutoPipelining: true,
     };
     private client = new Redis.default(this.options);
     private static cache: Cache;
