@@ -10,7 +10,7 @@ import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmService } from '../farm/services/farm.service';
 import { LockedAssetService } from '../locked-asset-factory/services/locked-asset.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyService } from '../proxy/proxy.service';
+import { ProxyService } from '../proxy/services/proxy.service';
 import {
     UserFarmToken,
     UserLockedAssetToken,
@@ -20,6 +20,7 @@ import {
 import { UserNftTokens } from './nfttokens.union';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { computeValueUSD } from '../../utils/token.converters';
+import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
 
 @Injectable()
 export class UserComputeService {
@@ -31,6 +32,7 @@ export class UserComputeService {
         private pairGetterService: PairGetterService,
         private lockedAssetService: LockedAssetService,
         private proxyService: ProxyService,
+        private readonly proxyGetter: ProxyGetterService,
     ) {}
 
     async farmTokenUSD(
@@ -82,7 +84,7 @@ export class UserComputeService {
         nftToken: LockedAssetToken,
     ): Promise<typeof UserNftTokens> {
         const [assetToken, decodedAttributes] = await Promise.all([
-            this.proxyService.getAssetToken(),
+            this.proxyGetter.getAssetToken(),
             this.lockedAssetService.decodeLockedAssetAttributes({
                 batchAttributes: [
                     {

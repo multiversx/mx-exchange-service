@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
+import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
 import {
     BigUIntValue,
     BytesValue,
@@ -7,20 +7,20 @@ import {
     U32Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { Address, GasLimit } from '@elrondnetwork/erdjs';
-import { TransactionModel } from '../../../models/transaction.model';
+import { TransactionModel } from 'src/models/transaction.model';
 import BigNumber from 'bignumber.js';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import {
     AddLiquidityProxyArgs,
     RemoveLiquidityProxyArgs,
-} from '../models/proxy-pair.args';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { WrapService } from '../../wrapping/wrap.service';
-import { TransactionsWrapService } from '../../wrapping/transactions-wrap.service';
+} from '../../models/proxy-pair.args';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { ProxyService } from '../proxy.service';
-import { ProxyPairService } from './proxy-pair.service';
+import { ProxyGetterService } from '../proxy.getter.service';
+import { ProxyPairGetterService } from './proxy-pair.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -31,8 +31,8 @@ export class TransactionsProxyPairService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly contextTransactions: ContextTransactionsService,
-        private readonly proxyService: ProxyService,
-        private readonly proxyPairService: ProxyPairService,
+        private readonly proxyGetter: ProxyGetterService,
+        private readonly proxyPairGetter: ProxyPairGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,
@@ -275,7 +275,7 @@ export class TransactionsProxyPairService {
     private async validateInputWrappedLpTokens(
         tokens: InputTokenModel[],
     ): Promise<void> {
-        const wrappedLpTokenID = await this.proxyPairService.getwrappedLpTokenID();
+        const wrappedLpTokenID = await this.proxyPairGetter.getwrappedLpTokenID();
 
         for (const wrappedLpToken of tokens.slice(2)) {
             if (
@@ -293,7 +293,7 @@ export class TransactionsProxyPairService {
     ): Promise<InputTokenModel[]> {
         const [firstTokenID, secondTokenID] = await Promise.all([
             this.pairGetterService.getFirstTokenID(pairAddress),
-            this.proxyService.getLockedAssetTokenID(),
+            this.proxyGetter.getLockedAssetTokenID(),
         ]);
 
         switch (firstTokenID) {
