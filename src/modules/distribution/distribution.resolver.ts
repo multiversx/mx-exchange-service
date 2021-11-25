@@ -1,29 +1,29 @@
 import { Resolver, Query, ResolveField } from '@nestjs/graphql';
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { DistributionService } from './distribution.service';
+import { DistributionService } from './services/distribution.service';
 import {
     CommunityDistributionModel,
     DistributionModel,
 } from './models/distribution.model';
-import { TransactionsDistributionService } from './transaction-distribution.service';
+import { TransactionsDistributionService } from './services/transaction-distribution.service';
 import { ApolloError } from 'apollo-server-express';
 import { User } from 'src/helpers/userDecorator';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { DistributionGetterService } from './services/distribution.getter.service';
 
 @Resolver(() => DistributionModel)
 export class DistributionResolver {
     constructor(
-        @Inject(DistributionService)
-        private distributionService: DistributionService,
-        @Inject(TransactionsDistributionService)
-        private transactionsService: TransactionsDistributionService,
+        private readonly distributionService: DistributionService,
+        private readonly distributionGetter: DistributionGetterService,
+        private readonly transactionsService: TransactionsDistributionService,
     ) {}
 
     @ResolveField()
     async communityDistribution(): Promise<CommunityDistributionModel> {
         try {
-            return await this.distributionService.getCommunityDistribution();
+            return await this.distributionGetter.getCommunityDistribution();
         } catch (error) {
             throw new ApolloError(error);
         }
