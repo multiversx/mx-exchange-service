@@ -12,6 +12,8 @@ import { AnalyticsResolver } from './analytics.resolver';
 import { AnalyticsService } from './services/analytics.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
+import { AnalyticsPairService } from './services/analytics.pair.service';
+import { PairDayDataResolver } from './analytics.pair.resolver';
 
 @Module({
     imports: [
@@ -29,6 +31,8 @@ import { AnalyticsGetterService } from './services/analytics.getter.service';
         AnalyticsGetterService,
         AnalyticsComputeService,
         AnalyticsEventHandlerService,
+        AnalyticsPairService,
+        PairDayDataResolver,
     ],
     exports: [
         AnalyticsService,
