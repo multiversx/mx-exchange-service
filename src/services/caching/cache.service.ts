@@ -22,7 +22,7 @@ export class CachingService {
         port: this.configService.getRedisPort(),
         password: this.configService.getRedisPassword(),
         retryStrategy(times) {
-            const delay = Math.min(times * 50, 2000);
+            const delay = Math.min(times * 50, 5000);
             return delay;
         },
         enableAutoPipelining: true,
