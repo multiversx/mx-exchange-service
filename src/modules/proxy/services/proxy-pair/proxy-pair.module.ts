@@ -1,13 +1,13 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { PairModule } from '../../pair/pair.module';
+import { PairModule } from 'src/modules/pair/pair.module';
 import { AbiProxyPairService } from './proxy-pair-abi.service';
 import { TransactionsProxyPairService } from './proxy-pair-transactions.service';
-import { ProxyPairService } from './proxy-pair.service';
-import { ContextModule } from '../../../services/context/context.module';
-import { ElrondCommunicationModule } from '../../../services/elrond-communication/elrond-communication.module';
-import { WrappingModule } from '../../wrapping/wrap.module';
-import { CachingModule } from '../../../services/caching/cache.module';
-import { ProxyModule } from '../proxy.module';
+import { ProxyPairGetterService } from './proxy-pair.getter.service';
+import { ContextModule } from 'src/services/context/context.module';
+import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { WrappingModule } from 'src/modules/wrapping/wrap.module';
+import { CachingModule } from 'src/services/caching/cache.module';
+import { ProxyModule } from '../../proxy.module';
 
 @Module({
     imports: [
@@ -20,11 +20,11 @@ import { ProxyModule } from '../proxy.module';
     ],
     providers: [
         AbiProxyPairService,
-        ProxyPairService,
+        ProxyPairGetterService,
         TransactionsProxyPairService,
     ],
     exports: [
-        ProxyPairService,
+        ProxyPairGetterService,
         AbiProxyPairService,
         TransactionsProxyPairService,
     ],

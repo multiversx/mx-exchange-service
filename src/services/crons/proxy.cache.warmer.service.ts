@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { AbiProxyService } from 'src/modules/proxy/proxy-abi.service';
-import { AbiProxyPairService } from 'src/modules/proxy/proxy-pair/proxy-pair-abi.service';
-import { AbiProxyFarmService } from 'src/modules/proxy/proxy-farm/proxy-farm-abi.service';
+import { AbiProxyService } from 'src/modules/proxy/services/proxy-abi.service';
+import { AbiProxyPairService } from 'src/modules/proxy/services/proxy-pair/proxy-pair-abi.service';
+import { AbiProxyFarmService } from 'src/modules/proxy/services/proxy-farm/proxy-farm-abi.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
 import { cacheConfig, constantsConfig } from 'src/config';

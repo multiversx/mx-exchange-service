@@ -14,6 +14,8 @@ import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
 import { ProxyModule } from '../proxy/proxy.module';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
+import { AnalyticsPairService } from './services/analytics.pair.service';
+import { PairDayDataResolver } from './analytics.pair.resolver';
 
 @Module({
     imports: [
@@ -33,6 +35,8 @@ import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
         AnalyticsGetterService,
         AnalyticsComputeService,
         AnalyticsEventHandlerService,
+        AnalyticsPairService,
+        PairDayDataResolver,
     ],
     exports: [
         AnalyticsService,

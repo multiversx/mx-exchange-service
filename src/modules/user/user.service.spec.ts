@@ -2,9 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { FarmService } from '../farm/services/farm.service';
 import { PairService } from '../pair/services/pair.service';
-import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
-import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
-import { ProxyService } from '../proxy/proxy.service';
+import { ProxyFarmGetterService } from '../proxy/services/proxy-farm/proxy-farm.getter.service';
+import { ProxyPairGetterService } from '../proxy/services/proxy-pair/proxy-pair.getter.service';
+import { ProxyService } from '../proxy/services/proxy.service';
 import { UserService } from './user.service';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { ContextService } from '../../services/context/context.service';
@@ -31,15 +31,16 @@ import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../pair/services/pair.compute.service';
-import { ProxyServiceMock } from '../proxy/proxy.service.mock';
-import { ProxyPairServiceMock } from '../proxy/proxy-pair/proxy.pair.service.mock';
-import { ProxyFarmServiceMock } from '../proxy/proxy-farm/proxy.farm.service.mock';
+import { ProxyGetterServiceMock } from '../proxy/mocks/proxy.getter.service.mock';
 import { LockedAssetServiceMock } from '../locked-asset-factory/mocks/locked.asset.service.mock';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
 import { AbiLockedAssetService } from '../locked-asset-factory/services/abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from '../locked-asset-factory/mocks/abi.locked.asset.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
+import { ProxyPairGetterServiceMock } from '../proxy/mocks/proxy.pair.getter.service.mock';
+import { ProxyFarmGetterServiceMock } from '../proxy/mocks/proxy.farm.getter.service.mock';
+import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
 
 describe('UserService', () => {
     let service: UserService;
@@ -86,17 +87,22 @@ describe('UserService', () => {
 
     const ProxyServiceProvider = {
         provide: ProxyService,
-        useClass: ProxyServiceMock,
+        useClass: ProxyGetterServiceMock,
     };
 
-    const ProxyPairServiceProvider = {
-        provide: ProxyPairService,
-        useClass: ProxyPairServiceMock,
+    const ProxyGetterServiceProvider = {
+        provide: ProxyGetterService,
+        useClass: ProxyGetterServiceMock,
     };
 
-    const ProxyFarmServiceProvider = {
-        provide: ProxyFarmService,
-        useClass: ProxyFarmServiceMock,
+    const ProxyPairGetterServiceProvider = {
+        provide: ProxyPairGetterService,
+        useClass: ProxyPairGetterServiceMock,
+    };
+
+    const ProxyFarmGetterServiceProvider = {
+        provide: ProxyFarmGetterService,
+        useClass: ProxyFarmGetterServiceMock,
     };
 
     const LockedAssetProvider = {
@@ -134,8 +140,9 @@ describe('UserService', () => {
                 PairComputeService,
                 PriceFeedServiceProvider,
                 ProxyServiceProvider,
-                ProxyPairServiceProvider,
-                ProxyFarmServiceProvider,
+                ProxyGetterServiceProvider,
+                ProxyPairGetterServiceProvider,
+                ProxyFarmGetterServiceProvider,
                 FarmServiceProvider,
                 FarmGetterServiceProvider,
                 LockedAssetProvider,

@@ -6,7 +6,7 @@ import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/servi
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyService } from 'src/modules/proxy/proxy.service';
+import { ProxyGetterService } from 'src/modules/proxy/services/proxy.getter.service';
 import { ContextService } from 'src/services/context/context.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 
@@ -18,7 +18,7 @@ export class AnalyticsComputeService {
         private readonly pairCompute: PairComputeService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairService: PairService,
-        private readonly proxyService: ProxyService,
+        private readonly proxyGetter: ProxyGetterService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
     ) {}
 
@@ -135,7 +135,7 @@ export class AnalyticsComputeService {
                 ),
             );
         }
-        promises.push(this.proxyService.getBurnedTokenAmount(tokenID));
+        promises.push(this.proxyGetter.getBurnedTokenAmount(tokenID));
         promises.push(this.lockedAssetGetter.getBurnedTokenAmount(tokenID));
 
         const burnedTokenAmounts = await Promise.all(promises);
