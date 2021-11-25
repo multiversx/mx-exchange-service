@@ -18,8 +18,6 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
-import { ProxyService } from 'src/modules/proxy/proxy.service';
-import { AbiProxyService } from 'src/modules/proxy/proxy-abi.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { FarmService } from 'src/modules/farm/services/farm.service';
@@ -27,6 +25,8 @@ import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { AbiLockedAssetService } from 'src/modules/locked-asset-factory/services/abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from 'src/modules/locked-asset-factory/mocks/abi.locked.asset.service.mock';
+import { ProxyGetterService } from 'src/modules/proxy/services/proxy.getter.service';
+import { ProxyGetterServiceMock } from 'src/modules/proxy/mocks/proxy.getter.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -49,6 +49,11 @@ describe('AnalyticsService', () => {
     const PairGetterServiceProvider = {
         provide: PairGetterService,
         useClass: PairGetterServiceMock,
+    };
+
+    const ProxyGetterServiceProvider = {
+        provide: ProxyGetterService,
+        useClass: ProxyGetterServiceMock,
     };
 
     const AbiLockedAssetServiceProvider = {
@@ -94,8 +99,7 @@ describe('AnalyticsService', () => {
                 PairServiceProvider,
                 PairGetterServiceProvider,
                 PairComputeService,
-                ProxyService,
-                AbiProxyService,
+                ProxyGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
                 PriceFeedServiceProvider,
