@@ -39,6 +39,9 @@ export class PairDayDataModel {
     @Field()
     volumeUSD24h: string;
 
+    @Field()
+    feesUSD24h: string;
+
     constructor(init?: Partial<PairDayDataModel>) {
         Object.assign(this, init);
     }

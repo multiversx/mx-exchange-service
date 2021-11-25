@@ -31,6 +31,13 @@ export class AnalyticsPairService {
         );
     }
 
+    async getDailyFeesUSD(pairAddress: string): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getSumCompleteValues(
+            pairAddress,
+            'feesUSD',
+        );
+    }
+
     async getClosingPriceUSD(tokenID: string): Promise<HistoricDataModel[]> {
         return await this.analyticsService.getLatestCompleteValues(
             tokenID,
@@ -46,11 +53,13 @@ export class AnalyticsPairService {
         const [
             lockedValuesUSD,
             volumesUSD,
+            feesUSD,
             firstTokenPricesUSD,
             secondTokenPricesUSD,
         ] = await Promise.all([
             this.getClosingLockedValueUSD(pairAddress),
             this.getDailyVolumesUSD(pairAddress),
+            this.getDailyFeesUSD(pairAddress),
             this.getClosingPriceUSD(firstTokenID),
             this.getClosingPriceUSD(secondTokenID),
         ]);
@@ -59,6 +68,9 @@ export class AnalyticsPairService {
             const volumeUSD = volumesUSD.find(v => {
                 return v.timestamp === lockedValueUSD.timestamp;
             });
+            const feeUSD = feesUSD.find(
+                fee => fee.timestamp === lockedValueUSD.timestamp,
+            );
             const firstTokenPriceUSD = firstTokenPricesUSD.find(
                 price => price.timestamp === lockedValueUSD.timestamp,
             );
@@ -84,6 +96,10 @@ export class AnalyticsPairService {
                     volumeUSD24h:
                         volumeUSD !== undefined
                             ? new BigNumber(volumeUSD.value).toFixed()
+                            : '0',
+                    feesUSD24h:
+                        feeUSD !== undefined
+                            ? new BigNumber(feeUSD.value).toFixed()
                             : '0',
                 }),
             );
