@@ -4,8 +4,8 @@ import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { FarmService } from '../farm/services/farm.service';
 import { NftToken } from '../../models/tokens/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
-import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
+import { ProxyFarmGetterService } from '../proxy/services/proxy-farm/proxy-farm.getter.service';
+import { ProxyPairGetterService } from '../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
@@ -22,7 +22,6 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
-import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PaginationArgs } from '../dex.model';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
@@ -52,11 +51,10 @@ export class UserService {
         private apiService: ElrondApiService,
         private cachingService: CachingService,
         private pairService: PairService,
-        private pairGetterService: PairGetterService,
         private pairComputeService: PairComputeService,
         private priceFeed: PriceFeedService,
-        private proxyPairService: ProxyPairService,
-        private proxyFarmService: ProxyFarmService,
+        private proxyPairGetter: ProxyPairGetterService,
+        private proxyFarmGetter: ProxyFarmGetterService,
         private farmService: FarmService,
         private farmGetterService: FarmGetterService,
         private lockedAssetGetter: LockedAssetGetterService,
@@ -209,8 +207,8 @@ export class UserService {
             lockedFarmTokenID,
         ] = await Promise.all([
             this.lockedAssetGetter.getLockedTokenID(),
-            this.proxyPairService.getwrappedLpTokenID(),
-            this.proxyFarmService.getwrappedFarmTokenID(),
+            this.proxyPairGetter.getwrappedLpTokenID(),
+            this.proxyFarmGetter.getwrappedFarmTokenID(),
         ]);
         const promises: Promise<string>[] = [];
         for (const farmAddress of farmsConfig) {
