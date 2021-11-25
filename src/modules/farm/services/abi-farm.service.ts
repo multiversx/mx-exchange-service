@@ -213,22 +213,7 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getBurnedTokenAmount([
             BytesValue.fromUTF8(tokenID),
         ]);
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            return response.firstValue.valueOf().toFixed();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getState.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 }
