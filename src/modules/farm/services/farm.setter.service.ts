@@ -175,6 +175,12 @@ export class FarmSetterService {
         return cacheKey;
     }
 
+    async setFarmAPR(farmAddress: string, value: string): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'apr');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     async setBurnedTokenAmount(
         farmAddress: string,
         tokenID: string,

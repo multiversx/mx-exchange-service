@@ -3,13 +3,14 @@ import {
     BigUIntValue,
     BytesValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Interaction } from '@elrondnetwork/erdjs';
+import { Interaction, QueryResponseBundle } from '@elrondnetwork/erdjs';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../models/farm.args';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { generateRunQueryLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 
 @Injectable()
 export class AbiFarmService {
@@ -18,28 +19,35 @@ export class AbiFarmService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getFarmedTokenID(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
-        const interaction: Interaction = contract.methods.getRewardTokenId([]);
+    async getGenericData(
+        contract: SmartContractProfiler,
+        interaction: Interaction,
+    ): Promise<QueryResponseBundle> {
         try {
             const queryResponse = await contract.runQuery(
                 this.elrondProxy.getService(),
                 interaction.buildQuery(),
             );
-            const response = interaction.interpretQueryResponse(queryResponse);
-
-            return response.firstValue.valueOf().toString();
+            return interaction.interpretQueryResponse(queryResponse);
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
                 AbiFarmService.name,
-                this.getFarmedTokenID.name,
+                interaction.getEndpoint().name,
                 error.message,
             );
             this.logger.error(logMessage);
+
             throw error;
         }
+    }
+
+    async getFarmedTokenID(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getRewardTokenId([]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
@@ -47,24 +55,8 @@ export class AbiFarmService {
             farmAddress,
         );
         const interaction: Interaction = contract.methods.getFarmTokenId([]);
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-
-            return response.firstValue.valueOf().toString();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getFarmTokenID.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
@@ -72,24 +64,8 @@ export class AbiFarmService {
             farmAddress,
         );
         const interaction: Interaction = contract.methods.getFarmingTokenId([]);
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-
-            return response.firstValue.valueOf().toString();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getFarmingTokenID.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
@@ -99,24 +75,9 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getFarmTokenSupply(
             [],
         );
+        const response = await this.getGenericData(contract, interaction);
 
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const farmTokenSupply: BigNumber = response.firstValue.valueOf();
-            return farmTokenSupply.toFixed();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getFarmTokenSupply.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
@@ -126,24 +87,8 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getFarmingTokenReserve(
             [],
         );
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const farmingTokenReserve: BigNumber = response.firstValue.valueOf();
-            return farmingTokenReserve.toFixed();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getFarmingTokenReserve.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
@@ -153,24 +98,8 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getPerBlockRewardAmount(
             [],
         );
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const rewardsPerBlock: BigNumber = response.firstValue.valueOf();
-            return rewardsPerBlock.toFixed();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getRewardsPerBlock.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getPenaltyPercent(farmAddress: string): Promise<number> {
@@ -178,24 +107,8 @@ export class AbiFarmService {
             farmAddress,
         );
         const interaction: Interaction = contract.methods.getPenaltyPercent([]);
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const penaltyPercent: BigNumber = response.firstValue.valueOf();
-            return penaltyPercent.toNumber();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getPenaltyPercent.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
@@ -205,24 +118,8 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getMinimumFarmingEpoch(
             [],
         );
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const minimumFarmingEpochs: BigNumber = response.firstValue.valueOf();
-            return minimumFarmingEpochs.toNumber();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getMinimumFarmingEpochs.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getRewardPerShare(farmAddress: string): Promise<string> {
@@ -230,24 +127,8 @@ export class AbiFarmService {
             farmAddress,
         );
         const interaction: Interaction = contract.methods.getRewardPerShare([]);
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const rewardPerShare: BigNumber = response.firstValue.valueOf();
-            return rewardPerShare.toFixed();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getLastRewardBlockNonce.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getLastRewardBlockNonce(farmAddress: string): Promise<string> {
@@ -257,24 +138,8 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getLastRewardBlockNonce(
             [],
         );
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const lastRewardBlockNonce: BigNumber = response.firstValue.valueOf();
-            return lastRewardBlockNonce.toFixed();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getLastRewardBlockNonce.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getUndistributedFees(farmAddress: string): Promise<string> {
@@ -284,24 +149,8 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getUndistributedFees(
             [],
         );
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const undistributedFees: BigNumber = response.firstValue.valueOf();
-            return undistributedFees.toFixed();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getUndistributedFees.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getCurrentBlockFee(farmAddress: string): Promise<string> {
@@ -311,24 +160,9 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getCurrentBlockFee(
             [],
         );
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const currentBlockFee = response.firstValue.valueOf();
-            return currentBlockFee ? currentBlockFee[1].toFixed() : '0';
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getCurrentBlockFee.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        const currentBlockFee = response.firstValue.valueOf();
+        return currentBlockFee ? currentBlockFee[1].toFixed() : '0';
     }
 
     async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
@@ -338,24 +172,8 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getDivisionSafetyConstant(
             [],
         );
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            const divisionSafetyConstant: BigNumber = response.firstValue.valueOf();
-            return divisionSafetyConstant.toFixed();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getDivisionSafetyConstant.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async calculateRewardsForGivenPosition(
@@ -372,23 +190,8 @@ export class AbiFarmService {
                 ),
             ],
         );
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            return response.firstValue.valueOf();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.calculateRewardsForGivenPosition.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf();
     }
 
     async getState(farmAddress: string): Promise<string> {
@@ -396,23 +199,8 @@ export class AbiFarmService {
             farmAddress,
         );
         const interaction: Interaction = contract.methods.getState([]);
-
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const response = interaction.interpretQueryResponse(queryResponse);
-            return response.firstValue.valueOf();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                this.getState.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf();
     }
 
     async getBurnedTokenAmount(

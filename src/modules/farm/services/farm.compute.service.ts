@@ -151,4 +151,37 @@ export class FarmComputeService {
         }
         return new BigNumber(0);
     }
+
+    async computeFarmAPR(farmAddress: string): Promise<string> {
+        const farmedToken = await this.farmGetterService.getFarmedToken(
+            farmAddress,
+        );
+
+        const [farmedTokenPriceUSD, rewardsPerBlock] = await Promise.all([
+            this.pairComputeService.computeTokenPriceUSD(
+                farmedToken.identifier,
+            ),
+            this.farmGetterService.getRewardsPerBlock(farmAddress),
+        ]);
+
+        // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
+        const blocksPerYear = (365 * 24 * 60 * 60) / 6;
+        const totalRewardsPerYear = new BigNumber(rewardsPerBlock).multipliedBy(
+            blocksPerYear,
+        );
+
+        const totalFarmingTokenValueUSD = await this.computeFarmLockedValueUSD(
+            farmAddress,
+        );
+
+        const totalRewardsPerYearUSD = computeValueUSD(
+            totalRewardsPerYear.toFixed(),
+            farmedToken.decimals,
+            farmedTokenPriceUSD.toFixed(),
+        );
+
+        const apr = totalRewardsPerYearUSD.div(totalFarmingTokenValueUSD);
+
+        return apr.toFixed();
+    }
 }

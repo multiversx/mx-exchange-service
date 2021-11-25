@@ -25,6 +25,7 @@ import { ContextGetterServiceMock } from 'src/services/context/mocks/context.get
 
 describe('FarmService', () => {
     let service: FarmService;
+    let computeService: FarmComputeService;
 
     const AbiFarmServiceProvider = {
         provide: AbiFarmService,
@@ -85,6 +86,7 @@ describe('FarmService', () => {
         }).compile();
 
         service = module.get<FarmService>(FarmService);
+        computeService = module.get<FarmComputeService>(FarmComputeService);
     });
 
     it('should be defined', () => {
@@ -123,5 +125,10 @@ describe('FarmService', () => {
                 rewards: '1000000000000000000',
             }),
         );
+    });
+
+    it('should get farmAPR', async () => {
+        const farmAPR = await computeService.computeFarmAPR('farm_address_1');
+        expect(farmAPR).toEqual('3504000');
     });
 });
