@@ -17,6 +17,7 @@ import { ElrondCommunicationModule } from './elrond-communication/elrond-communi
 import { CommonAppModule } from 'src/common.app.module';
 import { AnalyticsCacheWarmerService } from './crons/analytics.cache.warmer.service';
 import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
+import { TransactionProcessorService } from './crons/transaction.processor.service';
 
 @Module({
     imports: [
@@ -43,6 +44,7 @@ import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
         ProxyCacheWarmerService,
         AnalyticsCacheWarmerService,
         CachingService,
+        TransactionProcessorService,
     ],
 })
 export class CacheWarmerModule {}
