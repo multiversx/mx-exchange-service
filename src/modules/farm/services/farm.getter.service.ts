@@ -1,4 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from 'src/config';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
@@ -253,6 +254,24 @@ export class FarmGetterService {
             farmAddress,
             'apr',
             () => this.computeService.computeFarmAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getUnlockedRewardsAPR(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'unlockedRewardsAPR',
+            () => this.computeService.computeUnlockedRewardsAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getLockedRewardsAPR(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'lockedRewardsAPR',
+            () => this.computeService.computeLockedRewardsAPR(farmAddress),
             oneMinute(),
         );
     }

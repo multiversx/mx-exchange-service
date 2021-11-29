@@ -175,6 +175,27 @@ export class FarmSetterService {
         return cacheKey;
     }
 
+    async setUnlockedRewardsAPR(
+        farmAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(
+            farmAddress,
+            'unlockedRewardsAPR',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setLockedRewardsAPR(
+        farmAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'lockedRewardsAPR');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     async setFarmAPR(farmAddress: string, value: string): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, 'apr');
         await this.cachingService.setCache(cacheKey, value, oneMinute());

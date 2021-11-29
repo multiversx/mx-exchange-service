@@ -201,6 +201,28 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async unlockedRewardsAPR(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getUnlockedRewardsAPR(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async lockedRewardsAPR(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getLockedRewardsAPR(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async APR(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getFarmAPR(parent.address);
