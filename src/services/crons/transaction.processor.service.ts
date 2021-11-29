@@ -118,7 +118,7 @@ export class TransactionProcessorService {
     }
 
     private ESDTTransferEndpoint(functionArgs: string[]): string | undefined {
-        if (functionArgs.length < 2) {
+        if (functionArgs.length < 3) {
             return undefined;
         }
         return Buffer.from(functionArgs[2], 'hex').toString();
@@ -127,7 +127,7 @@ export class TransactionProcessorService {
     private ESDTNFTTransferEndpoint(
         functionArgs: string[],
     ): string | undefined {
-        if (functionArgs.length < 4) {
+        if (functionArgs.length < 5) {
             return undefined;
         }
         return Buffer.from(functionArgs[4], 'hex').toString();
