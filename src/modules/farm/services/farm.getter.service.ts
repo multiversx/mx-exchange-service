@@ -220,6 +220,34 @@ export class FarmGetterService {
         );
     }
 
+    async getLockedFarmingTokenReserveUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'lockedFarmingTokenReserveUSD',
+            () =>
+                this.computeService.computeLockedFarmingTokenReserveUSD(
+                    farmAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getUnlockedFarmingTokenReserveUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'unlockedFarmingTokenReserveUSD',
+            () =>
+                this.computeService.computeUnlockedFarmingTokenReserveUSD(
+                    farmAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
     async getFarmAPR(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,

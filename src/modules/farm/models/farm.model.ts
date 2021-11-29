@@ -89,6 +89,12 @@ export class FarmModel {
     totalValueLockedUSD: string;
 
     @Field()
+    lockedFarmingTokenReserveUSD: string;
+
+    @Field()
+    unlockedFarmingTokenReserveUSD: string;
+
+    @Field()
     state: string;
 
     constructor(init?: Partial<FarmModel>) {

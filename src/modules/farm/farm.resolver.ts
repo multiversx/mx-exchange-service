@@ -221,6 +221,28 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async lockedFarmingTokenReserveUSD(parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getLockedFarmingTokenReserveUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async unlockedFarmingTokenReserveUSD(parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getUnlockedFarmingTokenReserveUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async state(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getState(parent.address);
