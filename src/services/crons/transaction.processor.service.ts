@@ -99,7 +99,11 @@ export class TransactionProcessorService {
                         predefinedEndpoint => predefinedEndpoint === endpoint,
                     )
                 ) {
-                    MetricsCollector.setGasUsed(endpoint, receiver, gasUsed);
+                    MetricsCollector.setGasDifference(
+                        endpoint,
+                        receiver,
+                        transaction.gasLimit - gasUsed,
+                    );
                 }
             }
             await this.cachingService.setCache(

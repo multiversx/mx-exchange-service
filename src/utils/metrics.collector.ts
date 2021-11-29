@@ -4,7 +4,7 @@ export class MetricsCollector {
     private static fieldDurationHistogram: Histogram<string>;
     private static queryDurationHistogram: Histogram<string>;
     private static externalCallsHistogram: Histogram<string>;
-    private static gasUsedHistogram: Histogram<string>;
+    private static gasDifferenceHistogram: Histogram<string>;
     private static currentNonceGauge: Gauge<string>;
     private static lastProcessedNonceGauge: Gauge<string>;
     private static isDefaultMetricsRegistered = false;
@@ -37,12 +37,12 @@ export class MetricsCollector {
             });
         }
 
-        if (!MetricsCollector.gasUsedHistogram) {
-            MetricsCollector.gasUsedHistogram = new Histogram({
-                name: 'gas_used',
-                help: 'Gas Used',
+        if (!MetricsCollector.gasDifferenceHistogram) {
+            MetricsCollector.gasDifferenceHistogram = new Histogram({
+                name: 'gas_difference',
+                help: 'Gas Difference between gas limit and gas used',
                 labelNames: ['endpoint', 'receiver'],
-                buckets: [],
+                buckets: [100000, 1000000, 10000000],
             });
         }
 
@@ -87,11 +87,15 @@ export class MetricsCollector {
             .observe(duration);
     }
 
-    static setGasUsed(endpoint: string, receiver: string, gasUsed: number) {
+    static setGasDifference(
+        endpoint: string,
+        receiver: string,
+        gasDifference: number,
+    ) {
         MetricsCollector.ensureIsInitialized();
-        MetricsCollector.gasUsedHistogram
+        MetricsCollector.gasDifferenceHistogram
             .labels(endpoint, receiver)
-            .observe(gasUsed);
+            .observe(gasDifference);
     }
 
     static setCurrentNonce(shardId: number, nonce: number) {
