@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from 'src/config';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
