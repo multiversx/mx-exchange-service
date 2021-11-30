@@ -160,4 +160,25 @@ export class ElrondApiService {
             response => response,
         );
     }
+
+    async getShardTimestamp(shardId: number): Promise<number> {
+        const latestShardBlock = await this.doGetGeneric(
+            this.getShardTimestamp.name,
+            `blocks?from=0&size=1&shard=${shardId}`,
+            response => response,
+        );
+        return latestShardBlock[0].timestamp;
+    }
+
+    async getTransactions(
+        after: number,
+        before: number,
+        receiverShard: number,
+    ): Promise<any> {
+        return await this.doGetGeneric(
+            this.getTransactions.name,
+            `transactions?receiverShard=${receiverShard}&after=${after}&before=${before}`,
+            response => response,
+        );
+    }
 }
