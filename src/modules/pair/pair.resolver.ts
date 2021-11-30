@@ -361,4 +361,15 @@ export class PairResolver {
             args,
         );
     }
+
+    @Query(() => String)
+    async burnedTokenAmount(
+        @Args('pairAddress') pairAddress: string,
+        @Args('tokenID') tokenID: string,
+    ): Promise<string> {
+        return await this.pairGetterService.getBurnedTokenAmount(
+            pairAddress,
+            tokenID,
+        );
+    }
 }
