@@ -220,11 +220,57 @@ export class FarmGetterService {
         );
     }
 
+    async getLockedFarmingTokenReserveUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'lockedFarmingTokenReserveUSD',
+            () =>
+                this.computeService.computeLockedFarmingTokenReserveUSD(
+                    farmAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getUnlockedFarmingTokenReserveUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'unlockedFarmingTokenReserveUSD',
+            () =>
+                this.computeService.computeUnlockedFarmingTokenReserveUSD(
+                    farmAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
     async getFarmAPR(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,
             'apr',
             () => this.computeService.computeFarmAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getUnlockedRewardsAPR(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'unlockedRewardsAPR',
+            () => this.computeService.computeUnlockedRewardsAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getLockedRewardsAPR(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'lockedRewardsAPR',
+            () => this.computeService.computeLockedRewardsAPR(farmAddress),
             oneMinute(),
         );
     }

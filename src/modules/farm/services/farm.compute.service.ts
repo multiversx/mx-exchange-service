@@ -152,6 +152,137 @@ export class FarmComputeService {
         return new BigNumber(0);
     }
 
+    async computeLockedFarmingTokenReserve(
+        farmAddress: string,
+    ): Promise<string> {
+        const [farmTokenSupply, farmingTokenReserve] = await Promise.all([
+            this.farmGetterService.getFarmTokenSupply(farmAddress),
+            this.farmGetterService.getFarmingTokenReserve(farmAddress),
+        ]);
+        return new BigNumber(farmTokenSupply)
+            .minus(farmingTokenReserve)
+            .toFixed();
+    }
+
+    async computeUnlockedFarmingTokenReserve(
+        farmAddress: string,
+    ): Promise<string> {
+        const [farmingTokenReserve, lockedFarmingReserve] = await Promise.all([
+            this.farmGetterService.getFarmingTokenReserve(farmAddress),
+            this.computeLockedFarmingTokenReserve(farmAddress),
+        ]);
+
+        return new BigNumber(farmingTokenReserve)
+            .minus(lockedFarmingReserve)
+            .toFixed();
+    }
+
+    async computeLockedFarmingTokenReserveUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        const [farmingToken, lockedFarmingTokenReserve] = await Promise.all([
+            this.farmGetterService.getFarmingToken(farmAddress),
+            this.computeLockedFarmingTokenReserve(farmAddress),
+        ]);
+
+        if (scAddress.has(farmingToken.identifier)) {
+            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+                scAddress.get(farmingToken.identifier),
+                farmingToken.identifier,
+            );
+            return computeValueUSD(
+                lockedFarmingTokenReserve,
+                farmingToken.decimals,
+                tokenPriceUSD,
+            ).toFixed();
+        }
+
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingToken.identifier,
+        );
+        const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
+            pairAddress,
+            lockedFarmingTokenReserve,
+        );
+        return lockedValuesUSD;
+    }
+
+    async computeUnlockedFarmingTokenReserveUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        const [farmingToken, unlockedFarmingTokenReserve] = await Promise.all([
+            this.farmGetterService.getFarmingToken(farmAddress),
+            this.computeUnlockedFarmingTokenReserve(farmAddress),
+        ]);
+
+        if (scAddress.has(farmingToken.identifier)) {
+            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+                scAddress.get(farmingToken.identifier),
+                farmingToken.identifier,
+            );
+            return computeValueUSD(
+                unlockedFarmingTokenReserve,
+                farmingToken.decimals,
+                tokenPriceUSD,
+            ).toFixed();
+        }
+
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingToken.identifier,
+        );
+        const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
+            pairAddress,
+            unlockedFarmingTokenReserve,
+        );
+        return lockedValuesUSD;
+    }
+
+    async computeUnlockedRewardsAPR(farmAddress: string): Promise<string> {
+        const farmedToken = await this.farmGetterService.getFarmedToken(
+            farmAddress,
+        );
+
+        const [
+            farmedTokenPriceUSD,
+            rewardsPerBlock,
+            lockedFarmingTokenReserveUSD,
+            unlockedFarmingTokenReserveUSD,
+        ] = await Promise.all([
+            this.pairComputeService.computeTokenPriceUSD(
+                farmedToken.identifier,
+            ),
+            this.farmGetterService.getRewardsPerBlock(farmAddress),
+            this.computeLockedFarmingTokenReserveUSD(farmAddress),
+            this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
+        ]);
+
+        // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
+        const blocksPerYear = (365 * 24 * 60 * 60) / 6;
+        const totalRewardsPerYear = new BigNumber(rewardsPerBlock).multipliedBy(
+            blocksPerYear,
+        );
+        const totalRewardsPerYearUSD = computeValueUSD(
+            totalRewardsPerYear.toFixed(),
+            farmedToken.decimals,
+            farmedTokenPriceUSD.toFixed(),
+        );
+
+        return new BigNumber(totalRewardsPerYearUSD)
+            .div(
+                new BigNumber(lockedFarmingTokenReserveUSD)
+                    .times(2)
+                    .plus(unlockedFarmingTokenReserveUSD),
+            )
+            .toFixed();
+    }
+
+    async computeLockedRewardsAPR(farmAddress: string): Promise<string> {
+        const unlockedRewardsAPR = await this.computeUnlockedRewardsAPR(
+            farmAddress,
+        );
+        return new BigNumber(unlockedRewardsAPR).times(2).toFixed();
+    }
+
     async computeFarmAPR(farmAddress: string): Promise<string> {
         const farmedToken = await this.farmGetterService.getFarmedToken(
             farmAddress,

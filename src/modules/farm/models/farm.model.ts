@@ -86,7 +86,19 @@ export class FarmModel {
     APR: string;
 
     @Field()
+    lockedRewardsAPR: string;
+
+    @Field()
+    unlockedRewardsAPR: string;
+
+    @Field()
     totalValueLockedUSD: string;
+
+    @Field()
+    lockedFarmingTokenReserveUSD: string;
+
+    @Field()
+    unlockedFarmingTokenReserveUSD: string;
 
     @Field()
     state: string;

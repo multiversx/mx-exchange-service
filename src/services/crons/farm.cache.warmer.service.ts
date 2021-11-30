@@ -166,6 +166,8 @@ export class FarmCacheWarmerService {
                 farmedTokenPriceUSD,
                 farmingTokenPriceUSD,
                 totalValueLockedUSD,
+                unlockedRewardsAPR,
+                lockedRewardsAPR,
                 apr,
             ] = await Promise.all([
                 this.farmComputeService.computeFarmedTokenPriceUSD(farmAddress),
@@ -173,6 +175,8 @@ export class FarmCacheWarmerService {
                     farmAddress,
                 ),
                 this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
+                this.farmComputeService.computeUnlockedRewardsAPR(farmAddress),
+                this.farmComputeService.computeLockedRewardsAPR(farmAddress),
                 this.farmComputeService.computeFarmAPR(farmAddress),
             ]);
             const cacheKeys = await Promise.all([
@@ -187,6 +191,14 @@ export class FarmCacheWarmerService {
                 this.farmSetterService.setTotalValueLockedUSD(
                     farmAddress,
                     totalValueLockedUSD,
+                ),
+                this.farmSetterService.setUnlockedRewardsAPR(
+                    farmAddress,
+                    unlockedRewardsAPR,
+                ),
+                this.farmSetterService.setLockedRewardsAPR(
+                    farmAddress,
+                    lockedRewardsAPR,
                 ),
                 this.farmSetterService.setFarmAPR(farmAddress, apr),
             ]);
