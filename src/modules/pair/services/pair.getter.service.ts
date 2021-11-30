@@ -343,7 +343,7 @@ export class PairGetterService {
     }
 
     async getState(pairAddress: string): Promise<string> {
-        return this.getData(
+        return await this.getData(
             pairAddress,
             'state',
             () => this.abiService.getState(pairAddress),
@@ -355,7 +355,7 @@ export class PairGetterService {
         pairAddress: string,
         tokenID: string,
     ): Promise<string> {
-        return this.getData(
+        return await this.getData(
             pairAddress,
             `${tokenID}.burnedTokenAmount`,
             () => this.abiService.getBurnedTokenAmount(pairAddress, tokenID),
