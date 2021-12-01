@@ -245,6 +245,7 @@ export class FarmComputeService {
         const [
             farmedTokenPriceUSD,
             rewardsPerBlock,
+            aprMultiplier,
             lockedFarmingTokenReserveUSD,
             unlockedFarmingTokenReserveUSD,
         ] = await Promise.all([
@@ -252,6 +253,7 @@ export class FarmComputeService {
                 farmedToken.identifier,
             ),
             this.farmGetterService.getRewardsPerBlock(farmAddress),
+            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
             this.computeLockedFarmingTokenReserveUSD(farmAddress),
             this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
         ]);
@@ -270,17 +272,18 @@ export class FarmComputeService {
         return new BigNumber(totalRewardsPerYearUSD)
             .div(
                 new BigNumber(lockedFarmingTokenReserveUSD)
-                    .times(2)
+                    .times(aprMultiplier)
                     .plus(unlockedFarmingTokenReserveUSD),
             )
             .toFixed();
     }
 
     async computeLockedRewardsAPR(farmAddress: string): Promise<string> {
-        const unlockedRewardsAPR = await this.computeUnlockedRewardsAPR(
-            farmAddress,
-        );
-        return new BigNumber(unlockedRewardsAPR).times(2).toFixed();
+        const [unlockedRewardsAPR, aprMultiplier] = await Promise.all([
+            this.computeUnlockedRewardsAPR(farmAddress),
+            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
+        ]);
+        return new BigNumber(unlockedRewardsAPR).times(aprMultiplier).toFixed();
     }
 
     async computeFarmAPR(farmAddress: string): Promise<string> {
