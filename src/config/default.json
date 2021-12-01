@@ -97,6 +97,7 @@
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
         "MAX_GAS_LIMIT": 750000000,
         "MEX_TOKEN_ID": "MEX-45ebaa",
+        "MAINTENANCE": true,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",
