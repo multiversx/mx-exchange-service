@@ -139,6 +139,15 @@ export class FarmSetterService {
         return cacheKey;
     }
 
+    async setLockedRewardAprMuliplier(
+        farmAddress: string,
+        value: number,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'aprMultiplier');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     async setFarmedTokenPriceUSD(
         farmAddress: string,
         value: string,

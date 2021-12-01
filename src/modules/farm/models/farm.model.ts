@@ -82,6 +82,9 @@ export class FarmModel {
     @Field()
     divisionSafetyConstant: string;
 
+    @Field(() => Int)
+    aprMultiplier: number;
+
     @Field()
     APR: string;
 
