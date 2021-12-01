@@ -73,6 +73,7 @@ export class FarmCacheWarmerService {
                 penaltyPercent,
                 rewardsPerBlock,
                 burnedToken,
+                aprMultiplier,
                 state,
             ] = await Promise.all([
                 this.abiFarmService.getMinimumFarmingEpochs(farmAddress),
@@ -82,6 +83,7 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     constantsConfig.MEX_TOKEN_ID,
                 ),
+                this.abiFarmService.getLockedRewardAprMuliplier(farmAddress),
                 this.abiFarmService.getState(farmAddress),
             ]);
 
@@ -102,6 +104,10 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     constantsConfig.MEX_TOKEN_ID,
                     burnedToken,
+                ),
+                this.farmSetterService.setLockedRewardAprMuliplier(
+                    farmAddress,
+                    aprMultiplier,
                 ),
                 this.farmSetterService.setState(farmAddress, state),
             ]);

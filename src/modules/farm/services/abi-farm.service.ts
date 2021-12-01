@@ -165,6 +165,17 @@ export class AbiFarmService {
         return currentBlockFee ? currentBlockFee[1].toFixed() : '0';
     }
 
+    async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getLockedRewardAprMuliplier(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().integerValue();
+    }
+
     async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
