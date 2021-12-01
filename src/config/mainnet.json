@@ -25,6 +25,9 @@
     },
     "tokensSupply": ["MEX-455c57"],
     "cachedTokensPrice": ["MEX-455c57", "WEGLD-bd4d79"],
+    "constants": {
+        "MAINTENANCE": true
+    },
     "aws": {
         "region": "eu-central-1",
         "timestream": {
