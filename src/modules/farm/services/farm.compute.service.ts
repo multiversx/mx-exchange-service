@@ -264,17 +264,12 @@ export class FarmComputeService {
             .toFixed();
     }
 
-    async computeUnlockedRewardsAPR(farmAddress: string): Promise<string> {
+    async computeAnualRewardsUSD(farmAddress: string): Promise<string> {
         const farmedToken = await this.farmGetterService.getFarmedToken(
             farmAddress,
         );
 
-        const [
-            farmedTokenPriceUSD,
-            rewardsPerBlock,
-            unlockedFarmingTokenReserveUSD,
-            virtualValueLockedUSD,
-        ] = await Promise.all([
+        const [farmedTokenPriceUSD, rewardsPerBlock] = await Promise.all([
             this.pairComputeService.computeTokenPriceUSD(
                 farmedToken.identifier,
             ),
@@ -288,18 +283,31 @@ export class FarmComputeService {
         const totalRewardsPerYear = new BigNumber(rewardsPerBlock).multipliedBy(
             blocksPerYear,
         );
-        const totalRewardsPerYearUSD = computeValueUSD(
+
+        return computeValueUSD(
             totalRewardsPerYear.toFixed(),
             farmedToken.decimals,
             farmedTokenPriceUSD.toFixed(),
-        );
+        ).toFixed();
+    }
+
+    async computeUnlockedRewardsAPR(farmAddress: string): Promise<string> {
+        const [
+            totalRewardsPerYearUSD,
+            virtualValueLockedUSD,
+            unlockedFarmingTokenReserveUSD,
+        ] = await Promise.all([
+            this.computeAnualRewardsUSD(farmAddress),
+            this.computeVirtualValueLockedUSD(farmAddress),
+            this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
+        ]);
 
         const unlockedFarmingTokenReservePercent = new BigNumber(
             unlockedFarmingTokenReserveUSD,
         ).div(virtualValueLockedUSD);
-        const distributedRewardsUSD = totalRewardsPerYearUSD.times(
-            unlockedFarmingTokenReservePercent,
-        );
+        const distributedRewardsUSD = new BigNumber(
+            totalRewardsPerYearUSD,
+        ).times(unlockedFarmingTokenReservePercent);
 
         return distributedRewardsUSD
             .div(unlockedFarmingTokenReserveUSD)
@@ -307,45 +315,26 @@ export class FarmComputeService {
     }
 
     async computeLockedRewardsAPR(farmAddress: string): Promise<string> {
-        const farmedToken = await this.farmGetterService.getFarmedToken(
-            farmAddress,
-        );
-
         const [
-            farmedTokenPriceUSD,
-            rewardsPerBlock,
-            aprMultiplier,
-            lockedFarmingTokenReserveUSD,
+            totalRewardsPerYearUSD,
             virtualValueLockedUSD,
+            lockedFarmingTokenReserveUSD,
+            aprMultiplier,
         ] = await Promise.all([
-            this.pairComputeService.computeTokenPriceUSD(
-                farmedToken.identifier,
-            ),
-            this.farmGetterService.getRewardsPerBlock(farmAddress),
-            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
-            this.computeLockedFarmingTokenReserveUSD(farmAddress),
+            this.computeAnualRewardsUSD(farmAddress),
             this.computeVirtualValueLockedUSD(farmAddress),
+            this.computeLockedFarmingTokenReserveUSD(farmAddress),
+            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
         ]);
-
-        // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
-        const blocksPerYear = (365 * 24 * 60 * 60) / 6;
-        const totalRewardsPerYear = new BigNumber(rewardsPerBlock).multipliedBy(
-            blocksPerYear,
-        );
-        const totalRewardsPerYearUSD = computeValueUSD(
-            totalRewardsPerYear.toFixed(),
-            farmedToken.decimals,
-            farmedTokenPriceUSD.toFixed(),
-        );
 
         const lockedFarmingTokenReservePercent = new BigNumber(
             lockedFarmingTokenReserveUSD,
         )
             .times(aprMultiplier)
             .div(virtualValueLockedUSD);
-        const distributedRewardsUSD = totalRewardsPerYearUSD.times(
-            lockedFarmingTokenReservePercent,
-        );
+        const distributedRewardsUSD = new BigNumber(
+            totalRewardsPerYearUSD,
+        ).times(lockedFarmingTokenReservePercent);
 
         return distributedRewardsUSD
             .div(lockedFarmingTokenReserveUSD)
