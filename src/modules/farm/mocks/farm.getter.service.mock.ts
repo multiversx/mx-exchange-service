@@ -68,6 +68,9 @@ export class FarmGetterServiceMock {
     async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
         return 3;
     }
+    async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
+        return 2;
+    }
 
     async getState(farmAddress: string): Promise<string> {
         return 'true';
