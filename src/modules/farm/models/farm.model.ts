@@ -86,9 +86,6 @@ export class FarmModel {
     aprMultiplier: number;
 
     @Field()
-    APR: string;
-
-    @Field()
     lockedRewardsAPR: string;
 
     @Field()
