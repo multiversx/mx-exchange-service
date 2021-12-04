@@ -81,11 +81,6 @@ export class RabbitMqConsumer {
                         new RemoveLiquidityEvent(rawEvent),
                     );
                     break;
-                case PAIR_EVENTS.SWAP_NO_FEE:
-                    await this.wsPairHandler.handleSwapNoFeeEvent(
-                        new SwapNoFeeEvent(rawEvent),
-                    );
-                    break;
                 case FARM_EVENTS.ENTER_FARM:
                     await this.wsFarmHandler.handleFarmEvent(
                         new EnterFarmEvent(rawEvent),
