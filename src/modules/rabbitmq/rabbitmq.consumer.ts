@@ -62,71 +62,113 @@ export class RabbitMqConsumer {
         for (const rawEvent of events) {
             switch (rawEvent.identifier) {
                 case PAIR_EVENTS.SWAP_FIXED_INPUT:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsPairHandler.handleSwapEvent(
                         new SwapFixedInputEvent(rawEvent),
                     );
                     break;
                 case PAIR_EVENTS.SWAP_FIXED_OUTPUT:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsPairHandler.handleSwapEvent(
                         new SwapFixedOutputEvent(rawEvent),
                     );
                     break;
                 case PAIR_EVENTS.ADD_LIQUIDITY:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsPairHandler.handleLiquidityEvent(
                         new AddLiquidityEvent(rawEvent),
                     );
                     break;
                 case PAIR_EVENTS.REMOVE_LIQUIDITY:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsPairHandler.handleLiquidityEvent(
                         new RemoveLiquidityEvent(rawEvent),
                     );
                     break;
                 case FARM_EVENTS.ENTER_FARM:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsFarmHandler.handleFarmEvent(
                         new EnterFarmEvent(rawEvent),
                     );
                     break;
                 case FARM_EVENTS.EXIT_FARM:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsFarmHandler.handleFarmEvent(
                         new ExitFarmEvent(rawEvent),
                     );
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsFarmHandler.handleRewardsEvent(
                         new RewardsEvent(rawEvent),
                     );
                     break;
                 case FARM_EVENTS.COMPOUND_REWARDS:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsFarmHandler.handleRewardsEvent(
                         new RewardsEvent(rawEvent),
                     );
                     break;
                 case PROXY_EVENTS.ADD_LIQUIDITY_PROXY:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsProxyHandler.handleLiquidityProxyEvent(
                         new AddLiquidityProxyEvent(rawEvent),
                     );
                     break;
                 case PROXY_EVENTS.REMOVE_LIQUIDITY_PROXY:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsProxyHandler.handleLiquidityProxyEvent(
                         new PairProxyEvent(rawEvent),
                     );
                     break;
                 case PROXY_EVENTS.ENTER_FARM_PROXY:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsProxyHandler.handleFarmProxyEvent(
                         new EnterFarmProxyEvent(rawEvent),
                     );
                     break;
                 case PROXY_EVENTS.EXIT_FARM_PROXY:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsProxyHandler.handleFarmProxyEvent(
                         new ExitFarmProxyEvent(rawEvent),
                     );
                     break;
                 case PROXY_EVENTS.CLAIM_REWARDS_PROXY:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsProxyHandler.handleRewardsProxyEvent(
                         new ClaimRewardsProxyEvent(rawEvent),
                     );
                     break;
                 case PROXY_EVENTS.COMPOUND_REWARDS_PROXY:
+                    if (rawEvent.data === '') {
+                        break;
+                    }
                     await this.wsProxyHandler.handleRewardsProxyEvent(
                         new CompoundRewardsProxyEvent(rawEvent),
                     );
