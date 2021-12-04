@@ -201,6 +201,17 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async aprMultiplier(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getLockedRewardAprMuliplier(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async unlockedRewardsAPR(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getUnlockedRewardsAPR(

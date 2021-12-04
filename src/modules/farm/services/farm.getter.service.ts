@@ -189,6 +189,15 @@ export class FarmGetterService {
         );
     }
 
+    async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
+        return this.getData(
+            farmAddress,
+            'aprMultiplier',
+            () => this.abiService.getLockedRewardAprMuliplier(farmAddress),
+            oneMinute(),
+        );
+    }
+
     async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,

@@ -155,25 +155,35 @@ export class FarmComputeService {
     async computeLockedFarmingTokenReserve(
         farmAddress: string,
     ): Promise<string> {
-        const [farmTokenSupply, farmingTokenReserve] = await Promise.all([
-            this.farmGetterService.getFarmTokenSupply(farmAddress),
+        const [
+            unlockedFarmingTokenReserve,
+            farmingTokenReserve,
+        ] = await Promise.all([
+            this.computeUnlockedFarmingTokenReserve(farmAddress),
             this.farmGetterService.getFarmingTokenReserve(farmAddress),
         ]);
-        return new BigNumber(farmTokenSupply)
-            .minus(farmingTokenReserve)
+        return new BigNumber(farmingTokenReserve)
+            .minus(unlockedFarmingTokenReserve)
             .toFixed();
     }
 
     async computeUnlockedFarmingTokenReserve(
         farmAddress: string,
     ): Promise<string> {
-        const [farmingTokenReserve, lockedFarmingReserve] = await Promise.all([
+        const [
+            farmingTokenReserve,
+            farmTokenSupply,
+            aprMultiplier,
+        ] = await Promise.all([
             this.farmGetterService.getFarmingTokenReserve(farmAddress),
-            this.computeLockedFarmingTokenReserve(farmAddress),
+            this.farmGetterService.getFarmTokenSupply(farmAddress),
+            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
         ]);
 
         return new BigNumber(farmingTokenReserve)
-            .minus(lockedFarmingReserve)
+            .times(aprMultiplier)
+            .minus(farmTokenSupply)
+            .div(aprMultiplier - 1)
             .toFixed();
     }
 
@@ -237,6 +247,23 @@ export class FarmComputeService {
         return lockedValuesUSD;
     }
 
+    async computeVirtualValueLockedUSD(farmAddress: string): Promise<string> {
+        const [
+            lockedFarmingTokenReserveUSD,
+            unlockedFarmingTokenReserveUSD,
+            aprMultiplier,
+        ] = await Promise.all([
+            this.computeLockedFarmingTokenReserveUSD(farmAddress),
+            this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
+            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
+        ]);
+
+        return new BigNumber(lockedFarmingTokenReserveUSD)
+            .times(aprMultiplier)
+            .plus(unlockedFarmingTokenReserveUSD)
+            .toFixed();
+    }
+
     async computeUnlockedRewardsAPR(farmAddress: string): Promise<string> {
         const farmedToken = await this.farmGetterService.getFarmedToken(
             farmAddress,
@@ -245,15 +272,15 @@ export class FarmComputeService {
         const [
             farmedTokenPriceUSD,
             rewardsPerBlock,
-            lockedFarmingTokenReserveUSD,
             unlockedFarmingTokenReserveUSD,
+            virtualValueLockedUSD,
         ] = await Promise.all([
             this.pairComputeService.computeTokenPriceUSD(
                 farmedToken.identifier,
             ),
             this.farmGetterService.getRewardsPerBlock(farmAddress),
-            this.computeLockedFarmingTokenReserveUSD(farmAddress),
             this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
+            this.computeVirtualValueLockedUSD(farmAddress),
         ]);
 
         // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
@@ -267,20 +294,62 @@ export class FarmComputeService {
             farmedTokenPriceUSD.toFixed(),
         );
 
-        return new BigNumber(totalRewardsPerYearUSD)
-            .div(
-                new BigNumber(lockedFarmingTokenReserveUSD)
-                    .times(2)
-                    .plus(unlockedFarmingTokenReserveUSD),
-            )
+        const unlockedFarmingTokenReservePercent = new BigNumber(
+            unlockedFarmingTokenReserveUSD,
+        ).div(virtualValueLockedUSD);
+        const distributedRewardsUSD = totalRewardsPerYearUSD.times(
+            unlockedFarmingTokenReservePercent,
+        );
+
+        return distributedRewardsUSD
+            .div(unlockedFarmingTokenReserveUSD)
             .toFixed();
     }
 
     async computeLockedRewardsAPR(farmAddress: string): Promise<string> {
-        const unlockedRewardsAPR = await this.computeUnlockedRewardsAPR(
+        const farmedToken = await this.farmGetterService.getFarmedToken(
             farmAddress,
         );
-        return new BigNumber(unlockedRewardsAPR).times(2).toFixed();
+
+        const [
+            farmedTokenPriceUSD,
+            rewardsPerBlock,
+            aprMultiplier,
+            lockedFarmingTokenReserveUSD,
+            virtualValueLockedUSD,
+        ] = await Promise.all([
+            this.pairComputeService.computeTokenPriceUSD(
+                farmedToken.identifier,
+            ),
+            this.farmGetterService.getRewardsPerBlock(farmAddress),
+            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
+            this.computeLockedFarmingTokenReserveUSD(farmAddress),
+            this.computeVirtualValueLockedUSD(farmAddress),
+        ]);
+
+        // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
+        const blocksPerYear = (365 * 24 * 60 * 60) / 6;
+        const totalRewardsPerYear = new BigNumber(rewardsPerBlock).multipliedBy(
+            blocksPerYear,
+        );
+        const totalRewardsPerYearUSD = computeValueUSD(
+            totalRewardsPerYear.toFixed(),
+            farmedToken.decimals,
+            farmedTokenPriceUSD.toFixed(),
+        );
+
+        const lockedFarmingTokenReservePercent = new BigNumber(
+            lockedFarmingTokenReserveUSD,
+        )
+            .times(aprMultiplier)
+            .div(virtualValueLockedUSD);
+        const distributedRewardsUSD = totalRewardsPerYearUSD.times(
+            lockedFarmingTokenReservePercent,
+        );
+
+        return distributedRewardsUSD
+            .div(lockedFarmingTokenReserveUSD)
+            .toFixed();
     }
 
     async computeFarmAPR(farmAddress: string): Promise<string> {
