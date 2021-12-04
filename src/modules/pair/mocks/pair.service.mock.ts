@@ -35,7 +35,7 @@ export class PairServiceMock {
         pairAddress: string,
         amount: string,
     ): Promise<string> {
-        return '150';
+        return amount !== '0' ? '150' : '0';
     }
 
     async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {

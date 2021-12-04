@@ -257,15 +257,6 @@ export class FarmGetterService {
         );
     }
 
-    async getFarmAPR(farmAddress: string): Promise<string> {
-        return this.getData(
-            farmAddress,
-            'apr',
-            () => this.computeService.computeFarmAPR(farmAddress),
-            oneMinute(),
-        );
-    }
-
     async getUnlockedRewardsAPR(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,
