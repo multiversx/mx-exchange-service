@@ -15,7 +15,7 @@
         "routerAddress": "erd1qqqqqqqqqqqqqpgqwkrxc5gveu3zxldpuex90v622f8t8pes2jpsfpvl0f",
         "MEX-45ebaa": "erd1qqqqqqqqqqqqqpgqr82hqynfa7e2hvg4e4kyekuhy9j2739m2jpspjljhd",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqq0utpwehuwen54y5a2ev4r08j4gthy962jps0vpx2l",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqz72fhg0su90mqadtr96pnslldkev6h0x0n4sl355qv",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqjpt0qqgsrdhp2xqygpjtfrpwf76f9nvg2jpsg4q7th",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
@@ -30,9 +30,9 @@
     "tokensSupply": ["MEX-45ebaa"],
     "cachedTokensPrice": ["MEX-45ebaa"],
     "farms": [
-        "erd1qqqqqqqqqqqqqpgq3kvuacqw9thy6jttskvq8xxu7h4f8c6v2jpsptvnf9",
-        "erd1qqqqqqqqqqqqqpgq4mmmfxqyupx5tfwyrc2wvagtlwl3mcn52jpsjkc08h",
-        "erd1qqqqqqqqqqqqqpgqztxqkfp47p2maveng4rmnkvu7286kpdj2jpsgj7p4k"
+        "erd1qqqqqqqqqqqqqpgqctxx0knpdzmn2m8ztvh9ghx5073qtuxn0n4sueel9j",
+        "erd1qqqqqqqqqqqqqpgqjqr3dkjf6ldjzwvjjswl4ckc7tan0jk90n4snuffpj",
+        "erd1qqqqqqqqqqqqqpgqt3w5wzwawewrqareu6mzmgg78lzhhhs20n4ssyg99a"
     ],
     "caching": {
         "pairsMetadata": 300,
