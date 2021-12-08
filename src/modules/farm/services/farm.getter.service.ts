@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from 'src/config';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -216,6 +216,30 @@ export class FarmGetterService {
             farmAddress,
             'farmingTokenPriceUSD',
             () => this.computeService.computeFarmingTokenPriceUSD(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getLockedFarmingTokenReserve(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'lockedFarmingTokenReserve',
+            () =>
+                this.computeService.computeLockedFarmingTokenReserve(
+                    farmAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getUnlockedFarmingTokenReserve(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'unlockedFarmingTokenReserve',
+            () =>
+                this.computeService.computeUnlockedFarmingTokenReserve(
+                    farmAddress,
+                ),
             oneMinute(),
         );
     }
