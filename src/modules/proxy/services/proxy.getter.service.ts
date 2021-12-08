@@ -70,14 +70,6 @@ export class ProxyGetterService {
         return this.contextGetter.getNftCollectionMetadata(lockedAssetTokenID);
     }
 
-    async getBurnedTokenAmount(tokenID: string): Promise<string> {
-        return await this.getData(
-            `${tokenID}.burnedTokenAmount`,
-            () => this.abiService.getBurnedTokenAmount(tokenID),
-            oneMinute(),
-        );
-    }
-
     private getProxyCacheKey(...args: any) {
         return generateCacheKeyFromParams('proxy', ...args);
     }
