@@ -123,4 +123,25 @@ export class ApiConfigService {
         }
         return notifierUrl;
     }
+
+    getKeepAliveTimeoutDownstream(): number {
+        const keepAliveTimeoutDownstream = this.configService.get<string>(
+            'KEEPALIVE_TIMEOUT_DOWNSTREAM',
+        );
+        if (!keepAliveTimeoutDownstream) {
+            throw new Error('No keepAliveTimeoutDownstream present');
+        }
+
+        return parseInt(keepAliveTimeoutDownstream);
+    }
+
+    getKeepAliveTimeoutUpstream(): number {
+        const keepAliveTimeoutUpstream = this.configService.get<string>(
+            'KEEPALIVE_TIMEOUT_UPSTREAM',
+        );
+        if (!keepAliveTimeoutUpstream) {
+            throw new Error('No keepAliveTimeoutUpstream present');
+        }
+        return parseInt(keepAliveTimeoutUpstream);
+    }
 }

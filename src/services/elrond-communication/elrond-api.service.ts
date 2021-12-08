@@ -10,18 +10,21 @@ import { Logger } from 'winston';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class ElrondApiService {
     private readonly apiProvider: ApiProvider;
     constructor(
+        private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         const keepAliveOptions = {
             maxSockets: elrondConfig.keepAliveMaxSockets,
             maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
-            timeout: elrondConfig.keepAliveTimeout,
+            timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
             freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            keepAlive: true,
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
