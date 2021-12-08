@@ -11,19 +11,22 @@ import Agent, { HttpsAgent } from 'agentkeepalive';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SmartContractProfiler } from '../../helpers/smartcontract.profiler';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class ElrondProxyService {
     private readonly proxy: ProxyProvider;
 
     constructor(
+        private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         const keepAliveOptions = {
             maxSockets: elrondConfig.keepAliveMaxSockets,
             maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
-            timeout: elrondConfig.keepAliveTimeout,
+            timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
             freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            keepAlive: true,
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);

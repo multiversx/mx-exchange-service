@@ -23,6 +23,8 @@ import { ProxyPairGetterService } from '../services//proxy-pair/proxy-pair.gette
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ProxyPairGetterServiceMock } from '../mocks/proxy.pair.getter.service.mock';
 import { ProxyGetterService } from '../services/proxy.getter.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
@@ -83,6 +85,8 @@ describe('TransactionProxyPairService', () => {
                 ]),
             ],
             providers: [
+                ApiConfigService,
+                ConfigService,
                 ElrondProxyService,
                 ContextServiceProvider,
                 ContextTransactionsService,

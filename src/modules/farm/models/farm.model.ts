@@ -101,6 +101,12 @@ export class FarmModel {
     unlockedFarmingTokenReserveUSD: string;
 
     @Field()
+    lockedFarmingTokenReserve: string;
+
+    @Field()
+    unlockedFarmingTokenReserve: string;
+
+    @Field()
     state: string;
 
     constructor(init?: Partial<FarmModel>) {

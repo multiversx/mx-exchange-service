@@ -21,6 +21,8 @@ import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
@@ -79,6 +81,8 @@ describe('TransactionPairService', () => {
                 ]),
             ],
             providers: [
+                ConfigService,
+                ApiConfigService,
                 ElrondProxyServiceProvider,
                 ContextServiceProvider,
                 ContextGetterServiceProvider,
