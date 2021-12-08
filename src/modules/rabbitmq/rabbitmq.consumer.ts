@@ -60,6 +60,9 @@ export class RabbitMqConsumer {
         );
 
         for (const rawEvent of events) {
+            if (rawEvent.data === '') {
+                continue;
+            }
             switch (rawEvent.identifier) {
                 case PAIR_EVENTS.SWAP_FIXED_INPUT:
                     if (rawEvent.data === '') {
