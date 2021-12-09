@@ -1,6 +1,6 @@
 {
     "elrond": {
-        "chainID": "T",
+        "chainID": "D",
         "EGLDIdentifier": "EGLD",
         "version": 1,
         "proxyTimeout": 60000,
@@ -12,27 +12,27 @@
         "keepAliveMaxFreeSockets": 10
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqwkrxc5gveu3zxldpuex90v622f8t8pes2jpsfpvl0f",
-        "MEX-45ebaa": "erd1qqqqqqqqqqqqqpgqr82hqynfa7e2hvg4e4kyekuhy9j2739m2jpspjljhd",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqvz6xmxa5gmp0f45ff2na63ll5k7lpx5q0n4s7pecp8",
+        "MEX-b6bb7d": "erd1qqqqqqqqqqqqqpgqh7n0qrfk6c0jxtpuw5e04e4s3cusn2kz0n4sa6dyrk",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqz72fhg0su90mqadtr96pnslldkev6h0x0n4sl355qv",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqjpt0qqgsrdhp2xqygpjtfrpwf76f9nvg2jpsg4q7th",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqnx9848t85emupzkax3ar5kfl2cu4cgff0n4s8c5s0j",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqh279e8udz23rqck54xdf93mzj0gezdfz0n4sef0j9e",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
-            "shardID-1": "erd1qqqqqqqqqqqqqpgqmcmcerf4phjqglgfghsswe5a2ylecd8v0n4szcj3pe",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         }
     },
-    "tokenProviderUSD": "WUSDC-c5ce71",
+    "tokenProviderUSD": "USDC-a32906",
     "priceFeeds": {
-        "WUSDC-c5ce71": "usdc"
+        "USDC-a32906": "usdc"
     },
-    "tokensSupply": ["MEX-45ebaa"],
-    "cachedTokensPrice": ["MEX-45ebaa"],
+    "tokensSupply": ["MEX-b6bb7d"],
+    "cachedTokensPrice": ["MEX-b6bb7d"],
     "farms": [
-        "erd1qqqqqqqqqqqqqpgqctxx0knpdzmn2m8ztvh9ghx5073qtuxn0n4sueel9j",
-        "erd1qqqqqqqqqqqqqpgqjqr3dkjf6ldjzwvjjswl4ckc7tan0jk90n4snuffpj",
-        "erd1qqqqqqqqqqqqqpgqcx860hd6xdts28e9qxgq29qz6p5t9cy20n4s3wfvjq"
+        "erd1qqqqqqqqqqqqqpgqv3ss6jwn0hlevpg9m3a7vva4tckg372n0n4s5m5vqp",
+        "erd1qqqqqqqqqqqqqpgqatwfrrk50mltwcnpdfqwg3nx3j5mggaq0n4s0xfgj3",
+        "erd1qqqqqqqqqqqqqpgq3mezhstwvpuup2gxpglgrkm0fa6k78c40n4s7x4qux"
     ],
     "caching": {
         "pairsMetadata": 300,
@@ -96,8 +96,8 @@
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
         "MAX_GAS_LIMIT": 750000000,
-        "MEX_TOKEN_ID": "MEX-45ebaa",
-        "MAINTENANCE": true,
+        "MEX_TOKEN_ID": "MEX-b6bb7d",
+        "MAINTENANCE": false,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",
