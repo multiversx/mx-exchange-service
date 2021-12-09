@@ -291,15 +291,37 @@ export class FarmComputeService {
         ).toFixed();
     }
 
+    async computeFeesAPR(farmAddress: string): Promise<string> {
+        const [
+            farmedTokenID,
+            farmingTokenID,
+            farmLockedValueUSD,
+        ] = await Promise.all([
+            this.farmGetterService.getFarmedTokenID(farmAddress),
+            this.farmGetterService.getFarmingTokenID(farmAddress),
+            this.computeFarmLockedValueUSD(farmAddress),
+        ]);
+
+        if (farmedTokenID !== farmingTokenID) {
+            return new BigNumber(200000)
+                .times(365)
+                .dividedBy(farmLockedValueUSD)
+                .toFixed();
+        }
+        return new BigNumber(0).toFixed();
+    }
+
     async computeUnlockedRewardsAPR(farmAddress: string): Promise<string> {
         const [
             totalRewardsPerYearUSD,
             virtualValueLockedUSD,
             unlockedFarmingTokenReserveUSD,
+            feesAPR,
         ] = await Promise.all([
             this.computeAnualRewardsUSD(farmAddress),
             this.computeVirtualValueLockedUSD(farmAddress),
             this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
+            this.computeFeesAPR(farmAddress),
         ]);
 
         const unlockedFarmingTokenReservePercent = new BigNumber(
@@ -309,9 +331,10 @@ export class FarmComputeService {
             totalRewardsPerYearUSD,
         ).times(unlockedFarmingTokenReservePercent);
 
-        return distributedRewardsUSD
-            .div(unlockedFarmingTokenReserveUSD)
-            .toFixed();
+        const unlockedRewardsAPR = distributedRewardsUSD.div(
+            unlockedFarmingTokenReserveUSD,
+        );
+        return unlockedRewardsAPR.plus(feesAPR).toFixed();
     }
 
     async computeLockedRewardsAPR(farmAddress: string): Promise<string> {
@@ -320,11 +343,13 @@ export class FarmComputeService {
             virtualValueLockedUSD,
             lockedFarmingTokenReserveUSD,
             aprMultiplier,
+            feesAPR,
         ] = await Promise.all([
             this.computeAnualRewardsUSD(farmAddress),
             this.computeVirtualValueLockedUSD(farmAddress),
             this.computeLockedFarmingTokenReserveUSD(farmAddress),
             this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
+            this.computeFeesAPR(farmAddress),
         ]);
 
         const lockedFarmingTokenReservePercent = new BigNumber(
@@ -336,8 +361,9 @@ export class FarmComputeService {
             totalRewardsPerYearUSD,
         ).times(lockedFarmingTokenReservePercent);
 
-        return distributedRewardsUSD
-            .div(lockedFarmingTokenReserveUSD)
-            .toFixed();
+        const lockedRewardsAPR = distributedRewardsUSD.div(
+            lockedFarmingTokenReserveUSD,
+        );
+        return lockedRewardsAPR.plus(feesAPR).toFixed();
     }
 }
