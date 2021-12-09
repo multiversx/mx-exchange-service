@@ -1,29 +1,28 @@
 {
-    {
-        "elrond": {
-            "chainID": "D"
-        },
-        "scAddress": {
-            "routerAddress": "erd1qqqqqqqqqqqqqpgqvz6xmxa5gmp0f45ff2na63ll5k7lpx5q0n4s7pecp8",
-            "MEX-b6bb7d": "erd1qqqqqqqqqqqqqpgqh7n0qrfk6c0jxtpuw5e04e4s3cusn2kz0n4sa6dyrk",
-            "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
-            "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqnx9848t85emupzkax3ar5kfl2cu4cgff0n4s8c5s0j",
-            "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqh279e8udz23rqck54xdf93mzj0gezdfz0n4sef0j9e",
-            "wrappingAddress": {
-                "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
-                "shardID-1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
-                "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
-            }
-        },
-        "tokenProviderUSD": "USDC-a32906",
-        "priceFeeds": {
-            "USDC-a32906": "usdc"
-        },
-        "tokensSupply": ["MEX-b6bb7d"],
-        "cachedTokensPrice": ["MEX-b6bb7d"],
-        "farms": [
-            "erd1qqqqqqqqqqqqqpgqv3ss6jwn0hlevpg9m3a7vva4tckg372n0n4s5m5vqp",
-            "erd1qqqqqqqqqqqqqpgqatwfrrk50mltwcnpdfqwg3nx3j5mggaq0n4s0xfgj3",
-            "erd1qqqqqqqqqqqqqpgq3mezhstwvpuup2gxpglgrkm0fa6k78c40n4s7x4qux"
-        ],    
+    "elrond": {
+        "chainID": "D"
+    },
+    "scAddress": {
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqvz6xmxa5gmp0f45ff2na63ll5k7lpx5q0n4s7pecp8",
+        "MEX-b6bb7d": "erd1qqqqqqqqqqqqqpgqh7n0qrfk6c0jxtpuw5e04e4s3cusn2kz0n4sa6dyrk",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqnx9848t85emupzkax3ar5kfl2cu4cgff0n4s8c5s0j",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqh279e8udz23rqck54xdf93mzj0gezdfz0n4sef0j9e",
+        "wrappingAddress": {
+            "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
+            "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
+        }
+    },
+    "tokenProviderUSD": "USDC-a32906",
+    "priceFeeds": {
+        "USDC-a32906": "usdc"
+    },
+    "tokensSupply": ["MEX-b6bb7d"],
+    "cachedTokensPrice": ["MEX-b6bb7d"],
+    "farms": [
+        "erd1qqqqqqqqqqqqqpgqv3ss6jwn0hlevpg9m3a7vva4tckg372n0n4s5m5vqp",
+        "erd1qqqqqqqqqqqqqpgqatwfrrk50mltwcnpdfqwg3nx3j5mggaq0n4s0xfgj3",
+        "erd1qqqqqqqqqqqqqpgq3mezhstwvpuup2gxpglgrkm0fa6k78c40n4s7x4qux"
+    ]
 }
