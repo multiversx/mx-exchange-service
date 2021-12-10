@@ -128,4 +128,16 @@ export class PairComputeService {
             secondTokenLockedValueUSD,
         );
     }
+
+    async computeFeesAPR(pairAddress: string): Promise<string> {
+        const [fees24h, lockedValueUSD] = await Promise.all([
+            this.pairGetterService.getFeesUSD(pairAddress, '24h'),
+            this.computeLockedValueUSD(pairAddress),
+        ]);
+
+        return new BigNumber(fees24h)
+            .times(365)
+            .div(lockedValueUSD)
+            .toFixed();
+    }
 }

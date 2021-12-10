@@ -187,6 +187,15 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async feesAPR(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getFeesAPR(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async info(@Parent() parent: PairModel) {
         try {
             return await this.pairGetterService.getPairInfoMetadata(

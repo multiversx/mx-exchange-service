@@ -131,6 +131,6 @@ describe('FarmService', () => {
         const farmAPR = await computeService.computeUnlockedRewardsAPR(
             'farm_address_1',
         );
-        expect(farmAPR).toEqual('3504000');
+        expect(farmAPR).toEqual('3504010');
     });
 });

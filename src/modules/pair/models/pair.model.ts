@@ -70,6 +70,9 @@ export class PairModel {
     feesUSD24h: string;
 
     @Field()
+    feesAPR: string;
+
+    @Field()
     info: PairInfoModel;
 
     @Field()

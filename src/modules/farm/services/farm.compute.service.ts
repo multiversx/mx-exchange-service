@@ -291,37 +291,19 @@ export class FarmComputeService {
         ).toFixed();
     }
 
-    async computeFeesAPR(farmAddress: string): Promise<string> {
+    async computeUnlockedRewardsAPR(farmAddress: string): Promise<string> {
         const [
             farmedTokenID,
             farmingTokenID,
-            farmLockedValueUSD,
-        ] = await Promise.all([
-            this.farmGetterService.getFarmedTokenID(farmAddress),
-            this.farmGetterService.getFarmingTokenID(farmAddress),
-            this.computeFarmLockedValueUSD(farmAddress),
-        ]);
-
-        if (farmedTokenID !== farmingTokenID) {
-            return new BigNumber(200000)
-                .times(365)
-                .dividedBy(farmLockedValueUSD)
-                .toFixed();
-        }
-        return new BigNumber(0).toFixed();
-    }
-
-    async computeUnlockedRewardsAPR(farmAddress: string): Promise<string> {
-        const [
             totalRewardsPerYearUSD,
             virtualValueLockedUSD,
             unlockedFarmingTokenReserveUSD,
-            feesAPR,
         ] = await Promise.all([
+            this.farmGetterService.getFarmedTokenID(farmAddress),
+            this.farmGetterService.getFarmingTokenID(farmAddress),
             this.computeAnualRewardsUSD(farmAddress),
             this.computeVirtualValueLockedUSD(farmAddress),
             this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
-            this.computeFeesAPR(farmAddress),
         ]);
 
         const unlockedFarmingTokenReservePercent = new BigNumber(
@@ -334,22 +316,34 @@ export class FarmComputeService {
         const unlockedRewardsAPR = distributedRewardsUSD.div(
             unlockedFarmingTokenReserveUSD,
         );
+
+        let feesAPR = new BigNumber(0);
+        if (farmedTokenID !== farmingTokenID) {
+            const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+                farmingTokenID,
+            );
+            feesAPR = new BigNumber(
+                await this.pairGetterService.getFeesAPR(pairAddress),
+            );
+        }
         return unlockedRewardsAPR.plus(feesAPR).toFixed();
     }
 
     async computeLockedRewardsAPR(farmAddress: string): Promise<string> {
         const [
+            farmedTokenID,
+            farmingTokenID,
             totalRewardsPerYearUSD,
             virtualValueLockedUSD,
             lockedFarmingTokenReserveUSD,
             aprMultiplier,
-            feesAPR,
         ] = await Promise.all([
+            this.farmGetterService.getFarmedTokenID(farmAddress),
+            this.farmGetterService.getFarmingTokenID(farmAddress),
             this.computeAnualRewardsUSD(farmAddress),
             this.computeVirtualValueLockedUSD(farmAddress),
             this.computeLockedFarmingTokenReserveUSD(farmAddress),
             this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
-            this.computeFeesAPR(farmAddress),
         ]);
 
         const lockedFarmingTokenReservePercent = new BigNumber(
@@ -364,6 +358,16 @@ export class FarmComputeService {
         const lockedRewardsAPR = distributedRewardsUSD.div(
             lockedFarmingTokenReserveUSD,
         );
+
+        let feesAPR = new BigNumber(0);
+        if (farmedTokenID !== farmingTokenID) {
+            const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+                farmingTokenID,
+            );
+            feesAPR = new BigNumber(
+                await this.pairGetterService.getFeesAPR(pairAddress),
+            );
+        }
         return lockedRewardsAPR.plus(feesAPR).toFixed();
     }
 }
