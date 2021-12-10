@@ -62,7 +62,7 @@
         "removeLiquidityProxy": 33000000,
         "enterFarm": 12000000,
         "enterFarmMerge": 12500000,
-        "exitFarm": 33500000,
+        "exitFarm": 40000000,
         "claimRewards": 18500000,
         "compoundRewards": 12500000,
         "enterFarmProxy": 31000000,
