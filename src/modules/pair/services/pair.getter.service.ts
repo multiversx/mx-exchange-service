@@ -300,6 +300,15 @@ export class PairGetterService {
         );
     }
 
+    async getFeesAPR(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'feesAPR',
+            () => this.pairComputeService.computeFeesAPR(pairAddress),
+            oneMinute(),
+        );
+    }
+
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         const [
             firstTokenReserve,

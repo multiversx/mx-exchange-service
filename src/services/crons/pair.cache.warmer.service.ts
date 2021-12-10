@@ -142,6 +142,7 @@ export class PairCacheWarmerService {
                 secondTokenPrice,
                 secondTokenPriceUSD,
                 lpTokenPriceUSD,
+                feesAPR,
             ] = await Promise.all([
                 this.pairComputeService.computeFirstTokenPrice(
                     pairMetadata.address,
@@ -158,6 +159,7 @@ export class PairCacheWarmerService {
                 this.pairComputeService.computeLpTokenPriceUSD(
                     pairMetadata.address,
                 ),
+                this.pairComputeService.computeFeesAPR(pairMetadata.address),
             ]);
 
             this.invalidatedKeys = await Promise.all([
@@ -180,6 +182,10 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setLpTokenPriceUSD(
                     pairMetadata.address,
                     lpTokenPriceUSD,
+                ),
+                this.pairSetterService.setFeesAPR(
+                    pairMetadata.address,
+                    feesAPR,
                 ),
             ]);
             await this.deleteCacheKeys();
