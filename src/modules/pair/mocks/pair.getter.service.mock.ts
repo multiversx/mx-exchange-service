@@ -126,6 +126,10 @@ export class PairGetterServiceMock {
         return PairsData(pairAddress).totalFeePercent;
     }
 
+    async getFeesAPR(pairAddress: string): Promise<string> {
+        return '10';
+    }
+
     async getState(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).state;
     }
