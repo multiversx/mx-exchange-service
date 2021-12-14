@@ -321,10 +321,12 @@ export class FarmResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => FarmTokenAttributesModel)
     async farmTokenAttributes(
+        @Args('farmAddress') farmAddress: string,
         @Args('identifier') identifier: string,
         @Args('attributes') attributes: string,
     ): Promise<FarmTokenAttributesModel> {
         return this.farmService.decodeFarmTokenAttributes(
+            farmAddress,
             identifier,
             attributes,
         );

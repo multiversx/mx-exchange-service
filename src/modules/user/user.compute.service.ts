@@ -42,6 +42,7 @@ export class UserComputeService {
             farmAddress,
         );
         const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
+            farmAddress,
             nftToken.identifier,
             nftToken.attributes,
         );

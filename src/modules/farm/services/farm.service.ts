@@ -82,7 +82,8 @@ export class FarmService {
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
-        const farmTokenAttributes = await this.decodeFarmTokenAttributes(
+        const farmTokenAttributes = this.decodeFarmTokenAttributes(
+            positon.farmAddress,
             positon.identifier,
             positon.attributes,
         );
@@ -120,7 +121,8 @@ export class FarmService {
     async getTokensForExitFarm(
         args: CalculateRewardsArgs,
     ): Promise<ExitFarmTokensModel> {
-        const decodedAttributes = await this.decodeFarmTokenAttributes(
+        const decodedAttributes = this.decodeFarmTokenAttributes(
+            args.farmAddress,
             args.identifier,
             args.attributes,
         );
@@ -157,14 +159,11 @@ export class FarmService {
         });
     }
 
-    async decodeFarmTokenAttributes(
+    decodeFarmTokenAttributes(
+        farmAddress: string,
         identifier: string,
         attributes: string,
-    ): Promise<FarmTokenAttributesModel> {
-        const collection = `${identifier.split('-')[0]}-${
-            identifier.split('-')[1]
-        }`;
-        const farmAddress = await this.getFarmAddressByFarmTokenID(collection);
+    ): FarmTokenAttributesModel {
         const version = farmVersion(farmAddress);
         const attributesBuffer = Buffer.from(attributes, 'base64');
         const codec = new BinaryCodec();
