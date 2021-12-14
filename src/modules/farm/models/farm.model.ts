@@ -123,6 +123,9 @@ export class FarmModel {
     @Field()
     state: string;
 
+    @Field({ nullable: true })
+    requireWhitelist: boolean;
+
     @Field()
     version: FarmVersion;
 

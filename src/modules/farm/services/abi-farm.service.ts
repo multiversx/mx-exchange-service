@@ -11,6 +11,7 @@ import { generateRunQueryLogMessage } from '../../../utils/generate-log-message'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
+import { FarmRewardType } from '../models/farm.model';
 
 @Injectable()
 export class AbiFarmService {
@@ -66,6 +67,23 @@ export class AbiFarmService {
         const interaction: Interaction = contract.methods.getFarmingTokenId([]);
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getWhitelist(farmAddress: string): Promise<string[]> {
+        const [
+            contract,
+            version,
+            type,
+        ] = await this.elrondProxy.getFarmSmartContract(farmAddress);
+
+        if (type !== FarmRewardType.CUSTOM_REWARDS) {
+            return null;
+        }
+
+        const interaction: Interaction = contract.methods.getWhitelist([]);
+        const response = await this.getGenericData(contract, interaction);
+
+        return response.firstValue.valueOf().map(address => address.bech32());
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {

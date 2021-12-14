@@ -90,6 +90,15 @@ export class FarmGetterService {
         return this.contextGetter.getTokenMetadata(farmingTokenID);
     }
 
+    async getWhitelist(farmAddress: string): Promise<string[]> {
+        return await this.getData(
+            farmAddress,
+            'whitelist',
+            () => this.abiService.getWhitelist(farmAddress),
+            oneHour(),
+        );
+    }
+
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,

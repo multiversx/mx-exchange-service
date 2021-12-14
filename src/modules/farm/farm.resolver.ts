@@ -297,6 +297,18 @@ export class FarmResolver {
         }
     }
 
+    @ResolveField()
+    async requireWhitelist(@Parent() parent: FarmModel) {
+        try {
+            const whitelists = await this.farmGetterService.getWhitelist(
+                parent.address,
+            );
+            return whitelists ? whitelists.length > 0 : false;
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => FarmTokenAttributesModel)
     async farmTokenAttributes(
