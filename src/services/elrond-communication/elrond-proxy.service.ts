@@ -12,6 +12,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SmartContractProfiler } from '../../helpers/smartcontract.profiler';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
 export class ElrondProxyService {
@@ -70,8 +71,22 @@ export class ElrondProxyService {
         );
     }
 
-    async getFarmSmartContract(farmAddress: string): Promise<SmartContract> {
-        return this.getSmartContract(farmAddress, abiConfig.farm, 'Farm');
+    async getFarmSmartContract(
+        farmAddress: string,
+    ): Promise<[SmartContract, string, string]> {
+        const version = farmVersion(farmAddress);
+        const type = farmType(farmAddress);
+
+        const abiPath =
+            type === undefined
+                ? abiConfig.farm[version]
+                : abiConfig.farm[version][type];
+        const contract = await this.getSmartContract(
+            farmAddress,
+            abiPath,
+            'Farm',
+        );
+        return [contract, version, type];
     }
 
     async getProxyDexSmartContract(): Promise<SmartContract> {

@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { farmsConfig } from '../../config';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { FarmService } from '../farm/services/farm.service';
 import { NftToken } from '../../models/tokens/nftToken.model';
@@ -26,6 +25,7 @@ import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PaginationArgs } from '../dex.model';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { farmsAddresses } from 'src/utils/farm.utils';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -211,7 +211,7 @@ export class UserService {
             this.proxyFarmGetter.getwrappedFarmTokenID(),
         ]);
         const promises: Promise<string>[] = [];
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
         }
         const farmTokenIDs = await Promise.all(promises);

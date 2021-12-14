@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { farmsConfig, scAddress } from 'src/config';
+import { FarmRewardType } from 'src/modules/farm/models/farm.model';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ContextService } from 'src/services/context/context.service';
+import { farmsAddresses, farmType } from 'src/utils/farm.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
 
 @Injectable()
@@ -58,7 +60,7 @@ export class AnalyticsComputeService {
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
 
-        const promises: Promise<string>[] = farmsConfig.map(farmAddress =>
+        const promises: Promise<string>[] = farmsAddresses().map(farmAddress =>
             this.computeFarmLockedValueUSD(farmAddress),
         );
         const farmsLockedValueUSD = await Promise.all(promises);
@@ -81,7 +83,7 @@ export class AnalyticsComputeService {
 
         const lockedValuesUSD = await Promise.all([
             ...promises,
-            this.computeFarmLockedValueUSD(farmsConfig[2]),
+            this.computeFarmLockedValueUSD(farmsAddresses()[2]),
         ]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
@@ -95,10 +97,13 @@ export class AnalyticsComputeService {
     }
 
     async computeTotalAggregatedRewards(days: number): Promise<string> {
-        const farmsAddress: [] = farmsConfig;
-        const promises = farmsAddress.map(async farmAddress =>
-            this.farmGetterService.getRewardsPerBlock(farmAddress),
-        );
+        const addresses: string[] = farmsAddresses();
+        const promises = addresses.map(async farmAddress => {
+            if (farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS) {
+                return '0';
+            }
+            return this.farmGetterService.getRewardsPerBlock(farmAddress);
+        });
         const farmsRewardsPerBlock = await Promise.all(promises);
         const blocksNumber = (days * 24 * 60 * 60) / 6;
 
@@ -125,7 +130,7 @@ export class AnalyticsComputeService {
                 ),
             );
         }
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             promises.push(
                 this.farmGetterService.getBurnedTokenAmount(
                     farmAddress,

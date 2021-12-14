@@ -49,7 +49,7 @@ export class TransactionsFarmService {
             throw error;
         }
 
-        const contract = await this.elrondProxy.getFarmSmartContract(
+        const [contract] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
 
@@ -113,7 +113,7 @@ export class TransactionsFarmService {
         method: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
+        const [contract] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
 

@@ -5,7 +5,6 @@ import { CachingService } from '../caching/cache.service';
 import {
     cacheConfig,
     cachedTokensPriceConfig,
-    farmsConfig,
     tokensSupplyConfig,
 } from 'src/config';
 import { AnalyticsComputeService } from 'src/modules/analytics/services/analytics.compute.service';
@@ -13,6 +12,7 @@ import { AnalyticsGetterService } from 'src/modules/analytics/services/analytics
 import { oneMinute } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
+import { farmsAddresses } from 'src/utils/farm.utils';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
@@ -27,7 +27,7 @@ export class AnalyticsCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheAnalytics(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             const farmLockedValueUSD = await this.analyticsCompute.computeFarmLockedValueUSD(
                 farmAddress,
             );

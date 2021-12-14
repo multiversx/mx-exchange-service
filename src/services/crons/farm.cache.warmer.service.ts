@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { cacheConfig, constantsConfig, farmsConfig } from '../../config';
+import { cacheConfig, constantsConfig } from '../../config';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { AbiFarmService } from 'src/modules/farm/services/abi-farm.service';
@@ -10,6 +10,7 @@ import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour } from '../../helpers/helpers';
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { FarmSetterService } from 'src/modules/farm/services/farm.setter.service';
+import { farmsAddresses } from 'src/utils/farm.utils';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -26,7 +27,7 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_MINUTES)
     async cacheFarms(): Promise<void> {
-        const farmsAddress: string[] = farmsConfig;
+        const farmsAddress: string[] = farmsAddresses();
         const promises = farmsAddress.map(async farmAddress => {
             const [
                 farmTokenID,
@@ -67,7 +68,7 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheFarmInfo(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             const [
                 minimumFarmingEpochs,
                 penaltyPercent,
@@ -118,7 +119,7 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmReserves(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             const [
                 farmingTokenReserve,
                 farmTokenSupply,
@@ -167,7 +168,7 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmTokensPrices(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             const [
                 farmedTokenPriceUSD,
                 farmingTokenPriceUSD,

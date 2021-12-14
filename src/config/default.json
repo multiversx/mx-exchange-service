@@ -29,11 +29,24 @@
     },
     "tokensSupply": ["MEX-c751d6"],
     "cachedTokensPrice": ["MEX-c751d6"],
-    "farms": [
-        "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
-        "erd1qqqqqqqqqqqqqpgq6w2n335mupvrzjvl6pgnvxcxerggztuy0n4s8zvd23",
-        "erd1qqqqqqqqqqqqqpgqup689rhdkf5nu5nh3cancfjag9fnf59n0n4sxf8uh0"
-    ],
+    "farms": {
+        "v1.2": [
+            "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
+            "erd1qqqqqqqqqqqqqpgq6w2n335mupvrzjvl6pgnvxcxerggztuy0n4s8zvd23",
+            "erd1qqqqqqqqqqqqqpgqup689rhdkf5nu5nh3cancfjag9fnf59n0n4sxf8uh0"
+        ],
+        "v1.3": {
+            "unlockedRewards": [
+                "erd1qqqqqqqqqqqqqpgq8yyy8r89qy6u020nhmu7xkh83mzzf6rj0n4stc7gh4"
+            ],
+            "lockedRewards": [
+                "erd1qqqqqqqqqqqqqpgq959js8gr657c5nymayugwc4c4uuutrxd0n4stfcthk"
+            ],
+            "customRewards": [
+                "erd1qqqqqqqqqqqqqpgqafwjnc4xufkuky2yuqql7kdeqaurehnk0n4sudxq26"
+            ]
+        }
+    },
     "caching": {
         "pairsMetadata": 300,
         "pairs": 300,
@@ -81,11 +94,18 @@
     "abi": {
         "router": "./src/abis/router.abi.json",
         "pair": "./src/abis/pair.abi.json",
-        "farm": "./src/abis/farm.abi.json",
         "distribution": "./src/abis/distribution.abi.json",
         "lockedAssetFactory": "./src/abis/factory.abi.json",
         "proxy": "./src/abis/proxy-dex.abi.json",
-        "wrap": "./src/abis/egld-esdt-swap.abi.json"
+        "wrap": "./src/abis/egld-esdt-swap.abi.json",
+        "farm": {
+            "v1.2": "./src/abis/v1.2/farm.abi.json",
+            "v1.3": {
+                "unlockedRewards": "./src/abis/v1.3/farm.abi.json",
+                "lockedRewards": "./src/abis/v1.3/farm_with_lock.abi.json",
+                "customRewards": "./src/abis/v1.3/farm_custom_rewards.abi.json"
+            }
+        }
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,
