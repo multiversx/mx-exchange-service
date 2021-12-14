@@ -234,6 +234,15 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async apr(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getFarmAPR(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async totalValueLockedUSD(parent: FarmModel) {
         try {
             return await this.farmGetterService.getTotalValueLockedUSD(

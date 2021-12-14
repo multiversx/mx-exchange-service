@@ -308,6 +308,15 @@ export class FarmGetterService {
         );
     }
 
+    async getFarmAPR(farmAddress: string): Promise<string> {
+        return await this.getData(
+            farmAddress,
+            'farmAPR',
+            () => this.computeService.computeFarmAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
     async getBurnedTokenAmount(
         farmAddress: string,
         tokenID: string,

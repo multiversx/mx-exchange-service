@@ -100,6 +100,9 @@ export class FarmModel {
     aprMultiplier: number;
 
     @Field({ nullable: true })
+    apr: string;
+
+    @Field({ nullable: true })
     lockedRewardsAPR: string;
 
     @Field({ nullable: true })
