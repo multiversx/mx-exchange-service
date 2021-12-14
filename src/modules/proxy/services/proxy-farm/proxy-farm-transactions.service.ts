@@ -24,6 +24,8 @@ import { generateLogMessage } from 'src/utils/generate-log-message';
 import { ProxyPairGetterService } from '../proxy-pair/proxy-pair.getter.service';
 import { ProxyGetterService } from '../proxy.getter.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
+import { farmVersion } from 'src/utils/farm.utils';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 
 @Injectable()
 export class TransactionsProxyFarmService {
@@ -55,9 +57,13 @@ export class TransactionsProxyFarmService {
         }
 
         const contract = await this.elrondProxy.getProxyDexSmartContract();
-        const method = args.lockRewards
-            ? 'enterFarmAndLockRewardsProxy'
-            : 'enterFarmProxy';
+        const version = farmVersion(args.farmAddress);
+        const method =
+            version === FarmVersion.V1_3
+                ? 'enterFarmProxy'
+                : args.lockRewards
+                ? 'enterFarmAndLockRewardsProxy'
+                : 'enterFarmProxy';
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),

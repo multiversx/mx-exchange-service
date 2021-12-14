@@ -22,6 +22,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
+import { FarmVersion } from '../models/farm.model';
 
 @Injectable()
 export class TransactionsFarmService {
@@ -36,6 +37,15 @@ export class TransactionsFarmService {
         sender: string,
         args: EnterFarmArgs,
     ): Promise<TransactionModel> {
+        const whitelists = await this.farmGetterService.getWhitelist(
+            args.farmAddress,
+        );
+        if (whitelists && whitelists.length > 0) {
+            throw new Error(
+                `whitelisted addresses only for farm ${args.farmAddress}`,
+            );
+        }
+
         try {
             await this.validateInputTokens(args.farmAddress, args.tokens);
         } catch (error) {
@@ -49,13 +59,16 @@ export class TransactionsFarmService {
             throw error;
         }
 
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
 
-        const method = args.lockRewards
-            ? 'enterFarmAndLockRewards'
-            : 'enterFarm';
+        const method =
+            version === FarmVersion.V1_3
+                ? 'enterFarm'
+                : args.lockRewards
+                ? 'enterFarmAndLockRewards'
+                : 'enterFarm';
 
         return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
@@ -75,6 +88,15 @@ export class TransactionsFarmService {
         sender: string,
         args: ExitFarmArgs,
     ): Promise<TransactionModel> {
+        const whitelists = await this.farmGetterService.getWhitelist(
+            args.farmAddress,
+        );
+        if (whitelists && whitelists.length > 0) {
+            throw new Error(
+                `whitelisted addresses only for farm ${args.farmAddress}`,
+            );
+        }
+
         return this.SftFarmInteraction(
             sender,
             args,
@@ -87,6 +109,15 @@ export class TransactionsFarmService {
         sender: string,
         args: ClaimRewardsArgs,
     ): Promise<TransactionModel> {
+        const whitelists = await this.farmGetterService.getWhitelist(
+            args.farmAddress,
+        );
+        if (whitelists && whitelists.length > 0) {
+            throw new Error(
+                `whitelisted addresses only for farm ${args.farmAddress}`,
+            );
+        }
+
         return this.SftFarmInteraction(
             sender,
             args,
@@ -99,6 +130,15 @@ export class TransactionsFarmService {
         sender: string,
         args: CompoundRewardsArgs,
     ): Promise<TransactionModel> {
+        const whitelists = await this.farmGetterService.getWhitelist(
+            args.farmAddress,
+        );
+        if (whitelists && whitelists.length > 0) {
+            throw new Error(
+                `whitelisted addresses only for farm ${args.farmAddress}`,
+            );
+        }
+
         return this.SftFarmInteraction(
             sender,
             args,
