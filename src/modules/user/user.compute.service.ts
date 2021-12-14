@@ -17,7 +17,6 @@ import {
     UserLockedFarmToken,
     UserLockedLPToken,
 } from './models/user.model';
-import { UserNftTokens } from './nfttokens.union';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { computeValueUSD } from '../../utils/token.converters';
 import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
@@ -38,18 +37,20 @@ export class UserComputeService {
     async farmTokenUSD(
         nftToken: NftToken,
         farmAddress: string,
-    ): Promise<typeof UserNftTokens> {
+    ): Promise<UserFarmToken> {
         const farmingTokenID = await this.farmGetterService.getFarmingTokenID(
             farmAddress,
         );
-        const decodedFarmAttributes = this.farmService.decodeFarmTokenAttributes(
+        const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
             nftToken.identifier,
             nftToken.attributes,
         );
 
-        const farmTokenBalance = new BigNumber(nftToken.balance).dividedBy(
-            decodedFarmAttributes.aprMultiplier,
-        );
+        const farmTokenBalance = decodedFarmAttributes.aprMultiplier
+            ? new BigNumber(nftToken.balance).dividedBy(
+                  decodedFarmAttributes.aprMultiplier,
+              )
+            : new BigNumber(nftToken.balance);
         if (scAddress.has(farmingTokenID)) {
             const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
                 scAddress.get(farmingTokenID),
@@ -82,7 +83,7 @@ export class UserComputeService {
 
     async lockedAssetTokenUSD(
         nftToken: LockedAssetToken,
-    ): Promise<typeof UserNftTokens> {
+    ): Promise<UserLockedAssetToken> {
         const [assetToken, decodedAttributes] = await Promise.all([
             this.proxyGetter.getAssetToken(),
             this.lockedAssetService.decodeLockedAssetAttributes({
@@ -111,7 +112,7 @@ export class UserComputeService {
 
     async lockedLpTokenUSD(
         nftToken: LockedLpToken,
-    ): Promise<typeof UserNftTokens> {
+    ): Promise<UserLockedLPToken> {
         const decodedWLPTAttributes = this.proxyService.getWrappedLpTokenAttributes(
             {
                 batchAttributes: [
@@ -140,7 +141,7 @@ export class UserComputeService {
 
     async lockedFarmTokenUSD(
         nftToken: LockedFarmToken,
-    ): Promise<typeof UserNftTokens> {
+    ): Promise<UserLockedFarmToken> {
         const decodedWFMTAttributes = await this.proxyService.getWrappedFarmTokenAttributes(
             {
                 batchAttributes: [

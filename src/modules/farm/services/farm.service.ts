@@ -82,7 +82,7 @@ export class FarmService {
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
-        const farmTokenAttributes = this.decodeFarmTokenAttributes(
+        const farmTokenAttributes = await this.decodeFarmTokenAttributes(
             positon.identifier,
             positon.attributes,
         );
@@ -120,7 +120,7 @@ export class FarmService {
     async getTokensForExitFarm(
         args: CalculateRewardsArgs,
     ): Promise<ExitFarmTokensModel> {
-        const decodedAttributes = this.decodeFarmTokenAttributes(
+        const decodedAttributes = await this.decodeFarmTokenAttributes(
             args.identifier,
             args.attributes,
         );
@@ -157,20 +157,25 @@ export class FarmService {
         });
     }
 
-    decodeFarmTokenAttributes(
+    async decodeFarmTokenAttributes(
         identifier: string,
         attributes: string,
-    ): FarmTokenAttributesModel {
+    ): Promise<FarmTokenAttributesModel> {
+        const collection = `${identifier.split('-')[0]}-${
+            identifier.split('-')[1]
+        }`;
+        const farmAddress = await this.getFarmAddressByFarmTokenID(collection);
+        const version = farmVersion(farmAddress);
         const attributesBuffer = Buffer.from(attributes, 'base64');
         const codec = new BinaryCodec();
 
-        const structType = FarmTokenAttributesModel.getStructure();
-
+        const structType = FarmTokenAttributesModel.getStructure(version);
         const [decoded] = codec.decodeNested(attributesBuffer, structType);
 
         const decodedAttributes = decoded.valueOf();
         const farmTokenAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
             decodedAttributes,
+            version,
         );
         farmTokenAttributes.attributes = attributes;
         farmTokenAttributes.identifier = identifier;
