@@ -149,7 +149,7 @@ export class FarmGetterService {
             farmAddress,
             'state',
             () => this.abiService.getState(farmAddress),
-            oneHour(),
+            oneMinute(),
         );
     }
 
