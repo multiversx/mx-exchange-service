@@ -11,7 +11,7 @@ import { generateRunQueryLogMessage } from '../../../utils/generate-log-message'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
-import { FarmRewardType } from '../models/farm.model';
+import { FarmRewardType, FarmVersion } from '../models/farm.model';
 
 @Injectable()
 export class AbiFarmService {
@@ -102,7 +102,7 @@ export class AbiFarmService {
         const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        if (version !== 'v1.2') {
+        if (version !== FarmVersion.V1_2) {
             return null;
         }
         const interaction: Interaction = contract.methods.getFarmingTokenReserve(
@@ -167,7 +167,7 @@ export class AbiFarmService {
         const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        if (version !== 'v1.2') {
+        if (version !== FarmVersion.V1_2) {
             return null;
         }
         const interaction: Interaction = contract.methods.getUndistributedFees(
@@ -181,7 +181,7 @@ export class AbiFarmService {
         const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        if (version !== 'v1.2') {
+        if (version !== FarmVersion.V1_2) {
             return null;
         }
         const interaction: Interaction = contract.methods.getCurrentBlockFee(
@@ -196,7 +196,7 @@ export class AbiFarmService {
         const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        if (version !== 'v1.2') {
+        if (version !== FarmVersion.V1_2) {
             return null;
         }
         const interaction: Interaction = contract.methods.getLockedRewardAprMuliplier(
