@@ -181,7 +181,7 @@ export class AbiFarmService {
         const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        if (version != 'v1.2') {
+        if (version !== 'v1.2') {
             return null;
         }
         const interaction: Interaction = contract.methods.getCurrentBlockFee(
