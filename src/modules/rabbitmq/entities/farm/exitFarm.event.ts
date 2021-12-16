@@ -90,7 +90,10 @@ export class ExitFarmEvent extends GenericEvent {
         return {
             ...super.toJSON(),
             farmingToken: this.farmingToken.toJSON(),
-            farmingReserve: this.farmingReserve.toFixed(),
+            farmingReserve:
+                this.farmingReserve !== undefined
+                    ? this.farmingReserve.toFixed()
+                    : '',
             farmToken: this.farmToken.toJSON(),
             farmSupply: this.farmSupply.toFixed(),
             rewardToken: this.rewardToken.toJSON(),
@@ -108,13 +111,12 @@ export class ExitFarmEvent extends GenericEvent {
         const codec = new BinaryCodec();
 
         const eventStruct = this.getStructure(version);
-
         const [decoded] = codec.decodeNested(data, eventStruct);
         return decoded.valueOf();
     }
 
     getStructure(version: FarmVersion): StructType {
-        return new StructType('ExitFarmEvent', [
+        const eventStructType = new StructType('ExitFarmEvent', [
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition(
                 'farmingTokenID',
@@ -126,7 +128,6 @@ export class ExitFarmEvent extends GenericEvent {
                 '',
                 new BigUIntType(),
             ),
-            new StructFieldDefinition('farmingReserve', '', new BigUIntType()),
             new StructFieldDefinition(
                 'farmTokenID',
                 '',
@@ -160,5 +161,17 @@ export class ExitFarmEvent extends GenericEvent {
             new StructFieldDefinition('epoch', '', new U64Type()),
             new StructFieldDefinition('timestamp', '', new U64Type()),
         ]);
+        if (version === FarmVersion.V1_2) {
+            eventStructType.fields.splice(
+                2,
+                0,
+                new StructFieldDefinition(
+                    'farmingReserve',
+                    '',
+                    new BigUIntType(),
+                ),
+            );
+        }
+        return eventStructType;
     }
 }
