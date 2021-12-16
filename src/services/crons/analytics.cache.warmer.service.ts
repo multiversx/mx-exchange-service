@@ -27,27 +27,17 @@ export class AnalyticsCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheAnalytics(): Promise<void> {
-        for (const farmAddress of farmsAddresses()) {
-            const farmLockedValueUSD = await this.analyticsCompute.computeFarmLockedValueUSD(
-                farmAddress,
-            );
-            await this.setFarmCache(
-                farmAddress,
-                'lockedValueUSD',
-                farmLockedValueUSD,
-                oneMinute() * 2,
-            );
-        }
-
         for (const token of tokensSupplyConfig) {
             await this.analyticsGetterService.getTotalTokenSupply(token);
         }
         const [
             totalValueLockedUSD,
             totalAggregatedRewards,
+            totalValueLockedUSDFarms,
         ] = await Promise.all([
             this.analyticsCompute.computeTotalValueLockedUSD(),
             this.analyticsCompute.computeTotalAggregatedRewards(30),
+            this.analyticsCompute.computeLockedValueUSDFarms(),
         ]);
         await Promise.all([
             this.setAnalyticsCache(
@@ -58,6 +48,11 @@ export class AnalyticsCacheWarmerService {
             this.setAnalyticsCache(
                 [30, 'totalAggregatedRewards'],
                 totalAggregatedRewards,
+                oneMinute() * 2,
+            ),
+            this.setAnalyticsCache(
+                ['lockedValueUSDFarms'],
+                totalValueLockedUSDFarms,
                 oneMinute() * 2,
             ),
         ]);
