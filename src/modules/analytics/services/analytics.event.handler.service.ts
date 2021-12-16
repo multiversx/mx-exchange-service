@@ -39,7 +39,7 @@ export class AnalyticsEventHandlerService {
     ) {}
 
     async handleAddLiquidityEvent(event: AddLiquidityEventType): Promise<void> {
-        await this.updatePairLockedValueUSD(event.address);
+        // await this.updatePairLockedValueUSD(event.address);
         const [
             firstTokenLockedValueUSD,
             secondTokenLockedValueUSD,
@@ -79,17 +79,17 @@ export class AnalyticsEventHandlerService {
             Time: event.timestamp,
         });
 
-        this.invalidatedKeys.push(
-            this.routerSetterService.setTotalLockedValueUSD(
-                newTotalLockedValueUSD.toFixed(),
-            ),
-        );
-        await this.deleteCacheKeys();
+        // this.invalidatedKeys.push(
+        //     this.routerSetterService.setTotalLockedValueUSD(
+        //         newTotalLockedValueUSD.toFixed(),
+        //     ),
+        // );
+        // await this.deleteCacheKeys();
     }
 
     async handleSwapEvents(event: SwapEventType): Promise<void> {
-        await this.updatePairPrices(event.address);
-        await this.updatePairLockedValueUSD(event.address);
+        // await this.updatePairPrices(event.address);
+        // await this.updatePairLockedValueUSD(event.address);
 
         const [
             firstTokenID,
@@ -215,34 +215,34 @@ export class AnalyticsEventHandlerService {
             this.routerComputeService.computeTotalFeesUSD('24h'),
         ]);
 
-        const cacheKeys = await Promise.all([
-            this.pairSetterService.setFirstTokenVolume(
-                event.address,
-                firstTokenVolume24h,
-                '24h',
-            ),
-            this.pairSetterService.setSecondTokenVolume(
-                event.address,
-                secondTokenVolume24h,
-                '24h',
-            ),
-            this.pairSetterService.setVolumeUSD(
-                event.address,
-                volumeUSD24h,
-                '24h',
-            ),
-            this.pairSetterService.setFeesUSD(event.address, feesUSD24h, '24h'),
-            this.routerSetterService.setTotalVolumeUSD(
-                totalVolumeUSD24h.toFixed(),
-                '24h',
-            ),
-            this.routerSetterService.setTotalFeesUSD(
-                totalFeesUSD24h.toFixed(),
-                '24h',
-            ),
-        ]);
-        this.invalidatedKeys.push(cacheKeys);
-        await this.deleteCacheKeys();
+        // const cacheKeys = await Promise.all([
+        //     this.pairSetterService.setFirstTokenVolume(
+        //         event.address,
+        //         firstTokenVolume24h,
+        //         '24h',
+        //     ),
+        //     this.pairSetterService.setSecondTokenVolume(
+        //         event.address,
+        //         secondTokenVolume24h,
+        //         '24h',
+        //     ),
+        //     this.pairSetterService.setVolumeUSD(
+        //         event.address,
+        //         volumeUSD24h,
+        //         '24h',
+        //     ),
+        //     this.pairSetterService.setFeesUSD(event.address, feesUSD24h, '24h'),
+        //     this.routerSetterService.setTotalVolumeUSD(
+        //         totalVolumeUSD24h.toFixed(),
+        //         '24h',
+        //     ),
+        //     this.routerSetterService.setTotalFeesUSD(
+        //         totalFeesUSD24h.toFixed(),
+        //         '24h',
+        //     ),
+        // ]);
+        // this.invalidatedKeys.push(cacheKeys);
+        // await this.deleteCacheKeys();
     }
 
     private async updatePairLockedValueUSD(pairAddress: string): Promise<void> {
