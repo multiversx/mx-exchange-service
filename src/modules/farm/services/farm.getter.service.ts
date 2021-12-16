@@ -131,7 +131,7 @@ export class FarmGetterService {
             farmAddress,
             'penaltyPercent',
             () => this.abiService.getPenaltyPercent(farmAddress),
-            oneHour(),
+            oneMinute(),
         );
     }
 
