@@ -163,7 +163,7 @@ export class ExitFarmEvent extends GenericEvent {
         ]);
         if (version === FarmVersion.V1_2) {
             eventStructType.fields.splice(
-                2,
+                3,
                 0,
                 new StructFieldDefinition(
                     'farmingReserve',
