@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 
@@ -48,7 +48,7 @@ export class PairSetterService {
 
     async setState(pairAddress: string, value: string): Promise<string> {
         const cacheKey = this.getPairCacheKey(pairAddress, 'state');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 45);
         return cacheKey;
     }
 
