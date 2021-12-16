@@ -11,7 +11,9 @@ import {
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
+import { farmVersion } from 'src/utils/farm.utils';
 import { GenericEvent } from '../generic.event';
 import { FarmEventsTopics } from './farm.event.topics';
 import { RewardsEventType } from './rewards.types';
@@ -39,8 +41,9 @@ export class RewardsEvent extends GenericEvent {
 
     constructor(init?: Partial<GenericEvent>) {
         super(init);
+        const version = farmVersion(this.getAddress());
         this.decodedTopics = new FarmEventsTopics(this.topics);
-        const decodedEvent = this.decodeEvent();
+        const decodedEvent = this.decodeEvent(version);
         Object.assign(this, decodedEvent);
         this.oldFarmToken = new GenericToken({
             tokenID: decodedEvent.oldFarmTokenID.toString(),
@@ -59,9 +62,11 @@ export class RewardsEvent extends GenericEvent {
         });
         this.oldFarmAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.oldFarmAttributes,
+            version,
         );
         this.newFarmAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.newFarmAttributes,
+            version,
         );
     }
 
@@ -103,17 +108,17 @@ export class RewardsEvent extends GenericEvent {
         return this.decodedTopics.toPlainObject();
     }
 
-    decodeEvent() {
+    decodeEvent(version: FarmVersion) {
         const data = Buffer.from(this.data, 'base64');
         const codec = new BinaryCodec();
 
-        const eventStruct = this.getStructure();
+        const eventStruct = this.getStructure(version);
 
         const [decoded] = codec.decodeNested(data, eventStruct);
         return decoded.valueOf();
     }
 
-    getStructure(): StructType {
+    getStructure(version: FarmVersion): StructType {
         return new StructType('ClaimRewardsEvent', [
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition(
@@ -158,12 +163,12 @@ export class RewardsEvent extends GenericEvent {
             new StructFieldDefinition(
                 'oldFarmAttributes',
                 '',
-                FarmTokenAttributesModel.getStructure(),
+                FarmTokenAttributesModel.getStructure(version),
             ),
             new StructFieldDefinition(
                 'newFarmAttributes',
                 '',
-                FarmTokenAttributesModel.getStructure(),
+                FarmTokenAttributesModel.getStructure(version),
             ),
             new StructFieldDefinition(
                 'createdWithMerge',

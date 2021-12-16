@@ -52,6 +52,7 @@ export class FarmServiceMock {
     }
 
     decodeFarmTokenAttributes(
+        farmAddress: string,
         identifier: string,
         attributes: string,
     ): FarmTokenAttributesModel {

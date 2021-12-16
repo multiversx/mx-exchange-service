@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BinaryCodec } from '@elrondnetwork/erdjs';
-import { constantsConfig, farmsConfig } from '../../../config';
+import { constantsConfig } from '../../../config';
 import {
     ExitFarmTokensModel,
     FarmModel,
@@ -16,6 +16,7 @@ import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
 export class FarmService {
@@ -30,15 +31,21 @@ export class FarmService {
 
     getFarms(): FarmModel[] {
         const farms: Array<FarmModel> = [];
-        for (const farmAddress of farmsConfig) {
-            farms.push(new FarmModel({ address: farmAddress }));
+        for (const farmAddress of farmsAddresses()) {
+            farms.push(
+                new FarmModel({
+                    address: farmAddress,
+                    version: farmVersion(farmAddress),
+                    rewardType: farmType(farmAddress),
+                }),
+            );
         }
 
         return farms;
     }
 
     async isFarmToken(tokenID: string): Promise<boolean> {
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             const farmTokenID = await this.farmGetterService.getFarmTokenID(
                 farmAddress,
             );
@@ -52,7 +59,7 @@ export class FarmService {
     async getFarmAddressByFarmTokenID(
         tokenID: string,
     ): Promise<string | undefined> {
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             const farmTokenID = await this.farmGetterService.getFarmTokenID(
                 farmAddress,
             );
@@ -76,6 +83,7 @@ export class FarmService {
         positon: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
         const farmTokenAttributes = this.decodeFarmTokenAttributes(
+            positon.farmAddress,
             positon.identifier,
             positon.attributes,
         );
@@ -114,6 +122,7 @@ export class FarmService {
         args: CalculateRewardsArgs,
     ): Promise<ExitFarmTokensModel> {
         const decodedAttributes = this.decodeFarmTokenAttributes(
+            args.farmAddress,
             args.identifier,
             args.attributes,
         );
@@ -151,19 +160,21 @@ export class FarmService {
     }
 
     decodeFarmTokenAttributes(
+        farmAddress: string,
         identifier: string,
         attributes: string,
     ): FarmTokenAttributesModel {
+        const version = farmVersion(farmAddress);
         const attributesBuffer = Buffer.from(attributes, 'base64');
         const codec = new BinaryCodec();
 
-        const structType = FarmTokenAttributesModel.getStructure();
-
+        const structType = FarmTokenAttributesModel.getStructure(version);
         const [decoded] = codec.decodeNested(attributesBuffer, structType);
 
         const decodedAttributes = decoded.valueOf();
         const farmTokenAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
             decodedAttributes,
+            version,
         );
         farmTokenAttributes.attributes = attributes;
         farmTokenAttributes.identifier = identifier;

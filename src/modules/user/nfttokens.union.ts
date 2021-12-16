@@ -18,7 +18,7 @@ export const UserNftTokens = createUnionType({
         UserNftToken,
     ],
     resolveType(value) {
-        if (value.decodedAttributes.aprMultiplier) {
+        if (value.decodedAttributes.rewardPerShare) {
             return UserFarmToken.name;
         }
         if (value.decodedAttributes.lpTokenID) {

@@ -1,4 +1,12 @@
 {
+    "farms": {
+        "v1.2": ["farm_address_1"],
+        "v1.3": {
+            "unlockedRewards": ["farm_address_2"],
+            "lockedRewards": ["farm_address_3"],
+            "customRewards": ["farm_address_4"]
+        }
+    },
     "tokenProviderUSD": "TOK3-3333",
     "priceFeeds": {
         "TOK3-3333": "tok3"

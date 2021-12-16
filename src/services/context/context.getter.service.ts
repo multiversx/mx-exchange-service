@@ -84,7 +84,7 @@ export class ContextGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getCurrentBlockNonce(shardID),
-            oneSecond() * 6,
+            oneSecond() * 3,
             oneSecond() * 6,
         );
     }

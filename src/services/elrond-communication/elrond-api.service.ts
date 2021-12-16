@@ -157,11 +157,12 @@ export class ElrondApiService {
     }
 
     async getCurrentBlockNonce(shardId: number): Promise<number> {
-        return this.doGetGeneric(
+        const latestBlock = await this.doGetGeneric(
             this.getCurrentNonce.name,
-            `blocks/count?shard=${shardId}`,
+            `blocks?size=1&shard=${shardId}`,
             response => response,
         );
+        return latestBlock[0].nonce;
     }
 
     async getShardTimestamp(shardId: number): Promise<number> {

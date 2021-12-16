@@ -90,6 +90,15 @@ export class FarmGetterService {
         return this.contextGetter.getTokenMetadata(farmingTokenID);
     }
 
+    async getWhitelist(farmAddress: string): Promise<string[]> {
+        return await this.getData(
+            farmAddress,
+            'whitelist',
+            () => this.abiService.getWhitelist(farmAddress),
+            oneHour(),
+        );
+    }
+
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,
@@ -140,7 +149,7 @@ export class FarmGetterService {
             farmAddress,
             'state',
             () => this.abiService.getState(farmAddress),
-            oneHour(),
+            oneMinute(),
         );
     }
 
@@ -295,6 +304,15 @@ export class FarmGetterService {
             farmAddress,
             'lockedRewardsAPR',
             () => this.computeService.computeLockedRewardsAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getFarmAPR(farmAddress: string): Promise<string> {
+        return await this.getData(
+            farmAddress,
+            'farmAPR',
+            () => this.computeService.computeFarmAPR(farmAddress),
             oneMinute(),
         );
     }

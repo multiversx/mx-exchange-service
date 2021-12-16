@@ -234,6 +234,15 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async apr(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getFarmAPR(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async totalValueLockedUSD(parent: FarmModel) {
         try {
             return await this.farmGetterService.getTotalValueLockedUSD(
@@ -297,13 +306,27 @@ export class FarmResolver {
         }
     }
 
+    @ResolveField()
+    async requireWhitelist(@Parent() parent: FarmModel) {
+        try {
+            const whitelists = await this.farmGetterService.getWhitelist(
+                parent.address,
+            );
+            return whitelists ? whitelists.length > 0 : false;
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => FarmTokenAttributesModel)
     async farmTokenAttributes(
+        @Args('farmAddress') farmAddress: string,
         @Args('identifier') identifier: string,
         @Args('attributes') attributes: string,
     ): Promise<FarmTokenAttributesModel> {
         return this.farmService.decodeFarmTokenAttributes(
+            farmAddress,
             identifier,
             attributes,
         );

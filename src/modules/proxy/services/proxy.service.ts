@@ -55,7 +55,11 @@ export class ProxyService {
             const farmToken = await this.contextGetter.getNftMetadata(
                 decodedAttributes.farmTokenIdentifier,
             );
-            const decodedFarmAttributes = this.farmService.decodeFarmTokenAttributes(
+            const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
+                farmToken.collection,
+            );
+            const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
+                farmAddress,
                 decodedAttributes.farmTokenIdentifier,
                 farmToken.attributes,
             );
