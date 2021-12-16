@@ -48,7 +48,6 @@ export class RouterComputeService {
 
         const volumesUSD = await Promise.all(promises);
         for (const volumeUSD of volumesUSD) {
-            console.log({ volumeUSD: volumeUSD });
             totalVolumeUSD =
                 volumeUSD !== 'NaN'
                     ? totalVolumeUSD.plus(volumeUSD)

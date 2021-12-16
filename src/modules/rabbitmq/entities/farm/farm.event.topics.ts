@@ -11,12 +11,20 @@ export class FarmEventsTopics {
         this.eventName = Buffer.from(rawTopics[0], 'base64').toString();
         this.caller = new Address(Buffer.from(rawTopics[1], 'base64'));
         this.tokenID = Buffer.from(rawTopics[2], 'base64').toString();
-        this.lockedRewards =
-            Buffer.from(rawTopics[3], 'base64').toString() === 'true';
-        this.epoch = parseInt(
-            Buffer.from(rawTopics[4], 'base64').toString('hex'),
-            16,
-        );
+        if (rawTopics.length > 4) {
+            this.lockedRewards =
+                Buffer.from(rawTopics[3], 'base64').toString() === 'true';
+            this.epoch = parseInt(
+                Buffer.from(rawTopics[4], 'base64').toString('hex'),
+                16,
+            );
+        } else {
+            this.lockedRewards = false;
+            this.epoch = parseInt(
+                Buffer.from(rawTopics[3], 'base64').toString('hex'),
+                16,
+            );
+        }
     }
 
     toPlainObject() {
