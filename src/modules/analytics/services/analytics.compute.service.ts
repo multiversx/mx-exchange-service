@@ -56,6 +56,9 @@ export class AnalyticsComputeService {
             this.farmComputeService.computeFarmLockedValueUSD(
                 farmsAddresses()[2],
             ),
+            this.farmComputeService.computeFarmLockedValueUSD(
+                farmsAddresses()[5],
+            ),
         ]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
