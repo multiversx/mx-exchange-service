@@ -356,7 +356,7 @@ export class PairGetterService {
             pairAddress,
             'state',
             () => this.abiService.getState(pairAddress),
-            oneSecond() * 45,
+            oneHour(),
         );
     }
 

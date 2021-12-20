@@ -99,7 +99,7 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.context.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [pairInfo, burnedToken, state] = await Promise.all([
+            const [pairInfo, burnedToken] = await Promise.all([
                 this.abiPairService.getPairInfoMetadata(pairAddress),
                 this.abiPairService.getBurnedTokenAmount(
                     pairAddress,
@@ -126,7 +126,6 @@ export class PairCacheWarmerService {
                     pairAddress,
                     pairInfo.totalSupply,
                 ),
-                this.pairSetterService.setState(pairAddress, state),
             ]);
             await this.deleteCacheKeys();
         }
