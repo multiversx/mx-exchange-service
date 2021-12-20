@@ -99,42 +99,52 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.context.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [pairInfo, burnedToken, state] = await Promise.all([
-                this.abiPairService.getPairInfoMetadata(pairAddress),
+            const [feesAPR, burnedToken] = await Promise.all([
+                this.pairComputeService.computeFeesAPR(pairAddress),
                 this.abiPairService.getBurnedTokenAmount(
                     pairAddress,
                     constantsConfig.MEX_TOKEN_ID,
                 ),
-                this.abiPairService.getState(pairAddress),
             ]);
 
             this.invalidatedKeys = await Promise.all([
-                this.pairSetterService.setFirstTokenReserve(
-                    pairAddress,
-                    pairInfo.reserves0,
-                ),
-                this.pairSetterService.setSecondTokenReserve(
-                    pairAddress,
-                    pairInfo.reserves1,
-                ),
+                this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
                 this.pairSetterService.setBurnedTokenAmount(
                     pairAddress,
                     constantsConfig.MEX_TOKEN_ID,
                     burnedToken,
                 ),
-                this.pairSetterService.setTotalSupply(
-                    pairAddress,
-                    pairInfo.totalSupply,
-                ),
-                this.pairSetterService.setState(pairAddress, state),
             ]);
             await this.deleteCacheKeys();
         }
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron('*/6 * * * * *') // Update prices and reserves every 6 seconds
     async cacheTokenPrices(): Promise<void> {
         const pairsMetadata = await this.context.getPairsMetadata();
+
+        for (const pairAddress of pairsMetadata) {
+            const pairInfo = await this.abiPairService.getPairInfoMetadata(
+                pairAddress.address,
+            );
+
+            const cacheKeys = await Promise.all([
+                this.pairSetterService.setFirstTokenReserve(
+                    pairAddress.address,
+                    pairInfo.reserves0,
+                ),
+                this.pairSetterService.setSecondTokenReserve(
+                    pairAddress.address,
+                    pairInfo.reserves1,
+                ),
+                this.pairSetterService.setTotalSupply(
+                    pairAddress.address,
+                    pairInfo.totalSupply,
+                ),
+            ]);
+            this.invalidatedKeys.push(...cacheKeys);
+        }
+
         for (const pairMetadata of pairsMetadata) {
             const [
                 firstTokenPrice,
@@ -142,7 +152,6 @@ export class PairCacheWarmerService {
                 secondTokenPrice,
                 secondTokenPriceUSD,
                 lpTokenPriceUSD,
-                feesAPR,
             ] = await Promise.all([
                 this.pairComputeService.computeFirstTokenPrice(
                     pairMetadata.address,
@@ -159,10 +168,9 @@ export class PairCacheWarmerService {
                 this.pairComputeService.computeLpTokenPriceUSD(
                     pairMetadata.address,
                 ),
-                this.pairComputeService.computeFeesAPR(pairMetadata.address),
             ]);
 
-            this.invalidatedKeys = await Promise.all([
+            const cacheKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenPrice(
                     pairMetadata.address,
                     firstTokenPrice,
@@ -183,13 +191,10 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     lpTokenPriceUSD,
                 ),
-                this.pairSetterService.setFeesAPR(
-                    pairMetadata.address,
-                    feesAPR,
-                ),
             ]);
-            await this.deleteCacheKeys();
+            this.invalidatedKeys.push(...cacheKeys);
         }
+        await this.deleteCacheKeys();
     }
 
     private async setContextCache(
