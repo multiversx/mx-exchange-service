@@ -38,38 +38,38 @@ export class RabbitMQFarmHandlerService {
             this.abiFarmService.getRewardPerShare(event.getAddress()),
         ]);
         const version = farmVersion(event.getAddress());
-        // const cacheKeys = await Promise.all([
-        //     this.farmSetterService.setFarmTokenSupply(
-        //         event.getAddress(),
-        //         event.getFarmSupply().toFixed(),
-        //     ),
-        //     this.farmSetterService.setLastRewardBlockNonce(
-        //         event.getAddress(),
-        //         lastRewardBlockNonce,
-        //     ),
-        //     this.farmSetterService.setUndistributedFees(
-        //         event.getAddress(),
-        //         undistributedFees,
-        //     ),
-        //     this.farmSetterService.setCurrentBlockFee(
-        //         event.getAddress(),
-        //         currentBlockFee,
-        //     ),
-        //     this.farmSetterService.setRewardPerShare(
-        //         event.getAddress(),
-        //         farmRewardPerShare,
-        //     ),
-        // ]);
-        // if (version === FarmVersion.V1_2) {
-        //     cacheKeys.push(
-        //         await this.farmSetterService.setFarmingTokenReserve(
-        //             event.getAddress(),
-        //             event.getFarmingReserve().toFixed(),
-        //         ),
-        //     );
-        // }
-        // this.invalidatedKeys.push(cacheKeys);
-        // await this.deleteCacheKeys();
+        const cacheKeys = await Promise.all([
+            this.farmSetterService.setFarmTokenSupply(
+                event.getAddress(),
+                event.getFarmSupply().toFixed(),
+            ),
+            this.farmSetterService.setLastRewardBlockNonce(
+                event.getAddress(),
+                lastRewardBlockNonce,
+            ),
+            this.farmSetterService.setUndistributedFees(
+                event.getAddress(),
+                undistributedFees,
+            ),
+            this.farmSetterService.setCurrentBlockFee(
+                event.getAddress(),
+                currentBlockFee,
+            ),
+            this.farmSetterService.setRewardPerShare(
+                event.getAddress(),
+                farmRewardPerShare,
+            ),
+        ]);
+        if (version === FarmVersion.V1_2) {
+            cacheKeys.push(
+                await this.farmSetterService.setFarmingTokenReserve(
+                    event.getAddress(),
+                    event.getFarmingReserve().toFixed(),
+                ),
+            );
+        }
+        this.invalidatedKeys.push(cacheKeys);
+        await this.deleteCacheKeys();
         event.getIdentifier() === FARM_EVENTS.ENTER_FARM
             ? await this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
                   enterFarmEvent: event,
@@ -92,26 +92,26 @@ export class RabbitMQFarmHandlerService {
             this.abiFarmService.getRewardPerShare(event.getAddress()),
         ]);
 
-        // const cacheKeys = await Promise.all([
-        //     this.farmSetterService.setLastRewardBlockNonce(
-        //         event.getAddress(),
-        //         lastRewardBlockNonce,
-        //     ),
-        //     this.farmSetterService.setUndistributedFees(
-        //         event.getAddress(),
-        //         undistributedFees,
-        //     ),
-        //     this.farmSetterService.setCurrentBlockFee(
-        //         event.getAddress(),
-        //         currentBlockFee,
-        //     ),
-        //     this.farmSetterService.setRewardPerShare(
-        //         event.getAddress(),
-        //         farmRewardPerShare,
-        //     ),
-        // ]);
-        // this.invalidatedKeys.push(cacheKeys);
-        // await this.deleteCacheKeys();
+        const cacheKeys = await Promise.all([
+            this.farmSetterService.setLastRewardBlockNonce(
+                event.getAddress(),
+                lastRewardBlockNonce,
+            ),
+            this.farmSetterService.setUndistributedFees(
+                event.getAddress(),
+                undistributedFees,
+            ),
+            this.farmSetterService.setCurrentBlockFee(
+                event.getAddress(),
+                currentBlockFee,
+            ),
+            this.farmSetterService.setRewardPerShare(
+                event.getAddress(),
+                farmRewardPerShare,
+            ),
+        ]);
+        this.invalidatedKeys.push(cacheKeys);
+        await this.deleteCacheKeys();
 
         await this.pubSub.publish(FARM_EVENTS.CLAIM_REWARDS, {
             rewardsEvent: event,
