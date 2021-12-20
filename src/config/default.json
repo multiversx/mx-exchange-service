@@ -61,6 +61,13 @@
         "default": 120
     },
     "gasLimits": {
+        "router": {
+            "createPair": 1400000000,
+            "issueToken": 200000000,
+            "setLocalRoles": 200000000,
+            "setState": 200000000,
+            "setFee": 200000000
+        },
         "pairs": {
             "addLiquidity": 9000000,
             "removeLiquidity": 8500000,
@@ -69,11 +76,6 @@
                 "withFeeSwap": 18000000
             }
         },
-        "createPair": 1400000000,
-        "issueToken": 200000000,
-        "setLocalRoles": 200000000,
-        "setState": 200000000,
-        "setFee": 200000000,
         "addLiquidityProxy": 31000000,
         "addLiquidityProxyMerge": 51500000,
         "removeLiquidityProxy": 33000000,
