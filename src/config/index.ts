@@ -15,7 +15,7 @@ export const cacheConfig = config.get('caching');
 
 export const scAddress = config.get('scAddress');
 
-export const gasConfig = config.get('gas');
+export const gasConfig = config.get('gasLimits');
 
 export const abiConfig = config.get('abi');
 

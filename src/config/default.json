@@ -60,11 +60,15 @@
         "apr": 60,
         "default": 120
     },
-    "gas": {
-        "addLiquidity": 9000000,
-        "removeLiquidity": 8500000,
-        "swapTokens": 18000000,
-        "swapMexTokens": 9000000,
+    "gasLimits": {
+        "pairs": {
+            "addLiquidity": 9000000,
+            "removeLiquidity": 8500000,
+            "swapTokens": {
+                "default": 9000000,
+                "withFeeSwap": 18000000
+            }
+        },
         "createPair": 1400000000,
         "issueToken": 200000000,
         "setLocalRoles": 200000000,
