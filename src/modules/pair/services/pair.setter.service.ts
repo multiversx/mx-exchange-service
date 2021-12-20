@@ -57,7 +57,7 @@ export class PairSetterService {
         value: string,
     ): Promise<string> {
         const cacheKey = this.getPairCacheKey(pairAddress, 'firstTokenReserve');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
         return cacheKey;
     }
 
@@ -69,13 +69,13 @@ export class PairSetterService {
             pairAddress,
             'secondTokenReserve',
         );
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
         return cacheKey;
     }
 
     async setTotalSupply(pairAddress: string, value: string): Promise<string> {
         const cacheKey = this.getPairCacheKey(pairAddress, 'totalSupply');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
         return cacheKey;
     }
 
@@ -84,7 +84,7 @@ export class PairSetterService {
         value: string,
     ): Promise<string> {
         const cacheKey = this.getPairCacheKey(pairAddress, 'firstTokenPrice');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
         return cacheKey;
     }
 
@@ -93,7 +93,7 @@ export class PairSetterService {
         value: string,
     ): Promise<string> {
         const cacheKey = this.getPairCacheKey(pairAddress, 'secondTokenPrice');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
         return cacheKey;
     }
 
@@ -105,7 +105,7 @@ export class PairSetterService {
             pairAddress,
             'firstTokenPriceUSD',
         );
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
         return cacheKey;
     }
 
@@ -117,7 +117,7 @@ export class PairSetterService {
             pairAddress,
             'secondTokenPriceUSD',
         );
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
         return cacheKey;
     }
 
@@ -132,7 +132,7 @@ export class PairSetterService {
         value: string,
     ): Promise<string> {
         const cacheKey = this.getPairCacheKey(pairAddress, 'lpTokenPriceUSD');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
         return cacheKey;
     }
 

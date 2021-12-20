@@ -114,7 +114,7 @@ export class PairGetterService {
             pairAddress,
             'firstTokenPrice',
             () => this.pairComputeService.computeFirstTokenPrice(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -123,7 +123,7 @@ export class PairGetterService {
             pairAddress,
             'secondTokenPrice',
             () => this.pairComputeService.computeSecondTokenPrice(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -142,7 +142,7 @@ export class PairGetterService {
             'firstTokenPriceUSD',
             () =>
                 this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -152,7 +152,7 @@ export class PairGetterService {
             'secondTokenPriceUSD',
             () =>
                 this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -161,7 +161,7 @@ export class PairGetterService {
             pairAddress,
             'lpTokenPriceUSD',
             () => this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -171,7 +171,7 @@ export class PairGetterService {
             pairAddress,
             'firstTokenReserve',
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -181,7 +181,7 @@ export class PairGetterService {
             pairAddress,
             'secondTokenReserve',
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -190,7 +190,7 @@ export class PairGetterService {
             pairAddress,
             'totalSupply',
             () => this.abiService.getTotalSupply(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
