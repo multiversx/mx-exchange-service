@@ -18,6 +18,8 @@ export class ExitFarmProxyArgs {
     @Field(() => Int)
     wrappedFarmTokenNonce: number;
     @Field() amount: string;
+    @Field(() => Boolean, { nullable: true })
+    withPenalty = false;
 }
 
 @ArgsType()
