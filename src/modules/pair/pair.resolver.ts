@@ -229,6 +229,17 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async trustedSwapPairs(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getTrustedSwapPairs(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async state(@Parent() parent: PairModel) {
         try {
             return await this.pairGetterService.getState(parent.address);
