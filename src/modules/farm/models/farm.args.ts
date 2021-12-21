@@ -50,7 +50,10 @@ export class SftFarmInteractionArgs {
 }
 
 @ArgsType()
-export class ExitFarmArgs extends SftFarmInteractionArgs {}
+export class ExitFarmArgs extends SftFarmInteractionArgs {
+    @Field(() => Boolean, { nullable: true })
+    withPenalty = false;
+}
 
 @ArgsType()
 export class ClaimRewardsArgs extends SftFarmInteractionArgs {}

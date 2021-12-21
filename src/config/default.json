@@ -76,14 +76,61 @@
                 "withFeeSwap": 18000000
             }
         },
+        "farms": {
+            "v1.2": {
+                "enterFarm": {
+                    "default": 12000000,
+                    "withTokenMerge": 12500000
+                },
+                "exitFarm": {
+                    "default": 15000000,
+                    "withPenalty": {
+                        "localBurn": 20000000,
+                        "pairBurn": 25000000,
+                        "buybackAndBurn": 40000000
+                    }
+                },
+                "claimRewards": 18500000,
+                "compoundRewards": 12500000
+            },
+            "v1.3": {
+                "unlockedRewards": {
+                    "enterFarm": {
+                        "default": 12000000,
+                        "withTokenMerge": 12500000
+                    },
+                    "exitFarm": {
+                        "default": 15000000,
+                        "withPenalty": {
+                            "localBurn": 20000000,
+                            "pairBurn": 25000000,
+                            "buybackAndBurn": 40000000
+                        }
+                    },
+                    "claimRewards": 18500000,
+                    "compoundRewards": 12500000
+                },
+                "lockedRewards": {
+                    "enterFarm": {
+                        "default": 12000000,
+                        "withTokenMerge": 12500000
+                    },
+                    "exitFarm": {
+                        "default": 15000000,
+                        "withPenalty": {
+                            "localBurn": 20000000,
+                            "pairBurn": 25000000,
+                            "buybackAndBurn": 40000000
+                        }
+                    },
+                    "claimRewards": 18500000,
+                    "compoundRewards": 12500000
+                }
+            }
+        },
         "addLiquidityProxy": 31000000,
         "addLiquidityProxyMerge": 51500000,
         "removeLiquidityProxy": 33000000,
-        "enterFarm": 12000000,
-        "enterFarmMerge": 12500000,
-        "exitFarm": 40000000,
-        "claimRewards": 18500000,
-        "compoundRewards": 12500000,
         "enterFarmProxy": 31000000,
         "enterFarmProxyMerge": 73000000,
         "exitFarmProxy": 51000000,
