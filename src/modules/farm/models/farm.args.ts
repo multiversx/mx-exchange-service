@@ -47,6 +47,8 @@ export class SftFarmInteractionArgs {
     farmTokenNonce: number;
     @Field()
     amount: string;
+    @Field(() => Boolean, { nullable: true })
+    lockRewards = false;
 }
 
 @ArgsType()

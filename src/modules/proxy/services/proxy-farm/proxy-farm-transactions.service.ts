@@ -25,7 +25,10 @@ import { ProxyPairGetterService } from '../proxy-pair/proxy-pair.getter.service'
 import { ProxyGetterService } from '../proxy.getter.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
-import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import {
+    FarmRewardType,
+    FarmVersion,
+} from 'src/modules/farm/models/farm.model';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -63,33 +66,18 @@ export class TransactionsProxyFarmService {
         }
 
         const contract = await this.elrondProxy.getProxyDexSmartContract();
-        const [version, type] = [
-            farmVersion(args.farmAddress),
-            farmType(args.farmAddress),
-        ];
+        const version = farmVersion(args.farmAddress);
 
-        let method: string;
-        let gasLimit: number;
-        switch (version) {
-            case FarmVersion.V1_2:
-                method = args.lockRewards
+        const method =
+            version === FarmVersion.V1_2
+                ? args.lockRewards
                     ? 'enterFarmAndLockRewardsProxy'
-                    : 'enterFarmProxy';
-                gasLimit =
-                    args.tokens.length > 1
-                        ? gasConfig.proxy.farms[version].enterFarm
-                              .withTokenMerge
-                        : gasConfig.proxy.farms[version].enterFarm.default;
-                break;
-            case FarmVersion.V1_3:
-                method = 'enterFarmProxy';
-                gasLimit =
-                    args.tokens.length > 1
-                        ? gasConfig.proxy.farms[version][type].enterFarm
-                              .withTokenMerge
-                        : gasConfig.proxy.farms[version][type].enterFarm
-                              .default;
-        }
+                    : 'enterFarmProxy'
+                : 'enterFarmProxy';
+        const gasLimit =
+            args.tokens.length > 1
+                ? gasConfig.proxy.farms[version].enterFarm.withTokenMerge
+                : gasConfig.proxy.farms[version].enterFarm.default;
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -146,23 +134,18 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
-        const [version, type] = [
-            farmVersion(args.farmAddress),
-            farmType(args.farmAddress),
-        ];
-        let gasLimit: number;
-        switch (version) {
-            case FarmVersion.V1_2:
-                gasLimit = gasConfig.proxy.farms[version].claimRewards;
-                break;
-            case FarmVersion.V1_3:
-                gasLimit = gasConfig.proxy.farms[version][type].claimRewards;
-        }
+        const version = farmVersion(args.farmAddress);
+        const type =
+            version === FarmVersion.V1_2
+                ? args.lockRewards
+                    ? FarmRewardType.LOCKED_REWARDS
+                    : FarmRewardType.UNLOCKED_REWARDS
+                : farmType(args.farmAddress);
 
         const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasLimit),
+            new GasLimit(gasConfig.proxy.farms[version][type].claimRewards),
         );
 
         transaction.receiver = sender;
@@ -185,23 +168,12 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
-        const [version, type] = [
-            farmVersion(args.farmAddress),
-            farmType(args.farmAddress),
-        ];
-        let gasLimit: number;
-        switch (version) {
-            case FarmVersion.V1_2:
-                gasLimit = gasConfig.proxy.farms[version].compoundRewards;
-                break;
-            case FarmVersion.V1_3:
-                gasLimit = gasConfig.proxy.farms[version][type].compoundRewards;
-        }
+        const version = farmVersion(args.farmAddress);
 
         const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasLimit),
+            new GasLimit(gasConfig.proxy.farms[version].compoundRewards),
         );
 
         transaction.receiver = sender;
@@ -288,25 +260,23 @@ export class TransactionsProxyFarmService {
         args: ExitFarmProxyArgs,
     ): Promise<number> {
         const version = farmVersion(args.farmAddress);
-        const type = farmType(args.farmAddress);
+        const type =
+            version === FarmVersion.V1_2
+                ? args.lockRewards
+                    ? FarmRewardType.LOCKED_REWARDS
+                    : FarmRewardType.UNLOCKED_REWARDS
+                : farmType(args.farmAddress);
+
         const [farmedTokenID, farmingTokenID] = await Promise.all([
             this.farmGetterService.getFarmedTokenID(args.farmAddress),
             this.farmGetterService.getFarmingTokenID(args.farmAddress),
         ]);
 
         if (farmedTokenID === farmingTokenID) {
-            switch (version) {
-                case FarmVersion.V1_2:
-                    return args.withPenalty
-                        ? gasConfig.proxy.farms[version].exitFarm.withPenalty
-                              .localBurn
-                        : gasConfig.proxy.farms[version].exitFarm.default;
-                case FarmVersion.V1_3:
-                    return args.withPenalty
-                        ? gasConfig.proxy.farms[version][type].exitFarm
-                              .withPenalty.localBurn
-                        : gasConfig.proxy.farms[version][type].exitFarm.default;
-            }
+            return args.withPenalty
+                ? gasConfig.proxy.farms[version][type].exitFarm.withPenalty
+                      .localBurn
+                : gasConfig.proxy.farms[version][type].exitFarm.default;
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
@@ -317,37 +287,18 @@ export class TransactionsProxyFarmService {
             const trustedSwapPairs = await this.pairGetterService.getTrustedSwapPairs(
                 pairAddress,
             );
-            switch (version) {
-                case FarmVersion.V1_2:
-                    return args.withPenalty
-                        ? trustedSwapPairs.length > 0
-                            ? gasConfig.proxy.farms[version].exitFarm
-                                  .withPenalty.buybackAndBurn
-                            : gasConfig.proxy.farms[version].exitFarm
-                                  .withPenalty.pairBurn
-                        : gasConfig.proxy.farms[version].exitFarm.default;
-                case FarmVersion.V1_3:
-                    return args.withPenalty
-                        ? trustedSwapPairs.length > 0
-                            ? gasConfig.proxy.farms[version][type].exitFarm
-                                  .withPenalty.buybackAndBurn
-                            : gasConfig.proxy.farms[version][type].exitFarm
-                                  .withPenalty.pairBurn
-                        : gasConfig.proxy.farms[version][type].exitFarm.default;
-            }
+            return args.withPenalty
+                ? trustedSwapPairs.length > 0
+                    ? gasConfig.proxy.farms[version][type].exitFarm.withPenalty
+                          .buybackAndBurn
+                    : gasConfig.proxy.farms[version][type].exitFarm.withPenalty
+                          .pairBurn
+                : gasConfig.proxy.farms[version][type].exitFarm.default;
         }
 
-        switch (version) {
-            case FarmVersion.V1_2:
-                return args.withPenalty
-                    ? gasConfig.proxy.farms[version].exitFarm.withPenalty
-                          .localBurn
-                    : gasConfig.proxy.farms[version].exitFarm.default;
-            case FarmVersion.V1_3:
-                return args.withPenalty
-                    ? gasConfig.proxy.farms[version][type].exitFarm.withPenalty
-                          .localBurn
-                    : gasConfig.proxy.farms[version][type].exitFarm.default;
-        }
+        return args.withPenalty
+            ? gasConfig.proxy.farms[version][type].exitFarm.withPenalty
+                  .localBurn
+            : gasConfig.proxy.farms[version][type].exitFarm.default;
     }
 }

@@ -22,7 +22,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
-import { FarmVersion } from '../models/farm.model';
+import { FarmRewardType, FarmVersion } from '../models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
@@ -64,32 +64,20 @@ export class TransactionsFarmService {
             throw error;
         }
 
-        const [
-            contract,
-            version,
-            type,
-        ] = await this.elrondProxy.getFarmSmartContract(args.farmAddress);
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
+        );
 
-        let method: string;
-        let gasLimit: number;
-        switch (version) {
-            case FarmVersion.V1_2:
-                method = args.lockRewards
+        const method =
+            version === FarmVersion.V1_2
+                ? args.lockRewards
                     ? 'enterFarmAndLockRewards'
-                    : 'enterFarm';
-                gasLimit =
-                    args.tokens.length > 1
-                        ? gasConfig.farms[version].enterFarm.withTokenMerge
-                        : gasConfig.farms[version].enterFarm.default;
-                break;
-            case FarmVersion.V1_3:
-                method = 'enterFarm';
-                gasLimit =
-                    args.tokens.length > 1
-                        ? gasConfig.farms[version][type].enterFarm
-                              .withTokenMerge
-                        : gasConfig.farms[version][type].enterFarm.default;
-        }
+                    : 'enterFarm'
+                : 'enterFarm';
+        const gasLimit =
+            args.tokens.length > 1
+                ? gasConfig.farms[version].enterFarm.withTokenMerge
+                : gasConfig.farms[version].enterFarm.default;
 
         return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
@@ -129,19 +117,20 @@ export class TransactionsFarmService {
                 `whitelisted addresses only for farm ${args.farmAddress}`,
             );
         }
-        const [version, type] = [
-            farmVersion(args.farmAddress),
-            farmType(args.farmAddress),
-        ];
-        let gasLimit: number;
-        switch (version) {
-            case FarmVersion.V1_2:
-                gasLimit = gasConfig.farms[version].claimRewards;
-                break;
-            case FarmVersion.V1_3:
-                gasLimit = gasConfig.farms[version][type].claimRewards;
-        }
-        return this.SftFarmInteraction(sender, args, 'claimRewards', gasLimit);
+        const version = farmVersion(args.farmAddress);
+        const type =
+            version === FarmVersion.V1_2
+                ? args.lockRewards
+                    ? FarmRewardType.LOCKED_REWARDS
+                    : FarmRewardType.UNLOCKED_REWARDS
+                : farmType(args.farmAddress);
+
+        return this.SftFarmInteraction(
+            sender,
+            args,
+            'claimRewards',
+            gasConfig.farms[version][type].claimRewards,
+        );
     }
 
     async compoundRewards(
@@ -166,24 +155,13 @@ export class TransactionsFarmService {
             throw new Error('failed to compound different tokens');
         }
 
-        const [version, type] = [
-            farmVersion(args.farmAddress),
-            farmType(args.farmAddress),
-        ];
-        let gasLimit: number;
-        switch (version) {
-            case FarmVersion.V1_2:
-                gasLimit = gasConfig.farms[version].compoundRewards;
-                break;
-            case FarmVersion.V1_3:
-                gasLimit = gasConfig.farms[version][type].compoundRewards;
-        }
+        const version = farmVersion(args.farmAddress);
 
         return this.SftFarmInteraction(
             sender,
             args,
             'compoundRewards',
-            gasLimit,
+            gasConfig.farms[version].compoundRewards,
         );
     }
 
@@ -238,25 +216,21 @@ export class TransactionsFarmService {
 
     private async getExitFarmGasLimit(args: ExitFarmArgs): Promise<number> {
         const version = farmVersion(args.farmAddress);
-        const type = farmType(args.farmAddress);
+        const type =
+            version === FarmVersion.V1_2
+                ? args.lockRewards
+                    ? FarmRewardType.LOCKED_REWARDS
+                    : FarmRewardType.UNLOCKED_REWARDS
+                : farmType(args.farmAddress);
         const [farmedTokenID, farmingTokenID] = await Promise.all([
             this.farmGetterService.getFarmedTokenID(args.farmAddress),
             this.farmGetterService.getFarmingTokenID(args.farmAddress),
         ]);
 
         if (farmedTokenID === farmingTokenID) {
-            switch (version) {
-                case FarmVersion.V1_2:
-                    return args.withPenalty
-                        ? gasConfig.farms[version].exitFarm.withPenalty
-                              .localBurn
-                        : gasConfig.farms[version].exitFarm.default;
-                case FarmVersion.V1_3:
-                    return args.withPenalty
-                        ? gasConfig.farms[version][type].exitFarm.withPenalty
-                              .localBurn
-                        : gasConfig.farms[version][type].exitFarm.default;
-            }
+            return args.withPenalty
+                ? gasConfig.farms[version][type].exitFarm.withPenalty.localBurn
+                : gasConfig.farms[version][type].exitFarm.default;
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
@@ -267,36 +241,16 @@ export class TransactionsFarmService {
             const trustedSwapPairs = await this.pairGetterService.getTrustedSwapPairs(
                 pairAddress,
             );
-            switch (version) {
-                case FarmVersion.V1_2:
-                    return args.withPenalty
-                        ? trustedSwapPairs.length > 0
-                            ? gasConfig.farms[version].exitFarm.withPenalty
-                                  .buybackAndBurn
-                            : gasConfig.farms[version].exitFarm.withPenalty
-                                  .pairBurn
-                        : gasConfig.farms[version].exitFarm.default;
-                case FarmVersion.V1_3:
-                    return args.withPenalty
-                        ? trustedSwapPairs.length > 0
-                            ? gasConfig.farms[version][type].exitFarm
-                                  .withPenalty.buybackAndBurn
-                            : gasConfig.farms[version][type].exitFarm
-                                  .withPenalty.pairBurn
-                        : gasConfig.farms[version][type].exitFarm.default;
-            }
-        }
-
-        switch (version) {
-            case FarmVersion.V1_2:
-                return args.withPenalty
-                    ? gasConfig.farms[version].exitFarm.withPenalty.localBurn
-                    : gasConfig.farms[version].exitFarm.default;
-            case FarmVersion.V1_3:
-                return args.withPenalty
+            return args.withPenalty
+                ? trustedSwapPairs.length > 0
                     ? gasConfig.farms[version][type].exitFarm.withPenalty
-                          .localBurn
-                    : gasConfig.farms[version][type].exitFarm.default;
+                          .buybackAndBurn
+                    : gasConfig.farms[version][type].exitFarm.withPenalty
+                          .pairBurn
+                : gasConfig.farms[version][type].exitFarm.default;
         }
+        return args.withPenalty
+            ? gasConfig.farms[version][type].exitFarm.withPenalty.localBurn
+            : gasConfig.farms[version][type].exitFarm.default;
     }
 }

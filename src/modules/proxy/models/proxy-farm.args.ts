@@ -19,6 +19,8 @@ export class ExitFarmProxyArgs {
     wrappedFarmTokenNonce: number;
     @Field() amount: string;
     @Field(() => Boolean, { nullable: true })
+    lockRewards = false;
+    @Field(() => Boolean, { nullable: true })
     withPenalty = false;
 }
 
@@ -29,6 +31,8 @@ export class ClaimFarmRewardsProxyArgs {
     @Field(() => Int)
     wrappedFarmTokenNonce: number;
     @Field() amount: string;
+    @Field(() => Boolean, { nullable: true })
+    lockRewards = false;
 }
 
 @ArgsType()
@@ -41,4 +45,6 @@ export class CompoundRewardsProxyArgs {
     tokenNonce: number;
     @Field()
     amount: string;
+    @Field(() => Boolean, { nullable: true })
+    lockRewards = false;
 }

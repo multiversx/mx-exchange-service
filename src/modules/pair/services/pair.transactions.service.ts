@@ -222,8 +222,9 @@ export class PairTransactionService {
                         transactionArgs,
                         new GasLimit(
                             trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokens.default
-                                : gasConfig.pairs.swapTokens.withFeeSwap,
+                                ? gasConfig.pairs.swapTokensFixedInput.default
+                                : gasConfig.pairs.swapTokensFixedInput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -242,8 +243,9 @@ export class PairTransactionService {
                         transactionArgs,
                         new GasLimit(
                             trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokens.default
-                                : gasConfig.pairs.swapTokens.withFeeSwap,
+                                ? gasConfig.pairs.swapTokensFixedInput.default
+                                : gasConfig.pairs.swapTokensFixedInput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -269,8 +271,9 @@ export class PairTransactionService {
                         transactionArgs,
                         new GasLimit(
                             trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokens.default
-                                : gasConfig.pairs.swapTokens.withFeeSwap,
+                                ? gasConfig.pairs.swapTokensFixedInput.default
+                                : gasConfig.pairs.swapTokensFixedInput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -318,8 +321,9 @@ export class PairTransactionService {
                         transactionArgs,
                         new GasLimit(
                             trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokens.default
-                                : gasConfig.pairs.swapTokens.withFeeSwap,
+                                ? gasConfig.pairs.swapTokensFixedOutput.default
+                                : gasConfig.pairs.swapTokensFixedOutput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -338,8 +342,9 @@ export class PairTransactionService {
                         transactionArgs,
                         new GasLimit(
                             trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokens.default
-                                : gasConfig.pairs.swapTokens.withFeeSwap,
+                                ? gasConfig.pairs.swapTokensFixedOutput.default
+                                : gasConfig.pairs.swapTokensFixedOutput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -365,8 +370,9 @@ export class PairTransactionService {
                         transactionArgs,
                         new GasLimit(
                             trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokens.default
-                                : gasConfig.pairs.swapTokens.withFeeSwap,
+                                ? gasConfig.pairs.swapTokensFixedOutput.default
+                                : gasConfig.pairs.swapTokensFixedOutput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
