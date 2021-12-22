@@ -37,9 +37,15 @@
         ],
         "v1.3": {
             "unlockedRewards": [
+                "erd1qqqqqqqqqqqqqpgqk4c5p8fxh8ej0r2nhjvgg6ddkp0s7lr20n4s3rfj34",
+                "erd1qqqqqqqqqqqqqpgqatzz7wdjzy605pckfyvlw4a0g0xpx0v20n4syvrkhv",
+                "erd1qqqqqqqqqqqqqpgqwp4l049lhutgv79hgj2d0kpqavjc46nr0n4sjxg37u",
                 "erd1qqqqqqqqqqqqqpgq8yyy8r89qy6u020nhmu7xkh83mzzf6rj0n4stc7gh4"
             ],
             "lockedRewards": [
+                "erd1qqqqqqqqqqqqqpgqwdhjurjdx43uwjsd2ycepqjm503qmjtq0n4s9fqfh8",
+                "erd1qqqqqqqqqqqqqpgqjt465udddlnvfa06haa3m3m8awgsgm2m0n4s0urfsh",
+                "erd1qqqqqqqqqqqqqpgq3attym8u33fqmjae6ew9gwc52fc3an0m0n4s56gf7y",
                 "erd1qqqqqqqqqqqqqpgq959js8gr657c5nymayugwc4c4uuutrxd0n4stfcthk"
             ],
             "customRewards": [
@@ -183,7 +189,7 @@
                 "v1.3": {
                     "enterFarm": {
                         "default": 19000000,
-                        "withTokenMerge": 37000000
+                        "withTokenMerge": 39000000
                     },
                     "compoundRewards": 21600000,
                     "unlockedRewards": {
