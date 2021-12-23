@@ -125,9 +125,9 @@
                     "exitFarm": {
                         "default": 9000000,
                         "withPenalty": {
-                            "localBurn": 10500000,
-                            "pairBurn": 17000000,
-                            "buybackAndBurn": 31000000
+                            "localBurn": 9500000,
+                            "pairBurn": 16000000,
+                            "buybackAndBurn": 30000000
                         }
                     },
                     "claimRewards": 10500000,
@@ -137,8 +137,8 @@
                     "exitFarm": {
                         "default": 15300000,
                         "withPenalty": {
-                            "localBurn": 17000000,
-                            "pairBurn": 23700000,
+                            "localBurn": 16000000,
+                            "pairBurn": 23000000,
                             "buybackAndBurn": 37300000
                         }
                     },
@@ -168,7 +168,7 @@
                             "default": 18600000,
                             "withPenalty": {
                                 "localBurn": 19000000,
-                                "pairBurn": 25500000,
+                                "pairBurn": 24500000,
                                 "buybackAndBurn": 39000000
                             }
                         },
@@ -179,7 +179,7 @@
                             "default": 25000000,
                             "withPenalty": {
                                 "localBurn": 26000000,
-                                "pairBurn": 32000000,
+                                "pairBurn": 31000000,
                                 "buybackAndBurn": 48000000
                             }
                         },
