@@ -37,9 +37,15 @@
         ],
         "v1.3": {
             "unlockedRewards": [
+                "erd1qqqqqqqqqqqqqpgqk4c5p8fxh8ej0r2nhjvgg6ddkp0s7lr20n4s3rfj34",
+                "erd1qqqqqqqqqqqqqpgqatzz7wdjzy605pckfyvlw4a0g0xpx0v20n4syvrkhv",
+                "erd1qqqqqqqqqqqqqpgqwp4l049lhutgv79hgj2d0kpqavjc46nr0n4sjxg37u",
                 "erd1qqqqqqqqqqqqqpgq8yyy8r89qy6u020nhmu7xkh83mzzf6rj0n4stc7gh4"
             ],
             "lockedRewards": [
+                "erd1qqqqqqqqqqqqqpgqwdhjurjdx43uwjsd2ycepqjm503qmjtq0n4s9fqfh8",
+                "erd1qqqqqqqqqqqqqpgqjt465udddlnvfa06haa3m3m8awgsgm2m0n4s0urfsh",
+                "erd1qqqqqqqqqqqqqpgq3attym8u33fqmjae6ew9gwc52fc3an0m0n4s56gf7y",
                 "erd1qqqqqqqqqqqqqpgq959js8gr657c5nymayugwc4c4uuutrxd0n4stfcthk"
             ],
             "customRewards": [
@@ -119,9 +125,9 @@
                     "exitFarm": {
                         "default": 9000000,
                         "withPenalty": {
-                            "localBurn": 10500000,
-                            "pairBurn": 17000000,
-                            "buybackAndBurn": 31000000
+                            "localBurn": 9500000,
+                            "pairBurn": 16000000,
+                            "buybackAndBurn": 30000000
                         }
                     },
                     "claimRewards": 10500000,
@@ -131,8 +137,8 @@
                     "exitFarm": {
                         "default": 15300000,
                         "withPenalty": {
-                            "localBurn": 17000000,
-                            "pairBurn": 23700000,
+                            "localBurn": 16000000,
+                            "pairBurn": 23000000,
                             "buybackAndBurn": 37300000
                         }
                     },
@@ -162,7 +168,7 @@
                             "default": 18600000,
                             "withPenalty": {
                                 "localBurn": 19000000,
-                                "pairBurn": 25500000,
+                                "pairBurn": 24500000,
                                 "buybackAndBurn": 39000000
                             }
                         },
@@ -173,7 +179,7 @@
                             "default": 25000000,
                             "withPenalty": {
                                 "localBurn": 26000000,
-                                "pairBurn": 32000000,
+                                "pairBurn": 31000000,
                                 "buybackAndBurn": 48000000
                             }
                         },
@@ -183,7 +189,7 @@
                 "v1.3": {
                     "enterFarm": {
                         "default": 19000000,
-                        "withTokenMerge": 37000000
+                        "withTokenMerge": 39000000
                     },
                     "compoundRewards": 21600000,
                     "unlockedRewards": {
