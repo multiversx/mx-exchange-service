@@ -121,6 +121,7 @@
                     "default": 9500000,
                     "withTokenMerge": 10500000
                 },
+                "compoundRewards": 12500000,
                 "unlockedRewards": {
                     "exitFarm": {
                         "default": 9000000,
@@ -130,8 +131,7 @@
                             "buybackAndBurn": 30000000
                         }
                     },
-                    "claimRewards": 10500000,
-                    "compoundRewards": 12500000
+                    "claimRewards": 10500000
                 },
                 "lockedRewards": {
                     "exitFarm": {
@@ -142,8 +142,7 @@
                             "buybackAndBurn": 37300000
                         }
                     },
-                    "claimRewards": 17000000,
-                    "compoundRewards": 12500000
+                    "claimRewards": 17000000
                 }
             }
         },
