@@ -198,8 +198,9 @@ export class PairTransactionService {
 
         const amountIn = new BigNumber(args.amountIn);
         const amountOut = new BigNumber(args.amountOut);
-        const amountOutMin = amountOut
-            .multipliedBy(1 - args.tolerance)
+        const amountOutMin = new BigNumber(1)
+            .dividedBy(new BigNumber(1).plus(args.tolerance))
+            .multipliedBy(amountOut)
             .integerValue();
 
         switch (elrondConfig.EGLDIdentifier) {
