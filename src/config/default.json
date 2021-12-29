@@ -200,7 +200,7 @@
                                 "buybackAndBurn": 39000000
                             }
                         },
-                        "claimRewards": 18500000
+                        "claimRewards": 21000000
                     },
                     "lockedRewards": {
                         "exitFarm": {
@@ -211,7 +211,7 @@
                                 "buybackAndBurn": 48000000
                             }
                         },
-                        "claimRewards": 18500000
+                        "claimRewards": 27500000
                     },
                     "customRewards": {
                         "exitFarm": {
@@ -222,7 +222,7 @@
                                 "buybackAndBurn": 39000000
                             }
                         },
-                        "claimRewards": 18500000
+                        "claimRewards": 20700000
                     }
                 },
                 "defaultMergeWFMT": 20000000
