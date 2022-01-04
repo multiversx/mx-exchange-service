@@ -124,6 +124,21 @@ export class MetricsController {
         }
     }
 
+    @Get('/events/:address/:event/count')
+    async getFarmEvents(
+        @Param('address') address: string,
+        @Param('event') event: string,
+    ): Promise<number> {
+        try {
+            return await this.metricsService.computeEventsCount(address, event);
+        } catch {
+            throw new HttpException(
+                'Failed to compute farm events',
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
     @Get('/farm/:address/uniqueuserscount')
     async getFarmUniqueUsersCount(
         @Param('address') address: string,
