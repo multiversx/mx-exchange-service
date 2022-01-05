@@ -102,12 +102,7 @@ export class TransactionsFarmService {
             );
         }
         const gasLimit = await this.getExitFarmGasLimit(args);
-        return this.SftFarmInteraction(
-            sender,
-            args,
-            'exitFarm',
-            gasLimit + gasConfig.lockedAssetCreate,
-        );
+        return this.SftFarmInteraction(sender, args, 'exitFarm', gasLimit);
     }
 
     async claimRewards(
