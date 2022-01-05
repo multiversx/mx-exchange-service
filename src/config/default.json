@@ -137,7 +137,7 @@
                     "exitFarm": {
                         "default": 15300000,
                         "withPenalty": {
-                            "localBurn": 21000000,
+                            "localBurn": 16000000,
                             "pairBurn": 23000000,
                             "buybackAndBurn": 37300000
                         }
