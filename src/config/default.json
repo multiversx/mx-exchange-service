@@ -78,7 +78,7 @@
             "addLiquidity": 8300000,
             "removeLiquidity": 7700000,
             "swapTokensFixedInput": {
-                "default": 8200000,
+                "default": 8400000,
                 "withFeeSwap": 16500000
             },
             "swapTokensFixedOutput": {
@@ -193,7 +193,7 @@
                     "compoundRewards": 21600000,
                     "unlockedRewards": {
                         "exitFarm": {
-                            "default": 15000000,
+                            "default": 17500000,
                             "withPenalty": {
                                 "localBurn": 19000000,
                                 "pairBurn": 25500000,
@@ -204,7 +204,7 @@
                     },
                     "lockedRewards": {
                         "exitFarm": {
-                            "default": 15000000,
+                            "default": 24000000,
                             "withPenalty": {
                                 "localBurn": 26000000,
                                 "pairBurn": 32000000,
@@ -232,7 +232,8 @@
         "claimLockedAssets": 45500000,
         "unlockAssets": 17500000,
         "defaultMergeLockedAssets": 10000000,
-        "lockedAssetMerge": 2000000
+        "lockedAssetMerge": 2000000,
+        "lockedAssetCreate": 5000000
     },
     "abi": {
         "router": "./src/abis/router.abi.json",

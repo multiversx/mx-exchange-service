@@ -125,11 +125,15 @@ export class TransactionsFarmService {
                     : FarmRewardType.UNLOCKED_REWARDS
                 : farmType(args.farmAddress);
 
+        const lockedAssetCreateGas =
+            type === FarmRewardType.LOCKED_REWARDS
+                ? gasConfig.lockedAssetCreate
+                : 0;
         return this.SftFarmInteraction(
             sender,
             args,
             'claimRewards',
-            gasConfig.farms[version][type].claimRewards,
+            gasConfig.farms[version][type].claimRewards + lockedAssetCreateGas,
         );
     }
 
@@ -222,15 +226,20 @@ export class TransactionsFarmService {
                     ? FarmRewardType.LOCKED_REWARDS
                     : FarmRewardType.UNLOCKED_REWARDS
                 : farmType(args.farmAddress);
+        const lockedAssetCreateGas =
+            type === FarmRewardType.LOCKED_REWARDS
+                ? gasConfig.lockedAssetCreate
+                : 0;
         const [farmedTokenID, farmingTokenID] = await Promise.all([
             this.farmGetterService.getFarmedTokenID(args.farmAddress),
             this.farmGetterService.getFarmingTokenID(args.farmAddress),
         ]);
 
         if (farmedTokenID === farmingTokenID) {
-            return args.withPenalty
+            const gasLimit = args.withPenalty
                 ? gasConfig.farms[version][type].exitFarm.withPenalty.localBurn
                 : gasConfig.farms[version][type].exitFarm.default;
+            return gasLimit + lockedAssetCreateGas;
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
@@ -241,16 +250,19 @@ export class TransactionsFarmService {
             const trustedSwapPairs = await this.pairGetterService.getTrustedSwapPairs(
                 pairAddress,
             );
-            return args.withPenalty
+            const gasLimit = args.withPenalty
                 ? trustedSwapPairs.length > 0
                     ? gasConfig.farms[version][type].exitFarm.withPenalty
                           .buybackAndBurn
                     : gasConfig.farms[version][type].exitFarm.withPenalty
                           .pairBurn
                 : gasConfig.farms[version][type].exitFarm.default;
+            return gasLimit + lockedAssetCreateGas;
         }
-        return args.withPenalty
+
+        const gasLimit = args.withPenalty
             ? gasConfig.farms[version][type].exitFarm.withPenalty.localBurn
             : gasConfig.farms[version][type].exitFarm.default;
+        return gasLimit + lockedAssetCreateGas;
     }
 }
