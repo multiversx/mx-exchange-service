@@ -76,6 +76,7 @@ export class FarmCacheWarmerService {
                 burnedToken,
                 aprMultiplier,
                 state,
+                produceRewardsEnabled,
             ] = await Promise.all([
                 this.abiFarmService.getMinimumFarmingEpochs(farmAddress),
                 this.abiFarmService.getPenaltyPercent(farmAddress),
@@ -86,6 +87,7 @@ export class FarmCacheWarmerService {
                 ),
                 this.abiFarmService.getLockedRewardAprMuliplier(farmAddress),
                 this.abiFarmService.getState(farmAddress),
+                this.abiFarmService.getProduceRewardsEnabled(farmAddress),
             ]);
 
             const cacheKeys = await Promise.all([
@@ -111,6 +113,10 @@ export class FarmCacheWarmerService {
                     aprMultiplier,
                 ),
                 this.farmSetterService.setState(farmAddress, state),
+                this.farmSetterService.setProduceRewardsEnabled(
+                    farmAddress,
+                    produceRewardsEnabled,
+                ),
             ]);
             this.invalidatedKeys.push(cacheKeys);
             await this.deleteCacheKeys();
