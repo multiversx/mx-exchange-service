@@ -31,7 +31,7 @@ export class LogsProcessorService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    @Cron(CronExpression.EVERY_10_SECONDS)
+    @Cron(CronExpression.EVERY_MINUTE)
     async handleNewLogs() {
         if (this.isProcessing) {
             return;
