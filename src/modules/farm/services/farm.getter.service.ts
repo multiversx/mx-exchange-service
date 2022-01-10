@@ -117,6 +117,15 @@ export class FarmGetterService {
         );
     }
 
+    async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
+        return this.getData(
+            farmAddress,
+            'produceRewardsEnabled',
+            () => this.abiService.getProduceRewardsEnabled(farmAddress),
+            oneMinute() * 2,
+        );
+    }
+
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,

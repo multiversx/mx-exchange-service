@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
-import { farmsAddresses } from 'src/utils/farm.utils';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 
 @Injectable()
@@ -86,6 +85,18 @@ export class FarmSetterService {
     async setState(farmAddress: string, value: string): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, 'state');
         await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setProduceRewardsEnabled(
+        farmAddress: string,
+        value: boolean,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(
+            farmAddress,
+            'produceRewardsEnabled',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneMinute() * 2);
         return cacheKey;
     }
 

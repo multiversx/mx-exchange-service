@@ -12,11 +12,13 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import { FarmRewardType, FarmVersion } from '../models/farm.model';
+import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 
 @Injectable()
 export class AbiFarmService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
+        private readonly gatewayService: ElrondGatewayService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -256,5 +258,13 @@ export class AbiFarmService {
         ]);
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
+    }
+
+    async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
+        const response = await this.gatewayService.getSCStorageKey(
+            farmAddress,
+            'produce_rewards_enabled',
+        );
+        return response === '01';
     }
 }
