@@ -67,6 +67,9 @@ export class FarmModel {
     farmingTokenPriceUSD: string;
 
     @Field()
+    produceRewardsEnabled: boolean;
+
+    @Field()
     perBlockRewards: string;
 
     @Field()
