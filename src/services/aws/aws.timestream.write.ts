@@ -116,6 +116,17 @@ export class AWSTimestreamWriteService {
         await this.writeRecords({ TableName, Records });
     }
 
+    async multiRecordsIngest(
+        TableName: string,
+        Records: TimestreamWrite.Records,
+    ) {
+        if (!(await this.describeTable({ TableName }))) {
+            await this.createTable({ TableName });
+        }
+
+        await this.writeRecords({ TableName, Records });
+    }
+
     private printRejectedRecordsException(request, Records) {
         const responsePayload = JSON.parse(
             request.response.httpResponse.body.toString(),
