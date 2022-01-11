@@ -39,26 +39,12 @@ export class LogsProcessorService {
 
         try {
             this.isProcessing = true;
-            let lastProcessedTimestamp: number = await this.cachingService.getCache(
-                'lastLogProcessedTimestamp',
-            );
 
-            let currentTimestamp: number;
-
-            if (lastProcessedTimestamp === null) {
-                lastProcessedTimestamp =
-                    (await this.apiService.getShardTimestamp(1)) - oneMinute();
-                currentTimestamp = lastProcessedTimestamp;
-            } else {
-                currentTimestamp =
-                    (await this.apiService.getShardTimestamp(1)) - oneMinute();
-            }
-
-            if (currentTimestamp === lastProcessedTimestamp) {
-                await this.cachingService.setCache(
-                    'lastLogProcessedTimestamp',
-                    currentTimestamp,
-                );
+            const [
+                lastProcessedTimestamp,
+                currentTimestamp,
+            ] = await this.getProcessingInterval(oneMinute());
+            if (lastProcessedTimestamp === currentTimestamp) {
                 return;
             }
 
@@ -83,6 +69,34 @@ export class LogsProcessorService {
         } finally {
             this.isProcessing = false;
         }
+    }
+
+    private async getProcessingInterval(
+        delay: number,
+    ): Promise<[number, number]> {
+        let lastProcessedTimestamp: number = await this.cachingService.getCache(
+            'lastLogProcessedTimestamp',
+        );
+
+        let currentTimestamp: number;
+
+        if (lastProcessedTimestamp === null) {
+            lastProcessedTimestamp =
+                (await this.apiService.getShardTimestamp(1)) - delay;
+            currentTimestamp = lastProcessedTimestamp;
+        } else {
+            currentTimestamp =
+                (await this.apiService.getShardTimestamp(1)) - delay;
+        }
+
+        if (currentTimestamp === lastProcessedTimestamp) {
+            await this.cachingService.setCache(
+                'lastLogProcessedTimestamp',
+                currentTimestamp,
+            );
+        }
+
+        return [lastProcessedTimestamp, currentTimestamp];
     }
 
     private async getFeeBurned(gte: number, lte: number) {
