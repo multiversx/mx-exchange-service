@@ -10,18 +10,21 @@ import { Logger } from 'winston';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class ElrondApiService {
     private readonly apiProvider: ApiProvider;
     constructor(
+        private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         const keepAliveOptions = {
             maxSockets: elrondConfig.keepAliveMaxSockets,
             maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
-            timeout: elrondConfig.keepAliveTimeout,
+            timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
             freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            keepAlive: true,
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
@@ -154,9 +157,31 @@ export class ElrondApiService {
     }
 
     async getCurrentBlockNonce(shardId: number): Promise<number> {
-        return this.doGetGeneric(
+        const latestBlock = await this.doGetGeneric(
             this.getCurrentNonce.name,
-            `blocks/count?shard=${shardId}`,
+            `blocks?size=1&shard=${shardId}`,
+            response => response,
+        );
+        return latestBlock[0].nonce;
+    }
+
+    async getShardTimestamp(shardId: number): Promise<number> {
+        const latestShardBlock = await this.doGetGeneric(
+            this.getShardTimestamp.name,
+            `blocks?from=0&size=1&shard=${shardId}`,
+            response => response,
+        );
+        return latestShardBlock[0].timestamp;
+    }
+
+    async getTransactions(
+        after: number,
+        before: number,
+        receiverShard: number,
+    ): Promise<any> {
+        return await this.doGetGeneric(
+            this.getTransactions.name,
+            `transactions?receiverShard=${receiverShard}&after=${after}&before=${before}`,
             response => response,
         );
     }

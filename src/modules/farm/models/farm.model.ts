@@ -1,7 +1,21 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { EsdtToken } from '../../../models/tokens/esdtToken.model';
 import { NftCollection } from '../../../models/tokens/nftCollection.model';
 import { FarmTokenAttributesModel } from './farmTokenAttributes.model';
+
+export enum FarmVersion {
+    V1_2 = 'v1.2',
+    V1_3 = 'v1.3',
+}
+
+export enum FarmRewardType {
+    UNLOCKED_REWARDS = 'unlockedRewards',
+    LOCKED_REWARDS = 'lockedRewards',
+    CUSTOM_REWARDS = 'customRewards',
+}
+
+registerEnumType(FarmVersion, { name: 'FarmVersion' });
+registerEnumType(FarmRewardType, { name: 'FarmRewardType' });
 
 @ObjectType()
 export class RewardsModel {
@@ -58,7 +72,7 @@ export class FarmModel {
     @Field()
     farmTokenSupply: string;
 
-    @Field()
+    @Field({ nullable: true })
     farmingTokenReserve: string;
 
     @Field(() => Int)
@@ -73,20 +87,53 @@ export class FarmModel {
     @Field(() => Int)
     lastRewardBlockNonce: number;
 
-    @Field()
+    @Field({ nullable: true })
     undistributedFees: string;
 
-    @Field()
+    @Field({ nullable: true })
     currentBlockFee: string;
 
     @Field()
     divisionSafetyConstant: string;
 
+    @Field(() => Int, { nullable: true })
+    aprMultiplier: number;
+
+    @Field({ nullable: true })
+    apr: string;
+
+    @Field({ nullable: true })
+    lockedRewardsAPR: string;
+
+    @Field({ nullable: true })
+    unlockedRewardsAPR: string;
+
     @Field()
-    APR: string;
+    totalValueLockedUSD: string;
+
+    @Field({ nullable: true })
+    lockedFarmingTokenReserveUSD: string;
+
+    @Field({ nullable: true })
+    unlockedFarmingTokenReserveUSD: string;
+
+    @Field({ nullable: true })
+    lockedFarmingTokenReserve: string;
+
+    @Field({ nullable: true })
+    unlockedFarmingTokenReserve: string;
 
     @Field()
     state: string;
+
+    @Field({ nullable: true })
+    requireWhitelist: boolean;
+
+    @Field()
+    version: FarmVersion;
+
+    @Field({ nullable: true })
+    rewardType: FarmRewardType;
 
     constructor(init?: Partial<FarmModel>) {
         Object.assign(this, init);

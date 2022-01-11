@@ -13,20 +13,21 @@ import { promisify } from 'util';
 import { cacheConfig } from '../../config';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { ApiConfigService } from '../../helpers/api.config.service';
-import { createClient, RedisClient } from 'redis';
+import * as Redis from 'ioredis';
 
 @Injectable()
 export class CachingService {
-    private client = this.configService.getRedisPassword()
-        ? createClient(
-              this.configService.getRedisPort(),
-              this.configService.getRedisUrl(),
-          )
-        : createClient(
-              this.configService.getRedisPort(),
-              this.configService.getRedisUrl(),
-              { password: this.configService.getRedisPassword() },
-          );
+    private options: Redis.RedisOptions = {
+        host: this.configService.getRedisUrl(),
+        port: this.configService.getRedisPort(),
+        password: this.configService.getRedisPassword(),
+        retryStrategy(times) {
+            const delay = Math.min(times * 50, 5000);
+            return delay;
+        },
+        enableAutoPipelining: true,
+    };
+    private client = new Redis.default(this.options);
     private static cache: Cache;
     private asyncSet = promisify(this.getClient().set).bind(this.getClient());
     private asyncGet = promisify(this.getClient().get).bind(this.getClient());
@@ -45,7 +46,7 @@ export class CachingService {
         CachingService.cache = this.cache;
     }
 
-    getClient(): RedisClient {
+    getClient(): Redis.Redis {
         return this.client;
     }
 

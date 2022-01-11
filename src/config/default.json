@@ -12,28 +12,41 @@
         "keepAliveMaxFreeSockets": 10
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqwkrxc5gveu3zxldpuex90v622f8t8pes2jpsfpvl0f",
-        "MEX-45ebaa": "erd1qqqqqqqqqqqqqpgqr82hqynfa7e2hvg4e4kyekuhy9j2739m2jpspjljhd",
-        "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqq0utpwehuwen54y5a2ev4r08j4gthy962jps0vpx2l",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqjpt0qqgsrdhp2xqygpjtfrpwf76f9nvg2jpsg4q7th",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgq4axqc749vuqr27snr8d8qgvlmz44chsr0n4sm4a72g",
+        "MEX-c751d6": "erd1qqqqqqqqqqqqqpgqum3tp4paqxt3snyfj3a5qj37tr9umv970n4s0kv06c",
+        "distributionAddress": "erd1qqqqqqqqqqqqqpgq29s98mhxwyknmxcpdtdx6nm0wkvnkvwe0n4sjpdhyq",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqfmzfhlp7ae006vj85mr4pt3xsep0hfn00n4sur83jm",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnhlmwqvpt0r3uurlyg2p2f4q33q05cut0n4s325q26",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
-            "shardID-1": "erd1qqqqqqqqqqqqqpgqmcmcerf4phjqglgfghsswe5a2ylecd8v0n4szcj3pe",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqj5x0hg6l2e7526e6afv9w5twslsvyhk70n4snt3xsy",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         }
     },
-    "tokenProviderUSD": "WUSDC-067a5e",
+    "tokenProviderUSD": "USDC-72a225",
     "priceFeeds": {
-        "WUSDC-067a5e": "busd"
+        "USDC-72a225": "usdc"
     },
-    "tokensSupply": ["MEX-45ebaa"],
-    "cachedTokensPrice": ["MEX-45ebaa"],
-    "farms": [
-        "erd1qqqqqqqqqqqqqpgq3kvuacqw9thy6jttskvq8xxu7h4f8c6v2jpsptvnf9",
-        "erd1qqqqqqqqqqqqqpgqy62ntx752n6jl42ecvap90ad79cgazqc2jps2au88m",
-        "erd1qqqqqqqqqqqqqpgqztxqkfp47p2maveng4rmnkvu7286kpdj2jpsgj7p4k"
-    ],
+    "tokensSupply": ["MEX-c751d6"],
+    "cachedTokensPrice": ["MEX-c751d6"],
+    "farms": {
+        "v1.2": [
+            "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
+            "erd1qqqqqqqqqqqqqpgq6w2n335mupvrzjvl6pgnvxcxerggztuy0n4s8zvd23",
+            "erd1qqqqqqqqqqqqqpgqup689rhdkf5nu5nh3cancfjag9fnf59n0n4sxf8uh0"
+        ],
+        "v1.3": {
+            "unlockedRewards": [
+                "erd1qqqqqqqqqqqqqpgq8yyy8r89qy6u020nhmu7xkh83mzzf6rj0n4stc7gh4"
+            ],
+            "lockedRewards": [
+                "erd1qqqqqqqqqqqqqpgq959js8gr657c5nymayugwc4c4uuutrxd0n4stfcthk"
+            ],
+            "customRewards": [
+                "erd1qqqqqqqqqqqqqpgqafwjnc4xufkuky2yuqql7kdeqaurehnk0n4sudxq26"
+            ]
+        }
+    },
     "caching": {
         "pairsMetadata": 300,
         "pairs": 300,
@@ -48,43 +61,51 @@
         "default": 120
     },
     "gas": {
-        "addLiquidity": 12000000,
-        "removeLiquidity": 11500000,
-        "swapTokens": 21500000,
+        "addLiquidity": 9000000,
+        "removeLiquidity": 8500000,
+        "swapTokens": 18000000,
+        "swapMexTokens": 9000000,
         "createPair": 1400000000,
         "issueToken": 200000000,
         "setLocalRoles": 200000000,
         "setState": 200000000,
         "setFee": 200000000,
-        "addLiquidityProxy": 35000000,
-        "addLiquidityProxyMerge": 55500000,
-        "removeLiquidityProxy": 38500000,
-        "enterFarm": 16500000,
-        "enterFarmMerge": 17500000,
-        "exitFarm": 53000000,
-        "claimRewards": 40500000,
-        "compoundRewards": 16500000,
-        "enterFarmProxy": 36000000,
-        "enterFarmProxyMerge": 83500000,
-        "exitFarmProxy": 61500000,
-        "compoundRewardsProxy": 38000000,
-        "claimRewardsProxy": 55000000,
+        "addLiquidityProxy": 31000000,
+        "addLiquidityProxyMerge": 51500000,
+        "removeLiquidityProxy": 33000000,
+        "enterFarm": 12000000,
+        "enterFarmMerge": 12500000,
+        "exitFarm": 40000000,
+        "claimRewards": 18500000,
+        "compoundRewards": 12500000,
+        "enterFarmProxy": 31000000,
+        "enterFarmProxyMerge": 73000000,
+        "exitFarmProxy": 51000000,
+        "compoundRewardsProxy": 33000000,
+        "claimRewardsProxy": 48000000,
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
         "unlockAssets": 17500000,
         "defaultMergeWLPT": 20000000,
         "defaultMergeWFMT": 20000000,
         "defaultMergeLockedAssets": 10000000,
-        "lockedAssetMerge": 1500000
+        "lockedAssetMerge": 2000000
     },
     "abi": {
         "router": "./src/abis/router.abi.json",
         "pair": "./src/abis/pair.abi.json",
-        "farm": "./src/abis/farm.abi.json",
         "distribution": "./src/abis/distribution.abi.json",
         "lockedAssetFactory": "./src/abis/factory.abi.json",
         "proxy": "./src/abis/proxy-dex.abi.json",
-        "wrap": "./src/abis/egld-esdt-swap.abi.json"
+        "wrap": "./src/abis/egld-esdt-swap.abi.json",
+        "farm": {
+            "v1.2": "./src/abis/v1.2/farm.abi.json",
+            "v1.3": {
+                "unlockedRewards": "./src/abis/v1.3/farm.abi.json",
+                "lockedRewards": "./src/abis/v1.3/farm_with_lock.abi.json",
+                "customRewards": "./src/abis/v1.3/farm_custom_rewards.abi.json"
+            }
+        }
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,
@@ -94,7 +115,27 @@
         "MAX_PENALTY_PERCENT": 10000,
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
-        "MAX_GAS_LIMIT": 750000000
+        "MAX_GAS_LIMIT": 750000000,
+        "MEX_TOKEN_ID": "MEX-c751d6",
+        "MAINTENANCE": false,
+        "endpoints": [
+            "wrapEgld",
+            "unwrapEgld",
+            "swapTokensFixedInput",
+            "swapTokensFixedOutput",
+            "addLiquidity",
+            "addLiquidityProxy",
+            "removeLiquidity",
+            "removeLiquidityProxy",
+            "enterFarm",
+            "exitFarm",
+            "claimRewards",
+            "compoundRewards",
+            "enterFarmProxy",
+            "exitFarmProxy",
+            "claimRewardsProxy",
+            "compoundRewardsProxy"
+        ]
     },
     "security": {
         "admins": []

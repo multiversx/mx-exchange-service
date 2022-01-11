@@ -13,6 +13,7 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairGetterService } from './pair.getter.service';
+import { computeValueUSD } from 'src/utils/token.converters';
 
 @Injectable()
 export class PairService {
@@ -175,6 +176,39 @@ export class PairService {
             firstTokenAmount: firstTokenAmount.toFixed(),
             secondTokenAmount: secondTokenAmount.toFixed(),
         });
+    }
+
+    async getLiquidityPositionUSD(
+        pairAddress: string,
+        amount: string,
+    ): Promise<string> {
+        const [
+            firstToken,
+            secondToken,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+            liquidityPosition,
+        ] = await Promise.all([
+            this.pairGetterService.getFirstToken(pairAddress),
+            this.pairGetterService.getSecondToken(pairAddress),
+            this.pairGetterService.getFirstTokenPriceUSD(pairAddress),
+            this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
+            this.getLiquidityPosition(pairAddress, amount),
+        ]);
+
+        return computeValueUSD(
+            liquidityPosition.firstTokenAmount,
+            firstToken.decimals,
+            firstTokenPriceUSD,
+        )
+            .plus(
+                computeValueUSD(
+                    liquidityPosition.secondTokenAmount,
+                    secondToken.decimals,
+                    secondTokenPriceUSD,
+                ),
+            )
+            .toFixed();
     }
 
     async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {

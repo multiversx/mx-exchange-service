@@ -31,6 +31,13 @@ export class PairServiceMock {
         });
     }
 
+    async getLiquidityPositionUSD(
+        pairAddress: string,
+        amount: string,
+    ): Promise<string> {
+        return amount !== '0' ? '150' : '0';
+    }
+
     async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
         if (!tokensPriceData.has(tokenProviderUSD)) {
             return new BigNumber(0);

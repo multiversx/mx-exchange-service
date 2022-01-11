@@ -7,6 +7,7 @@ import {
     U8Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { FarmVersion } from './farm.model';
 
 @ObjectType()
 export class FarmTokenAttributesModel {
@@ -20,9 +21,9 @@ export class FarmTokenAttributesModel {
     originalEnteringEpoch: number;
     @Field(() => Int)
     enteringEpoch: number;
-    @Field(() => Int)
+    @Field(() => Int, { nullable: true })
     aprMultiplier: number;
-    @Field()
+    @Field({ nullable: true })
     lockedRewards: boolean;
     @Field()
     initialFarmingAmount: string;
@@ -50,21 +51,28 @@ export class FarmTokenAttributesModel {
 
     static fromDecodedAttributes(
         decodedAttributes: any,
+        version: FarmVersion,
     ): FarmTokenAttributesModel {
         return new FarmTokenAttributesModel({
             rewardPerShare: decodedAttributes.rewardPerShare.toString(),
             originalEnteringEpoch: decodedAttributes.originalEnteringEpoch.toNumber(),
             enteringEpoch: decodedAttributes.enteringEpoch.toNumber(),
-            aprMultiplier: decodedAttributes.aprMultiplier.toNumber(),
-            lockedRewards: decodedAttributes.withLockedRewards,
+            aprMultiplier:
+                version === FarmVersion.V1_2
+                    ? decodedAttributes.aprMultiplier.toNumber()
+                    : null,
+            lockedRewards:
+                version === FarmVersion.V1_2
+                    ? decodedAttributes.withLockedRewards
+                    : null,
             initialFarmingAmount: decodedAttributes.initialFarmingAmount.toFixed(),
             compoundedReward: decodedAttributes.compoundedReward.toFixed(),
             currentFarmAmount: decodedAttributes.currentFarmAmount.toFixed(),
         });
     }
 
-    static getStructure(): StructType {
-        return new StructType('FarmTokenAttributes', [
+    static getStructure(version: FarmVersion): StructType {
+        const structType = new StructType('FarmTokenAttributes', [
             new StructFieldDefinition('rewardPerShare', '', new BigUIntType()),
             new StructFieldDefinition(
                 'originalEnteringEpoch',
@@ -72,12 +80,6 @@ export class FarmTokenAttributesModel {
                 new U64Type(),
             ),
             new StructFieldDefinition('enteringEpoch', '', new U64Type()),
-            new StructFieldDefinition('aprMultiplier', '', new U8Type()),
-            new StructFieldDefinition(
-                'withLockedRewards',
-                '',
-                new BooleanType(),
-            ),
             new StructFieldDefinition(
                 'initialFarmingAmount',
                 '',
@@ -94,5 +96,23 @@ export class FarmTokenAttributesModel {
                 new BigUIntType(),
             ),
         ]);
+        if (version === FarmVersion.V1_2) {
+            structType.fields.splice(
+                3,
+                0,
+                new StructFieldDefinition('aprMultiplier', '', new U8Type()),
+            );
+            structType.fields.splice(
+                4,
+                0,
+                new StructFieldDefinition(
+                    'withLockedRewards',
+                    '',
+                    new BooleanType(),
+                ),
+            );
+        }
+
+        return structType;
     }
 }

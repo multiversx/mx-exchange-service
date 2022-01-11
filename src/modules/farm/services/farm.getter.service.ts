@@ -90,6 +90,15 @@ export class FarmGetterService {
         return this.contextGetter.getTokenMetadata(farmingTokenID);
     }
 
+    async getWhitelist(farmAddress: string): Promise<string[]> {
+        return await this.getData(
+            farmAddress,
+            'whitelist',
+            () => this.abiService.getWhitelist(farmAddress),
+            oneHour(),
+        );
+    }
+
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,
@@ -122,7 +131,7 @@ export class FarmGetterService {
             farmAddress,
             'penaltyPercent',
             () => this.abiService.getPenaltyPercent(farmAddress),
-            oneHour(),
+            oneMinute(),
         );
     }
 
@@ -140,7 +149,7 @@ export class FarmGetterService {
             farmAddress,
             'state',
             () => this.abiService.getState(farmAddress),
-            oneHour(),
+            oneMinute(),
         );
     }
 
@@ -189,6 +198,15 @@ export class FarmGetterService {
         );
     }
 
+    async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
+        return this.getData(
+            farmAddress,
+            'aprMultiplier',
+            () => this.abiService.getLockedRewardAprMuliplier(farmAddress),
+            oneMinute(),
+        );
+    }
+
     async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
         return this.getData(
             farmAddress,
@@ -207,6 +225,106 @@ export class FarmGetterService {
             farmAddress,
             'farmingTokenPriceUSD',
             () => this.computeService.computeFarmingTokenPriceUSD(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getLockedFarmingTokenReserve(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'lockedFarmingTokenReserve',
+            () =>
+                this.computeService.computeLockedFarmingTokenReserve(
+                    farmAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getUnlockedFarmingTokenReserve(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'unlockedFarmingTokenReserve',
+            () =>
+                this.computeService.computeUnlockedFarmingTokenReserve(
+                    farmAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getTotalValueLockedUSD(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'totalValueLockedUSD',
+            () => this.computeService.computeFarmLockedValueUSD(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getLockedFarmingTokenReserveUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'lockedFarmingTokenReserveUSD',
+            () =>
+                this.computeService.computeLockedFarmingTokenReserveUSD(
+                    farmAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getUnlockedFarmingTokenReserveUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'unlockedFarmingTokenReserveUSD',
+            () =>
+                this.computeService.computeUnlockedFarmingTokenReserveUSD(
+                    farmAddress,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getUnlockedRewardsAPR(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'unlockedRewardsAPR',
+            () => this.computeService.computeUnlockedRewardsAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getLockedRewardsAPR(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'lockedRewardsAPR',
+            () => this.computeService.computeLockedRewardsAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getFarmAPR(farmAddress: string): Promise<string> {
+        return await this.getData(
+            farmAddress,
+            'farmAPR',
+            () => this.computeService.computeFarmAPR(farmAddress),
+            oneMinute(),
+        );
+    }
+
+    async getBurnedTokenAmount(
+        farmAddress: string,
+        tokenID: string,
+    ): Promise<string> {
+        return this.getData(
+            farmAddress,
+            `${tokenID}.burnedTokenAmount`,
+            () => this.abiService.getBurnedTokenAmount(farmAddress, tokenID),
             oneMinute(),
         );
     }

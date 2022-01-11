@@ -67,7 +67,7 @@ describe('PairService', () => {
 
     it('should get token price in USD from simple path', async () => {
         const tokenPriceUSD = await service.computeTokenPriceUSD('TOK3-3333');
-        expect(tokenPriceUSD.toFixed()).toEqual('100');
+        expect(tokenPriceUSD.toFixed()).toEqual('1');
     });
 
     it('should get token price in USD from multiple path', async () => {

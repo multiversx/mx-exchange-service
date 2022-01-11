@@ -1,5 +1,5 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityProxyArgs,
@@ -11,14 +11,14 @@ import {
     EnterFarmProxyArgs,
     ExitFarmProxyArgs,
 } from './models/proxy-farm.args';
-import { ProxyPairService } from './proxy-pair/proxy-pair.service';
+import { ProxyPairGetterService } from './services/proxy-pair/proxy-pair.getter.service';
 import { ProxyModel } from './models/proxy.model';
 import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
 import { WrappedFarmTokenAttributesModel } from './models/wrappedFarmTokenAttributes.model';
-import { ProxyFarmService } from './proxy-farm/proxy-farm.service';
-import { TransactionsProxyPairService } from './proxy-pair/proxy-pair-transactions.service';
-import { TransactionsProxyFarmService } from './proxy-farm/proxy-farm-transactions.service';
-import { ProxyService } from './proxy.service';
+import { ProxyFarmGetterService } from './services/proxy-farm/proxy-farm.getter.service';
+import { TransactionsProxyPairService } from './services/proxy-pair/proxy-pair-transactions.service';
+import { TransactionsProxyFarmService } from './services/proxy-farm/proxy-farm-transactions.service';
+import { ProxyService } from './services/proxy.service';
 import { DecodeAttributesArgs } from './models/proxy.args';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
@@ -26,24 +26,23 @@ import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
+import { ProxyGetterService } from './services/proxy.getter.service';
 
 @Resolver(() => ProxyModel)
 export class ProxyResolver {
     constructor(
-        @Inject(ProxyService) private proxyService: ProxyService,
-        @Inject(ProxyPairService) private proxyPairService: ProxyPairService,
-        @Inject(ProxyFarmService)
-        private proxyFarmService: ProxyFarmService,
-        @Inject(TransactionsProxyPairService)
-        private transactionsProxyPairService: TransactionsProxyPairService,
-        @Inject(TransactionsProxyFarmService)
-        private transactionsProxyFarmService: TransactionsProxyFarmService,
+        private readonly proxyService: ProxyService,
+        private readonly proxyGetter: ProxyGetterService,
+        private readonly proxyPairGetter: ProxyPairGetterService,
+        private readonly proxyFarmGetter: ProxyFarmGetterService,
+        private readonly transactionsProxyPairService: TransactionsProxyPairService,
+        private readonly transactionsProxyFarmService: TransactionsProxyFarmService,
     ) {}
 
     @ResolveField()
     async wrappedLpToken(): Promise<NftCollection> {
         try {
-            return await this.proxyPairService.getwrappedLpToken();
+            return await this.proxyPairGetter.getwrappedLpToken();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -52,7 +51,7 @@ export class ProxyResolver {
     @ResolveField()
     async wrappedFarmToken(): Promise<NftCollection> {
         try {
-            return await this.proxyFarmService.getwrappedFarmToken();
+            return await this.proxyFarmGetter.getwrappedFarmToken();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -61,7 +60,7 @@ export class ProxyResolver {
     @ResolveField()
     async assetToken(): Promise<EsdtToken> {
         try {
-            return await this.proxyService.getAssetToken();
+            return await this.proxyGetter.getAssetToken();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -70,7 +69,7 @@ export class ProxyResolver {
     @ResolveField()
     async lockedAssetToken(): Promise<NftCollection> {
         try {
-            return await this.proxyService.getlockedAssetToken();
+            return await this.proxyGetter.getlockedAssetToken();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -79,7 +78,7 @@ export class ProxyResolver {
     @ResolveField()
     async intermediatedPairs(): Promise<string[]> {
         try {
-            return await this.proxyPairService.getIntermediatedPairs();
+            return await this.proxyPairGetter.getIntermediatedPairs();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -88,7 +87,7 @@ export class ProxyResolver {
     @ResolveField()
     async intermediatedFarms(): Promise<string[]> {
         try {
-            return await this.proxyFarmService.getIntermediatedFarms();
+            return await this.proxyFarmGetter.getIntermediatedFarms();
         } catch (error) {
             throw new ApolloError(error);
         }

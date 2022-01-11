@@ -25,11 +25,12 @@ import { SwapFixedOutputEvent } from './entities/pair/swapFixedOutput.event';
 import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
-import { farmsConfig, scAddress } from 'src/config';
+import { scAddress } from 'src/config';
 import { ContextService } from 'src/services/context/context.service';
 import { EsdtLocalBurnEvent } from './entities/esdtToken/esdtLocalBurn.event';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { EsdtLocalMintEvent } from './entities/esdtToken/esdtLocalMint.event';
+import { farmsAddresses } from 'src/utils/farm.utils';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -60,6 +61,9 @@ export class RabbitMqConsumer {
         );
 
         for (const rawEvent of events) {
+            if (rawEvent.data === '') {
+                continue;
+            }
             switch (rawEvent.identifier) {
                 case PAIR_EVENTS.SWAP_FIXED_INPUT:
                     await this.wsPairHandler.handleSwapEvent(
@@ -79,11 +83,6 @@ export class RabbitMqConsumer {
                 case PAIR_EVENTS.REMOVE_LIQUIDITY:
                     await this.wsPairHandler.handleLiquidityEvent(
                         new RemoveLiquidityEvent(rawEvent),
-                    );
-                    break;
-                case PAIR_EVENTS.SWAP_NO_FEE:
-                    await this.wsPairHandler.handleSwapNoFeeEvent(
-                        new SwapNoFeeEvent(rawEvent),
                     );
                     break;
                 case FARM_EVENTS.ENTER_FARM:
@@ -152,7 +151,7 @@ export class RabbitMqConsumer {
 
     async getFilterAddresses(): Promise<void> {
         this.filterAddresses = await this.context.getAllPairsAddress();
-        this.filterAddresses.push(...farmsConfig);
+        this.filterAddresses.push(...farmsAddresses());
         this.filterAddresses.push(scAddress.proxyDexAddress);
     }
 }

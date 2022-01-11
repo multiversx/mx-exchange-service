@@ -1,16 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { cacheConfig, farmsConfig } from '../../config';
-import { FarmStatisticsService } from 'src/modules/farm/services/farm-statistics.service';
+import { cacheConfig, constantsConfig } from '../../config';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { AbiFarmService } from 'src/modules/farm/services/abi-farm.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
-import { oneHour, oneMinute } from '../../helpers/helpers';
+import { oneHour } from '../../helpers/helpers';
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { FarmSetterService } from 'src/modules/farm/services/farm.setter.service';
+import { farmsAddresses } from 'src/utils/farm.utils';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -20,7 +20,6 @@ export class FarmCacheWarmerService {
         private readonly abiFarmService: AbiFarmService,
         private readonly farmSetterService: FarmSetterService,
         private readonly farmComputeService: FarmComputeService,
-        private readonly farmStatisticsService: FarmStatisticsService,
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -28,7 +27,7 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_MINUTES)
     async cacheFarms(): Promise<void> {
-        const farmsAddress: string[] = farmsConfig;
+        const farmsAddress: string[] = farmsAddresses();
         const promises = farmsAddress.map(async farmAddress => {
             const [
                 farmTokenID,
@@ -69,16 +68,23 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheFarmInfo(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             const [
                 minimumFarmingEpochs,
                 penaltyPercent,
                 rewardsPerBlock,
+                burnedToken,
+                aprMultiplier,
                 state,
             ] = await Promise.all([
                 this.abiFarmService.getMinimumFarmingEpochs(farmAddress),
                 this.abiFarmService.getPenaltyPercent(farmAddress),
                 this.abiFarmService.getRewardsPerBlock(farmAddress),
+                this.abiFarmService.getBurnedTokenAmount(
+                    farmAddress,
+                    constantsConfig.MEX_TOKEN_ID,
+                ),
+                this.abiFarmService.getLockedRewardAprMuliplier(farmAddress),
                 this.abiFarmService.getState(farmAddress),
             ]);
 
@@ -95,6 +101,15 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     rewardsPerBlock,
                 ),
+                this.farmSetterService.setBurnedTokenAmount(
+                    farmAddress,
+                    constantsConfig.MEX_TOKEN_ID,
+                    burnedToken,
+                ),
+                this.farmSetterService.setLockedRewardAprMuliplier(
+                    farmAddress,
+                    aprMultiplier,
+                ),
                 this.farmSetterService.setState(farmAddress, state),
             ]);
             this.invalidatedKeys.push(cacheKeys);
@@ -104,7 +119,7 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmReserves(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             const [
                 farmingTokenReserve,
                 farmTokenSupply,
@@ -153,15 +168,23 @@ export class FarmCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheFarmTokensPrices(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             const [
                 farmedTokenPriceUSD,
                 farmingTokenPriceUSD,
+                totalValueLockedUSD,
+                unlockedRewardsAPR,
+                lockedRewardsAPR,
+                apr,
             ] = await Promise.all([
                 this.farmComputeService.computeFarmedTokenPriceUSD(farmAddress),
                 this.farmComputeService.computeFarmingTokenPriceUSD(
                     farmAddress,
                 ),
+                this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
+                this.farmComputeService.computeUnlockedRewardsAPR(farmAddress),
+                this.farmComputeService.computeLockedRewardsAPR(farmAddress),
+                this.farmComputeService.computeFarmAPR(farmAddress),
             ]);
             const cacheKeys = await Promise.all([
                 this.farmSetterService.setFarmedTokenPriceUSD(
@@ -172,26 +195,21 @@ export class FarmCacheWarmerService {
                     farmAddress,
                     farmingTokenPriceUSD,
                 ),
+                this.farmSetterService.setTotalValueLockedUSD(
+                    farmAddress,
+                    totalValueLockedUSD,
+                ),
+                this.farmSetterService.setUnlockedRewardsAPR(
+                    farmAddress,
+                    unlockedRewardsAPR,
+                ),
+                this.farmSetterService.setLockedRewardsAPR(
+                    farmAddress,
+                    lockedRewardsAPR,
+                ),
+                this.farmSetterService.setFarmAPR(farmAddress, apr),
             ]);
             this.invalidatedKeys.push(cacheKeys);
-            await this.deleteCacheKeys();
-        }
-    }
-
-    @Cron('*/45 * * * * *')
-    async cacheApr(): Promise<void> {
-        for (const farmAddress of farmsConfig) {
-            const apr = await this.farmStatisticsService.computeFarmAPR(
-                farmAddress,
-            );
-            const cacheKey = generateCacheKeyFromParams(
-                'farmStatistics',
-                farmAddress,
-                'apr',
-            );
-
-            await this.cachingService.setCache(cacheKey, apr, oneMinute());
-            this.invalidatedKeys.push(cacheKey);
             await this.deleteCacheKeys();
         }
     }

@@ -1,11 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { farmsConfig } from '../../config';
 import { PriceFeedService } from '../../services/price-feed/price-feed.service';
 import { FarmService } from '../farm/services/farm.service';
 import { NftToken } from '../../models/tokens/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyFarmService } from '../proxy/proxy-farm/proxy-farm.service';
-import { ProxyPairService } from '../proxy/proxy-pair/proxy-pair.service';
+import { ProxyFarmGetterService } from '../proxy/services/proxy-farm/proxy-farm.getter.service';
+import { ProxyPairGetterService } from '../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
@@ -22,10 +21,11 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
-import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PaginationArgs } from '../dex.model';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
+import { computeValueUSD } from 'src/utils/token.converters';
+import { farmsAddresses } from 'src/utils/farm.utils';
 
 type EsdtTokenDetails = {
     priceUSD: string;
@@ -51,11 +51,10 @@ export class UserService {
         private apiService: ElrondApiService,
         private cachingService: CachingService,
         private pairService: PairService,
-        private pairGetterService: PairGetterService,
         private pairComputeService: PairComputeService,
         private priceFeed: PriceFeedService,
-        private proxyPairService: ProxyPairService,
-        private proxyFarmService: ProxyFarmService,
+        private proxyPairGetter: ProxyPairGetterService,
+        private proxyFarmGetter: ProxyFarmGetterService,
         private farmService: FarmService,
         private farmGetterService: FarmGetterService,
         private lockedAssetGetter: LockedAssetGetterService,
@@ -83,22 +82,10 @@ export class UserService {
         }
 
         const promises = userPairEsdtTokens.map(async token => {
-            const esdtTokenDetails = await this.getEsdtTokenDetails(
-                token.identifier,
-            );
-            const denominator = new BigNumber(`1e-${token.decimals}`);
-            const valueUSD = new BigNumber(token.balance)
-                .multipliedBy(denominator)
-                .multipliedBy(new BigNumber(esdtTokenDetails.priceUSD))
-                .toFixed();
-            return {
-                ...token,
-                type: esdtTokenDetails.type,
-                valueUSD: valueUSD,
-            };
+            return await this.getEsdtTokenDetails(token);
         });
-
-        return await Promise.all(promises);
+        const tokens = await Promise.all(promises);
+        return tokens;
     }
 
     async getAllNftTokens(
@@ -184,27 +171,32 @@ export class UserService {
         return await Promise.all(promises);
     }
 
-    private async getEsdtTokenDetails(
-        tokenID: string,
-    ): Promise<EsdtTokenDetails> {
+    private async getEsdtTokenDetails(token: UserToken): Promise<UserToken> {
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            tokenID,
+            token.identifier,
         );
         if (pairAddress) {
-            const tokenPriceUSD = await this.pairGetterService.getLpTokenPriceUSD(
+            const valueUSD = await this.pairService.getLiquidityPositionUSD(
                 pairAddress,
+                token.balance,
             );
             return {
+                ...token,
                 type: EsdtTokenType.FungibleLpToken,
-                priceUSD: tokenPriceUSD,
+                valueUSD: valueUSD,
             };
         }
         const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
-            tokenID,
+            token.identifier,
         );
         return {
+            ...token,
             type: EsdtTokenType.FungibleToken,
-            priceUSD: tokenPriceUSD.toFixed(),
+            valueUSD: computeValueUSD(
+                token.balance,
+                token.decimals,
+                tokenPriceUSD.toFixed(),
+            ).toFixed(),
         };
     }
 
@@ -215,11 +207,11 @@ export class UserService {
             lockedFarmTokenID,
         ] = await Promise.all([
             this.lockedAssetGetter.getLockedTokenID(),
-            this.proxyPairService.getwrappedLpTokenID(),
-            this.proxyFarmService.getwrappedFarmTokenID(),
+            this.proxyPairGetter.getwrappedLpTokenID(),
+            this.proxyFarmGetter.getwrappedFarmTokenID(),
         ]);
         const promises: Promise<string>[] = [];
-        for (const farmAddress of farmsConfig) {
+        for (const farmAddress of farmsAddresses()) {
             promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
         }
         const farmTokenIDs = await Promise.all(promises);

@@ -8,6 +8,7 @@ import { TransactionRouterService } from './services/transactions.router.service
 import { JwtAdminGuard } from '../../helpers/guards/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
+import { constantsConfig } from 'src/config';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -62,6 +63,15 @@ export class RouterResolver {
     async totalFeesUSD24h() {
         try {
             return this.routerGetterService.getTotalFeesUSD('24h');
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async maintenance() {
+        try {
+            return constantsConfig.MAINTENANCE;
         } catch (error) {
             throw new ApolloError(error);
         }

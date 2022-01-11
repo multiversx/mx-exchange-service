@@ -2,7 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
+import { farmVersion } from 'src/utils/farm.utils';
 import { Logger } from 'winston';
+import { FarmVersion } from '../farm/models/farm.model';
 import { AbiFarmService } from '../farm/services/abi-farm.service';
 import { FarmSetterService } from '../farm/services/farm.setter.service';
 import { EnterFarmEvent } from './entities/farm/enterFarm.event';
@@ -35,35 +37,39 @@ export class RabbitMQFarmHandlerService {
             this.abiFarmService.getCurrentBlockFee(event.getAddress()),
             this.abiFarmService.getRewardPerShare(event.getAddress()),
         ]);
-
-        const cacheKeys = await Promise.all([
-            this.farmSetterService.setFarmTokenSupply(
-                event.getAddress(),
-                event.getFarmSupply().toFixed(),
-            ),
-            this.farmSetterService.setFarmingTokenReserve(
-                event.getAddress(),
-                event.getFarmingReserve().toFixed(),
-            ),
-            this.farmSetterService.setLastRewardBlockNonce(
-                event.getAddress(),
-                lastRewardBlockNonce,
-            ),
-            this.farmSetterService.setUndistributedFees(
-                event.getAddress(),
-                undistributedFees,
-            ),
-            this.farmSetterService.setCurrentBlockFee(
-                event.getAddress(),
-                currentBlockFee,
-            ),
-            this.farmSetterService.setRewardPerShare(
-                event.getAddress(),
-                farmRewardPerShare,
-            ),
-        ]);
-        this.invalidatedKeys.push(cacheKeys);
-        await this.deleteCacheKeys();
+        const version = farmVersion(event.getAddress());
+        // const cacheKeys = await Promise.all([
+        //     this.farmSetterService.setFarmTokenSupply(
+        //         event.getAddress(),
+        //         event.getFarmSupply().toFixed(),
+        //     ),
+        //     this.farmSetterService.setLastRewardBlockNonce(
+        //         event.getAddress(),
+        //         lastRewardBlockNonce,
+        //     ),
+        //     this.farmSetterService.setUndistributedFees(
+        //         event.getAddress(),
+        //         undistributedFees,
+        //     ),
+        //     this.farmSetterService.setCurrentBlockFee(
+        //         event.getAddress(),
+        //         currentBlockFee,
+        //     ),
+        //     this.farmSetterService.setRewardPerShare(
+        //         event.getAddress(),
+        //         farmRewardPerShare,
+        //     ),
+        // ]);
+        // if (version === FarmVersion.V1_2) {
+        //     cacheKeys.push(
+        //         await this.farmSetterService.setFarmingTokenReserve(
+        //             event.getAddress(),
+        //             event.getFarmingReserve().toFixed(),
+        //         ),
+        //     );
+        // }
+        // this.invalidatedKeys.push(cacheKeys);
+        // await this.deleteCacheKeys();
         event.getIdentifier() === FARM_EVENTS.ENTER_FARM
             ? await this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
                   enterFarmEvent: event,
@@ -86,26 +92,26 @@ export class RabbitMQFarmHandlerService {
             this.abiFarmService.getRewardPerShare(event.getAddress()),
         ]);
 
-        const cacheKeys = await Promise.all([
-            this.farmSetterService.setLastRewardBlockNonce(
-                event.getAddress(),
-                lastRewardBlockNonce,
-            ),
-            this.farmSetterService.setUndistributedFees(
-                event.getAddress(),
-                undistributedFees,
-            ),
-            this.farmSetterService.setCurrentBlockFee(
-                event.getAddress(),
-                currentBlockFee,
-            ),
-            this.farmSetterService.setRewardPerShare(
-                event.getAddress(),
-                farmRewardPerShare,
-            ),
-        ]);
-        this.invalidatedKeys.push(cacheKeys);
-        await this.deleteCacheKeys();
+        // const cacheKeys = await Promise.all([
+        //     this.farmSetterService.setLastRewardBlockNonce(
+        //         event.getAddress(),
+        //         lastRewardBlockNonce,
+        //     ),
+        //     this.farmSetterService.setUndistributedFees(
+        //         event.getAddress(),
+        //         undistributedFees,
+        //     ),
+        //     this.farmSetterService.setCurrentBlockFee(
+        //         event.getAddress(),
+        //         currentBlockFee,
+        //     ),
+        //     this.farmSetterService.setRewardPerShare(
+        //         event.getAddress(),
+        //         farmRewardPerShare,
+        //     ),
+        // ]);
+        // this.invalidatedKeys.push(cacheKeys);
+        // await this.deleteCacheKeys();
 
         await this.pubSub.publish(FARM_EVENTS.CLAIM_REWARDS, {
             rewardsEvent: event,

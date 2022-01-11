@@ -16,7 +16,6 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
 } from './models/farm.args';
-import { FarmStatisticsService } from './services/farm-statistics.service';
 import { ApolloError } from 'apollo-server-express';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 import { FarmGetterService } from './services/farm.getter.service';
@@ -29,7 +28,6 @@ export class FarmResolver {
         private readonly farmService: FarmService,
         private readonly farmGetterService: FarmGetterService,
         private readonly transactionsService: TransactionsFarmService,
-        private readonly statisticsService: FarmStatisticsService,
     ) {}
 
     @ResolveField()
@@ -203,9 +201,97 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async APR(@Parent() parent: FarmModel) {
+    async aprMultiplier(@Parent() parent: FarmModel) {
         try {
-            return await this.statisticsService.getFarmAPR(parent.address);
+            return await this.farmGetterService.getLockedRewardAprMuliplier(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async unlockedRewardsAPR(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getUnlockedRewardsAPR(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async lockedRewardsAPR(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getLockedRewardsAPR(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async apr(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getFarmAPR(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async totalValueLockedUSD(parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getTotalValueLockedUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async lockedFarmingTokenReserve(parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getLockedFarmingTokenReserve(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async unlockedFarmingTokenReserve(parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getUnlockedFarmingTokenReserve(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async lockedFarmingTokenReserveUSD(parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getLockedFarmingTokenReserveUSD(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async unlockedFarmingTokenReserveUSD(parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getUnlockedFarmingTokenReserveUSD(
+                parent.address,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -220,13 +306,27 @@ export class FarmResolver {
         }
     }
 
+    @ResolveField()
+    async requireWhitelist(@Parent() parent: FarmModel) {
+        try {
+            const whitelists = await this.farmGetterService.getWhitelist(
+                parent.address,
+            );
+            return whitelists ? whitelists.length > 0 : false;
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => FarmTokenAttributesModel)
     async farmTokenAttributes(
+        @Args('farmAddress') farmAddress: string,
         @Args('identifier') identifier: string,
         @Args('attributes') attributes: string,
     ): Promise<FarmTokenAttributesModel> {
         return this.farmService.decodeFarmTokenAttributes(
+            farmAddress,
             identifier,
             attributes,
         );

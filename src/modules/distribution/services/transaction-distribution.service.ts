@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { GasLimit } from '@elrondnetwork/erdjs';
-import { elrondConfig, gasConfig } from '../../config';
+import { elrondConfig, gasConfig } from '../../../config';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { TransactionModel } from '../../models/transaction.model';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import { TransactionModel } from '../../../models/transaction.model';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class TransactionsDistributionService {

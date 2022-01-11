@@ -1,18 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { farmsConfig } from 'src/config';
+import { FarmRewardType } from 'src/modules/farm/models/farm.model';
+import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
+import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextService } from 'src/services/context/context.service';
+import { farmsAddresses, farmType } from 'src/utils/farm.utils';
 
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
         private readonly context: ContextService,
         private readonly farmGetterService: FarmGetterService,
+        private readonly farmComputeService: FarmComputeService,
         private readonly pairCompute: PairComputeService,
         private readonly pairGetterService: PairGetterService,
+        private readonly lockedAssetGetter: LockedAssetGetterService,
     ) {}
 
     async computeTokenPriceUSD(tokenID: string): Promise<string> {
@@ -22,29 +27,11 @@ export class AnalyticsComputeService {
         return tokenPriceUSD.toFixed();
     }
 
-    async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
-        const [
-            farmingToken,
-            farmingTokenPriceUSD,
-            farmingTokenReserve,
-        ] = await Promise.all([
-            this.farmGetterService.getFarmingToken(farmAddress),
-            this.farmGetterService.getFarmingTokenPriceUSD(farmAddress),
-            this.farmGetterService.getFarmingTokenReserve(farmAddress),
-        ]);
-
-        const lockedValue = new BigNumber(farmingTokenReserve)
-            .multipliedBy(`1e-${farmingToken.decimals}`)
-            .multipliedBy(farmingTokenPriceUSD);
-
-        return lockedValue.toFixed();
-    }
-
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
 
-        const promises: Promise<string>[] = farmsConfig.map(farmAddress =>
-            this.computeFarmLockedValueUSD(farmAddress),
+        const promises: Promise<string>[] = farmsAddresses().map(farmAddress =>
+            this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
         );
         const farmsLockedValueUSD = await Promise.all(promises);
         for (const farmLockedValueUSD of farmsLockedValueUSD) {
@@ -66,7 +53,12 @@ export class AnalyticsComputeService {
 
         const lockedValuesUSD = await Promise.all([
             ...promises,
-            this.computeFarmLockedValueUSD(farmsConfig[2]),
+            this.farmComputeService.computeFarmLockedValueUSD(
+                farmsAddresses()[2],
+            ),
+            this.farmComputeService.computeFarmLockedValueUSD(
+                farmsAddresses()[5],
+            ),
         ]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
@@ -80,10 +72,13 @@ export class AnalyticsComputeService {
     }
 
     async computeTotalAggregatedRewards(days: number): Promise<string> {
-        const farmsAddress: [] = farmsConfig;
-        const promises = farmsAddress.map(async farmAddress =>
-            this.farmGetterService.getRewardsPerBlock(farmAddress),
-        );
+        const addresses: string[] = farmsAddresses();
+        const promises = addresses.map(async farmAddress => {
+            if (farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS) {
+                return '0';
+            }
+            return this.farmGetterService.getRewardsPerBlock(farmAddress);
+        });
         const farmsRewardsPerBlock = await Promise.all(promises);
         const blocksNumber = (days * 24 * 60 * 60) / 6;
 
@@ -97,5 +92,35 @@ export class AnalyticsComputeService {
             );
         }
         return totalAggregatedRewards.toFixed();
+    }
+
+    async computeTotalBurnedTokenAmount(tokenID: string): Promise<string> {
+        const promises = [];
+        const pairsAddresses = await this.context.getAllPairsAddress();
+        for (const pairAddress of pairsAddresses) {
+            promises.push(
+                this.pairGetterService.getBurnedTokenAmount(
+                    pairAddress,
+                    tokenID,
+                ),
+            );
+        }
+        for (const farmAddress of farmsAddresses()) {
+            promises.push(
+                this.farmGetterService.getBurnedTokenAmount(
+                    farmAddress,
+                    tokenID,
+                ),
+            );
+        }
+        promises.push(this.lockedAssetGetter.getBurnedTokenAmount(tokenID));
+
+        const burnedTokenAmounts = await Promise.all(promises);
+        let burnedTokenAmount = new BigNumber(0);
+        for (const burnedToken of burnedTokenAmounts) {
+            burnedTokenAmount = burnedTokenAmount.plus(burnedToken);
+        }
+
+        return burnedTokenAmount.toFixed();
     }
 }

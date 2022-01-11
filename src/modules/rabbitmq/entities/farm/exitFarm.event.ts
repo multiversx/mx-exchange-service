@@ -10,7 +10,9 @@ import {
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
+import { farmVersion } from 'src/utils/farm.utils';
 import { GenericEvent } from '../generic.event';
 import { FarmEventsTopics } from './farm.event.topics';
 import { FarmEventType } from './farm.types';
@@ -36,8 +38,9 @@ export class ExitFarmEvent extends GenericEvent {
 
     constructor(init?: Partial<GenericEvent>) {
         super(init);
+        const version = farmVersion(this.getAddress());
         this.decodedTopics = new FarmEventsTopics(this.topics);
-        const decodedEvent = this.decodeEvent();
+        const decodedEvent = this.decodeEvent(version);
         Object.assign(this, decodedEvent);
         this.farmingToken = new GenericToken({
             tokenID: decodedEvent.farmingTokenID.toString(),
@@ -55,6 +58,7 @@ export class ExitFarmEvent extends GenericEvent {
         });
         this.farmAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
             decodedEvent.farmAttributes,
+            version,
         );
     }
 
@@ -86,7 +90,10 @@ export class ExitFarmEvent extends GenericEvent {
         return {
             ...super.toJSON(),
             farmingToken: this.farmingToken.toJSON(),
-            farmingReserve: this.farmingReserve.toFixed(),
+            farmingReserve:
+                this.farmingReserve !== undefined
+                    ? this.farmingReserve.toFixed()
+                    : '',
             farmToken: this.farmToken.toJSON(),
             farmSupply: this.farmSupply.toFixed(),
             rewardToken: this.rewardToken.toJSON(),
@@ -99,18 +106,17 @@ export class ExitFarmEvent extends GenericEvent {
         return this.decodedTopics.toPlainObject();
     }
 
-    decodeEvent() {
+    decodeEvent(version: FarmVersion) {
         const data = Buffer.from(this.data, 'base64');
         const codec = new BinaryCodec();
 
-        const eventStruct = this.getStructure();
-
+        const eventStruct = this.getStructure(version);
         const [decoded] = codec.decodeNested(data, eventStruct);
         return decoded.valueOf();
     }
 
-    getStructure(): StructType {
-        return new StructType('ExitFarmEvent', [
+    getStructure(version: FarmVersion): StructType {
+        const eventStructType = new StructType('ExitFarmEvent', [
             new StructFieldDefinition('caller', '', new AddressType()),
             new StructFieldDefinition(
                 'farmingTokenID',
@@ -122,7 +128,6 @@ export class ExitFarmEvent extends GenericEvent {
                 '',
                 new BigUIntType(),
             ),
-            new StructFieldDefinition('farmingReserve', '', new BigUIntType()),
             new StructFieldDefinition(
                 'farmTokenID',
                 '',
@@ -150,11 +155,23 @@ export class ExitFarmEvent extends GenericEvent {
             new StructFieldDefinition(
                 'farmAttributes',
                 '',
-                FarmTokenAttributesModel.getStructure(),
+                FarmTokenAttributesModel.getStructure(version),
             ),
             new StructFieldDefinition('block', '', new U64Type()),
             new StructFieldDefinition('epoch', '', new U64Type()),
             new StructFieldDefinition('timestamp', '', new U64Type()),
         ]);
+        if (version === FarmVersion.V1_2) {
+            eventStructType.fields.splice(
+                3,
+                0,
+                new StructFieldDefinition(
+                    'farmingReserve',
+                    '',
+                    new BigUIntType(),
+                ),
+            );
+        }
+        return eventStructType;
     }
 }

@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig, constantsConfig } from 'src/config';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -300,6 +300,15 @@ export class PairGetterService {
         );
     }
 
+    async getFeesAPR(pairAddress: string): Promise<string> {
+        return this.getData(
+            pairAddress,
+            'feesAPR',
+            () => this.pairComputeService.computeFeesAPR(pairAddress),
+            oneMinute(),
+        );
+    }
+
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         const [
             firstTokenReserve,
@@ -343,11 +352,23 @@ export class PairGetterService {
     }
 
     async getState(pairAddress: string): Promise<string> {
-        return this.getData(
+        return await this.getData(
             pairAddress,
             'state',
             () => this.abiService.getState(pairAddress),
-            oneHour(),
+            oneSecond() * 45,
+        );
+    }
+
+    async getBurnedTokenAmount(
+        pairAddress: string,
+        tokenID: string,
+    ): Promise<string> {
+        return await this.getData(
+            pairAddress,
+            `${tokenID}.burnedTokenAmount`,
+            () => this.abiService.getBurnedTokenAmount(pairAddress, tokenID),
+            oneMinute(),
         );
     }
 

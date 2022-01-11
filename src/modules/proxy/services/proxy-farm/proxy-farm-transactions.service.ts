@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { constantsConfig, gasConfig } from '../../../config';
+import { constantsConfig, gasConfig } from '../../../../config';
 import {
     BigUIntValue,
     BytesValue,
     U32Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { Address, GasLimit } from '@elrondnetwork/erdjs';
-import { TransactionModel } from '../../../models/transaction.model';
+import { TransactionModel } from '../../../../models/transaction.model';
 import BigNumber from 'bignumber.js';
 
 import {
@@ -14,25 +14,27 @@ import {
     CompoundRewardsProxyArgs,
     EnterFarmProxyArgs,
     ExitFarmProxyArgs,
-} from '../models/proxy-farm.args';
+} from '../../models/proxy-farm.args';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { ProxyFarmService } from './proxy-farm.service';
+import { ProxyFarmGetterService } from './proxy-farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import { ProxyPairService } from '../proxy-pair/proxy-pair.service';
-import { ProxyService } from '../proxy.service';
+import { ProxyPairGetterService } from '../proxy-pair/proxy-pair.getter.service';
+import { ProxyGetterService } from '../proxy.getter.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
+import { farmVersion } from 'src/utils/farm.utils';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 
 @Injectable()
 export class TransactionsProxyFarmService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly contextTransactions: ContextTransactionsService,
-        private readonly proxyFarmService: ProxyFarmService,
-        private readonly proxyPairService: ProxyPairService,
-        private readonly proxyService: ProxyService,
+        private readonly proxyFarmGetter: ProxyFarmGetterService,
+        private readonly proxyPairService: ProxyPairGetterService,
+        private readonly proxyGetter: ProxyGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -55,9 +57,13 @@ export class TransactionsProxyFarmService {
         }
 
         const contract = await this.elrondProxy.getProxyDexSmartContract();
-        const method = args.lockRewards
-            ? 'enterFarmAndLockRewardsProxy'
-            : 'enterFarmProxy';
+        const version = farmVersion(args.farmAddress);
+        const method =
+            version === FarmVersion.V1_3
+                ? 'enterFarmProxy'
+                : args.lockRewards
+                ? 'enterFarmAndLockRewardsProxy'
+                : 'enterFarmProxy';
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -199,7 +205,7 @@ export class TransactionsProxyFarmService {
     private async validateWFMTInputTokens(
         tokens: InputTokenModel[],
     ): Promise<void> {
-        const wrappedFarmTokenID = await this.proxyFarmService.getwrappedFarmTokenID();
+        const wrappedFarmTokenID = await this.proxyFarmGetter.getwrappedFarmTokenID();
 
         for (const wrappedFarmToken of tokens) {
             if (
@@ -215,7 +221,7 @@ export class TransactionsProxyFarmService {
         tokens: InputTokenModel[],
     ): Promise<void> {
         const [lockedAssetTokenID, wrappedLPTokenID] = await Promise.all([
-            this.proxyService.getLockedAssetTokenID(),
+            this.proxyGetter.getLockedAssetTokenID(),
             this.proxyPairService.getwrappedLpTokenID(),
         ]);
 

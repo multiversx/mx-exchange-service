@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { tokensPriceData } from 'src/config';
+import { tokenProviderUSD } from 'src/config';
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
@@ -16,30 +16,34 @@ export class PairComputeService {
     ) {}
 
     async computeFirstTokenPrice(pairAddress: string): Promise<string> {
-        const firstToken = await this.pairGetterService.getFirstToken(
-            pairAddress,
-        );
+        const [firstToken, secondToken] = await Promise.all([
+            this.pairGetterService.getFirstToken(pairAddress),
+            this.pairGetterService.getSecondToken(pairAddress),
+        ]);
+
         const firstTokenPrice = await this.pairService.getEquivalentForLiquidity(
             pairAddress,
             firstToken.identifier,
             new BigNumber(`1e${firstToken.decimals}`).toFixed(),
         );
         return new BigNumber(firstTokenPrice)
-            .multipliedBy(`1e-${firstToken.decimals}`)
+            .multipliedBy(`1e-${secondToken.decimals}`)
             .toFixed();
     }
 
     async computeSecondTokenPrice(pairAddress: string): Promise<string> {
-        const secondToken = await this.pairGetterService.getSecondToken(
-            pairAddress,
-        );
+        const [firstToken, secondToken] = await Promise.all([
+            this.pairGetterService.getFirstToken(pairAddress),
+            this.pairGetterService.getSecondToken(pairAddress),
+        ]);
+
         const secondTokenPrice = await this.pairService.getEquivalentForLiquidity(
             pairAddress,
             secondToken.identifier,
             new BigNumber(`1e${secondToken.decimals}`).toFixed(),
         );
         return new BigNumber(secondTokenPrice)
-            .multipliedBy(`1e-${secondToken.decimals}`)
+            .multipliedBy(`1e-${firstToken.decimals}`)
             .toFixed();
     }
 
@@ -70,8 +74,8 @@ export class PairComputeService {
     }
 
     async computeTokenPriceUSD(tokenID: string): Promise<BigNumber> {
-        return tokensPriceData.has(tokenID)
-            ? this.priceFeed.getTokenPrice(tokensPriceData.get(tokenID))
+        return tokenProviderUSD === tokenID
+            ? new BigNumber(1)
             : this.pairService.getPriceUSDByPath(tokenID);
     }
 
@@ -123,5 +127,17 @@ export class PairComputeService {
         return new BigNumber(firstTokenLockedValueUSD).plus(
             secondTokenLockedValueUSD,
         );
+    }
+
+    async computeFeesAPR(pairAddress: string): Promise<string> {
+        const [fees24h, lockedValueUSD] = await Promise.all([
+            this.pairGetterService.getFeesUSD(pairAddress, '24h'),
+            this.computeLockedValueUSD(pairAddress),
+        ]);
+
+        return new BigNumber(fees24h)
+            .times(365)
+            .div(lockedValueUSD)
+            .toFixed();
     }
 }

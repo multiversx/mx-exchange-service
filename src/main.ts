@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { BigNumber } from 'bignumber.js';
 import { PublicAppModule } from './public.app.module';
@@ -15,9 +15,14 @@ async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
 
     const app = await NestFactory.create(PublicAppModule);
+    const httpAdapterHostService = app.get<HttpAdapterHost>(HttpAdapterHost);
 
     app.useGlobalInterceptors(new LoggingInterceptor());
     const apiConfigService = app.get<ApiConfigService>(ApiConfigService);
+    const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
+
+    httpServer.keepAliveTimeout = apiConfigService.getKeepAliveTimeoutUpstream();
+    httpServer.headersTimeout = apiConfigService.getKeepAliveTimeoutUpstream(); //`keepAliveTimeout + server's expected response time`
 
     const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
         PubSubModule,

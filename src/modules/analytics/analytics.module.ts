@@ -12,6 +12,10 @@ import { AnalyticsResolver } from './analytics.resolver';
 import { AnalyticsService } from './services/analytics.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
+import { ProxyModule } from '../proxy/proxy.module';
+import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
+import { AnalyticsPairService } from './services/analytics.pair.service';
+import { PairDayDataResolver } from './analytics.pair.resolver';
 
 @Module({
     imports: [
@@ -22,6 +26,8 @@ import { AnalyticsGetterService } from './services/analytics.getter.service';
         RouterModule,
         PairModule,
         FarmModule,
+        ProxyModule,
+        LockedAssetModule,
     ],
     providers: [
         AnalyticsResolver,
@@ -29,6 +35,8 @@ import { AnalyticsGetterService } from './services/analytics.getter.service';
         AnalyticsGetterService,
         AnalyticsComputeService,
         AnalyticsEventHandlerService,
+        AnalyticsPairService,
+        PairDayDataResolver,
     ],
     exports: [
         AnalyticsService,

@@ -187,6 +187,15 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async feesAPR(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getFeesAPR(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async info(@Parent() parent: PairModel) {
         try {
             return await this.pairGetterService.getPairInfoMetadata(
@@ -359,6 +368,17 @@ export class PairResolver {
         return this.transactionService.swapTokensFixedOutput(
             user.publicKey,
             args,
+        );
+    }
+
+    @Query(() => String)
+    async burnedTokenAmount(
+        @Args('pairAddress') pairAddress: string,
+        @Args('tokenID') tokenID: string,
+    ): Promise<string> {
+        return await this.pairGetterService.getBurnedTokenAmount(
+            pairAddress,
+            tokenID,
         );
     }
 }

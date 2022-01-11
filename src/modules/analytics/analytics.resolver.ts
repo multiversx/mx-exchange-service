@@ -1,13 +1,10 @@
 import { Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
-import {
-    AnalyticsModel,
-    HistoricDataModel,
-} from 'src/modules/analytics/models/analytics.model';
+import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
 import { AnalyticsService } from './services/analytics.service';
 
-@Resolver(() => AnalyticsModel)
+@Resolver()
 export class AnalyticsResolver {
     constructor(
         private readonly analyticsService: AnalyticsService,
@@ -39,6 +36,13 @@ export class AnalyticsResolver {
         @Args('days', { type: () => Int }) days: number,
     ) {
         return this.analyticsGetterService.getTotalAggregatedRewards(days);
+    }
+
+    @Query(() => String)
+    async totalBurnedTokenAmount(
+        @Args('tokenID', { type: () => String }) tokenID: string,
+    ) {
+        return this.analyticsGetterService.getTotalBurnedTokenAmount(tokenID);
     }
 
     @Query(() => [HistoricDataModel])

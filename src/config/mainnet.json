@@ -14,17 +14,33 @@
             "shardID-2": "erd1qqqqqqqqqqqqqpgqmuk0q2saj0mgutxm4teywre6dl8wqf58xamqdrukln"
         }
     },
-    "farms": [
-        "erd1qqqqqqqqqqqqqpgqye633y7k0zd7nedfnp3m48h24qygm5jl2jpslxallh",
-        "erd1qqqqqqqqqqqqqpgqsw9pssy8rchjeyfh8jfafvl3ynum0p9k2jps6lwewp",
-        "erd1qqqqqqqqqqqqqpgqv4ks4nzn2cw96mm06lt7s2l3xfrsznmp2jpsszdry5"
-    ],
-    "tokenProviderUSD": "WEGLD-bd4d79",
+    "farms": {
+        "v1.2": [
+            "erd1qqqqqqqqqqqqqpgqye633y7k0zd7nedfnp3m48h24qygm5jl2jpslxallh",
+            "erd1qqqqqqqqqqqqqpgqsw9pssy8rchjeyfh8jfafvl3ynum0p9k2jps6lwewp",
+            "erd1qqqqqqqqqqqqqpgqv4ks4nzn2cw96mm06lt7s2l3xfrsznmp2jpsszdry5"
+        ],
+        "v1.3": {
+            "unlockedRewards": [
+                "erd1qqqqqqqqqqqqqpgqs2puacesqywt84jawqenmmree20uj80d2jpsefuka9"
+            ],
+            "lockedRewards": [
+                "erd1qqqqqqqqqqqqqpgqs2mmvzpu6wz83z3vthajl4ncpwz67ctu2jpsrcl0ct"
+            ],
+            "customRewards": [
+                "erd1qqqqqqqqqqqqqpgq5e2m9df5yxxkmr86rusejc979arzayjk2jpsz2q43s"
+            ]
+        }
+    },
+    "tokenProviderUSD": "USDC-c76f1f",
     "priceFeeds": {
-        "WEGLD-bd4d79": "egld"
+        "USDC-c76f1f": "usdc"
     },
     "tokensSupply": ["MEX-455c57"],
     "cachedTokensPrice": ["MEX-455c57", "WEGLD-bd4d79"],
+    "constants": {
+        "MAINTENANCE": false
+    },
     "aws": {
         "region": "eu-central-1",
         "timestream": {

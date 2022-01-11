@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { farmsAddresses } from 'src/utils/farm.utils';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 
 @Injectable()
@@ -66,7 +67,7 @@ export class FarmSetterService {
         value: number,
     ): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, 'penaltyPercent');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
         return cacheKey;
     }
 
@@ -84,7 +85,7 @@ export class FarmSetterService {
 
     async setState(farmAddress: string, value: string): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, 'state');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
         return cacheKey;
     }
 
@@ -139,6 +140,15 @@ export class FarmSetterService {
         return cacheKey;
     }
 
+    async setLockedRewardAprMuliplier(
+        farmAddress: string,
+        value: number,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'aprMultiplier');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     async setFarmedTokenPriceUSD(
         farmAddress: string,
         value: string,
@@ -158,6 +168,58 @@ export class FarmSetterService {
         const cacheKey = this.getFarmCacheKey(
             farmAddress,
             'farmingTokenPriceUSD',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setTotalValueLockedUSD(
+        farmAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(
+            farmAddress,
+            'totalValueLockedUSD',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setUnlockedRewardsAPR(
+        farmAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(
+            farmAddress,
+            'unlockedRewardsAPR',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setLockedRewardsAPR(
+        farmAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'lockedRewardsAPR');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setFarmAPR(farmAddress: string, value: string): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'farmAPR');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setBurnedTokenAmount(
+        farmAddress: string,
+        tokenID: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(
+            farmAddress,
+            `${tokenID}.burnedTokenAmount`,
         );
         await this.cachingService.setCache(cacheKey, value, oneMinute());
         return cacheKey;

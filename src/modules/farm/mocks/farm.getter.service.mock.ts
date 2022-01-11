@@ -50,11 +50,11 @@ export class FarmGetterServiceMock {
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
-        return '1000000000000000000000000';
+        return '1000000000000000000';
     }
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
-        return '600000000000000000000000';
+        return '1000000000000000000';
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
@@ -67,6 +67,9 @@ export class FarmGetterServiceMock {
 
     async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
         return 3;
+    }
+    async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
+        return 2;
     }
 
     async getState(farmAddress: string): Promise<string> {

@@ -11,19 +11,23 @@ import Agent, { HttpsAgent } from 'agentkeepalive';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SmartContractProfiler } from '../../helpers/smartcontract.profiler';
+import { ApiConfigService } from 'src/helpers/api.config.service';
+import { farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
 export class ElrondProxyService {
     private readonly proxy: ProxyProvider;
 
     constructor(
+        private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         const keepAliveOptions = {
             maxSockets: elrondConfig.keepAliveMaxSockets,
             maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
-            timeout: elrondConfig.keepAliveTimeout,
+            timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
             freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            keepAlive: true,
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
@@ -67,8 +71,22 @@ export class ElrondProxyService {
         );
     }
 
-    async getFarmSmartContract(farmAddress: string): Promise<SmartContract> {
-        return this.getSmartContract(farmAddress, abiConfig.farm, 'Farm');
+    async getFarmSmartContract(
+        farmAddress: string,
+    ): Promise<[SmartContract, string, string]> {
+        const version = farmVersion(farmAddress);
+        const type = farmType(farmAddress);
+
+        const abiPath =
+            type === undefined
+                ? abiConfig.farm[version]
+                : abiConfig.farm[version][type];
+        const contract = await this.getSmartContract(
+            farmAddress,
+            abiPath,
+            'Farm',
+        );
+        return [contract, version, type];
     }
 
     async getProxyDexSmartContract(): Promise<SmartContract> {

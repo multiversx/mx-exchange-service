@@ -10,16 +10,16 @@ import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmService } from '../farm/services/farm.service';
 import { LockedAssetService } from '../locked-asset-factory/services/locked-asset.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyService } from '../proxy/proxy.service';
+import { ProxyService } from '../proxy/services/proxy.service';
 import {
     UserFarmToken,
     UserLockedAssetToken,
     UserLockedFarmToken,
     UserLockedLPToken,
 } from './models/user.model';
-import { UserNftTokens } from './nfttokens.union';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { computeValueUSD } from '../../utils/token.converters';
+import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
 
 @Injectable()
 export class UserComputeService {
@@ -31,39 +31,62 @@ export class UserComputeService {
         private pairGetterService: PairGetterService,
         private lockedAssetService: LockedAssetService,
         private proxyService: ProxyService,
+        private readonly proxyGetter: ProxyGetterService,
     ) {}
 
     async farmTokenUSD(
         nftToken: NftToken,
         farmAddress: string,
-    ): Promise<typeof UserNftTokens> {
+    ): Promise<UserFarmToken> {
+        const farmingTokenID = await this.farmGetterService.getFarmingTokenID(
+            farmAddress,
+        );
         const decodedFarmAttributes = this.farmService.decodeFarmTokenAttributes(
+            farmAddress,
             nftToken.identifier,
             nftToken.attributes,
         );
 
-        const tokenPriceUSD = await this.farmGetterService.getFarmTokenPriceUSD(
-            farmAddress,
-        );
+        const farmTokenBalance = decodedFarmAttributes.aprMultiplier
+            ? new BigNumber(nftToken.balance).dividedBy(
+                  decodedFarmAttributes.aprMultiplier,
+              )
+            : new BigNumber(nftToken.balance);
+        if (scAddress.has(farmingTokenID)) {
+            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+                scAddress.get(farmingTokenID),
+                farmingTokenID,
+            );
+            return new UserFarmToken({
+                ...nftToken,
+                valueUSD: computeValueUSD(
+                    farmTokenBalance.toFixed(),
+                    nftToken.decimals,
+                    tokenPriceUSD,
+                ).toFixed(),
+                decodedAttributes: decodedFarmAttributes,
+            });
+        }
 
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingTokenID,
+        );
+        const farmTokenBalanceUSD = await this.pairService.getLiquidityPositionUSD(
+            pairAddress,
+            farmTokenBalance.toFixed(),
+        );
         return new UserFarmToken({
             ...nftToken,
-            valueUSD: computeValueUSD(
-                new BigNumber(nftToken.balance)
-                    .dividedBy(decodedFarmAttributes.aprMultiplier)
-                    .toFixed(),
-                nftToken.decimals,
-                tokenPriceUSD,
-            ).toFixed(),
+            valueUSD: farmTokenBalanceUSD,
             decodedAttributes: decodedFarmAttributes,
         });
     }
 
     async lockedAssetTokenUSD(
         nftToken: LockedAssetToken,
-    ): Promise<typeof UserNftTokens> {
+    ): Promise<UserLockedAssetToken> {
         const [assetToken, decodedAttributes] = await Promise.all([
-            this.proxyService.getAssetToken(),
+            this.proxyGetter.getAssetToken(),
             this.lockedAssetService.decodeLockedAssetAttributes({
                 batchAttributes: [
                     {
@@ -90,7 +113,7 @@ export class UserComputeService {
 
     async lockedLpTokenUSD(
         nftToken: LockedLpToken,
-    ): Promise<typeof UserNftTokens> {
+    ): Promise<UserLockedLPToken> {
         const decodedWLPTAttributes = this.proxyService.getWrappedLpTokenAttributes(
             {
                 batchAttributes: [
@@ -105,17 +128,13 @@ export class UserComputeService {
             decodedWLPTAttributes[0].lpTokenID,
         );
         if (pairAddress) {
-            const tokenPriceUSD = await this.pairGetterService.getLpTokenPriceUSD(
+            const valueUSD = await this.pairService.getLiquidityPositionUSD(
                 pairAddress,
+                nftToken.balance,
             );
-
             return new UserLockedLPToken({
                 ...nftToken,
-                valueUSD: computeValueUSD(
-                    nftToken.balance,
-                    nftToken.decimals,
-                    tokenPriceUSD,
-                ).toFixed(),
+                valueUSD: valueUSD,
                 decodedAttributes: decodedWLPTAttributes[0],
             });
         }
@@ -123,7 +142,7 @@ export class UserComputeService {
 
     async lockedFarmTokenUSD(
         nftToken: LockedFarmToken,
-    ): Promise<typeof UserNftTokens> {
+    ): Promise<UserLockedFarmToken> {
         const decodedWFMTAttributes = await this.proxyService.getWrappedFarmTokenAttributes(
             {
                 batchAttributes: [
