@@ -112,6 +112,7 @@ export class FarmComputeService {
             divisionSafetyConstant,
             farmTokenSupply,
             farmRewardPerShare,
+            produceRewardsEnabled,
         ] = await Promise.all([
             this.contextGetter.getShardCurrentBlockNonce(1),
             this.farmGetterService.getLastRewardBlockNonce(farmAddress),
@@ -121,6 +122,7 @@ export class FarmComputeService {
             this.farmGetterService.getDivisionSafetyConstant(farmAddress),
             this.farmGetterService.getFarmTokenSupply(farmAddress),
             this.farmGetterService.getRewardPerShare(farmAddress),
+            this.farmGetterService.getProduceRewardsEnabled(farmAddress),
         ]);
 
         const amountBig = new BigNumber(liquidity);
@@ -139,7 +141,7 @@ export class FarmComputeService {
         let toBeMinted = new BigNumber(0);
         const feesBig = undistributedFeesBig.plus(currentBlockFeeBig);
 
-        if (currentNonce > lastRewardBlockNonce) {
+        if (currentNonce > lastRewardBlockNonce && produceRewardsEnabled) {
             toBeMinted = perBlockRewardAmountBig.times(
                 currentBlockBig.minus(lastRewardBlockNonceBig),
             );
