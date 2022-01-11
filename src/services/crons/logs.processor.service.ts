@@ -99,91 +99,24 @@ export class LogsProcessorService {
     }
 
     private async getSwapLogs(swapType: string, gte: number, lte: number) {
-        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-        elasticQueryAdapter.condition.must = [
-            QueryType.Nested('events', [
-                QueryType.Match('events.identifier', swapType),
-            ]),
-        ];
-
-        elasticQueryAdapter.filter = [
-            QueryType.Range('timestamp', {
-                before: gte,
-                after: lte,
-            }),
-        ];
-
-        elasticQueryAdapter.sort = [
-            { name: 'timestamp', order: ElasticSortOrder.ascending },
-        ];
-
-        const transactionsLogs = await this.elasticService.getList(
-            'logs',
-            '',
-            elasticQueryAdapter,
+        const transactionsLogs = await this.getTransactionsLogs(
+            swapType,
+            gte,
+            lte,
         );
-
-        let totalFeeBurned = new BigNumber(0);
 
         for (const transactionLogs of transactionsLogs) {
             const timestamp: number = transactionLogs._source.timestamp;
             const events = transactionLogs._source.events;
-
-            const esdtLocalBurnEvents: EsdtLocalBurnEvent[] = [];
-
-            for (const event of events) {
-                switch (event.identifier) {
-                    case 'ESDTLocalBurn':
-                        esdtLocalBurnEvents.push(new EsdtLocalBurnEvent(event));
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            const feeBurned = this.getBurnedFee(esdtLocalBurnEvents);
-            totalFeeBurned = totalFeeBurned.plus(feeBurned);
-
-            if (feeBurned === '0') {
-                continue;
-            }
-
-            const feeEntry = this.feeMap.get(timestamp);
-
-            if (feeEntry) {
-                this.feeMap.set(
-                    timestamp,
-                    new BigNumber(feeEntry).plus(feeBurned).toFixed(),
-                );
-            } else {
-                this.feeMap.set(timestamp, feeBurned);
-            }
+            this.processSwapEvents(events, timestamp);
         }
     }
 
     private async getExitFarmLogs(gte: number, lte: number) {
-        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
-        elasticQueryAdapter.condition.must = [
-            QueryType.Nested('events', [
-                QueryType.Match('events.identifier', 'exitFarm'),
-            ]),
-        ];
-
-        elasticQueryAdapter.filter = [
-            QueryType.Range('timestamp', {
-                before: gte,
-                after: lte,
-            }),
-        ];
-
-        elasticQueryAdapter.sort = [
-            { name: 'timestamp', order: ElasticSortOrder.ascending },
-        ];
-
-        const transactionsLogs = await this.elasticService.getList(
-            'logs',
-            '',
-            elasticQueryAdapter,
+        const transactionsLogs = await this.getTransactionsLogs(
+            'exitFarm',
+            gte,
+            lte,
         );
 
         this.penaltyMap.clear();
@@ -192,47 +125,7 @@ export class LogsProcessorService {
             const timestamp = transactionLogs._source.timestamp;
             const events = transactionLogs._source.events;
 
-            let exitFarmEvent: ExitFarmEvent | undefined = undefined;
-            const esdtLocalBurnEvents: EsdtLocalBurnEvent[] = [];
-
-            for (const event of events) {
-                switch (event.identifier) {
-                    case 'exitFarm':
-                        if (event.data === '') {
-                            break;
-                        }
-                        exitFarmEvent = new ExitFarmEvent(event);
-                        break;
-                    case 'ESDTLocalBurn':
-                        esdtLocalBurnEvents.push(new EsdtLocalBurnEvent(event));
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            if (exitFarmEvent === undefined) {
-                continue;
-            }
-
-            const penaltyEntry = this.penaltyMap.get(timestamp);
-            const penalty = this.getBurnedPenalty(
-                exitFarmEvent,
-                esdtLocalBurnEvents,
-            );
-
-            if (penalty === '0') {
-                continue;
-            }
-
-            if (penaltyEntry) {
-                this.penaltyMap.set(
-                    timestamp,
-                    new BigNumber(penaltyEntry).plus(penalty).toFixed(),
-                );
-            } else {
-                this.penaltyMap.set(timestamp, penalty);
-            }
+            this.processExitFarmEvents(events, timestamp);
         }
 
         const totalWriteRecords = await this.writeRecords(
@@ -241,6 +134,36 @@ export class LogsProcessorService {
         );
 
         this.logger.info(`penalty burned records ${totalWriteRecords}`);
+    }
+
+    private async getTransactionsLogs(
+        eventName: string,
+        gte: number,
+        lte: number,
+    ): Promise<any[]> {
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapter.condition.must = [
+            QueryType.Nested('events', [
+                QueryType.Match('events.identifier', eventName),
+            ]),
+        ];
+
+        elasticQueryAdapter.filter = [
+            QueryType.Range('timestamp', {
+                before: gte,
+                after: lte,
+            }),
+        ];
+
+        elasticQueryAdapter.sort = [
+            { name: 'timestamp', order: ElasticSortOrder.ascending },
+        ];
+
+        return await this.elasticService.getList(
+            'logs',
+            '',
+            elasticQueryAdapter,
+        );
     }
 
     private async writeRecords(
@@ -253,7 +176,6 @@ export class LogsProcessorService {
         const MeasureValueType = 'DOUBLE';
         let Records: TimestreamWrite.Records = [];
 
-        let totalTokenBurned = new BigNumber(0);
         let totalWriteRecords = 0;
 
         for (const key of recordsMap.keys()) {
@@ -272,44 +194,34 @@ export class LogsProcessorService {
                 Version: Date.now(),
             });
 
-            totalTokenBurned = totalTokenBurned.plus(record);
-
             if (Records.length === 100) {
-                try {
-                    await this.awsWrite.multiRecordsIngest(
-                        'tradingInfo',
-                        Records,
-                    );
-                    totalWriteRecords += Records.length;
-                    Records = [];
-                } catch (error) {
-                    const logMessage = generateLogMessage(
-                        LogsProcessorService.name,
-                        this.writeRecords.name,
-                        '',
-                        error,
-                    );
-                    this.logger.error(logMessage);
-                }
+                totalWriteRecords += await this.pushAWSRecords(Records);
+                Records = [];
             }
         }
 
         if (Records.length > 0) {
-            try {
-                await this.awsWrite.multiRecordsIngest('tradingInfo', Records);
-                totalWriteRecords += Records.length;
-            } catch (error) {
-                const logMessage = generateLogMessage(
-                    LogsProcessorService.name,
-                    this.writeRecords.name,
-                    '',
-                    error,
-                );
-                this.logger.error(logMessage);
-            }
+            totalWriteRecords += await this.pushAWSRecords(Records);
         }
 
         return totalWriteRecords;
+    }
+
+    private async pushAWSRecords(
+        Records: TimestreamWrite.Records,
+    ): Promise<number> {
+        try {
+            await this.awsWrite.multiRecordsIngest('tradingInfo', Records);
+            return Records.length;
+        } catch (error) {
+            const logMessage = generateLogMessage(
+                LogsProcessorService.name,
+                this.writeRecords.name,
+                '',
+                error,
+            );
+            this.logger.error(logMessage);
+        }
     }
 
     private getBurnedFee(esdtLocalBurnEvents: EsdtLocalBurnEvent[]): string {
@@ -326,6 +238,84 @@ export class LogsProcessorService {
         }
 
         return fee.toFixed();
+    }
+
+    private processSwapEvents(events: any[], timestamp: number): Promise<void> {
+        const esdtLocalBurnEvents: EsdtLocalBurnEvent[] = [];
+
+        for (const event of events) {
+            switch (event.identifier) {
+                case 'ESDTLocalBurn':
+                    esdtLocalBurnEvents.push(new EsdtLocalBurnEvent(event));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        const feeBurned = this.getBurnedFee(esdtLocalBurnEvents);
+
+        if (feeBurned === '0') {
+            return;
+        }
+
+        const feeEntry = this.feeMap.get(timestamp);
+
+        if (feeEntry) {
+            this.feeMap.set(
+                timestamp,
+                new BigNumber(feeEntry).plus(feeBurned).toFixed(),
+            );
+        } else {
+            this.feeMap.set(timestamp, feeBurned);
+        }
+    }
+
+    private processExitFarmEvents(
+        events: any[],
+        timestamp: number,
+    ): Promise<void> {
+        let exitFarmEvent: ExitFarmEvent | undefined = undefined;
+        const esdtLocalBurnEvents: EsdtLocalBurnEvent[] = [];
+
+        for (const event of events) {
+            switch (event.identifier) {
+                case 'exitFarm':
+                    if (event.data === '') {
+                        break;
+                    }
+                    exitFarmEvent = new ExitFarmEvent(event);
+                    break;
+                case 'ESDTLocalBurn':
+                    esdtLocalBurnEvents.push(new EsdtLocalBurnEvent(event));
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (exitFarmEvent === undefined) {
+            return;
+        }
+
+        const penaltyEntry = this.penaltyMap.get(timestamp);
+        const penalty = this.getBurnedPenalty(
+            exitFarmEvent,
+            esdtLocalBurnEvents,
+        );
+
+        if (penalty === '0') {
+            return;
+        }
+
+        if (penaltyEntry) {
+            this.penaltyMap.set(
+                timestamp,
+                new BigNumber(penaltyEntry).plus(penalty).toFixed(),
+            );
+        } else {
+            this.penaltyMap.set(timestamp, penalty);
+        }
     }
 
     private getBurnedPenalty(
