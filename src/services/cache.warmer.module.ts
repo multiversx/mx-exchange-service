@@ -18,6 +18,9 @@ import { CommonAppModule } from 'src/common.app.module';
 import { AnalyticsCacheWarmerService } from './crons/analytics.cache.warmer.service';
 import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
 import { TransactionProcessorService } from './crons/transaction.processor.service';
+import { LogsProcessorService } from './crons/logs.processor.service';
+import { ElasticService } from 'src/helpers/elastic.service';
+import { AWSModule } from './aws/aws.module';
 
 @Module({
     imports: [
@@ -35,6 +38,7 @@ import { TransactionProcessorService } from './crons/transaction.processor.servi
         ProxyFarmModule,
         ProxyPairModule,
         AnalyticsModule,
+        AWSModule,
     ],
     controllers: [],
     providers: [
@@ -45,6 +49,8 @@ import { TransactionProcessorService } from './crons/transaction.processor.servi
         AnalyticsCacheWarmerService,
         CachingService,
         TransactionProcessorService,
+        LogsProcessorService,
+        ElasticService,
     ],
 })
 export class CacheWarmerModule {}

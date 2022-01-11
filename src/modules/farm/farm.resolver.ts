@@ -58,6 +58,17 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async produceRewardsEnabled(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getProduceRewardsEnabled(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async perBlockRewards(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getRewardsPerBlock(
