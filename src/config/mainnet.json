@@ -39,6 +39,7 @@
     "tokensSupply": ["MEX-455c57"],
     "cachedTokensPrice": ["MEX-455c57", "WEGLD-bd4d79"],
     "constants": {
+        "MEX_TOKEN_ID": "MEX-455c57",
         "MAINTENANCE": false
     },
     "aws": {
