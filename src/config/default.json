@@ -149,8 +149,8 @@
         "proxy": {
             "pairs": {
                 "addLiquidity": {
-                    "default": 18500000,
-                    "withTokenMerge": 27600000
+                    "default": 19500000,
+                    "withTokenMerge": 29000000
                 },
                 "removeLiquidity": 21000000,
                 "defaultMergeWLPT": 20000000
