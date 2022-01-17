@@ -26,4 +26,8 @@ export class PriceDiscoveryModel {
     endEpoch: number;
     @Field()
     pairAddress: string;
+
+    constructor(init?: Partial<PriceDiscoveryModel>) {
+        Object.assign(this, init);
+    }
 }

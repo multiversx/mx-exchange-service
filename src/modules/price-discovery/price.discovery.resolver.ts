@@ -1,13 +1,15 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { PriceDiscoveryModel } from './models/price.discovery.model';
 import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
+import { PriceDiscoveryService } from './services/price.discovery.service';
 
 @Resolver(() => PriceDiscoveryModel)
 export class PriceDiscoveryResolver {
     constructor(
+        private readonly priceDiscoveryService: PriceDiscoveryService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
     ) {}
 
@@ -99,5 +101,10 @@ export class PriceDiscoveryResolver {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getPairAddress(parent.address),
         );
+    }
+
+    @Query(() => [PriceDiscoveryModel])
+    async priceDiscoveryContracts(): Promise<PriceDiscoveryModel[]> {
+        return this.priceDiscoveryService.getPriceDiscoveryContracts();
     }
 }
