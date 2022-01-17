@@ -21,14 +21,9 @@
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqj5x0hg6l2e7526e6afv9w5twslsvyhk70n4snt3xsy",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
-        }
+        },
+        "priceDiscovery": []
     },
-    "tokenProviderUSD": "USDC-72a225",
-    "priceFeeds": {
-        "USDC-72a225": "usdc"
-    },
-    "tokensSupply": ["MEX-c751d6"],
-    "cachedTokensPrice": ["MEX-c751d6"],
     "farms": {
         "v1.2": [
             "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
@@ -47,6 +42,12 @@
             ]
         }
     },
+    "tokenProviderUSD": "USDC-72a225",
+    "priceFeeds": {
+        "USDC-72a225": "usdc"
+    },
+    "tokensSupply": ["MEX-c751d6"],
+    "cachedTokensPrice": ["MEX-c751d6"],
     "caching": {
         "pairsMetadata": 300,
         "pairs": 300,
@@ -98,6 +99,7 @@
         "lockedAssetFactory": "./src/abis/factory.abi.json",
         "proxy": "./src/abis/proxy-dex.abi.json",
         "wrap": "./src/abis/egld-esdt-swap.abi.json",
+        "priceDiscovery": "./src/abis/price-discovery.abi.json",
         "farm": {
             "v1.2": "./src/abis/v1.2/farm.abi.json",
             "v1.3": {
