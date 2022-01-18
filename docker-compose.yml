@@ -22,3 +22,9 @@ services:
     ports:
       - '5672:5672'
       - '15672:15672'
+  mongodb:
+    image: mongo:latest
+    environment:
+      - MONGODB_DATABASE="development"
+    ports:
+      - 27017:27017
