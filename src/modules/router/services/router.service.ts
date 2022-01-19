@@ -73,7 +73,7 @@ export class RouterService {
                 const lpTokenID = await this.pairGetterService.getLpTokenID(
                     pair.address,
                 );
-                if (lpTokenID !== 'EGLD') {
+                if (lpTokenID !== undefined) {
                     pairs.push(
                         new PairModel({
                             address: pair.address,
