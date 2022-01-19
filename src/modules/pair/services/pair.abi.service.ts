@@ -67,7 +67,9 @@ export class PairAbiService {
         );
 
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toString();
+        console.log({ lpTokenID: response.firstValue.valueOf().toString() });
+        const lpTokenID = response.firstValue.valueOf().toString();
+        return lpTokenID !== 'EGLD' ? lpTokenID : undefined;
     }
 
     async getTokenReserve(

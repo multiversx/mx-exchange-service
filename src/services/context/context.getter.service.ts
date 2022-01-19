@@ -44,6 +44,9 @@ export class ContextGetterService {
     }
 
     async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
+        if (tokenID === undefined) {
+            return undefined;
+        }
         const cacheKey = this.getContextCacheKey(tokenID);
         return await this.getData(
             cacheKey,
