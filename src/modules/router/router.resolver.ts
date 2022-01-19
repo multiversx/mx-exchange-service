@@ -9,6 +9,7 @@ import { JwtAdminGuard } from '../../helpers/guards/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
+import { PairFilterArgs } from './models/filter.args';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -87,11 +88,15 @@ export class RouterResolver {
     }
 
     @Query(() => [PairModel])
-    async pairs(@Args() page: GetPairsArgs): Promise<PairModel[]> {
+    async pairs(
+        @Args() page: GetPairsArgs,
+        @Args() filter: PairFilterArgs,
+    ): Promise<PairModel[]> {
         try {
             return await this.routerService.getAllPairs(
                 page.offset,
                 page.limit,
+                filter,
             );
         } catch (error) {
             throw new ApolloError(error);

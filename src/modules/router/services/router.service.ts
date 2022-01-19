@@ -12,6 +12,8 @@ import {
     generateGetLogMessage,
 } from '../../../utils/generate-log-message';
 import { RouterGetterService } from '../services/router.getter.service';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairFilterArgs } from '../models/filter.args';
 
 @Injectable()
 export class RouterService {
@@ -20,6 +22,7 @@ export class RouterService {
     constructor(
         private readonly cachingService: CachingService,
         private readonly routerGetterService: RouterGetterService,
+        private readonly pairGetterService: PairGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         this.elasticClient = new Client({
@@ -33,15 +36,57 @@ export class RouterService {
         });
     }
 
-    async getAllPairs(offset: number, limit: number): Promise<PairModel[]> {
-        const pairsAddress = await this.routerGetterService.getAllPairsAddress();
+    async getAllPairs(
+        offset: number,
+        limit: number,
+        pairFilter: PairFilterArgs,
+    ): Promise<PairModel[]> {
+        let pairsMetadata = await this.routerGetterService.getPairsMetadata();
         const pairs: PairModel[] = [];
-        for (const pairAddress of pairsAddress) {
-            pairs.push(
-                new PairModel({
-                    address: pairAddress,
-                }),
+
+        if (pairFilter.address) {
+            pairsMetadata = pairsMetadata.filter(
+                pair => pairFilter.address === pair.address,
             );
+        }
+
+        if (pairFilter.firstTokenID) {
+            if (pairFilter.secondTokenID) {
+                pairsMetadata = pairsMetadata.filter(
+                    pair =>
+                        pairFilter.firstTokenID === pair.firstTokenID &&
+                        pairFilter.secondTokenID === pair.secondTokenID,
+                );
+            } else {
+                pairsMetadata = pairsMetadata.filter(
+                    pair => pairFilter.firstTokenID === pair.firstTokenID,
+                );
+            }
+        } else if (pairFilter.secondTokenID) {
+            pairsMetadata = pairsMetadata.filter(
+                pair => pairFilter.secondTokenID === pair.secondTokenID,
+            );
+        }
+
+        for (const pair of pairsMetadata) {
+            if (pairFilter.issuedLpToken) {
+                const lpTokenID = await this.pairGetterService.getLpTokenID(
+                    pair.address,
+                );
+                if (lpTokenID !== 'EGLD') {
+                    pairs.push(
+                        new PairModel({
+                            address: pair.address,
+                        }),
+                    );
+                }
+            } else {
+                pairs.push(
+                    new PairModel({
+                        address: pair.address,
+                    }),
+                );
+            }
         }
 
         return pairs.slice(offset, limit);
