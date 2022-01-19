@@ -15,6 +15,8 @@ import { AWSModule } from 'src/services/aws/aws.module';
 import { PairDBService } from './services/pair.db.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Pair, PairSchema } from './schemas/pair.schema';
+import { CommonAppModule } from 'src/common.app.module';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Module({
     imports: [
@@ -24,6 +26,13 @@ import { Pair, PairSchema } from './schemas/pair.schema';
         WrappingModule,
         CachingModule,
         AWSModule,
+        MongooseModule.forRootAsync({
+            imports: [CommonAppModule],
+            useFactory: async (configService: ApiConfigService) => ({
+                uri: `${configService.getMongoDBURL()}/${configService.getMongoDBDatabase()}`,
+            }),
+            inject: [ApiConfigService],
+        }),
         MongooseModule.forFeature([{ name: Pair.name, schema: PairSchema }]),
     ],
     providers: [
