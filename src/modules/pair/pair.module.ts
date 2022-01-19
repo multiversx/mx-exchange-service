@@ -12,6 +12,9 @@ import { PairGetterService } from './services/pair.getter.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { PairSetterService } from './services/pair.setter.service';
 import { AWSModule } from 'src/services/aws/aws.module';
+import { PairDBService } from './services/pair.db.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Pair, PairSchema } from './schemas/pair.schema';
 
 @Module({
     imports: [
@@ -21,12 +24,14 @@ import { AWSModule } from 'src/services/aws/aws.module';
         WrappingModule,
         CachingModule,
         AWSModule,
+        MongooseModule.forFeature([{ name: Pair.name, schema: PairSchema }]),
     ],
     providers: [
         PairService,
         PairGetterService,
         PairSetterService,
         PairComputeService,
+        PairDBService,
         PairAbiService,
         PairTransactionService,
         PairResolver,
@@ -36,7 +41,9 @@ import { AWSModule } from 'src/services/aws/aws.module';
         PairGetterService,
         PairSetterService,
         PairComputeService,
+        PairDBService,
         PairAbiService,
+        MongooseModule.forFeature([{ name: Pair.name, schema: PairSchema }]),
     ],
 })
 export class PairModule {}
