@@ -144,4 +144,22 @@ export class ApiConfigService {
         }
         return parseInt(keepAliveTimeoutUpstream);
     }
+
+    getMongoDBURL(): string {
+        const mongoDBUrl = this.configService.get<string>('MONGODB_URL');
+        if (!mongoDBUrl) {
+            throw new Error('No MongoDB URL present');
+        }
+        return mongoDBUrl;
+    }
+
+    getMongoDBDatabase(): string {
+        const mongoDBDatabase = this.configService.get<string>(
+            'MONGODB_DATABASE',
+        );
+        if (!mongoDBDatabase) {
+            throw new Error('No MongoDB Database present');
+        }
+        return mongoDBDatabase;
+    }
 }
