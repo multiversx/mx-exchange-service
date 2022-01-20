@@ -114,7 +114,7 @@ export class PairGetterService {
             pairAddress,
             'firstTokenPrice',
             () => this.pairComputeService.computeFirstTokenPrice(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -123,7 +123,7 @@ export class PairGetterService {
             pairAddress,
             'secondTokenPrice',
             () => this.pairComputeService.computeSecondTokenPrice(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -151,7 +151,7 @@ export class PairGetterService {
             pairAddress,
             'firstTokenPriceUSD',
             () => this.pairComputeService.computeTokenPriceUSD(firstTokenID),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -161,7 +161,7 @@ export class PairGetterService {
             pairAddress,
             'secondTokenPriceUSD',
             () => this.pairComputeService.computeTokenPriceUSD(secondTokenID),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -170,7 +170,7 @@ export class PairGetterService {
             pairAddress,
             'lpTokenPriceUSD',
             () => this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -180,7 +180,7 @@ export class PairGetterService {
             pairAddress,
             'firstTokenReserve',
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -190,7 +190,7 @@ export class PairGetterService {
             pairAddress,
             'secondTokenReserve',
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -199,7 +199,7 @@ export class PairGetterService {
             pairAddress,
             'totalSupply',
             () => this.abiService.getTotalSupply(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -353,12 +353,21 @@ export class PairGetterService {
             .toNumber();
     }
 
+    async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
+        return await this.getData(
+            pairAddress,
+            'trustedSwapPairs',
+            () => this.abiService.getTrustedSwapPairs(pairAddress),
+            oneSecond(),
+        );
+    }
+
     async getState(pairAddress: string): Promise<string> {
         return await this.getData(
             pairAddress,
             'state',
             () => this.abiService.getState(pairAddress),
-            oneSecond() * 45,
+            oneHour(),
         );
     }
 

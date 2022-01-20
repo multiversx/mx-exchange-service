@@ -40,7 +40,7 @@ export class QueryType {
 
     static Nested = (
         key: string,
-        value: any | undefined,
+        value: MatchQuery[] | undefined,
         operator: QueryOperator | undefined = undefined,
     ): NestedQuery => {
         return new NestedQuery(key, value, operator).getQuery();
