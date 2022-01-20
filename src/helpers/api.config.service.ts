@@ -162,4 +162,24 @@ export class ApiConfigService {
         }
         return mongoDBDatabase;
     }
+
+    getMongoDBUsername(): string {
+        const mongoDBUsername = this.configService.get<string>(
+            'MONGODB_USERNAME',
+        );
+        if (!mongoDBUsername) {
+            throw new Error('No MongoDB username present');
+        }
+        return mongoDBUsername;
+    }
+
+    getMongoDBPassword(): string {
+        const mongoDBPassword = this.configService.get<string>(
+            'MONGODB_PASSWORD',
+        );
+        if (!mongoDBPassword) {
+            throw new Error('No MongoDB password present');
+        }
+        return mongoDBPassword;
+    }
 }
