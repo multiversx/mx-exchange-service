@@ -144,4 +144,42 @@ export class ApiConfigService {
         }
         return parseInt(keepAliveTimeoutUpstream);
     }
+
+    getMongoDBURL(): string {
+        const mongoDBUrl = this.configService.get<string>('MONGODB_URL');
+        if (!mongoDBUrl) {
+            throw new Error('No MongoDB URL present');
+        }
+        return mongoDBUrl;
+    }
+
+    getMongoDBDatabase(): string {
+        const mongoDBDatabase = this.configService.get<string>(
+            'MONGODB_DATABASE',
+        );
+        if (!mongoDBDatabase) {
+            throw new Error('No MongoDB Database present');
+        }
+        return mongoDBDatabase;
+    }
+
+    getMongoDBUsername(): string {
+        const mongoDBUsername = this.configService.get<string>(
+            'MONGODB_USERNAME',
+        );
+        if (!mongoDBUsername) {
+            throw new Error('No MongoDB username present');
+        }
+        return mongoDBUsername;
+    }
+
+    getMongoDBPassword(): string {
+        const mongoDBPassword = this.configService.get<string>(
+            'MONGODB_PASSWORD',
+        );
+        if (!mongoDBPassword) {
+            throw new Error('No MongoDB password present');
+        }
+        return mongoDBPassword;
+    }
 }

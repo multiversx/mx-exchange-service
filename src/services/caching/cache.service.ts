@@ -208,6 +208,9 @@ export class CachingService {
 
         try {
             const value = await promise();
+            if (value === undefined) {
+                return undefined;
+            }
             profiler.stop(`Cache miss for key ${key}`);
 
             if (localTtl > 0) {

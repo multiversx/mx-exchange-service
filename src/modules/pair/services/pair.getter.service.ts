@@ -13,6 +13,7 @@ import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
+import { PairDBService } from './pair.db.service';
 
 @Injectable()
 export class PairGetterService {
@@ -22,6 +23,7 @@ export class PairGetterService {
         private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
+        private readonly pairDbService: PairDBService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -378,6 +380,15 @@ export class PairGetterService {
             `${tokenID}.burnedTokenAmount`,
             () => this.abiService.getBurnedTokenAmount(pairAddress, tokenID),
             oneMinute(),
+        );
+    }
+
+    async getType(pairAddress: string): Promise<string> {
+        return await this.getData(
+            pairAddress,
+            'type',
+            () => this.pairDbService.getPairType(pairAddress),
+            oneSecond(),
         );
     }
 

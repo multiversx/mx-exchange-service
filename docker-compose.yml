@@ -1,24 +1,32 @@
 version: '3.1'
 
 services:
-  redis:
-    image: redis
-    container_name: redis
-    command: redis-server
-    ports:
-      - '6379:6379'
-    expose:
-      - '6379'
-  rabbitmq:
-    image: 331leo/rabbitmq3-management-mqtt
-    hostname: rabbitmq
-    environment:
-      HOSTNAME: rabbitmq
-      RABBITMQ_NODENAME: rabbitmq
-      RABBITMQ_DEFAULT_USER: 'guest'
-      RABBITMQ_DEFAULT_PASS: 'guest'
-    volumes:
-      - /var/lib/rabbitmq
-    ports:
-      - '5672:5672'
-      - '15672:15672'
+    redis:
+        image: redis
+        container_name: redis
+        command: redis-server
+        ports:
+            - '6379:6379'
+        expose:
+            - '6379'
+    rabbitmq:
+        image: 331leo/rabbitmq3-management-mqtt
+        hostname: rabbitmq
+        environment:
+            HOSTNAME: rabbitmq
+            RABBITMQ_NODENAME: rabbitmq
+            RABBITMQ_DEFAULT_USER: 'guest'
+            RABBITMQ_DEFAULT_PASS: 'guest'
+        volumes:
+            - /var/lib/rabbitmq
+        ports:
+            - '5672:5672'
+            - '15672:15672'
+    mongodb:
+        image: mongo:latest
+        environment:
+            - MONGODB_DATABASE=development
+            - MONGO_INITDB_ROOT_USERNAME=admin
+            - MONGO_INITDB_ROOT_PASSWORD=admin
+        ports:
+            - 27017:27017

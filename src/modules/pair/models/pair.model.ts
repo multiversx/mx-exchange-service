@@ -85,6 +85,9 @@ export class PairModel {
     trustedSwapPairs: string[];
 
     @Field()
+    type: string;
+
+    @Field()
     state: string;
 
     constructor(init?: Partial<PairModel>) {
