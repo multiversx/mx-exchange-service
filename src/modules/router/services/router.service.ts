@@ -14,6 +14,7 @@ import {
 import { RouterGetterService } from '../services/router.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairFilterArgs } from '../models/filter.args';
+import { PairMetadata } from '../models/pair.metadata.model';
 
 @Injectable()
 export class RouterService {
@@ -43,50 +44,19 @@ export class RouterService {
     ): Promise<PairModel[]> {
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
         const pairs: PairModel[] = [];
-
-        if (pairFilter.address) {
-            pairsMetadata = pairsMetadata.filter(
-                pair => pairFilter.address === pair.address,
-            );
-        }
-
-        if (pairFilter.firstTokenID) {
-            if (pairFilter.secondTokenID) {
-                pairsMetadata = pairsMetadata.filter(
-                    pair =>
-                        pairFilter.firstTokenID === pair.firstTokenID &&
-                        pairFilter.secondTokenID === pair.secondTokenID,
-                );
-            } else {
-                pairsMetadata = pairsMetadata.filter(
-                    pair => pairFilter.firstTokenID === pair.firstTokenID,
-                );
-            }
-        } else if (pairFilter.secondTokenID) {
-            pairsMetadata = pairsMetadata.filter(
-                pair => pairFilter.secondTokenID === pair.secondTokenID,
-            );
-        }
+        pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
+        pairsMetadata = this.filterPairsByTokens(pairFilter, pairsMetadata);
+        pairsMetadata = await this.filterPairsByIssuedLpToken(
+            pairFilter,
+            pairsMetadata,
+        );
 
         for (const pair of pairsMetadata) {
-            if (pairFilter.issuedLpToken) {
-                const lpTokenID = await this.pairGetterService.getLpTokenID(
-                    pair.address,
-                );
-                if (lpTokenID !== undefined) {
-                    pairs.push(
-                        new PairModel({
-                            address: pair.address,
-                        }),
-                    );
-                }
-            } else {
-                pairs.push(
-                    new PairModel({
-                        address: pair.address,
-                    }),
-                );
-            }
+            pairs.push(
+                new PairModel({
+                    address: pair.address,
+                }),
+            );
         }
 
         return pairs.slice(offset, limit);
@@ -176,6 +146,62 @@ export class RouterService {
         }
 
         return totalTxCount;
+    }
+
+    private filterPairsByAddress(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): PairMetadata[] {
+        if (pairFilter.address) {
+            pairsMetadata = pairsMetadata.filter(
+                pair => pairFilter.address === pair.address,
+            );
+        }
+        return pairsMetadata;
+    }
+
+    private filterPairsByTokens(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): PairMetadata[] {
+        if (pairFilter.firstTokenID) {
+            if (pairFilter.secondTokenID) {
+                pairsMetadata = pairsMetadata.filter(
+                    pair =>
+                        pairFilter.firstTokenID === pair.firstTokenID &&
+                        pairFilter.secondTokenID === pair.secondTokenID,
+                );
+            } else {
+                pairsMetadata = pairsMetadata.filter(
+                    pair => pairFilter.firstTokenID === pair.firstTokenID,
+                );
+            }
+        } else if (pairFilter.secondTokenID) {
+            pairsMetadata = pairsMetadata.filter(
+                pair => pairFilter.secondTokenID === pair.secondTokenID,
+            );
+        }
+        return pairsMetadata;
+    }
+
+    private async filterPairsByIssuedLpToken(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.issuedLpToken) {
+            return pairsMetadata;
+        }
+
+        const filteredPairsMetadata = [];
+        for (const pair of pairsMetadata) {
+            const lpTokenID = await this.pairGetterService.getLpTokenID(
+                pair.address,
+            );
+            if (lpTokenID !== undefined) {
+                filteredPairsMetadata.push(pair);
+            }
+        }
+        return filteredPairsMetadata;
     }
 
     private getRouterCacheKey(...args: any) {
