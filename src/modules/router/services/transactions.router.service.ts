@@ -24,14 +24,14 @@ export class TransactionRouterService {
         secondTokenID: string,
     ): Promise<TransactionModel> {
         const pairCount = await this.routerService.getPairCount();
-        const pair = await this.routerService.getAllPairs(0, pairCount, {
+        const pairs = await this.routerService.getAllPairs(0, pairCount, {
             address: null,
             firstTokenID: firstTokenID,
             secondTokenID: secondTokenID,
             issuedLpToken: true,
         });
 
-        if (pair) {
+        if (pairs.length > 0) {
             throw new Error('Pair already exists');
         }
 
