@@ -9,13 +9,13 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { RouterService } from './router.service';
+import { RouterGetterService } from './router.getter.service';
 
 @Injectable()
 export class TransactionRouterService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly routerService: RouterService,
+        private readonly routerGetterService: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
     ) {}
 
@@ -23,15 +23,12 @@ export class TransactionRouterService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        const pairCount = await this.routerService.getPairCount();
-        const pairs = await this.routerService.getAllPairs(0, pairCount, {
-            address: null,
-            firstTokenID: firstTokenID,
-            secondTokenID: secondTokenID,
-            issuedLpToken: true,
-        });
+        const checkPairExists = await this.checkPairExists(
+            firstTokenID,
+            secondTokenID,
+        );
 
-        if (pairs.length > 0) {
+        if (checkPairExists) {
             throw new Error('Pair already exists');
         }
 
@@ -118,5 +115,23 @@ export class TransactionRouterService {
         const transaction = setFeeInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.setFee));
         return transaction.toPlainObject();
+    }
+
+    private async checkPairExists(
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<boolean> {
+        const pairsMetadata = await this.routerGetterService.getPairsMetadata();
+        for (const pair of pairsMetadata) {
+            if (
+                (pair.firstTokenID === firstTokenID &&
+                    pair.secondTokenID === secondTokenID) ||
+                (pair.firstTokenID === secondTokenID &&
+                    pair.secondTokenID === firstTokenID)
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }
