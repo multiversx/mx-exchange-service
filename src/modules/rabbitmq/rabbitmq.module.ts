@@ -11,6 +11,8 @@ import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.se
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
+import { RouterModule } from '../router/router.module';
+import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
 
 @Module({
     imports: [
@@ -20,12 +22,14 @@ import { ContextModule } from 'src/services/context/context.module';
         ContextModule,
         PairModule,
         FarmModule,
+        RouterModule,
     ],
     providers: [
         RabbitMqConsumer,
         RabbitMQPairHandlerService,
         RabbitMQFarmHandlerService,
         RabbitMQProxyHandlerService,
+        RabbitMQRouterHandlerService,
         RabbitMQEsdtTokenHandlerService,
     ],
 })

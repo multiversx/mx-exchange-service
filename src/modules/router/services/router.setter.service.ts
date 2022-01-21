@@ -4,6 +4,7 @@ import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
+import { PairMetadata } from '../models/pair.metadata.model';
 
 @Injectable()
 export class RouterSetterService {
@@ -11,6 +12,12 @@ export class RouterSetterService {
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
+
+    async setPairsMetadata(value: PairMetadata[]): Promise<string> {
+        const cacheKey = this.getRouterCacheKey('pairsMetadata');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
 
     async setTotalLockedValueUSD(value: string): Promise<string> {
         const cacheKey = this.getRouterCacheKey('totalLockedValueUSD');

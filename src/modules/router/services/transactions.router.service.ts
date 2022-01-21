@@ -5,23 +5,41 @@ import {
     Interaction,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { RouterService } from './router.service';
 
 @Injectable()
 export class TransactionRouterService {
-    constructor(private readonly elrondProxy: ElrondProxyService) {}
+    constructor(
+        private readonly elrondProxy: ElrondProxyService,
+        private readonly routerService: RouterService,
+        private readonly pairGetterService: PairGetterService,
+    ) {}
 
     async createPair(
-        token0ID: string,
-        token1ID: string,
+        firstTokenID: string,
+        secondTokenID: string,
     ): Promise<TransactionModel> {
+        const pairCount = await this.routerService.getPairCount();
+        const pair = await this.routerService.getAllPairs(0, pairCount, {
+            address: null,
+            firstTokenID: firstTokenID,
+            secondTokenID: secondTokenID,
+            issuedLpToken: true,
+        });
+
+        if (pair) {
+            throw new Error('Pair already exists');
+        }
+
         const contract = await this.elrondProxy.getRouterSmartContract();
 
         const createPairInteraction: Interaction = contract.methods.createPair([
-            BytesValue.fromUTF8(token0ID),
-            BytesValue.fromUTF8(token1ID),
+            BytesValue.fromUTF8(firstTokenID),
+            BytesValue.fromUTF8(secondTokenID),
         ]);
 
         const transaction = createPairInteraction.buildTransaction();
@@ -34,6 +52,11 @@ export class TransactionRouterService {
         lpTokenName: string,
         lpTokenTicker: string,
     ): Promise<TransactionModel> {
+        const lpTokeID = await this.pairGetterService.getLpTokenID(pairAddress);
+        if (lpTokeID !== undefined) {
+            throw new Error('LP Token already issued');
+        }
+
         const contract = await this.elrondProxy.getRouterSmartContract();
         const issueLPTokenInteraction: Interaction = contract.methods.issueLPToken(
             [
