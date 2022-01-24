@@ -23,6 +23,7 @@ import { AWSModule } from 'src/services/aws/aws.module';
         RouterResolver,
     ],
     exports: [
+        AbiRouterService,
         RouterService,
         RouterGetterService,
         RouterSetterService,
