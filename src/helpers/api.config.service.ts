@@ -182,4 +182,13 @@ export class ApiConfigService {
         }
         return mongoDBPassword;
     }
+
+    getSecurityAdmins(): string[] {
+        const admins = this.configService.get<string>('SECURITY_ADMINS');
+        if (!admins) {
+            throw new Error('No security admins present');
+        }
+
+        return admins.split(',');
+    }
 }
