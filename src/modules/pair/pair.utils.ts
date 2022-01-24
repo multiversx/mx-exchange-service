@@ -10,6 +10,10 @@ export function quote(
     const tokenInReservesBig = new BigNumber(tokenInReserves);
     const tokenOutReservesBig = new BigNumber(tokenOutReserves);
 
+    if (tokenInReservesBig.isZero()) {
+        return new BigNumber(0);
+    }
+
     return tokenInAmountBig
         .multipliedBy(tokenOutReservesBig)
         .dividedBy(tokenInReservesBig)
