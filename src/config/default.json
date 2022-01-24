@@ -75,7 +75,7 @@
             "setFee": 200000000
         },
         "pairs": {
-            "addLiquidity": 8300000,
+            "addLiquidity": 8800000,
             "removeLiquidity": 7700000,
             "swapTokensFixedInput": {
                 "default": 8400000,
