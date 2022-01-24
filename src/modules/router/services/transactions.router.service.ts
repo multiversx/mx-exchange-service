@@ -65,7 +65,7 @@ export class TransactionRouterService {
         );
 
         const transaction = issueLPTokenInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.issueToken));
+        transaction.setGasLimit(new GasLimit(gasConfig.router.issueToken));
         transaction.setValue(Balance.egld(constantsConfig.ISSUE_LP_TOKEN_COST));
         return transaction.toPlainObject();
     }
