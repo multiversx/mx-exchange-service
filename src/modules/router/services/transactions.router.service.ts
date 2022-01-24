@@ -55,7 +55,7 @@ export class TransactionRouterService {
         }
 
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const issueLPTokenInteraction: Interaction = contract.methods.issueLPToken(
+        const issueLPTokenInteraction: Interaction = contract.methods.issueLpToken(
             [
                 BytesValue.fromHex(new Address(pairAddress).hex()),
                 BytesValue.fromUTF8(lpTokenName),
