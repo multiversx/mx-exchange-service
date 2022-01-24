@@ -1,12 +1,13 @@
 import {
     Address,
+    Balance,
     BytesValue,
     GasLimit,
     Interaction,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { gasConfig } from '../../../config';
+import { constantsConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { RouterGetterService } from './router.getter.service';
@@ -64,7 +65,8 @@ export class TransactionRouterService {
         );
 
         const transaction = issueLPTokenInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.router.issueToken));
+        transaction.setGasLimit(new GasLimit(gasConfig.issueToken));
+        transaction.setValue(Balance.egld(constantsConfig.ISSUE_LP_TOKEN_COST));
         return transaction.toPlainObject();
     }
 
