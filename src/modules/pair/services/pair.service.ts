@@ -223,6 +223,14 @@ export class PairService {
             return new BigNumber(0);
         }
 
+        const pathTokenProviderUSD = graph
+            .get(tokenID)
+            .find(entry => entry === tokenProviderUSD);
+
+        if (pathTokenProviderUSD !== undefined) {
+            return await this.getPriceUSDByToken(tokenID, tokenProviderUSD);
+        }
+
         for (const edge of graph.keys()) {
             discovered.set(edge, false);
         }
@@ -237,14 +245,24 @@ export class PairService {
         if (path.length === 0) {
             return new BigNumber(0);
         }
-        const pair = await this.context.getPairByTokens(tokenID, path[1]);
+        return await this.getPriceUSDByToken(tokenID, path[1]);
+    }
+
+    async getPriceUSDByToken(
+        tokenID: string,
+        priceProviderToken: string,
+    ): Promise<BigNumber> {
+        const pair = await this.context.getPairByTokens(
+            tokenID,
+            priceProviderToken,
+        );
         const firstTokenPrice = await this.pairGetterService.getTokenPrice(
             pair.address,
             tokenID,
         );
         const secondTokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
             pair.address,
-            path[1],
+            priceProviderToken,
         );
         return new BigNumber(firstTokenPrice).multipliedBy(secondTokenPriceUSD);
     }
