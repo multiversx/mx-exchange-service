@@ -223,10 +223,11 @@ export class PairService {
             return new BigNumber(0);
         }
 
-        if (
-            graph.get(tokenID).find(entry => entry === tokenProviderUSD) !==
-            undefined
-        ) {
+        const pathTokenProviderUSD = graph
+            .get(tokenID)
+            .find(entry => entry === tokenProviderUSD);
+
+        if (pathTokenProviderUSD !== undefined) {
             return await this.getPriceUSDByToken(tokenID, tokenProviderUSD);
         }
 
@@ -241,7 +242,6 @@ export class PairService {
             path,
         );
 
-        console.log(path);
         if (path.length === 0) {
             return new BigNumber(0);
         }
