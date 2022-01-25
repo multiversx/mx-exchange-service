@@ -5,7 +5,7 @@ import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './services/transactions.router.service';
-import { JwtAdminGuard } from '../../helpers/guards/jwt.admin.guard';
+import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
