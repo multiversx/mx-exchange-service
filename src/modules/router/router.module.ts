@@ -30,6 +30,7 @@ import { CommonAppModule } from 'src/common.app.module';
         RouterResolver,
     ],
     exports: [
+        AbiRouterService,
         RouterService,
         RouterGetterService,
         RouterSetterService,

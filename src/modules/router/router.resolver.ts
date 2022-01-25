@@ -10,6 +10,7 @@ import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
 import { PairFilterArgs } from './models/filter.args';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -103,7 +104,7 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async createPair(
         @Args('firstTokenID') firstTokenID: string,
@@ -112,7 +113,7 @@ export class RouterResolver {
         return this.transactionService.createPair(firstTokenID, secondTokenID);
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async issueLPToken(
         @Args('address') address: string,
@@ -126,7 +127,7 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async setLocalRoles(
         @Args('address') address: string,
