@@ -262,6 +262,7 @@
         "MAX_GAS_LIMIT": 750000000,
         "ISSUE_LP_TOKEN_COST": 0.05,
         "MEX_TOKEN_ID": "MEX-c751d6",
+        "PRECISION_EX_INCREASE": 1000,
         "MAINTENANCE": false,
         "endpoints": [
             "wrapEgld",

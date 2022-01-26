@@ -10,3 +10,8 @@ export const computeValueUSD = (
     decimals: number,
     priceUSD: string,
 ): BigNumber => denominateAmount(amount, decimals).times(priceUSD);
+
+export const tokenNonce = (tokenID): number => {
+    const tokenNonceHex = tokenID.split('-')[2];
+    return parseInt(tokenNonceHex, 16);
+};

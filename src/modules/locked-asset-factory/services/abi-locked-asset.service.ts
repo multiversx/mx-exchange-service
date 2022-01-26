@@ -69,6 +69,15 @@ export class AbiLockedAssetService {
         return response.firstValue.valueOf().toNumber();
     }
 
+    async getExtendedAttributesActivationNonce(): Promise<number> {
+        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const interaction: Interaction = contract.methods.getExtendedAttributesActivationNonce(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
     async getBurnedTokenAmount(tokenID: string): Promise<string> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction = contract.methods.getBurnedTokenAmount([

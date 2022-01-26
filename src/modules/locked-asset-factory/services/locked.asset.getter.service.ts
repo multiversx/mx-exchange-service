@@ -77,6 +77,17 @@ export class LockedAssetGetterService {
         );
     }
 
+    async getExtendedAttributesActivationNonce(): Promise<number> {
+        const cacheKey = this.getLockedAssetFactoryCacheKey(
+            'extendedAttributesActivationNonce',
+        );
+        return await this.getData(
+            cacheKey,
+            () => this.abiService.getExtendedAttributesActivationNonce(),
+            oneHour(),
+        );
+    }
+
     async getBurnedTokenAmount(tokenID: string): Promise<number> {
         const cacheKey = this.getLockedAssetFactoryCacheKey(
             `${tokenID}.burnedTokenAmount`,
