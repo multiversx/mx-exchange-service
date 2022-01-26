@@ -1,11 +1,11 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.56.0-nightly",
-            "commitHash": "29ef6cf1637aa8317f8911f93f14e18d404c1b0e",
-            "commitDate": "2021-08-31",
+            "version": "1.58.0-nightly",
+            "commitHash": "4961b107f204e15b26961eab0685df6be3ab03c6",
+            "commitDate": "2021-11-04",
             "channel": "Nightly",
-            "short": "rustc 1.56.0-nightly (29ef6cf16 2021-08-31)"
+            "short": "rustc 1.58.0-nightly (4961b107f 2021-11-04)"
         },
         "contractCrate": {
             "name": "factory",
@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.21.0"
+            "version": "0.25.0"
         }
     },
     "name": "LockedAssetFactory",
@@ -74,7 +74,7 @@
                 },
                 {
                     "name": "unlock_period",
-                    "type": "UnlockPeriod"
+                    "type": "UnlockSchedule"
                 }
             ],
             "outputs": [
@@ -114,9 +114,7 @@
         {
             "name": "unlockAssets",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [],
             "outputs": []
         },
@@ -134,12 +132,10 @@
             "outputs": []
         },
         {
-            "name": "issueLockedAssetToken",
+            "name": "registerLockedAssetToken",
             "onlyOwner": true,
             "mutability": "mutable",
-            "payableInTokens": [
-                "EGLD"
-            ],
+            "payableInTokens": ["EGLD"],
             "inputs": [
                 {
                     "name": "token_display_name",
@@ -148,6 +144,10 @@
                 {
                     "name": "token_ticker",
                     "type": "bytes"
+                },
+                {
+                    "name": "num_decimals",
+                    "type": "u32"
                 }
             ],
             "outputs": []
@@ -165,6 +165,18 @@
                     "name": "roles",
                     "type": "variadic<EsdtLocalRole>",
                     "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setInitEpoch",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "init_epoch",
+                    "type": "u64"
                 }
             ],
             "outputs": []
@@ -206,7 +218,7 @@
             "inputs": [],
             "outputs": [
                 {
-                    "type": "UnlockPeriod"
+                    "type": "UnlockSchedule"
                 }
             ]
         },
@@ -253,7 +265,7 @@
             ],
             "outputs": [
                 {
-                    "type": "Option<UnlockSchedule>"
+                    "type": "Option<UnlockScheduleEx>"
                 }
             ]
         },
@@ -264,58 +276,6 @@
             "outputs": [
                 {
                     "type": "u32"
-                }
-            ]
-        },
-        {
-            "name": "getGeneratedTokenAmountList",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getBurnedTokenAmountList",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getGeneratedTokenAmount",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getBurnedTokenAmount",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
                 }
             ]
         },
@@ -332,9 +292,7 @@
         {
             "name": "mergeLockedAssetTokens",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [
                 {
                     "name": "opt_accept_funds_func",
@@ -347,8 +305,19 @@
                     "type": "EsdtTokenPayment"
                 }
             ]
+        },
+        {
+            "name": "getExtendedAttributesActivationNonce",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
         }
     ],
+    "hasCallback": true,
     "types": {
         "EsdtLocalRole": {
             "type": "enum",
@@ -438,7 +407,7 @@
                 }
             ]
         },
-        "UnlockPeriod": {
+        "UnlockSchedule": {
             "type": "struct",
             "fields": [
                 {
@@ -447,12 +416,25 @@
                 }
             ]
         },
-        "UnlockSchedule": {
+        "UnlockMilestoneEx": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "unlock_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "unlock_percent",
+                    "type": "u64"
+                }
+            ]
+        },
+        "UnlockScheduleEx": {
             "type": "struct",
             "fields": [
                 {
                     "name": "unlock_milestones",
-                    "type": "List<UnlockMilestone>"
+                    "type": "List<UnlockMilestoneEx>"
                 }
             ]
         }

@@ -4,7 +4,7 @@ import {
     LockedAssetModel,
     UnlockMileStoneModel,
 } from '../models/locked-asset.model';
-import { scAddress } from '../../../config';
+import { constantsConfig, scAddress } from '../../../config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import {
@@ -19,6 +19,7 @@ import {
 import { DecodeAttributesArgs } from '../../proxy/models/proxy.args';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { LockedAssetGetterService } from './locked.asset.getter.service';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class LockedAssetService {
@@ -37,15 +38,26 @@ export class LockedAssetService {
         args: DecodeAttributesArgs,
     ): Promise<LockedAssetAttributes[]> {
         const decodedBatchAttributes = [];
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+        const [
+            currentEpoch,
+            extendedAttributesActivationNonce,
+        ] = await Promise.all([
+            this.contextGetter.getCurrentEpoch(),
+            this.lockedAssetGetter.getExtendedAttributesActivationNonce(),
+        ]);
         for (const lockedAsset of args.batchAttributes) {
             const attributesBuffer = Buffer.from(
                 lockedAsset.attributes,
                 'base64',
             );
             const codec = new BinaryCodec();
-
-            const lockedAssetAttributesStructure = this.getLockedAssetAttributesStructure();
+            const tokenNonceHex = lockedAsset.identifier.split('-')[2];
+            const tokenNonce = parseInt(tokenNonceHex, 16);
+            const withActivationNonce =
+                tokenNonce > extendedAttributesActivationNonce;
+            const lockedAssetAttributesStructure = await this.getLockedAssetAttributesStructure(
+                withActivationNonce,
+            );
 
             const [decoded] = codec.decodeNested(
                 attributesBuffer,
@@ -56,6 +68,11 @@ export class LockedAssetService {
             const unlockMilestones = [];
             for (const unlockMilestone of decodedAttributes.unlockSchedule) {
                 const unlockEpoch = unlockMilestone.epoch.toNumber();
+                const unlockPercent: BigNumber = withActivationNonce
+                    ? unlockMilestone.percent.div(
+                          constantsConfig.PRECISION_EX_INCREASE,
+                      )
+                    : unlockMilestone.percent;
                 const unlockStartEpoch = await this.getMonthStartEpoch(
                     unlockEpoch,
                 );
@@ -70,7 +87,7 @@ export class LockedAssetService {
                 }
                 unlockMilestones.push(
                     new UnlockMileStoneModel({
-                        percent: unlockMilestone.percent.toNumber(),
+                        percent: unlockPercent.toNumber(),
                         epochs: remainingEpochs > 0 ? remainingEpochs : 0,
                     }),
                 );
@@ -88,7 +105,9 @@ export class LockedAssetService {
         return decodedBatchAttributes;
     }
 
-    private getLockedAssetAttributesStructure(): StructType {
+    private async getLockedAssetAttributesStructure(
+        withActivationNonce: boolean,
+    ): Promise<StructType> {
         return new StructType('LockedAssetAttributes', [
             new StructFieldDefinition(
                 'unlockSchedule',
@@ -96,7 +115,11 @@ export class LockedAssetService {
                 new ListType(
                     new StructType('UnlockMilestone', [
                         new StructFieldDefinition('epoch', '', new U64Type()),
-                        new StructFieldDefinition('percent', '', new U8Type()),
+                        new StructFieldDefinition(
+                            'percent',
+                            '',
+                            withActivationNonce ? new U64Type() : new U8Type(),
+                        ),
                     ]),
                 ),
             ),

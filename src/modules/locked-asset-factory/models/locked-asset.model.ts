@@ -5,7 +5,7 @@ import { NftCollection } from '../../../models/tokens/nftCollection.model';
 export class UnlockMileStoneModel {
     @Field(() => Int)
     epochs: number;
-    @Field(() => Int)
+    @Field()
     percent: number;
 
     constructor(init?: Partial<UnlockMileStoneModel>) {
