@@ -63,14 +63,14 @@ describe('LockedAssetService', () => {
             batchAttributes: [
                 {
                     attributes: 'AAAAAgAAAAAAAAABCgAAAAAAAAAeWgA=',
-                    identifier: '',
+                    identifier: 'LKTOK-1234-01',
                 },
             ],
         });
         expect(decodedLockedMEX).toEqual([
             new LockedAssetAttributes({
                 attributes: 'AAAAAgAAAAAAAAABCgAAAAAAAAAeWgA=',
-                identifier: '',
+                identifier: 'LKTOK-1234-01',
                 isMerged: false,
                 unlockSchedule: [
                     new UnlockMileStoneModel({
@@ -96,14 +96,14 @@ describe('LockedAssetService', () => {
             batchAttributes: [
                 {
                     attributes: 'AAAAAgAAAAAAAAABCgAAAAAAAAAeWgA=',
-                    identifier: '',
+                    identifier: 'LKTOK-1234-01',
                 },
             ],
         });
         expect(decodedLockedMEX).toEqual([
             new LockedAssetAttributes({
                 attributes: 'AAAAAgAAAAAAAAABCgAAAAAAAAAeWgA=',
-                identifier: '',
+                identifier: 'LKTOK-1234-01',
                 isMerged: false,
                 unlockSchedule: [
                     new UnlockMileStoneModel({
@@ -129,14 +129,14 @@ describe('LockedAssetService', () => {
             batchAttributes: [
                 {
                     attributes: 'AAAAAgAAAAAAAAACCgAAAAAAAAAfWgA=',
-                    identifier: '',
+                    identifier: 'LKTOK-1234-01',
                 },
             ],
         });
         expect(decodedLockedMEX).toEqual([
             new LockedAssetAttributes({
                 attributes: 'AAAAAgAAAAAAAAACCgAAAAAAAAAfWgA=',
-                identifier: '',
+                identifier: 'LKTOK-1234-01',
                 isMerged: false,
                 unlockSchedule: [
                     new UnlockMileStoneModel({
