@@ -27,6 +27,7 @@ import { AbiLockedAssetService } from 'src/modules/locked-asset-factory/services
 import { AbiLockedAssetServiceMock } from 'src/modules/locked-asset-factory/mocks/abi.locked.asset.service.mock';
 import { ProxyGetterService } from 'src/modules/proxy/services/proxy.getter.service';
 import { ProxyGetterServiceMock } from 'src/modules/proxy/mocks/proxy.getter.service.mock';
+import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -96,6 +97,7 @@ describe('AnalyticsService', () => {
                 ElrondApiServiceProvider,
                 FarmServiceProvider,
                 FarmGetterServiceProvider,
+                FarmComputeService,
                 PairServiceProvider,
                 PairGetterServiceProvider,
                 PairComputeService,
