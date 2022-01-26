@@ -1,5 +1,5 @@
 export class LockedAssetServiceMock {
     async getLockedTokenID(): Promise<string> {
-        return 'LKMEX-1234';
+        return 'LKTOK-1234';
     }
 }
