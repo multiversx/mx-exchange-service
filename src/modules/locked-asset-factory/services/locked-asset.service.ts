@@ -20,6 +20,7 @@ import { DecodeAttributesArgs } from '../../proxy/models/proxy.args';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { LockedAssetGetterService } from './locked.asset.getter.service';
 import BigNumber from 'bignumber.js';
+import { tokenNonce } from 'src/utils/token.converters';
 
 @Injectable()
 export class LockedAssetService {
@@ -51,10 +52,10 @@ export class LockedAssetService {
                 'base64',
             );
             const codec = new BinaryCodec();
-            const tokenNonceHex = lockedAsset.identifier.split('-')[2];
-            const tokenNonce = parseInt(tokenNonceHex, 16);
+
             const withActivationNonce =
-                tokenNonce > extendedAttributesActivationNonce;
+                tokenNonce(lockedAsset.identifier) >
+                extendedAttributesActivationNonce;
             const lockedAssetAttributesStructure = await this.getLockedAssetAttributesStructure(
                 withActivationNonce,
             );
