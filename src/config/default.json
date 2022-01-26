@@ -188,7 +188,7 @@
                 "v1.3": {
                     "enterFarm": {
                         "default": 19000000,
-                        "withTokenMerge": 39000000
+                        "withTokenMerge": 41000000
                     },
                     "compoundRewards": 21600000,
                     "unlockedRewards": {
