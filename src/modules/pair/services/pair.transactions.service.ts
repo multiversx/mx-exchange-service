@@ -385,11 +385,7 @@ export class PairTransactionService {
             this.pairGetterService.getFirstTokenID(pairAddress),
             this.pairGetterService.getSecondTokenID(pairAddress),
         ]);
-        console.log({
-            tokens: tokens,
-            firstTokenID: firstTokenID,
-            secondTokenID: secondTokenID,
-        });
+
         if (tokens[0].nonce > 0 || tokens[1].nonce > 0) {
             throw new Error('Only ESDT tokens allowed!');
         }
