@@ -423,52 +423,52 @@ export class PairTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<InputTokenModel[]> {
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
         switch (elrondConfig.EGLDIdentifier) {
             case tokens[0].tokenID:
-                if (tokens[1].tokenID === firstTokenID) {
-                    return [
-                        tokens[1],
-                        new InputTokenModel({
-                            tokenID: wrappedTokenID,
-                            amount: tokens[0].amount,
-                            nonce: tokens[0].nonce,
-                        }),
-                    ];
-                }
-                if (tokens[1].tokenID === secondTokenID) {
-                    return [
-                        new InputTokenModel({
-                            tokenID: wrappedTokenID,
-                            amount: tokens[0].amount,
-                            nonce: tokens[0].nonce,
-                        }),
-                        tokens[1],
-                    ];
-                }
+                return await this.getTokensInOrder(
+                    tokens[1],
+                    tokens[0],
+                    firstTokenID,
+                    secondTokenID,
+                );
             case tokens[1].tokenID:
-                if (tokens[0].tokenID === firstTokenID) {
-                    return [
-                        tokens[0],
-                        new InputTokenModel({
-                            tokenID: wrappedTokenID,
-                            amount: tokens[1].amount,
-                            nonce: tokens[1].nonce,
-                        }),
-                    ];
-                }
-                if (tokens[0].tokenID === secondTokenID) {
-                    return [
-                        new InputTokenModel({
-                            tokenID: wrappedTokenID,
-                            amount: tokens[1].amount,
-                            nonce: tokens[1].nonce,
-                        }),
-                        tokens[0],
-                    ];
-                }
+                return await this.getTokensInOrder(
+                    tokens[0],
+                    tokens[1],
+                    firstTokenID,
+                    secondTokenID,
+                );
             default:
                 throw new Error('Invalid tokens with EGLD');
+        }
+    }
+
+    private async getTokensInOrder(
+        firstToken: InputTokenModel,
+        secondToken: InputTokenModel,
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<InputTokenModel[]> {
+        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
+        if (firstToken.tokenID === firstTokenID) {
+            return [
+                firstToken,
+                new InputTokenModel({
+                    tokenID: wrappedTokenID,
+                    amount: secondToken.amount,
+                    nonce: secondToken.nonce,
+                }),
+            ];
+        }
+        if (firstToken.tokenID === secondTokenID) {
+            return [
+                new InputTokenModel({
+                    tokenID: wrappedTokenID,
+                    amount: secondToken.amount,
+                    nonce: secondToken.nonce,
+                }),
+                firstToken,
+            ];
         }
     }
 }
