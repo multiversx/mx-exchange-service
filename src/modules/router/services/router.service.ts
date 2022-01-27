@@ -168,8 +168,10 @@ export class RouterService {
             if (pairFilter.secondTokenID) {
                 pairsMetadata = pairsMetadata.filter(
                     pair =>
-                        pairFilter.firstTokenID === pair.firstTokenID &&
-                        pairFilter.secondTokenID === pair.secondTokenID,
+                        (pairFilter.firstTokenID === pair.firstTokenID &&
+                            pairFilter.secondTokenID === pair.secondTokenID) ||
+                        (pairFilter.firstTokenID === pair.secondTokenID &&
+                            pairFilter.secondTokenID === pair.firstTokenID),
                 );
             } else {
                 pairsMetadata = pairsMetadata.filter(
