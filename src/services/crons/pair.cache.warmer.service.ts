@@ -39,7 +39,6 @@ export class PairCacheWarmerService {
                 lpToken,
                 totalFeePercent,
                 specialFeePercent,
-                state,
             ] = await Promise.all([
                 this.apiService
                     .getService()
@@ -50,7 +49,6 @@ export class PairCacheWarmerService {
                 this.apiService.getService().getToken(lpTokenID),
                 this.abiPairService.getTotalFeePercent(pairMetadata.address),
                 this.abiPairService.getSpecialFeePercent(pairMetadata.address),
-                this.abiPairService.getState(pairMetadata.address),
             ]);
 
             const cacheKeys = await Promise.all([
@@ -74,7 +72,6 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     specialFeePercent,
                 ),
-                this.pairSetterService.setState(pairMetadata.address, state),
             ]);
             this.invalidatedKeys.push(cacheKeys);
 
