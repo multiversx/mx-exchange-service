@@ -381,46 +381,28 @@ export class PairTransactionService {
         pairAddress: string,
         tokens: InputTokenModel[],
     ): Promise<InputTokenModel[]> {
-        const [
-            firstTokenID,
-            secondTokenID,
-            wrappedTokenID,
-        ] = await Promise.all([
+        const [firstTokenID, secondTokenID] = await Promise.all([
             this.pairGetterService.getFirstTokenID(pairAddress),
             this.pairGetterService.getSecondTokenID(pairAddress),
-            this.wrapService.getWrappedEgldTokenID(),
         ]);
-
+        console.log({
+            tokens: tokens,
+            firstTokenID: firstTokenID,
+            secondTokenID: secondTokenID,
+        });
         if (tokens[0].nonce > 0 || tokens[1].nonce > 0) {
             throw new Error('Only ESDT tokens allowed!');
         }
 
         if (
-            tokens[0].tokenID === elrondConfig.EGLDIdentifier &&
-            tokens[1].tokenID === secondTokenID
+            tokens[0].tokenID === elrondConfig.EGLDIdentifier ||
+            tokens[1].tokenID === elrondConfig.EGLDIdentifier
         ) {
-            return [
-                new InputTokenModel({
-                    tokenID: wrappedTokenID,
-                    amount: tokens[0].amount,
-                    nonce: tokens[0].nonce,
-                }),
-                tokens[1],
-            ];
-        }
-
-        if (
-            tokens[1].tokenID === elrondConfig.EGLDIdentifier &&
-            tokens[0].tokenID === secondTokenID
-        ) {
-            return [
-                new InputTokenModel({
-                    tokenID: wrappedTokenID,
-                    amount: tokens[1].amount,
-                    nonce: tokens[1].nonce,
-                }),
-                tokens[0],
-            ];
+            return await this.getTokensWithEGLD(
+                tokens,
+                firstTokenID,
+                secondTokenID,
+            );
         }
 
         if (
@@ -438,5 +420,59 @@ export class PairTransactionService {
         }
 
         throw new Error('invalid tokens received');
+    }
+
+    private async getTokensWithEGLD(
+        tokens: InputTokenModel[],
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<InputTokenModel[]> {
+        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
+        switch (elrondConfig.EGLDIdentifier) {
+            case tokens[0].tokenID:
+                if (tokens[1].tokenID === firstTokenID) {
+                    return [
+                        tokens[1],
+                        new InputTokenModel({
+                            tokenID: wrappedTokenID,
+                            amount: tokens[0].amount,
+                            nonce: tokens[0].nonce,
+                        }),
+                    ];
+                }
+                if (tokens[1].tokenID === secondTokenID) {
+                    return [
+                        new InputTokenModel({
+                            tokenID: wrappedTokenID,
+                            amount: tokens[0].amount,
+                            nonce: tokens[0].nonce,
+                        }),
+                        tokens[1],
+                    ];
+                }
+            case tokens[1].tokenID:
+                if (tokens[0].tokenID === firstTokenID) {
+                    return [
+                        tokens[0],
+                        new InputTokenModel({
+                            tokenID: wrappedTokenID,
+                            amount: tokens[1].amount,
+                            nonce: tokens[1].nonce,
+                        }),
+                    ];
+                }
+                if (tokens[0].tokenID === secondTokenID) {
+                    return [
+                        new InputTokenModel({
+                            tokenID: wrappedTokenID,
+                            amount: tokens[1].amount,
+                            nonce: tokens[1].nonce,
+                        }),
+                        tokens[0],
+                    ];
+                }
+            default:
+                throw new Error('Invalid tokens with EGLD');
+        }
     }
 }
