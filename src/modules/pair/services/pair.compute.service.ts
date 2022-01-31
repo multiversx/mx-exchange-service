@@ -51,6 +51,11 @@ export class PairComputeService {
             this.pairGetterService.getLpToken(pairAddress),
             this.pairGetterService.getFirstTokenPrice(pairAddress),
         ]);
+
+        if (lpToken === undefined) {
+            return undefined;
+        }
+
         const [secondTokenPriceUSD, lpTokenPosition] = await Promise.all([
             this.computeTokenPriceUSD(secondToken.identifier),
             this.pairService.getLiquidityPosition(
