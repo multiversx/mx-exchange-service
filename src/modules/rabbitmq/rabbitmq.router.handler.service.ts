@@ -19,9 +19,13 @@ export class RabbitMQRouterHandlerService {
     ) {}
 
     async handleCreatePairEvent(event: CreatePairEvent): Promise<void> {
-        const pairsMetadata = await this.routerAbiService.getPairsMetadata();
+        const [pairsMetadata, pairsAddresses] = await Promise.all([
+            this.routerAbiService.getPairsMetadata(),
+            this.routerAbiService.getAllPairsAddress(),
+        ]);
         const keys = await Promise.all([
             this.routerSetterService.setPairsMetadata(pairsMetadata),
+            this.routerSetterService.setAllPairsAddress(pairsAddresses),
         ]);
         this.invalidatedKeys.push(...keys);
         await this.deleteCacheKeys();
