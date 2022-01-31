@@ -152,11 +152,14 @@ export class RabbitMqConsumer {
                     await this.wsRouterHandler.handleCreatePairEvent(
                         new CreatePairEvent(rawEvent),
                     );
+                    await this.getFilterAddresses();
+                    break;
             }
         }
     }
 
     async getFilterAddresses(): Promise<void> {
+        this.filterAddresses = [];
         this.filterAddresses = await this.context.getAllPairsAddress();
         this.filterAddresses.push(...farmsAddresses());
         this.filterAddresses.push(scAddress.proxyDexAddress);
