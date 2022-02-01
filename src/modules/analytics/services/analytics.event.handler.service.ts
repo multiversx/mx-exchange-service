@@ -65,11 +65,9 @@ export class AnalyticsEventHandlerService {
             liquidity: event.liquidityPoolSupply,
         };
         data[event.firstToken.tokenID] = await this.getTokenLiquidityData(
-            event.address,
             event.firstToken.tokenID,
         );
         data[event.secondToken.tokenID] = await this.getTokenLiquidityData(
-            event.address,
             event.secondToken.tokenID,
         );
 
@@ -107,14 +105,8 @@ export class AnalyticsEventHandlerService {
             this.pairGetterService.getSecondTokenID(event.address),
             this.contextGetter.getTokenMetadata(event.tokenIn.tokenID),
             this.contextGetter.getTokenMetadata(event.tokenOut.tokenID),
-            this.pairGetterService.getTokenPriceUSD(
-                event.address,
-                event.tokenIn.tokenID,
-            ),
-            this.pairGetterService.getTokenPriceUSD(
-                event.address,
-                event.tokenOut.tokenID,
-            ),
+            this.pairGetterService.getTokenPriceUSD(event.tokenIn.tokenID),
+            this.pairGetterService.getTokenPriceUSD(event.tokenOut.tokenID),
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
             this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
             this.pairGetterService.getTotalFeePercent(event.address),
@@ -159,12 +151,10 @@ export class AnalyticsEventHandlerService {
         };
 
         data[event.tokenIn.tokenID] = await this.getTokenSwapData(
-            event.address,
             event.tokenIn.tokenID,
             event.tokenIn.amount,
         );
         data[event.tokenOut.tokenID] = await this.getTokenSwapData(
-            event.address,
             event.tokenOut.tokenID,
             event.tokenOut.amount,
         );
@@ -278,10 +268,6 @@ export class AnalyticsEventHandlerService {
     }
 
     private async updatePairPrices(pairAddress: string): Promise<void> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
-        ]);
         const [
             firstTokenPrice,
             secondTokenPrice,
@@ -291,8 +277,8 @@ export class AnalyticsEventHandlerService {
         ] = await Promise.all([
             this.pairComputeService.computeFirstTokenPrice(pairAddress),
             this.pairComputeService.computeSecondTokenPrice(pairAddress),
-            this.pairComputeService.computeTokenPriceUSD(firstTokenID),
-            this.pairComputeService.computeTokenPriceUSD(secondTokenID),
+            this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
+            this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
             this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
         ]);
         const cacheKeys = await Promise.all([
@@ -306,11 +292,11 @@ export class AnalyticsEventHandlerService {
             ),
             this.pairSetterService.setFirstTokenPriceUSD(
                 pairAddress,
-                firstTokenPriceUSD.toFixed(),
+                firstTokenPriceUSD,
             ),
             this.pairSetterService.setSecondTokenPriceUSD(
                 pairAddress,
-                secondTokenPriceUSD.toFixed(),
+                secondTokenPriceUSD,
             ),
             this.pairSetterService.setLpTokenPriceUSD(
                 pairAddress,
@@ -321,13 +307,10 @@ export class AnalyticsEventHandlerService {
         await this.deleteCacheKeys();
     }
 
-    private async getTokenLiquidityData(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<any> {
+    private async getTokenLiquidityData(tokenID: string): Promise<any> {
         const [token, priceUSD, pairs] = await Promise.all([
             this.contextGetter.getTokenMetadata(tokenID),
-            this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
+            this.pairGetterService.getTokenPriceUSD(tokenID),
             this.context.getPairsMetadata(),
         ]);
 
@@ -360,14 +343,13 @@ export class AnalyticsEventHandlerService {
     }
 
     private async getTokenSwapData(
-        pairAddress: string,
         tokenID: string,
         amount: string,
     ): Promise<any> {
         const [token, priceUSD, lockedData] = await Promise.all([
             this.contextGetter.getTokenMetadata(tokenID),
-            this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
-            this.getTokenLiquidityData(pairAddress, tokenID),
+            this.pairGetterService.getTokenPriceUSD(tokenID),
+            this.getTokenLiquidityData(tokenID),
         ]);
         return {
             lockedValue: lockedData.lockedValue,
