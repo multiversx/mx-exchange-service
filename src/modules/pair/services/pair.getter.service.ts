@@ -127,40 +127,31 @@ export class PairGetterService {
         );
     }
 
-    async getTokenPriceUSD(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.getFirstTokenID(pairAddress),
-            this.getSecondTokenID(pairAddress),
-        ]);
-
-        switch (tokenID) {
-            case firstTokenID:
-                return this.getFirstTokenPriceUSD(pairAddress);
-            case secondTokenID:
-                return this.getSecondTokenPriceUSD(pairAddress);
-        }
+    async getTokenPriceUSD(tokenID: string): Promise<string> {
+        return await this.getData(
+            'priceUSD',
+            tokenID,
+            () => this.pairComputeService.computeTokenPriceUSD(tokenID),
+            oneMinute(),
+        );
     }
 
     async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-
-        return this.getData(
+        return await this.getData(
             pairAddress,
             'firstTokenPriceUSD',
-            () => this.pairComputeService.computeTokenPriceUSD(firstTokenID),
+            () =>
+                this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
             oneMinute(),
         );
     }
 
     async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return this.getData(
+        return await this.getData(
             pairAddress,
             'secondTokenPriceUSD',
-            () => this.pairComputeService.computeTokenPriceUSD(secondTokenID),
+            () =>
+                this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
             oneMinute(),
         );
     }

@@ -2,17 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
-import {
-    cacheConfig,
-    cachedTokensPriceConfig,
-    tokensSupplyConfig,
-} from 'src/config';
+import { cacheConfig, tokensSupplyConfig } from 'src/config';
 import { AnalyticsComputeService } from 'src/modules/analytics/services/analytics.compute.service';
 import { AnalyticsGetterService } from 'src/modules/analytics/services/analytics.getter.service';
 import { oneMinute } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
-import { farmsAddresses } from 'src/utils/farm.utils';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
@@ -58,32 +53,6 @@ export class AnalyticsCacheWarmerService {
         ]);
 
         await this.deleteCacheKeys();
-    }
-
-    @Cron(CronExpression.EVERY_30_SECONDS)
-    async cacheTokenPriceUSD(): Promise<void> {
-        for (const token of cachedTokensPriceConfig) {
-            const tokenPriceUSD = await this.analyticsCompute.computeTokenPriceUSD(
-                token,
-            );
-            await this.setAnalyticsCache(
-                [token, 'tokenPriceUSD'],
-                tokenPriceUSD,
-                oneMinute(),
-            );
-        }
-        await this.deleteCacheKeys();
-    }
-
-    private async setFarmCache(
-        farmAddress: string,
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ) {
-        const cacheKey = generateCacheKeyFromParams('farm', farmAddress, key);
-        await this.cachingService.setCache(cacheKey, value, ttl);
-        this.invalidatedKeys.push(cacheKey);
     }
 
     private async setAnalyticsCache(

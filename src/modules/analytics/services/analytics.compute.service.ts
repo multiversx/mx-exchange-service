@@ -20,13 +20,6 @@ export class AnalyticsComputeService {
         private readonly lockedAssetGetter: LockedAssetGetterService,
     ) {}
 
-    async computeTokenPriceUSD(tokenID: string): Promise<string> {
-        const tokenPriceUSD = await this.pairCompute.computeTokenPriceUSD(
-            tokenID,
-        );
-        return tokenPriceUSD.toFixed();
-    }
-
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
 

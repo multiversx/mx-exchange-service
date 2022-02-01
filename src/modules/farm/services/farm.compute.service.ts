@@ -78,7 +78,6 @@ export class FarmComputeService {
 
         if (scAddress.has(farmingToken.identifier)) {
             const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-                scAddress.get(farmingToken.identifier),
                 farmingToken.identifier,
             );
             return computeValueUSD(
@@ -226,7 +225,6 @@ export class FarmComputeService {
 
         if (scAddress.has(farmingToken.identifier)) {
             const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-                scAddress.get(farmingToken.identifier),
                 farmingToken.identifier,
             );
             return computeValueUSD(
@@ -260,7 +258,6 @@ export class FarmComputeService {
 
         if (scAddress.has(farmingToken.identifier)) {
             const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-                scAddress.get(farmingToken.identifier),
                 farmingToken.identifier,
             );
             return computeValueUSD(
