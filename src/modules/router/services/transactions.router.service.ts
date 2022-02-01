@@ -7,7 +7,7 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { constantsConfig, gasConfig } from '../../../config';
+import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { RouterGetterService } from './router.getter.service';
@@ -42,7 +42,10 @@ export class TransactionRouterService {
 
         const transaction = createPairInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.createPair));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async issueLpToken(
@@ -67,7 +70,10 @@ export class TransactionRouterService {
         const transaction = issueLPTokenInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.issueToken));
         transaction.setValue(Balance.egld(constantsConfig.ISSUE_LP_TOKEN_COST));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
@@ -78,7 +84,10 @@ export class TransactionRouterService {
 
         const transaction = setLocalRolesInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.setLocalRoles));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async setState(
@@ -94,7 +103,10 @@ export class TransactionRouterService {
 
         const transaction = stateInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.setState));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async setFee(
@@ -116,7 +128,10 @@ export class TransactionRouterService {
 
         const transaction = setFeeInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.setFee));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     private async checkPairExists(
