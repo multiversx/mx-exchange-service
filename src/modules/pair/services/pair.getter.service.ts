@@ -114,7 +114,7 @@ export class PairGetterService {
             pairAddress,
             'firstTokenPrice',
             () => this.pairComputeService.computeFirstTokenPrice(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
         );
     }
 
@@ -123,7 +123,7 @@ export class PairGetterService {
             pairAddress,
             'secondTokenPrice',
             () => this.pairComputeService.computeSecondTokenPrice(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
         );
     }
 
@@ -132,7 +132,7 @@ export class PairGetterService {
             'priceUSD',
             tokenID,
             () => this.pairComputeService.computeTokenPriceUSD(tokenID),
-            oneSecond() * 12,
+            oneMinute(),
         );
     }
 
@@ -142,7 +142,7 @@ export class PairGetterService {
             'firstTokenPriceUSD',
             () =>
                 this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
         );
     }
 
@@ -152,7 +152,7 @@ export class PairGetterService {
             'secondTokenPriceUSD',
             () =>
                 this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
         );
     }
 
