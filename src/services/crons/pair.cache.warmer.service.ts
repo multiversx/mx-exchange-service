@@ -144,14 +144,14 @@ export class PairCacheWarmerService {
                 this.pairComputeService.computeFirstTokenPrice(
                     pairMetadata.address,
                 ),
-                this.pairComputeService.computeTokenPriceUSD(
-                    pairMetadata.firstTokenID,
+                this.pairComputeService.computeFirstTokenPriceUSD(
+                    pairMetadata.address,
                 ),
                 this.pairComputeService.computeSecondTokenPrice(
                     pairMetadata.address,
                 ),
-                this.pairComputeService.computeTokenPriceUSD(
-                    pairMetadata.secondTokenID,
+                this.pairComputeService.computeSecondTokenPriceUSD(
+                    pairMetadata.address,
                 ),
                 this.pairComputeService.computeLpTokenPriceUSD(
                     pairMetadata.address,
@@ -170,11 +170,11 @@ export class PairCacheWarmerService {
                 ),
                 this.pairSetterService.setFirstTokenPriceUSD(
                     pairMetadata.address,
-                    firstTokenPriceUSD.toFixed(),
+                    firstTokenPriceUSD,
                 ),
                 this.pairSetterService.setSecondTokenPriceUSD(
                     pairMetadata.address,
-                    secondTokenPriceUSD.toFixed(),
+                    secondTokenPriceUSD,
                 ),
                 this.pairSetterService.setLpTokenPriceUSD(
                     pairMetadata.address,
