@@ -46,8 +46,12 @@ export class AnalyticsComputeService {
 
     async computeTotalValueLockedUSD(): Promise<string> {
         const pairsAddress = await this.context.getAllPairsAddress();
+        const filteredPairs = await this.fiterPairsByIssuedLpToken(
+            pairsAddress,
+        );
+
         let totalValueLockedUSD = new BigNumber(0);
-        const promises = pairsAddress.map(pairAddress =>
+        const promises = filteredPairs.map(pairAddress =>
             this.pairGetterService.getLockedValueUSD(pairAddress),
         );
 
@@ -122,5 +126,21 @@ export class AnalyticsComputeService {
         }
 
         return burnedTokenAmount.toFixed();
+    }
+
+    private async fiterPairsByIssuedLpToken(
+        pairsAddress: string[],
+    ): Promise<string[]> {
+        const filteredPairs = [];
+        for (const pairAddress of pairsAddress) {
+            const lpTokenID = await this.pairGetterService.getLpTokenID(
+                pairAddress,
+            );
+            if (lpTokenID !== undefined) {
+                filteredPairs.push(pairAddress);
+            }
+        }
+
+        return filteredPairs;
     }
 }
