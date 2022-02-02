@@ -11,6 +11,7 @@ import { oneHour } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
+import { PairDBService } from 'src/modules/pair/services/pair.db.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -19,6 +20,7 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: PairAbiService,
+        private readonly pairDbService: PairDBService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
         private readonly cachingService: CachingService,
@@ -96,13 +98,14 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.context.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [pairInfo, burnedToken, state] = await Promise.all([
+            const [pairInfo, burnedToken, state, type] = await Promise.all([
                 this.abiPairService.getPairInfoMetadata(pairAddress),
                 this.abiPairService.getBurnedTokenAmount(
                     pairAddress,
                     constantsConfig.MEX_TOKEN_ID,
                 ),
                 this.abiPairService.getState(pairAddress),
+                this.pairDbService.getPairType(pairAddress),
             ]);
 
             this.invalidatedKeys = await Promise.all([
@@ -124,6 +127,7 @@ export class PairCacheWarmerService {
                     pairInfo.totalSupply,
                 ),
                 this.pairSetterService.setState(pairAddress, state),
+                this.pairSetterService.setType(pairAddress, type),
             ]);
             await this.deleteCacheKeys();
         }

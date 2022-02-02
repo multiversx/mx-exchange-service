@@ -370,7 +370,7 @@ export class PairGetterService {
             pairAddress,
             'type',
             () => this.pairDbService.getPairType(pairAddress),
-            oneSecond(),
+            oneMinute(),
         );
     }
 
