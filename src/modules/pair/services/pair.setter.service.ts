@@ -221,6 +221,12 @@ export class PairSetterService {
         return cacheKey;
     }
 
+    async setType(pairAddress: string, value: string): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'type');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     async setBurnedTokenAmount(
         pairAddress: string,
         tokenID: string,
