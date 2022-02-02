@@ -85,11 +85,11 @@
         "claimRewardsProxy": 48000000,
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
-        "unlockAssets": 17500000,
+        "unlockAssets": 22500000,
         "defaultMergeWLPT": 20000000,
         "defaultMergeWFMT": 20000000,
         "defaultMergeLockedAssets": 10000000,
-        "lockedAssetMerge": 2000000
+        "lockedAssetMerge": 3000000
     },
     "abi": {
         "router": "./src/abis/router.abi.json",
