@@ -132,7 +132,7 @@ export class PairGetterService {
             'priceUSD',
             tokenID,
             () => this.pairComputeService.computeTokenPriceUSD(tokenID),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 

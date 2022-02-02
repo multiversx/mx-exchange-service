@@ -123,7 +123,7 @@ export class PairSetterService {
 
     async setTokenPriceUSD(tokenID: string, value: string): Promise<string> {
         const cacheKey = this.getPairCacheKey('priceUSD', tokenID);
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
         return cacheKey;
     }
 
