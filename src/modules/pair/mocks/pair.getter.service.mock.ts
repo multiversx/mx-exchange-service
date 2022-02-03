@@ -51,20 +51,14 @@ export class PairGetterServiceMock {
         return PairsData(pairAddress).secondTokenPrice;
     }
 
-    async getTokenPriceUSD(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.getFirstTokenID(pairAddress),
-            this.getSecondTokenID(pairAddress),
-        ]);
-
+    async getTokenPriceUSD(tokenID: string): Promise<string> {
         switch (tokenID) {
-            case firstTokenID:
-                return this.getFirstTokenPriceUSD(pairAddress);
-            case secondTokenID:
-                return this.getSecondTokenPriceUSD(pairAddress);
+            case 'TOK1-1111':
+                return '200';
+            case 'TOK2-2222':
+                return '100';
+            case 'USDC-1111':
+                return '1';
         }
     }
 
