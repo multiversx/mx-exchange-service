@@ -26,7 +26,6 @@ import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
 import { FarmServiceMock } from '../farm/mocks/farm.service.mock';
 import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
-import { PairServiceMock } from '../pair/mocks/pair.service.mock';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../pair/mocks/pair.getter.service.mock';
@@ -68,11 +67,6 @@ describe('UserService', () => {
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
-    };
-
-    const PairServiceProvider = {
-        provide: PairService,
-        useClass: PairServiceMock,
     };
 
     const PairGetterServiceProvider = {
@@ -135,7 +129,7 @@ describe('UserService', () => {
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
                 ContextGetterServiceProvider,
-                PairServiceProvider,
+                PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
                 PriceFeedServiceProvider,
@@ -213,7 +207,7 @@ describe('UserService', () => {
                 creator: 'farm_address_1',
                 nonce: 1,
                 royalties: 0,
-                valueUSD: '150',
+                valueUSD: '400',
                 decodedAttributes: new FarmTokenAttributesModel({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',

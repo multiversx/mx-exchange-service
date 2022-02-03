@@ -7,8 +7,12 @@
             "customRewards": ["farm_address_4"]
         }
     },
-    "tokenProviderUSD": "TOK3-3333",
+    "tokenProviderUSD": "TOK1-1111",
     "priceFeeds": {
-        "TOK3-3333": "tok3"
+        "USDC-1111": "tok3"
+    },
+    "constants": {
+        "MEX_TOKEN_ID": "TOK2-2222",
+        "USDC_TOKEN_ID": "USDC-1111"
     }
 }

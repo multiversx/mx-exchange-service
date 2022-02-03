@@ -12,7 +12,6 @@ import { ElrondProxyService } from '../../../services/elrond-communication/elron
 import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-transactions.service';
 import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { PairServiceMock } from 'src/modules/pair/mocks/pair.service.mock';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
@@ -44,11 +43,6 @@ describe('TransactionProxyPairService', () => {
     const ProxyPairGetterServiceProvider = {
         provide: ProxyPairGetterService,
         useClass: ProxyPairGetterServiceMock,
-    };
-
-    const PairServiceProvider = {
-        provide: PairService,
-        useClass: PairServiceMock,
     };
 
     const PairGetterServiceProvider = {
@@ -92,7 +86,7 @@ describe('TransactionProxyPairService', () => {
                 ContextTransactionsService,
                 ProxyGetterServiceProvider,
                 ProxyPairGetterServiceProvider,
-                PairServiceProvider,
+                PairService,
                 PairGetterServiceProvider,
                 WrapServiceProvider,
                 TransactionsWrapService,
