@@ -5,7 +5,6 @@ import { RewardsEvent } from './entities/farm/rewards.event';
 import { AddLiquidityEvent } from './entities/pair/addLiquidity.event';
 import { RemoveLiquidityEvent } from './entities/pair/removeLiquidity.event';
 import { SwapFixedInputEvent } from './entities/pair/swapFixedInput.event';
-import { SwapNoFeeEvent } from './entities/pair/swapNoFee.event';
 import { AddLiquidityProxyEvent } from './entities/proxy/addLiquidityProxy.event';
 import { ClaimRewardsProxyEvent } from './entities/proxy/claimRewardsProxy.event';
 import { CompoundRewardsProxyEvent } from './entities/proxy/compoundRewardsProxy.event';
@@ -17,6 +16,7 @@ import {
     FARM_EVENTS,
     PAIR_EVENTS,
     PROXY_EVENTS,
+    ROUTER_EVENTS,
 } from './entities/generic.types';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -31,6 +31,8 @@ import { EsdtLocalBurnEvent } from './entities/esdtToken/esdtLocalBurn.event';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { EsdtLocalMintEvent } from './entities/esdtToken/esdtLocalMint.event';
 import { farmsAddresses } from 'src/utils/farm.utils';
+import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
+import { CreatePairEvent } from './entities/router/createPair.event';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -41,6 +43,7 @@ export class RabbitMqConsumer {
         private readonly wsPairHandler: RabbitMQPairHandlerService,
         private readonly wsFarmHandler: RabbitMQFarmHandlerService,
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
+        private readonly wsRouterHandler: RabbitMQRouterHandlerService,
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -145,13 +148,21 @@ export class RabbitMqConsumer {
                         new EsdtLocalBurnEvent(rawEvent),
                     );
                     break;
+                case ROUTER_EVENTS.CREATE_PAIR:
+                    await this.wsRouterHandler.handleCreatePairEvent(
+                        new CreatePairEvent(rawEvent),
+                    );
+                    await this.getFilterAddresses();
+                    break;
             }
         }
     }
 
     async getFilterAddresses(): Promise<void> {
+        this.filterAddresses = [];
         this.filterAddresses = await this.context.getAllPairsAddress();
         this.filterAddresses.push(...farmsAddresses());
         this.filterAddresses.push(scAddress.proxyDexAddress);
+        this.filterAddresses.push(scAddress.routerAddress);
     }
 }

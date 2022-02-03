@@ -1,32 +1,51 @@
 import {
     Address,
+    Balance,
     BytesValue,
     GasLimit,
     Interaction,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
-import { gasConfig } from '../../../config';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { RouterGetterService } from './router.getter.service';
 
 @Injectable()
 export class TransactionRouterService {
-    constructor(private readonly elrondProxy: ElrondProxyService) {}
+    constructor(
+        private readonly elrondProxy: ElrondProxyService,
+        private readonly routerGetterService: RouterGetterService,
+        private readonly pairGetterService: PairGetterService,
+    ) {}
 
     async createPair(
-        token0ID: string,
-        token1ID: string,
+        firstTokenID: string,
+        secondTokenID: string,
     ): Promise<TransactionModel> {
+        const checkPairExists = await this.checkPairExists(
+            firstTokenID,
+            secondTokenID,
+        );
+
+        if (checkPairExists) {
+            throw new Error('Pair already exists');
+        }
+
         const contract = await this.elrondProxy.getRouterSmartContract();
 
         const createPairInteraction: Interaction = contract.methods.createPair([
-            BytesValue.fromUTF8(token0ID),
-            BytesValue.fromUTF8(token1ID),
+            BytesValue.fromUTF8(firstTokenID),
+            BytesValue.fromUTF8(secondTokenID),
         ]);
 
         const transaction = createPairInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.createPair));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async issueLpToken(
@@ -34,8 +53,13 @@ export class TransactionRouterService {
         lpTokenName: string,
         lpTokenTicker: string,
     ): Promise<TransactionModel> {
+        const lpTokeID = await this.pairGetterService.getLpTokenID(pairAddress);
+        if (lpTokeID !== undefined) {
+            throw new Error('LP Token already issued');
+        }
+
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const issueLPTokenInteraction: Interaction = contract.methods.issueLPToken(
+        const issueLPTokenInteraction: Interaction = contract.methods.issueLpToken(
             [
                 BytesValue.fromHex(new Address(pairAddress).hex()),
                 BytesValue.fromUTF8(lpTokenName),
@@ -45,7 +69,11 @@ export class TransactionRouterService {
 
         const transaction = issueLPTokenInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.issueToken));
-        return transaction.toPlainObject();
+        transaction.setValue(Balance.egld(constantsConfig.ISSUE_LP_TOKEN_COST));
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
@@ -56,7 +84,10 @@ export class TransactionRouterService {
 
         const transaction = setLocalRolesInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.setLocalRoles));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async setState(
@@ -72,7 +103,10 @@ export class TransactionRouterService {
 
         const transaction = stateInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.setState));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async setFee(
@@ -94,6 +128,27 @@ export class TransactionRouterService {
 
         const transaction = setFeeInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.setFee));
-        return transaction.toPlainObject();
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
+    }
+
+    private async checkPairExists(
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<boolean> {
+        const pairsMetadata = await this.routerGetterService.getPairsMetadata();
+        for (const pair of pairsMetadata) {
+            if (
+                (pair.firstTokenID === firstTokenID &&
+                    pair.secondTokenID === secondTokenID) ||
+                (pair.firstTokenID === secondTokenID &&
+                    pair.secondTokenID === firstTokenID)
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }

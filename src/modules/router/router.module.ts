@@ -10,9 +10,16 @@ import { RouterComputeService } from './services/router.compute.service';
 import { PairModule } from '../pair/pair.module';
 import { RouterSetterService } from './services/router.setter.service';
 import { AWSModule } from 'src/services/aws/aws.module';
+import { CommonAppModule } from 'src/common.app.module';
 
 @Module({
-    imports: [ElrondCommunicationModule, CachingModule, PairModule, AWSModule],
+    imports: [
+        CommonAppModule,
+        ElrondCommunicationModule,
+        CachingModule,
+        PairModule,
+        AWSModule,
+    ],
     providers: [
         RouterService,
         AbiRouterService,
@@ -23,6 +30,7 @@ import { AWSModule } from 'src/services/aws/aws.module';
         RouterResolver,
     ],
     exports: [
+        AbiRouterService,
         RouterService,
         RouterGetterService,
         RouterSetterService,

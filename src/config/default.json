@@ -24,6 +24,12 @@
         },
         "priceDiscovery": []
     },
+    "tokenProviderUSD": "WEGLD-f643d8",
+    "priceFeeds": {
+        "USDC-72a225": "usdc"
+    },
+    "tokensSupply": ["MEX-c751d6"],
+    "cachedTokensPrice": ["MEX-c751d6"],
     "farms": {
         "v1.2": [
             "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
@@ -42,12 +48,6 @@
             ]
         }
     },
-    "tokenProviderUSD": "USDC-72a225",
-    "priceFeeds": {
-        "USDC-72a225": "usdc"
-    },
-    "tokensSupply": ["MEX-c751d6"],
-    "cachedTokensPrice": ["MEX-c751d6"],
     "caching": {
         "pairsMetadata": 300,
         "pairs": 300,
@@ -66,9 +66,9 @@
         "removeLiquidity": 8500000,
         "swapTokens": 18000000,
         "swapMexTokens": 9000000,
-        "createPair": 1400000000,
-        "issueToken": 200000000,
-        "setLocalRoles": 200000000,
+        "createPair": 21000000,
+        "issueToken": 100000000,
+        "setLocalRoles": 100000000,
         "setState": 200000000,
         "setFee": 200000000,
         "addLiquidityProxy": 31000000,
@@ -86,11 +86,11 @@
         "claimRewardsProxy": 48000000,
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
-        "unlockAssets": 17500000,
+        "unlockAssets": 30000000,
         "defaultMergeWLPT": 20000000,
         "defaultMergeWFMT": 20000000,
         "defaultMergeLockedAssets": 10000000,
-        "lockedAssetMerge": 2000000
+        "lockedAssetMerge": 4000000
     },
     "abi": {
         "router": "./src/abis/router.abi.json",
@@ -118,7 +118,10 @@
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
         "MAX_GAS_LIMIT": 750000000,
+        "ISSUE_LP_TOKEN_COST": 0.05,
         "MEX_TOKEN_ID": "MEX-c751d6",
+        "USDC_TOKEN_ID": "USDC-72a225",
+        "PRECISION_EX_INCREASE": 1000,
         "MAINTENANCE": false,
         "endpoints": [
             "wrapEgld",

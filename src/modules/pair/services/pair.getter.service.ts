@@ -13,6 +13,7 @@ import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
+import { PairDBService } from './pair.db.service';
 
 @Injectable()
 export class PairGetterService {
@@ -22,6 +23,7 @@ export class PairGetterService {
         private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
+        private readonly pairDbService: PairDBService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -112,7 +114,7 @@ export class PairGetterService {
             pairAddress,
             'firstTokenPrice',
             () => this.pairComputeService.computeFirstTokenPrice(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -121,45 +123,36 @@ export class PairGetterService {
             pairAddress,
             'secondTokenPrice',
             () => this.pairComputeService.computeSecondTokenPrice(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
-    async getTokenPriceUSD(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.getFirstTokenID(pairAddress),
-            this.getSecondTokenID(pairAddress),
-        ]);
-
-        switch (tokenID) {
-            case firstTokenID:
-                return this.getFirstTokenPriceUSD(pairAddress);
-            case secondTokenID:
-                return this.getSecondTokenPriceUSD(pairAddress);
-        }
+    async getTokenPriceUSD(tokenID: string): Promise<string> {
+        return await this.getData(
+            'priceUSD',
+            tokenID,
+            () => this.pairComputeService.computeTokenPriceUSD(tokenID),
+            oneSecond() * 12,
+        );
     }
 
     async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
-        const firstTokenID = await this.getFirstTokenID(pairAddress);
-
-        return this.getData(
+        return await this.getData(
             pairAddress,
             'firstTokenPriceUSD',
-            () => this.pairComputeService.computeTokenPriceUSD(firstTokenID),
-            oneMinute(),
+            () =>
+                this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
+            oneSecond() * 12,
         );
     }
 
     async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
-        const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return this.getData(
+        return await this.getData(
             pairAddress,
             'secondTokenPriceUSD',
-            () => this.pairComputeService.computeTokenPriceUSD(secondTokenID),
-            oneMinute(),
+            () =>
+                this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
+            oneSecond() * 12,
         );
     }
 
@@ -168,7 +161,7 @@ export class PairGetterService {
             pairAddress,
             'lpTokenPriceUSD',
             () => this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -178,7 +171,7 @@ export class PairGetterService {
             pairAddress,
             'firstTokenReserve',
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -188,7 +181,7 @@ export class PairGetterService {
             pairAddress,
             'secondTokenReserve',
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -197,7 +190,7 @@ export class PairGetterService {
             pairAddress,
             'totalSupply',
             () => this.abiService.getTotalSupply(pairAddress),
-            oneMinute(),
+            oneSecond() * 12,
         );
     }
 
@@ -368,6 +361,15 @@ export class PairGetterService {
             pairAddress,
             `${tokenID}.burnedTokenAmount`,
             () => this.abiService.getBurnedTokenAmount(pairAddress, tokenID),
+            oneMinute(),
+        );
+    }
+
+    async getType(pairAddress: string): Promise<string> {
+        return await this.getData(
+            pairAddress,
+            'type',
+            () => this.pairDbService.getPairType(pairAddress),
             oneMinute(),
         );
     }

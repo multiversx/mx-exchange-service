@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { elrondConfig, tokenProviderUSD, tokensPriceData } from 'src/config';
+import { constantsConfig, elrondConfig, tokenProviderUSD } from 'src/config';
 import { BigNumber } from 'bignumber.js';
 import { LiquidityPosition } from '../models/pair.model';
 import {
@@ -212,8 +212,16 @@ export class PairService {
     }
 
     async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
-        if (!tokensPriceData.has(tokenProviderUSD)) {
-            return new BigNumber(0);
+        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
+        if (wrappedTokenID === tokenID) {
+            const pair = await this.context.getPairByTokens(
+                wrappedTokenID,
+                constantsConfig.USDC_TOKEN_ID,
+            );
+            const tokenPriceUSD = await this.pairGetterService.getFirstTokenPrice(
+                pair.address,
+            );
+            return new BigNumber(tokenPriceUSD);
         }
 
         const path: string[] = [];
@@ -221,6 +229,14 @@ export class PairService {
         const graph = await this.context.getPairsMap();
         if (!graph.has(tokenID)) {
             return new BigNumber(0);
+        }
+
+        const pathTokenProviderUSD = graph
+            .get(tokenID)
+            .find(entry => entry === tokenProviderUSD);
+
+        if (pathTokenProviderUSD !== undefined) {
+            return await this.getPriceUSDByToken(tokenID, tokenProviderUSD);
         }
 
         for (const edge of graph.keys()) {
@@ -237,16 +253,26 @@ export class PairService {
         if (path.length === 0) {
             return new BigNumber(0);
         }
-        const pair = await this.context.getPairByTokens(tokenID, path[1]);
+        return await this.getPriceUSDByToken(tokenID, path[1]);
+    }
+
+    async getPriceUSDByToken(
+        tokenID: string,
+        priceProviderToken: string,
+    ): Promise<BigNumber> {
+        const pair = await this.context.getPairByTokens(
+            tokenID,
+            priceProviderToken,
+        );
         const firstTokenPrice = await this.pairGetterService.getTokenPrice(
             pair.address,
             tokenID,
         );
-        const secondTokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-            pair.address,
-            path[1],
+        const priceProviderUSD = await this.pairGetterService.getTokenPriceUSD(
+            priceProviderToken,
         );
-        return new BigNumber(firstTokenPrice).multipliedBy(secondTokenPriceUSD);
+
+        return new BigNumber(priceProviderUSD).multipliedBy(firstTokenPrice);
     }
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {

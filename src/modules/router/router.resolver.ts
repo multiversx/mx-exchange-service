@@ -5,10 +5,12 @@ import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './services/transactions.router.service';
-import { JwtAdminGuard } from '../../helpers/guards/jwt.admin.guard';
+import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
+import { PairFilterArgs } from './models/filter.args';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -87,18 +89,22 @@ export class RouterResolver {
     }
 
     @Query(() => [PairModel])
-    async pairs(@Args() page: GetPairsArgs): Promise<PairModel[]> {
+    async pairs(
+        @Args() page: GetPairsArgs,
+        @Args() filter: PairFilterArgs,
+    ): Promise<PairModel[]> {
         try {
             return await this.routerService.getAllPairs(
                 page.offset,
                 page.limit,
+                filter,
             );
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async createPair(
         @Args('firstTokenID') firstTokenID: string,
@@ -107,7 +113,7 @@ export class RouterResolver {
         return this.transactionService.createPair(firstTokenID, secondTokenID);
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async issueLPToken(
         @Args('address') address: string,
@@ -121,7 +127,7 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async setLocalRoles(
         @Args('address') address: string,

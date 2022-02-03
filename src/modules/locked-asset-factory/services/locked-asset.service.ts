@@ -4,7 +4,7 @@ import {
     LockedAssetModel,
     UnlockMileStoneModel,
 } from '../models/locked-asset.model';
-import { scAddress } from '../../../config';
+import { constantsConfig, scAddress } from '../../../config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import {
@@ -19,6 +19,8 @@ import {
 import { DecodeAttributesArgs } from '../../proxy/models/proxy.args';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { LockedAssetGetterService } from './locked.asset.getter.service';
+import BigNumber from 'bignumber.js';
+import { tokenNonce } from 'src/utils/token.converters';
 
 @Injectable()
 export class LockedAssetService {
@@ -37,7 +39,7 @@ export class LockedAssetService {
         args: DecodeAttributesArgs,
     ): Promise<LockedAssetAttributes[]> {
         const decodedBatchAttributes = [];
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+        const extendedAttributesActivationNonce = await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
         for (const lockedAsset of args.batchAttributes) {
             const attributesBuffer = Buffer.from(
                 lockedAsset.attributes,
@@ -45,7 +47,12 @@ export class LockedAssetService {
             );
             const codec = new BinaryCodec();
 
-            const lockedAssetAttributesStructure = this.getLockedAssetAttributesStructure();
+            const withActivationNonce =
+                tokenNonce(lockedAsset.identifier) >=
+                extendedAttributesActivationNonce;
+            const lockedAssetAttributesStructure = await this.getLockedAssetAttributesStructure(
+                withActivationNonce,
+            );
 
             const [decoded] = codec.decodeNested(
                 attributesBuffer,
@@ -53,28 +60,10 @@ export class LockedAssetService {
             );
             const decodedAttributes = decoded.valueOf();
 
-            const unlockMilestones = [];
-            for (const unlockMilestone of decodedAttributes.unlockSchedule) {
-                const unlockEpoch = unlockMilestone.epoch.toNumber();
-                const unlockStartEpoch = await this.getMonthStartEpoch(
-                    unlockEpoch,
-                );
-                let remainingEpochs: number;
-                if (
-                    unlockEpoch <= unlockStartEpoch &&
-                    unlockEpoch <= currentEpoch
-                ) {
-                    remainingEpochs = 0;
-                } else {
-                    remainingEpochs = unlockStartEpoch + 30 - currentEpoch;
-                }
-                unlockMilestones.push(
-                    new UnlockMileStoneModel({
-                        percent: unlockMilestone.percent.toNumber(),
-                        epochs: remainingEpochs > 0 ? remainingEpochs : 0,
-                    }),
-                );
-            }
+            const unlockMilestones = await this.getUnlockMilestones(
+                decodedAttributes.unlockSchedule,
+                withActivationNonce,
+            );
 
             decodedBatchAttributes.push(
                 new LockedAssetAttributes({
@@ -88,7 +77,46 @@ export class LockedAssetService {
         return decodedBatchAttributes;
     }
 
-    private getLockedAssetAttributesStructure(): StructType {
+    private async getUnlockMilestones(
+        unlockSchedule: any,
+        withActivationNonce: boolean,
+    ): Promise<UnlockMileStoneModel[]> {
+        const unlockMilestones: UnlockMileStoneModel[] = [];
+        for (const unlockMilestone of unlockSchedule) {
+            const unlockEpoch = unlockMilestone.epoch.toNumber();
+            const unlockPercent: BigNumber = withActivationNonce
+                ? unlockMilestone.percent.div(
+                      constantsConfig.PRECISION_EX_INCREASE,
+                  )
+                : unlockMilestone.percent;
+            const remainingEpochs = await this.getRemainingEpochs(unlockEpoch);
+
+            unlockMilestones.push(
+                new UnlockMileStoneModel({
+                    percent: unlockPercent.toNumber(),
+                    epochs: remainingEpochs > 0 ? remainingEpochs : 0,
+                }),
+            );
+        }
+
+        return unlockMilestones;
+    }
+
+    private async getRemainingEpochs(unlockEpoch: number): Promise<number> {
+        const [currentEpoch, unlockStartEpoch] = await Promise.all([
+            this.contextGetter.getCurrentEpoch(),
+            this.getMonthStartEpoch(unlockEpoch),
+        ]);
+        if (unlockEpoch <= unlockStartEpoch && unlockEpoch <= currentEpoch) {
+            return 0;
+        } else {
+            return unlockStartEpoch + 30 - currentEpoch;
+        }
+    }
+
+    private async getLockedAssetAttributesStructure(
+        withActivationNonce: boolean,
+    ): Promise<StructType> {
         return new StructType('LockedAssetAttributes', [
             new StructFieldDefinition(
                 'unlockSchedule',
@@ -96,7 +124,11 @@ export class LockedAssetService {
                 new ListType(
                     new StructType('UnlockMilestone', [
                         new StructFieldDefinition('epoch', '', new U64Type()),
-                        new StructFieldDefinition('percent', '', new U8Type()),
+                        new StructFieldDefinition(
+                            'percent',
+                            '',
+                            withActivationNonce ? new U64Type() : new U8Type(),
+                        ),
                     ]),
                 ),
             ),

@@ -2,7 +2,7 @@ import { UnlockMileStoneModel } from '../models/locked-asset.model';
 
 export class AbiLockedAssetServiceMock {
     async getLockedTokenID(): Promise<string> {
-        return 'LockedMEX-2222';
+        return 'LKTOK-1234';
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
@@ -20,5 +20,9 @@ export class AbiLockedAssetServiceMock {
 
     async getInitEpoch(): Promise<number> {
         return 1;
+    }
+
+    async getExtendedAttributesActivationNonce(): Promise<number> {
+        return 2;
     }
 }

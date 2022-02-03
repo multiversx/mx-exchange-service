@@ -47,20 +47,20 @@ export class RabbitMQPairHandlerService {
             firstTokenReserves = event.getTokenOutReserves();
             secondTokenReserves = event.getTokenInReserves();
         }
-        // this.invalidatedKeys.push(
-        //     await this.pairSetterService.setFirstTokenReserve(
-        //         event.getAddress(),
-        //         firstTokenReserves.toFixed(),
-        //     ),
-        // );
-        // this.invalidatedKeys.push(
-        //     await this.pairSetterService.setSecondTokenReserve(
-        //         event.getAddress(),
-        //         secondTokenReserves.toFixed(),
-        //     ),
-        // );
+        this.invalidatedKeys.push(
+            await this.pairSetterService.setFirstTokenReserve(
+                event.getAddress(),
+                firstTokenReserves.toFixed(),
+            ),
+        );
+        this.invalidatedKeys.push(
+            await this.pairSetterService.setSecondTokenReserve(
+                event.getAddress(),
+                secondTokenReserves.toFixed(),
+            ),
+        );
 
-        // await this.deleteCacheKeys();
+        await this.deleteCacheKeys();
 
         event.getIdentifier() === PAIR_EVENTS.SWAP_FIXED_INPUT
             ? await this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_INPUT, {
@@ -74,22 +74,22 @@ export class RabbitMQPairHandlerService {
     async handleLiquidityEvent(
         event: AddLiquidityEvent | RemoveLiquidityEvent,
     ): Promise<void> {
-        // const cacheKeys = await Promise.all([
-        //     this.pairSetterService.setFirstTokenReserve(
-        //         event.getAddress(),
-        //         event.getFirstTokenReserves().toFixed(),
-        //     ),
-        //     this.pairSetterService.setSecondTokenReserve(
-        //         event.getAddress(),
-        //         event.getSecondTokenReserves().toFixed(),
-        //     ),
-        //     this.pairSetterService.setTotalSupply(
-        //         event.getAddress(),
-        //         event.getLiquidityPoolSupply().toFixed(),
-        //     ),
-        // ]);
-        // this.invalidatedKeys.push(cacheKeys);
-        // await this.deleteCacheKeys();
+        const cacheKeys = await Promise.all([
+            this.pairSetterService.setFirstTokenReserve(
+                event.getAddress(),
+                event.getFirstTokenReserves().toFixed(),
+            ),
+            this.pairSetterService.setSecondTokenReserve(
+                event.getAddress(),
+                event.getSecondTokenReserves().toFixed(),
+            ),
+            this.pairSetterService.setTotalSupply(
+                event.getAddress(),
+                event.getLiquidityPoolSupply().toFixed(),
+            ),
+        ]);
+        this.invalidatedKeys.push(cacheKeys);
+        await this.deleteCacheKeys();
 
         event.getIdentifier() === PAIR_EVENTS.ADD_LIQUIDITY
             ? await this.pubSub.publish(PAIR_EVENTS.ADD_LIQUIDITY, {

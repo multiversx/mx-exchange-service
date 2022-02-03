@@ -39,7 +39,7 @@ export class AnalyticsEventHandlerService {
     ) {}
 
     async handleAddLiquidityEvent(event: AddLiquidityEventType): Promise<void> {
-        // await this.updatePairLockedValueUSD(event.address);
+        await this.updatePairLockedValueUSD(event.address);
         const [
             firstTokenLockedValueUSD,
             secondTokenLockedValueUSD,
@@ -65,11 +65,9 @@ export class AnalyticsEventHandlerService {
             liquidity: event.liquidityPoolSupply,
         };
         data[event.firstToken.tokenID] = await this.getTokenLiquidityData(
-            event.address,
             event.firstToken.tokenID,
         );
         data[event.secondToken.tokenID] = await this.getTokenLiquidityData(
-            event.address,
             event.secondToken.tokenID,
         );
 
@@ -79,17 +77,21 @@ export class AnalyticsEventHandlerService {
             Time: event.timestamp,
         });
 
-        // this.invalidatedKeys.push(
-        //     this.routerSetterService.setTotalLockedValueUSD(
-        //         newTotalLockedValueUSD.toFixed(),
-        //     ),
-        // );
-        // await this.deleteCacheKeys();
+        this.invalidatedKeys.push(
+            this.routerSetterService.setTotalLockedValueUSD(
+                newTotalLockedValueUSD.toFixed(),
+            ),
+        );
+        await this.deleteCacheKeys();
     }
 
     async handleSwapEvents(event: SwapEventType): Promise<void> {
-        // await this.updatePairPrices(event.address);
-        // await this.updatePairLockedValueUSD(event.address);
+        await this.updatePairPrices(
+            event.address,
+            event.tokenIn.tokenID,
+            event.tokenOut.tokenID,
+        );
+        await this.updatePairLockedValueUSD(event.address);
 
         const [
             firstTokenID,
@@ -107,14 +109,8 @@ export class AnalyticsEventHandlerService {
             this.pairGetterService.getSecondTokenID(event.address),
             this.contextGetter.getTokenMetadata(event.tokenIn.tokenID),
             this.contextGetter.getTokenMetadata(event.tokenOut.tokenID),
-            this.pairGetterService.getTokenPriceUSD(
-                event.address,
-                event.tokenIn.tokenID,
-            ),
-            this.pairGetterService.getTokenPriceUSD(
-                event.address,
-                event.tokenOut.tokenID,
-            ),
+            this.pairGetterService.getTokenPriceUSD(event.tokenIn.tokenID),
+            this.pairGetterService.getTokenPriceUSD(event.tokenOut.tokenID),
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
             this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
             this.pairGetterService.getTotalFeePercent(event.address),
@@ -159,12 +155,10 @@ export class AnalyticsEventHandlerService {
         };
 
         data[event.tokenIn.tokenID] = await this.getTokenSwapData(
-            event.address,
             event.tokenIn.tokenID,
             event.tokenIn.amount,
         );
         data[event.tokenOut.tokenID] = await this.getTokenSwapData(
-            event.address,
             event.tokenOut.tokenID,
             event.tokenOut.amount,
         );
@@ -215,34 +209,34 @@ export class AnalyticsEventHandlerService {
             this.routerComputeService.computeTotalFeesUSD('24h'),
         ]);
 
-        // const cacheKeys = await Promise.all([
-        //     this.pairSetterService.setFirstTokenVolume(
-        //         event.address,
-        //         firstTokenVolume24h,
-        //         '24h',
-        //     ),
-        //     this.pairSetterService.setSecondTokenVolume(
-        //         event.address,
-        //         secondTokenVolume24h,
-        //         '24h',
-        //     ),
-        //     this.pairSetterService.setVolumeUSD(
-        //         event.address,
-        //         volumeUSD24h,
-        //         '24h',
-        //     ),
-        //     this.pairSetterService.setFeesUSD(event.address, feesUSD24h, '24h'),
-        //     this.routerSetterService.setTotalVolumeUSD(
-        //         totalVolumeUSD24h.toFixed(),
-        //         '24h',
-        //     ),
-        //     this.routerSetterService.setTotalFeesUSD(
-        //         totalFeesUSD24h.toFixed(),
-        //         '24h',
-        //     ),
-        // ]);
-        // this.invalidatedKeys.push(cacheKeys);
-        // await this.deleteCacheKeys();
+        const cacheKeys = await Promise.all([
+            this.pairSetterService.setFirstTokenVolume(
+                event.address,
+                firstTokenVolume24h,
+                '24h',
+            ),
+            this.pairSetterService.setSecondTokenVolume(
+                event.address,
+                secondTokenVolume24h,
+                '24h',
+            ),
+            this.pairSetterService.setVolumeUSD(
+                event.address,
+                volumeUSD24h,
+                '24h',
+            ),
+            this.pairSetterService.setFeesUSD(event.address, feesUSD24h, '24h'),
+            this.routerSetterService.setTotalVolumeUSD(
+                totalVolumeUSD24h.toFixed(),
+                '24h',
+            ),
+            this.routerSetterService.setTotalFeesUSD(
+                totalFeesUSD24h.toFixed(),
+                '24h',
+            ),
+        ]);
+        this.invalidatedKeys.push(cacheKeys);
+        await this.deleteCacheKeys();
     }
 
     private async updatePairLockedValueUSD(pairAddress: string): Promise<void> {
@@ -277,23 +271,27 @@ export class AnalyticsEventHandlerService {
         await this.deleteCacheKeys();
     }
 
-    private async updatePairPrices(pairAddress: string): Promise<void> {
-        const [firstTokenID, secondTokenID] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
-        ]);
+    private async updatePairPrices(
+        pairAddress: string,
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<void> {
         const [
             firstTokenPrice,
             secondTokenPrice,
             firstTokenPriceUSD,
             secondTokenPriceUSD,
             lpTokenPriceUSD,
+            genericFirstTokenPriceUSD,
+            genericSecondTokenPriceUSD,
         ] = await Promise.all([
             this.pairComputeService.computeFirstTokenPrice(pairAddress),
             this.pairComputeService.computeSecondTokenPrice(pairAddress),
+            this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
+            this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
+            this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
             this.pairComputeService.computeTokenPriceUSD(firstTokenID),
             this.pairComputeService.computeTokenPriceUSD(secondTokenID),
-            this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
         ]);
         const cacheKeys = await Promise.all([
             this.pairSetterService.setFirstTokenPrice(
@@ -306,28 +304,33 @@ export class AnalyticsEventHandlerService {
             ),
             this.pairSetterService.setFirstTokenPriceUSD(
                 pairAddress,
-                firstTokenPriceUSD.toFixed(),
+                firstTokenPriceUSD,
             ),
             this.pairSetterService.setSecondTokenPriceUSD(
                 pairAddress,
-                secondTokenPriceUSD.toFixed(),
+                secondTokenPriceUSD,
             ),
             this.pairSetterService.setLpTokenPriceUSD(
                 pairAddress,
                 lpTokenPriceUSD,
+            ),
+            this.pairSetterService.setTokenPriceUSD(
+                firstTokenID,
+                genericFirstTokenPriceUSD.toFixed(),
+            ),
+            this.pairSetterService.setTokenPriceUSD(
+                secondTokenID,
+                genericSecondTokenPriceUSD.toFixed(),
             ),
         ]);
         this.invalidatedKeys.push(cacheKeys);
         await this.deleteCacheKeys();
     }
 
-    private async getTokenLiquidityData(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<any> {
+    private async getTokenLiquidityData(tokenID: string): Promise<any> {
         const [token, priceUSD, pairs] = await Promise.all([
             this.contextGetter.getTokenMetadata(tokenID),
-            this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
+            this.pairGetterService.getTokenPriceUSD(tokenID),
             this.context.getPairsMetadata(),
         ]);
 
@@ -360,14 +363,13 @@ export class AnalyticsEventHandlerService {
     }
 
     private async getTokenSwapData(
-        pairAddress: string,
         tokenID: string,
         amount: string,
     ): Promise<any> {
         const [token, priceUSD, lockedData] = await Promise.all([
             this.contextGetter.getTokenMetadata(tokenID),
-            this.pairGetterService.getTokenPriceUSD(pairAddress, tokenID),
-            this.getTokenLiquidityData(pairAddress, tokenID),
+            this.pairGetterService.getTokenPriceUSD(tokenID),
+            this.getTokenLiquidityData(tokenID),
         ]);
         return {
             lockedValue: lockedData.lockedValue,

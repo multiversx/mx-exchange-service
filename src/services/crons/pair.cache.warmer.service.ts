@@ -11,6 +11,7 @@ import { oneHour } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
+import { PairDBService } from 'src/modules/pair/services/pair.db.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -19,6 +20,7 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: PairAbiService,
+        private readonly pairDbService: PairDBService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
         private readonly cachingService: CachingService,
@@ -39,7 +41,6 @@ export class PairCacheWarmerService {
                 lpToken,
                 totalFeePercent,
                 specialFeePercent,
-                state,
             ] = await Promise.all([
                 this.apiService
                     .getService()
@@ -50,7 +51,6 @@ export class PairCacheWarmerService {
                 this.apiService.getService().getToken(lpTokenID),
                 this.abiPairService.getTotalFeePercent(pairMetadata.address),
                 this.abiPairService.getSpecialFeePercent(pairMetadata.address),
-                this.abiPairService.getState(pairMetadata.address),
             ]);
 
             const cacheKeys = await Promise.all([
@@ -74,7 +74,6 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     specialFeePercent,
                 ),
-                this.pairSetterService.setState(pairMetadata.address, state),
             ]);
             this.invalidatedKeys.push(cacheKeys);
 
@@ -99,42 +98,56 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.context.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [pairInfo, burnedToken, state] = await Promise.all([
-                this.abiPairService.getPairInfoMetadata(pairAddress),
+            const [feesAPR, burnedToken, state, type] = await Promise.all([
+                this.pairComputeService.computeFeesAPR(pairAddress),
                 this.abiPairService.getBurnedTokenAmount(
                     pairAddress,
                     constantsConfig.MEX_TOKEN_ID,
                 ),
                 this.abiPairService.getState(pairAddress),
+                this.pairDbService.getPairType(pairAddress),
             ]);
 
             this.invalidatedKeys = await Promise.all([
-                this.pairSetterService.setFirstTokenReserve(
-                    pairAddress,
-                    pairInfo.reserves0,
-                ),
-                this.pairSetterService.setSecondTokenReserve(
-                    pairAddress,
-                    pairInfo.reserves1,
-                ),
+                this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
                 this.pairSetterService.setBurnedTokenAmount(
                     pairAddress,
                     constantsConfig.MEX_TOKEN_ID,
                     burnedToken,
                 ),
-                this.pairSetterService.setTotalSupply(
-                    pairAddress,
-                    pairInfo.totalSupply,
-                ),
                 this.pairSetterService.setState(pairAddress, state),
+                this.pairSetterService.setType(pairAddress, type),
             ]);
             await this.deleteCacheKeys();
         }
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron('*/6 * * * * *') // Update prices and reserves every 6 seconds
     async cacheTokenPrices(): Promise<void> {
         const pairsMetadata = await this.context.getPairsMetadata();
+
+        for (const pairAddress of pairsMetadata) {
+            const pairInfo = await this.abiPairService.getPairInfoMetadata(
+                pairAddress.address,
+            );
+
+            const cacheKeys = await Promise.all([
+                this.pairSetterService.setFirstTokenReserve(
+                    pairAddress.address,
+                    pairInfo.reserves0,
+                ),
+                this.pairSetterService.setSecondTokenReserve(
+                    pairAddress.address,
+                    pairInfo.reserves1,
+                ),
+                this.pairSetterService.setTotalSupply(
+                    pairAddress.address,
+                    pairInfo.totalSupply,
+                ),
+            ]);
+            this.invalidatedKeys.push(...cacheKeys);
+        }
+
         for (const pairMetadata of pairsMetadata) {
             const [
                 firstTokenPrice,
@@ -142,27 +155,33 @@ export class PairCacheWarmerService {
                 secondTokenPrice,
                 secondTokenPriceUSD,
                 lpTokenPriceUSD,
-                feesAPR,
+                genericFirstTokenPriceUSD,
+                genericSecondTokenPriceUSD,
             ] = await Promise.all([
                 this.pairComputeService.computeFirstTokenPrice(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeFirstTokenPriceUSD(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeSecondTokenPrice(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeSecondTokenPriceUSD(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeLpTokenPriceUSD(
                     pairMetadata.address,
                 ),
                 this.pairComputeService.computeTokenPriceUSD(
                     pairMetadata.firstTokenID,
                 ),
-                this.pairComputeService.computeSecondTokenPrice(
-                    pairMetadata.address,
-                ),
                 this.pairComputeService.computeTokenPriceUSD(
                     pairMetadata.secondTokenID,
                 ),
-                this.pairComputeService.computeLpTokenPriceUSD(
-                    pairMetadata.address,
-                ),
-                this.pairComputeService.computeFeesAPR(pairMetadata.address),
             ]);
 
-            this.invalidatedKeys = await Promise.all([
+            const cacheKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenPrice(
                     pairMetadata.address,
                     firstTokenPrice,
@@ -173,23 +192,28 @@ export class PairCacheWarmerService {
                 ),
                 this.pairSetterService.setFirstTokenPriceUSD(
                     pairMetadata.address,
-                    firstTokenPriceUSD.toFixed(),
+                    firstTokenPriceUSD,
                 ),
                 this.pairSetterService.setSecondTokenPriceUSD(
                     pairMetadata.address,
-                    secondTokenPriceUSD.toFixed(),
+                    secondTokenPriceUSD,
                 ),
                 this.pairSetterService.setLpTokenPriceUSD(
                     pairMetadata.address,
                     lpTokenPriceUSD,
                 ),
-                this.pairSetterService.setFeesAPR(
-                    pairMetadata.address,
-                    feesAPR,
+                this.pairSetterService.setTokenPriceUSD(
+                    pairMetadata.firstTokenID,
+                    genericFirstTokenPriceUSD.toFixed(),
+                ),
+                this.pairSetterService.setTokenPriceUSD(
+                    pairMetadata.secondTokenID,
+                    genericSecondTokenPriceUSD.toFixed(),
                 ),
             ]);
-            await this.deleteCacheKeys();
+            this.invalidatedKeys.push(...cacheKeys);
         }
+        await this.deleteCacheKeys();
     }
 
     private async setContextCache(
