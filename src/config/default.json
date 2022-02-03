@@ -23,7 +23,7 @@
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         }
     },
-    "tokenProviderUSD": "USDC-72a225",
+    "tokenProviderUSD": "WEGLD-f643d8",
     "priceFeeds": {
         "USDC-72a225": "usdc"
     },
@@ -262,6 +262,7 @@
         "MAX_GAS_LIMIT": 750000000,
         "ISSUE_LP_TOKEN_COST": 0.05,
         "MEX_TOKEN_ID": "MEX-c751d6",
+        "USDC_TOKEN_ID": "USDC-72a225",
         "PRECISION_EX_INCREASE": 1000,
         "MAINTENANCE": false,
         "endpoints": [

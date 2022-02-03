@@ -11,6 +11,7 @@ import { oneHour } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
+import { PairDBService } from 'src/modules/pair/services/pair.db.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -19,6 +20,7 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: PairAbiService,
+        private readonly pairDbService: PairDBService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
         private readonly cachingService: CachingService,
@@ -96,12 +98,14 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.context.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [feesAPR, burnedToken] = await Promise.all([
+            const [feesAPR, burnedToken, state, type] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.abiPairService.getBurnedTokenAmount(
                     pairAddress,
                     constantsConfig.MEX_TOKEN_ID,
                 ),
+                this.abiPairService.getState(pairAddress),
+                this.pairDbService.getPairType(pairAddress),
             ]);
 
             this.invalidatedKeys = await Promise.all([
@@ -111,6 +115,8 @@ export class PairCacheWarmerService {
                     constantsConfig.MEX_TOKEN_ID,
                     burnedToken,
                 ),
+                this.pairSetterService.setState(pairAddress, state),
+                this.pairSetterService.setType(pairAddress, type),
             ]);
             await this.deleteCacheKeys();
         }
@@ -149,21 +155,29 @@ export class PairCacheWarmerService {
                 secondTokenPrice,
                 secondTokenPriceUSD,
                 lpTokenPriceUSD,
+                genericFirstTokenPriceUSD,
+                genericSecondTokenPriceUSD,
             ] = await Promise.all([
                 this.pairComputeService.computeFirstTokenPrice(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeFirstTokenPriceUSD(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeSecondTokenPrice(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeSecondTokenPriceUSD(
+                    pairMetadata.address,
+                ),
+                this.pairComputeService.computeLpTokenPriceUSD(
                     pairMetadata.address,
                 ),
                 this.pairComputeService.computeTokenPriceUSD(
                     pairMetadata.firstTokenID,
                 ),
-                this.pairComputeService.computeSecondTokenPrice(
-                    pairMetadata.address,
-                ),
                 this.pairComputeService.computeTokenPriceUSD(
                     pairMetadata.secondTokenID,
-                ),
-                this.pairComputeService.computeLpTokenPriceUSD(
-                    pairMetadata.address,
                 ),
             ]);
 
@@ -178,15 +192,23 @@ export class PairCacheWarmerService {
                 ),
                 this.pairSetterService.setFirstTokenPriceUSD(
                     pairMetadata.address,
-                    firstTokenPriceUSD.toFixed(),
+                    firstTokenPriceUSD,
                 ),
                 this.pairSetterService.setSecondTokenPriceUSD(
                     pairMetadata.address,
-                    secondTokenPriceUSD.toFixed(),
+                    secondTokenPriceUSD,
                 ),
                 this.pairSetterService.setLpTokenPriceUSD(
                     pairMetadata.address,
                     lpTokenPriceUSD,
+                ),
+                this.pairSetterService.setTokenPriceUSD(
+                    pairMetadata.firstTokenID,
+                    genericFirstTokenPriceUSD.toFixed(),
+                ),
+                this.pairSetterService.setTokenPriceUSD(
+                    pairMetadata.secondTokenID,
+                    genericSecondTokenPriceUSD.toFixed(),
                 ),
             ]);
             this.invalidatedKeys.push(...cacheKeys);

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute } from 'src/helpers/helpers';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -14,6 +15,7 @@ export class AnalyticsGetterService {
         private readonly contextGetter: ContextGetterService,
         private readonly cachingService: CachingService,
         private readonly analyticsCompute: AnalyticsComputeService,
+        private readonly pairGetterService: PairGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -41,12 +43,7 @@ export class AnalyticsGetterService {
     }
 
     async getTokenPriceUSD(tokenID: string): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(tokenID, 'tokenPriceUSD');
-        return await this.getData(
-            cacheKey,
-            () => this.analyticsCompute.computeTokenPriceUSD(tokenID),
-            oneMinute(),
-        );
+        return await this.pairGetterService.getTokenPriceUSD(tokenID);
     }
 
     async getTotalTokenSupply(tokenID: string): Promise<string> {

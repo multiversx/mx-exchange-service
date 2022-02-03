@@ -71,7 +71,6 @@ export class PairServiceMock {
             tokenID,
         );
         const secondTokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-            pair.address,
             path[1],
         );
         return new BigNumber(firstTokenPrice).multipliedBy(secondTokenPriceUSD);
