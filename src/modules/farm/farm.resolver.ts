@@ -15,12 +15,14 @@ import {
     CompoundRewardsArgs,
     EnterFarmArgs,
     ExitFarmArgs,
+    FarmMigrationConfigArgs,
 } from './models/farm.args';
 import { ApolloError } from 'apollo-server-express';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 import { FarmGetterService } from './services/farm.getter.service';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 
 @Resolver(() => FarmModel)
 export class FarmResolver {
@@ -329,6 +331,17 @@ export class FarmResolver {
         }
     }
 
+    @ResolveField()
+    async migrationConfig(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getFarmMigrationConfiguration(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => FarmTokenAttributesModel)
     async farmTokenAttributes(
@@ -416,6 +429,36 @@ export class FarmResolver {
         return await this.transactionsService.compoundRewards(
             user.publicKey,
             args,
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async migrateToNewFarm(
+        @Args() args: ExitFarmArgs,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        return await this.transactionsService.compoundRewards(
+            user.publicKey,
+            args,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setFarmMigrationConfig(
+        @Args() args: FarmMigrationConfigArgs,
+    ): Promise<TransactionModel> {
+        return await this.transactionsService.setFarmMigrationConfig(args);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async stopRewardsAndMigrateRps(
+        @Args('farmAddress') farmAddress: string,
+    ): Promise<TransactionModel> {
+        return await this.transactionsService.stopRewardsAndMigrateRps(
+            farmAddress,
         );
     }
 }

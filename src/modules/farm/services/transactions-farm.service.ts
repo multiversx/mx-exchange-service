@@ -5,7 +5,7 @@ import {
     U32Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Address, GasLimit } from '@elrondnetwork/erdjs';
+import { Address, GasLimit, Interaction } from '@elrondnetwork/erdjs';
 import { gasConfig } from '../../../config';
 import { BigNumber } from 'bignumber.js';
 import {
@@ -13,6 +13,7 @@ import {
     CompoundRewardsArgs,
     EnterFarmArgs,
     ExitFarmArgs,
+    FarmMigrationConfigArgs,
     SftFarmInteractionArgs,
 } from '../models/farm.args';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
@@ -167,6 +168,65 @@ export class TransactionsFarmService {
             'compoundRewards',
             gasConfig.farms[version].compoundRewards,
         );
+    }
+
+    async migrateToNewFarm(
+        sender: string,
+        args: ExitFarmArgs,
+    ): Promise<TransactionModel> {
+        const whitelists = await this.farmGetterService.getWhitelist(
+            args.farmAddress,
+        );
+        if (whitelists && whitelists.length > 0) {
+            throw new Error(
+                `whitelisted addresses only for farm ${args.farmAddress}`,
+            );
+        }
+        const version = farmVersion(args.farmAddress);
+        return this.SftFarmInteraction(
+            sender,
+            args,
+            'migrateToNewFarm',
+            gasConfig.farms[version].migrateToNewFarm,
+        );
+    }
+
+    async setFarmMigrationConfig(
+        args: FarmMigrationConfigArgs,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            args.oldFarmAddress,
+        );
+
+        const transactionArgs = [
+            BytesValue.fromHex(new Address(args.oldFarmAddress).hex()),
+            BytesValue.fromUTF8(args.oldFarmTokenID),
+            BytesValue.fromHex(new Address(args.newFarmAddress).hex()),
+            BytesValue.fromHex(new Address(args.newLockedFarmAddress).hex()),
+        ];
+
+        const interaction: Interaction = contract.methods.setFarmMigrationConfig(
+            transactionArgs,
+        );
+        const transaction = interaction.buildTransaction();
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.farms[version].farmMigrationConfig),
+        );
+        return transaction.toPlainObject();
+    }
+
+    async stopRewardsAndMigrateRps(
+        farmAddress: string,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.stopRewardsAndMigrateRps();
+        const transaction = interaction.buildTransaction();
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.farms[version].stopRewards),
+        );
+        return transaction.toPlainObject();
     }
 
     private async SftFarmInteraction(

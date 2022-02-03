@@ -11,7 +11,11 @@ import { generateRunQueryLogMessage } from '../../../utils/generate-log-message'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
-import { FarmRewardType, FarmVersion } from '../models/farm.model';
+import {
+    FarmMigrationConfig,
+    FarmRewardType,
+    FarmVersion,
+} from '../models/farm.model';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 
 @Injectable()
@@ -266,5 +270,16 @@ export class AbiFarmService {
             'produce_rewards_enabled',
         );
         return response === '01';
+    }
+
+    async getFarmMigrationConfiguration(
+        farmAddress: string,
+    ): Promise<FarmMigrationConfig> {
+        const [contract] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getFarmMigrationConfiguration();
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 }

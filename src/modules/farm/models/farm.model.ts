@@ -44,6 +44,20 @@ export class ExitFarmTokensModel {
 }
 
 @ObjectType()
+export class FarmMigrationConfig {
+    @Field()
+    migrationRole: number;
+    @Field()
+    oldFarmAddress: string;
+    @Field()
+    oldFarmTokenID: string;
+    @Field()
+    newFarmAddress: string;
+    @Field()
+    newLockedFarmAddress: string;
+}
+
+@ObjectType()
 export class FarmModel {
     @Field()
     address: string;
@@ -137,6 +151,9 @@ export class FarmModel {
 
     @Field({ nullable: true })
     rewardType: FarmRewardType;
+
+    @Field(() => FarmMigrationConfig)
+    migrationConfig: FarmMigrationConfig;
 
     constructor(init?: Partial<FarmModel>) {
         Object.assign(this, init);

@@ -62,3 +62,15 @@ export class ClaimRewardsArgs extends SftFarmInteractionArgs {}
 
 @ArgsType()
 export class CompoundRewardsArgs extends SftFarmInteractionArgs {}
+
+@ArgsType()
+export class FarmMigrationConfigArgs {
+    @Field()
+    oldFarmAddress: string;
+    @Field()
+    oldFarmTokenID: string;
+    @Field()
+    newFarmAddress: string;
+    @Field()
+    newLockedFarmAddress: string;
+}
