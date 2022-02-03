@@ -15,7 +15,7 @@ export class RouterGetterServiceMock {
             new PairMetadata({
                 address: 'pair_address_2',
                 firstTokenID: 'TOK1-1111',
-                secondTokenID: 'TOK3-3333',
+                secondTokenID: 'USDC-1111',
             }),
         ];
     }

@@ -9,7 +9,6 @@ import { RedisModule } from 'nestjs-redis';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
-import { PairServiceMock } from '../mocks/pair.service.mock';
 import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { ContextService } from 'src/services/context/context.service';
 import { PairService } from '../services/pair.service';
@@ -40,11 +39,6 @@ describe('TransactionPairService', () => {
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
-    };
-
-    const PairServiceProvider = {
-        provide: PairService,
-        useClass: PairServiceMock,
     };
 
     const PairGetterServiceProvider = {
@@ -87,7 +81,7 @@ describe('TransactionPairService', () => {
                 ContextServiceProvider,
                 ContextGetterServiceProvider,
                 ContextTransactionsService,
-                PairServiceProvider,
+                PairService,
                 PairGetterServiceProvider,
                 WrapServiceProvider,
                 TransactionsWrapService,
