@@ -1,11 +1,11 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.58.0-nightly",
-            "commitHash": "4961b107f204e15b26961eab0685df6be3ab03c6",
-            "commitDate": "2021-11-04",
+            "version": "1.60.0-nightly",
+            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
+            "commitDate": "2022-01-29",
             "channel": "Nightly",
-            "short": "rustc 1.58.0-nightly (4961b107f 2021-11-04)"
+            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
         },
         "contractCrate": {
             "name": "price-discovery",
@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.25.0"
+            "version": "0.27.4"
         }
     },
     "name": "PriceDiscovery",
@@ -157,15 +157,6 @@
             "outputs": []
         },
         {
-            "name": "accept_funds_func",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
-        {
             "name": "getDexScAddress",
             "mutability": "readonly",
             "inputs": [],
@@ -207,161 +198,8 @@
                     "type": "TokenIdentifier"
                 }
             ]
-        },
-        {
-            "name": "set_transfer_exec_gas_limit",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "gas_limit",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "set_extern_swap_gas_limit",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "gas_limit",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "pause",
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "resume",
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "setStateActiveNoSwaps",
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "getLpTokenIdentifier",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "setFeePercents",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "total_fee_percent",
-                    "type": "u64"
-                },
-                {
-                    "name": "special_fee_percent",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "getTotalFeePercent",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getSpecialFee",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getRouterManagedAddress",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
-            "name": "getRouterOwnerManagedAddress",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
-            "name": "getState",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "State"
-                }
-            ]
-        },
-        {
-            "name": "getExternSwapGasLimit",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getTransferExecGasLimit",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
         }
     ],
     "hasCallback": true,
-    "types": {
-        "State": {
-            "type": "enum",
-            "variants": [
-                {
-                    "name": "Inactive",
-                    "discriminant": 0
-                },
-                {
-                    "name": "Active",
-                    "discriminant": 1
-                },
-                {
-                    "name": "ActiveNoSwaps",
-                    "discriminant": 2
-                }
-            ]
-        }
-    }
+    "types": {}
 }
