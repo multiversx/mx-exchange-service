@@ -3,7 +3,6 @@ import { ElrondProxyService } from '../../../services/elrond-communication/elron
 import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
 import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
-import { PairServiceMock } from '../../pair/mocks/pair.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/services/farm.getter.service';
@@ -28,6 +27,8 @@ import { AbiLockedAssetServiceMock } from 'src/modules/locked-asset-factory/mock
 import { ProxyGetterService } from 'src/modules/proxy/services/proxy.getter.service';
 import { ProxyGetterServiceMock } from 'src/modules/proxy/mocks/proxy.getter.service.mock';
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
+import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -40,11 +41,6 @@ describe('AnalyticsService', () => {
     const FarmGetterServiceProvider = {
         provide: FarmGetterService,
         useClass: FarmGetterServiceMock,
-    };
-
-    const PairServiceProvider = {
-        provide: PairService,
-        useClass: PairServiceMock,
     };
 
     const PairGetterServiceProvider = {
@@ -87,6 +83,11 @@ describe('AnalyticsService', () => {
         useClass: PriceFeedServiceMock,
     };
 
+    const WrapServiceProvider = {
+        provide: WrapService,
+        useClass: WrapServiceMock,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule, AWSModule],
@@ -98,13 +99,14 @@ describe('AnalyticsService', () => {
                 FarmServiceProvider,
                 FarmGetterServiceProvider,
                 FarmComputeService,
-                PairServiceProvider,
+                PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
                 ProxyGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
                 PriceFeedServiceProvider,
+                WrapServiceProvider,
                 AnalyticsComputeService,
             ],
         }).compile();
@@ -118,6 +120,6 @@ describe('AnalyticsService', () => {
 
     it('should get total value locked in farms', async () => {
         const totalLockedValueUSDFarms = await service.computeLockedValueUSDFarms();
-        expect(totalLockedValueUSDFarms.toString()).toEqual('600');
+        expect(totalLockedValueUSDFarms.toString()).toEqual('1600');
     });
 });

@@ -35,9 +35,9 @@ describe('ContextService', () => {
         const pairsMap = await service.getPairsMap();
 
         const expectedMap = new Map();
-        expectedMap.set('TOK1-1111', ['TOK2-2222', 'TOK3-3333']);
+        expectedMap.set('TOK1-1111', ['TOK2-2222', 'USDC-1111']);
         expectedMap.set('TOK2-2222', ['TOK1-1111']);
-        expectedMap.set('TOK3-3333', ['TOK1-1111']);
+        expectedMap.set('USDC-1111', ['TOK1-1111']);
 
         expect(pairsMap).toEqual(expectedMap);
     });
@@ -52,13 +52,13 @@ describe('ContextService', () => {
 
         path = [];
         discovered = new Map<string, boolean>();
-        service.isConnected(graph, 'TOK3-3333', 'TOK1-1111', discovered, path);
-        expect(path).toEqual(['TOK3-3333', 'TOK1-1111']);
+        service.isConnected(graph, 'USDC-1111', 'TOK1-1111', discovered, path);
+        expect(path).toEqual(['USDC-1111', 'TOK1-1111']);
 
         path = [];
         discovered = new Map<string, boolean>();
-        service.isConnected(graph, 'TOK2-2222', 'TOK3-3333', discovered, path);
-        expect(path).toEqual(['TOK2-2222', 'TOK1-1111', 'TOK3-3333']);
+        service.isConnected(graph, 'TOK2-2222', 'USDC-1111', discovered, path);
+        expect(path).toEqual(['TOK2-2222', 'TOK1-1111', 'USDC-1111']);
     });
 
     it('should not get a path between tokens', async () => {

@@ -8,7 +8,7 @@ export const pairsMetadata: PairMetadata[] = [
     },
     {
         firstTokenID: 'TOK1-1111',
-        secondTokenID: 'TOK3-3333',
+        secondTokenID: 'USDC-1111',
         address: 'pair_address_2',
     },
 ];
@@ -45,9 +45,9 @@ export class ContextServiceMock {
 
     async getPairsMap(): Promise<Map<string, string[]>> {
         const pairsMap: Map<string, string[]> = new Map();
-        pairsMap.set('TOK1-1111', ['TOK2-2222', 'TOK3-3333']);
+        pairsMap.set('TOK1-1111', ['TOK2-2222', 'USDC-1111']);
         pairsMap.set('TOK2-2222', ['TOK1-1111']);
-        pairsMap.set('TOK3-3333', ['TOK1-1111']);
+        pairsMap.set('USDC-1111', ['TOK1-1111']);
 
         return pairsMap;
     }

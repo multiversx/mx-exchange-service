@@ -48,7 +48,7 @@ export class LockedAssetService {
             const codec = new BinaryCodec();
 
             const withActivationNonce =
-                tokenNonce(lockedAsset.identifier) >
+                tokenNonce(lockedAsset.identifier) >=
                 extendedAttributesActivationNonce;
             const lockedAssetAttributesStructure = await this.getLockedAssetAttributesStructure(
                 withActivationNonce,

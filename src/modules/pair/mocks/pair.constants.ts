@@ -34,9 +34,9 @@ export const Tokens = (tokenID: string) => {
                 canWipe: true,
                 type: '',
             };
-        case 'TOK3-3333':
+        case 'USDC-1111':
             return {
-                identifier: 'TOK3-3333',
+                identifier: 'USDC-1111',
                 name: 'ThirdToken',
                 owner: 'owner_address',
                 supply: '2000000000000000000',
@@ -118,21 +118,21 @@ export const PairsData = (pairAddress: string) => {
             return {
                 address: 'pair_address_1',
                 firstToken: Tokens('TOK1-1111'),
-                secondToken: Tokens('TOK3-3333'),
+                secondToken: Tokens('USDC-1111'),
                 liquidityPoolToken: Tokens('LPT-abcd'),
                 info: {
                     reserves0: '1000000000000000000',
-                    reserves1: '2000000000000000000',
+                    reserves1: '200000000000000000000',
                     totalSupply: '1000000000000000000',
                 },
-                firstTokenPrice: '2',
+                firstTokenPrice: '200',
                 firstTokenPriceUSD: '200',
-                secondTokenPrice: '0.5',
-                secondTokenPriceUSD: '100',
-                liquidityPoolTokenPriceUSD: '2',
-                firstTokenLockedValueUSD: '500',
-                secondTokenLockedValueUSD: '500',
-                lockedValueUSD: '1000',
+                secondTokenPrice: '0.005',
+                secondTokenPriceUSD: '1',
+                liquidityPoolTokenPriceUSD: '400',
+                firstTokenLockedValueUSD: '200',
+                secondTokenLockedValueUSD: '200',
+                lockedValueUSD: '400',
                 totalFeePercent: 0.003,
                 state: 'Active',
             };

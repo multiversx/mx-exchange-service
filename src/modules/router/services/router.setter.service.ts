@@ -13,6 +13,12 @@ export class RouterSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    async setAllPairsAddress(value: string[]): Promise<string> {
+        const cacheKey = this.getRouterCacheKey('pairsAddress');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     async setPairsMetadata(value: PairMetadata[]): Promise<string> {
         const cacheKey = this.getRouterCacheKey('pairsMetadata');
         await this.cachingService.setCache(cacheKey, value, oneMinute());

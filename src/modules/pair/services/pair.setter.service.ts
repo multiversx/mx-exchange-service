@@ -121,6 +121,12 @@ export class PairSetterService {
         return cacheKey;
     }
 
+    async setTokenPriceUSD(tokenID: string, value: string): Promise<string> {
+        const cacheKey = this.getPairCacheKey('priceUSD', tokenID);
+        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
+        return cacheKey;
+    }
+
     async setLpTokenPriceUSD(
         pairAddress: string,
         value: string,
@@ -211,6 +217,12 @@ export class PairSetterService {
 
     async setFeesAPR(pairAddress: string, value: string): Promise<string> {
         const cacheKey = this.getPairCacheKey(pairAddress, 'feesAPR');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setType(pairAddress: string, value: string): Promise<string> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'type');
         await this.cachingService.setCache(cacheKey, value, oneMinute());
         return cacheKey;
     }
