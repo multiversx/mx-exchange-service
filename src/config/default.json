@@ -186,7 +186,8 @@
                             }
                         },
                         "claimRewards": 28500000
-                    }
+                    },
+                    "migrateToNewFarm": 50000000
                 },
                 "v1.3": {
                     "enterFarm": {
