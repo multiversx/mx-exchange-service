@@ -19,9 +19,10 @@ import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.servic
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
-import { PairServiceMock } from 'src/modules/pair/mocks/pair.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
+import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -52,11 +53,6 @@ describe('FarmService', () => {
         useClass: ContextGetterServiceMock,
     };
 
-    const PairServiceProvider = {
-        provide: PairService,
-        useClass: PairServiceMock,
-    };
-
     const PairGetterServiceProvider = {
         provide: PairGetterService,
         useClass: PairGetterServiceMock,
@@ -65,6 +61,11 @@ describe('FarmService', () => {
     const PriceFeedServiceProvider = {
         provide: PriceFeedService,
         useClass: PriceFeedServiceMock,
+    };
+
+    const WrapServiceProvider = {
+        provide: WrapService,
+        useClass: WrapServiceMock,
     };
 
     beforeEach(async () => {
@@ -77,10 +78,11 @@ describe('FarmService', () => {
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
                 ContextGetterServiceProvider,
-                PairServiceProvider,
+                PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
                 PriceFeedServiceProvider,
+                WrapServiceProvider,
                 FarmService,
             ],
         }).compile();
@@ -131,6 +133,6 @@ describe('FarmService', () => {
         const farmAPR = await computeService.computeUnlockedRewardsAPR(
             'farm_address_1',
         );
-        expect(farmAPR).toEqual('3504010');
+        expect(farmAPR).toEqual('1314010');
     });
 });

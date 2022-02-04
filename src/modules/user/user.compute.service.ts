@@ -54,7 +54,6 @@ export class UserComputeService {
             : new BigNumber(nftToken.balance);
         if (scAddress.has(farmingTokenID)) {
             const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-                scAddress.get(farmingTokenID),
                 farmingTokenID,
             );
             return new UserFarmToken({

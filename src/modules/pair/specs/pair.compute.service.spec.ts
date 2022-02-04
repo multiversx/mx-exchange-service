@@ -8,17 +8,11 @@ import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
 import { PairComputeService } from '../services/pair.compute.service';
 import { PairService } from '../services/pair.service';
-import { PairServiceMock } from '../mocks/pair.service.mock';
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 
 describe('PairService', () => {
     let service: PairComputeService;
-
-    const PairServiceProvider = {
-        provide: PairService,
-        useClass: PairServiceMock,
-    };
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
@@ -45,7 +39,7 @@ describe('PairService', () => {
             imports: [CommonAppModule],
             providers: [
                 PairComputeService,
-                PairServiceProvider,
+                PairService,
                 PairGetterServiceProvider,
                 ContextServiceProvider,
                 WrapServiceProvider,
@@ -66,7 +60,7 @@ describe('PairService', () => {
     });
 
     it('should get token price in USD from simple path', async () => {
-        const tokenPriceUSD = await service.computeTokenPriceUSD('TOK3-3333');
+        const tokenPriceUSD = await service.computeTokenPriceUSD('USDC-1111');
         expect(tokenPriceUSD.toFixed()).toEqual('1');
     });
 
