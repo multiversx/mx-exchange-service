@@ -2,6 +2,7 @@ import { TransactionModel } from '../../../models/transaction.model';
 import { Inject, Injectable } from '@nestjs/common';
 import {
     BigUIntValue,
+    TypedValue,
     U32Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
@@ -188,6 +189,7 @@ export class TransactionsFarmService {
             args,
             'migrateToNewFarm',
             gasConfig.farms[version].migrateToNewFarm,
+            [BytesValue.fromHex(Address.fromString(sender).hex())],
         );
     }
 
@@ -234,6 +236,7 @@ export class TransactionsFarmService {
         args: SftFarmInteractionArgs,
         method: string,
         gasLimit: number,
+        endpointArgs?: TypedValue[],
     ): Promise<TransactionModel> {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
@@ -245,6 +248,7 @@ export class TransactionsFarmService {
             new BigUIntValue(new BigNumber(args.amount)),
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
             BytesValue.fromUTF8(method),
+            ...endpointArgs,
         ];
 
         const transaction = this.contextTransactions.nftTransfer(
