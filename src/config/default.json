@@ -116,7 +116,7 @@
                     "claimRewards": 18500000
                 },
                 "migrateToNewFarm": 30000000,
-                "farmMigrationConfig": 10000000,
+                "farmMigrationConfig": 7300000,
                 "stopRewards": 10000000
             },
             "v1.3": {
