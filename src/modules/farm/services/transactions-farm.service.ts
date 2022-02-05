@@ -104,7 +104,7 @@ export class TransactionsFarmService {
             );
         }
         const gasLimit = await this.getExitFarmGasLimit(args);
-        return this.SftFarmInteraction(sender, args, 'exitFarm', gasLimit);
+        return this.SftFarmInteraction(sender, args, 'exitFarm', gasLimit, []);
     }
 
     async claimRewards(
@@ -136,6 +136,7 @@ export class TransactionsFarmService {
             args,
             'claimRewards',
             gasConfig.farms[version][type].claimRewards + lockedAssetCreateGas,
+            [],
         );
     }
 
@@ -168,6 +169,7 @@ export class TransactionsFarmService {
             args,
             'compoundRewards',
             gasConfig.farms[version].compoundRewards,
+            [],
         );
     }
 
@@ -236,7 +238,7 @@ export class TransactionsFarmService {
         args: SftFarmInteractionArgs,
         method: string,
         gasLimit: number,
-        endpointArgs?: TypedValue[],
+        endpointArgs: TypedValue[],
     ): Promise<TransactionModel> {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
