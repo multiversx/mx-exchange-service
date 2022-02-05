@@ -32,14 +32,15 @@
             ]
         }
     },
-    "tokenProviderUSD": "USDC-a32906",
+    "tokenProviderUSD": "WEGLD-88600a",
     "priceFeeds": {
         "USDC-a32906": "usdc"
     },
     "tokensSupply": ["MEX-b6bb7d"],
     "cachedTokensPrice": ["MEX-b6bb7d"],
     "constants": {
-        "MEX_TOKEN_ID": "MEX-b6bb7d"
+        "MEX_TOKEN_ID": "MEX-b6bb7d",
+        "USDC_TOKEN_ID": "USDC-a32906"
     },
     "aws": {
         "region": "eu-central-1",
