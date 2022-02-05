@@ -274,12 +274,24 @@ export class AbiFarmService {
 
     async getFarmMigrationConfiguration(
         farmAddress: string,
-    ): Promise<FarmMigrationConfig> {
+    ): Promise<FarmMigrationConfig | undefined> {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getFarmMigrationConfiguration();
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
+
+        try {
+            const interaction: Interaction = contract.methods.getFarmMigrationConfiguration();
+            const response = await this.getGenericData(contract, interaction);
+            const decodedResponse = response.firstValue.valueOf();
+            return new FarmMigrationConfig({
+                migrationRole: decodedResponse.migration_role,
+                oldFarmAddress: decodedResponse.old_farm_address.bech32(),
+                oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
+                newFarmAddress: decodedResponse.new_farm_address.bech32(),
+                newLockedFarmAddress: decodedResponse.new_farm_with_lock_address.bech32(),
+            });
+        } catch (error) {
+            return undefined;
+        }
     }
 }
