@@ -22,7 +22,7 @@ import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 import { FarmGetterService } from './services/farm.getter.service';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
-import { JwtAdminGuard } from '../auth/jwt.admin.guard';
+import { GqlAdminGuard } from '../auth/gql.admin.guard';
 
 @Resolver(() => FarmModel)
 export class FarmResolver {
@@ -444,7 +444,7 @@ export class FarmResolver {
         );
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setFarmMigrationConfig(
         @Args() args: FarmMigrationConfigArgs,
@@ -452,7 +452,7 @@ export class FarmResolver {
         return await this.transactionsService.setFarmMigrationConfig(args);
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async stopRewardsAndMigrateRps(
         @Args('farmAddress') farmAddress: string,
