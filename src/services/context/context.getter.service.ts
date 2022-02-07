@@ -78,7 +78,7 @@ export class ContextGetterService {
         return await this.getData(
             cacheKey,
             async () => (await this.apiService.getStats()).epoch,
-            oneMinute() * 10,
+            oneSecond() * 6,
         );
     }
 

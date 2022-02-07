@@ -17,7 +17,7 @@ export class MetricsService {
         elasticQueryAdapter.condition.must = [
             QueryType.Match('receiver', address),
         ];
-        return  await this.elasticService.getCount(
+        return await this.elasticService.getCount(
             'transactions',
             elasticQueryAdapter,
         );
@@ -62,10 +62,10 @@ export class MetricsService {
         const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
         elasticQueryAdapter.condition.must = [
             QueryType.Match('receiver', address),
-            QueryType.Wildcard('data', 'YWRkTGlxdWlkaXR*'),
+            QueryType.Wildcard('data', '*YWRkTGlxdWlkaXR*'),
         ];
 
-        return  await this.elasticService.getCount(
+        return await this.elasticService.getCount(
             'transactions',
             elasticQueryAdapter,
         );
@@ -85,7 +85,21 @@ export class MetricsService {
             'transactions',
             elasticQueryAdapter,
         );
+    }
 
+    async computeEventsCount(
+        address: string,
+        eventIdentifier: string,
+    ): Promise<number> {
+        const elasticQueryAdapter: ElasticQuery = new ElasticQuery();
+        elasticQueryAdapter.condition.must = [
+            QueryType.Nested('events', [
+                QueryType.Match('events.address', address),
+                QueryType.Match('events.identifier', eventIdentifier),
+            ]),
+        ];
+
+        return await this.elasticService.getCount('logs', elasticQueryAdapter);
     }
 
     async computeUniqueUsers(address: string): Promise<number> {

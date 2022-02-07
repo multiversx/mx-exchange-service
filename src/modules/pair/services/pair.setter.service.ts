@@ -48,7 +48,7 @@ export class PairSetterService {
 
     async setState(pairAddress: string, value: string): Promise<string> {
         const cacheKey = this.getPairCacheKey(pairAddress, 'state');
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 45);
+        await this.cachingService.setCache(cacheKey, value, oneHour());
         return cacheKey;
     }
 
