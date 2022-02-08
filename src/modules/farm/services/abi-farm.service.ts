@@ -284,7 +284,7 @@ export class AbiFarmService {
             const response = await this.getGenericData(contract, interaction);
             const decodedResponse = response.firstValue.valueOf();
             return new FarmMigrationConfig({
-                migrationRole: decodedResponse.migration_role,
+                migrationRole: decodedResponse.migration_role.name,
                 oldFarmAddress: decodedResponse.old_farm_address.bech32(),
                 oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
                 newFarmAddress: decodedResponse.new_farm_address.bech32(),
