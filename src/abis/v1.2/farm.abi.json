@@ -1,11 +1,11 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.60.0-nightly",
-            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
-            "commitDate": "2022-01-29",
+            "version": "1.59.0-nightly",
+            "commitHash": "8f3238f898163f09726c3d2b2cc9bafb09da26f3",
+            "commitDate": "2022-01-02",
             "channel": "Nightly",
-            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
+            "short": "rustc 1.59.0-nightly (8f3238f89 2022-01-02)"
         },
         "contractCrate": {
             "name": "farm",
@@ -50,9 +50,7 @@
         {
             "name": "enterFarm",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [
                 {
                     "name": "opt_accept_funds_func",
@@ -69,9 +67,7 @@
         {
             "name": "enterFarmAndLockRewards",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [
                 {
                     "name": "opt_accept_funds_func",
@@ -88,9 +84,7 @@
         {
             "name": "exitFarm",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [
                 {
                     "name": "opt_accept_funds_func",
@@ -110,9 +104,7 @@
         {
             "name": "claimRewards",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [
                 {
                     "name": "opt_accept_funds_func",
@@ -132,9 +124,7 @@
         {
             "name": "compoundRewards",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [
                 {
                     "name": "opt_accept_funds_func",
@@ -151,9 +141,7 @@
         {
             "name": "acceptFee",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [],
             "outputs": []
         },
@@ -493,9 +481,7 @@
         {
             "name": "registerFarmToken",
             "mutability": "mutable",
-            "payableInTokens": [
-                "EGLD"
-            ],
+            "payableInTokens": ["EGLD"],
             "inputs": [
                 {
                     "name": "token_display_name",
@@ -521,9 +507,7 @@
         {
             "name": "mergeFarmTokens",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [
                 {
                     "name": "opt_accept_funds_func",
@@ -540,9 +524,7 @@
         {
             "name": "migrateToNewFarm",
             "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
+            "payableInTokens": ["*"],
             "inputs": [
                 {
                     "name": "orig_caller",

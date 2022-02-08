@@ -2,7 +2,7 @@ import {
     AddressType,
     BigUIntType,
     BinaryCodec,
-    StructFieldDefinition,
+    FieldDefinition,
     StructType,
     TokenIdentifierType,
     U64Type,
@@ -102,51 +102,19 @@ export class AddLiquidityEvent extends GenericEvent {
 
     private getStructure(): StructType {
         return new StructType('LiquidityEvent', [
-            new StructFieldDefinition('caller', '', new AddressType()),
-            new StructFieldDefinition(
-                'firstTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition(
-                'firstTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'secondTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition(
-                'secondTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'lpTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition('lpTokenAmount', '', new BigUIntType()),
-            new StructFieldDefinition(
-                'liquidityPoolSupply',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'firstTokenReserves',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'secondTokenReserves',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition('block', '', new U64Type()),
-            new StructFieldDefinition('epoch', '', new U64Type()),
-            new StructFieldDefinition('timestamp', '', new U64Type()),
+            new FieldDefinition('caller', '', new AddressType()),
+            new FieldDefinition('firstTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('firstTokenAmount', '', new BigUIntType()),
+            new FieldDefinition('secondTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('secondTokenAmount', '', new BigUIntType()),
+            new FieldDefinition('lpTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('lpTokenAmount', '', new BigUIntType()),
+            new FieldDefinition('liquidityPoolSupply', '', new BigUIntType()),
+            new FieldDefinition('firstTokenReserves', '', new BigUIntType()),
+            new FieldDefinition('secondTokenReserves', '', new BigUIntType()),
+            new FieldDefinition('block', '', new U64Type()),
+            new FieldDefinition('epoch', '', new U64Type()),
+            new FieldDefinition('timestamp', '', new U64Type()),
         ]);
     }
 }
