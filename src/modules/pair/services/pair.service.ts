@@ -18,6 +18,7 @@ import { computeValueUSD } from 'src/utils/token.converters';
 @Injectable()
 export class PairService {
     constructor(
+        @Inject(forwardRef(() => ContextService))
         private readonly context: ContextService,
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetterService: PairGetterService,
