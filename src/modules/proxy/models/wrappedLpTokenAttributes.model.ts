@@ -1,6 +1,6 @@
 import {
     BigUIntType,
-    StructFieldDefinition,
+    FieldDefinition,
     StructType,
     TokenIdentifierType,
     U64Type,
@@ -48,22 +48,10 @@ export class WrappedLpTokenAttributesModel {
 
     static getStructure(): StructType {
         return new StructType('WrappedLpTokenAttributes', [
-            new StructFieldDefinition(
-                'lpTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition(
-                'lpTokenTotalAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'lockedAssetsInvested',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition('lockedAssetsNonce', '', new U64Type()),
+            new FieldDefinition('lpTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('lpTokenTotalAmount', '', new BigUIntType()),
+            new FieldDefinition('lockedAssetsInvested', '', new BigUIntType()),
+            new FieldDefinition('lockedAssetsNonce', '', new U64Type()),
         ]);
     }
 }
