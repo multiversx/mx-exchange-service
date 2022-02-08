@@ -2,7 +2,7 @@ import {
     AddressType,
     BigUIntType,
     BinaryCodec,
-    StructFieldDefinition,
+    FieldDefinition,
     StructType,
     TokenIdentifierType,
     U64Type,
@@ -79,49 +79,29 @@ export class PairProxyEvent extends GenericEvent {
 
     getStructure(): StructType {
         return new StructType('RemoveLiquidityProxyEvent', [
-            new StructFieldDefinition('caller', '', new AddressType()),
-            new StructFieldDefinition('pairAddress', '', new AddressType()),
-            new StructFieldDefinition(
+            new FieldDefinition('caller', '', new AddressType()),
+            new FieldDefinition('pairAddress', '', new AddressType()),
+            new FieldDefinition(
                 'wrappedLpTokenID',
                 '',
                 new TokenIdentifierType(),
             ),
-            new StructFieldDefinition('wrappedLpTokenNonce', '', new U64Type()),
-            new StructFieldDefinition(
-                'wrappedLpTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
+            new FieldDefinition('wrappedLpTokenNonce', '', new U64Type()),
+            new FieldDefinition('wrappedLpTokenAmount', '', new BigUIntType()),
+            new FieldDefinition(
                 'wrappedLpAttributes',
                 '',
                 WrappedLpTokenAttributesModel.getStructure(),
             ),
-            new StructFieldDefinition(
-                'firstTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition('firstTokenNonce', '', new U64Type()),
-            new StructFieldDefinition(
-                'firstTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'secondTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition('secondTokenNonce', '', new U64Type()),
-            new StructFieldDefinition(
-                'secondTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition('block', '', new U64Type()),
-            new StructFieldDefinition('epoch', '', new U64Type()),
-            new StructFieldDefinition('timestamp', '', new U64Type()),
+            new FieldDefinition('firstTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('firstTokenNonce', '', new U64Type()),
+            new FieldDefinition('firstTokenAmount', '', new BigUIntType()),
+            new FieldDefinition('secondTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('secondTokenNonce', '', new U64Type()),
+            new FieldDefinition('secondTokenAmount', '', new BigUIntType()),
+            new FieldDefinition('block', '', new U64Type()),
+            new FieldDefinition('epoch', '', new U64Type()),
+            new FieldDefinition('timestamp', '', new U64Type()),
         ]);
     }
 }

@@ -1,6 +1,6 @@
 import {
     BigUIntType,
-    StructFieldDefinition,
+    FieldDefinition,
     StructType,
     TokenIdentifierType,
     U64Type,
@@ -61,24 +61,16 @@ export class WrappedFarmTokenAttributesModel {
 
     static getStructure() {
         return new StructType('WrappedFarmTokenAttributes', [
-            new StructFieldDefinition(
-                'farmTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition('farmTokenNonce', '', new U64Type()),
-            new StructFieldDefinition('farmTokenAmount', '', new BigUIntType()),
-            new StructFieldDefinition(
+            new FieldDefinition('farmTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('farmTokenNonce', '', new U64Type()),
+            new FieldDefinition('farmTokenAmount', '', new BigUIntType()),
+            new FieldDefinition(
                 'farmingTokenID',
                 '',
                 new TokenIdentifierType(),
             ),
-            new StructFieldDefinition('farmingTokenNonce', '', new U64Type()),
-            new StructFieldDefinition(
-                'farmingTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
+            new FieldDefinition('farmingTokenNonce', '', new U64Type()),
+            new FieldDefinition('farmingTokenAmount', '', new BigUIntType()),
         ]);
     }
 }
