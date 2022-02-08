@@ -438,7 +438,7 @@ export class FarmResolver {
         @Args() args: ExitFarmArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.compoundRewards(
+        return await this.transactionsService.migrateToNewFarm(
             user.publicKey,
             args,
         );
