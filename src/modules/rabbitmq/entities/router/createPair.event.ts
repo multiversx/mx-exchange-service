@@ -1,7 +1,7 @@
 import {
     AddressType,
     BinaryCodec,
-    StructFieldDefinition,
+    FieldDefinition,
     StructType,
     TokenIdentifierType,
     U64Type,
@@ -57,23 +57,15 @@ export class CreatePairEvent extends GenericEvent {
 
     private getStructure(): StructType {
         return new StructType('LiquidityEvent', [
-            new StructFieldDefinition('caller', '', new AddressType()),
-            new StructFieldDefinition(
-                'firstTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition(
-                'secondTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition('totalFeePercent', '', new U64Type()),
-            new StructFieldDefinition('specialFeePercent', '', new U64Type()),
-            new StructFieldDefinition('address', '', new AddressType()),
-            new StructFieldDefinition('block', '', new U64Type()),
-            new StructFieldDefinition('epoch', '', new U64Type()),
-            new StructFieldDefinition('timestamp', '', new U64Type()),
+            new FieldDefinition('caller', '', new AddressType()),
+            new FieldDefinition('firstTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('secondTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('totalFeePercent', '', new U64Type()),
+            new FieldDefinition('specialFeePercent', '', new U64Type()),
+            new FieldDefinition('address', '', new AddressType()),
+            new FieldDefinition('block', '', new U64Type()),
+            new FieldDefinition('epoch', '', new U64Type()),
+            new FieldDefinition('timestamp', '', new U64Type()),
         ]);
     }
 }

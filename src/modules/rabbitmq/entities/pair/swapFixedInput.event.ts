@@ -2,7 +2,7 @@ import {
     AddressType,
     BigUIntType,
     BinaryCodec,
-    StructFieldDefinition,
+    FieldDefinition,
     StructType,
     TokenIdentifierType,
     U64Type,
@@ -89,29 +89,17 @@ export class SwapFixedInputEvent extends GenericEvent {
 
     private getStructure(): StructType {
         return new StructType('SwapEvent', [
-            new StructFieldDefinition('caller', '', new AddressType()),
-            new StructFieldDefinition(
-                'tokenInID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition('tokenInAmount', '', new BigUIntType()),
-            new StructFieldDefinition(
-                'tokenOutID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition('tokenOutAmount', '', new BigUIntType()),
-            new StructFieldDefinition('feeAmount', '', new BigUIntType()),
-            new StructFieldDefinition('tokenInReserves', '', new BigUIntType()),
-            new StructFieldDefinition(
-                'tokenOutReserves',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition('block', '', new U64Type()),
-            new StructFieldDefinition('epoch', '', new U64Type()),
-            new StructFieldDefinition('timestamp', '', new U64Type()),
+            new FieldDefinition('caller', '', new AddressType()),
+            new FieldDefinition('tokenInID', '', new TokenIdentifierType()),
+            new FieldDefinition('tokenInAmount', '', new BigUIntType()),
+            new FieldDefinition('tokenOutID', '', new TokenIdentifierType()),
+            new FieldDefinition('tokenOutAmount', '', new BigUIntType()),
+            new FieldDefinition('feeAmount', '', new BigUIntType()),
+            new FieldDefinition('tokenInReserves', '', new BigUIntType()),
+            new FieldDefinition('tokenOutReserves', '', new BigUIntType()),
+            new FieldDefinition('block', '', new U64Type()),
+            new FieldDefinition('epoch', '', new U64Type()),
+            new FieldDefinition('timestamp', '', new U64Type()),
         ]);
     }
 }

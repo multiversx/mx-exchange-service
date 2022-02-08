@@ -1,7 +1,7 @@
 import {
     BigUIntType,
     BooleanType,
-    StructFieldDefinition,
+    FieldDefinition,
     StructType,
     U64Type,
     U8Type,
@@ -73,46 +73,27 @@ export class FarmTokenAttributesModel {
 
     static getStructure(version: FarmVersion): StructType {
         const structType = new StructType('FarmTokenAttributes', [
-            new StructFieldDefinition('rewardPerShare', '', new BigUIntType()),
-            new StructFieldDefinition(
-                'originalEnteringEpoch',
-                '',
-                new U64Type(),
-            ),
-            new StructFieldDefinition('enteringEpoch', '', new U64Type()),
-            new StructFieldDefinition(
-                'initialFarmingAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'compoundedReward',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'currentFarmAmount',
-                '',
-                new BigUIntType(),
-            ),
+            new FieldDefinition('rewardPerShare', '', new BigUIntType()),
+            new FieldDefinition('originalEnteringEpoch', '', new U64Type()),
+            new FieldDefinition('enteringEpoch', '', new U64Type()),
+            new FieldDefinition('initialFarmingAmount', '', new BigUIntType()),
+            new FieldDefinition('compoundedReward', '', new BigUIntType()),
+            new FieldDefinition('currentFarmAmount', '', new BigUIntType()),
         ]);
+        const structFields = structType.getFieldsDefinitions();
         if (version === FarmVersion.V1_2) {
-            structType.fields.splice(
+            structFields.splice(
                 3,
                 0,
-                new StructFieldDefinition('aprMultiplier', '', new U8Type()),
+                new FieldDefinition('aprMultiplier', '', new U8Type()),
             );
-            structType.fields.splice(
+            structFields.splice(
                 4,
                 0,
-                new StructFieldDefinition(
-                    'withLockedRewards',
-                    '',
-                    new BooleanType(),
-                ),
+                new FieldDefinition('withLockedRewards', '', new BooleanType()),
             );
         }
 
-        return structType;
+        return new StructType('FarmTokenAttributes', structFields);
     }
 }
