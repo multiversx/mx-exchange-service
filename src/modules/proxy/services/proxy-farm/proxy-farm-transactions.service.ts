@@ -187,6 +187,33 @@ export class TransactionsProxyFarmService {
         return transaction;
     }
 
+    async migrateToNewFarmProxy(
+        sender: string,
+        args: ExitFarmProxyArgs,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.wrappedFarmTokenID),
+            new U32Value(args.wrappedFarmTokenNonce),
+            new BigUIntValue(new BigNumber(args.amount)),
+            BytesValue.fromHex(contract.getAddress().hex()),
+            BytesValue.fromUTF8('migrateV1_2Position'),
+            BytesValue.fromHex(new Address(args.farmAddress).hex()),
+        ];
+        const version = farmVersion(args.farmAddress);
+
+        const transaction = this.contextTransactions.nftTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.proxy.farms[version].migrateToNewFarm),
+        );
+
+        transaction.receiver = sender;
+
+        return transaction;
+    }
+
     async mergeWrappedFarmTokens(
         sender: string,
         farmAddress: string,

@@ -1,11 +1,11 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.56.0-nightly",
-            "commitHash": "29ef6cf1637aa8317f8911f93f14e18d404c1b0e",
-            "commitDate": "2021-08-31",
+            "version": "1.60.0-nightly",
+            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
+            "commitDate": "2022-01-29",
             "channel": "Nightly",
-            "short": "rustc 1.56.0-nightly (29ef6cf16 2021-08-31)"
+            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
         },
         "contractCrate": {
             "name": "proxy-dex",
@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.21.0"
+            "version": "0.27.4"
         }
     },
     "name": "ProxyDexImpl",
@@ -36,7 +36,7 @@
     },
     "endpoints": [
         {
-            "name": "issueSftProxyPair",
+            "name": "registerProxyPair",
             "onlyOwner": true,
             "mutability": "mutable",
             "payableInTokens": [
@@ -50,12 +50,16 @@
                 {
                     "name": "token_ticker",
                     "type": "bytes"
+                },
+                {
+                    "name": "num_decimals",
+                    "type": "u32"
                 }
             ],
             "outputs": []
         },
         {
-            "name": "issueSftProxyFarm",
+            "name": "registerProxyFarm",
             "onlyOwner": true,
             "mutability": "mutable",
             "payableInTokens": [
@@ -69,6 +73,10 @@
                 {
                     "name": "token_ticker",
                     "type": "bytes"
+                },
+                {
+                    "name": "num_decimals",
+                    "type": "u32"
                 }
             ],
             "outputs": []
@@ -103,15 +111,6 @@
                     "type": "bytes"
                 }
             ]
-        },
-        {
-            "name": "acceptPay",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
         },
         {
             "name": "getAssetTokenId",
@@ -282,20 +281,6 @@
             "outputs": []
         },
         {
-            "name": "enterFarmAndLockRewardsProxy",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "farm_address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
             "name": "exitFarmProxy",
             "mutability": "mutable",
             "payableInTokens": [
@@ -336,58 +321,6 @@
                 }
             ],
             "outputs": []
-        },
-        {
-            "name": "getGeneratedTokenAmountList",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getBurnedTokenAmountList",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getGeneratedTokenAmount",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getBurnedTokenAmount",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
         },
         {
             "name": "getTransferExecGasLimit",
@@ -432,8 +365,23 @@
                 }
             ],
             "outputs": []
+        },
+        {
+            "name": "migrateV1_2Position",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
         }
     ],
+    "hasCallback": true,
     "types": {
         "EsdtLocalRole": {
             "type": "enum",

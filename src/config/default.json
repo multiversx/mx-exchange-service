@@ -37,9 +37,15 @@
         ],
         "v1.3": {
             "unlockedRewards": [
+                "erd1qqqqqqqqqqqqqpgqrplpr2xkwnvnmckez3wdkhpm7hklk4zs0n4sckg8zu",
+                "erd1qqqqqqqqqqqqqpgqw7k44hpumdwpus2ljkxzv9g6le07z59g0n4s28kegk",
+                "erd1qqqqqqqqqqqqqpgqsxvqtnms7q3x39zq8pzgswzpg9wgzs8c0n4s9aq2rh",
                 "erd1qqqqqqqqqqqqqpgqcrzcw0p07c0a3alzglkfslg5859j3sq00n4sn0tsdu"
             ],
             "lockedRewards": [
+                "erd1qqqqqqqqqqqqqpgq2y57353rr2h33tujmtl960dr7944x6ul0n4stzplmu",
+                "erd1qqqqqqqqqqqqqpgqr4enqjgk4klzxfcczfkacwu34jqz66rr0n4sgs7ngz",
+                "erd1qqqqqqqqqqqqqpgq53mkm43ldf6zwy29cxq4m2mcxcpxpf0q0n4stv2j79",
                 "erd1qqqqqqqqqqqqqpgqfz3wqazehjeftqauw2mkmczzk47zfq5k0n4spgzp5u"
             ],
             "customRewards": [
@@ -108,7 +114,10 @@
                         }
                     },
                     "claimRewards": 18500000
-                }
+                },
+                "migrateToNewFarm": 30000000,
+                "farmMigrationConfig": 7300000,
+                "stopRewards": 10000000
             },
             "v1.3": {
                 "enterFarm": {
@@ -177,7 +186,8 @@
                             }
                         },
                         "claimRewards": 28500000
-                    }
+                    },
+                    "migrateToNewFarm": 50000000
                 },
                 "v1.3": {
                     "enterFarm": {

@@ -231,6 +231,18 @@ export class ProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async migrateToNewFarmProxy(
+        @Args() args: ExitFarmProxyArgs,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        return await this.transactionsProxyFarmService.migrateToNewFarmProxy(
+            user.publicKey,
+            args,
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
     @Query(() => [WrappedLpTokenAttributesModel])
     async wrappedLpTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
