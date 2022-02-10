@@ -65,6 +65,7 @@
         "class-validator": "^0.13.1",
         "config": "^3.3.6",
         "dataloader": "^2.0.0",
+        "dd-trace": "^2.1.1",
         "graphql": "^15.5.1",
         "graphql-redis-subscriptions": "^2.4.0",
         "graphql-subscriptions": "^1.2.1",

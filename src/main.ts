@@ -10,8 +10,10 @@ import { ApiConfigService } from './helpers/api.config.service';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { RabbitMqConsumer } from './modules/rabbitmq/rabbitmq.consumer';
+import tracer from 'dd-trace';
 
 async function bootstrap() {
+    tracer.init();
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
 
     const app = await NestFactory.create(PublicAppModule);
