@@ -37,6 +37,6 @@ export class PairDBService {
             .equals(pairAddress)
             .exec();
 
-        return pair ? pair.type : 'Imported';
+        return pair ? pair.type : 'Experimental';
     }
 }
