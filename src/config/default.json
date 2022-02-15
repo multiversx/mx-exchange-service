@@ -21,7 +21,10 @@
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqg8a36rqxu4ch5v2522jv5avlun94sdv80n4sygxs94",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
-        }
+        },
+        "staking": [
+            "erd1qqqqqqqqqqqqqpgqeq3qu7aaz67vav5554w28y25rp3xqt3v0n4sq3ruck"
+        ]
     },
     "tokenProviderUSD": "WEGLD-584d96",
     "priceFeeds": {
@@ -253,7 +256,8 @@
                 "lockedRewards": "./src/abis/v1.3/farm_with_lock.abi.json",
                 "customRewards": "./src/abis/v1.3/farm_custom_rewards.abi.json"
             }
-        }
+        },
+        "staking": "./src/abis/farm-staking.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,
