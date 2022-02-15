@@ -274,6 +274,8 @@
     },
     "constants": {
         "MAX_PENALTY_PERCENT": 10000,
+        "MAX_PERCENT": 10000,
+        "BLOCKS_IN_YEAR": 5256000,
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
         "MAX_GAS_LIMIT": 750000000,
