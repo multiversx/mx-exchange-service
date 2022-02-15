@@ -49,9 +49,7 @@ export class StakingTransactionService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        console.log({
-            gasLimit: gasConfig.stake.stakeFarm,
-        });
+
         return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,

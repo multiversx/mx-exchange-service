@@ -5,7 +5,6 @@ import { User } from 'src/helpers/userDecorator';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { BatchFarmRewardsComputeArgs } from '../farm/models/farm.args';
-import { RewardsModel } from '../farm/models/farm.model';
 import {
     StakeFarmArgs,
     GenericStakeFarmArgs,
@@ -234,7 +233,7 @@ export class StakingResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => [StakingRewardsModel])
-    async getRewardsForPosition(
+    async getStakingRewardsForPosition(
         @Args('stakingPositions') args: BatchFarmRewardsComputeArgs,
     ): Promise<StakingRewardsModel[]> {
         try {
