@@ -88,11 +88,7 @@ export class StakingComputeService {
         const maxRewardsForUser = maxRewardsForUserPerBlock.multipliedBy(
             blockDiff,
         );
-        console.log({
-            maxRewardsForUserPerBlock: maxRewardsForUserPerBlock.toFixed(),
-            maxRewardsForUser: maxRewardsForUser.toFixed(),
-            rewardsBig: rewardsBig.toFixed(),
-        });
+
         return maxRewardsForUser.isLessThan(rewardsBig)
             ? maxRewardsForUser
             : rewardsBig;

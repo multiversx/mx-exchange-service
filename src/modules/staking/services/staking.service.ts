@@ -91,20 +91,11 @@ export class StakingService {
         );
         let rewards: BigNumber;
         if (positon.vmQuery) {
-            const vmQueryrewards = await this.abiService.calculateRewardsForGivenPosition(
+            rewards = await this.abiService.calculateRewardsForGivenPosition(
                 positon.farmAddress,
                 positon.liquidity,
                 positon.attributes,
             );
-            rewards = await this.stakingComputeService.computeStakeRewardsForPosition(
-                positon.farmAddress,
-                positon.liquidity,
-                stakeTokenAttributes,
-            );
-            console.log({
-                vmQueryrewards: vmQueryrewards.toFixed(),
-                rewards: rewards.integerValue().toFixed(),
-            });
         } else {
             rewards = await this.stakingComputeService.computeStakeRewardsForPosition(
                 positon.farmAddress,
