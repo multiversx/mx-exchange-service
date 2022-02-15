@@ -21,7 +21,10 @@
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqg8a36rqxu4ch5v2522jv5avlun94sdv80n4sygxs94",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
-        }
+        },
+        "staking": [
+            "erd1qqqqqqqqqqqqqpgqeq3qu7aaz67vav5554w28y25rp3xqt3v0n4sq3ruck"
+        ]
     },
     "tokenProviderUSD": "WEGLD-584d96",
     "priceFeeds": {
@@ -232,6 +235,15 @@
                 "defaultMergeWFMT": 20000000
             }
         },
+        "stake": {
+            "stakeFarm": 7500000,
+            "unstakeFarm": 9500000,
+            "unboundFarm": 7500000,
+            "claimRewards": 7500000,
+            "claimRewardsWithNewValue": 7500000,
+            "compoundRewards": 7500000,
+            "mergeTokens": 20000000
+        },
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
         "unlockAssets": 17500000,
@@ -253,7 +265,8 @@
                 "lockedRewards": "./src/abis/v1.3/farm_with_lock.abi.json",
                 "customRewards": "./src/abis/v1.3/farm_custom_rewards.abi.json"
             }
-        }
+        },
+        "staking": "./src/abis/farm-staking.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,
@@ -261,6 +274,8 @@
     },
     "constants": {
         "MAX_PENALTY_PERCENT": 10000,
+        "MAX_PERCENT": 10000,
+        "BLOCKS_IN_YEAR": 5256000,
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
         "MAX_GAS_LIMIT": 750000000,

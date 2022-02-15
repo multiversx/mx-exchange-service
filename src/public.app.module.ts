@@ -17,6 +17,7 @@ import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { StakingModule } from './modules/staking/staking.module';
 
 @Module({
     imports: [
@@ -74,6 +75,7 @@ import { AuthModule } from './modules/auth/auth.module';
         RouterModule,
         PairModule,
         FarmModule,
+        StakingModule,
         DistributionModule,
         ProxyModule,
         LockedAssetModule,

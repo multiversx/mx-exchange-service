@@ -1,0 +1,104 @@
+import {
+    BigUIntType,
+    FieldDefinition,
+    StructType,
+    U64Type,
+} from '@elrondnetwork/erdjs/out';
+import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
+
+export enum StakingTokenType {
+    STAKING_FARM_TOKEN = 'stakingFarmToken',
+    UNBOUND_FARM_TOKEN = 'unboundFarmToken',
+}
+
+registerEnumType(StakingTokenType, { name: 'StakingTokenType' });
+
+@ObjectType()
+export class StakingTokenAttributesModel {
+    @Field({ nullable: true })
+    identifier?: string;
+    @Field({ nullable: true })
+    attributes?: string;
+    @Field()
+    type: StakingTokenType;
+    @Field()
+    rewardPerShare: string;
+    @Field(() => Int)
+    lastClaimBlock: number;
+    @Field()
+    compoundedReward: string;
+    @Field()
+    currentFarmAmount: string;
+
+    constructor(init?: Partial<StakingTokenAttributesModel>) {
+        Object.assign(this, init);
+    }
+
+    toJSON() {
+        return {
+            rewardPerShare: this.rewardPerShare,
+            lastClaimBlock: this.lastClaimBlock,
+            compoundedReward: this.compoundedReward,
+            currentFarmAmount: this.currentFarmAmount,
+        };
+    }
+
+    static fromDecodedAttributes(
+        decodedAttributes: any,
+    ): StakingTokenAttributesModel {
+        return new StakingTokenAttributesModel({
+            type: StakingTokenType.STAKING_FARM_TOKEN,
+            rewardPerShare: decodedAttributes.rewardPerShare.toFixed(),
+            lastClaimBlock: decodedAttributes.lastClaimBlock.toNumber(),
+            compoundedReward: decodedAttributes.compoundedReward.toFixed(),
+            currentFarmAmount: decodedAttributes.currentFarmAmount.toFixed(),
+        });
+    }
+
+    static getStructure(): StructType {
+        return new StructType('StakingFarmTokenAttributes', [
+            new FieldDefinition('rewardPerShare', '', new BigUIntType()),
+            new FieldDefinition('lastClaimBlock', '', new U64Type()),
+            new FieldDefinition('compoundedReward', '', new BigUIntType()),
+            new FieldDefinition('currentFarmAmount', '', new BigUIntType()),
+        ]);
+    }
+}
+
+@ObjectType()
+export class UnboundTokenAttributesModel {
+    @Field({ nullable: true })
+    identifier?: string;
+    @Field({ nullable: true })
+    attributes?: string;
+    @Field()
+    type: StakingTokenType;
+    @Field(() => Int)
+    unlockEpoch: number;
+
+    constructor(init?: Partial<UnboundTokenAttributesModel>) {
+        Object.assign(this, init);
+    }
+
+    toJSON() {
+        return {
+            type: this.type,
+            unlockEpoch: this.unlockEpoch,
+        };
+    }
+
+    static fromDecodedAttributes(
+        decodedAttributes: any,
+    ): UnboundTokenAttributesModel {
+        return new UnboundTokenAttributesModel({
+            type: StakingTokenType.UNBOUND_FARM_TOKEN,
+            unlockEpoch: decodedAttributes.unlockEpoch.toNumber(),
+        });
+    }
+
+    static getStructure(): StructType {
+        return new StructType('UnboundFarmTokenAttributes', [
+            new FieldDefinition('unlockEpoch', '', new U64Type()),
+        ]);
+    }
+}

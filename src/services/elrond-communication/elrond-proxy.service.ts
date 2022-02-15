@@ -89,6 +89,16 @@ export class ElrondProxyService {
         return [contract, version, type];
     }
 
+    async getStakingSmartContract(
+        stakeAddress: string,
+    ): Promise<SmartContract> {
+        return await this.getSmartContract(
+            stakeAddress,
+            abiConfig.staking,
+            'Farm',
+        );
+    }
+
     async getProxyDexSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.proxyDexAddress,
