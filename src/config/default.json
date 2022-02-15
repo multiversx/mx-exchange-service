@@ -235,6 +235,15 @@
                 "defaultMergeWFMT": 20000000
             }
         },
+        "stake": {
+            "stakeFarm": 7500000,
+            "unstakeFarm": 9500000,
+            "unboundFarm": 7500000,
+            "claimRewards": 7500000,
+            "claimRewardsWithNewValue": 7500000,
+            "compoundRewards": 7500000,
+            "mergeTokens": 20000000
+        },
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
         "unlockAssets": 17500000,
