@@ -307,7 +307,7 @@ export class StakingResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async claimRewards(
+    async claimStakingRewards(
         @Args() args: GenericStakeFarmArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
@@ -324,7 +324,7 @@ export class StakingResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async claimRewardsWithNewValue(
+    async claimStakingRewardsWithNewValue(
         @Args() args: ClaimRewardsWithNewValueArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
@@ -342,7 +342,7 @@ export class StakingResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async compoundRewards(
+    async compoundStakingRewards(
         @Args() args: GenericStakeFarmArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
@@ -359,7 +359,7 @@ export class StakingResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async mergeFarmTokens(
+    async mergeStakeFarmTokens(
         @Args() args: StakeFarmArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
