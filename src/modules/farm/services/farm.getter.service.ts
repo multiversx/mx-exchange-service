@@ -132,7 +132,7 @@ export class FarmGetterService {
             farmAddress,
             'rewardsPerBlock',
             () => this.abiService.getRewardsPerBlock(farmAddress),
-            oneHour(),
+            oneMinute() * 2,
         );
     }
 
