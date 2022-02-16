@@ -40,15 +40,15 @@
         ],
         "v1.3": {
             "unlockedRewards": [
-                "erd1qqqqqqqqqqqqqpgqrplpr2xkwnvnmckez3wdkhpm7hklk4zs0n4sckg8zu",
-                "erd1qqqqqqqqqqqqqpgqw7k44hpumdwpus2ljkxzv9g6le07z59g0n4s28kegk",
-                "erd1qqqqqqqqqqqqqpgqsxvqtnms7q3x39zq8pzgswzpg9wgzs8c0n4s9aq2rh",
+                "erd1qqqqqqqqqqqqqpgq5j0l9wd3fnghcg2pk0w9xuzc8jl2gvlu0n4s3hlxut",
+                "erd1qqqqqqqqqqqqqpgqu2g4qdjj0qdwwfhhf0h26ly0hrzhkz550n4sj0h962",
+                "erd1qqqqqqqqqqqqqpgqnfem20du5tqwqzmm6fc2hpzj7s6ct5xj0n4shlewv5",
                 "erd1qqqqqqqqqqqqqpgqcrzcw0p07c0a3alzglkfslg5859j3sq00n4sn0tsdu"
             ],
             "lockedRewards": [
-                "erd1qqqqqqqqqqqqqpgq2y57353rr2h33tujmtl960dr7944x6ul0n4stzplmu",
-                "erd1qqqqqqqqqqqqqpgqr4enqjgk4klzxfcczfkacwu34jqz66rr0n4sgs7ngz",
-                "erd1qqqqqqqqqqqqqpgq53mkm43ldf6zwy29cxq4m2mcxcpxpf0q0n4stv2j79",
+                "erd1qqqqqqqqqqqqqpgqvrjy3f9hggj4dfrdqpp65hmd9qj0gdfc0n4s6rllsc",
+                "erd1qqqqqqqqqqqqqpgqeqe6ezxqjm28990dgyxrgealpz6tq7sm0n4shldvej",
+                "erd1qqqqqqqqqqqqqpgqacwqrzkzkg4fhtnc0dta48cx787szwk50n4s0pp8rl",
                 "erd1qqqqqqqqqqqqqpgqfz3wqazehjeftqauw2mkmczzk47zfq5k0n4spgzp5u"
             ],
             "customRewards": [
@@ -124,8 +124,8 @@
             },
             "v1.3": {
                 "enterFarm": {
-                    "default": 9500000,
-                    "withTokenMerge": 10500000
+                    "default": 10500000,
+                    "withTokenMerge": 11500000
                 },
                 "compoundRewards": 12500000,
                 "unlockedRewards": {
