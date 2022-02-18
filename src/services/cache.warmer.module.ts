@@ -23,6 +23,8 @@ import { ElasticService } from 'src/helpers/elastic.service';
 import { AWSModule } from './aws/aws.module';
 import { StakingModule } from 'src/modules/staking/staking.module';
 import { StakingCacheWarmerService } from './crons/staking.cache.warmer.service';
+import { StakingProxyCacheWarmerService } from './crons/staking.proxy.cache.warmer.service';
+import { StakingProxyModule } from 'src/modules/staking-proxy/staking.proxy.module';
 
 @Module({
     imports: [
@@ -37,6 +39,7 @@ import { StakingCacheWarmerService } from './crons/staking.cache.warmer.service'
         ContextModule,
         FarmModule,
         StakingModule,
+        StakingProxyModule,
         ProxyModule,
         ProxyFarmModule,
         ProxyPairModule,
@@ -49,6 +52,7 @@ import { StakingCacheWarmerService } from './crons/staking.cache.warmer.service'
         PairCacheWarmerService,
         FarmCacheWarmerService,
         StakingCacheWarmerService,
+        StakingProxyCacheWarmerService,
         ProxyCacheWarmerService,
         AnalyticsCacheWarmerService,
         CachingService,
