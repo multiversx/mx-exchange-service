@@ -18,6 +18,7 @@ import * as Transport from 'winston-transport';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { StakingModule } from './modules/staking/staking.module';
+import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module';
 
 @Module({
     imports: [
@@ -76,6 +77,7 @@ import { StakingModule } from './modules/staking/staking.module';
         PairModule,
         FarmModule,
         StakingModule,
+        StakingProxyModule,
         DistributionModule,
         ProxyModule,
         LockedAssetModule,
