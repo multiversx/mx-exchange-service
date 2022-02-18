@@ -247,6 +247,11 @@
             "compoundRewards": 7500000,
             "mergeTokens": 20000000
         },
+        "stakeProxy": {
+            "stakeFarmTokens": 20000000,
+            "claimDualYield": 30000000,
+            "unstakeFarmTokens": 30000000
+        },
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
         "unlockAssets": 17500000,
