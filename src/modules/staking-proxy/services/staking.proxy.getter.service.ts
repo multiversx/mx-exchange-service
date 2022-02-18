@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from 'src/config';
-import { oneSecond } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { StakingGetterService } from 'src/modules/staking/services/staking.getter.service';
@@ -54,7 +54,7 @@ export class StakingProxyGetterService {
             stakingProxyAddress,
             'lpFarmAddress',
             () => this.abiService.getLpFarmAddress(stakingProxyAddress),
-            oneSecond(),
+            oneHour(),
         );
     }
 
@@ -63,7 +63,7 @@ export class StakingProxyGetterService {
             stakingProxyAddress,
             'stakingFarmAddress',
             () => this.abiService.getStakingFarmAddress(stakingProxyAddress),
-            oneSecond(),
+            oneHour(),
         );
     }
 
@@ -72,7 +72,7 @@ export class StakingProxyGetterService {
             stakingProxyAddress,
             'pairAddress',
             () => this.abiService.getPairAddress(stakingProxyAddress),
-            oneSecond(),
+            oneHour(),
         );
     }
 
@@ -81,7 +81,7 @@ export class StakingProxyGetterService {
             stakingProxyAddress,
             'stakingTokenID',
             () => this.abiService.getStakingTokenID(stakingProxyAddress),
-            oneSecond(),
+            oneHour(),
         );
     }
 
@@ -90,7 +90,7 @@ export class StakingProxyGetterService {
             stakingProxyAddress,
             'farmTokenID',
             () => this.abiService.getFarmTokenID(stakingProxyAddress),
-            oneSecond(),
+            oneHour(),
         );
     }
 
@@ -99,7 +99,7 @@ export class StakingProxyGetterService {
             stakingProxyAddress,
             'dualYieldTokenID',
             () => this.abiService.getDualYieldTokenID(stakingProxyAddress),
-            oneSecond(),
+            oneHour(),
         );
     }
 
@@ -108,7 +108,7 @@ export class StakingProxyGetterService {
             stakingProxyAddress,
             'lpFarmTokenID',
             () => this.abiService.getLpFarmTokenID(stakingProxyAddress),
-            oneSecond(),
+            oneHour(),
         );
     }
 

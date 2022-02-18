@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from 'src/config';
-import { oneSecond } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -37,31 +37,31 @@ export class StakingProxySetterService {
     }
 
     async setLpFarmAddress(value: string): Promise<string> {
-        return await this.setData('lpFarmAddress', value, oneSecond());
+        return await this.setData('lpFarmAddress', value, oneHour());
     }
 
     async setStakingFarmAddress(value: string): Promise<string> {
-        return await this.setData('stakingFarmAddress', value, oneSecond());
+        return await this.setData('stakingFarmAddress', value, oneHour());
     }
 
     async setPairAddress(value: string): Promise<string> {
-        return await this.setData('pairAddress', value, oneSecond());
+        return await this.setData('pairAddress', value, oneHour());
     }
 
     async setStakingTokenID(value: string): Promise<string> {
-        return await this.setData('stakingTokenID', value, oneSecond());
+        return await this.setData('stakingTokenID', value, oneHour());
     }
 
     async setFarmTokenID(value: string): Promise<string> {
-        return await this.setData('farmTokenID', value, oneSecond());
+        return await this.setData('farmTokenID', value, oneHour());
     }
 
     async setDualYieldTokenID(value: string): Promise<string> {
-        return await this.setData('dualYieldTokenID', value, oneSecond());
+        return await this.setData('dualYieldTokenID', value, oneHour());
     }
 
     async setLpFarmTokenID(value: string): Promise<string> {
-        return await this.setData('lpFarmTokenID', value, oneSecond());
+        return await this.setData('lpFarmTokenID', value, oneHour());
     }
 
     private getStakeProxyCacheKey(...args: any) {
