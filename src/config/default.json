@@ -24,6 +24,9 @@
         },
         "staking": [
             "erd1qqqqqqqqqqqqqpgqeq3qu7aaz67vav5554w28y25rp3xqt3v0n4sq3ruck"
+        ],
+        "stakingProxy": [
+            "erd1qqqqqqqqqqqqqpgq59k4x383d07zs597rd9w4v0pcg4axhud0n4s35j9z5"
         ]
     },
     "tokenProviderUSD": "WEGLD-584d96",
@@ -244,6 +247,11 @@
             "compoundRewards": 7500000,
             "mergeTokens": 20000000
         },
+        "stakeProxy": {
+            "stakeFarmTokens": 20000000,
+            "claimDualYield": 30000000,
+            "unstakeFarmTokens": 30000000
+        },
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
         "unlockAssets": 17500000,
@@ -266,7 +274,8 @@
                 "customRewards": "./src/abis/v1.3/farm_custom_rewards.abi.json"
             }
         },
-        "staking": "./src/abis/farm-staking.abi.json"
+        "staking": "./src/abis/farm-staking.abi.json",
+        "stakingProxy": "./src/abis/farm-staking-proxy.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,
