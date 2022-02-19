@@ -2,6 +2,7 @@ import { BinaryCodec } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
+import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { Logger } from 'winston';
 import { DualYieldTokenAttributesModel } from '../models/dualYieldTokenAttributes.model';
 import { StakingProxyModel } from '../models/staking.proxy.model';
@@ -26,20 +27,21 @@ export class StakingProxyService {
     }
 
     decodeDualYieldTokenAttributes(
-        identifier: string,
-        attributes: string,
-    ): DualYieldTokenAttributesModel {
-        const attributesBuffer = Buffer.from(attributes, 'base64');
-        const codec = new BinaryCodec();
-        const structType = DualYieldTokenAttributesModel.getStructure();
-        const [decoded] = codec.decodeNested(attributesBuffer, structType);
-        const decodedAttributes = decoded.valueOf();
-        const dualYieldTokenAttributes = DualYieldTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes,
-        );
-        dualYieldTokenAttributes.identifier = identifier;
-        dualYieldTokenAttributes.attributes = attributes;
+        args: DecodeAttributesArgs,
+    ): DualYieldTokenAttributesModel[] {
+        return args.batchAttributes.map(arg => {
+            const attributesBuffer = Buffer.from(arg.attributes, 'base64');
+            const codec = new BinaryCodec();
+            const structType = DualYieldTokenAttributesModel.getStructure();
+            const [decoded] = codec.decodeNested(attributesBuffer, structType);
+            const decodedAttributes = decoded.valueOf();
+            const dualYieldTokenAttributes = DualYieldTokenAttributesModel.fromDecodedAttributes(
+                decodedAttributes,
+            );
+            dualYieldTokenAttributes.identifier = arg.identifier;
+            dualYieldTokenAttributes.attributes = arg.attributes;
 
-        return dualYieldTokenAttributes;
+            return dualYieldTokenAttributes;
+        });
     }
 }

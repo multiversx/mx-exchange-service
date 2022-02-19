@@ -6,6 +6,7 @@ import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { DualYieldTokenAttributesModel } from './models/dualYieldTokenAttributes.model';
 import {
     ClaimDualYieldArgs,
@@ -107,15 +108,13 @@ export class StakingProxyResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => DualYieldTokenAttributesModel)
+    @Query(() => [DualYieldTokenAttributesModel])
     dualYieldTokenAttributes(
-        @Args('identifier') identifier: string,
-        @Args('attributes') attributes: string,
-    ): DualYieldTokenAttributesModel {
+        @Args('args') args: DecodeAttributesArgs,
+    ): DualYieldTokenAttributesModel[] {
         try {
             return this.stakingProxyService.decodeDualYieldTokenAttributes(
-                identifier,
-                attributes,
+                args,
             );
         } catch (error) {
             throw new ApolloError(error);
