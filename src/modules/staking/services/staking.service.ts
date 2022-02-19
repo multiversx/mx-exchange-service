@@ -4,6 +4,8 @@ import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
+import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { Logger } from 'winston';
 import { StakingModel, StakingRewardsModel } from '../models/staking.model';
 import {
@@ -18,6 +20,7 @@ export class StakingService {
     constructor(
         private readonly abiService: AbiStakingService,
         private readonly stakingComputeService: StakingComputeService,
+        private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -36,41 +39,48 @@ export class StakingService {
     }
 
     decodeStakingTokenAttributes(
-        identifier: string,
-        attributes: string,
-    ): StakingTokenAttributesModel {
-        const attributesBuffer = Buffer.from(attributes, 'base64');
-        const codec = new BinaryCodec();
-        const structType = StakingTokenAttributesModel.getStructure();
-        const [decoded] = codec.decodeNested(attributesBuffer, structType);
-        const decodedAttributes = decoded.valueOf();
-        const stakingTokenAttributes = StakingTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes,
-        );
+        args: DecodeAttributesArgs,
+    ): StakingTokenAttributesModel[] {
+        return args.batchAttributes.map(arg => {
+            const attributesBuffer = Buffer.from(arg.attributes, 'base64');
+            const codec = new BinaryCodec();
+            const structType = StakingTokenAttributesModel.getStructure();
+            const [decoded] = codec.decodeNested(attributesBuffer, structType);
+            const decodedAttributes = decoded.valueOf();
+            const stakingTokenAttributes = StakingTokenAttributesModel.fromDecodedAttributes(
+                decodedAttributes,
+            );
 
-        stakingTokenAttributes.identifier = identifier;
-        stakingTokenAttributes.attributes = attributes;
+            stakingTokenAttributes.identifier = arg.identifier;
+            stakingTokenAttributes.attributes = arg.attributes;
 
-        return stakingTokenAttributes;
+            return stakingTokenAttributes;
+        });
     }
 
-    decodeUnboundTokenAttributes(
-        identifier: string,
-        attributes: string,
-    ): UnboundTokenAttributesModel {
-        const attributesBuffer = Buffer.from(attributes, 'base64');
-        const codec = new BinaryCodec();
-        const structType = UnboundTokenAttributesModel.getStructure();
-        const [decoded] = codec.decodeNested(attributesBuffer, structType);
-        const decodedAttributes = decoded.valueOf();
-        const unboundFarmTokenAttributes = UnboundTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes,
-        );
+    async decodeUnboundTokenAttributes(
+        args: DecodeAttributesArgs,
+    ): Promise<UnboundTokenAttributesModel[]> {
+        const decodedAttributesBatch = [];
+        for (const arg of args.batchAttributes) {
+            const attributesBuffer = Buffer.from(arg.attributes, 'base64');
+            const codec = new BinaryCodec();
+            const structType = UnboundTokenAttributesModel.getStructure();
+            const [decoded] = codec.decodeNested(attributesBuffer, structType);
+            const decodedAttributes = decoded.valueOf();
+            const remainingEpochs = await this.getUnbondigRemaingEpochs(
+                decodedAttributes.unlockEpoch.toNumber(),
+            );
+            const unboundFarmTokenAttributes = new UnboundTokenAttributesModel({
+                identifier: arg.identifier,
+                attributes: arg.attributes,
+                remainingEpochs,
+            });
 
-        unboundFarmTokenAttributes.identifier = identifier;
-        unboundFarmTokenAttributes.attributes = attributes;
+            decodedAttributesBatch.push(unboundFarmTokenAttributes);
+        }
 
-        return unboundFarmTokenAttributes;
+        return decodedAttributesBatch;
     }
 
     async getBatchRewardsForPosition(
@@ -85,10 +95,14 @@ export class StakingService {
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
     ): Promise<StakingRewardsModel> {
-        const stakeTokenAttributes = this.decodeStakingTokenAttributes(
-            positon.identifier,
-            positon.attributes,
-        );
+        const stakeTokenAttributes = this.decodeStakingTokenAttributes({
+            batchAttributes: [
+                {
+                    attributes: positon.attributes,
+                    identifier: positon.identifier,
+                },
+            ],
+        });
         let rewards: BigNumber;
         if (positon.vmQuery) {
             rewards = await this.abiService.calculateRewardsForGivenPosition(
@@ -100,13 +114,21 @@ export class StakingService {
             rewards = await this.stakingComputeService.computeStakeRewardsForPosition(
                 positon.farmAddress,
                 positon.liquidity,
-                stakeTokenAttributes,
+                stakeTokenAttributes[0],
             );
         }
 
         return new StakingRewardsModel({
-            decodedAttributes: stakeTokenAttributes,
+            decodedAttributes: stakeTokenAttributes[0],
             rewards: rewards.integerValue().toFixed(),
         });
+    }
+
+    private async getUnbondigRemaingEpochs(
+        unlockEpoch: number,
+    ): Promise<number> {
+        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+
+        return unlockEpoch - currentEpoch > 0 ? unlockEpoch - currentEpoch : 0;
     }
 }
