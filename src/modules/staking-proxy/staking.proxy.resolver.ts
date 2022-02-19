@@ -6,6 +6,7 @@ import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { BatchFarmRewardsComputeArgs } from '../farm/models/farm.args';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { DualYieldTokenAttributesModel } from './models/dualYieldTokenAttributes.model';
 import {
@@ -13,7 +14,10 @@ import {
     ProxyStakeFarmArgs,
     UnstakeFarmTokensArgs,
 } from './models/staking.proxy.args.model';
-import { StakingProxyModel } from './models/staking.proxy.model';
+import {
+    DualYieldRewardsModel,
+    StakingProxyModel,
+} from './models/staking.proxy.model';
 import { StakingProxyGetterService } from './services/staking.proxy.getter.service';
 import { StakingProxyService } from './services/staking.proxy.service';
 import { StakingProxyTransactionService } from './services/staking.proxy.transactions.service';
@@ -172,6 +176,20 @@ export class StakingProxyResolver {
             return await this.stakingProxyTransaction.unstakeFarmTokens(
                 user.publicKey,
                 args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => [DualYieldRewardsModel])
+    async getDualYieldRewardsForPosition(
+        @Args('proxyStakingPositions') args: BatchFarmRewardsComputeArgs,
+    ): Promise<DualYieldRewardsModel[]> {
+        try {
+            return await this.stakingProxyService.getBatchRewardsForPosition(
+                args.farmsPositions,
             );
         } catch (error) {
             throw new ApolloError(error);
