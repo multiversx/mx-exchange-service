@@ -130,4 +130,21 @@ export class StakingProxyService {
             return dualYieldTokenAttributes;
         });
     }
+
+    async getStakingProxyAddressByDualYieldTokenID(
+        tokenID: string,
+    ): Promise<string> {
+        const stakingProxiesAddress: string[] = scAddress.stakingProxy;
+
+        for (const address of stakingProxiesAddress) {
+            const dualYieldTokenID = await this.stakingProxyGetter.getDualYieldTokenID(
+                address,
+            );
+            if (dualYieldTokenID === tokenID) {
+                return address;
+            }
+        }
+
+        return undefined;
+    }
 }
