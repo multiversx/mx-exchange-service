@@ -12,26 +12,39 @@ import { LockedAssetService } from '../locked-asset-factory/services/locked-asse
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyService } from '../proxy/services/proxy.service';
 import {
+    UserDualYiledToken,
     UserFarmToken,
     UserLockedAssetToken,
     UserLockedFarmToken,
     UserLockedLPToken,
+    UserStakeFarmToken,
+    UserUnbondFarmToken,
 } from './models/user.model';
 import { PairGetterService } from '../pair/services/pair.getter.service';
-import { computeValueUSD } from '../../utils/token.converters';
+import { computeValueUSD, tokenIdentifier } from '../../utils/token.converters';
 import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
+import { StakeFarmToken } from 'src/models/tokens/stakeFarmToken.model';
+import { StakingGetterService } from '../staking/services/staking.getter.service';
+import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
+import { StakingService } from '../staking/services/staking.service';
+import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
+import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
 
 @Injectable()
 export class UserComputeService {
     constructor(
-        private apiService: ElrondApiService,
-        private farmService: FarmService,
-        private farmGetterService: FarmGetterService,
-        private pairService: PairService,
-        private pairGetterService: PairGetterService,
-        private lockedAssetService: LockedAssetService,
-        private proxyService: ProxyService,
+        private readonly apiService: ElrondApiService,
+        private readonly farmService: FarmService,
+        private readonly farmGetterService: FarmGetterService,
+        private readonly pairService: PairService,
+        private readonly pairGetterService: PairGetterService,
+        private readonly lockedAssetService: LockedAssetService,
+        private readonly proxyService: ProxyService,
         private readonly proxyGetter: ProxyGetterService,
+        private readonly stakingGetter: StakingGetterService,
+        private readonly stakingService: StakingService,
+        private readonly stakingProxyGetter: StakingProxyGetterService,
+        private readonly stakingProxyService: StakingProxyService,
     ) {}
 
     async farmTokenUSD(
@@ -166,6 +179,102 @@ export class UserComputeService {
             ...nftToken,
             valueUSD: userFarmToken.valueUSD,
             decodedAttributes: decodedWFMTAttributes[0],
+        });
+    }
+
+    async stakeFarmUSD(
+        nftToken: StakeFarmToken,
+    ): Promise<UserStakeFarmToken | UserUnbondFarmToken> {
+        const stakeFarmAddress = await this.stakingService.getStakeFarmAddressByStakeFarmTokenID(
+            nftToken.collection,
+        );
+        const farmingToken = await this.stakingGetter.getFarmingToken(
+            stakeFarmAddress,
+        );
+        const priceUSD = await this.pairGetterService.getTokenPriceUSD(
+            farmingToken.identifier,
+        );
+        const valueUSD = computeValueUSD(
+            nftToken.balance,
+            farmingToken.decimals,
+            priceUSD,
+        ).toFixed();
+        if (nftToken.attributes.length === 12) {
+            const unbondDecodedAttributes = await this.stakingService.decodeUnboundTokenAttributes(
+                {
+                    batchAttributes: [
+                        {
+                            attributes: nftToken.attributes,
+                            identifier: nftToken.identifier,
+                        },
+                    ],
+                },
+            );
+            return new UserUnbondFarmToken({
+                ...nftToken,
+                valueUSD,
+                decodedAttributes: unbondDecodedAttributes[0],
+            });
+        } else {
+            const stakeDecodedAttributes = this.stakingService.decodeStakingTokenAttributes(
+                {
+                    batchAttributes: [
+                        {
+                            attributes: nftToken.attributes,
+                            identifier: nftToken.identifier,
+                        },
+                    ],
+                },
+            );
+            return new UserStakeFarmToken({
+                ...nftToken,
+                valueUSD,
+                decodedAttributes: stakeDecodedAttributes[0],
+            });
+        }
+    }
+
+    async dualYieldTokenUSD(
+        nftToken: DualYieldToken,
+    ): Promise<UserDualYiledToken> {
+        const decodedAttributes = this.stakingProxyService.decodeDualYieldTokenAttributes(
+            {
+                batchAttributes: [
+                    {
+                        attributes: nftToken.attributes,
+                        identifier: nftToken.identifier,
+                    },
+                ],
+            },
+        );
+
+        const stakingProxyAddress = await this.stakingProxyService.getStakingProxyAddressByDualYieldTokenID(
+            nftToken.collection,
+        );
+        const farmTokenID = await this.stakingProxyGetter.getLpFarmTokenID(
+            stakingProxyAddress,
+        );
+
+        const farmTokenIdentifier = tokenIdentifier(
+            farmTokenID,
+            decodedAttributes[0].lpFarmTokenNonce,
+        );
+        console.log({
+            farmTokenIdentifier,
+        });
+        const [farmToken, farmAddress] = await Promise.all([
+            this.apiService.getNftByTokenIdentifier(
+                stakingProxyAddress,
+                farmTokenIdentifier,
+            ),
+            this.farmService.getFarmAddressByFarmTokenID(farmTokenID),
+        ]);
+        const farmTokenUSD = await this.farmTokenUSD(farmToken, farmAddress);
+
+        return new UserDualYiledToken({
+            ...nftToken,
+            valueUSD: farmTokenUSD.valueUSD,
+            decodedAttributes: decodedAttributes[0],
         });
     }
 }
