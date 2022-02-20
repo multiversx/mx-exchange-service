@@ -19,8 +19,8 @@ export class StakingTokenAttributesModel {
     identifier?: string;
     @Field({ nullable: true })
     attributes?: string;
-    @Field()
-    type: StakingTokenType;
+    @Field(() => StakingTokenType)
+    type = StakingTokenType.STAKING_FARM_TOKEN;
     @Field()
     rewardPerShare: string;
     @Field(() => Int)
@@ -47,7 +47,6 @@ export class StakingTokenAttributesModel {
         decodedAttributes: any,
     ): StakingTokenAttributesModel {
         return new StakingTokenAttributesModel({
-            type: StakingTokenType.STAKING_FARM_TOKEN,
             rewardPerShare: decodedAttributes.rewardPerShare.toFixed(),
             lastClaimBlock: decodedAttributes.lastClaimBlock.toNumber(),
             compoundedReward: decodedAttributes.compoundedReward.toFixed(),
@@ -71,10 +70,10 @@ export class UnboundTokenAttributesModel {
     identifier?: string;
     @Field({ nullable: true })
     attributes?: string;
-    @Field()
-    type: StakingTokenType;
+    @Field(() => StakingTokenType)
+    type = StakingTokenType.UNBOUND_FARM_TOKEN;
     @Field(() => Int)
-    unlockEpoch: number;
+    remainingEpochs: number;
 
     constructor(init?: Partial<UnboundTokenAttributesModel>) {
         Object.assign(this, init);
@@ -83,17 +82,8 @@ export class UnboundTokenAttributesModel {
     toJSON() {
         return {
             type: this.type,
-            unlockEpoch: this.unlockEpoch,
+            unlockEpoch: this.remainingEpochs,
         };
-    }
-
-    static fromDecodedAttributes(
-        decodedAttributes: any,
-    ): UnboundTokenAttributesModel {
-        return new UnboundTokenAttributesModel({
-            type: StakingTokenType.UNBOUND_FARM_TOKEN,
-            unlockEpoch: decodedAttributes.unlockEpoch.toNumber(),
-        });
     }
 
     static getStructure(): StructType {

@@ -3,7 +3,9 @@ import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
+import { StakingModule } from '../staking/staking.module';
 import { AbiStakingProxyService } from './services/staking.proxy.abi.service';
 import { StakingProxyGetterService } from './services/staking.proxy.getter.service';
 import { StakingProxyService } from './services/staking.proxy.service';
@@ -18,6 +20,8 @@ import { StakingProxyResolver } from './staking.proxy.resolver';
         CachingModule,
         ElrondCommunicationModule,
         PairModule,
+        FarmModule,
+        StakingModule,
     ],
     providers: [
         AbiStakingProxyService,
@@ -29,6 +33,7 @@ import { StakingProxyResolver } from './staking.proxy.resolver';
     ],
     exports: [
         AbiStakingProxyService,
+        StakingProxyService,
         StakingProxyGetterService,
         StakingProxySetterService,
     ],

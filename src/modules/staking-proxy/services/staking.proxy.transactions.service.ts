@@ -101,15 +101,21 @@ export class StakingProxyTransactionService {
         args: UnstakeFarmTokensArgs,
     ): Promise<TransactionModel> {
         const decodedAttributes = this.stakeProxyService.decodeDualYieldTokenAttributes(
-            args.payment.tokenID,
-            args.attributes,
+            {
+                batchAttributes: [
+                    {
+                        identifier: args.payment.tokenID,
+                        attributes: args.attributes,
+                    },
+                ],
+            },
         );
         const pairAddress = await this.stakeProxyGetter.getPairAddress(
             args.proxyStakingAddress,
         );
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             pairAddress,
-            decodedAttributes.lpFarmTokenAmount,
+            decodedAttributes[0].lpFarmTokenAmount,
         );
         const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
             .multipliedBy(1 - args.tolerance)
