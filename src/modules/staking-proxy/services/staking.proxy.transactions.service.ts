@@ -59,13 +59,17 @@ export class StakingProxyTransactionService {
             args.proxyStakingAddress,
         );
 
+        const gasLimit =
+            args.payments.length > 1
+                ? gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge
+                : gasConfig.stakeProxy.stakeFarmTokens.default;
         return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
             args.payments,
             this.stakeFarmTokens.name,
             [],
-            new GasLimit(gasConfig.stakeProxy.stakeFarmTokens),
+            new GasLimit(gasLimit),
         );
     }
 
