@@ -50,13 +50,17 @@ export class StakingTransactionService {
             stakeAddress,
         );
 
+        const gasLimit =
+            payments.length > 1
+                ? gasConfig.stake.stakeFarm.withTokenMerge
+                : gasConfig.stake.stakeFarm.default;
         return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
             payments,
             this.stakeFarm.name,
             [],
-            new GasLimit(gasConfig.stake.stakeFarm),
+            new GasLimit(gasLimit),
         );
     }
 
