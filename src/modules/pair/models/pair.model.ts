@@ -81,6 +81,9 @@ export class PairModel {
     @Field()
     specialFeePercent: number;
 
+    @Field(() => [String])
+    trustedSwapPairs: string[];
+
     @Field()
     type: string;
 

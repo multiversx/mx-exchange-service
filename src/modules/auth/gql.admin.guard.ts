@@ -5,11 +5,13 @@ import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-hos
 import { ForbiddenError } from 'apollo-server-errors';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
-export class GqlAuthGuard extends AuthGuard('jwt') {
+export class GqlAdminGuard extends AuthGuard('jwt') {
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        private readonly configService: ApiConfigService,
     ) {
         super();
     }
@@ -23,8 +25,8 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
     }
 
     handleRequest(err: any, user: any, info: any) {
-        if (!err && !!user) {
-            this.logger.error('address', [{ user: user }]);
+        const admins = this.configService.getSecurityAdmins();
+        if (!err && !!user && admins.includes(user.publicKey)) {
             return user;
         }
 

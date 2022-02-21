@@ -11,7 +11,11 @@ import { generateRunQueryLogMessage } from '../../../utils/generate-log-message'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
-import { FarmRewardType, FarmVersion } from '../models/farm.model';
+import {
+    FarmMigrationConfig,
+    FarmRewardType,
+    FarmVersion,
+} from '../models/farm.model';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 
 @Injectable()
@@ -266,5 +270,28 @@ export class AbiFarmService {
             'produce_rewards_enabled',
         );
         return response === '01';
+    }
+
+    async getFarmMigrationConfiguration(
+        farmAddress: string,
+    ): Promise<FarmMigrationConfig | undefined> {
+        const [contract] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+
+        try {
+            const interaction: Interaction = contract.methods.getFarmMigrationConfiguration();
+            const response = await this.getGenericData(contract, interaction);
+            const decodedResponse = response.firstValue.valueOf();
+            return new FarmMigrationConfig({
+                migrationRole: decodedResponse.migration_role.name,
+                oldFarmAddress: decodedResponse.old_farm_address.bech32(),
+                oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
+                newFarmAddress: decodedResponse.new_farm_address.bech32(),
+                newLockedFarmAddress: decodedResponse.new_farm_with_lock_address.bech32(),
+            });
+        } catch (error) {
+            return undefined;
+        }
     }
 }

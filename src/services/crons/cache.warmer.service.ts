@@ -30,14 +30,18 @@ export class CacheWarmerService {
                 'priceFeed',
                 tokensPriceData.get(priceFeed),
             );
-            await this.cachingService.setCache(cacheKey, tokenPrice, oneMinute());
+            await this.cachingService.setCache(
+                cacheKey,
+                tokenPrice,
+                oneMinute(),
+            );
 
             this.invalidatedKeys.push(cacheKey);
             await this.deleteCacheKeys();
         }
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron('*/6 * * * * *')
     async cacheCurrentEpoch(): Promise<void> {
         const stats = await this.apiService.getStats();
         const ttl = (stats.roundsPerEpoch - stats.roundsPassed) * 6;

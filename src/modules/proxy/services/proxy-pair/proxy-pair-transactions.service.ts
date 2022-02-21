@@ -116,8 +116,8 @@ export class TransactionsProxyPairService {
 
         const gasLimit: GasLimit = new GasLimit(
             inputTokens.length > 2
-                ? gasConfig.addLiquidityProxyMerge
-                : gasConfig.addLiquidityProxy,
+                ? gasConfig.proxy.pairs.addLiquidity.withTokenMerge
+                : gasConfig.proxy.pairs.addLiquidity.default,
         );
         return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
@@ -175,7 +175,7 @@ export class TransactionsProxyPairService {
         const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.removeLiquidityProxy),
+            new GasLimit(gasConfig.proxy.pairs.removeLiquidity),
         );
         transaction.receiver = sender;
         transactions.push(transaction);
@@ -232,7 +232,9 @@ export class TransactionsProxyPairService {
             tokens,
             'mergeWrappedLpTokens',
             [],
-            new GasLimit(gasConfig.defaultMergeWLPT * tokens.length),
+            new GasLimit(
+                gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length,
+            ),
         );
     }
 

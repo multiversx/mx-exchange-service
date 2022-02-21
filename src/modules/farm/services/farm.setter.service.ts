@@ -57,7 +57,7 @@ export class FarmSetterService {
         value: string,
     ): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, 'rewardsPerBlock');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
+        await this.cachingService.setCache(cacheKey, value, oneMinute() * 2);
         return cacheKey;
     }
 
