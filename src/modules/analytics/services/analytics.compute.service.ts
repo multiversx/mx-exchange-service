@@ -51,10 +51,10 @@ export class AnalyticsComputeService {
         const lockedValuesUSD = await Promise.all([
             ...promises,
             this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[2],
+                farmsAddresses()[5],
             ),
             this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[5],
+                farmsAddresses()[9],
             ),
         ]);
 
