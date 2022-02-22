@@ -30,6 +30,10 @@ export class StakingProxyModel {
 
 @ObjectType()
 export class DualYieldRewardsModel {
+    @Field({ nullable: true })
+    identifier?: string;
+    @Field({ nullable: true })
+    attributes?: string;
     @Field()
     stakingRewards: StakingRewardsModel;
     @Field()

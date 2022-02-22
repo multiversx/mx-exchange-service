@@ -107,6 +107,8 @@ export class StakingProxyService {
         ]);
 
         return new DualYieldRewardsModel({
+            attributes: position.attributes,
+            identifier: position.identifier,
             farmRewards,
             stakingRewards,
         });
