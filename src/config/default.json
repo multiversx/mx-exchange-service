@@ -234,7 +234,7 @@
         },
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
-        "unlockAssets": 17500000,
+        "unlockAssets": 25000000,
         "defaultMergeLockedAssets": 10000000,
         "lockedAssetMerge": 2000000,
         "lockedAssetCreate": 5000000
