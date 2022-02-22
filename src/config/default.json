@@ -82,7 +82,7 @@
                 "withFeeSwap": 16500000
             },
             "swapTokensFixedOutput": {
-                "default": 8800000,
+                "default": 9000000,
                 "withFeeSwap": 17000000
             }
         },
@@ -153,7 +153,7 @@
             "pairs": {
                 "addLiquidity": {
                     "default": 19500000,
-                    "withTokenMerge": 32000000
+                    "withTokenMerge": 35000000
                 },
                 "removeLiquidity": 21000000,
                 "defaultMergeWLPT": 20000000
@@ -192,7 +192,7 @@
                 "v1.3": {
                     "enterFarm": {
                         "default": 19000000,
-                        "withTokenMerge": 50000000
+                        "withTokenMerge": 55000000
                     },
                     "compoundRewards": 21600000,
                     "unlockedRewards": {
