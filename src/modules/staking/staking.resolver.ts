@@ -14,7 +14,7 @@ import {
 import { StakingModel, StakingRewardsModel } from './models/staking.model';
 import {
     StakingTokenAttributesModel,
-    UnboundTokenAttributesModel,
+    UnbondTokenAttributesModel,
 } from './models/stakingTokenAttributes.model';
 import { StakingGetterService } from './services/staking.getter.service';
 import { StakingService } from './services/staking.service';
@@ -213,10 +213,10 @@ export class StakingResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => [UnboundTokenAttributesModel])
+    @Query(() => [UnbondTokenAttributesModel])
     async unboundTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
-    ): Promise<UnboundTokenAttributesModel[]> {
+    ): Promise<UnbondTokenAttributesModel[]> {
         try {
             return this.stakingService.decodeUnboundTokenAttributes(args);
         } catch (error) {

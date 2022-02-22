@@ -10,15 +10,17 @@ import { Logger } from 'winston';
 import { StakingModel, StakingRewardsModel } from '../models/staking.model';
 import {
     StakingTokenAttributesModel,
-    UnboundTokenAttributesModel,
+    UnbondTokenAttributesModel,
 } from '../models/stakingTokenAttributes.model';
 import { AbiStakingService } from './staking.abi.service';
 import { StakingComputeService } from './staking.compute.service';
+import { StakingGetterService } from './staking.getter.service';
 
 @Injectable()
 export class StakingService {
     constructor(
         private readonly abiService: AbiStakingService,
+        private readonly stakingGetterService: StakingGetterService,
         private readonly stakingComputeService: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -60,18 +62,18 @@ export class StakingService {
 
     async decodeUnboundTokenAttributes(
         args: DecodeAttributesArgs,
-    ): Promise<UnboundTokenAttributesModel[]> {
+    ): Promise<UnbondTokenAttributesModel[]> {
         const decodedAttributesBatch = [];
         for (const arg of args.batchAttributes) {
             const attributesBuffer = Buffer.from(arg.attributes, 'base64');
             const codec = new BinaryCodec();
-            const structType = UnboundTokenAttributesModel.getStructure();
+            const structType = UnbondTokenAttributesModel.getStructure();
             const [decoded] = codec.decodeNested(attributesBuffer, structType);
             const decodedAttributes = decoded.valueOf();
             const remainingEpochs = await this.getUnbondigRemaingEpochs(
                 decodedAttributes.unlockEpoch.toNumber(),
             );
-            const unboundFarmTokenAttributes = new UnboundTokenAttributesModel({
+            const unboundFarmTokenAttributes = new UnbondTokenAttributesModel({
                 identifier: arg.identifier,
                 attributes: arg.attributes,
                 remainingEpochs,
@@ -130,5 +132,22 @@ export class StakingService {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
 
         return unlockEpoch - currentEpoch > 0 ? unlockEpoch - currentEpoch : 0;
+    }
+
+    async getStakeFarmAddressByStakeFarmTokenID(
+        tokenID: string,
+    ): Promise<string> {
+        const stakeFarmAddresses: string[] = scAddress.staking;
+
+        for (const address of stakeFarmAddresses) {
+            const stakeFarmTokenID = await this.stakingGetterService.getFarmTokenID(
+                address,
+            );
+            if (tokenID === stakeFarmTokenID) {
+                return address;
+            }
+        }
+
+        return undefined;
     }
 }

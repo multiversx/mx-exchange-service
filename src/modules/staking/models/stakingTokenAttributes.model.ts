@@ -65,7 +65,7 @@ export class StakingTokenAttributesModel {
 }
 
 @ObjectType()
-export class UnboundTokenAttributesModel {
+export class UnbondTokenAttributesModel {
     @Field({ nullable: true })
     identifier?: string;
     @Field({ nullable: true })
@@ -75,7 +75,7 @@ export class UnboundTokenAttributesModel {
     @Field(() => Int)
     remainingEpochs: number;
 
-    constructor(init?: Partial<UnboundTokenAttributesModel>) {
+    constructor(init?: Partial<UnbondTokenAttributesModel>) {
         Object.assign(this, init);
     }
 
