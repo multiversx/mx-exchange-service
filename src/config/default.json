@@ -26,7 +26,8 @@
             "erd1qqqqqqqqqqqqqpgqeq3qu7aaz67vav5554w28y25rp3xqt3v0n4sq3ruck"
         ],
         "stakingProxy": [
-            "erd1qqqqqqqqqqqqqpgq59k4x383d07zs597rd9w4v0pcg4axhud0n4s35j9z5"
+            "erd1qqqqqqqqqqqqqpgqtqjq6fktv46tpk6f56php5tygfdgqrqy0n4syse06g",
+            "erd1qqqqqqqqqqqqqpgq4q4t5zfcfkckmcg0fc5jaaqy3nkrva7g0n4sut0eyn"
         ]
     },
     "tokenProviderUSD": "WEGLD-584d96",
@@ -82,7 +83,7 @@
         },
         "pairs": {
             "addLiquidity": 8800000,
-            "removeLiquidity": 7700000,
+            "removeLiquidity": 8500000,
             "swapTokensFixedInput": {
                 "default": 8700000,
                 "withFeeSwap": 16500000
@@ -252,11 +253,11 @@
         },
         "stakeProxy": {
             "stakeFarmTokens": {
-                "default": 30000000,
-                "withTokenMerge": 40000000
+                "default": 23000000,
+                "withTokenMerge": 33000000
             },
             "claimDualYield": 30000000,
-            "unstakeFarmTokens": 30000000
+            "unstakeFarmTokens": 50000000
         },
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
