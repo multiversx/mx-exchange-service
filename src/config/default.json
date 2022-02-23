@@ -153,7 +153,7 @@
             "pairs": {
                 "addLiquidity": {
                     "default": 19500000,
-                    "withTokenMerge": 35000000
+                    "withTokenMerge": 40000000
                 },
                 "removeLiquidity": 21000000,
                 "defaultMergeWLPT": 20000000
@@ -235,8 +235,8 @@
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
         "unlockAssets": 45000000,
-        "defaultMergeLockedAssets": 10000000,
-        "lockedAssetMerge": 2000000,
+        "defaultMergeLockedAssets": 12000000,
+        "lockedAssetMerge": 4000000,
         "lockedAssetCreate": 5000000
     },
     "abi": {
