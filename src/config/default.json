@@ -82,7 +82,7 @@
         },
         "pairs": {
             "addLiquidity": 8800000,
-            "removeLiquidity": 7700000,
+            "removeLiquidity": 8500000,
             "swapTokensFixedInput": {
                 "default": 8700000,
                 "withFeeSwap": 16500000
@@ -252,11 +252,11 @@
         },
         "stakeProxy": {
             "stakeFarmTokens": {
-                "default": 30000000,
-                "withTokenMerge": 40000000
+                "default": 23000000,
+                "withTokenMerge": 33000000
             },
             "claimDualYield": 30000000,
-            "unstakeFarmTokens": 30000000
+            "unstakeFarmTokens": 50000000
         },
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
