@@ -6,7 +6,10 @@ import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { BatchFarmRewardsComputeArgs } from '../farm/models/farm.args';
+import {
+    BatchFarmRewardsComputeArgs,
+    CalculateRewardsArgs,
+} from '../farm/models/farm.args';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { DualYieldTokenAttributesModel } from './models/dualYieldTokenAttributes.model';
 import {
@@ -17,6 +20,7 @@ import {
 import {
     DualYieldRewardsModel,
     StakingProxyModel,
+    UnstakeFarmTokensReceiveModel,
 } from './models/staking.proxy.model';
 import { StakingProxyGetterService } from './services/staking.proxy.getter.service';
 import { StakingProxyService } from './services/staking.proxy.service';
@@ -190,6 +194,19 @@ export class StakingProxyResolver {
         try {
             return await this.stakingProxyService.getBatchRewardsForPosition(
                 args.farmsPositions,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @Query(() => UnstakeFarmTokensReceiveModel)
+    async getUnstakeTokensReceived(
+        @Args('position') position: CalculateRewardsArgs,
+    ): Promise<UnstakeFarmTokensReceiveModel> {
+        try {
+            return await this.stakingProxyService.getUnstakeTokensReceived(
+                position,
             );
         } catch (error) {
             throw new ApolloError(error);

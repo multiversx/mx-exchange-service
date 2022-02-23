@@ -4,6 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { FarmService } from 'src/modules/farm/services/farm.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
@@ -13,6 +14,7 @@ import { DualYieldTokenAttributesModel } from '../models/dualYieldTokenAttribute
 import {
     DualYieldRewardsModel,
     StakingProxyModel,
+    UnstakeFarmTokensReceiveModel,
 } from '../models/staking.proxy.model';
 import { StakingProxyGetterService } from './staking.proxy.getter.service';
 
@@ -22,6 +24,7 @@ export class StakingProxyService {
         private readonly stakingProxyGetter: StakingProxyGetterService,
         private readonly stakingService: StakingService,
         private readonly farmService: FarmService,
+        private readonly pairService: PairService,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -46,6 +49,34 @@ export class StakingProxyService {
             return await this.getRewardsForPosition(position);
         });
         return await Promise.all(promises);
+    }
+
+    async getUnstakeTokensReceived(
+        position: CalculateRewardsArgs,
+    ): Promise<UnstakeFarmTokensReceiveModel> {
+        const decodedAttributes = this.decodeDualYieldTokenAttributes({
+            batchAttributes: [
+                {
+                    attributes: position.attributes,
+                    identifier: position.identifier,
+                },
+            ],
+        });
+        const pairAddress = await this.stakingProxyGetter.getPairAddress(
+            position.farmAddress,
+        );
+
+        const liquidityPosition = await this.pairService.getLiquidityPosition(
+            pairAddress,
+            decodedAttributes[0].lpFarmTokenAmount,
+        );
+        const dualYieldRewards = await this.getRewardsForPosition(position);
+
+        return new UnstakeFarmTokensReceiveModel({
+            liquidityPosition,
+            farmRewards: dualYieldRewards.farmRewards.rewards,
+            stakingRewards: dualYieldRewards.stakingRewards.rewards,
+        });
     }
 
     async getRewardsForPosition(
