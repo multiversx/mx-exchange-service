@@ -1,7 +1,9 @@
 import { BinaryCodec } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
+import { ruleOfThree } from 'src/helpers/helpers';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { FarmService } from 'src/modules/farm/services/farm.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -62,14 +64,22 @@ export class StakingProxyService {
                 },
             ],
         });
+
+        const lpFarmTokenAmount = ruleOfThree(
+            new BigNumber(position.liquidity),
+            new BigNumber(decodedAttributes[0].stakingFarmTokenAmount),
+            new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
+        );
+
         const pairAddress = await this.stakingProxyGetter.getPairAddress(
             position.farmAddress,
         );
 
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             pairAddress,
-            decodedAttributes[0].lpFarmTokenAmount,
+            lpFarmTokenAmount.toFixed(),
         );
+
         const dualYieldRewards = await this.getRewardsForPosition(position);
 
         return new UnstakeFarmTokensReceiveModel({
@@ -120,19 +130,25 @@ export class StakingProxyService {
             ),
         ]);
 
+        const lpFarmTokenAmount = ruleOfThree(
+            new BigNumber(position.liquidity),
+            new BigNumber(decodedAttributes[0].stakingFarmTokenAmount),
+            new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
+        );
+
         const [farmRewards, stakingRewards] = await Promise.all([
             this.farmService.getRewardsForPosition({
                 attributes: farmToken.attributes,
                 identifier: farmToken.identifier,
                 farmAddress,
-                liquidity: decodedAttributes[0].lpFarmTokenAmount,
+                liquidity: lpFarmTokenAmount.toFixed(),
                 vmQuery: position.vmQuery,
             }),
             this.stakingService.getRewardsForPosition({
                 attributes: stakingToken.attributes,
                 identifier: stakingToken.identifier,
                 farmAddress: stakingFarmAddress,
-                liquidity: decodedAttributes[0].stakingFarmTokenAmount,
+                liquidity: position.liquidity,
                 vmQuery: position.vmQuery,
             }),
         ]);

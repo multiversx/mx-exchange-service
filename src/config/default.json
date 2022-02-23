@@ -246,9 +246,9 @@
             },
             "unstakeFarm": 9500000,
             "unboundFarm": 7500000,
-            "claimRewards": 7500000,
+            "claimRewards": 8500000,
             "claimRewardsWithNewValue": 7500000,
-            "compoundRewards": 7500000,
+            "compoundRewards": 8500000,
             "mergeTokens": 20000000
         },
         "stakeProxy": {
@@ -256,7 +256,7 @@
                 "default": 23000000,
                 "withTokenMerge": 33000000
             },
-            "claimDualYield": 30000000,
+            "claimDualYield": 32000000,
             "unstakeFarmTokens": 50000000
         },
         "wrapeGLD": 4000000,
