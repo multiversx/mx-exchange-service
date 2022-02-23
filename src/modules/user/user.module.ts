@@ -13,6 +13,8 @@ import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { UserComputeService } from './user.compute.service';
 import { CachingModule } from 'src/services/caching/cache.module';
+import { StakingModule } from '../staking/staking.module';
+import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 
 @Module({
     imports: [
@@ -27,6 +29,8 @@ import { CachingModule } from 'src/services/caching/cache.module';
         FarmModule,
         LockedAssetModule,
         WrappingModule,
+        StakingModule,
+        StakingProxyModule,
     ],
     providers: [UserService, UserComputeService, UserResolver],
     exports: [UserService],

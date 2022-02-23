@@ -27,6 +27,11 @@ import { StakingResolver } from './staking.resolver';
         StakingTransactionService,
         StakingResolver,
     ],
-    exports: [AbiStakingService, StakingGetterService, StakingSetterService],
+    exports: [
+        AbiStakingService,
+        StakingService,
+        StakingGetterService,
+        StakingSetterService,
+    ],
 })
 export class StakingModule {}

@@ -5,6 +5,7 @@ import { User } from 'src/helpers/userDecorator';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { BatchFarmRewardsComputeArgs } from '../farm/models/farm.args';
+import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import {
     StakeFarmArgs,
     GenericStakeFarmArgs,
@@ -13,7 +14,7 @@ import {
 import { StakingModel, StakingRewardsModel } from './models/staking.model';
 import {
     StakingTokenAttributesModel,
-    UnboundTokenAttributesModel,
+    UnbondTokenAttributesModel,
 } from './models/stakingTokenAttributes.model';
 import { StakingGetterService } from './services/staking.getter.service';
 import { StakingService } from './services/staking.service';
@@ -200,32 +201,24 @@ export class StakingResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => StakingTokenAttributesModel)
+    @Query(() => [StakingTokenAttributesModel])
     async stakingTokenAttributes(
-        @Args('identifier') identifier: string,
-        @Args('attributes') attributes: string,
-    ): Promise<StakingTokenAttributesModel> {
+        @Args('args') args: DecodeAttributesArgs,
+    ): Promise<StakingTokenAttributesModel[]> {
         try {
-            return this.stakingService.decodeStakingTokenAttributes(
-                identifier,
-                attributes,
-            );
+            return this.stakingService.decodeStakingTokenAttributes(args);
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => UnboundTokenAttributesModel)
+    @Query(() => [UnbondTokenAttributesModel])
     async unboundTokenAttributes(
-        @Args('identifier') identifier: string,
-        @Args('attributes') attributes: string,
-    ): Promise<UnboundTokenAttributesModel> {
+        @Args('args') args: DecodeAttributesArgs,
+    ): Promise<UnbondTokenAttributesModel[]> {
         try {
-            return this.stakingService.decodeUnboundTokenAttributes(
-                identifier,
-                attributes,
-            );
+            return this.stakingService.decodeUnboundTokenAttributes(args);
         } catch (error) {
             throw new ApolloError(error);
         }

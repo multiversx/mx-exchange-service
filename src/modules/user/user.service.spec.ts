@@ -40,6 +40,14 @@ import { ContextGetterServiceMock } from 'src/services/context/mocks/context.get
 import { ProxyPairGetterServiceMock } from '../proxy/mocks/proxy.pair.getter.service.mock';
 import { ProxyFarmGetterServiceMock } from '../proxy/mocks/proxy.farm.getter.service.mock';
 import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
+import { StakingGetterService } from '../staking/services/staking.getter.service';
+import { StakingGetterServiceMock } from '../staking/mocks/staking.getter.service.mock';
+import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
+import { StakingProxyGetterServiceMock } from '../staking-proxy/mocks/staking.proxy.getter.service.mock';
+import { StakingService } from '../staking/services/staking.service';
+import { StakingServiceMock } from '../staking/mocks/staking.service.mock';
+import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
+import { StakingProxyServiceMock } from '../staking-proxy/mocks/staking.proxy.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -114,6 +122,26 @@ describe('UserService', () => {
         useClass: WrapServiceMock,
     };
 
+    const StakingServiceProvider = {
+        provide: StakingService,
+        useClass: StakingServiceMock,
+    };
+
+    const StakingProxyServiceProvider = {
+        provide: StakingProxyService,
+        useClass: StakingProxyServiceMock,
+    };
+
+    const StakingGetterServiceProvider = {
+        provide: StakingGetterService,
+        useClass: StakingGetterServiceMock,
+    };
+
+    const StakingProxyGetterServiceProvider = {
+        provide: StakingProxyGetterService,
+        useClass: StakingProxyGetterServiceMock,
+    };
+
     const logTransports: Transport[] = [
         new winston.transports.Console({
             format: winston.format.combine(
@@ -143,6 +171,10 @@ describe('UserService', () => {
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
                 WrapServiceProvider,
+                StakingServiceProvider,
+                StakingGetterServiceProvider,
+                StakingProxyServiceProvider,
+                StakingProxyGetterServiceProvider,
                 UserService,
                 UserComputeService,
             ],
