@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { FarmRewardType } from 'src/modules/farm/models/farm.model';
+import {
+    FarmRewardType,
+    FarmVersion,
+} from 'src/modules/farm/models/farm.model';
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextService } from 'src/services/context/context.service';
-import { farmsAddresses, farmType } from 'src/utils/farm.utils';
+import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -51,10 +54,10 @@ export class AnalyticsComputeService {
         const lockedValuesUSD = await Promise.all([
             ...promises,
             this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[2],
+                farmsAddresses()[5],
             ),
             this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[5],
+                farmsAddresses()[9],
             ),
         ]);
 
@@ -71,7 +74,10 @@ export class AnalyticsComputeService {
     async computeTotalAggregatedRewards(days: number): Promise<string> {
         const addresses: string[] = farmsAddresses();
         const promises = addresses.map(async farmAddress => {
-            if (farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS) {
+            if (
+                farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS ||
+                farmVersion(farmAddress) === FarmVersion.V1_2
+            ) {
                 return '0';
             }
             return this.farmGetterService.getRewardsPerBlock(farmAddress);

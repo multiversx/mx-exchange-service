@@ -51,10 +51,10 @@ export class FarmMigrationConfig {
     oldFarmAddress: string;
     @Field()
     oldFarmTokenID: string;
-    @Field()
-    newFarmAddress: string;
-    @Field()
-    newLockedFarmAddress: string;
+    @Field({ nullable: true })
+    newFarmAddress?: string;
+    @Field({ nullable: true })
+    newLockedFarmAddress?: string;
 
     constructor(init?: Partial<FarmMigrationConfig>) {
         Object.assign(this, init);

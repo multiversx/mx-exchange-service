@@ -88,7 +88,7 @@
                 "withFeeSwap": 16500000
             },
             "swapTokensFixedOutput": {
-                "default": 8800000,
+                "default": 9000000,
                 "withFeeSwap": 17000000
             }
         },
@@ -137,7 +137,7 @@
                         "withPenalty": {
                             "localBurn": 9500000,
                             "pairBurn": 16000000,
-                            "buybackAndBurn": 30000000
+                            "buybackAndBurn": 32000000
                         }
                     },
                     "claimRewards": 10500000
@@ -159,7 +159,7 @@
             "pairs": {
                 "addLiquidity": {
                     "default": 19500000,
-                    "withTokenMerge": 29000000
+                    "withTokenMerge": 40000000
                 },
                 "removeLiquidity": 21000000,
                 "defaultMergeWLPT": 20000000
@@ -198,7 +198,7 @@
                 "v1.3": {
                     "enterFarm": {
                         "default": 19000000,
-                        "withTokenMerge": 41000000
+                        "withTokenMerge": 55000000
                     },
                     "compoundRewards": 21600000,
                     "unlockedRewards": {
@@ -260,9 +260,9 @@
         },
         "wrapeGLD": 4000000,
         "claimLockedAssets": 45500000,
-        "unlockAssets": 17500000,
-        "defaultMergeLockedAssets": 10000000,
-        "lockedAssetMerge": 2000000,
+        "unlockAssets": 45000000,
+        "defaultMergeLockedAssets": 12000000,
+        "lockedAssetMerge": 4000000,
         "lockedAssetCreate": 5000000
     },
     "abi": {
