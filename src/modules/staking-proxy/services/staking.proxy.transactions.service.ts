@@ -9,6 +9,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { gasConfig } from 'src/config';
+import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -117,9 +118,16 @@ export class StakingProxyTransactionService {
         const pairAddress = await this.stakeProxyGetter.getPairAddress(
             args.proxyStakingAddress,
         );
+
+        const liquidityPositionAmount = ruleOfThree(
+            new BigNumber(args.payment.amount),
+            new BigNumber(decodedAttributes[0].stakingFarmTokenAmount),
+            new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
+        );
+
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             pairAddress,
-            decodedAttributes[0].lpFarmTokenAmount,
+            liquidityPositionAmount.toFixed(),
         );
         const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
             .multipliedBy(1 - args.tolerance)
