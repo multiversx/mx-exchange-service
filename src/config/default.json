@@ -256,7 +256,7 @@
                 "default": 23000000,
                 "withTokenMerge": 33000000
             },
-            "claimDualYield": 32000000,
+            "claimDualYield": 40000000,
             "unstakeFarmTokens": 50000000
         },
         "wrapeGLD": 4000000,
