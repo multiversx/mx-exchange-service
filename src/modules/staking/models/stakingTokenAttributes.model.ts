@@ -23,8 +23,6 @@ export class StakingTokenAttributesModel {
     type = StakingTokenType.STAKING_FARM_TOKEN;
     @Field()
     rewardPerShare: string;
-    @Field(() => Int)
-    lastClaimBlock: number;
     @Field()
     compoundedReward: string;
     @Field()
@@ -37,7 +35,6 @@ export class StakingTokenAttributesModel {
     toJSON() {
         return {
             rewardPerShare: this.rewardPerShare,
-            lastClaimBlock: this.lastClaimBlock,
             compoundedReward: this.compoundedReward,
             currentFarmAmount: this.currentFarmAmount,
         };
@@ -48,7 +45,6 @@ export class StakingTokenAttributesModel {
     ): StakingTokenAttributesModel {
         return new StakingTokenAttributesModel({
             rewardPerShare: decodedAttributes.rewardPerShare.toFixed(),
-            lastClaimBlock: decodedAttributes.lastClaimBlock.toNumber(),
             compoundedReward: decodedAttributes.compoundedReward.toFixed(),
             currentFarmAmount: decodedAttributes.currentFarmAmount.toFixed(),
         });
@@ -57,7 +53,6 @@ export class StakingTokenAttributesModel {
     static getStructure(): StructType {
         return new StructType('StakingFarmTokenAttributes', [
             new FieldDefinition('rewardPerShare', '', new BigUIntType()),
-            new FieldDefinition('lastClaimBlock', '', new U64Type()),
             new FieldDefinition('compoundedReward', '', new BigUIntType()),
             new FieldDefinition('currentFarmAmount', '', new BigUIntType()),
         ]);
