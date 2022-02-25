@@ -14,6 +14,8 @@
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         }
     },
+    "staking": [],
+    "stakingProxy": [],
     "farms": {
         "v1.2": [
             "erd1qqqqqqqqqqqqqpgqv3ss6jwn0hlevpg9m3a7vva4tckg372n0n4s5m5vqp",
