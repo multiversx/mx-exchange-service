@@ -24,8 +24,6 @@ export class StakingComputeService {
             futureRewardsPerShare,
             divisionSafetyConstant,
         ] = await Promise.all([
-            this.contextGetter.getShardCurrentBlockNonce(1),
-            this.stakingGetterService.getLastRewardBlockNonce(stakeAddress),
             this.computeFutureRewardsPerShare(stakeAddress),
             this.stakingGetterService.getDivisionSafetyConstant(stakeAddress),
         ]);
