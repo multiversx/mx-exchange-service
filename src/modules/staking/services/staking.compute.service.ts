@@ -21,76 +21,122 @@ export class StakingComputeService {
         decodedAttributes: StakingTokenAttributesModel,
     ): Promise<BigNumber> {
         const [
+            futureRewardsPerShare,
+            divisionSafetyConstant,
+        ] = await Promise.all([
+            this.contextGetter.getShardCurrentBlockNonce(1),
+            this.stakingGetterService.getLastRewardBlockNonce(stakeAddress),
+            this.computeFutureRewardsPerShare(stakeAddress),
+            this.stakingGetterService.getDivisionSafetyConstant(stakeAddress),
+        ]);
+
+        const amountBig = new BigNumber(liquidity);
+        const futureRewardsPerShareBig = new BigNumber(futureRewardsPerShare);
+        const currentRewardPerShareBig = new BigNumber(
+            decodedAttributes.rewardPerShare,
+        );
+
+        const rewardPerShareDiff = futureRewardsPerShareBig.minus(
+            currentRewardPerShareBig,
+        );
+        return amountBig
+            .multipliedBy(rewardPerShareDiff)
+            .dividedBy(divisionSafetyConstant);
+    }
+
+    async computeFutureRewardsPerShare(
+        stakeAddress: string,
+    ): Promise<BigNumber> {
+        let extraRewards = await this.computeExtraRewardsSinceLastAllocation(
+            stakeAddress,
+        );
+
+        const [
+            accumulatedRewards,
+            rewardsCapacity,
+            farmRewardPerShare,
+            farmTokenSupply,
+            divisionSafetyConstant,
+        ] = await Promise.all([
+            this.stakingGetterService.getAccumulatedRewards(stakeAddress),
+            this.stakingGetterService.getRewardCapacity(stakeAddress),
+            this.stakingGetterService.getRewardPerShare(stakeAddress),
+            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
+            this.stakingGetterService.getDivisionSafetyConstant(stakeAddress),
+        ]);
+
+        const farmRewardPerShareBig = new BigNumber(farmRewardPerShare);
+        const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
+        const divisionSafetyConstantBig = new BigNumber(divisionSafetyConstant);
+
+        if (extraRewards.isGreaterThan(0)) {
+            const totalRewards = extraRewards.plus(accumulatedRewards);
+            if (totalRewards.isGreaterThan(rewardsCapacity)) {
+                const amountOverCapacity = totalRewards.minus(rewardsCapacity);
+                extraRewards = extraRewards.minus(amountOverCapacity);
+            }
+
+            return farmRewardPerShareBig.plus(
+                extraRewards
+                    .multipliedBy(divisionSafetyConstantBig)
+                    .dividedBy(farmTokenSupplyBig),
+            );
+        }
+
+        return farmRewardPerShareBig;
+    }
+
+    async computeExtraRewardsSinceLastAllocation(
+        stakeAddress: string,
+    ): Promise<BigNumber> {
+        const [
             currentNonce,
             lastRewardBlockNonce,
             perBlockRewardAmount,
-            divisionSafetyConstant,
-            farmTokenSupply,
-            farmRewardPerShare,
-            maximumAPR,
             produceRewardsEnabled,
         ] = await Promise.all([
             this.contextGetter.getShardCurrentBlockNonce(1),
             this.stakingGetterService.getLastRewardBlockNonce(stakeAddress),
             this.stakingGetterService.getPerBlockRewardAmount(stakeAddress),
-            this.stakingGetterService.getDivisionSafetyConstant(stakeAddress),
-            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
-            this.stakingGetterService.getRewardPerShare(stakeAddress),
-            this.stakingGetterService.getAnnualPercentageRewards(stakeAddress),
             this.stakingGetterService.getProduceRewardsEnabled(stakeAddress),
         ]);
 
-        const amountBig = new BigNumber(liquidity);
         const currentBlockBig = new BigNumber(currentNonce);
         const lastRewardBlockNonceBig = new BigNumber(lastRewardBlockNonce);
         const perBlockRewardAmountBig = new BigNumber(perBlockRewardAmount);
-        const divisionSafetyConstantBig = new BigNumber(divisionSafetyConstant);
-        const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
-        const farmRewardPerShareBig = new BigNumber(farmRewardPerShare);
-        const rewardPerShareBig = new BigNumber(
-            decodedAttributes.rewardPerShare,
+        const blockDifferenceBig = currentBlockBig.minus(
+            lastRewardBlockNonceBig,
         );
-
-        let toBeMinted = new BigNumber(0);
-
         if (currentNonce > lastRewardBlockNonce && produceRewardsEnabled) {
-            toBeMinted = perBlockRewardAmountBig.times(
-                currentBlockBig.minus(lastRewardBlockNonceBig),
+            const extraRewardsUnbounded = perBlockRewardAmountBig.times(
+                blockDifferenceBig,
             );
-        }
-        const rewardIncrease = toBeMinted;
-        const rewardPerShareIncrease = rewardIncrease
-            .times(divisionSafetyConstantBig)
-            .dividedBy(farmTokenSupplyBig);
-        const futureRewardPerShare = farmRewardPerShareBig.plus(
-            rewardPerShareIncrease,
-        );
-        let rewardsBig: BigNumber = new BigNumber(0);
-        if (
-            futureRewardPerShare.isGreaterThan(decodedAttributes.rewardPerShare)
-        ) {
-            const rewardPerShareDiff = futureRewardPerShare.minus(
-                rewardPerShareBig,
+            const extraRewardsBounded = await this.computeExtraRewardsBounded(
+                stakeAddress,
+                blockDifferenceBig,
             );
 
-            rewardsBig = amountBig
-                .times(rewardPerShareDiff)
-                .dividedBy(divisionSafetyConstantBig);
+            return extraRewardsUnbounded.isLessThan(extraRewardsBounded)
+                ? extraRewardsUnbounded
+                : extraRewardsBounded;
         }
 
-        const blockDiff = currentBlockBig.minus(
-            decodedAttributes.lastClaimBlock,
-        );
-        const maxRewardsForUserPerBlock = new BigNumber(liquidity)
-            .multipliedBy(maximumAPR)
+        return new BigNumber(0);
+    }
+
+    async computeExtraRewardsBounded(
+        stakeAddress: string,
+        blockDifferenceBig: BigNumber,
+    ): Promise<BigNumber> {
+        const [farmTokenSupply, annualPercentageRewards] = await Promise.all([
+            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
+            this.stakingGetterService.getAnnualPercentageRewards(stakeAddress),
+        ]);
+        const extraRewardsAPRBoundedPerBlock = new BigNumber(farmTokenSupply)
+            .multipliedBy(annualPercentageRewards)
             .dividedBy(constantsConfig.MAX_PERCENT)
             .dividedBy(constantsConfig.BLOCKS_IN_YEAR);
-        const maxRewardsForUser = maxRewardsForUserPerBlock.multipliedBy(
-            blockDiff,
-        );
 
-        return maxRewardsForUser.isLessThan(rewardsBig)
-            ? maxRewardsForUser
-            : rewardsBig;
+        return extraRewardsAPRBoundedPerBlock.multipliedBy(blockDifferenceBig);
     }
 }
