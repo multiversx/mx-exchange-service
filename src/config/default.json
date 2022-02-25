@@ -257,9 +257,9 @@
                 "withTokenMerge": 33000000
             },
             "claimDualYield": 40000000,
-            "unstakeFarmTokens": 50000000
+            "unstakeFarmTokens": 62000000
         },
-        "wrapeGLD": 4000000,
+        "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000,
         "unlockAssets": 17500000,
         "defaultMergeLockedAssets": 10000000,
