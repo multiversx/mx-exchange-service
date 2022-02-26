@@ -117,7 +117,7 @@ export class StakingResolver {
     @ResolveField()
     async minUnboundEpochs(@Parent() parent: StakingModel) {
         try {
-            return await this.stakingGetterService.getMinimumFarmingEpoch(
+            return await this.stakingGetterService.getMinUnbondEpochs(
                 parent.address,
             );
         } catch (error) {
