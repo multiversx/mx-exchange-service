@@ -299,7 +299,7 @@
         "MEX_TOKEN_ID": "MEX-0f2d49",
         "USDC_TOKEN_ID": "USDC-ebc075",
         "PRECISION_EX_INCREASE": 1000,
-        "MAINTENANCE": false,
+        "MAINTENANCE": true,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",
