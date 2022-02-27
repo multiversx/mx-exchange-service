@@ -44,7 +44,8 @@
     "cachedTokensPrice": ["MEX-b6bb7d"],
     "constants": {
         "MEX_TOKEN_ID": "MEX-b6bb7d",
-        "USDC_TOKEN_ID": "USDC-a32906"
+        "USDC_TOKEN_ID": "USDC-a32906",
+        "MAINTENANCE": false
     },
     "aws": {
         "region": "eu-central-1",
