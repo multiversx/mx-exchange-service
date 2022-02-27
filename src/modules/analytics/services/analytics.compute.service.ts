@@ -51,15 +51,22 @@ export class AnalyticsComputeService {
             this.pairGetterService.getLockedValueUSD(pairAddress),
         );
 
-        const lockedValuesUSD = await Promise.all([
-            ...promises,
-            this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[5],
-            ),
-            this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[9],
-            ),
-        ]);
+        if (farmsAddresses()[5] !== undefined) {
+            promises.push(
+                this.farmComputeService.computeFarmLockedValueUSD(
+                    farmsAddresses()[5],
+                ),
+            );
+        }
+        if (farmsAddresses()[9] !== undefined) {
+            promises.push(
+                this.farmComputeService.computeFarmLockedValueUSD(
+                    farmsAddresses()[9],
+                ),
+            );
+        }
+
+        const lockedValuesUSD = await Promise.all([...promises]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
             const lockedValuesUSDBig = new BigNumber(lockedValueUSD);
