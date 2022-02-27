@@ -43,7 +43,7 @@ export const UserNftTokens = createUnionType({
             return UserStakeFarmToken.name;
         }
         if (
-            value.decodedAttributes.type === StakingTokenType.UNBOUND_FARM_TOKEN
+            value.decodedAttributes.type === StakingTokenType.UNBOND_FARM_TOKEN
         ) {
             return UserUnbondFarmToken.name;
         }

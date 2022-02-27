@@ -8,7 +8,7 @@ import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 export enum StakingTokenType {
     STAKING_FARM_TOKEN = 'stakingFarmToken',
-    UNBOUND_FARM_TOKEN = 'unboundFarmToken',
+    UNBOND_FARM_TOKEN = 'unboundFarmToken',
 }
 
 registerEnumType(StakingTokenType, { name: 'StakingTokenType' });
@@ -66,7 +66,7 @@ export class UnbondTokenAttributesModel {
     @Field({ nullable: true })
     attributes?: string;
     @Field(() => StakingTokenType)
-    type = StakingTokenType.UNBOUND_FARM_TOKEN;
+    type = StakingTokenType.UNBOND_FARM_TOKEN;
     @Field(() => Int)
     remainingEpochs: number;
 
