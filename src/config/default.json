@@ -23,11 +23,11 @@
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
         "staking": [
-            "erd1qqqqqqqqqqqqqpgqeq3qu7aaz67vav5554w28y25rp3xqt3v0n4sq3ruck"
+            "erd1qqqqqqqqqqqqqpgq27tkyxsn54lw6apf46va0cm3fqjpjf9u0n4snuh9g5"
         ],
         "stakingProxy": [
-            "erd1qqqqqqqqqqqqqpgqtqjq6fktv46tpk6f56php5tygfdgqrqy0n4syse06g",
-            "erd1qqqqqqqqqqqqqpgq4q4t5zfcfkckmcg0fc5jaaqy3nkrva7g0n4sut0eyn"
+            "erd1qqqqqqqqqqqqqpgqqs9x790544kn06qz8vd6620lyj2ly0e60n4sp4ja47",
+            "erd1qqqqqqqqqqqqqpgqz2fyzdx6gcn3rfaavwrqurpauf4ryycg0n4svxhwhz"
         ]
     },
     "tokenProviderUSD": "WEGLD-584d96",
@@ -257,9 +257,9 @@
                 "withTokenMerge": 33000000
             },
             "claimDualYield": 40000000,
-            "unstakeFarmTokens": 50000000
+            "unstakeFarmTokens": 62000000
         },
-        "wrapeGLD": 4000000,
+        "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000,
         "unlockAssets": 45000000,
         "defaultMergeLockedAssets": 12000000,
@@ -299,7 +299,7 @@
         "MEX_TOKEN_ID": "MEX-0f2d49",
         "USDC_TOKEN_ID": "USDC-ebc075",
         "PRECISION_EX_INCREASE": 1000,
-        "MAINTENANCE": false,
+        "MAINTENANCE": true,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",

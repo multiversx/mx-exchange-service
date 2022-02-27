@@ -12,7 +12,11 @@
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
-        }
+        },
+        "staking": [
+            "erd1qqqqqqqqqqqqqpgqeda4yygsavp68fykpztjn28aantwwq7w0n4syawk89"
+        ],
+        "stakingProxy": []
     },
     "farms": {
         "v1.2": [

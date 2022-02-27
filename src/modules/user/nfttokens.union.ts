@@ -1,4 +1,5 @@
 import { createUnionType } from '@nestjs/graphql';
+import { StakingTokenType } from '../staking/models/stakingTokenAttributes.model';
 
 import {
     UserFarmToken,
@@ -36,10 +37,14 @@ export const UserNftTokens = createUnionType({
         if (value.decodedAttributes.unlockSchedule) {
             return UserLockedAssetToken.name;
         }
-        if (value.decodedAttributes.lastClaimBlock) {
+        if (
+            value.decodedAttributes.type === StakingTokenType.STAKING_FARM_TOKEN
+        ) {
             return UserStakeFarmToken.name;
         }
-        if (value.decodedAttributes.remainingEpochs) {
+        if (
+            value.decodedAttributes.type === StakingTokenType.UNBOND_FARM_TOKEN
+        ) {
             return UserUnbondFarmToken.name;
         }
         if (value.decodedAttributes.stakingFarmTokenNonce) {
