@@ -161,14 +161,6 @@ export class PairAbiService {
         pairAddress: string,
         tokenID: string,
     ): Promise<string> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getBurnedTokenAmount([
-            BytesValue.fromUTF8(tokenID),
-        ]);
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
+        return '0';
     }
 }
