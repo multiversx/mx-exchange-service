@@ -86,7 +86,7 @@
             "removeLiquidity": 8500000,
             "swapTokensFixedInput": {
                 "default": 8700000,
-                "withFeeSwap": 16500000
+                "withFeeSwap": 18500000
             },
             "swapTokensFixedOutput": {
                 "default": 9000000,
