@@ -362,18 +362,6 @@ export class PairGetterService {
         );
     }
 
-    async getBurnedTokenAmount(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        return await this.getData(
-            pairAddress,
-            `${tokenID}.burnedTokenAmount`,
-            () => this.abiService.getBurnedTokenAmount(pairAddress, tokenID),
-            oneMinute(),
-        );
-    }
-
     async getType(pairAddress: string): Promise<string> {
         return await this.getData(
             pairAddress,

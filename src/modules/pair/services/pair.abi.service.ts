@@ -156,11 +156,4 @@ export class PairAbiService {
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().name;
     }
-
-    async getBurnedTokenAmount(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        return '0';
-    }
 }
