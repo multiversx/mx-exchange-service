@@ -1,3 +1,4 @@
+import { Address } from '@elrondnetwork/erdjs/out';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -6,10 +7,11 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { farmVersion } from 'src/utils/farm.utils';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
-import { FarmVersion } from '../models/farm.model';
+import { FarmRewardType, FarmVersion } from '../models/farm.model';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
 
@@ -22,6 +24,7 @@ export class FarmComputeService {
         private readonly pairGetterService: PairGetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly proxyService: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -57,6 +60,54 @@ export class FarmComputeService {
             farmingTokenID,
         );
         return this.pairComputeService.computeLpTokenPriceUSD(pairAddress);
+    }
+
+    async computeFarmingTokensLockedValueUSD(
+        farmAddress: string,
+    ): Promise<string> {
+        const version = farmVersion(farmAddress);
+        const type = farmType(farmAddress);
+
+        const farmingToken = await this.farmGetterService.getFarmingToken(
+            farmAddress,
+        );
+        const farmingTokenBalance = await this.proxyService
+            .getService()
+            .getAddressEsdt(new Address(farmAddress), farmingToken.identifier);
+        let farmingTokenBalanceBig = new BigNumber(farmingTokenBalance.balance);
+        if (scAddress.has(farmingToken.identifier)) {
+            const claimableRewards = await this.farmGetterService.getRewardReserve(
+                farmAddress,
+            );
+
+            if (
+                version === FarmVersion.V1_2 ||
+                (version === FarmVersion.V1_3 &&
+                    type === FarmRewardType.UNLOCKED_REWARDS)
+            ) {
+                farmingTokenBalanceBig = farmingTokenBalanceBig.minus(
+                    claimableRewards,
+                );
+            }
+
+            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+                farmingToken.identifier,
+            );
+            return computeValueUSD(
+                farmingTokenBalanceBig.toFixed(),
+                farmingToken.decimals,
+                tokenPriceUSD,
+            ).toFixed();
+        }
+
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingToken.identifier,
+        );
+        const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
+            pairAddress,
+            farmingTokenBalanceBig.toFixed(),
+        );
+        return lockedValuesUSD;
     }
 
     async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {

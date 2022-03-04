@@ -104,6 +104,17 @@ export class ElrondApiService {
         );
     }
 
+    async getTokenForUser(
+        address: string,
+        tokenID: string,
+    ): Promise<EsdtToken> {
+        return this.doGetGeneric(
+            this.getTokenForUser.name,
+            `accounts/${address}/tokens/${tokenID}`,
+            response => response,
+        );
+    }
+
     async getNftsCountForUser(address: string): Promise<number> {
         return this.doGetGeneric(
             this.getNftsCountForUser.name,

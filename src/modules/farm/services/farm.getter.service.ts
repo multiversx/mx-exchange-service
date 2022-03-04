@@ -276,8 +276,11 @@ export class FarmGetterService {
         return this.getData(
             farmAddress,
             'totalValueLockedUSD',
-            () => this.computeService.computeFarmLockedValueUSD(farmAddress),
-            oneMinute(),
+            () =>
+                this.computeService.computeFarmingTokensLockedValueUSD(
+                    farmAddress,
+                ),
+            oneSecond(),
         );
     }
 
