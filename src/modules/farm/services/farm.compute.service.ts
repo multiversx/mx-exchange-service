@@ -1,4 +1,3 @@
-import { Address } from '@elrondnetwork/erdjs/out';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -7,7 +6,7 @@ import { PairComputeService } from 'src/modules/pair/services/pair.compute.servi
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
@@ -24,7 +23,7 @@ export class FarmComputeService {
         private readonly pairGetterService: PairGetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly contextGetter: ContextGetterService,
-        private readonly proxyService: ElrondProxyService,
+        private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -71,10 +70,11 @@ export class FarmComputeService {
         const farmingToken = await this.farmGetterService.getFarmingToken(
             farmAddress,
         );
-        const farmingTokenBalance = await this.proxyService
-            .getService()
-            .getAddressEsdt(new Address(farmAddress), farmingToken.identifier);
-        let farmingTokenBalanceBig = new BigNumber(farmingTokenBalance.balance);
+        const userFarmingToken = await this.apiService.getTokenForUser(
+            farmAddress,
+            farmingToken.identifier,
+        );
+        let userFarmingTokenBig = new BigNumber(userFarmingToken.balance);
         if (scAddress.has(farmingToken.identifier)) {
             const claimableRewards = await this.farmGetterService.getRewardReserve(
                 farmAddress,
@@ -85,7 +85,7 @@ export class FarmComputeService {
                 (version === FarmVersion.V1_3 &&
                     type === FarmRewardType.UNLOCKED_REWARDS)
             ) {
-                farmingTokenBalanceBig = farmingTokenBalanceBig.minus(
+                userFarmingTokenBig = userFarmingTokenBig.minus(
                     claimableRewards,
                 );
             }
@@ -94,7 +94,7 @@ export class FarmComputeService {
                 farmingToken.identifier,
             );
             return computeValueUSD(
-                farmingTokenBalanceBig.toFixed(),
+                userFarmingTokenBig.toFixed(),
                 farmingToken.decimals,
                 tokenPriceUSD,
             ).toFixed();
@@ -105,7 +105,7 @@ export class FarmComputeService {
         );
         const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
             pairAddress,
-            farmingTokenBalanceBig.toFixed(),
+            userFarmingTokenBig.toFixed(),
         );
         return lockedValuesUSD;
     }

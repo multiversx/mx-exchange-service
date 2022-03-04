@@ -280,7 +280,7 @@ export class FarmGetterService {
                 this.computeService.computeFarmingTokensLockedValueUSD(
                     farmAddress,
                 ),
-            oneSecond(),
+            oneMinute(),
         );
     }
 
