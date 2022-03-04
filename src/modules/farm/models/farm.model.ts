@@ -93,6 +93,9 @@ export class FarmModel {
     @Field()
     farmTokenSupply: string;
 
+    @Field()
+    rewardReserve: string;
+
     @Field({ nullable: true })
     farmingTokenReserve: string;
 

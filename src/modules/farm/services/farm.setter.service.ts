@@ -52,6 +52,15 @@ export class FarmSetterService {
         return cacheKey;
     }
 
+    async setRewardReserve(
+        farmAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getFarmCacheKey(farmAddress, 'rewardReserve');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     async setRewardsPerBlock(
         farmAddress: string,
         value: string,

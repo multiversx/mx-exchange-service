@@ -118,6 +118,15 @@ export class AbiFarmService {
         return response.firstValue.valueOf().toFixed();
     }
 
+    async getRewardReserve(farmAddress: string): Promise<string> {
+        const [contract] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getRewardReserve([]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,

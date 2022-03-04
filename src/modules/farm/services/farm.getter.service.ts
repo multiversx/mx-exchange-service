@@ -118,6 +118,15 @@ export class FarmGetterService {
         );
     }
 
+    async getRewardReserve(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'rewardReserve',
+            () => this.abiService.getRewardReserve(farmAddress),
+            oneMinute(),
+        );
+    }
+
     async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
         return this.getData(
             farmAddress,

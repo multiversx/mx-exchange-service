@@ -93,6 +93,17 @@ export class FarmResolver {
     }
 
     @ResolveField()
+    async rewardReserve(@Parent() parent: FarmModel) {
+        try {
+            return await this.farmGetterService.getRewardReserve(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async farmingTokenReserve(@Parent() parent: FarmModel) {
         try {
             return await this.farmGetterService.getFarmingTokenReserve(
