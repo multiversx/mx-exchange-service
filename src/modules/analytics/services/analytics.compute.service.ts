@@ -104,36 +104,6 @@ export class AnalyticsComputeService {
         return totalAggregatedRewards.toFixed();
     }
 
-    async computeTotalBurnedTokenAmount(tokenID: string): Promise<string> {
-        const promises = [];
-        const pairsAddresses = await this.context.getAllPairsAddress();
-        for (const pairAddress of pairsAddresses) {
-            promises.push(
-                this.pairGetterService.getBurnedTokenAmount(
-                    pairAddress,
-                    tokenID,
-                ),
-            );
-        }
-        for (const farmAddress of farmsAddresses()) {
-            promises.push(
-                this.farmGetterService.getBurnedTokenAmount(
-                    farmAddress,
-                    tokenID,
-                ),
-            );
-        }
-        promises.push(this.lockedAssetGetter.getBurnedTokenAmount(tokenID));
-
-        const burnedTokenAmounts = await Promise.all(promises);
-        let burnedTokenAmount = new BigNumber(0);
-        for (const burnedToken of burnedTokenAmounts) {
-            burnedTokenAmount = burnedTokenAmount.plus(burnedToken);
-        }
-
-        return burnedTokenAmount.toFixed();
-    }
-
     private async fiterPairsByIssuedLpToken(
         pairsAddress: string[],
     ): Promise<string[]> {

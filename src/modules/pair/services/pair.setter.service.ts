@@ -227,19 +227,6 @@ export class PairSetterService {
         return cacheKey;
     }
 
-    async setBurnedTokenAmount(
-        pairAddress: string,
-        tokenID: string,
-        value: string,
-    ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            `${tokenID}.burnedTokenAmount`,
-        );
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
-    }
-
     private getPairCacheKey(pairAddress: string, ...args: any) {
         return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }

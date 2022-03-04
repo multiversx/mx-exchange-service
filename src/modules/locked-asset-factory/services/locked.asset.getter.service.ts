@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -85,17 +85,6 @@ export class LockedAssetGetterService {
             cacheKey,
             () => this.abiService.getExtendedAttributesActivationNonce(),
             oneHour(),
-        );
-    }
-
-    async getBurnedTokenAmount(tokenID: string): Promise<number> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey(
-            `${tokenID}.burnedTokenAmount`,
-        );
-        return await this.getData(
-            cacheKey,
-            () => this.abiService.getBurnedTokenAmount(tokenID),
-            oneMinute(),
         );
     }
 
