@@ -51,7 +51,7 @@ export class ContextGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getService().getToken(tokenID),
-            oneHour(),
+            oneMinute() * 2,
         );
     }
 
