@@ -60,7 +60,7 @@ export class ContextGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getNftCollection(collection),
-            oneHour(),
+            oneMinute() * 2,
         );
     }
 
