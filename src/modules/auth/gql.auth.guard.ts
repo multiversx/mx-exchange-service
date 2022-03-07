@@ -34,7 +34,6 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
         if (!err && !!user) {
             this.logger.error('address', [{ user: user }]);
             if (this.impersonateAddress) {
-                console.log(this.impersonateAddress);
                 const admins = process.env.SECURITY_ADMINS.split(',');
                 if (admins.find(admin => admin === user.publicKey)) {
                     user.publicKey = this.impersonateAddress;
