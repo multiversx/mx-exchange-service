@@ -4,6 +4,14 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 export const User = createParamDecorator(
     (data: unknown, context: ExecutionContext) => {
         const ctx = GqlExecutionContext.create(context);
-        return ctx.getContext().req.user;
+        const user = ctx.getContext().req.user;
+
+        const cookies = ctx.getContext().cookies;
+
+        if (cookies !== undefined) {
+            user.publicKey = cookies['Impersonate-Address'];
+        }
+
+        return user;
     },
 );
