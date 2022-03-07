@@ -8,6 +8,8 @@ import { Logger } from 'winston';
 
 @Injectable()
 export class GqlAuthGuard extends AuthGuard('jwt') {
+    private impersonateAddress: string;
+
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
@@ -19,12 +21,25 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
         this.logger.error('request header', [
             { requestIP: req.ip, request: req.headers },
         ]);
+
+        const cookies = ctx.getContext().cookies;
+
+        if (cookies !== undefined) {
+            this.impersonateAddress = cookies['Impersonate-Address'];
+        }
         return super.canActivate(new ExecutionContextHost([req]));
     }
 
     handleRequest(err: any, user: any, info: any) {
         if (!err && !!user) {
             this.logger.error('address', [{ user: user }]);
+            if (this.impersonateAddress) {
+                console.log(this.impersonateAddress);
+                const admins = process.env.SECURITY_ADMINS.split(',');
+                if (admins.find(admin => admin === user.publicKey)) {
+                    user.publicKey = this.impersonateAddress;
+                }
+            }
             return user;
         }
 

@@ -6,12 +6,6 @@ export const User = createParamDecorator(
         const ctx = GqlExecutionContext.create(context);
         const user = ctx.getContext().req.user;
 
-        const cookies = ctx.getContext().cookies;
-
-        if (cookies !== undefined) {
-            user.publicKey = cookies['Impersonate-Address'];
-        }
-
         return user;
     },
 );
