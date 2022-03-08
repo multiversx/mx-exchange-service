@@ -141,20 +141,20 @@ export class PriceDiscoveryGetterService {
         );
     }
 
-    async getStartEpoch(priceDiscoveryAddress: string): Promise<number> {
+    async getStartBlock(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
             'startEpoch',
-            () => this.abiService.getStartEpoch(priceDiscoveryAddress),
+            () => this.abiService.getStartBlock(priceDiscoveryAddress),
             oneHour(),
         );
     }
 
-    async getEndEpoch(priceDiscoveryAddress: string): Promise<number> {
+    async getEndBlock(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
             'endEpoch',
-            () => this.abiService.getEndEpoch(priceDiscoveryAddress),
+            () => this.abiService.getEndBlock(priceDiscoveryAddress),
             oneHour(),
         );
     }

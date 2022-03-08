@@ -21,9 +21,9 @@ export class PriceDiscoveryModel {
     @Field()
     lpTokensReceived: string;
     @Field()
-    startEpoch: number;
+    startBlock: number;
     @Field()
-    endEpoch: number;
+    endBlock: number;
     @Field()
     pairAddress: string;
 

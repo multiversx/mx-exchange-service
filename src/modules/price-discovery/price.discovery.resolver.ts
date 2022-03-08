@@ -83,16 +83,16 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
-    async startEpoch(@Parent() parent: PriceDiscoveryModel): Promise<number> {
+    async startBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getStartEpoch(parent.address),
+            this.priceDiscoveryGetter.getStartBlock(parent.address),
         );
     }
 
     @ResolveField()
-    async endEpoch(@Parent() parent: PriceDiscoveryModel): Promise<number> {
+    async endBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getEndEpoch(parent.address),
+            this.priceDiscoveryGetter.getEndBlock(parent.address),
         );
     }
 

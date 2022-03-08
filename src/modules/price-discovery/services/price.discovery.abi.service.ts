@@ -120,21 +120,21 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getStartEpoch(priceDiscoveryAddress: string): Promise<number> {
+    async getStartBlock(priceDiscoveryAddress: string): Promise<number> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getStartEpoch([]);
+        const interaction: Interaction = contract.methods.getStartBlock([]);
 
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getEndEpoch(priceDiscoveryAddress: string): Promise<number> {
+    async getEndBlock(priceDiscoveryAddress: string): Promise<number> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getEndEpoch([]);
+        const interaction: Interaction = contract.methods.getEndBlock([]);
 
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toNumber();
