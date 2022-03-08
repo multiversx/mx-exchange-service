@@ -47,13 +47,30 @@ export class SftFarmInteractionArgs {
     farmTokenNonce: number;
     @Field()
     amount: string;
+    @Field(() => Boolean, { nullable: true })
+    lockRewards = false;
 }
 
 @ArgsType()
-export class ExitFarmArgs extends SftFarmInteractionArgs {}
+export class ExitFarmArgs extends SftFarmInteractionArgs {
+    @Field(() => Boolean, { nullable: true })
+    withPenalty = false;
+}
 
 @ArgsType()
 export class ClaimRewardsArgs extends SftFarmInteractionArgs {}
 
 @ArgsType()
 export class CompoundRewardsArgs extends SftFarmInteractionArgs {}
+
+@ArgsType()
+export class FarmMigrationConfigArgs {
+    @Field()
+    oldFarmAddress: string;
+    @Field()
+    oldFarmTokenID: string;
+    @Field()
+    newFarmAddress: string;
+    @Field()
+    newLockedFarmAddress: string;
+}

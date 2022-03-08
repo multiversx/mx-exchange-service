@@ -11,12 +11,12 @@ import { FarmService } from '../../farm/services/farm.service';
 import { DecodeAttributesArgs } from '../models/proxy.args';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 
 @Injectable()
 export class ProxyService {
     constructor(
-        private contextGetter: ContextGetterService,
+        private readonly apiService: ElrondApiService,
         private farmService: FarmService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -52,7 +52,8 @@ export class ProxyService {
                 arg.attributes,
             );
 
-            const farmToken = await this.contextGetter.getNftMetadata(
+            const farmToken = await this.apiService.getNftByTokenIdentifier(
+                scAddress.proxyDexAddress,
                 decodedAttributes.farmTokenIdentifier,
             );
             const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(

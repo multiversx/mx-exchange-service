@@ -10,9 +10,11 @@ import { CachingModule } from '../../services/caching/cache.module';
 import { FarmGetterService } from './services/farm.getter.service';
 import { FarmComputeService } from './services/farm.compute.service';
 import { FarmSetterService } from './services/farm.setter.service';
+import { CommonAppModule } from 'src/common.app.module';
 
 @Module({
     imports: [
+        CommonAppModule,
         ElrondCommunicationModule,
         CachingModule,
         ContextModule,

@@ -9,7 +9,6 @@ import { UserToken } from './models/user.model';
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { UserNftTokens } from './nfttokens.union';
-import { WrapService } from '../wrapping/wrap.service';
 import { UserComputeService } from './user.compute.service';
 import { LockedAssetToken } from '../../models/tokens/lockedAssetToken.model';
 import { LockedLpToken } from '../../models/tokens/lockedLpToken.model';
@@ -26,11 +25,11 @@ import { PaginationArgs } from '../dex.model';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { farmsAddresses } from 'src/utils/farm.utils';
-
-type EsdtTokenDetails = {
-    priceUSD: string;
-    type: EsdtTokenType;
-};
+import { StakingGetterService } from '../staking/services/staking.getter.service';
+import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
+import { scAddress } from 'src/config';
+import { StakeFarmToken } from 'src/models/tokens/stakeFarmToken.model';
+import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
 
 enum EsdtTokenType {
     FungibleToken = 'FungibleESDT',
@@ -42,6 +41,8 @@ enum NftTokenType {
     LockedAssetToken,
     LockedLpToken,
     LockedFarmToken,
+    StakeFarmToken,
+    DualYieldToken,
 }
 
 @Injectable()
@@ -58,7 +59,8 @@ export class UserService {
         private farmService: FarmService,
         private farmGetterService: FarmGetterService,
         private lockedAssetGetter: LockedAssetGetterService,
-        private wrapService: WrapService,
+        private stakeGetterService: StakingGetterService,
+        private proxyStakeGetter: StakingProxyGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -163,6 +165,20 @@ export class UserService {
                         ),
                     );
                     break;
+                case NftTokenType.StakeFarmToken:
+                    promises.push(
+                        this.userComputeService.stakeFarmUSD(
+                            new StakeFarmToken(userNft),
+                        ),
+                    );
+                    break;
+                case NftTokenType.DualYieldToken:
+                    promises.push(
+                        this.userComputeService.dualYieldTokenUSD(
+                            new DualYieldToken(userNft),
+                        ),
+                    );
+                    break;
                 default:
                     break;
             }
@@ -210,11 +226,7 @@ export class UserService {
             this.proxyPairGetter.getwrappedLpTokenID(),
             this.proxyFarmGetter.getwrappedFarmTokenID(),
         ]);
-        const promises: Promise<string>[] = [];
-        for (const farmAddress of farmsAddresses()) {
-            promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
-        }
-        const farmTokenIDs = await Promise.all(promises);
+
         switch (tokenID) {
             case lockedMEXTokenID:
                 return NftTokenType.LockedAssetToken;
@@ -222,12 +234,44 @@ export class UserService {
                 return NftTokenType.LockedLpToken;
             case lockedFarmTokenID:
                 return NftTokenType.LockedFarmToken;
-            default:
-                if (farmTokenIDs.find(farmTokenID => farmTokenID === tokenID)) {
-                    return NftTokenType.FarmToken;
-                }
-                return undefined;
         }
+
+        let promises: Promise<string>[] = [];
+        for (const farmAddress of farmsAddresses()) {
+            promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
+        }
+        const farmTokenIDs = await Promise.all(promises);
+        if (farmTokenIDs.find(farmTokenID => farmTokenID === tokenID)) {
+            return NftTokenType.FarmToken;
+        }
+
+        promises = [];
+        for (const address of scAddress.staking) {
+            promises.push(this.stakeGetterService.getFarmTokenID(address));
+        }
+        const stakeFarmTokenIDs = await Promise.all(promises);
+        if (
+            stakeFarmTokenIDs.find(
+                stakeFarmTokenID => stakeFarmTokenID === tokenID,
+            )
+        ) {
+            return NftTokenType.StakeFarmToken;
+        }
+
+        promises = [];
+        for (const address of scAddress.stakingProxy) {
+            promises.push(this.proxyStakeGetter.getDualYieldTokenID(address));
+        }
+        const dualYieldTokenIDs = await Promise.all(promises);
+        if (
+            dualYieldTokenIDs.find(
+                dualYieldTokenID => dualYieldTokenID === tokenID,
+            )
+        ) {
+            return NftTokenType.DualYieldToken;
+        }
+
+        return undefined;
     }
 
     async computeUserWorth(address: string): Promise<number | undefined> {

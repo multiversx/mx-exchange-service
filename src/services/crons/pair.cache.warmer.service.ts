@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { cacheConfig, constantsConfig } from '../../config';
+import { cacheConfig } from '../../config';
 import { ContextService } from '../context/context.service';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -98,23 +98,14 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.context.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [feesAPR, burnedToken, state, type] = await Promise.all([
+            const [feesAPR, state, type] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
-                this.abiPairService.getBurnedTokenAmount(
-                    pairAddress,
-                    constantsConfig.MEX_TOKEN_ID,
-                ),
                 this.abiPairService.getState(pairAddress),
                 this.pairDbService.getPairType(pairAddress),
             ]);
 
             this.invalidatedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
-                this.pairSetterService.setBurnedTokenAmount(
-                    pairAddress,
-                    constantsConfig.MEX_TOKEN_ID,
-                    burnedToken,
-                ),
                 this.pairSetterService.setState(pairAddress, state),
                 this.pairSetterService.setType(pairAddress, type),
             ]);

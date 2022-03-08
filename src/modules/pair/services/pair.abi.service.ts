@@ -133,6 +133,20 @@ export class PairAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
+    async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getTrustedSwapPairs(
+            [],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue
+            .valueOf()
+            .map(swapPair => swapPair.field1.bech32());
+    }
+
     async getState(pairAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
@@ -140,21 +154,6 @@ export class PairAbiService {
         const interaction: Interaction = contract.methods.getState([]);
 
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf();
-    }
-
-    async getBurnedTokenAmount(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getBurnedTokenAmount([
-            BytesValue.fromUTF8(tokenID),
-        ]);
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().name;
     }
 }

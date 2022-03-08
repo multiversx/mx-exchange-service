@@ -3,7 +3,7 @@ import {
     BigUIntType,
     BinaryCodec,
     BooleanType,
-    StructFieldDefinition,
+    FieldDefinition,
     StructType,
     TokenIdentifierType,
     U64Type,
@@ -120,64 +120,40 @@ export class RewardsEvent extends GenericEvent {
 
     getStructure(version: FarmVersion): StructType {
         return new StructType('ClaimRewardsEvent', [
-            new StructFieldDefinition('caller', '', new AddressType()),
-            new StructFieldDefinition(
+            new FieldDefinition('caller', '', new AddressType()),
+            new FieldDefinition(
                 'oldFarmTokenID',
                 '',
                 new TokenIdentifierType(),
             ),
-            new StructFieldDefinition('oldFarmTokenNonce', '', new U64Type()),
-            new StructFieldDefinition(
-                'oldFarmTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
+            new FieldDefinition('oldFarmTokenNonce', '', new U64Type()),
+            new FieldDefinition('oldFarmTokenAmount', '', new BigUIntType()),
+            new FieldDefinition(
                 'newFarmTokenID',
                 '',
                 new TokenIdentifierType(),
             ),
-            new StructFieldDefinition('newFarmTokenNonce', '', new U64Type()),
-            new StructFieldDefinition(
-                'newFarmTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition('farmSupply', '', new BigUIntType()),
-            new StructFieldDefinition(
-                'rewardTokenID',
-                '',
-                new TokenIdentifierType(),
-            ),
-            new StructFieldDefinition('rewardTokenNonce', '', new U64Type()),
-            new StructFieldDefinition(
-                'rewardTokenAmount',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
-                'rewardTokenReserves',
-                '',
-                new BigUIntType(),
-            ),
-            new StructFieldDefinition(
+            new FieldDefinition('newFarmTokenNonce', '', new U64Type()),
+            new FieldDefinition('newFarmTokenAmount', '', new BigUIntType()),
+            new FieldDefinition('farmSupply', '', new BigUIntType()),
+            new FieldDefinition('rewardTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('rewardTokenNonce', '', new U64Type()),
+            new FieldDefinition('rewardTokenAmount', '', new BigUIntType()),
+            new FieldDefinition('rewardTokenReserves', '', new BigUIntType()),
+            new FieldDefinition(
                 'oldFarmAttributes',
                 '',
                 FarmTokenAttributesModel.getStructure(version),
             ),
-            new StructFieldDefinition(
+            new FieldDefinition(
                 'newFarmAttributes',
                 '',
                 FarmTokenAttributesModel.getStructure(version),
             ),
-            new StructFieldDefinition(
-                'createdWithMerge',
-                '',
-                new BooleanType(),
-            ),
-            new StructFieldDefinition('block', '', new U64Type()),
-            new StructFieldDefinition('epoch', '', new U64Type()),
-            new StructFieldDefinition('timestamp', '', new U64Type()),
+            new FieldDefinition('createdWithMerge', '', new BooleanType()),
+            new FieldDefinition('block', '', new U64Type()),
+            new FieldDefinition('epoch', '', new U64Type()),
+            new FieldDefinition('timestamp', '', new U64Type()),
         ]);
     }
 }

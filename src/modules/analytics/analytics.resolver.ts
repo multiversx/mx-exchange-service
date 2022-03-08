@@ -39,10 +39,25 @@ export class AnalyticsResolver {
     }
 
     @Query(() => String)
-    async totalBurnedTokenAmount(
-        @Args('tokenID', { type: () => String }) tokenID: string,
+    async getFeeTokenBurned(
+        @Args('tokenID') tokenID: string,
+        @Args('time') time: string,
     ) {
-        return this.analyticsGetterService.getTotalBurnedTokenAmount(tokenID);
+        return await this.analyticsGetterService.getFeeTokenBurned(
+            tokenID,
+            time,
+        );
+    }
+
+    @Query(() => String)
+    async getPenaltyTokenBurned(
+        @Args('tokenID') tokenID: string,
+        @Args('time') time: string,
+    ) {
+        return await this.analyticsGetterService.getPenaltyTokenBurned(
+            tokenID,
+            time,
+        );
     }
 
     @Query(() => [HistoricDataModel])

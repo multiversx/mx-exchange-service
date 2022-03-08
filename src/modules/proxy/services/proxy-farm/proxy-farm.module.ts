@@ -7,6 +7,8 @@ import { ProxyFarmGetterService } from './proxy-farm.getter.service';
 import { CachingModule } from '../../../../services/caching/cache.module';
 import { ProxyPairModule } from '../proxy-pair/proxy-pair.module';
 import { ProxyModule } from '../../proxy.module';
+import { FarmModule } from 'src/modules/farm/farm.module';
+import { PairModule } from 'src/modules/pair/pair.module';
 
 @Module({
     imports: [
@@ -15,6 +17,8 @@ import { ProxyModule } from '../../proxy.module';
         ContextModule,
         ProxyPairModule,
         forwardRef(() => ProxyModule),
+        FarmModule,
+        PairModule,
     ],
     providers: [
         AbiProxyFarmService,

@@ -344,24 +344,21 @@ export class PairGetterService {
             .toNumber();
     }
 
+    async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
+        return await this.getData(
+            pairAddress,
+            'trustedSwapPairs',
+            () => this.abiService.getTrustedSwapPairs(pairAddress),
+            oneSecond(),
+        );
+    }
+
     async getState(pairAddress: string): Promise<string> {
         return await this.getData(
             pairAddress,
             'state',
             () => this.abiService.getState(pairAddress),
-            oneSecond() * 45,
-        );
-    }
-
-    async getBurnedTokenAmount(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        return await this.getData(
-            pairAddress,
-            `${tokenID}.burnedTokenAmount`,
-            () => this.abiService.getBurnedTokenAmount(pairAddress, tokenID),
-            oneMinute(),
+            oneHour(),
         );
     }
 

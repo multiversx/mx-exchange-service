@@ -117,6 +117,11 @@ export class AnalyticsEventHandlerService {
             this.routerComputeService.computeTotalLockedValueUSD(),
         ]);
 
+        const [firstTokenPrice, secondTokenPrice] = await Promise.all([
+            this.pairGetterService.getFirstTokenPrice(event.address),
+            this.pairGetterService.getSecondTokenPrice(event.address),
+        ]);
+
         const [tokenInAmountDenom, tokenOutAmountDenom] = [
             denominateAmount(event.tokenIn.amount, tokenIn.decimals),
             denominateAmount(event.tokenOut.amount, tokenOut.decimals),
@@ -132,11 +137,13 @@ export class AnalyticsEventHandlerService {
 
         const data = [];
         data[event.address] = {
+            firstTokenPrice: firstTokenPrice,
             firstTokenLocked:
                 event.tokenIn.tokenID === firstTokenID
                     ? event.tokenInReserves
                     : event.tokenOutReserves,
             firstTokenLockedValueUSD: firstTokenLockedValueUSD,
+            secondTokenPrice: secondTokenPrice,
             secondTokenLocked:
                 event.tokenOut.tokenID === secondTokenID
                     ? event.tokenOutReserves

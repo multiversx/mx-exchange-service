@@ -435,7 +435,7 @@ export class FarmComputeService {
             farmTokenSupplyUSD,
         );
 
-        let feesAPR: BigNumber;
+        let feesAPR: BigNumber = new BigNumber(0);
         if (farmedTokenID !== farmingTokenID) {
             const pairAddress = await this.pairService.getPairAddressByLpTokenID(
                 farmingTokenID,

@@ -12,7 +12,14 @@
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
-        }
+        },
+        "staking": [
+            "erd1qqqqqqqqqqqqqpgqeda4yygsavp68fykpztjn28aantwwq7w0n4syawk89"
+        ],
+        "stakingProxy": [
+            "erd1qqqqqqqqqqqqqpgqps52hcn3fjltrfyzajj0s3pwap0wr0ue0n4sdc3pr8",
+            "erd1qqqqqqqqqqqqqpgqjrgwn7lcj4nskalsf55g2at9fkx8yfwr0n4sx42mqc"
+        ]
     },
     "farms": {
         "v1.2": [
@@ -22,9 +29,15 @@
         ],
         "v1.3": {
             "unlockedRewards": [
+                "erd1qqqqqqqqqqqqqpgqflm7v0hcgsanrvwdalkjq9e2pq7xcgd60n4shds5lv",
+                "erd1qqqqqqqqqqqqqpgqpnqnl3zcvg7ppc3yjypwpvp8w5gstf4j0n4s048nm2",
+                "erd1qqqqqqqqqqqqqpgq3wgd8nnr34x7y7j7wdnt4qhkw940a6y20n4su9d2vm",
                 "erd1qqqqqqqqqqqqqpgqf8pqt8ewcxmzrfwquayuh3q70fm9mjq00n4sfm5zz2"
             ],
             "lockedRewards": [
+                "erd1qqqqqqqqqqqqqpgq4au0tsdaqv8das4h8gzz3j530fp54dz70n4sa3nslj",
+                "erd1qqqqqqqqqqqqqpgqz7hd2sg2s03ddcyt7amtfrdy3uq997070n4se8azm3",
+                "erd1qqqqqqqqqqqqqpgqujx97pg9ma7qqsd2j9s4zvxjnlytrqcx0n4szdhx0l",
                 "erd1qqqqqqqqqqqqqpgql5rrp5wyewp2d2xp7qmrtuhkau7ewwcd0n4sne3m4h"
             ],
             "customRewards": [
@@ -32,14 +45,16 @@
             ]
         }
     },
-    "tokenProviderUSD": "USDC-a32906",
+    "tokenProviderUSD": "WEGLD-88600a",
     "priceFeeds": {
         "USDC-a32906": "usdc"
     },
     "tokensSupply": ["MEX-b6bb7d"],
     "cachedTokensPrice": ["MEX-b6bb7d"],
     "constants": {
-        "MEX_TOKEN_ID": "MEX-b6bb7d"
+        "MEX_TOKEN_ID": "MEX-b6bb7d",
+        "USDC_TOKEN_ID": "USDC-a32906",
+        "MAINTENANCE": false
     },
     "aws": {
         "region": "eu-central-1",

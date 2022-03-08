@@ -11,7 +11,7 @@ import {
     BinaryCodec,
     BooleanType,
     ListType,
-    StructFieldDefinition,
+    FieldDefinition,
     StructType,
     U64Type,
     U8Type,
@@ -118,13 +118,13 @@ export class LockedAssetService {
         withActivationNonce: boolean,
     ): Promise<StructType> {
         return new StructType('LockedAssetAttributes', [
-            new StructFieldDefinition(
+            new FieldDefinition(
                 'unlockSchedule',
                 '',
                 new ListType(
                     new StructType('UnlockMilestone', [
-                        new StructFieldDefinition('epoch', '', new U64Type()),
-                        new StructFieldDefinition(
+                        new FieldDefinition('epoch', '', new U64Type()),
+                        new FieldDefinition(
                             'percent',
                             '',
                             withActivationNonce ? new U64Type() : new U8Type(),
@@ -132,7 +132,7 @@ export class LockedAssetService {
                     ]),
                 ),
             ),
-            new StructFieldDefinition('isMerged', '', new BooleanType()),
+            new FieldDefinition('isMerged', '', new BooleanType()),
         ]);
     }
 

@@ -57,7 +57,7 @@ export class FarmSetterService {
         value: string,
     ): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, 'rewardsPerBlock');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
+        await this.cachingService.setCache(cacheKey, value, oneMinute() * 2);
         return cacheKey;
     }
 
@@ -219,19 +219,6 @@ export class FarmSetterService {
 
     async setFarmAPR(farmAddress: string, value: string): Promise<string> {
         const cacheKey = this.getFarmCacheKey(farmAddress, 'farmAPR');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
-    }
-
-    async setBurnedTokenAmount(
-        farmAddress: string,
-        tokenID: string,
-        value: string,
-    ): Promise<string> {
-        const cacheKey = this.getFarmCacheKey(
-            farmAddress,
-            `${tokenID}.burnedTokenAmount`,
-        );
         await this.cachingService.setCache(cacheKey, value, oneMinute());
         return cacheKey;
     }

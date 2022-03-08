@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from 'src/config';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -9,6 +9,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
+import { FarmMigrationConfig } from '../models/farm.model';
 import { AbiFarmService } from './abi-farm.service';
 import { FarmComputeService } from './farm.compute.service';
 
@@ -131,7 +132,7 @@ export class FarmGetterService {
             farmAddress,
             'rewardsPerBlock',
             () => this.abiService.getRewardsPerBlock(farmAddress),
-            oneHour(),
+            oneMinute() * 2,
         );
     }
 
@@ -326,15 +327,14 @@ export class FarmGetterService {
         );
     }
 
-    async getBurnedTokenAmount(
+    async getFarmMigrationConfiguration(
         farmAddress: string,
-        tokenID: string,
-    ): Promise<string> {
+    ): Promise<FarmMigrationConfig> {
         return this.getData(
             farmAddress,
-            `${tokenID}.burnedTokenAmount`,
-            () => this.abiService.getBurnedTokenAmount(farmAddress, tokenID),
-            oneMinute(),
+            'migrationConfig',
+            () => this.abiService.getFarmMigrationConfiguration(farmAddress),
+            oneSecond(),
         );
     }
 

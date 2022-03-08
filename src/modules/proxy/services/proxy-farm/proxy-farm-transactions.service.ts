@@ -24,8 +24,14 @@ import { generateLogMessage } from 'src/utils/generate-log-message';
 import { ProxyPairGetterService } from '../proxy-pair/proxy-pair.getter.service';
 import { ProxyGetterService } from '../proxy.getter.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
-import { farmVersion } from 'src/utils/farm.utils';
-import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { farmType, farmVersion } from 'src/utils/farm.utils';
+import {
+    FarmRewardType,
+    FarmVersion,
+} from 'src/modules/farm/models/farm.model';
+import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 
 @Injectable()
 export class TransactionsProxyFarmService {
@@ -35,6 +41,9 @@ export class TransactionsProxyFarmService {
         private readonly proxyFarmGetter: ProxyFarmGetterService,
         private readonly proxyPairService: ProxyPairGetterService,
         private readonly proxyGetter: ProxyGetterService,
+        private readonly farmGetterService: FarmGetterService,
+        private readonly pairService: PairService,
+        private readonly pairGetterService: PairGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -58,12 +67,17 @@ export class TransactionsProxyFarmService {
 
         const contract = await this.elrondProxy.getProxyDexSmartContract();
         const version = farmVersion(args.farmAddress);
+
         const method =
-            version === FarmVersion.V1_3
-                ? 'enterFarmProxy'
-                : args.lockRewards
-                ? 'enterFarmAndLockRewardsProxy'
+            version === FarmVersion.V1_2
+                ? args.lockRewards
+                    ? 'enterFarmAndLockRewardsProxy'
+                    : 'enterFarmProxy'
                 : 'enterFarmProxy';
+        const gasLimit =
+            args.tokens.length > 1
+                ? gasConfig.proxy.farms[version].enterFarm.withTokenMerge
+                : gasConfig.proxy.farms[version].enterFarm.default;
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -75,11 +89,7 @@ export class TransactionsProxyFarmService {
             args.tokens,
             method,
             endpointArgs,
-            new GasLimit(
-                args.tokens.length > 1
-                    ? gasConfig.enterFarmProxyMerge
-                    : gasConfig.enterFarmProxy,
-            ),
+            new GasLimit(gasLimit),
         );
     }
 
@@ -97,11 +107,11 @@ export class TransactionsProxyFarmService {
             BytesValue.fromUTF8('exitFarmProxy'),
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
-
+        const gasLimit = await this.getExitFarmProxyGasLimit(args);
         const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.exitFarmProxy),
+            new GasLimit(gasLimit),
         );
 
         transaction.receiver = sender;
@@ -124,10 +134,24 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
+        const version = farmVersion(args.farmAddress);
+        const type =
+            version === FarmVersion.V1_2
+                ? args.lockRewards
+                    ? FarmRewardType.LOCKED_REWARDS
+                    : FarmRewardType.UNLOCKED_REWARDS
+                : farmType(args.farmAddress);
+        const lockedAssetCreateGas =
+            type === FarmRewardType.LOCKED_REWARDS
+                ? gasConfig.lockedAssetCreate
+                : 0;
         const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.claimRewardsProxy),
+            new GasLimit(
+                gasConfig.proxy.farms[version][type].claimRewards +
+                    lockedAssetCreateGas,
+            ),
         );
 
         transaction.receiver = sender;
@@ -150,10 +174,39 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
+        const version = farmVersion(args.farmAddress);
+
         const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.compoundRewardsProxy),
+            new GasLimit(gasConfig.proxy.farms[version].compoundRewards),
+        );
+
+        transaction.receiver = sender;
+
+        return transaction;
+    }
+
+    async migrateToNewFarmProxy(
+        sender: string,
+        args: ExitFarmProxyArgs,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getProxyDexSmartContract();
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.wrappedFarmTokenID),
+            new U32Value(args.wrappedFarmTokenNonce),
+            new BigUIntValue(new BigNumber(args.amount)),
+            BytesValue.fromHex(contract.getAddress().hex()),
+            BytesValue.fromUTF8('migrateV1_2Position'),
+            BytesValue.fromHex(new Address(args.farmAddress).hex()),
+        ];
+        const version = farmVersion(args.farmAddress);
+
+        const transaction = this.contextTransactions.nftTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.proxy.farms[version].migrateToNewFarm),
         );
 
         transaction.receiver = sender;
@@ -198,7 +251,9 @@ export class TransactionsProxyFarmService {
             tokens,
             'mergeWrappedFarmTokens',
             endpointArgs,
-            new GasLimit(gasConfig.defaultMergeWFMT * tokens.length),
+            new GasLimit(
+                gasConfig.proxy.farms.defaultMergeWFMT * tokens.length,
+            ),
         );
     }
 
@@ -232,5 +287,57 @@ export class TransactionsProxyFarmService {
         ) {
             throw new Error('Invalid farming token received!');
         }
+    }
+
+    private async getExitFarmProxyGasLimit(
+        args: ExitFarmProxyArgs,
+    ): Promise<number> {
+        const version = farmVersion(args.farmAddress);
+        const type =
+            version === FarmVersion.V1_2
+                ? args.lockRewards
+                    ? FarmRewardType.LOCKED_REWARDS
+                    : FarmRewardType.UNLOCKED_REWARDS
+                : farmType(args.farmAddress);
+        const lockedAssetCreateGas =
+            type === FarmRewardType.LOCKED_REWARDS
+                ? gasConfig.lockedAssetCreate
+                : 0;
+        const [farmedTokenID, farmingTokenID] = await Promise.all([
+            this.farmGetterService.getFarmedTokenID(args.farmAddress),
+            this.farmGetterService.getFarmingTokenID(args.farmAddress),
+        ]);
+
+        if (farmedTokenID === farmingTokenID) {
+            const gasLimit = args.withPenalty
+                ? gasConfig.proxy.farms[version][type].exitFarm.withPenalty
+                      .localBurn
+                : gasConfig.proxy.farms[version][type].exitFarm.default;
+            return gasLimit + lockedAssetCreateGas;
+        }
+
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            farmingTokenID,
+        );
+
+        if (pairAddress) {
+            const trustedSwapPairs = await this.pairGetterService.getTrustedSwapPairs(
+                pairAddress,
+            );
+            const gasLimit = args.withPenalty
+                ? trustedSwapPairs.length > 0
+                    ? gasConfig.proxy.farms[version][type].exitFarm.withPenalty
+                          .buybackAndBurn
+                    : gasConfig.proxy.farms[version][type].exitFarm.withPenalty
+                          .pairBurn
+                : gasConfig.proxy.farms[version][type].exitFarm.default;
+            return gasLimit + lockedAssetCreateGas;
+        }
+
+        const gasLimit = args.withPenalty
+            ? gasConfig.proxy.farms[version][type].exitFarm.withPenalty
+                  .localBurn
+            : gasConfig.proxy.farms[version][type].exitFarm.default;
+        return gasLimit + lockedAssetCreateGas;
     }
 }

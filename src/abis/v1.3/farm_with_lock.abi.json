@@ -1,11 +1,11 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.58.0-nightly",
-            "commitHash": "4961b107f204e15b26961eab0685df6be3ab03c6",
-            "commitDate": "2021-11-04",
+            "version": "1.60.0-nightly",
+            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
+            "commitDate": "2022-01-29",
             "channel": "Nightly",
-            "short": "rustc 1.58.0-nightly (4961b107f 2021-11-04)"
+            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
         },
         "contractCrate": {
             "name": "farm_with_lock",
@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.24.0"
+            "version": "0.27.4"
         }
     },
     "name": "Farm",
@@ -146,12 +146,14 @@
         },
         {
             "name": "end_produce_rewards",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "setPerBlockRewardAmount",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -162,7 +164,8 @@
             "outputs": []
         },
         {
-            "name": "start_produce_rewards",
+            "name": "startProduceRewards",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
@@ -188,17 +191,8 @@
             ]
         },
         {
-            "name": "getLockedAssetFactoryManagedAddress",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
             "name": "set_penalty_percent",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -210,6 +204,7 @@
         },
         {
             "name": "set_minimum_farming_epochs",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -221,6 +216,7 @@
         },
         {
             "name": "set_transfer_exec_gas_limit",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -232,6 +228,7 @@
         },
         {
             "name": "set_burn_gas_limit",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
@@ -243,12 +240,14 @@
         },
         {
             "name": "pause",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
         },
         {
             "name": "resume",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
@@ -280,16 +279,6 @@
             "outputs": [
                 {
                     "type": "State"
-                }
-            ]
-        },
-        {
-            "name": "getOwner",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
                 }
             ]
         },
@@ -394,6 +383,16 @@
             ]
         },
         {
+            "name": "getLockedAssetFactoryManagedAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
             "name": "getTransferExecGasLimit",
             "mutability": "readonly",
             "inputs": [],
@@ -405,6 +404,7 @@
         },
         {
             "name": "registerFarmToken",
+            "onlyOwner": true,
             "mutability": "mutable",
             "payableInTokens": [
                 "EGLD"
@@ -427,6 +427,7 @@
         },
         {
             "name": "setLocalRolesFarmToken",
+            "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
@@ -447,6 +448,69 @@
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "migrateFromV1_2Farm",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "orig_caller",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "setFarmMigrationConfig",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "old_farm_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "old_farm_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "new_farm_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "new_farm_with_lock_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setRpsAndStartRewards",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "rps",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getFarmMigrationConfiguration",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "FarmMigrationConfig"
                 }
             ]
         }
@@ -496,6 +560,40 @@
                 {
                     "name": "Invalid",
                     "discriminant": 4
+                }
+            ]
+        },
+        "FarmMigrationConfig": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "migration_role",
+                    "type": "FarmMigrationRole"
+                },
+                {
+                    "name": "old_farm_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "old_farm_token_id",
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        "FarmMigrationRole": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "Old",
+                    "discriminant": 0
+                },
+                {
+                    "name": "New",
+                    "discriminant": 1
+                },
+                {
+                    "name": "NewWithLock",
+                    "discriminant": 2
                 }
             ]
         },

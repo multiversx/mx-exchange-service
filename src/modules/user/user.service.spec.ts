@@ -26,7 +26,6 @@ import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
 import { FarmServiceMock } from '../farm/mocks/farm.service.mock';
 import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
-import { PairServiceMock } from '../pair/mocks/pair.service.mock';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../pair/mocks/pair.getter.service.mock';
@@ -41,6 +40,14 @@ import { ContextGetterServiceMock } from 'src/services/context/mocks/context.get
 import { ProxyPairGetterServiceMock } from '../proxy/mocks/proxy.pair.getter.service.mock';
 import { ProxyFarmGetterServiceMock } from '../proxy/mocks/proxy.farm.getter.service.mock';
 import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
+import { StakingGetterService } from '../staking/services/staking.getter.service';
+import { StakingGetterServiceMock } from '../staking/mocks/staking.getter.service.mock';
+import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
+import { StakingProxyGetterServiceMock } from '../staking-proxy/mocks/staking.proxy.getter.service.mock';
+import { StakingService } from '../staking/services/staking.service';
+import { StakingServiceMock } from '../staking/mocks/staking.service.mock';
+import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
+import { StakingProxyServiceMock } from '../staking-proxy/mocks/staking.proxy.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -68,11 +75,6 @@ describe('UserService', () => {
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
-    };
-
-    const PairServiceProvider = {
-        provide: PairService,
-        useClass: PairServiceMock,
     };
 
     const PairGetterServiceProvider = {
@@ -120,6 +122,26 @@ describe('UserService', () => {
         useClass: WrapServiceMock,
     };
 
+    const StakingServiceProvider = {
+        provide: StakingService,
+        useClass: StakingServiceMock,
+    };
+
+    const StakingProxyServiceProvider = {
+        provide: StakingProxyService,
+        useClass: StakingProxyServiceMock,
+    };
+
+    const StakingGetterServiceProvider = {
+        provide: StakingGetterService,
+        useClass: StakingGetterServiceMock,
+    };
+
+    const StakingProxyGetterServiceProvider = {
+        provide: StakingProxyGetterService,
+        useClass: StakingProxyGetterServiceMock,
+    };
+
     const logTransports: Transport[] = [
         new winston.transports.Console({
             format: winston.format.combine(
@@ -135,7 +157,7 @@ describe('UserService', () => {
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
                 ContextGetterServiceProvider,
-                PairServiceProvider,
+                PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
                 PriceFeedServiceProvider,
@@ -149,6 +171,10 @@ describe('UserService', () => {
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
                 WrapServiceProvider,
+                StakingServiceProvider,
+                StakingGetterServiceProvider,
+                StakingProxyServiceProvider,
+                StakingProxyGetterServiceProvider,
                 UserService,
                 UserComputeService,
             ],
@@ -213,7 +239,7 @@ describe('UserService', () => {
                 creator: 'farm_address_1',
                 nonce: 1,
                 royalties: 0,
-                valueUSD: '150',
+                valueUSD: '400',
                 decodedAttributes: new FarmTokenAttributesModel({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',

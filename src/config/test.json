@@ -1,4 +1,7 @@
 {
+    "scAddress": {
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl"
+    },
     "farms": {
         "v1.2": ["farm_address_1"],
         "v1.3": {
@@ -7,8 +10,12 @@
             "customRewards": ["farm_address_4"]
         }
     },
-    "tokenProviderUSD": "TOK3-3333",
+    "tokenProviderUSD": "TOK1-1111",
     "priceFeeds": {
-        "TOK3-3333": "tok3"
+        "USDC-1111": "tok3"
+    },
+    "constants": {
+        "MEX_TOKEN_ID": "TOK2-2222",
+        "USDC_TOKEN_ID": "USDC-1111"
     }
 }

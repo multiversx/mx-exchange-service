@@ -237,6 +237,16 @@ export class PairResolver {
         }
     }
 
+    async trustedSwapPairs(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getTrustedSwapPairs(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @ResolveField()
     async state(@Parent() parent: PairModel) {
         try {
@@ -377,17 +387,6 @@ export class PairResolver {
         return this.transactionService.swapTokensFixedOutput(
             user.publicKey,
             args,
-        );
-    }
-
-    @Query(() => String)
-    async burnedTokenAmount(
-        @Args('pairAddress') pairAddress: string,
-        @Args('tokenID') tokenID: string,
-    ): Promise<string> {
-        return await this.pairGetterService.getBurnedTokenAmount(
-            pairAddress,
-            tokenID,
         );
     }
 }

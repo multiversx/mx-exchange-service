@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { FarmRewardType } from 'src/modules/farm/models/farm.model';
+import {
+    FarmRewardType,
+    FarmVersion,
+} from 'src/modules/farm/models/farm.model';
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextService } from 'src/services/context/context.service';
-import { farmsAddresses, farmType } from 'src/utils/farm.utils';
+import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
 export class AnalyticsComputeService {
@@ -48,15 +51,22 @@ export class AnalyticsComputeService {
             this.pairGetterService.getLockedValueUSD(pairAddress),
         );
 
-        const lockedValuesUSD = await Promise.all([
-            ...promises,
-            this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[2],
-            ),
-            this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[5],
-            ),
-        ]);
+        if (farmsAddresses()[5] !== undefined) {
+            promises.push(
+                this.farmComputeService.computeFarmLockedValueUSD(
+                    farmsAddresses()[5],
+                ),
+            );
+        }
+        if (farmsAddresses()[9] !== undefined) {
+            promises.push(
+                this.farmComputeService.computeFarmLockedValueUSD(
+                    farmsAddresses()[9],
+                ),
+            );
+        }
+
+        const lockedValuesUSD = await Promise.all([...promises]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
             const lockedValuesUSDBig = new BigNumber(lockedValueUSD);
@@ -71,7 +81,10 @@ export class AnalyticsComputeService {
     async computeTotalAggregatedRewards(days: number): Promise<string> {
         const addresses: string[] = farmsAddresses();
         const promises = addresses.map(async farmAddress => {
-            if (farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS) {
+            if (
+                farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS ||
+                farmVersion(farmAddress) === FarmVersion.V1_2
+            ) {
                 return '0';
             }
             return this.farmGetterService.getRewardsPerBlock(farmAddress);
@@ -89,36 +102,6 @@ export class AnalyticsComputeService {
             );
         }
         return totalAggregatedRewards.toFixed();
-    }
-
-    async computeTotalBurnedTokenAmount(tokenID: string): Promise<string> {
-        const promises = [];
-        const pairsAddresses = await this.context.getAllPairsAddress();
-        for (const pairAddress of pairsAddresses) {
-            promises.push(
-                this.pairGetterService.getBurnedTokenAmount(
-                    pairAddress,
-                    tokenID,
-                ),
-            );
-        }
-        for (const farmAddress of farmsAddresses()) {
-            promises.push(
-                this.farmGetterService.getBurnedTokenAmount(
-                    farmAddress,
-                    tokenID,
-                ),
-            );
-        }
-        promises.push(this.lockedAssetGetter.getBurnedTokenAmount(tokenID));
-
-        const burnedTokenAmounts = await Promise.all(promises);
-        let burnedTokenAmount = new BigNumber(0);
-        for (const burnedToken of burnedTokenAmounts) {
-            burnedTokenAmount = burnedTokenAmount.plus(burnedToken);
-        }
-
-        return burnedTokenAmount.toFixed();
     }
 
     private async fiterPairsByIssuedLpToken(

@@ -21,6 +21,10 @@ import { TransactionProcessorService } from './crons/transaction.processor.servi
 import { LogsProcessorService } from './crons/logs.processor.service';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { AWSModule } from './aws/aws.module';
+import { StakingModule } from 'src/modules/staking/staking.module';
+import { StakingCacheWarmerService } from './crons/staking.cache.warmer.service';
+import { StakingProxyCacheWarmerService } from './crons/staking.proxy.cache.warmer.service';
+import { StakingProxyModule } from 'src/modules/staking-proxy/staking.proxy.module';
 
 @Module({
     imports: [
@@ -34,6 +38,8 @@ import { AWSModule } from './aws/aws.module';
         ElrondCommunicationModule,
         ContextModule,
         FarmModule,
+        StakingModule,
+        StakingProxyModule,
         ProxyModule,
         ProxyFarmModule,
         ProxyPairModule,
@@ -45,6 +51,8 @@ import { AWSModule } from './aws/aws.module';
         CacheWarmerService,
         PairCacheWarmerService,
         FarmCacheWarmerService,
+        StakingCacheWarmerService,
+        StakingProxyCacheWarmerService,
         ProxyCacheWarmerService,
         AnalyticsCacheWarmerService,
         CachingService,

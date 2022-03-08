@@ -115,7 +115,7 @@ export class PairTransactionService {
             [firstTokenInput, secondTokenInput],
             'addLiquidity',
             endpointArgs,
-            new GasLimit(gasConfig.addLiquidity),
+            new GasLimit(gasConfig.pairs.addLiquidity),
         );
     }
 
@@ -159,7 +159,7 @@ export class PairTransactionService {
             this.contextTransactions.esdtTransfer(
                 contract,
                 transactionArgs,
-                new GasLimit(gasConfig.removeLiquidity),
+                new GasLimit(gasConfig.pairs.removeLiquidity),
             ),
         );
 
@@ -190,9 +190,10 @@ export class PairTransactionService {
     ): Promise<TransactionModel[]> {
         const transactions = [];
         let transactionArgs: TypedValue[];
-        const [wrappedTokenID, contract] = await Promise.all([
+        const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
             this.elrondProxy.getPairSmartContract(args.pairAddress),
+            this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
         ]);
 
         const amountIn = new BigNumber(args.amountIn);
@@ -221,9 +222,10 @@ export class PairTransactionService {
                         contract,
                         transactionArgs,
                         new GasLimit(
-                            args.tokenOutID === constantsConfig.MEX_TOKEN_ID
-                                ? gasConfig.swapMexTokens
-                                : gasConfig.swapTokens,
+                            trustedSwapPairs.length === 0
+                                ? gasConfig.pairs.swapTokensFixedInput.default
+                                : gasConfig.pairs.swapTokensFixedInput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -241,9 +243,10 @@ export class PairTransactionService {
                         contract,
                         transactionArgs,
                         new GasLimit(
-                            args.tokenInID === constantsConfig.MEX_TOKEN_ID
-                                ? gasConfig.swapMexTokens
-                                : gasConfig.swapTokens,
+                            trustedSwapPairs.length === 0
+                                ? gasConfig.pairs.swapTokensFixedInput.default
+                                : gasConfig.pairs.swapTokensFixedInput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -268,10 +271,10 @@ export class PairTransactionService {
                         contract,
                         transactionArgs,
                         new GasLimit(
-                            args.tokenInID === constantsConfig.MEX_TOKEN_ID ||
-                            args.tokenOutID === constantsConfig.MEX_TOKEN_ID
-                                ? gasConfig.swapMexTokens
-                                : gasConfig.swapTokens,
+                            trustedSwapPairs.length === 0
+                                ? gasConfig.pairs.swapTokensFixedInput.default
+                                : gasConfig.pairs.swapTokensFixedInput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -287,9 +290,10 @@ export class PairTransactionService {
     ): Promise<TransactionModel[]> {
         const transactions = [];
         let transactionArgs: TypedValue[];
-        const [wrappedTokenID, contract] = await Promise.all([
+        const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
             this.elrondProxy.getPairSmartContract(args.pairAddress),
+            this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
         ]);
 
         const amountIn = new BigNumber(args.amountIn);
@@ -317,9 +321,10 @@ export class PairTransactionService {
                         contract,
                         transactionArgs,
                         new GasLimit(
-                            args.tokenOutID === constantsConfig.MEX_TOKEN_ID
-                                ? gasConfig.swapMexTokens
-                                : gasConfig.swapTokens,
+                            trustedSwapPairs.length === 0
+                                ? gasConfig.pairs.swapTokensFixedOutput.default
+                                : gasConfig.pairs.swapTokensFixedOutput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -337,9 +342,10 @@ export class PairTransactionService {
                         contract,
                         transactionArgs,
                         new GasLimit(
-                            args.tokenInID === constantsConfig.MEX_TOKEN_ID
-                                ? gasConfig.swapMexTokens
-                                : gasConfig.swapTokens,
+                            trustedSwapPairs.length === 0
+                                ? gasConfig.pairs.swapTokensFixedOutput.default
+                                : gasConfig.pairs.swapTokensFixedOutput
+                                      .withFeeSwap,
                         ),
                     ),
                 );
@@ -364,10 +370,10 @@ export class PairTransactionService {
                         contract,
                         transactionArgs,
                         new GasLimit(
-                            args.tokenInID === constantsConfig.MEX_TOKEN_ID ||
-                            args.tokenOutID === constantsConfig.MEX_TOKEN_ID
-                                ? gasConfig.swapMexTokens
-                                : gasConfig.swapTokens,
+                            trustedSwapPairs.length === 0
+                                ? gasConfig.pairs.swapTokensFixedOutput.default
+                                : gasConfig.pairs.swapTokensFixedOutput
+                                      .withFeeSwap,
                         ),
                     ),
                 );

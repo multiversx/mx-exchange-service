@@ -11,7 +11,11 @@ import { generateRunQueryLogMessage } from '../../../utils/generate-log-message'
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
-import { FarmRewardType, FarmVersion } from '../models/farm.model';
+import {
+    FarmMigrationConfig,
+    FarmRewardType,
+    FarmVersion,
+} from '../models/farm.model';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 
 @Injectable()
@@ -243,21 +247,7 @@ export class AbiFarmService {
         );
         const interaction: Interaction = contract.methods.getState([]);
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf();
-    }
-
-    async getBurnedTokenAmount(
-        farmAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
-        const interaction: Interaction = contract.methods.getBurnedTokenAmount([
-            BytesValue.fromUTF8(tokenID),
-        ]);
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().name;
     }
 
     async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
@@ -266,5 +256,37 @@ export class AbiFarmService {
             'produce_rewards_enabled',
         );
         return response === '01';
+    }
+
+    async getFarmMigrationConfiguration(
+        farmAddress: string,
+    ): Promise<FarmMigrationConfig | undefined> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+
+        try {
+            const interaction: Interaction = contract.methods.getFarmMigrationConfiguration();
+            const response = await this.getGenericData(contract, interaction);
+            const decodedResponse = response.firstValue.valueOf();
+            console.log(decodedResponse);
+            if (version === FarmVersion.V1_2) {
+                return new FarmMigrationConfig({
+                    migrationRole: decodedResponse.migration_role.name,
+                    oldFarmAddress: decodedResponse.old_farm_address.bech32(),
+                    oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
+                    newFarmAddress: decodedResponse.new_farm_address.bech32(),
+                    newLockedFarmAddress: decodedResponse.new_farm_with_lock_address.bech32(),
+                });
+            }
+
+            return new FarmMigrationConfig({
+                migrationRole: decodedResponse.migration_role.name,
+                oldFarmAddress: decodedResponse.old_farm_address.bech32(),
+                oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
+            });
+        } catch (error) {
+            return undefined;
+        }
     }
 }
