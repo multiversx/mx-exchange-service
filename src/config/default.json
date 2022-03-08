@@ -12,52 +12,43 @@
         "keepAliveMaxFreeSockets": 10
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgq37e5r67hvtrkyhs6yadwvwtk3rxk792e0n4s066pa5",
-        "MEX-0f2d49": "erd1qqqqqqqqqqqqqpgqnj4jud533vqcm5su6kupw6f45c8h69n70n4sxzgt8f",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
+        "MEX-56b144": "erd1qqqqqqqqqqqqqpgqp3jh6l6wtvqwy66z3r8s05j8xkefssa90n4smfa8y3",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgq29s98mhxwyknmxcpdtdx6nm0wkvnkvwe0n4sjpdhyq",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqsk0e3wdgmfz4x9pctz8dsnw2vhtdjwd40n4sf0xl4n",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgq6wrtdnv7d5uypnaw2k8mtujfdl0s66t40n4sag5e7n",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq2gum6hua5dh7vl67l0rtgzk5ly8y2ydw0n4snkgrdj",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
-            "shardID-1": "erd1qqqqqqqqqqqqqpgqg8a36rqxu4ch5v2522jv5avlun94sdv80n4sygxs94",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqc8relmv973g34dytgd55p3hmaaljvka30n4s6n64q6",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
         "staking": [
-            "erd1qqqqqqqqqqqqqpgq27tkyxsn54lw6apf46va0cm3fqjpjf9u0n4snuh9g5"
+            "erd1qqqqqqqqqqqqqpgqp8ca9usk9tgk5hjpdh9u47c677q3qydx0n4sva2qah"
         ],
-        "stakingProxy": [
-            "erd1qqqqqqqqqqqqqpgqqs9x790544kn06qz8vd6620lyj2ly0e60n4sp4ja47",
-            "erd1qqqqqqqqqqqqqpgqz2fyzdx6gcn3rfaavwrqurpauf4ryycg0n4svxhwhz"
-        ]
+        "stakingProxy": []
     },
-    "tokenProviderUSD": "WEGLD-584d96",
+    "tokenProviderUSD": "WEGLD-57ee56",
     "priceFeeds": {
-        "USDC-ebc075": "usdc"
+        "USDC-1876bd": "usdc"
     },
-    "tokensSupply": ["MEX-0f2d49"],
-    "cachedTokensPrice": ["MEX-0f2d49"],
+    "tokensSupply": ["MEX-56b144"],
+    "cachedTokensPrice": ["MEX-56b144"],
     "farms": {
-        "v1.2": [
-            "erd1qqqqqqqqqqqqqpgq6w2n335mupvrzjvl6pgnvxcxerggztuy0n4s8zvd23",
-            "erd1qqqqqqqqqqqqqpgqup689rhdkf5nu5nh3cancfjag9fnf59n0n4sxf8uh0",
-            "erd1qqqqqqqqqqqqqpgqfmzfhlp7ae006vj85mr4pt3xsep0hfn00n4sur83jm"
-        ],
+        "v1.2": [],
         "v1.3": {
             "unlockedRewards": [
-                "erd1qqqqqqqqqqqqqpgq5j0l9wd3fnghcg2pk0w9xuzc8jl2gvlu0n4s3hlxut",
-                "erd1qqqqqqqqqqqqqpgqu2g4qdjj0qdwwfhhf0h26ly0hrzhkz550n4sj0h962",
-                "erd1qqqqqqqqqqqqqpgqnfem20du5tqwqzmm6fc2hpzj7s6ct5xj0n4shlewv5",
-                "erd1qqqqqqqqqqqqqpgqcrzcw0p07c0a3alzglkfslg5859j3sq00n4sn0tsdu"
+                "erd1qqqqqqqqqqqqqpgqxsy4k8fkqvllcvyrwhf80t97kyd32qfx0n4stue7cn",
+                "erd1qqqqqqqqqqqqqpgqlauj5h3wdqnmtrlljxh87f6u992jtlj80n4sjpnl56",
+                "erd1qqqqqqqqqqqqqpgqwe7relwdmhg52ra4d9t72nt5hk0qhjrd0n4spy0wnx",
+                "erd1qqqqqqqqqqqqqpgqnwzdd6467q4d4p6mc2few7hawnfwxhtn0n4snuexra"
             ],
             "lockedRewards": [
-                "erd1qqqqqqqqqqqqqpgqvrjy3f9hggj4dfrdqpp65hmd9qj0gdfc0n4s6rllsc",
-                "erd1qqqqqqqqqqqqqpgqeqe6ezxqjm28990dgyxrgealpz6tq7sm0n4shldvej",
-                "erd1qqqqqqqqqqqqqpgqacwqrzkzkg4fhtnc0dta48cx787szwk50n4s0pp8rl",
-                "erd1qqqqqqqqqqqqqpgqfz3wqazehjeftqauw2mkmczzk47zfq5k0n4spgzp5u"
+                "erd1qqqqqqqqqqqqqpgqg2esr6d6tfd250x4n3tkhfkw8cc4p2x50n4swatdz6",
+                "erd1qqqqqqqqqqqqqpgqpfekajgprpwzfqfctzqfqe5j2n38t3ev0n4shhyhy5",
+                "erd1qqqqqqqqqqqqqpgqfau7c39mzvmjkkkfmxtdwjgjparkgfmz0n4sfe8er6",
+                "erd1qqqqqqqqqqqqqpgqz9cev6r0yy7p8yd8vpzl2edju6fv6flf0n4sj0muw9"
             ],
-            "customRewards": [
-                "erd1qqqqqqqqqqqqqpgqzm39pgj98al5d9zyz2jadk2p66t54x2g0n4s4njthx"
-            ]
+            "customRewards": []
         }
     },
     "caching": {
@@ -296,10 +287,10 @@
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
         "MAX_GAS_LIMIT": 750000000,
         "ISSUE_LP_TOKEN_COST": 0.05,
-        "MEX_TOKEN_ID": "MEX-0f2d49",
-        "USDC_TOKEN_ID": "USDC-ebc075",
+        "MEX_TOKEN_ID": "MEX-56b144",
+        "USDC_TOKEN_ID": "USDC-1876bd",
         "PRECISION_EX_INCREASE": 1000,
-        "MAINTENANCE": true,
+        "MAINTENANCE": false,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",
