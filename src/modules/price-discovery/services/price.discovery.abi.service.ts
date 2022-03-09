@@ -6,6 +6,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
+import { PhaseModel } from '../models/price.discovery.model';
 
 @Injectable()
 export class PriceDiscoveryAbiService {
@@ -148,5 +149,23 @@ export class PriceDiscoveryAbiService {
 
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getCurrentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getCurrentPhase([]);
+
+        const response = await this.getGenericData(contract, interaction);
+        const phaseName = response.firstValue.valueOf().name;
+        const penaltyPercent = response.firstValue
+            .valueOf()
+            .penalty_percentage?.toNumber();
+
+        return new PhaseModel({
+            name: phaseName,
+            penaltyPercent: penaltyPercent ? penaltyPercent : 0,
+        });
     }
 }

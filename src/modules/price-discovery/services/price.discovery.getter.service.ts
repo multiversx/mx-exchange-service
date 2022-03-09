@@ -8,6 +8,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
+import { PhaseModel } from '../models/price.discovery.model';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 @Injectable()
 export class PriceDiscoveryGetterService {
@@ -165,6 +166,15 @@ export class PriceDiscoveryGetterService {
             'pairAddress',
             () => this.abiService.getPairAddress(priceDiscoveryAddress),
             oneHour(),
+        );
+    }
+
+    async getCurrentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'currentPhase',
+            () => this.abiService.getCurrentPhase(priceDiscoveryAddress),
+            oneMinute(),
         );
     }
 

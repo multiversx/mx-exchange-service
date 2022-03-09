@@ -26,8 +26,22 @@ export class PriceDiscoveryModel {
     endBlock: number;
     @Field()
     pairAddress: string;
+    @Field()
+    currentPhase: PhaseModel;
 
     constructor(init?: Partial<PriceDiscoveryModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class PhaseModel {
+    @Field()
+    name: string;
+    @Field()
+    penaltyPercent = 0;
+
+    constructor(init?: Partial<PhaseModel>) {
         Object.assign(this, init);
     }
 }
