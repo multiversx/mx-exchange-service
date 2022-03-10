@@ -1,7 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -13,6 +15,7 @@ export class MetabondingGetterService {
     constructor(
         private readonly abiService: MetabondingAbiService,
         private readonly cachingService: CachingService,
+        private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -45,6 +48,13 @@ export class MetabondingGetterService {
             'lockedAssetTokenID',
             () => this.abiService.getLockedAssetTokenID(),
             oneHour(),
+        );
+    }
+
+    async getLockedAssetToken(): Promise<NftCollection> {
+        const lockedAssetTokenID = await this.getLockedAssetTokenID();
+        return await this.contextGetter.getNftCollectionMetadata(
+            lockedAssetTokenID,
         );
     }
 

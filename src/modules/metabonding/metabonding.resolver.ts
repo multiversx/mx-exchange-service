@@ -4,6 +4,7 @@ import { ApolloError } from 'apollo-server-express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { Logger } from 'winston';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
@@ -33,9 +34,9 @@ export class MetabondingResolver {
     }
 
     @ResolveField()
-    async lockedAssetTokenID(): Promise<string> {
+    async lockedAssetToken(): Promise<NftCollection> {
         return await this.genericFieldResover(() =>
-            this.metabondingGetter.getLockedAssetTokenID(),
+            this.metabondingGetter.getLockedAssetToken(),
         );
     }
 
