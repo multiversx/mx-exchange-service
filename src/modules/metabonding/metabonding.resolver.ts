@@ -82,9 +82,11 @@ export class MetabondingResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async unstakeMetabonding(): Promise<TransactionModel> {
+    async unstakeMetabonding(
+        @Args('unstakeAmount') unstakeAmount: string,
+    ): Promise<TransactionModel> {
         try {
-            return await this.metabondingTransactions.unstake();
+            return await this.metabondingTransactions.unstake(unstakeAmount);
         } catch (error) {
             throw new ApolloError(error);
         }
