@@ -7,7 +7,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { StakedUserPosition } from '../models/metabonding.model';
+import { UserEntryModel } from '../models/metabonding.model';
 import { MetabondingAbiService } from './metabonding.abi.service';
 
 @Injectable()
@@ -74,12 +74,10 @@ export class MetabondingGetterService {
         );
     }
 
-    async getUserStakedPosition(
-        userAddress: string,
-    ): Promise<StakedUserPosition> {
+    async getUserEntry(userAddress: string): Promise<UserEntryModel> {
         return this.getData(
-            `${userAddress}.stakedPosition`,
-            () => this.abiService.getUserStakedPosition(userAddress),
+            `${userAddress}.userEntry`,
+            () => this.abiService.getUserEntry(userAddress),
             oneSecond(),
         );
     }

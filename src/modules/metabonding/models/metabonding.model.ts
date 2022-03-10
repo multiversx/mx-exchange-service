@@ -18,15 +18,17 @@ export class MetabondingStakingModel {
 }
 
 @ObjectType()
-export class StakedUserPosition {
+export class UserEntryModel {
     @Field(() => Int)
-    nonce: number;
+    tokenNonce: number;
     @Field()
-    amount: string;
+    stakedAmount: string;
+    @Field()
+    unstakedAmount: string;
     @Field({ nullable: true })
     unbondEpoch: number;
 
-    constructor(init?: Partial<StakedUserPosition>) {
+    constructor(init?: Partial<UserEntryModel>) {
         Object.assign(this, init);
     }
 }

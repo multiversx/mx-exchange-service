@@ -10,7 +10,7 @@ import { Logger } from 'winston';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import {
     MetabondingStakingModel,
-    StakedUserPosition,
+    UserEntryModel,
 } from './models/metabonding.model';
 import { MetabondingGetterService } from './services/metabonding.getter.service';
 import { MetabondingService } from './services/metabonding.service';
@@ -53,14 +53,12 @@ export class MetabondingResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => StakedUserPosition)
+    @Query(() => UserEntryModel)
     async metabondingStakedPosition(
         @User() user: any,
-    ): Promise<StakedUserPosition> {
+    ): Promise<UserEntryModel> {
         try {
-            return await this.metabondingGetter.getUserStakedPosition(
-                user.publicKey,
-            );
+            return await this.metabondingGetter.getUserEntry(user.publicKey);
         } catch (error) {
             throw new ApolloError(error);
         }
