@@ -19,6 +19,7 @@ import { SubscriptionsModule } from './modules/subscriptions/subscriptions.modul
 import { AuthModule } from './modules/auth/auth.module';
 import { StakingModule } from './modules/staking/staking.module';
 import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module';
+import { MetabondingModule } from './modules/metabonding/metabonding.module';
 
 @Module({
     imports: [
@@ -81,6 +82,7 @@ import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module
         DistributionModule,
         ProxyModule,
         LockedAssetModule,
+        MetabondingModule,
         WrappingModule,
         UserModule,
         AnalyticsModule,
