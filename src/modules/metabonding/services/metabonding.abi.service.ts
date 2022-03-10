@@ -19,7 +19,7 @@ export class MetabondingAbiService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getGenericData(
+    private async getGenericData(
         contract: SmartContractProfiler,
         interaction: Interaction,
     ): Promise<QueryResponseBundle> {
