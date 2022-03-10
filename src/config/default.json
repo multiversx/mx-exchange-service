@@ -17,6 +17,7 @@
         "distributionAddress": "erd1qqqqqqqqqqqqqpgq29s98mhxwyknmxcpdtdx6nm0wkvnkvwe0n4sjpdhyq",
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgq6wrtdnv7d5uypnaw2k8mtujfdl0s66t40n4sag5e7n",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq2gum6hua5dh7vl67l0rtgzk5ly8y2ydw0n4snkgrdj",
+        "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqc8relmv973g34dytgd55p3hmaaljvka30n4s6n64q6",
@@ -250,6 +251,11 @@
             "claimDualYield": 40000000,
             "unstakeFarmTokens": 62000000
         },
+        "metabonding": {
+            "stakeLockedAsset": 10000000,
+            "unstake": 10000000,
+            "unbond": 10000000
+        },
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000,
         "unlockAssets": 45000000,
@@ -262,6 +268,7 @@
         "pair": "./src/abis/pair.abi.json",
         "distribution": "./src/abis/distribution.abi.json",
         "lockedAssetFactory": "./src/abis/factory.abi.json",
+        "metabondingStaking": "./src/abis/metabonding-staking.abi.json",
         "proxy": "./src/abis/proxy-dex.abi.json",
         "wrap": "./src/abis/egld-esdt-swap.abi.json",
         "farm": {
