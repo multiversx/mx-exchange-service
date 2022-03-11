@@ -82,7 +82,11 @@ export class MetabondingAbiService {
         const rawUserEntry = response.firstValue.valueOf();
 
         if (!rawUserEntry) {
-            throw new Error(`No staking position for ${userAddress}`);
+            return new UserEntryModel({
+                tokenNonce: 0,
+                stakedAmount: '0',
+                unstakedAmount: '0',
+            });
         }
 
         return new UserEntryModel({
