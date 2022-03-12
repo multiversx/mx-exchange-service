@@ -13,6 +13,8 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { RouterModule } from '../router/router.module';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
+import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
+import { MetabondingModule } from '../metabonding/metabonding.module';
 
 @Module({
     imports: [
@@ -23,6 +25,7 @@ import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service'
         PairModule,
         FarmModule,
         RouterModule,
+        MetabondingModule,
     ],
     providers: [
         RabbitMqConsumer,
@@ -31,6 +34,7 @@ import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service'
         RabbitMQProxyHandlerService,
         RabbitMQRouterHandlerService,
         RabbitMQEsdtTokenHandlerService,
+        RabbitMQMetabondingHandlerService,
     ],
 })
 export class RabbitMqModule {
