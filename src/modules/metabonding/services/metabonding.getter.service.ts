@@ -78,7 +78,7 @@ export class MetabondingGetterService {
         return this.getData(
             `${userAddress}.userEntry`,
             () => this.abiService.getUserEntry(userAddress),
-            oneSecond(),
+            oneMinute() * 10,
         );
     }
 
