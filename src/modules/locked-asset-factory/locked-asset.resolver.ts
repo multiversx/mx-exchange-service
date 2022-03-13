@@ -16,6 +16,7 @@ import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { LockedAssetGetterService } from './services/locked.asset.getter.service';
+import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 
 @Resolver(() => LockedAssetModel)
 export class LockedAssetResolver {
@@ -24,6 +25,15 @@ export class LockedAssetResolver {
         private readonly lockedAssetGetter: LockedAssetGetterService,
         private readonly transactionsService: TransactionsLockedAssetService,
     ) {}
+
+    @ResolveField()
+    async assetToken(): Promise<EsdtToken> {
+        try {
+            return await this.lockedAssetGetter.getAssetToken();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
 
     @ResolveField()
     async lockedToken(): Promise<NftCollection> {

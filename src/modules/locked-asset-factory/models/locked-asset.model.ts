@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from '../../../models/tokens/nftCollection.model';
 
 @ObjectType()
@@ -33,6 +34,9 @@ export class LockedAssetAttributes {
 export class LockedAssetModel {
     @Field()
     address: string;
+
+    @Field()
+    assetToken: EsdtToken;
 
     @Field()
     lockedToken: NftCollection;
