@@ -60,6 +60,14 @@ export class LockedAssetResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
+    async lockAssets(
+        @Args('inputToken') inputToken: InputTokenModel,
+    ): Promise<TransactionModel> {
+        return await this.transactionsService.lockAssets(inputToken);
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
     async unlockAssets(
         @Args() args: UnlockAssetsArs,
         @User() user: any,

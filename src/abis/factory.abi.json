@@ -1,11 +1,11 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.58.0-nightly",
-            "commitHash": "4961b107f204e15b26961eab0685df6be3ab03c6",
-            "commitDate": "2021-11-04",
+            "version": "1.60.0-nightly",
+            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
+            "commitDate": "2022-01-29",
             "channel": "Nightly",
-            "short": "rustc 1.58.0-nightly (4961b107f 2021-11-04)"
+            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
         },
         "contractCrate": {
             "name": "factory",
@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.25.0"
+            "version": "0.29.3"
         }
     },
     "name": "LockedAssetFactory",
@@ -114,9 +114,24 @@
         {
             "name": "unlockAssets",
             "mutability": "mutable",
-            "payableInTokens": ["*"],
+            "payableInTokens": [
+                "*"
+            ],
             "inputs": [],
             "outputs": []
+        },
+        {
+            "name": "lockAssets",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
         },
         {
             "name": "setUnlockPeriod",
@@ -135,7 +150,9 @@
             "name": "registerLockedAssetToken",
             "onlyOwner": true,
             "mutability": "mutable",
-            "payableInTokens": ["EGLD"],
+            "payableInTokens": [
+                "EGLD"
+            ],
             "inputs": [
                 {
                     "name": "token_display_name",
@@ -292,7 +309,9 @@
         {
             "name": "mergeLockedAssetTokens",
             "mutability": "mutable",
-            "payableInTokens": ["*"],
+            "payableInTokens": [
+                "*"
+            ],
             "inputs": [
                 {
                     "name": "opt_accept_funds_func",
@@ -345,6 +364,14 @@
                 {
                     "name": "NftBurn",
                     "discriminant": 5
+                },
+                {
+                    "name": "NftAddUri",
+                    "discriminant": 6
+                },
+                {
+                    "name": "NftUpdateAttributes",
+                    "discriminant": 7
                 }
             ]
         },
@@ -407,15 +434,6 @@
                 }
             ]
         },
-        "UnlockSchedule": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "unlock_milestones",
-                    "type": "List<UnlockMilestone>"
-                }
-            ]
-        },
         "UnlockMilestoneEx": {
             "type": "struct",
             "fields": [
@@ -426,6 +444,15 @@
                 {
                     "name": "unlock_percent",
                     "type": "u64"
+                }
+            ]
+        },
+        "UnlockSchedule": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "unlock_milestones",
+                    "type": "List<UnlockMilestone>"
                 }
             ]
         },
