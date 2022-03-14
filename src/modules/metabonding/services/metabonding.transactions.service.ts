@@ -54,7 +54,9 @@ export class MetabondingTransactionService {
                 gasConfig.metabonding.stakeLockedAsset.withTokenMerge,
             );
         } else {
-            gasLimit = gasConfig.metabonding.stakeLockedAsset.default;
+            gasLimit = new GasLimit(
+                gasConfig.metabonding.stakeLockedAsset.default,
+            );
         }
 
         const transactionArgs = [
