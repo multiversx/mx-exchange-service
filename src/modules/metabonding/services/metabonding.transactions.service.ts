@@ -43,7 +43,19 @@ export class MetabondingTransactionService {
             throw error;
         }
 
-        const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
+        const [contract, userEntry] = await Promise.all([
+            this.elrondProxy.getMetabondingStakingSmartContract(),
+            this.metabondingGetter.getUserEntry(sender),
+        ]);
+
+        let gasLimit: GasLimit;
+        if (new BigNumber(userEntry.stakedAmount).isGreaterThan(0)) {
+            gasLimit = new GasLimit(
+                gasConfig.metabonding.stakeLockedAsset.withTokenMerge,
+            );
+        } else {
+            gasLimit = gasConfig.metabonding.stakeLockedAsset.default;
+        }
 
         const transactionArgs = [
             BytesValue.fromUTF8(inputToken.tokenID),
@@ -56,7 +68,7 @@ export class MetabondingTransactionService {
         const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.metabonding.stakeLockedAsset),
+            gasLimit,
         );
 
         transaction.receiver = sender;
