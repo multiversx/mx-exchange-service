@@ -256,12 +256,15 @@
             "unstake": 10000000,
             "unbond": 10000000
         },
+        "lockedAssetFactory": {
+            "lockAssets": 20000000,
+            "unlockAssets": 45000000,
+            "defaultMergeLockedAssets": 12000000,
+            "lockedAssetMerge": 4000000
+        },
+        "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
-        "claimLockedAssets": 45500000,
-        "unlockAssets": 45000000,
-        "defaultMergeLockedAssets": 12000000,
-        "lockedAssetMerge": 4000000,
-        "lockedAssetCreate": 5000000
+        "claimLockedAssets": 45500000
     },
     "abi": {
         "router": "./src/abis/router.abi.json",
