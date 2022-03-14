@@ -19,5 +19,6 @@ import { MetabondingTransactionService } from './services/metabonding.transactio
         MetabondingTransactionService,
         MetabondingResolver,
     ],
+    exports: [MetabondingAbiService, MetabondingSetterService],
 })
 export class MetabondingModule {}

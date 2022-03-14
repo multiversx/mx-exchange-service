@@ -10,7 +10,7 @@ import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { StakedUserPosition } from '../models/metabonding.model';
+import { UserEntryModel } from '../models/metabonding.model';
 
 @Injectable()
 export class MetabondingAbiService {
@@ -71,26 +71,29 @@ export class MetabondingAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getUserStakedPosition(
-        userAddress: string,
-    ): Promise<StakedUserPosition> {
+    async getUserEntry(userAddress: string): Promise<UserEntryModel> {
         const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methods.getUserStakedPosition(
-            [new AddressValue(Address.fromString(userAddress))],
-        );
+        const interaction: Interaction = contract.methods.getUserEntry([
+            new AddressValue(Address.fromString(userAddress)),
+        ]);
 
         const response = await this.getGenericData(contract, interaction);
 
-        const rawUserPosition = response.firstValue.valueOf();
+        const rawUserEntry = response.firstValue.valueOf();
 
-        if (!rawUserPosition) {
-            throw new Error(`No staking position for ${userAddress}`);
+        if (!rawUserEntry) {
+            return new UserEntryModel({
+                tokenNonce: 0,
+                stakedAmount: '0',
+                unstakedAmount: '0',
+            });
         }
 
-        return new StakedUserPosition({
-            nonce: rawUserPosition.nonce.toNumber(),
-            amount: rawUserPosition.amount.toFixed(),
-            unbondEpoch: rawUserPosition.opt_unbond_epoch?.toNumber(),
+        return new UserEntryModel({
+            tokenNonce: rawUserEntry.token_nonce.toNumber(),
+            stakedAmount: rawUserEntry.stake_amount.toFixed(),
+            unstakedAmount: rawUserEntry.unstake_amount.toFixed(),
+            unbondEpoch: rawUserEntry.unbond_epoch.toNumber(),
         });
     }
 }

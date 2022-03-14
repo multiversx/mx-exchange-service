@@ -64,9 +64,11 @@ export class MetabondingTransactionService {
         return transaction;
     }
 
-    async unstake(): Promise<TransactionModel> {
+    async unstake(unstakeAmount: string): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methods.unstake([]);
+        const interaction: Interaction = contract.methods.unstake([
+            new BigUIntValue(new BigNumber(unstakeAmount)),
+        ]);
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.metabonding.unstake));
 

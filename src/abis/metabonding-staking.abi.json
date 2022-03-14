@@ -43,7 +43,12 @@
         {
             "name": "unstake",
             "mutability": "mutable",
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ],
             "outputs": []
         },
         {
@@ -68,7 +73,7 @@
             ]
         },
         {
-            "name": "getUserStakedPosition",
+            "name": "getUserEntry",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -78,7 +83,7 @@
             ],
             "outputs": [
                 {
-                    "type": "optional<StakingEntry>",
+                    "type": "optional<UserEntry>",
                     "multi_result": true
                 }
             ]
@@ -138,20 +143,24 @@
     ],
     "hasCallback": false,
     "types": {
-        "StakingEntry": {
+        "UserEntry": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "nonce",
+                    "name": "token_nonce",
                     "type": "u64"
                 },
                 {
-                    "name": "amount",
+                    "name": "stake_amount",
                     "type": "BigUint"
                 },
                 {
-                    "name": "opt_unbond_epoch",
-                    "type": "Option<u64>"
+                    "name": "unstake_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "unbond_epoch",
+                    "type": "u64"
                 }
             ]
         }
