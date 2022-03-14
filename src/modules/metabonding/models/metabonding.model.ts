@@ -5,6 +5,7 @@ import {
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { constantsConfig } from 'src/config';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @ObjectType()
@@ -17,6 +18,9 @@ export class MetabondingStakingModel {
 
     @Field()
     lockedAssetTokenSupply: string;
+
+    @Field(() => Int)
+    unbondEpochs = constantsConfig.UNBOND_EPOCHS;
 
     constructor(init?: Partial<MetabondingStakingModel>) {
         Object.assign(this, init);
