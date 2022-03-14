@@ -1,3 +1,9 @@
+import {
+    BigUIntType,
+    FieldDefinition,
+    StructType,
+    U64Type,
+} from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
@@ -18,15 +24,26 @@ export class MetabondingStakingModel {
 }
 
 @ObjectType()
-export class StakedUserPosition {
+export class UserEntryModel {
     @Field(() => Int)
-    nonce: number;
+    tokenNonce: number;
     @Field()
-    amount: string;
+    stakedAmount: string;
+    @Field()
+    unstakedAmount: string;
     @Field({ nullable: true })
     unbondEpoch: number;
 
-    constructor(init?: Partial<StakedUserPosition>) {
+    constructor(init?: Partial<UserEntryModel>) {
         Object.assign(this, init);
+    }
+
+    static getStructure(): StructType {
+        return new StructType('UserEntry', [
+            new FieldDefinition('tokenNonce', '', new U64Type()),
+            new FieldDefinition('stakeAmount', '', new BigUIntType()),
+            new FieldDefinition('unstakeAmount', '', new BigUIntType()),
+            new FieldDefinition('unbondEpoch', '', new U64Type()),
+        ]);
     }
 }

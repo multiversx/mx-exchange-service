@@ -12,10 +12,13 @@ import { gasConfig } from 'src/config';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
+import { FarmService } from 'src/modules/farm/services/farm.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { generateLogMessage } from 'src/utils/generate-log-message';
+import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import {
     ClaimDualYieldArgs,
@@ -31,8 +34,10 @@ export class StakingProxyTransactionService {
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyGetter: StakingProxyGetterService,
         private readonly pairService: PairService,
+        private readonly farmService: FarmService,
         private readonly contextTransactions: ContextTransactionsService,
         private readonly elrondProxy: ElrondProxyService,
+        private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -115,9 +120,21 @@ export class StakingProxyTransactionService {
                 ],
             },
         );
-        const pairAddress = await this.stakeProxyGetter.getPairAddress(
-            args.proxyStakingAddress,
+        const [farmTokenID, farmAddress] = await Promise.all([
+            this.stakeProxyGetter.getLpFarmTokenID(args.proxyStakingAddress),
+            this.stakeProxyGetter.getLpFarmAddress(args.proxyStakingAddress),
+        ]);
+        const farmTokenPosition = tokenIdentifier(
+            farmTokenID,
+            decodedAttributes[0].lpFarmTokenNonce,
         );
+        const [farmToken, pairAddress] = await Promise.all([
+            this.apiService.getNftByTokenIdentifier(
+                args.proxyStakingAddress,
+                farmTokenPosition,
+            ),
+            this.stakeProxyGetter.getPairAddress(args.proxyStakingAddress),
+        ]);
 
         const liquidityPositionAmount = ruleOfThree(
             new BigNumber(args.payment.amount),
@@ -125,9 +142,17 @@ export class StakingProxyTransactionService {
             new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
         );
 
+        const exitFarmPosition = await this.farmService.getTokensForExitFarm({
+            attributes: farmToken.attributes,
+            identifier: farmToken.identifier,
+            farmAddress: farmAddress,
+            liquidity: liquidityPositionAmount.toFixed(),
+            vmQuery: false,
+        });
+
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             pairAddress,
-            liquidityPositionAmount.toFixed(),
+            exitFarmPosition.farmingTokens,
         );
         const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
             .multipliedBy(1 - args.tolerance)

@@ -5,6 +5,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
+import { UserEntryModel } from '../models/metabonding.model';
 
 @Injectable()
 export class MetabondingSetterService {
@@ -40,6 +41,17 @@ export class MetabondingSetterService {
 
     async setTotalLockedAssetSupply(value: string): Promise<string> {
         return await this.setData('lockedAssetTokenSupply', value, oneMinute());
+    }
+
+    async setUserEntry(
+        userAddress: string,
+        value: UserEntryModel,
+    ): Promise<string> {
+        return await this.setData(
+            `${userAddress}.userEntry`,
+            value,
+            oneMinute() * 10,
+        );
     }
 
     private getMetabondingCacheKey(...args: any) {
