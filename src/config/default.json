@@ -300,6 +300,7 @@
         "MEX_TOKEN_ID": "MEX-56b144",
         "USDC_TOKEN_ID": "USDC-1876bd",
         "PRECISION_EX_INCREASE": 1000,
+        "UNBOND_EPOCHS": 10,
         "MAINTENANCE": false,
         "endpoints": [
             "wrapEgld",
