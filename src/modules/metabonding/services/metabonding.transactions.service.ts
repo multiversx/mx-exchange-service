@@ -49,7 +49,7 @@ export class MetabondingTransactionService {
         ]);
 
         let gasLimit: GasLimit;
-        if (new BigNumber(userEntry.stakedAmount).isGreaterThan(0)) {
+        if (userEntry.tokenNonce > 0) {
             gasLimit = new GasLimit(
                 gasConfig.metabonding.stakeLockedAsset.withTokenMerge,
             );
