@@ -23,8 +23,13 @@
             "shardID-1": "erd1qqqqqqqqqqqqqpgqhjdqy6rqz3vdqsr3wydvyha9xvw5n75h0n4swc0wnt",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
-        "staking": [],
-        "stakingProxy": []
+        "staking": [
+            "erd1qqqqqqqqqqqqqpgqqf7vhr9clwpavm59xexf3tjq0spzg3tl0n4shhszql"
+        ],
+        "stakingProxy": [
+            "erd1qqqqqqqqqqqqqpgqpgl505hxumyjdtqnjrhmds9wsf4tyydu0n4skwfkf0",
+            "erd1qqqqqqqqqqqqqpgqkq58a23glv6dzyz8a8fsc30wzc59y6m60n4szjktz0"
+        ]
     },
     "tokenProviderUSD": "WEGLD-71e90a",
     "priceFeeds": {
@@ -301,7 +306,7 @@
         "MEX_TOKEN_ID": "MEX-27f4cd",
         "USDC_TOKEN_ID": "USDC-a63f36",
         "PRECISION_EX_INCREASE": 1000,
-        "UNBOND_EPOCHS": 10,
+        "UNBOND_EPOCHS": 3,
         "MAINTENANCE": false,
         "endpoints": [
             "wrapEgld",
