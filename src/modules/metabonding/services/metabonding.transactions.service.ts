@@ -7,12 +7,14 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { elrondConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { MetabondingGetterService } from './metabonding.getter.service';
@@ -23,6 +25,7 @@ export class MetabondingTransactionService {
         private readonly metabondingGetter: MetabondingGetterService,
         private readonly elrondProxy: ElrondProxyService,
         private readonly contextTransactions: ContextTransactionsService,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -92,11 +95,13 @@ export class MetabondingTransactionService {
         };
     }
 
-    async unbond(): Promise<TransactionModel> {
+    async unbond(sender: string): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction = contract.methods.unbond([]);
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.metabonding.unbond));
+
+        await this.pubSub.publish('deleteCacheKeys', [`${sender}.userEntry`]);
 
         return {
             ...transaction.toPlainObject(),

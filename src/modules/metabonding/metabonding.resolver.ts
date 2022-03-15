@@ -94,9 +94,9 @@ export class MetabondingResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async unbondMetabonding(): Promise<TransactionModel> {
+    async unbondMetabonding(@User() user: any): Promise<TransactionModel> {
         try {
-            return await this.metabondingTransactions.unbond();
+            return await this.metabondingTransactions.unbond(user.publicKey);
         } catch (error) {
             throw new ApolloError(error);
         }
