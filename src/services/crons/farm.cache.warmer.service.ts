@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { cacheConfig, constantsConfig } from '../../config';
+import { cacheConfig } from '../../config';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { AbiFarmService } from 'src/modules/farm/services/abi-farm.service';
@@ -73,7 +73,6 @@ export class FarmCacheWarmerService {
                 minimumFarmingEpochs,
                 penaltyPercent,
                 rewardsPerBlock,
-                burnedToken,
                 aprMultiplier,
                 state,
                 produceRewardsEnabled,
@@ -81,10 +80,6 @@ export class FarmCacheWarmerService {
                 this.abiFarmService.getMinimumFarmingEpochs(farmAddress),
                 this.abiFarmService.getPenaltyPercent(farmAddress),
                 this.abiFarmService.getRewardsPerBlock(farmAddress),
-                this.abiFarmService.getBurnedTokenAmount(
-                    farmAddress,
-                    constantsConfig.MEX_TOKEN_ID,
-                ),
                 this.abiFarmService.getLockedRewardAprMuliplier(farmAddress),
                 this.abiFarmService.getState(farmAddress),
                 this.abiFarmService.getProduceRewardsEnabled(farmAddress),
@@ -102,11 +97,6 @@ export class FarmCacheWarmerService {
                 this.farmSetterService.setRewardsPerBlock(
                     farmAddress,
                     rewardsPerBlock,
-                ),
-                this.farmSetterService.setBurnedTokenAmount(
-                    farmAddress,
-                    constantsConfig.MEX_TOKEN_ID,
-                    burnedToken,
                 ),
                 this.farmSetterService.setLockedRewardAprMuliplier(
                     farmAddress,

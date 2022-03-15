@@ -89,6 +89,26 @@ export class ElrondProxyService {
         return [contract, version, type];
     }
 
+    async getStakingSmartContract(
+        stakeAddress: string,
+    ): Promise<SmartContract> {
+        return await this.getSmartContract(
+            stakeAddress,
+            abiConfig.staking,
+            'Farm',
+        );
+    }
+
+    async getStakingProxySmartContract(
+        stakingProxyAddress: string,
+    ): Promise<SmartContract> {
+        return await this.getSmartContract(
+            stakingProxyAddress,
+            abiConfig.stakingProxy,
+            'FarmStakingProxy',
+        );
+    }
+
     async getProxyDexSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.proxyDexAddress,
@@ -110,6 +130,14 @@ export class ElrondProxyService {
             scAddress.lockedAssetAddress,
             abiConfig.lockedAssetFactory,
             'LockedAssetFactory',
+        );
+    }
+
+    async getMetabondingStakingSmartContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.metabondingStakingAddress,
+            abiConfig.metabondingStaking,
+            'MetabondingStaking',
         );
     }
 

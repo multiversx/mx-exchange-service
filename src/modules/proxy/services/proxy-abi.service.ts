@@ -5,7 +5,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
-import { BytesValue, QueryResponseBundle } from '@elrondnetwork/erdjs/out';
+import { QueryResponseBundle } from '@elrondnetwork/erdjs/out';
 
 @Injectable()
 export class AbiProxyService {

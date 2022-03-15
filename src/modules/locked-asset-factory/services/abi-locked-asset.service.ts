@@ -37,6 +37,13 @@ export class AbiLockedAssetService {
         }
     }
 
+    async getAssetTokenID(): Promise<string> {
+        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+        const interaction: Interaction = contract.methods.getAssetTokenId([]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
+    }
+
     async getLockedTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction = contract.methods.getLockedAssetTokenId(
@@ -76,14 +83,5 @@ export class AbiLockedAssetService {
         );
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toNumber();
-    }
-
-    async getBurnedTokenAmount(tokenID: string): Promise<string> {
-        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction = contract.methods.getBurnedTokenAmount([
-            BytesValue.fromUTF8(tokenID),
-        ]);
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
     }
 }

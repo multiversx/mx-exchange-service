@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
+import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -43,6 +44,15 @@ export class LockedAssetGetterService {
         }
     }
 
+    async getAssetTokenID(): Promise<string> {
+        const cacheKey = this.getLockedAssetFactoryCacheKey('assetTokenID');
+        return await this.getData(
+            cacheKey,
+            () => this.abiService.getAssetTokenID(),
+            oneHour(),
+        );
+    }
+
     async getLockedTokenID(): Promise<string> {
         const cacheKey = this.getLockedAssetFactoryCacheKey('lockedTokenID');
         return await this.getData(
@@ -50,6 +60,11 @@ export class LockedAssetGetterService {
             () => this.abiService.getLockedTokenID(),
             oneHour(),
         );
+    }
+
+    async getAssetToken(): Promise<EsdtToken> {
+        const assetTokenID = await this.getAssetTokenID();
+        return await this.contextGetter.getTokenMetadata(assetTokenID);
     }
 
     async getLockedToken(): Promise<NftCollection> {
@@ -85,17 +100,6 @@ export class LockedAssetGetterService {
             cacheKey,
             () => this.abiService.getExtendedAttributesActivationNonce(),
             oneHour(),
-        );
-    }
-
-    async getBurnedTokenAmount(tokenID: string): Promise<number> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey(
-            `${tokenID}.burnedTokenAmount`,
-        );
-        return await this.getData(
-            cacheKey,
-            () => this.abiService.getBurnedTokenAmount(tokenID),
-            oneMinute(),
         );
     }
 

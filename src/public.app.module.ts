@@ -17,6 +17,9 @@ import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as Transport from 'winston-transport';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { StakingModule } from './modules/staking/staking.module';
+import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module';
+import { MetabondingModule } from './modules/metabonding/metabonding.module';
 
 @Module({
     imports: [
@@ -74,9 +77,12 @@ import { AuthModule } from './modules/auth/auth.module';
         RouterModule,
         PairModule,
         FarmModule,
+        StakingModule,
+        StakingProxyModule,
         DistributionModule,
         ProxyModule,
         LockedAssetModule,
+        MetabondingModule,
         WrappingModule,
         UserModule,
         AnalyticsModule,

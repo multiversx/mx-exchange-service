@@ -51,15 +51,22 @@ export class AnalyticsComputeService {
             this.pairGetterService.getLockedValueUSD(pairAddress),
         );
 
-        const lockedValuesUSD = await Promise.all([
-            ...promises,
-            this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[5],
-            ),
-            this.farmComputeService.computeFarmLockedValueUSD(
-                farmsAddresses()[9],
-            ),
-        ]);
+        if (farmsAddresses()[5] !== undefined) {
+            promises.push(
+                this.farmComputeService.computeFarmLockedValueUSD(
+                    farmsAddresses()[5],
+                ),
+            );
+        }
+        if (farmsAddresses()[9] !== undefined) {
+            promises.push(
+                this.farmComputeService.computeFarmLockedValueUSD(
+                    farmsAddresses()[9],
+                ),
+            );
+        }
+
+        const lockedValuesUSD = await Promise.all([...promises]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
             const lockedValuesUSDBig = new BigNumber(lockedValueUSD);
@@ -95,36 +102,6 @@ export class AnalyticsComputeService {
             );
         }
         return totalAggregatedRewards.toFixed();
-    }
-
-    async computeTotalBurnedTokenAmount(tokenID: string): Promise<string> {
-        const promises = [];
-        const pairsAddresses = await this.context.getAllPairsAddress();
-        for (const pairAddress of pairsAddresses) {
-            promises.push(
-                this.pairGetterService.getBurnedTokenAmount(
-                    pairAddress,
-                    tokenID,
-                ),
-            );
-        }
-        for (const farmAddress of farmsAddresses()) {
-            promises.push(
-                this.farmGetterService.getBurnedTokenAmount(
-                    farmAddress,
-                    tokenID,
-                ),
-            );
-        }
-        promises.push(this.lockedAssetGetter.getBurnedTokenAmount(tokenID));
-
-        const burnedTokenAmounts = await Promise.all(promises);
-        let burnedTokenAmount = new BigNumber(0);
-        for (const burnedToken of burnedTokenAmounts) {
-            burnedTokenAmount = burnedTokenAmount.plus(burnedToken);
-        }
-
-        return burnedTokenAmount.toFixed();
     }
 
     private async fiterPairsByIssuedLpToken(

@@ -43,7 +43,7 @@ export class TransactionsLockedAssetService {
         const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.unlockAssets),
+            new GasLimit(gasConfig.lockedAssetFactory.unlockAssets),
         );
 
         transaction.receiver = sender;
@@ -51,14 +51,32 @@ export class TransactionsLockedAssetService {
         return transaction;
     }
 
+    async lockAssets(token: InputTokenModel): Promise<TransactionModel> {
+        await this.validateLockAssetsInputTokens(token);
+
+        const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(token.tokenID),
+            new BigUIntValue(new BigNumber(token.amount)),
+            BytesValue.fromUTF8(this.lockAssets.name),
+        ];
+
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.lockedAssetFactory.lockAssets),
+        );
+    }
+
     async mergeLockedAssetTokens(
         sender: string,
         tokens: InputTokenModel[],
     ): Promise<TransactionModel> {
         if (
-            new BigNumber(gasConfig.lockedAssetMerge)
+            new BigNumber(gasConfig.lockedAssetFactory.lockedAssetMerge)
                 .times(tokens.length)
-                .plus(gasConfig.defaultMergeLockedAssets)
+                .plus(gasConfig.lockedAssetFactory.defaultMergeLockedAssets)
                 .isGreaterThan(constantsConfig.MAX_GAS_LIMIT)
         ) {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
@@ -85,9 +103,9 @@ export class TransactionsLockedAssetService {
             'mergeLockedAssetTokens',
             [],
             new GasLimit(
-                new BigNumber(gasConfig.lockedAssetMerge)
+                new BigNumber(gasConfig.lockedAssetFactory.lockedAssetMerge)
                     .times(tokens.length)
-                    .plus(gasConfig.defaultMergeLockedAssets)
+                    .plus(gasConfig.lockedAssetFactory.defaultMergeLockedAssets)
                     .toNumber(),
             ),
         );
@@ -103,6 +121,14 @@ export class TransactionsLockedAssetService {
             ) {
                 throw new Error('Invalid locked asset to merge!');
             }
+        }
+    }
+
+    async validateLockAssetsInputTokens(token: InputTokenModel): Promise<void> {
+        const assetTokenID = await this.lockedAssetGetter.getAssetTokenID();
+
+        if (token.tokenID !== assetTokenID || token.nonce > 0) {
+            throw new Error('Invalid input token!');
         }
     }
 }

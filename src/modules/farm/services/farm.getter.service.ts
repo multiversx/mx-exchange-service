@@ -327,18 +327,6 @@ export class FarmGetterService {
         );
     }
 
-    async getBurnedTokenAmount(
-        farmAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        return this.getData(
-            farmAddress,
-            `${tokenID}.burnedTokenAmount`,
-            () => this.abiService.getBurnedTokenAmount(farmAddress, tokenID),
-            oneMinute(),
-        );
-    }
-
     async getFarmMigrationConfiguration(
         farmAddress: string,
     ): Promise<FarmMigrationConfig> {

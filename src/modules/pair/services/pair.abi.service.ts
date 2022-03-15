@@ -156,19 +156,4 @@ export class PairAbiService {
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().name;
     }
-
-    async getBurnedTokenAmount(
-        pairAddress: string,
-        tokenID: string,
-    ): Promise<string> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getBurnedTokenAmount([
-            BytesValue.fromUTF8(tokenID),
-        ]);
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
-    }
 }
