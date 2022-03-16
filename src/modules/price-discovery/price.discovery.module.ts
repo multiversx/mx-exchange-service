@@ -5,11 +5,13 @@ import { ElrondCommunicationModule } from 'src/services/elrond-communication/elr
 import { PriceDiscoveryResolver } from './price.discovery.resolver';
 import { PriceDiscoveryAbiService } from './services/price.discovery.abi.service';
 import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
+import { PriceDiscoveryService } from './services/price.discovery.service';
 import { PriceDiscoverySetterService } from './services/price.discovery.setter.service';
 
 @Module({
     imports: [ElrondCommunicationModule, ContextModule, CachingModule],
     providers: [
+        PriceDiscoveryService,
         PriceDiscoveryAbiService,
         PriceDiscoveryGetterService,
         PriceDiscoverySetterService,
@@ -17,4 +19,4 @@ import { PriceDiscoverySetterService } from './services/price.discovery.setter.s
     ],
     exports: [],
 })
-export class PairModule {}
+export class PriceDiscoveryModule {}
