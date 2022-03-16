@@ -20,6 +20,12 @@ export enum PROXY_EVENTS {
     COMPOUND_REWARDS_PROXY = 'compoundRewardsFarmProxy',
 }
 
+export enum METABONDING_EVENTS {
+    STAKE_LOCKED_ASSET = 'stakeLockedAsset',
+    UNSTAKE = 'unstake',
+    UNBOND = 'unbond',
+}
+
 export enum ROUTER_EVENTS {
     CREATE_PAIR = 'createPair',
 }

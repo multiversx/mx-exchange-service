@@ -14,6 +14,7 @@ import { PairProxyEvent } from './entities/proxy/pairProxy.event';
 import {
     ESDT_EVENTS,
     FARM_EVENTS,
+    METABONDING_EVENTS,
     PAIR_EVENTS,
     PROXY_EVENTS,
     ROUTER_EVENTS,
@@ -33,6 +34,8 @@ import { EsdtLocalMintEvent } from './entities/esdtToken/esdtLocalMint.event';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
 import { CreatePairEvent } from './entities/router/createPair.event';
+import { MetabondingEvent } from './entities/metabonding/metabonding.event';
+import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -45,6 +48,7 @@ export class RabbitMqConsumer {
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
         private readonly wsRouterHandler: RabbitMQRouterHandlerService,
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
+        private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -154,6 +158,16 @@ export class RabbitMqConsumer {
                     );
                     await this.getFilterAddresses();
                     break;
+                case METABONDING_EVENTS.STAKE_LOCKED_ASSET:
+                    await this.wsMetabondingHandler.handleMetabondingEvent(
+                        new MetabondingEvent(rawEvent),
+                    );
+                    break;
+                case METABONDING_EVENTS.UNSTAKE:
+                    await this.wsMetabondingHandler.handleMetabondingEvent(
+                        new MetabondingEvent(rawEvent),
+                    );
+                    break;
             }
         }
     }
@@ -164,5 +178,6 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(...farmsAddresses());
         this.filterAddresses.push(scAddress.proxyDexAddress);
         this.filterAddresses.push(scAddress.routerAddress);
+        this.filterAddresses.push(scAddress.metabondingStakingAddress);
     }
 }

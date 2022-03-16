@@ -8,6 +8,7 @@
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqnx9848t85emupzkax3ar5kfl2cu4cgff0n4s8c5s0j",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqh279e8udz23rqck54xdf93mzj0gezdfz0n4sef0j9e",
+        "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqd7fm8xm5lpgcqh6zwk08474md4qly4sx0n4s63hp6c",

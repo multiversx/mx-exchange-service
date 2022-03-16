@@ -143,6 +143,14 @@ export class ElrondProxyService {
         );
     }
 
+    async getMetabondingStakingSmartContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.metabondingStakingAddress,
+            abiConfig.metabondingStaking,
+            'MetabondingStaking',
+        );
+    }
+
     async getSmartContract(
         contractAddress: string,
         contractAbiPath: string,

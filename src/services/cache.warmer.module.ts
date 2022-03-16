@@ -25,6 +25,8 @@ import { StakingModule } from 'src/modules/staking/staking.module';
 import { StakingCacheWarmerService } from './crons/staking.cache.warmer.service';
 import { StakingProxyCacheWarmerService } from './crons/staking.proxy.cache.warmer.service';
 import { StakingProxyModule } from 'src/modules/staking-proxy/staking.proxy.module';
+import { MetabondingCacheWarmerService } from './crons/metabonding.cache.warmer.service';
+import { MetabondingModule } from 'src/modules/metabonding/metabonding.module';
 
 @Module({
     imports: [
@@ -40,6 +42,7 @@ import { StakingProxyModule } from 'src/modules/staking-proxy/staking.proxy.modu
         FarmModule,
         StakingModule,
         StakingProxyModule,
+        MetabondingModule,
         ProxyModule,
         ProxyFarmModule,
         ProxyPairModule,
@@ -53,6 +56,7 @@ import { StakingProxyModule } from 'src/modules/staking-proxy/staking.proxy.modu
         FarmCacheWarmerService,
         StakingCacheWarmerService,
         StakingProxyCacheWarmerService,
+        MetabondingCacheWarmerService,
         ProxyCacheWarmerService,
         AnalyticsCacheWarmerService,
         CachingService,
