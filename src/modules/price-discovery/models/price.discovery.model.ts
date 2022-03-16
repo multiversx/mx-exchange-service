@@ -1,6 +1,18 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
+
+@ObjectType()
+export class PhaseModel {
+    @Field()
+    name: string;
+    @Field(() => Int)
+    penaltyPercent = 0;
+
+    constructor(init?: Partial<PhaseModel>) {
+        Object.assign(this, init);
+    }
+}
 
 @ObjectType()
 export class PriceDiscoveryModel {
@@ -11,8 +23,10 @@ export class PriceDiscoveryModel {
     @Field()
     acceptedToken: EsdtToken;
     @Field()
-    redeemToken: NftCollection;
+    rewardsToken: EsdtToken;
     @Field()
+    redeemToken: NftCollection;
+    @Field({ nullable: true })
     lpToken: EsdtToken;
     @Field()
     launchedTokenAmount: string;
@@ -21,6 +35,8 @@ export class PriceDiscoveryModel {
     @Field()
     lpTokensReceived: string;
     @Field()
+    extraRewards: string;
+    @Field()
     startBlock: number;
     @Field()
     endBlock: number;
@@ -28,20 +44,24 @@ export class PriceDiscoveryModel {
     pairAddress: string;
     @Field()
     currentPhase: PhaseModel;
+    @Field()
+    minLaunchedTokenPrice: string;
+    @Field(() => Int)
+    noLimitPhaseDurationBlocks: number;
+    @Field(() => Int)
+    linearPenaltyPhaseDurationBlocks: number;
+    @Field(() => Int)
+    fixedPenaltyPhaseDurationBlocks: number;
+    @Field(() => Int)
+    unbondPeriodEpochs: number;
+    @Field(() => Int)
+    penaltyMinPercentage: number;
+    @Field(() => Int)
+    penaltyMaxPercentage: number;
+    @Field(() => Int)
+    fixedPenaltyPercentage: number;
 
     constructor(init?: Partial<PriceDiscoveryModel>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
-export class PhaseModel {
-    @Field()
-    name: string;
-    @Field()
-    penaltyPercent = 0;
-
-    constructor(init?: Partial<PhaseModel>) {
         Object.assign(this, init);
     }
 }

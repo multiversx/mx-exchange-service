@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.28.0"
+            "version": "0.29.3"
         }
     },
     "name": "PriceDiscovery",
@@ -28,11 +28,15 @@
                 "type": "TokenIdentifier"
             },
             {
-                "name": "start_block",
-                "type": "u64"
+                "name": "extra_rewards_token_id",
+                "type": "TokenIdentifier"
             },
             {
-                "name": "end_block",
+                "name": "min_launched_token_price",
+                "type": "BigUint"
+            },
+            {
+                "name": "start_block",
                 "type": "u64"
             },
             {
@@ -68,6 +72,15 @@
     },
     "endpoints": [
         {
+            "name": "depositExtraRewards",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
             "name": "deposit",
             "mutability": "mutable",
             "payableInTokens": [
@@ -95,6 +108,16 @@
             "outputs": []
         },
         {
+            "name": "getMinLaunchedTokenPrice",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
             "name": "getLaunchedTokenId",
             "mutability": "readonly",
             "inputs": [],
@@ -115,6 +138,16 @@
             ]
         },
         {
+            "name": "getExtraRewardsTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
             "name": "getLpTokenId",
             "mutability": "readonly",
             "inputs": [],
@@ -125,7 +158,7 @@
             ]
         },
         {
-            "name": "getLaunchedTokenFinalAmount",
+            "name": "getTotalLpTokensReceived",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -135,17 +168,7 @@
             ]
         },
         {
-            "name": "getAcceptedTokenFinalAmount",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "totalLpTokensReceived",
+            "name": "getExtraRewards",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -209,6 +232,76 @@
             "outputs": [
                 {
                     "type": "Phase"
+                }
+            ]
+        },
+        {
+            "name": "getNoLimitPhaseDurationBlocks",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getLinearPenaltyPhaseDurationBlocks",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getFixedPenaltyPhaseDurationBlocks",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getUnbondPeriodEpochs",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getPenaltyMinPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getPenaltyMaxPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getFixedPenaltyPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },
