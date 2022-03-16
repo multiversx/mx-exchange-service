@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { elrondConfig } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -16,6 +18,7 @@ export class PriceDiscoveryGetterService {
         private readonly contextGetter: ContextGetterService,
         private readonly cachingService: CachingService,
         private readonly abiService: PriceDiscoveryAbiService,
+        private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -108,16 +111,24 @@ export class PriceDiscoveryGetterService {
 
     async getLpToken(priceDiscoveryAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.getLpTokenID(priceDiscoveryAddress);
+        if (lpTokenID === elrondConfig.EGLDIdentifier) {
+            return undefined;
+        }
         return this.contextGetter.getTokenMetadata(lpTokenID);
     }
 
     async getLaunchedTokenAmount(
         priceDiscoveryAddress: string,
     ): Promise<string> {
+        const tokenID = await this.getLaunchedTokenID(priceDiscoveryAddress);
         return this.getData(
             priceDiscoveryAddress,
             'launchedTokenAmount',
-            () => this.abiService.getLaunchedTokenAmount(priceDiscoveryAddress),
+            () =>
+                this.apiService.getTokenBalanceForUser(
+                    priceDiscoveryAddress,
+                    tokenID,
+                ),
             oneSecond() * 6,
         );
     }
@@ -125,10 +136,15 @@ export class PriceDiscoveryGetterService {
     async getAcceptedTokenAmount(
         priceDiscoveryAddress: string,
     ): Promise<string> {
+        const tokenID = await this.getAcceptedTokenID(priceDiscoveryAddress);
         return this.getData(
             priceDiscoveryAddress,
             'acceptedTokenAmount',
-            () => this.abiService.getAcceptedTokenAmount(priceDiscoveryAddress),
+            () =>
+                this.apiService.getTokenBalanceForUser(
+                    priceDiscoveryAddress,
+                    tokenID,
+                ),
             oneSecond() * 6,
         );
     }

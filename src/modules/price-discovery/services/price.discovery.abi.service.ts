@@ -81,34 +81,6 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getLaunchedTokenAmount(
-        priceDiscoveryAddress: string,
-    ): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            priceDiscoveryAddress,
-        );
-        const interaction: Interaction = contract.methods.getLaunchedTokenFinalAmount(
-            [],
-        );
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
-    }
-
-    async getAcceptedTokenAmount(
-        priceDiscoveryAddress: string,
-    ): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            priceDiscoveryAddress,
-        );
-        const interaction: Interaction = contract.methods.getAcceptedTokenFinalAmount(
-            [],
-        );
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
-    }
-
     async getLpTokensReceived(priceDiscoveryAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
