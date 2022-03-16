@@ -68,6 +68,15 @@ export class PriceDiscoveryGetterService {
         );
     }
 
+    async getRewardsTokenID(priceDiscoveryAddress: string): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'rewardsTokenID',
+            () => this.abiService.getExtraRewardsTokenID(priceDiscoveryAddress),
+            oneHour(),
+        );
+    }
+
     async getRedeemTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
             priceDiscoveryAddress,
@@ -98,6 +107,13 @@ export class PriceDiscoveryGetterService {
             priceDiscoveryAddress,
         );
         return this.contextGetter.getTokenMetadata(acceptedTokenID);
+    }
+
+    async getRewardsToken(priceDiscoveryAddress: string): Promise<EsdtToken> {
+        const rewardsTokenID = await this.getRewardsTokenID(
+            priceDiscoveryAddress,
+        );
+        return this.contextGetter.getTokenMetadata(rewardsTokenID);
     }
 
     async getRedeemToken(
@@ -191,6 +207,129 @@ export class PriceDiscoveryGetterService {
             'currentPhase',
             () => this.abiService.getCurrentPhase(priceDiscoveryAddress),
             oneMinute(),
+        );
+    }
+
+    async getMinLaunchedTokenPrice(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'minLaunchedTokenPrice',
+            () =>
+                this.abiService.getMinLaunchedTokenPrice(priceDiscoveryAddress),
+            oneHour(),
+        );
+    }
+
+    async getExtraRewardsTokenID(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'extreRewardsTokenID',
+            () => this.abiService.getExtraRewardsTokenID(priceDiscoveryAddress),
+            oneHour(),
+        );
+    }
+
+    async getExtraRewards(priceDiscoveryAddress: string): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'extraRewards',
+            () => this.abiService.getExtraRewards(priceDiscoveryAddress),
+            oneMinute(),
+        );
+    }
+
+    async getNoLimitPhaseDurationBlocks(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'noLimitPhaseDurationBlocks',
+            () =>
+                this.abiService.getNoLimitPhaseDurationBlocks(
+                    priceDiscoveryAddress,
+                ),
+            oneHour(),
+        );
+    }
+
+    async getLinearPenaltyPhaseDurationBlocks(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'linearPenaltyPhaseDurationBlocks',
+            () =>
+                this.abiService.getLinearPenaltyPhaseDurationBlocks(
+                    priceDiscoveryAddress,
+                ),
+            oneHour(),
+        );
+    }
+
+    async getFixedPenaltyPhaseDurationBlocks(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'getFixedPenaltyPhaseDurationBlocks',
+            () =>
+                this.abiService.getFixedPenaltyPhaseDurationBlocks(
+                    priceDiscoveryAddress,
+                ),
+            oneHour(),
+        );
+    }
+
+    async getUnbondPeriodEpochs(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'getUnbondPeriodEpochs',
+            () => this.abiService.getUnbondPeriodEpochs(priceDiscoveryAddress),
+            oneHour(),
+        );
+    }
+
+    async getPenaltyMinPercentage(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'getPenaltyMinPercentage',
+            () =>
+                this.abiService.getPenaltyMinPercentage(priceDiscoveryAddress),
+            oneHour(),
+        );
+    }
+
+    async getPenaltyMaxPercentage(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'getPenaltyMaxPercentage',
+            () =>
+                this.abiService.getPenaltyMaxPercentage(priceDiscoveryAddress),
+            oneHour(),
+        );
+    }
+
+    async getFixedPenaltyPercentage(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'getFixedPenaltyPercentage',
+            () =>
+                this.abiService.getFixedPenaltyPercentage(
+                    priceDiscoveryAddress,
+                ),
+            oneHour(),
         );
     }
 

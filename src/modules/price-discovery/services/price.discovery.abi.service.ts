@@ -85,7 +85,7 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.totalLpTokensReceived(
+        const interaction: Interaction = contract.methods.getTotalLpTokensReceived(
             [],
         );
 
@@ -139,5 +139,132 @@ export class PriceDiscoveryAbiService {
             name: phaseName,
             penaltyPercent: penaltyPercent ? penaltyPercent : 0,
         });
+    }
+
+    async getMinLaunchedTokenPrice(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getMinLaunchedTokenPrice(
+            [],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getExtraRewardsTokenID(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getExtraRewardsTokenId(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
+    }
+
+    async getExtraRewards(priceDiscoveryAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getExtraRewards([]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getNoLimitPhaseDurationBlocks(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getNoLimitPhaseDurationBlocks(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    async getLinearPenaltyPhaseDurationBlocks(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getLinearPenaltyPhaseDurationBlocks(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    async getFixedPenaltyPhaseDurationBlocks(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getFixedPenaltyPhaseDurationBlocks(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    async getUnbondPeriodEpochs(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getUnbondPeriodEpochs(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    async getPenaltyMinPercentage(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getPenaltyMinPercentage(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getPenaltyMaxPercentage(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getPenaltyMaxPercentage(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getFixedPenaltyPercentage(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getFixedPenaltyPercentage(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 }

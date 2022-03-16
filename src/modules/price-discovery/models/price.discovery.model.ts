@@ -54,12 +54,12 @@ export class PriceDiscoveryModel {
     fixedPenaltyPhaseDurationBlocks: number;
     @Field(() => Int)
     unbondPeriodEpochs: number;
-    @Field(() => Int)
-    penaltyMinPercentage: number;
-    @Field(() => Int)
-    penaltyMaxPercentage: number;
-    @Field(() => Int)
-    fixedPenaltyPercentage: number;
+    @Field()
+    penaltyMinPercentage: string;
+    @Field()
+    penaltyMaxPercentage: string;
+    @Field()
+    fixedPenaltyPercentage: string;
 
     constructor(init?: Partial<PriceDiscoveryModel>) {
         Object.assign(this, init);

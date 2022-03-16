@@ -43,6 +43,15 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
+    async rewardsToken(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<EsdtToken> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getRewardsToken(parent.address),
+        );
+    }
+
+    @ResolveField()
     async redeemToken(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<NftCollection> {
@@ -86,6 +95,13 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
+    async extraRewards(@Parent() parent: PriceDiscoveryModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getExtraRewards(parent.address),
+        );
+    }
+
+    @ResolveField()
     async startBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getStartBlock(parent.address),
@@ -112,6 +128,84 @@ export class PriceDiscoveryResolver {
     ): Promise<PhaseModel> {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getCurrentPhase(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async minLaunchedTokenPrice(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getMinLaunchedTokenPrice(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async noLimitPhaseDurationBlocks(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getNoLimitPhaseDurationBlocks(
+                parent.address,
+            ),
+        );
+    }
+
+    @ResolveField()
+    async linearPenaltyPhaseDurationBlocks(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getLinearPenaltyPhaseDurationBlocks(
+                parent.address,
+            ),
+        );
+    }
+
+    @ResolveField()
+    async fixedPenaltyPhaseDurationBlocks(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getFixedPenaltyPhaseDurationBlocks(
+                parent.address,
+            ),
+        );
+    }
+
+    @ResolveField()
+    async unbondPeriodEpochs(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getUnbondPeriodEpochs(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async penaltyMinPercentage(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getPenaltyMinPercentage(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async penaltyMaxPercentage(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getPenaltyMaxPercentage(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async fixedPenaltyPercentage(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getFixedPenaltyPercentage(parent.address),
         );
     }
 
