@@ -17,7 +17,10 @@
         "staking": [
             "erd1qqqqqqqqqqqqqpgqmqq78c5htmdnws8hm5u4suvags36eq092jpsaxv3e7"
         ],
-        "stakingProxy": []
+        "stakingProxy": [
+            "erd1qqqqqqqqqqqqqpgq2ymdr66nk5hx32j2tqdeqv9ajm9dj9uu2jps3dtv6v",
+            "erd1qqqqqqqqqqqqqpgq389gc8qnqy0ksha948jf72c9cks9g3rf2jpsl5z0aa"
+        ]
     },
     "farms": {
         "v1.2": [
