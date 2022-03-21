@@ -1,19 +1,26 @@
-import { Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
+import { User } from 'src/helpers/userDecorator';
+import { InputTokenModel } from 'src/models/inputToken.model';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { TransactionModel } from 'src/models/transaction.model';
+import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import {
     PhaseModel,
     PriceDiscoveryModel,
 } from './models/price.discovery.model';
 import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
 import { PriceDiscoveryService } from './services/price.discovery.service';
+import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
 
 @Resolver(() => PriceDiscoveryModel)
 export class PriceDiscoveryResolver {
     constructor(
         private readonly priceDiscoveryService: PriceDiscoveryService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private readonly priceDiscoveryTransactions: PriceDiscoveryTransactionService,
     ) {}
 
     private async genericFieldResover(fieldResolver: () => any): Promise<any> {
@@ -212,5 +219,59 @@ export class PriceDiscoveryResolver {
     @Query(() => [PriceDiscoveryModel])
     async priceDiscoveryContracts(): Promise<PriceDiscoveryModel[]> {
         return this.priceDiscoveryService.getPriceDiscoveryContracts();
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async depositOnPriceDiscovery(
+        @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
+        @Args('inputTokens') inputTokens: InputTokenModel,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.priceDiscoveryTransactions.deposit(
+                priceDiscoveryAddress,
+                inputTokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async withdrawFromPriceDiscovery(
+        @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.priceDiscoveryTransactions.genericRedeemInteraction(
+                priceDiscoveryAddress,
+                user.publicKey,
+                inputTokens,
+                'withdraw',
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async redeemLpTokens(
+        @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.priceDiscoveryTransactions.genericRedeemInteraction(
+                priceDiscoveryAddress,
+                user.publicKey,
+                inputTokens,
+                'redeem',
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }

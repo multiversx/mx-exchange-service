@@ -7,6 +7,7 @@ import { PriceDiscoveryAbiService } from './services/price.discovery.abi.service
 import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
 import { PriceDiscoveryService } from './services/price.discovery.service';
 import { PriceDiscoverySetterService } from './services/price.discovery.setter.service';
+import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
 
 @Module({
     imports: [ElrondCommunicationModule, ContextModule, CachingModule],
@@ -15,6 +16,7 @@ import { PriceDiscoverySetterService } from './services/price.discovery.setter.s
         PriceDiscoveryAbiService,
         PriceDiscoveryGetterService,
         PriceDiscoverySetterService,
+        PriceDiscoveryTransactionService,
         PriceDiscoveryResolver,
     ],
     exports: [],
