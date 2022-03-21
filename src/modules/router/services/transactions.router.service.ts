@@ -41,7 +41,7 @@ export class TransactionRouterService {
         ]);
 
         const transaction = createPairInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.createPair));
+        transaction.setGasLimit(new GasLimit(gasConfig.router.createPair));
         return {
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -83,7 +83,7 @@ export class TransactionRouterService {
         );
 
         const transaction = setLocalRolesInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.setLocalRoles));
+        transaction.setGasLimit(new GasLimit(gasConfig.router.setLocalRoles));
         return {
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -102,7 +102,7 @@ export class TransactionRouterService {
             : contract.methods.pause(args);
 
         const transaction = stateInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.setState));
+        transaction.setGasLimit(new GasLimit(gasConfig.router.setState));
         return {
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -127,7 +127,7 @@ export class TransactionRouterService {
             : contract.methods.setFeeOff([args]);
 
         const transaction = setFeeInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.setFee));
+        transaction.setGasLimit(new GasLimit(gasConfig.router.setFee));
         return {
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,

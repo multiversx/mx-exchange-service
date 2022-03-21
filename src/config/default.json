@@ -88,7 +88,7 @@
             },
             "swapTokensFixedOutput": {
                 "default": 9000000,
-                "withFeeSwap": 17000000
+                "withFeeSwap": 18500000
             }
         },
         "farms": {
