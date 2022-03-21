@@ -115,7 +115,7 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getPairAddress(priceDiscoveryAddress: string): Promise<number> {
+    async getPairAddress(priceDiscoveryAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
