@@ -132,12 +132,15 @@ export class PriceDiscoveryAbiService {
         const interaction: Interaction = contract.methods.getCurrentPhase([]);
 
         const response = await this.getGenericData(contract, interaction);
-        console.log(response.firstValue.valueOf().fields.penalty_percentage);
+
         const phaseName = response.firstValue.valueOf().name;
         const penalty = response.firstValue.valueOf().fields.penalty_percentage;
-        const penaltyPercent = new BigNumber(penalty).dividedBy(
-            constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY,
-        );
+        const penaltyPercent = penalty
+            ? new BigNumber(penalty).dividedBy(
+                  constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY,
+              )
+            : new BigNumber(0);
+
         return new PhaseModel({
             name: phaseName,
             penaltyPercent: penaltyPercent.toNumber(),
