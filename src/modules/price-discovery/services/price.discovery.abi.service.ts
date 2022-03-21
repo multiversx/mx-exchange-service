@@ -7,6 +7,8 @@ import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import { PhaseModel } from '../models/price.discovery.model';
+import BigNumber from 'bignumber.js';
+import { constantsConfig } from 'src/config';
 
 @Injectable()
 export class PriceDiscoveryAbiService {
@@ -130,14 +132,15 @@ export class PriceDiscoveryAbiService {
         const interaction: Interaction = contract.methods.getCurrentPhase([]);
 
         const response = await this.getGenericData(contract, interaction);
+        console.log(response.firstValue.valueOf().fields.penalty_percentage);
         const phaseName = response.firstValue.valueOf().name;
-        const penaltyPercent = response.firstValue
-            .valueOf()
-            .penalty_percentage?.toNumber();
-
+        const penalty = response.firstValue.valueOf().fields.penalty_percentage;
+        const penaltyPercent = new BigNumber(penalty).dividedBy(
+            constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY,
+        );
         return new PhaseModel({
             name: phaseName,
-            penaltyPercent: penaltyPercent ? penaltyPercent : 0,
+            penaltyPercent: penaltyPercent.toNumber(),
         });
     }
 

@@ -272,7 +272,7 @@
             "lockedAssetMerge": 4000000
         },
         "priceDiscovery": {
-            "deposit": 10000000,
+            "deposit": 5000000,
             "withdraw": 10000000
         },
         "lockedAssetCreate": 5000000,
@@ -306,6 +306,7 @@
     "constants": {
         "MAX_PENALTY_PERCENT": 10000,
         "MAX_PERCENT": 10000,
+        "MAX_PERCENTAGE_PRICE_DISCOVERY": 10000000000000,
         "BLOCKS_IN_YEAR": 5256000,
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,

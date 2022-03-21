@@ -6,8 +6,8 @@ import { NftCollection } from 'src/models/tokens/nftCollection.model';
 export class PhaseModel {
     @Field()
     name: string;
-    @Field(() => Int)
-    penaltyPercent = 0;
+    @Field()
+    penaltyPercent: number;
 
     constructor(init?: Partial<PhaseModel>) {
         Object.assign(this, init);
