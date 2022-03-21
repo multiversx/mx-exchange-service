@@ -93,6 +93,42 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
+    async launchedTokenPrice(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getLaunchedTokenPrice(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async acceptedTokenPrice(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getAcceptedTokenPrice(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async launchedTokenPriceUSD(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getLaunchedTokenPriceUSD(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async acceptedTokenPriceUSD(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getAcceptedTokenPriceUSD(parent.address),
+        );
+    }
+
+    @ResolveField()
     async lpTokensReceived(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {

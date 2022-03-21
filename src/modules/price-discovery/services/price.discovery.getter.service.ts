@@ -1,9 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { elrondConfig } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
@@ -12,12 +13,16 @@ import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
+import { PriceDiscoveryComputeService } from './price.discovery.compute.service';
 @Injectable()
 export class PriceDiscoveryGetterService {
     constructor(
         private readonly contextGetter: ContextGetterService,
         private readonly cachingService: CachingService,
         private readonly abiService: PriceDiscoveryAbiService,
+        @Inject(forwardRef(() => PriceDiscoveryComputeService))
+        private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
+        private readonly pairGetter: PairGetterService,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -161,6 +166,62 @@ export class PriceDiscoveryGetterService {
                     priceDiscoveryAddress,
                     tokenID,
                 ),
+            oneSecond() * 6,
+        );
+    }
+
+    async getLaunchedTokenPrice(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'launchedTokenPrice',
+            () =>
+                this.priceDiscoveryCompute.computeLaunchedTokenPrice(
+                    priceDiscoveryAddress,
+                ),
+            oneSecond() * 6,
+        );
+    }
+
+    async getAcceptedTokenPrice(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'acceptedTokenPrice',
+            () =>
+                this.priceDiscoveryCompute.computeAcceptedTokenPrice(
+                    priceDiscoveryAddress,
+                ),
+            oneSecond() * 6,
+        );
+    }
+
+    async getLaunchedTokenPriceUSD(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'launchedTokenPriceUSD',
+            () =>
+                this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(
+                    priceDiscoveryAddress,
+                ),
+            oneSecond() * 6,
+        );
+    }
+
+    async getAcceptedTokenPriceUSD(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const acceptedTokenID = await this.getAcceptedTokenID(
+            priceDiscoveryAddress,
+        );
+        return this.getData(
+            priceDiscoveryAddress,
+            'acceptedTokenPriceUSD',
+            () => this.pairGetter.getTokenPriceUSD(acceptedTokenID),
             oneSecond() * 6,
         );
     }

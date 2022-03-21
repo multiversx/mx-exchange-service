@@ -33,6 +33,14 @@ export class PriceDiscoveryModel {
     @Field()
     acceptedTokenAmount: string;
     @Field()
+    launchedTokenPrice: string;
+    @Field()
+    acceptedTokenPrice: string;
+    @Field()
+    launchedTokenPriceUSD: string;
+    @Field()
+    acceptedTokenPriceUSD: string;
+    @Field()
     lpTokensReceived: string;
     @Field()
     extraRewards: string;
