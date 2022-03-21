@@ -288,7 +288,7 @@ export class PriceDiscoveryGetterService {
     ): Promise<string> {
         return this.getData(
             priceDiscoveryAddress,
-            'extreRewardsTokenID',
+            'extraRewardsTokenID',
             () => this.abiService.getExtraRewardsTokenID(priceDiscoveryAddress),
             oneHour(),
         );
@@ -336,7 +336,7 @@ export class PriceDiscoveryGetterService {
     ): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
-            'getFixedPenaltyPhaseDurationBlocks',
+            'fixedPenaltyPhaseDurationBlocks',
             () =>
                 this.abiService.getFixedPenaltyPhaseDurationBlocks(
                     priceDiscoveryAddress,
@@ -350,7 +350,7 @@ export class PriceDiscoveryGetterService {
     ): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
-            'getUnbondPeriodEpochs',
+            'unbondPeriodEpochs',
             () => this.abiService.getUnbondPeriodEpochs(priceDiscoveryAddress),
             oneHour(),
         );
@@ -361,7 +361,7 @@ export class PriceDiscoveryGetterService {
     ): Promise<string> {
         return this.getData(
             priceDiscoveryAddress,
-            'getPenaltyMinPercentage',
+            'penaltyMinPercentage',
             () =>
                 this.abiService.getPenaltyMinPercentage(priceDiscoveryAddress),
             oneHour(),
@@ -373,7 +373,7 @@ export class PriceDiscoveryGetterService {
     ): Promise<string> {
         return this.getData(
             priceDiscoveryAddress,
-            'getPenaltyMaxPercentage',
+            'penaltyMaxPercentage',
             () =>
                 this.abiService.getPenaltyMaxPercentage(priceDiscoveryAddress),
             oneHour(),
@@ -385,7 +385,7 @@ export class PriceDiscoveryGetterService {
     ): Promise<string> {
         return this.getData(
             priceDiscoveryAddress,
-            'getFixedPenaltyPercentage',
+            'fixedPenaltyPercentage',
             () =>
                 this.abiService.getFixedPenaltyPercentage(
                     priceDiscoveryAddress,
