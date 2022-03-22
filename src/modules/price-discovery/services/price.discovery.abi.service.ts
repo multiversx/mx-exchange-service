@@ -178,7 +178,9 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getExtraRewards([]);
+        const interaction: Interaction = contract.methods.getTotalExtraRewardsTokens(
+            [],
+        );
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }

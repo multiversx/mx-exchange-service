@@ -168,7 +168,7 @@
             ]
         },
         {
-            "name": "getExtraRewards",
+            "name": "getTotalExtraRewardsTokens",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
