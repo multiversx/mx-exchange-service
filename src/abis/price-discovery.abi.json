@@ -375,6 +375,10 @@
                 {
                     "name": "Unbond",
                     "discriminant": 4
+                },
+                {
+                    "name": "Redeem",
+                    "discriminant": 5
                 }
             ]
         }
