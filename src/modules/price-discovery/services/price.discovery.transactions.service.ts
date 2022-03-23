@@ -7,9 +7,11 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { gasConfig } from 'src/config';
+import { elrondConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
+import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
@@ -20,7 +22,37 @@ export class PriceDiscoveryTransactionService {
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly elrondProxy: ElrondProxyService,
         private readonly contextTransactions: ContextTransactionsService,
+        private readonly wrappingService: WrapService,
+        private readonly wrappingTransactions: TransactionsWrapService,
     ) {}
+
+    async depositBatch(
+        priceDiscoveryAddress: string,
+        sender: string,
+        inputToken: InputTokenModel,
+    ): Promise<TransactionModel[]> {
+        const wrappedTokenID = await this.wrappingService.getWrappedEgldTokenID();
+        const transactions: TransactionModel[] = [];
+        if (inputToken.tokenID === elrondConfig.EGLDIdentifier) {
+            transactions.push(
+                await this.wrappingTransactions.wrapEgld(
+                    sender,
+                    inputToken.amount,
+                ),
+            );
+        }
+        transactions.push(
+            await this.deposit(
+                priceDiscoveryAddress,
+                new InputTokenModel({
+                    tokenID: wrappedTokenID,
+                    amount: inputToken.amount,
+                }),
+            ),
+        );
+
+        return transactions;
+    }
 
     async deposit(
         priceDiscoveryAddress: string,

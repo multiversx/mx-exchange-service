@@ -258,6 +258,24 @@ export class PriceDiscoveryResolver {
     }
 
     @UseGuards(GqlAuthGuard)
+    @Query(() => [TransactionModel])
+    async depositBatchOnPriceDiscovery(
+        @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel[]> {
+        try {
+            return await this.priceDiscoveryTransactions.depositBatch(
+                priceDiscoveryAddress,
+                user.publicKey,
+                inputTokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async depositOnPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
