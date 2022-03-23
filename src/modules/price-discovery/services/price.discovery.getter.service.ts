@@ -121,6 +121,20 @@ export class PriceDiscoveryGetterService {
         return this.contextGetter.getTokenMetadata(rewardsTokenID);
     }
 
+    async getExtraRewardsTokenNonce(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'rewardsNonce',
+            () =>
+                this.abiService.getExtraRewardsTokenNonce(
+                    priceDiscoveryAddress,
+                ),
+            oneHour(),
+        );
+    }
+
     async getRedeemToken(
         priceDiscoveryAddress: string,
     ): Promise<NftCollection> {
@@ -141,15 +155,11 @@ export class PriceDiscoveryGetterService {
     async getLaunchedTokenAmount(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const tokenID = await this.getLaunchedTokenID(priceDiscoveryAddress);
         return this.getData(
             priceDiscoveryAddress,
             'launchedTokenAmount',
             () =>
-                this.apiService.getTokenBalanceForUser(
-                    priceDiscoveryAddress,
-                    tokenID,
-                ),
+                this.abiService.getLaunchedTokenBalance(priceDiscoveryAddress),
             oneSecond() * 6,
         );
     }
@@ -157,15 +167,11 @@ export class PriceDiscoveryGetterService {
     async getAcceptedTokenAmount(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const tokenID = await this.getAcceptedTokenID(priceDiscoveryAddress);
         return this.getData(
             priceDiscoveryAddress,
             'acceptedTokenAmount',
             () =>
-                this.apiService.getTokenBalanceForUser(
-                    priceDiscoveryAddress,
-                    tokenID,
-                ),
+                this.abiService.getAcceptedTokenBalance(priceDiscoveryAddress),
             oneSecond() * 6,
         );
     }
@@ -235,6 +241,15 @@ export class PriceDiscoveryGetterService {
         );
     }
 
+    async getLpTokensClaimed(priceDiscoveryAddress: string): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'lpTokensClaimed',
+            () => this.abiService.getLpTokensClaimed(priceDiscoveryAddress),
+            oneMinute(),
+        );
+    }
+
     async getStartBlock(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
@@ -298,7 +313,7 @@ export class PriceDiscoveryGetterService {
         return this.getData(
             priceDiscoveryAddress,
             'extraRewards',
-            () => this.abiService.getExtraRewards(priceDiscoveryAddress),
+            () => this.abiService.getExtraRewardsBalance(priceDiscoveryAddress),
             oneMinute(),
         );
     }

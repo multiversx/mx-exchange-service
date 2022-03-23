@@ -18,6 +18,9 @@
     },
     "name": "PriceDiscovery",
     "constructor": {
+        "docs": [
+            "For explanations regarding what each parameter means, please refer to docs/setup.md"
+        ],
         "inputs": [
             {
                 "name": "launched_token_id",
@@ -66,12 +69,21 @@
             {
                 "name": "fixed_penalty_percentage",
                 "type": "BigUint"
+            },
+            {
+                "name": "deposit_extra_rewards_whitelist",
+                "type": "variadic<Address>",
+                "multi_arg": true
             }
         ],
         "outputs": []
     },
     "endpoints": [
         {
+            "docs": [
+                "Extra rewards that will be given to users that contributed to the pool, defined by",
+                "extra_rewards_token_id. Can be deposited by anyone."
+            ],
             "name": "depositExtraRewards",
             "mutability": "mutable",
             "payableInTokens": [
@@ -81,6 +93,10 @@
             "outputs": []
         },
         {
+            "docs": [
+                "Users can deposit either launched_token or accepted_token.",
+                "They will receive an SFT that can be used to withdraw said tokens"
+            ],
             "name": "deposit",
             "mutability": "mutable",
             "payableInTokens": [
@@ -90,6 +106,11 @@
             "outputs": []
         },
         {
+            "docs": [
+                "Deposit SFTs received after deposit to withdraw the initially deposited tokens.",
+                "Depending on the current Phase, a penalty may be applied and only a part",
+                "of the initial tokens will be received."
+            ],
             "name": "withdraw",
             "mutability": "mutable",
             "payableInTokens": [
@@ -99,6 +120,11 @@
             "outputs": []
         },
         {
+            "docs": [
+                "After the liquidity pool has been created and the LP tokens received,",
+                "users can withdraw their fair share of the LP tokens by depositing their SFTs",
+                "and a share of the extra rewards"
+            ],
             "name": "redeem",
             "mutability": "mutable",
             "payableInTokens": [
@@ -114,6 +140,27 @@
             "outputs": [
                 {
                     "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getLpTokensClaimed",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getDepositExtraRewardsWhitelist",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
                 }
             ]
         },
@@ -148,12 +195,52 @@
             ]
         },
         {
+            "name": "getExtraRewardsTokenNonce",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
             "name": "getLpTokenId",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
                     "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getLaunchedTokenBalance",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getAcceptedTokenBalance",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getExtraRewardsBalance",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },
@@ -210,6 +297,12 @@
             "outputs": []
         },
         {
+            "docs": [
+                "Can only be called during unbond period, i.e. last phase.",
+                "Sends all accepted and launched tokens to the liquidity pool,",
+                "receiving LP tokens, which are locked for a number of epochs",
+                "before redeeming is allowed"
+            ],
             "name": "createDexLiquidityPool",
             "mutability": "mutable",
             "inputs": [],
@@ -222,6 +315,16 @@
             "outputs": [
                 {
                     "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getUnbondPeriodEpochs",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
                 }
             ]
         },
@@ -257,16 +360,6 @@
         },
         {
             "name": "getFixedPenaltyPhaseDurationBlocks",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getUnbondPeriodEpochs",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [

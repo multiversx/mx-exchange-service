@@ -95,6 +95,60 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
+    async getLpTokensClaimed(priceDiscoveryAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getLpTokensClaimed(
+            [],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getExtraRewardsTokenNonce(
+        priceDiscoveryAddress: string,
+    ): Promise<number> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getExtraRewardsTokenNonce(
+            [],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    async getLaunchedTokenBalance(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getLaunchedTokenBalance(
+            [],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getAcceptedTokenBalance(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getAcceptedTokenBalance(
+            [],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
     async getStartBlock(priceDiscoveryAddress: string): Promise<number> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
@@ -174,11 +228,13 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getExtraRewards(priceDiscoveryAddress: string): Promise<string> {
+    async getExtraRewardsBalance(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getTotalExtraRewardsTokens(
+        const interaction: Interaction = contract.methods.getExtraRewardsBalance(
             [],
         );
         const response = await this.getGenericData(contract, interaction);
