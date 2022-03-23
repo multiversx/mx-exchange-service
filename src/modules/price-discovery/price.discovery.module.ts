@@ -3,6 +3,7 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { PairModule } from '../pair/pair.module';
+import { WrappingModule } from '../wrapping/wrap.module';
 import { PriceDiscoveryResolver } from './price.discovery.resolver';
 import { PriceDiscoveryAbiService } from './services/price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from './services/price.discovery.compute.service';
@@ -17,6 +18,7 @@ import { PriceDiscoveryTransactionService } from './services/price.discovery.tra
         ContextModule,
         CachingModule,
         PairModule,
+        WrappingModule,
     ],
     providers: [
         PriceDiscoveryService,
