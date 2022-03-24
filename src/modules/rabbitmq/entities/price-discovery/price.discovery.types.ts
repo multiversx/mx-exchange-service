@@ -31,3 +31,11 @@ export type DepositEventType = PriceDiscoveryEventType & {
     currentPhase: PhaseType;
 };
 
+export type RedeemEventType = PriceDiscoveryEventType & {
+    redeemToken: GenericTokenType;
+    lpToken: GenericTokenType;
+    remainingLpTokens: string;
+    totalLpTokensReceived: string;
+    rewardsToken: GenericTokenType;
+};
+
