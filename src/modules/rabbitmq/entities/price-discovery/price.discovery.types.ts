@@ -17,3 +17,8 @@ export type PriceDiscoveryEventType = {
     address: string;
     identifier: string;
 };
+
+export type ExtraRewardsEventType = PriceDiscoveryEventType & {
+    rewardsToken: GenericTokenType;
+};
+
