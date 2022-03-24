@@ -39,3 +39,6 @@ export type RedeemEventType = PriceDiscoveryEventType & {
     rewardsToken: GenericTokenType;
 };
 
+export type InitialLiquidityEventType = PriceDiscoveryEventType & {
+    lpToken: GenericTokenType;
+};
