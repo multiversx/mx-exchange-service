@@ -22,3 +22,12 @@ export type ExtraRewardsEventType = PriceDiscoveryEventType & {
     rewardsToken: GenericTokenType;
 };
 
+export type DepositEventType = PriceDiscoveryEventType & {
+    tokenIn: GenericTokenType;
+    redeemToken: GenericTokenType;
+    launchedTokenAmount: string;
+    acceptedTokenAmount: string;
+    launchedTokenPrice: string;
+    currentPhase: PhaseType;
+};
+
