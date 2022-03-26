@@ -78,6 +78,51 @@ export class PriceDiscoveryTransactionService {
         );
     }
 
+    async genericBatchRedeemInteraction(
+        priceDiscoveryAddress: string,
+        sender: string,
+        inputToken: InputTokenModel,
+        endpointName: string,
+    ): Promise<TransactionModel[]> {
+        const transactions: TransactionModel[] = [];
+
+        const [
+            currentPhase,
+            acceptedTokenID,
+            wrappedTokenID,
+        ] = await Promise.all([
+            this.priceDiscoveryGetter.getCurrentPhase(priceDiscoveryAddress),
+            this.priceDiscoveryGetter.getAcceptedTokenID(priceDiscoveryAddress),
+            this.wrappingService.getWrappedEgldTokenID(),
+        ]);
+
+        transactions.push(
+            await this.genericRedeemInteraction(
+                priceDiscoveryAddress,
+                sender,
+                inputToken,
+                endpointName,
+            ),
+        );
+
+        if (inputToken.nonce === 2 && acceptedTokenID === wrappedTokenID) {
+            const wrappedAmount =
+                currentPhase.penaltyPercent > 0
+                    ? new BigNumber(inputToken.amount).multipliedBy(
+                          1 - currentPhase.penaltyPercent,
+                      )
+                    : new BigNumber(inputToken.amount);
+            transactions.push(
+                await this.wrappingTransactions.unwrapEgld(
+                    sender,
+                    wrappedAmount.toFixed(),
+                ),
+            );
+        }
+
+        return transactions;
+    }
+
     async genericRedeemInteraction(
         priceDiscoveryAddress: string,
         sender: string,

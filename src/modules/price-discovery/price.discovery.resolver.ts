@@ -253,6 +253,25 @@ export class PriceDiscoveryResolver {
     }
 
     @UseGuards(GqlAuthGuard)
+    @Query(() => [TransactionModel])
+    async withdrawBatchFromPriceDiscovery(
+        @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel[]> {
+        try {
+            return await this.priceDiscoveryTransactions.genericBatchRedeemInteraction(
+                priceDiscoveryAddress,
+                user.publicKey,
+                inputTokens,
+                'withdraw',
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async withdrawFromPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
@@ -272,8 +291,27 @@ export class PriceDiscoveryResolver {
     }
 
     @UseGuards(GqlAuthGuard)
+    @Query(() => [TransactionModel])
+    async redeemTokensBatchFromPriceDiscovery(
+        @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel[]> {
+        try {
+            return await this.priceDiscoveryTransactions.genericBatchRedeemInteraction(
+                priceDiscoveryAddress,
+                user.publicKey,
+                inputTokens,
+                'redeem',
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async redeemLpTokens(
+    async redeemTokensFromPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
         @Args('inputTokens') inputTokens: InputTokenModel,
         @User() user: any,
