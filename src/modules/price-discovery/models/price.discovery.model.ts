@@ -52,11 +52,7 @@ export class PriceDiscoveryModel {
     @Field()
     acceptedToken: EsdtToken;
     @Field()
-    rewardsToken: EsdtToken;
-    @Field()
     redeemToken: NftCollection;
-    @Field({ nullable: true })
-    lpToken: EsdtToken;
     @Field()
     launchedTokenAmount: string;
     @Field()
@@ -70,15 +66,9 @@ export class PriceDiscoveryModel {
     @Field()
     acceptedTokenPriceUSD: string;
     @Field()
-    lpTokensReceived: string;
-    @Field()
-    extraRewards: string;
-    @Field()
     startBlock: number;
     @Field()
     endBlock: number;
-    @Field()
-    pairAddress: string;
     @Field()
     currentPhase: PhaseModel;
     @Field()
@@ -90,7 +80,7 @@ export class PriceDiscoveryModel {
     @Field(() => Int)
     fixedPenaltyPhaseDurationBlocks: number;
     @Field(() => Int)
-    unbondPeriodEpochs: number;
+    unbondPeriodBlocks: number;
     @Field()
     penaltyMinPercentage: string;
     @Field()

@@ -50,27 +50,11 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
-    async rewardsToken(
-        @Parent() parent: PriceDiscoveryModel,
-    ): Promise<EsdtToken> {
-        return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getRewardsToken(parent.address),
-        );
-    }
-
-    @ResolveField()
     async redeemToken(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<NftCollection> {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getRedeemToken(parent.address),
-        );
-    }
-
-    @ResolveField()
-    async lpToken(@Parent() parent: PriceDiscoveryModel): Promise<EsdtToken> {
-        return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getLpToken(parent.address),
         );
     }
 
@@ -129,22 +113,6 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
-    async lpTokensReceived(
-        @Parent() parent: PriceDiscoveryModel,
-    ): Promise<string> {
-        return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getLpTokensReceived(parent.address),
-        );
-    }
-
-    @ResolveField()
-    async extraRewards(@Parent() parent: PriceDiscoveryModel): Promise<string> {
-        return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getExtraRewards(parent.address),
-        );
-    }
-
-    @ResolveField()
     async startBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getStartBlock(parent.address),
@@ -155,13 +123,6 @@ export class PriceDiscoveryResolver {
     async endBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getEndBlock(parent.address),
-        );
-    }
-
-    @ResolveField()
-    async pairAddress(@Parent() parent: PriceDiscoveryModel): Promise<string> {
-        return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getPairAddress(parent.address),
         );
     }
 
@@ -217,11 +178,11 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
-    async unbondPeriodEpochs(
+    async unbondPeriodBlocks(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getUnbondPeriodEpochs(parent.address),
+            this.priceDiscoveryGetter.getUnbondPeriodBlocks(parent.address),
         );
     }
 

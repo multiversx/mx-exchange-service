@@ -1,13 +1,11 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -23,7 +21,6 @@ export class PriceDiscoveryGetterService {
         @Inject(forwardRef(() => PriceDiscoveryComputeService))
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         private readonly pairGetter: PairGetterService,
-        private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -73,29 +70,11 @@ export class PriceDiscoveryGetterService {
         );
     }
 
-    async getRewardsTokenID(priceDiscoveryAddress: string): Promise<string> {
-        return this.getData(
-            priceDiscoveryAddress,
-            'rewardsTokenID',
-            () => this.abiService.getExtraRewardsTokenID(priceDiscoveryAddress),
-            oneHour(),
-        );
-    }
-
     async getRedeemTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
             priceDiscoveryAddress,
             'redeemTokenID',
             () => this.abiService.getRedeemTokenID(priceDiscoveryAddress),
-            oneHour(),
-        );
-    }
-
-    async getLpTokenID(priceDiscoveryAddress: string): Promise<string> {
-        return this.getData(
-            priceDiscoveryAddress,
-            'lpTokenID',
-            () => this.abiService.getLpTokenID(priceDiscoveryAddress),
             oneHour(),
         );
     }
@@ -114,27 +93,6 @@ export class PriceDiscoveryGetterService {
         return this.contextGetter.getTokenMetadata(acceptedTokenID);
     }
 
-    async getRewardsToken(priceDiscoveryAddress: string): Promise<EsdtToken> {
-        const rewardsTokenID = await this.getRewardsTokenID(
-            priceDiscoveryAddress,
-        );
-        return this.contextGetter.getTokenMetadata(rewardsTokenID);
-    }
-
-    async getExtraRewardsTokenNonce(
-        priceDiscoveryAddress: string,
-    ): Promise<number> {
-        return this.getData(
-            priceDiscoveryAddress,
-            'rewardsNonce',
-            () =>
-                this.abiService.getExtraRewardsTokenNonce(
-                    priceDiscoveryAddress,
-                ),
-            oneHour(),
-        );
-    }
-
     async getRedeemToken(
         priceDiscoveryAddress: string,
     ): Promise<NftCollection> {
@@ -142,14 +100,6 @@ export class PriceDiscoveryGetterService {
             priceDiscoveryAddress,
         );
         return this.contextGetter.getNftCollectionMetadata(redeemTokenID);
-    }
-
-    async getLpToken(priceDiscoveryAddress: string): Promise<EsdtToken> {
-        const lpTokenID = await this.getLpTokenID(priceDiscoveryAddress);
-        if (lpTokenID === elrondConfig.EGLDIdentifier) {
-            return undefined;
-        }
-        return this.contextGetter.getTokenMetadata(lpTokenID);
     }
 
     async getLaunchedTokenAmount(
@@ -232,24 +182,6 @@ export class PriceDiscoveryGetterService {
         );
     }
 
-    async getLpTokensReceived(priceDiscoveryAddress: string): Promise<string> {
-        return this.getData(
-            priceDiscoveryAddress,
-            'lpTokensReceived',
-            () => this.abiService.getLpTokensReceived(priceDiscoveryAddress),
-            oneMinute(),
-        );
-    }
-
-    async getLpTokensClaimed(priceDiscoveryAddress: string): Promise<string> {
-        return this.getData(
-            priceDiscoveryAddress,
-            'lpTokensClaimed',
-            () => this.abiService.getLpTokensClaimed(priceDiscoveryAddress),
-            oneMinute(),
-        );
-    }
-
     async getStartBlock(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
@@ -264,15 +196,6 @@ export class PriceDiscoveryGetterService {
             priceDiscoveryAddress,
             'endEpoch',
             () => this.abiService.getEndBlock(priceDiscoveryAddress),
-            oneHour(),
-        );
-    }
-
-    async getPairAddress(priceDiscoveryAddress: string): Promise<string> {
-        return this.getData(
-            priceDiscoveryAddress,
-            'pairAddress',
-            () => this.abiService.getPairAddress(priceDiscoveryAddress),
             oneHour(),
         );
     }
@@ -295,26 +218,6 @@ export class PriceDiscoveryGetterService {
             () =>
                 this.abiService.getMinLaunchedTokenPrice(priceDiscoveryAddress),
             oneHour(),
-        );
-    }
-
-    async getExtraRewardsTokenID(
-        priceDiscoveryAddress: string,
-    ): Promise<string> {
-        return this.getData(
-            priceDiscoveryAddress,
-            'extraRewardsTokenID',
-            () => this.abiService.getExtraRewardsTokenID(priceDiscoveryAddress),
-            oneHour(),
-        );
-    }
-
-    async getExtraRewards(priceDiscoveryAddress: string): Promise<string> {
-        return this.getData(
-            priceDiscoveryAddress,
-            'extraRewards',
-            () => this.abiService.getExtraRewardsBalance(priceDiscoveryAddress),
-            oneMinute(),
         );
     }
 
@@ -360,13 +263,13 @@ export class PriceDiscoveryGetterService {
         );
     }
 
-    async getUnbondPeriodEpochs(
+    async getUnbondPeriodBlocks(
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
-            'unbondPeriodEpochs',
-            () => this.abiService.getUnbondPeriodEpochs(priceDiscoveryAddress),
+            'unbondPeriodBlocks',
+            () => this.abiService.getUnbondPeriodBlocks(priceDiscoveryAddress),
             oneHour(),
         );
     }

@@ -62,18 +62,6 @@ export class PriceDiscoverySetterService {
         );
     }
 
-    async setRewardsTokenID(
-        priceDiscoveryAddress: string,
-        value: string,
-    ): Promise<string> {
-        return await this.setData(
-            priceDiscoveryAddress,
-            'rewardsTokenID',
-            value,
-            oneHour(),
-        );
-    }
-
     async setRedeemTokenID(
         priceDiscoveryAddress: string,
         value: string,
@@ -81,30 +69,6 @@ export class PriceDiscoverySetterService {
         return await this.setData(
             priceDiscoveryAddress,
             'redeemTokenID',
-            value,
-            oneHour(),
-        );
-    }
-
-    async setLpTokenID(
-        priceDiscoveryAddress: string,
-        value: string,
-    ): Promise<string> {
-        return await this.setData(
-            priceDiscoveryAddress,
-            'lpTokenID',
-            value,
-            oneHour(),
-        );
-    }
-
-    async setExtraRewardsTokenID(
-        priceDiscoveryAddress: string,
-        value: string,
-    ): Promise<string> {
-        return await this.setData(
-            priceDiscoveryAddress,
-            'extraRewardsTokenID',
             value,
             oneHour(),
         );
@@ -182,30 +146,6 @@ export class PriceDiscoverySetterService {
         );
     }
 
-    async setLpTokensReceived(
-        priceDiscoveryAddress: string,
-        value: string,
-    ): Promise<string> {
-        return await this.setData(
-            priceDiscoveryAddress,
-            'lpTokensReceived',
-            value,
-            oneMinute(),
-        );
-    }
-
-    async setExtraRewards(
-        priceDiscoveryAddress: string,
-        value: string,
-    ): Promise<string> {
-        return await this.setData(
-            priceDiscoveryAddress,
-            'extraRewards',
-            value,
-            oneMinute(),
-        );
-    }
-
     async setStartBlock(
         priceDiscoveryAddress: string,
         value: number,
@@ -225,18 +165,6 @@ export class PriceDiscoverySetterService {
         return await this.setData(
             priceDiscoveryAddress,
             'endEpoch',
-            value,
-            oneHour(),
-        );
-    }
-
-    async setPairAddress(
-        priceDiscoveryAddress: string,
-        value: string,
-    ): Promise<string> {
-        return await this.setData(
-            priceDiscoveryAddress,
-            'pairAddress',
             value,
             oneHour(),
         );
@@ -302,13 +230,13 @@ export class PriceDiscoverySetterService {
         );
     }
 
-    async setUnbondPeriodEpochs(
+    async setUnbondPeriodBlocks(
         priceDiscoveryAddress: string,
         value: number,
     ): Promise<string> {
         return await this.setData(
             priceDiscoveryAddress,
-            'unbondPeriodEpochs',
+            'unbondPeriodBlocks',
             value,
             oneHour(),
         );

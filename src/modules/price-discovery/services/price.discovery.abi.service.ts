@@ -73,54 +73,6 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getLpTokenID(priceDiscoveryAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            priceDiscoveryAddress,
-        );
-        const interaction: Interaction = contract.methods.getLpTokenId([]);
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toString();
-    }
-
-    async getLpTokensReceived(priceDiscoveryAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            priceDiscoveryAddress,
-        );
-        const interaction: Interaction = contract.methods.getTotalLpTokensReceived(
-            [],
-        );
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
-    }
-
-    async getLpTokensClaimed(priceDiscoveryAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            priceDiscoveryAddress,
-        );
-        const interaction: Interaction = contract.methods.getLpTokensClaimed(
-            [],
-        );
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
-    }
-
-    async getExtraRewardsTokenNonce(
-        priceDiscoveryAddress: string,
-    ): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            priceDiscoveryAddress,
-        );
-        const interaction: Interaction = contract.methods.getExtraRewardsTokenNonce(
-            [],
-        );
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toNumber();
-    }
-
     async getLaunchedTokenBalance(
         priceDiscoveryAddress: string,
     ): Promise<string> {
@@ -169,16 +121,6 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getPairAddress(priceDiscoveryAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            priceDiscoveryAddress,
-        );
-        const interaction: Interaction = contract.methods.getDexScAddress([]);
-
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toString();
-    }
-
     async getCurrentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
@@ -211,32 +153,6 @@ export class PriceDiscoveryAbiService {
             [],
         );
 
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
-    }
-
-    async getExtraRewardsTokenID(
-        priceDiscoveryAddress: string,
-    ): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            priceDiscoveryAddress,
-        );
-        const interaction: Interaction = contract.methods.getExtraRewardsTokenId(
-            [],
-        );
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toString();
-    }
-
-    async getExtraRewardsBalance(
-        priceDiscoveryAddress: string,
-    ): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            priceDiscoveryAddress,
-        );
-        const interaction: Interaction = contract.methods.getExtraRewardsBalance(
-            [],
-        );
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
@@ -280,7 +196,7 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getUnbondPeriodEpochs(
+    async getUnbondPeriodBlocks(
         priceDiscoveryAddress: string,
     ): Promise<number> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(

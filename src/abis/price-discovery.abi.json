@@ -31,10 +31,6 @@
                 "type": "TokenIdentifier"
             },
             {
-                "name": "extra_rewards_token_id",
-                "type": "TokenIdentifier"
-            },
-            {
                 "name": "min_launched_token_price",
                 "type": "BigUint"
             },
@@ -55,7 +51,7 @@
                 "type": "u64"
             },
             {
-                "name": "unbond_period_epochs",
+                "name": "unbond_period_blocks",
                 "type": "u64"
             },
             {
@@ -69,29 +65,11 @@
             {
                 "name": "fixed_penalty_percentage",
                 "type": "BigUint"
-            },
-            {
-                "name": "deposit_extra_rewards_whitelist",
-                "type": "variadic<Address>",
-                "multi_arg": true
             }
         ],
         "outputs": []
     },
     "endpoints": [
-        {
-            "docs": [
-                "Extra rewards that will be given to users that contributed to the pool, defined by",
-                "extra_rewards_token_id. Can be deposited by anyone."
-            ],
-            "name": "depositExtraRewards",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": []
-        },
         {
             "docs": [
                 "Users can deposit either launched_token or accepted_token.",
@@ -121,9 +99,10 @@
         },
         {
             "docs": [
-                "After the liquidity pool has been created and the LP tokens received,",
-                "users can withdraw their fair share of the LP tokens by depositing their SFTs",
-                "and a share of the extra rewards"
+                "After the unbond period has ended,",
+                "users can withdraw their fair share of either accepted or launched tokens,",
+                "depending on which token they deposited initially.",
+                "Users that deposited accepted tokens receives launched tokens and vice-versa."
             ],
             "name": "redeem",
             "mutability": "mutable",
@@ -144,27 +123,6 @@
             ]
         },
         {
-            "name": "getLpTokensClaimed",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getDepositExtraRewardsWhitelist",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<Address>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
             "name": "getLaunchedTokenId",
             "mutability": "readonly",
             "inputs": [],
@@ -176,36 +134,6 @@
         },
         {
             "name": "getAcceptedTokenId",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getExtraRewardsTokenId",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getExtraRewardsTokenNonce",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "getLpTokenId",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -235,36 +163,6 @@
             ]
         },
         {
-            "name": "getExtraRewardsBalance",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getTotalLpTokensReceived",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getTotalExtraRewardsTokens",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
             "name": "getStartBlock",
             "mutability": "readonly",
             "inputs": [],
@@ -276,50 +174,6 @@
         },
         {
             "name": "getEndBlock",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "setPairAddress",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "dex_sc_address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "docs": [
-                "Can only be called during unbond period, i.e. last phase.",
-                "Sends all accepted and launched tokens to the liquidity pool,",
-                "receiving LP tokens, which are locked for a number of epochs",
-                "before redeeming is allowed"
-            ],
-            "name": "createDexLiquidityPool",
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "getDexScAddress",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
-            "name": "getUnbondPeriodEpochs",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -395,6 +249,16 @@
             "outputs": [
                 {
                     "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getUnbondPeriodBlocks",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
                 }
             ]
         },

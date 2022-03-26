@@ -33,20 +33,14 @@ export class PriceDiscoveryCacheWarmerService {
                 launchedTokenID,
                 acceptedTokenID,
                 redeemTokenID,
-                rewardsTokenID,
-                lpTokenID,
                 startBlock,
                 endBlock,
-                pairAddress,
             ] = await Promise.all([
                 this.priceDiscoveryAbi.getLaunchedTokenID(address),
                 this.priceDiscoveryAbi.getAcceptedTokenID(address),
                 this.priceDiscoveryAbi.getRedeemTokenID(address),
-                this.priceDiscoveryAbi.getExtraRewardsTokenID(address),
-                this.priceDiscoveryAbi.getLpTokenID(address),
                 this.priceDiscoveryAbi.getStartBlock(address),
                 this.priceDiscoveryAbi.getEndBlock(address),
-                this.priceDiscoveryAbi.getPairAddress(address),
             ]);
 
             const [
@@ -54,7 +48,7 @@ export class PriceDiscoveryCacheWarmerService {
                 noLimitPhaseDurationBlocks,
                 linearPenaltyPhaseDurationBlocks,
                 fixedPenaltyPhaseDurationBlocks,
-                unbondPeriodEpochs,
+                unbondPeriodBlocks,
                 penaltyMinPercentage,
                 penaltyMaxPercentage,
                 fixedPenaltyPercentage,
@@ -67,7 +61,7 @@ export class PriceDiscoveryCacheWarmerService {
                 this.priceDiscoveryAbi.getFixedPenaltyPhaseDurationBlocks(
                     address,
                 ),
-                this.priceDiscoveryAbi.getUnbondPeriodEpochs(address),
+                this.priceDiscoveryAbi.getUnbondPeriodBlocks(address),
                 this.priceDiscoveryAbi.getPenaltyMinPercentage(address),
                 this.priceDiscoveryAbi.getPenaltyMaxPercentage(address),
                 this.priceDiscoveryAbi.getFixedPenaltyPercentage(address),
@@ -75,14 +69,10 @@ export class PriceDiscoveryCacheWarmerService {
             const [
                 launchedToken,
                 acceptedToken,
-                rewardsToken,
-                lpToken,
                 redeemToken,
             ] = await Promise.all([
                 this.apiService.getService().getToken(launchedTokenID),
                 this.apiService.getService().getToken(acceptedTokenID),
-                this.apiService.getService().getToken(rewardsTokenID),
-                this.apiService.getService().getToken(lpTokenID),
                 this.apiService.getNftCollection(redeemTokenID),
             ]);
 
@@ -99,14 +89,8 @@ export class PriceDiscoveryCacheWarmerService {
                     address,
                     redeemTokenID,
                 ),
-                this.priceDiscoverySetter.setRewardsTokenID(
-                    address,
-                    rewardsTokenID,
-                ),
-                this.priceDiscoverySetter.setLpTokenID(address, lpTokenID),
                 this.priceDiscoverySetter.setStartBlock(address, startBlock),
                 this.priceDiscoverySetter.setEndBlock(address, endBlock),
-                this.priceDiscoverySetter.setPairAddress(address, pairAddress),
                 this.priceDiscoverySetter.setMinLaunchedTokenPrice(
                     address,
                     minLaunchedTokenPrice,
@@ -123,9 +107,9 @@ export class PriceDiscoveryCacheWarmerService {
                     address,
                     fixedPenaltyPhaseDurationBlocks,
                 ),
-                this.priceDiscoverySetter.setUnbondPeriodEpochs(
+                this.priceDiscoverySetter.setUnbondPeriodBlocks(
                     address,
-                    unbondPeriodEpochs,
+                    unbondPeriodBlocks,
                 ),
                 this.priceDiscoverySetter.setPenaltyMinPercentage(
                     address,
@@ -145,8 +129,6 @@ export class PriceDiscoveryCacheWarmerService {
                 this.setContextCache(launchedTokenID, launchedToken, oneHour()),
                 this.setContextCache(acceptedTokenID, acceptedToken, oneHour()),
                 this.setContextCache(redeemTokenID, redeemToken, oneHour()),
-                this.setContextCache(rewardsTokenID, rewardsToken, oneHour()),
-                this.setContextCache(lpTokenID, lpToken, oneHour()),
             ]);
 
             invalidatedKeys.push(...contextCacheKeys);
