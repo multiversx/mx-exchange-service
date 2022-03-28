@@ -196,15 +196,11 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getUnbondPeriodBlocks(
-        priceDiscoveryAddress: string,
-    ): Promise<number> {
+    async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getUnbondPeriodEpochs(
-            [],
-        );
+        const interaction: Interaction = contract.methods.getUnlockEpoch([]);
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toNumber();
     }

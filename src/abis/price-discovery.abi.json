@@ -31,6 +31,10 @@
                 "type": "TokenIdentifier"
             },
             {
+                "name": "launched_token_decimals",
+                "type": "u32"
+            },
+            {
                 "name": "min_launched_token_price",
                 "type": "BigUint"
             },
@@ -51,7 +55,7 @@
                 "type": "u64"
             },
             {
-                "name": "unbond_period_blocks",
+                "name": "unlock_epoch",
                 "type": "u64"
             },
             {
@@ -65,6 +69,10 @@
             {
                 "name": "fixed_penalty_percentage",
                 "type": "BigUint"
+            },
+            {
+                "name": "locking_sc_address",
+                "type": "Address"
             }
         ],
         "outputs": []
@@ -99,10 +107,13 @@
         },
         {
             "docs": [
-                "After the unbond period has ended,",
+                "After all phases have ended,",
                 "users can withdraw their fair share of either accepted or launched tokens,",
                 "depending on which token they deposited initially.",
-                "Users that deposited accepted tokens receives launched tokens and vice-versa."
+                "Users that deposited accepted tokens will receive Locked launched tokens.",
+                "Users that deposited launched tokens will receive Locked accepted tokens.",
+                "The users can unlock said tokens at the configured unlock_epoch,",
+                "through the SC at locking_sc_address"
             ],
             "name": "redeem",
             "mutability": "mutable",
@@ -119,6 +130,16 @@
             "outputs": [
                 {
                     "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getPricePrecision",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
                 }
             ]
         },
@@ -174,6 +195,38 @@
         },
         {
             "name": "getEndBlock",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "setLockingScAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getLockingScAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getUnlockEpoch",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
@@ -253,16 +306,6 @@
             ]
         },
         {
-            "name": "getUnbondPeriodBlocks",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
             "name": "issueRedeemToken",
             "onlyOwner": true,
             "mutability": "mutable",
@@ -330,12 +373,8 @@
                     ]
                 },
                 {
-                    "name": "Unbond",
-                    "discriminant": 4
-                },
-                {
                     "name": "Redeem",
-                    "discriminant": 5
+                    "discriminant": 4
                 }
             ]
         }

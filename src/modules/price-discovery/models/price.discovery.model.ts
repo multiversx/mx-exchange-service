@@ -80,7 +80,7 @@ export class PriceDiscoveryModel {
     @Field(() => Int)
     fixedPenaltyPhaseDurationBlocks: number;
     @Field(() => Int)
-    unbondPeriodBlocks: number;
+    unlockEpoch: number;
     @Field()
     penaltyMinPercentage: string;
     @Field()

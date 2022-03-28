@@ -178,11 +178,9 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
-    async unbondPeriodBlocks(
-        @Parent() parent: PriceDiscoveryModel,
-    ): Promise<number> {
+    async unlockEpoch(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getUnbondPeriodBlocks(parent.address),
+            this.priceDiscoveryGetter.getUnlockEpoch(parent.address),
         );
     }
 

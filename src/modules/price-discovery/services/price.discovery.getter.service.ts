@@ -263,13 +263,11 @@ export class PriceDiscoveryGetterService {
         );
     }
 
-    async getUnbondPeriodBlocks(
-        priceDiscoveryAddress: string,
-    ): Promise<number> {
+    async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
-            'unbondPeriodBlocks',
-            () => this.abiService.getUnbondPeriodBlocks(priceDiscoveryAddress),
+            'unlockEpoch',
+            () => this.abiService.getUnlockEpoch(priceDiscoveryAddress),
             oneHour(),
         );
     }

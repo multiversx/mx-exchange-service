@@ -230,13 +230,13 @@ export class PriceDiscoverySetterService {
         );
     }
 
-    async setUnbondPeriodBlocks(
+    async setUnlockEpoch(
         priceDiscoveryAddress: string,
         value: number,
     ): Promise<string> {
         return await this.setData(
             priceDiscoveryAddress,
-            'unbondPeriodBlocks',
+            'unlockEpoch',
             value,
             oneHour(),
         );
