@@ -230,6 +230,18 @@ export class PriceDiscoverySetterService {
         );
     }
 
+    async setLockingScAddress(
+        priceDiscoveryAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            priceDiscoveryAddress,
+            'lockingScAddress',
+            value,
+            oneHour(),
+        );
+    }
+
     async setUnlockEpoch(
         priceDiscoveryAddress: string,
         value: number,

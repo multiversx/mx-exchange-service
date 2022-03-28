@@ -48,7 +48,8 @@ export class PriceDiscoveryCacheWarmerService {
                 noLimitPhaseDurationBlocks,
                 linearPenaltyPhaseDurationBlocks,
                 fixedPenaltyPhaseDurationBlocks,
-                unbondPeriodBlocks,
+                lockingScAddress,
+                unlockEpoch,
                 penaltyMinPercentage,
                 penaltyMaxPercentage,
                 fixedPenaltyPercentage,
@@ -61,7 +62,8 @@ export class PriceDiscoveryCacheWarmerService {
                 this.priceDiscoveryAbi.getFixedPenaltyPhaseDurationBlocks(
                     address,
                 ),
-                this.priceDiscoveryAbi.getUnbondPeriodBlocks(address),
+                this.priceDiscoveryAbi.getLockingScAddress(address),
+                this.priceDiscoveryAbi.getUnlockEpoch(address),
                 this.priceDiscoveryAbi.getPenaltyMinPercentage(address),
                 this.priceDiscoveryAbi.getPenaltyMaxPercentage(address),
                 this.priceDiscoveryAbi.getFixedPenaltyPercentage(address),
@@ -107,10 +109,11 @@ export class PriceDiscoveryCacheWarmerService {
                     address,
                     fixedPenaltyPhaseDurationBlocks,
                 ),
-                this.priceDiscoverySetter.setUnbondPeriodBlocks(
+                this.priceDiscoverySetter.setLockingScAddress(
                     address,
-                    unbondPeriodBlocks,
+                    lockingScAddress,
                 ),
+                this.priceDiscoverySetter.setUnlockEpoch(address, unlockEpoch),
                 this.priceDiscoverySetter.setPenaltyMinPercentage(
                     address,
                     penaltyMinPercentage,

@@ -263,6 +263,15 @@ export class PriceDiscoveryGetterService {
         );
     }
 
+    async getLockingScAddress(priceDiscoveryAddress: string): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'lockingScAddress',
+            () => this.abiService.getLockingScAddress(priceDiscoveryAddress),
+            oneHour(),
+        );
+    }
+
     async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,

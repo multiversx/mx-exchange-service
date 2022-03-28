@@ -79,6 +79,8 @@ export class PriceDiscoveryModel {
     linearPenaltyPhaseDurationBlocks: number;
     @Field(() => Int)
     fixedPenaltyPhaseDurationBlocks: number;
+    @Field()
+    lockingScAddress: string;
     @Field(() => Int)
     unlockEpoch: number;
     @Field()

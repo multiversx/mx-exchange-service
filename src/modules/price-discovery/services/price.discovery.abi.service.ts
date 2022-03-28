@@ -196,6 +196,17 @@ export class PriceDiscoveryAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
+    async getLockingScAddress(priceDiscoveryAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getLockingScAddress(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
+    }
+
     async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
