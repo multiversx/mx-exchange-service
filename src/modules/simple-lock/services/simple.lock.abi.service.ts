@@ -37,9 +37,7 @@ export class SimpleLockAbiService {
     }
 
     async getLockedTokenID(): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            scAddress.simpleLockAddress,
-        );
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
         const interaction: Interaction = contract.methods.getLockedTokenId([]);
 
         const response = await this.getGenericData(contract, interaction);
@@ -47,9 +45,7 @@ export class SimpleLockAbiService {
     }
 
     async getLpProxyTokenID(): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
-            scAddress.simpleLockAddress,
-        );
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
         const interaction: Interaction = contract.methods.getLpProxyTokenId([]);
 
         const response = await this.getGenericData(contract, interaction);
