@@ -3,6 +3,7 @@ import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
@@ -32,16 +33,16 @@ export class SimpleLockResolver {
     }
 
     @ResolveField()
-    async lockedTokenID(): Promise<string> {
+    async lockedToken(): Promise<NftCollection> {
         return await this.genericFieldResover(() =>
-            this.simpleLockGetter.getLockedTokenID(),
+            this.simpleLockGetter.getLockedToken(),
         );
     }
 
     @ResolveField()
-    async lpProxyTokenID(): Promise<string> {
+    async lpProxyToken(): Promise<NftCollection> {
         return await this.genericFieldResover(() =>
-            this.simpleLockGetter.getLpProxyTokenID(),
+            this.simpleLockGetter.getLpProxyToken(),
         );
     }
 

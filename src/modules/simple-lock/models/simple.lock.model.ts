@@ -5,6 +5,7 @@ import {
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { NftCollection } from 'src/models/tokens/nftCollection.model';
 
 @ObjectType()
 export class LockedTokenAttributesModel {
@@ -87,9 +88,9 @@ export class SimpleLockModel {
     @Field()
     address: string;
     @Field()
-    lockedTokenID: string;
+    lockedToken: NftCollection;
     @Field()
-    lpProxyTokenID: string;
+    lpProxyToken: NftCollection;
 
     constructor(init?: Partial<SimpleLockModel>) {
         Object.assign(this, init);
