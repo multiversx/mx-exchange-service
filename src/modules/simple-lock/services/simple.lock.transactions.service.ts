@@ -58,6 +58,58 @@ export class SimpleLockTransactionService {
         return transaction;
     }
 
+    async addLiquidityLockedTokenBatch(
+        sender: string,
+        inputTokens: InputTokenModel[],
+        tolerance: number,
+    ): Promise<TransactionModel[]> {
+        const transactions: TransactionModel[] = [];
+        const [wrappedTokenID] = await this.wrapService.getWrappedEgldTokenID();
+
+        if (inputTokens.length !== 2) {
+            throw new Error('Invalid input tokens length');
+        }
+
+        let [firstTokenInput, secondTokenInput] = inputTokens;
+
+        switch (wrappedTokenID) {
+            case firstTokenInput.tokenID:
+                firstTokenInput = new InputTokenModel({
+                    ...firstTokenInput,
+                    tokenID: wrappedTokenID,
+                });
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        sender,
+                        firstTokenInput.amount,
+                    ),
+                );
+                break;
+            case secondTokenInput.tokenID:
+                secondTokenInput = new InputTokenModel({
+                    ...secondTokenInput,
+                    tokenID: wrappedTokenID,
+                });
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        sender,
+                        secondTokenInput.amount,
+                    ),
+                );
+            default:
+                break;
+        }
+
+        transactions.push(
+            await this.addLiquidityLockedToken(
+                sender,
+                [firstTokenInput, secondTokenInput],
+                tolerance,
+            ),
+        );
+        return transactions;
+    }
+
     async addLiquidityLockedToken(
         sender: string,
         inputTokens: InputTokenModel[],
