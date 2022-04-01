@@ -9,7 +9,7 @@ import {
 import { Logger } from 'winston';
 import {
     LockedTokenAttributesModel,
-    LpProxyTokenAttributes,
+    LpProxyTokenAttributesModel,
     SimpleLockModel,
 } from '../models/simple.lock.model';
 
@@ -52,7 +52,7 @@ export class SimpleLockService {
 
     decodeBatchLpTokenProxyAttributes(
         args: DecodeAttributesArgs,
-    ): LpProxyTokenAttributes[] {
+    ): LpProxyTokenAttributesModel[] {
         return args.batchAttributes.map(arg => {
             return this.decodeLpProxyTokenAttributes(arg);
         });
@@ -60,16 +60,18 @@ export class SimpleLockService {
 
     decodeLpProxyTokenAttributes(
         args: DecodeAttributesModel,
-    ): LpProxyTokenAttributes {
+    ): LpProxyTokenAttributesModel {
         const attributesBuffer = Buffer.from(args.attributes, 'base64');
         const codec = new BinaryCodec();
-        const structType = LpProxyTokenAttributes.getStructure();
+        const structType = LpProxyTokenAttributesModel.getStructure();
 
         const [decodedAttributes] = codec.decodeNested(
             attributesBuffer,
             structType,
         );
 
-        return LpProxyTokenAttributes.fromDecodedAttributes(decodedAttributes);
+        return LpProxyTokenAttributesModel.fromDecodedAttributes(
+            decodedAttributes,
+        );
     }
 }

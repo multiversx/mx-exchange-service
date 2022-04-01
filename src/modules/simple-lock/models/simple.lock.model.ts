@@ -43,7 +43,7 @@ export class LockedTokenAttributesModel {
 }
 
 @ObjectType()
-export class LpProxyTokenAttributes {
+export class LpProxyTokenAttributesModel {
     @Field()
     lpTokenID: string;
     @Field()
@@ -55,7 +55,7 @@ export class LpProxyTokenAttributes {
     @Field(() => Int)
     secondTokenLockedNonce: number;
 
-    constructor(init?: Partial<LpProxyTokenAttributes>) {
+    constructor(init?: Partial<LpProxyTokenAttributesModel>) {
         Object.assign(this, init);
     }
 
@@ -71,8 +71,8 @@ export class LpProxyTokenAttributes {
 
     static fromDecodedAttributes(
         decodedAttributes: any,
-    ): LpProxyTokenAttributes {
-        return new LpProxyTokenAttributes({
+    ): LpProxyTokenAttributesModel {
+        return new LpProxyTokenAttributesModel({
             lpTokenID: decodedAttributes.lpTokenID.toString(),
             firstTokenID: decodedAttributes.firstTokenID.toString(),
             firstTokenLockedNonce: decodedAttributes.firstTokenLockedNonce.toNumber(),
