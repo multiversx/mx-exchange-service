@@ -1,4 +1,6 @@
 import {
+    EnumType,
+    EnumVariantDefinition,
     FieldDefinition,
     StructType,
     TokenIdentifierType,
@@ -79,6 +81,57 @@ export class LpProxyTokenAttributesModel {
             firstTokenLockedNonce: decodedAttributes.firstTokenLockedNonce.toNumber(),
             secondTokenID: decodedAttributes.secondTokenID.toString(),
             secondTokenLockedNonce: decodedAttributes.secondTokenLockedNonce.toNumber(),
+        });
+    }
+}
+
+@ObjectType()
+export class FarmProxyTokenAttributesModel {
+    @Field()
+    farmType: string;
+    @Field()
+    farmTokenID: string;
+    @Field(() => Int)
+    farmTokenNonce: number;
+    @Field()
+    farmingTokenID: string;
+    @Field(() => Int)
+    farmingTokenLockedNonce: number;
+
+    constructor(init?: Partial<FarmProxyTokenAttributesModel>) {
+        Object.assign(this, init);
+    }
+
+    static getStructure(): StructType {
+        return new StructType('FarmProxyTokenAttributes', [
+            new FieldDefinition(
+                'farmType',
+                '',
+                new EnumType('FarmType', [
+                    new EnumVariantDefinition('SimpleFarm', 0),
+                    new EnumVariantDefinition('FarmWithLockedRewards', 1),
+                ]),
+            ),
+            new FieldDefinition('farmTokenID', '', new TokenIdentifierType()),
+            new FieldDefinition('farmTokenNonce', '', new U64Type()),
+            new FieldDefinition(
+                'farmingTokenID',
+                '',
+                new TokenIdentifierType(),
+            ),
+            new FieldDefinition('farmingTokenLockedNonce', '', new U64Type()),
+        ]);
+    }
+
+    static fromDecodedAttributes(
+        decodedAttributes: any,
+    ): FarmProxyTokenAttributesModel {
+        return new FarmProxyTokenAttributesModel({
+            farmType: decodedAttributes.farmType.name,
+            farmTokenID: decodedAttributes.farmTokenID.toString(),
+            farmTokenNonce: decodedAttributes.farmTokenNonce.toNumber(),
+            farmingTokenID: decodedAttributes.farmingTokenID.toString(),
+            farmingTokenLockedNonce: decodedAttributes.farmingTokenLockedNonce.toNumber(),
         });
     }
 }

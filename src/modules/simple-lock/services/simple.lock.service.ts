@@ -8,6 +8,7 @@ import {
 } from 'src/modules/proxy/models/proxy.args';
 import { Logger } from 'winston';
 import {
+    FarmProxyTokenAttributesModel,
     LockedTokenAttributesModel,
     LpProxyTokenAttributesModel,
     SimpleLockModel,
@@ -71,6 +72,31 @@ export class SimpleLockService {
         );
 
         return LpProxyTokenAttributesModel.fromDecodedAttributes(
+            decodedAttributes,
+        );
+    }
+
+    decodeBatchFarmProxyTokenAttributes(
+        args: DecodeAttributesArgs,
+    ): FarmProxyTokenAttributesModel[] {
+        return args.batchAttributes.map(arg => {
+            return this.decodeFarmProxyTokenAttributes(arg);
+        });
+    }
+
+    decodeFarmProxyTokenAttributes(
+        args: DecodeAttributesModel,
+    ): FarmProxyTokenAttributesModel {
+        const attributesBuffer = Buffer.from(args.attributes, 'base64');
+        const codec = new BinaryCodec();
+        const structType = FarmProxyTokenAttributesModel.getStructure();
+
+        const [decodedAttributes] = codec.decodeNested(
+            attributesBuffer,
+            structType,
+        );
+
+        return FarmProxyTokenAttributesModel.fromDecodedAttributes(
             decodedAttributes,
         );
     }
