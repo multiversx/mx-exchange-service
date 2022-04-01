@@ -5,7 +5,12 @@ import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { SimpleLockModel } from './models/simple.lock.model';
+import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
+import {
+    LockedTokenAttributesModel,
+    LpProxyTokenAttributesModel,
+    SimpleLockModel,
+} from './models/simple.lock.model';
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
@@ -45,6 +50,34 @@ export class SimpleLockResolver {
         try {
             return this.simpleLockService.getSimpleLock();
         } catch (error) {}
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => [LockedTokenAttributesModel])
+    async lockedTokenAttributes(
+        @Args('args') args: DecodeAttributesArgs,
+    ): Promise<LockedTokenAttributesModel[]> {
+        try {
+            return this.simpleLockService.decodeBatchLockedTokenAttributes(
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => [LpProxyTokenAttributesModel])
+    async lpProxyTokenAttributes(
+        @Args('args') args: DecodeAttributesArgs,
+    ): Promise<LpProxyTokenAttributesModel[]> {
+        try {
+            return this.simpleLockService.decodeBatchLpTokenProxyAttributes(
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
