@@ -58,6 +58,14 @@ export class SimpleLockGetterService {
         );
     }
 
+    async getFarmProxyTokenID(): Promise<string> {
+        return await this.getData(
+            'farmProxyTokenID',
+            () => this.abiService.getFarmProxyTokenID(),
+            oneHour(),
+        );
+    }
+
     async getLockedToken(): Promise<NftCollection> {
         const tokenID = await this.getLockedTokenID();
         return await this.contextGetter.getNftCollectionMetadata(tokenID);
@@ -65,6 +73,11 @@ export class SimpleLockGetterService {
 
     async getLpProxyToken(): Promise<NftCollection> {
         const tokenID = await this.getLpProxyTokenID();
+        return await this.contextGetter.getNftCollectionMetadata(tokenID);
+    }
+
+    async getFarmProxyToken(): Promise<NftCollection> {
+        const tokenID = await this.getFarmProxyTokenID();
         return await this.contextGetter.getNftCollectionMetadata(tokenID);
     }
 

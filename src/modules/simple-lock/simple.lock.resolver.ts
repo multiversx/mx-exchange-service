@@ -46,6 +46,13 @@ export class SimpleLockResolver {
         );
     }
 
+    @ResolveField()
+    async farmProxyToken(): Promise<NftCollection> {
+        return await this.genericFieldResover(() =>
+            this.simpleLockGetter.getFarmProxyToken(),
+        );
+    }
+
     @Query(() => SimpleLockModel)
     async simpleLock(): Promise<SimpleLockModel> {
         try {

@@ -51,4 +51,14 @@ export class SimpleLockAbiService {
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toString();
     }
+
+    async getFarmProxyTokenID(): Promise<string> {
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const interaction: Interaction = contract.methods.getFarmProxyTokenId(
+            [],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
+    }
 }
