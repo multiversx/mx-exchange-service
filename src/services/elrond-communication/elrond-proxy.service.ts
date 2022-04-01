@@ -143,6 +143,14 @@ export class ElrondProxyService {
         );
     }
 
+    async getSimpleLockSmartContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.simpleLockAddress,
+            abiConfig.simpleLock,
+            'SimpleLock',
+        );
+    }
+
     async getMetabondingStakingSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.metabondingStakingAddress,
