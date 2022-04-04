@@ -31,6 +31,7 @@ import { PriceDiscoveryTransactionService } from './services/price.discovery.tra
     ],
     exports: [
         PriceDiscoveryAbiService,
+        PriceDiscoveryService,
         PriceDiscoveryGetterService,
         PriceDiscoverySetterService,
         PriceDiscoveryComputeService,
