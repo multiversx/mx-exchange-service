@@ -2,6 +2,7 @@ import {
     Address,
     BigUIntValue,
     BytesValue,
+    EnumValue,
     GasLimit,
     TypedValue,
     U32Value,
@@ -16,6 +17,7 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { FarmTypeEnumType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
 import { SimpleLockService } from './simple.lock.service';
 
@@ -220,6 +222,69 @@ export class SimpleLockTransactionService {
         return transactions;
     }
 
+    async enterFarmLockedToken(
+        sender: string,
+        inputTokens: InputTokenModel,
+        attributes: string,
+    ): Promise<TransactionModel> {
+        await this.validateInputLpProxyToken(inputTokens);
+
+        const decodedAttributes = this.simpleLockService.decodeFarmProxyTokenAttributes(
+            {
+                attributes,
+                identifier: inputTokens.tokenID,
+            },
+        );
+
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(inputTokens.tokenID),
+            new U32Value(inputTokens.nonce),
+            new BigUIntValue(new BigNumber(inputTokens.amount)),
+            BytesValue.fromHex(contract.getAddress().hex()),
+            BytesValue.fromUTF8(this.enterFarmLockedToken.name),
+            EnumValue.fromDiscriminant(
+                FarmTypeEnumType,
+                decodedAttributes.farmType,
+            ),
+        ];
+
+        const transaction = this.contextTransactions.nftTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.simpleLock.enterFarmLockedToken),
+        );
+        transaction.receiver = sender;
+        return transaction;
+    }
+
+    async farmProxyTokenInteraction(
+        sender: string,
+        inputTokens: InputTokenModel,
+        endpointName: string,
+    ): Promise<TransactionModel> {
+        await this.validateInputFarmProxyToken(inputTokens);
+
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(inputTokens.tokenID),
+            new U32Value(inputTokens.nonce),
+            new BigUIntValue(new BigNumber(inputTokens.amount)),
+            BytesValue.fromHex(contract.getAddress().hex()),
+            BytesValue.fromUTF8(endpointName),
+        ];
+
+        const transaction = this.contextTransactions.nftTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.simpleLock.exitFarmLockedToken),
+        );
+        transaction.receiver = sender;
+        return transaction;
+    }
+
     private async validateInputUnlockTokens(
         inputTokens: InputTokenModel,
     ): Promise<void> {
@@ -266,6 +331,13 @@ export class SimpleLockTransactionService {
         }
     }
 
+    private async validateInputFarmProxyToken(
+        inputTokens: InputTokenModel,
+    ): Promise<void> {
+        const farmProxyTokenID = await this.simpleLockGetter.getFarmProxyTokenID();
+
+        if (inputTokens.tokenID !== farmProxyTokenID || inputTokens.nonce < 1) {
+            throw new Error('Invalid input token');
         }
     }
 }

@@ -6,8 +6,20 @@ import {
     TokenIdentifierType,
     U64Type,
 } from '@elrondnetwork/erdjs/out';
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
+
+export enum FarmType {
+    SIMPLE_FARM,
+    FARM_WITH_LOCKED_REWARDS,
+}
+
+registerEnumType(FarmType, { name: 'FarmType' });
+
+export const FarmTypeEnumType = new EnumType('FarmType', [
+    new EnumVariantDefinition('SimpleFarm', 0),
+    new EnumVariantDefinition('FarmWithLockedRewards', 1),
+]);
 
 @ObjectType()
 export class LockedTokenAttributesModel {
@@ -88,7 +100,7 @@ export class LpProxyTokenAttributesModel {
 @ObjectType()
 export class FarmProxyTokenAttributesModel {
     @Field()
-    farmType: string;
+    farmType: FarmType;
     @Field()
     farmTokenID: string;
     @Field(() => Int)
