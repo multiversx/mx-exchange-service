@@ -147,7 +147,7 @@ export class SimpleLockTransactionService {
         attributes: string,
         tolerance: number,
     ): Promise<TransactionModel[]> {
-        await this.validateInputRemoveLiquidityLockedToken(inputTokens);
+        await this.validateInputLpProxyToken(inputTokens);
 
         const transactions = [];
         const [wrappedTokenID, contract] = await Promise.all([
@@ -225,8 +225,8 @@ export class SimpleLockTransactionService {
     ): Promise<void> {
         const lockedTokenID = await this.simpleLockGetter.getLockedTokenID();
 
-        if (inputTokens.tokenID !== lockedTokenID || inputTokens.nonce === 0) {
-            throw new Error('Invalid input token!');
+        if (inputTokens.tokenID !== lockedTokenID || inputTokens.nonce < 1) {
+            throw new Error('Invalid input token');
         }
     }
 
@@ -242,23 +242,30 @@ export class SimpleLockTransactionService {
         const [firstToken, secondToken] = inputTokens;
 
         if (
-            firstToken.tokenID !== lockedTokenID ||
+            firstToken.tokenID !== lockedTokenID &&
             secondToken.tokenID !== lockedTokenID
         ) {
             throw new Error('Invalid tokens to send');
         }
+
+        if (firstToken.tokenID === lockedTokenID && firstToken.nonce < 1) {
+            throw new Error('Invalid locked token');
+        }
+        if (secondToken.tokenID === lockedTokenID && secondToken.nonce < 1) {
+            throw new Error('Invalid locked token');
+        }
     }
 
-    private async validateInputRemoveLiquidityLockedToken(
+    private async validateInputLpProxyToken(
         inputTokens: InputTokenModel,
     ): Promise<void> {
         const lockedLpTokenID = await this.simpleLockGetter.getLpProxyTokenID();
 
-        if (
-            inputTokens.tokenID !== lockedLpTokenID ||
-            inputTokens.nonce === 0
-        ) {
-            throw new Error('Invalid input token!');
+        if (inputTokens.tokenID !== lockedLpTokenID || inputTokens.nonce < 1) {
+            throw new Error('Invalid input token');
+        }
+    }
+
         }
     }
 }
