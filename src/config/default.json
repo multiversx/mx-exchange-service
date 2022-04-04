@@ -12,28 +12,31 @@
         "keepAliveMaxFreeSockets": 10
     },
     "scAddress": {
-        "routerAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
-        "MEX-56b144": "erd1qqqqqqqqqqqqqpgqp3jh6l6wtvqwy66z3r8s05j8xkefssa90n4smfa8y3",
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp",
+        "MEX-27f4cd": "erd1qqqqqqqqqqqqqpgqxv39e72dt57vcjdyfz6cztw86vuq7nx20n4srlnthr",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgq29s98mhxwyknmxcpdtdx6nm0wkvnkvwe0n4sjpdhyq",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgq6wrtdnv7d5uypnaw2k8mtujfdl0s66t40n4sag5e7n",
-        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgq2gum6hua5dh7vl67l0rtgzk5ly8y2ydw0n4snkgrdj",
+        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z",
+        "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqup60nzrkww5ukj7rxxud9txq9fakd36l0n4sthknw2",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
-            "shardID-1": "erd1qqqqqqqqqqqqqpgqc8relmv973g34dytgd55p3hmaaljvka30n4s6n64q6",
+            "shardID-1": "erd1qqqqqqqqqqqqqpgqhjdqy6rqz3vdqsr3wydvyha9xvw5n75h0n4swc0wnt",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
         "staking": [
-            "erd1qqqqqqqqqqqqqpgqp8ca9usk9tgk5hjpdh9u47c677q3qydx0n4sva2qah"
+            "erd1qqqqqqqqqqqqqpgqqf7vhr9clwpavm59xexf3tjq0spzg3tl0n4shhszql"
         ],
-        "stakingProxy": []
+        "stakingProxy": [
+            "erd1qqqqqqqqqqqqqpgqpgl505hxumyjdtqnjrhmds9wsf4tyydu0n4skwfkf0",
+            "erd1qqqqqqqqqqqqqpgqkq58a23glv6dzyz8a8fsc30wzc59y6m60n4szjktz0"
+        ]
     },
-    "tokenProviderUSD": "WEGLD-57ee56",
+    "tokenProviderUSD": "WEGLD-71e90a",
     "priceFeeds": {
-        "USDC-1876bd": "usdc"
+        "USDC-a63f36": "usdc"
     },
-    "tokensSupply": ["MEX-56b144"],
-    "cachedTokensPrice": ["MEX-56b144"],
+    "tokensSupply": ["MEX-27f4cd"],
+    "cachedTokensPrice": ["MEX-27f4cd"],
     "farms": {
         "v1.2": [],
         "v1.3": {
@@ -41,13 +44,13 @@
                 "erd1qqqqqqqqqqqqqpgqxsy4k8fkqvllcvyrwhf80t97kyd32qfx0n4stue7cn",
                 "erd1qqqqqqqqqqqqqpgqlauj5h3wdqnmtrlljxh87f6u992jtlj80n4sjpnl56",
                 "erd1qqqqqqqqqqqqqpgqwe7relwdmhg52ra4d9t72nt5hk0qhjrd0n4spy0wnx",
-                "erd1qqqqqqqqqqqqqpgqnwzdd6467q4d4p6mc2few7hawnfwxhtn0n4snuexra"
+                "erd1qqqqqqqqqqqqqpgqhpu9gztn7tmznxc46q46uk6f23ttnern0n4sar7l79"
             ],
             "lockedRewards": [
                 "erd1qqqqqqqqqqqqqpgqg2esr6d6tfd250x4n3tkhfkw8cc4p2x50n4swatdz6",
                 "erd1qqqqqqqqqqqqqpgqpfekajgprpwzfqfctzqfqe5j2n38t3ev0n4shhyhy5",
                 "erd1qqqqqqqqqqqqqpgqfau7c39mzvmjkkkfmxtdwjgjparkgfmz0n4sfe8er6",
-                "erd1qqqqqqqqqqqqqpgqz9cev6r0yy7p8yd8vpzl2edju6fv6flf0n4sj0muw9"
+                "erd1qqqqqqqqqqqqqpgq9s7ft5fj72zyt8qn8yd24xcl8rxu9v4m0n4sjlh528"
             ],
             "customRewards": []
         }
@@ -67,7 +70,7 @@
     },
     "gasLimits": {
         "router": {
-            "createPair": 21000000,
+            "createPair": 30000000,
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
             "setState": 200000000,
@@ -82,7 +85,7 @@
             },
             "swapTokensFixedOutput": {
                 "default": 9000000,
-                "withFeeSwap": 17000000
+                "withFeeSwap": 18500000
             }
         },
         "farms": {
@@ -300,10 +303,10 @@
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
         "MAX_GAS_LIMIT": 750000000,
         "ISSUE_LP_TOKEN_COST": 0.05,
-        "MEX_TOKEN_ID": "MEX-56b144",
-        "USDC_TOKEN_ID": "USDC-1876bd",
+        "MEX_TOKEN_ID": "MEX-27f4cd",
+        "USDC_TOKEN_ID": "USDC-a63f36",
         "PRECISION_EX_INCREASE": 1000,
-        "UNBOND_EPOCHS": 10,
+        "UNBOND_EPOCHS": 3,
         "MAINTENANCE": false,
         "endpoints": [
             "wrapEgld",

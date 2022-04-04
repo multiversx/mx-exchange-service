@@ -288,7 +288,7 @@ export class PairTransactionService {
         sender: string,
         args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel[]> {
-        const transactions = [];
+        const transactions: TransactionModel[] = [];
         let transactionArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
@@ -379,7 +379,6 @@ export class PairTransactionService {
                 );
                 break;
         }
-
         return transactions;
     }
 

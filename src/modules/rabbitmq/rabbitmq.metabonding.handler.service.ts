@@ -17,11 +17,7 @@ export class RabbitMQMetabondingHandlerService {
     async handleMetabondingEvent(event: MetabondingEvent): Promise<void> {
         const userEntry = event.getUserEntry();
         const caller = event.getTopics().getCaller();
-        console.log({
-            methodName: this.handleMetabondingEvent.name,
-            caller: caller.bech32(),
-            userEntry,
-        });
+
         const invalidatedKeys = await this.metabondingSetter.setUserEntry(
             caller.bech32(),
             userEntry,

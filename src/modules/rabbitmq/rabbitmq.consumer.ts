@@ -168,11 +168,6 @@ export class RabbitMqConsumer {
                         new MetabondingEvent(rawEvent),
                     );
                     break;
-                case METABONDING_EVENTS.UNBOND:
-                    await this.wsMetabondingHandler.handleMetabondingEvent(
-                        new MetabondingEvent(rawEvent),
-                    );
-                    break;
             }
         }
     }
