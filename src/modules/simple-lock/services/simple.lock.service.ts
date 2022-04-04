@@ -47,7 +47,7 @@ export class SimpleLockService {
         );
 
         return LockedTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes,
+            decodedAttributes.valueOf(),
         );
     }
 
@@ -72,7 +72,7 @@ export class SimpleLockService {
         );
 
         return LpProxyTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes,
+            decodedAttributes.valueOf(),
         );
     }
 
@@ -97,7 +97,7 @@ export class SimpleLockService {
         );
 
         return FarmProxyTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes,
+            decodedAttributes.valueOf(),
         );
     }
 }
