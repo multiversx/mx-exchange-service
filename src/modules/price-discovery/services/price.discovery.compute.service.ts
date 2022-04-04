@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { quote } from 'src/modules/pair/pair.utils';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { computeValueUSD } from 'src/utils/token.converters';
 import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
 
 @Injectable()

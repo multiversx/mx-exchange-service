@@ -30,6 +30,8 @@ import { StakingProxyGetterService } from '../staking-proxy/services/staking.pro
 import { scAddress } from 'src/config';
 import { StakeFarmToken } from 'src/models/tokens/stakeFarmToken.model';
 import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
+import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
+import { PriceDiscoveryService } from '../price-discovery/services/price.discovery.service';
 
 enum EsdtTokenType {
     FungibleToken = 'FungibleESDT',
@@ -43,6 +45,7 @@ enum NftTokenType {
     LockedFarmToken,
     StakeFarmToken,
     DualYieldToken,
+    RedeemToken,
 }
 
 @Injectable()
@@ -61,6 +64,8 @@ export class UserService {
         private lockedAssetGetter: LockedAssetGetterService,
         private stakeGetterService: StakingGetterService,
         private proxyStakeGetter: StakingProxyGetterService,
+        private priceDiscoveryService: PriceDiscoveryService,
+        private priceDiscoveryGetter: PriceDiscoveryGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -179,6 +184,16 @@ export class UserService {
                         ),
                     );
                     break;
+                case NftTokenType.RedeemToken:
+                    const priceDiscoveryAddress = await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
+                        userNft.collection,
+                    );
+                    promises.push(
+                        this.userComputeService.redeemTokenUSD(
+                            userNft,
+                            priceDiscoveryAddress,
+                        ),
+                    );
                 default:
                     break;
             }
@@ -269,6 +284,13 @@ export class UserService {
             )
         ) {
             return NftTokenType.DualYieldToken;
+        }
+
+        const priceDiscoveryAddress = await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
+            tokenID,
+        );
+        if (priceDiscoveryAddress) {
+            return NftTokenType.RedeemToken;
         }
 
         return undefined;
