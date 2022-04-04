@@ -263,6 +263,7 @@ export class SimpleLockTransactionService {
         sender: string,
         inputTokens: InputTokenModel,
         endpointName: string,
+        gasLimit: number,
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens);
 
@@ -279,7 +280,7 @@ export class SimpleLockTransactionService {
         const transaction = this.contextTransactions.nftTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.simpleLock.exitFarmLockedToken),
+            new GasLimit(gasLimit),
         );
         transaction.receiver = sender;
         return transaction;

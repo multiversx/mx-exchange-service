@@ -277,9 +277,12 @@
             "withdraw": 10000000
         },
         "simpleLock": {
-            "unlockTokens": 10000000,
-            "addLiquidityLockedToken": 30000000,
-            "removeLiquidityLockedToken": 30000000
+            "unlockTokens": 5000000,
+            "addLiquidityLockedToken": 15000000,
+            "removeLiquidityLockedToken": 15000000,
+            "enterFarmLockedToken": 20000000,
+            "exitFarmLockedToken": 20000000,
+            "farmClaimRewardsLockedToken": 20000000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
