@@ -17,7 +17,6 @@ export class UserToken extends EsdtToken {
 @ObjectType()
 export class UserNftToken extends NftToken {
     @Field() valueUSD: string;
-    @Field() decodedAttributes: string;
 
     constructor(init?: Partial<UserNftToken>) {
         super(init);
@@ -94,6 +93,9 @@ export class UserDualYiledToken extends DualYieldToken {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class UserRedeemToken extends UserNftToken {}
 
 @ObjectType()
 export class UserModel {

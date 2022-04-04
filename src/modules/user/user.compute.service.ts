@@ -17,6 +17,7 @@ import {
     UserLockedAssetToken,
     UserLockedFarmToken,
     UserLockedLPToken,
+    UserRedeemToken,
     UserStakeFarmToken,
     UserUnbondFarmToken,
 } from './models/user.model';
@@ -29,6 +30,7 @@ import { StakingProxyGetterService } from '../staking-proxy/services/staking.pro
 import { StakingService } from '../staking/services/staking.service';
 import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
 import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
+import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
 
 @Injectable()
 export class UserComputeService {
@@ -45,6 +47,7 @@ export class UserComputeService {
         private readonly stakingService: StakingService,
         private readonly stakingProxyGetter: StakingProxyGetterService,
         private readonly stakingProxyService: StakingProxyService,
+        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
     ) {}
 
     async farmTokenUSD(
@@ -275,6 +278,34 @@ export class UserComputeService {
             ...nftToken,
             valueUSD: farmTokenUSD.valueUSD,
             decodedAttributes: decodedAttributes[0],
+        });
+    }
+
+    async redeemTokenUSD(
+        nftToken: NftToken,
+        priceDiscoveryAddress: string,
+    ): Promise<UserRedeemToken> {
+        const [
+            launcedTokenPriceUSD,
+            acceptedTokenPriceUSD,
+        ] = await Promise.all([
+            this.priceDiscoveryGetter.getLaunchedTokenPriceUSD(
+                priceDiscoveryAddress,
+            ),
+            this.priceDiscoveryGetter.getAcceptedTokenPriceUSD(
+                priceDiscoveryAddress,
+            ),
+        ]);
+
+        const valueUSD = computeValueUSD(
+            nftToken.balance,
+            nftToken.decimals,
+            nftToken.nonce === 1 ? launcedTokenPriceUSD : acceptedTokenPriceUSD,
+        ).toFixed();
+
+        return new UserRedeemToken({
+            ...nftToken,
+            valueUSD,
         });
     }
 }

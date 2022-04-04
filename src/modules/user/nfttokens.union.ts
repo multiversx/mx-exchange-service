@@ -10,6 +10,7 @@ import {
     UserStakeFarmToken,
     UserDualYiledToken,
     UserUnbondFarmToken,
+    UserRedeemToken,
 } from './models/user.model';
 
 export const UserNftTokens = createUnionType({
@@ -22,9 +23,13 @@ export const UserNftTokens = createUnionType({
         UserStakeFarmToken,
         UserUnbondFarmToken,
         UserDualYiledToken,
+        UserRedeemToken,
         UserNftToken,
     ],
     resolveType(value) {
+        if (value.constructor.name === UserRedeemToken.name) {
+            return UserRedeemToken.name;
+        }
         if (value.decodedAttributes.originalEnteringEpoch) {
             return UserFarmToken.name;
         }
@@ -50,6 +55,7 @@ export const UserNftTokens = createUnionType({
         if (value.decodedAttributes.stakingFarmTokenNonce) {
             return UserDualYiledToken.name;
         }
+
         return UserNftToken.name;
     },
 });
