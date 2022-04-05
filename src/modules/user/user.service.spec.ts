@@ -48,6 +48,8 @@ import { StakingService } from '../staking/services/staking.service';
 import { StakingServiceMock } from '../staking/mocks/staking.service.mock';
 import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
 import { StakingProxyServiceMock } from '../staking-proxy/mocks/staking.proxy.service.mock';
+import { PriceDiscoveryGetterServiceProvider } from '../price-discovery/mocks/price.discovery.getter.mock';
+import { PriceDiscoveryServiceProvider } from '../price-discovery/mocks/price.discovery.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -175,6 +177,8 @@ describe('UserService', () => {
                 StakingGetterServiceProvider,
                 StakingProxyServiceProvider,
                 StakingProxyGetterServiceProvider,
+                PriceDiscoveryServiceProvider,
+                PriceDiscoveryGetterServiceProvider,
                 UserService,
                 UserComputeService,
             ],
