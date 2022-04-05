@@ -24,6 +24,10 @@ export const FarmTypeEnumType = new EnumType('FarmType', [
 @ObjectType()
 export class LockedTokenAttributesModel {
     @Field()
+    identifier: string;
+    @Field()
+    attributes: string;
+    @Field()
     originalTokenID: string;
     @Field(() => Int)
     originalTokenNonce: number;
@@ -59,6 +63,10 @@ export class LockedTokenAttributesModel {
 
 @ObjectType()
 export class LpProxyTokenAttributesModel {
+    @Field()
+    identifier: string;
+    @Field()
+    attributes: string;
     @Field()
     lpTokenID: string;
     @Field()
@@ -99,6 +107,10 @@ export class LpProxyTokenAttributesModel {
 
 @ObjectType()
 export class FarmProxyTokenAttributesModel {
+    @Field()
+    identifier: string;
+    @Field()
+    attributes: string;
     @Field()
     farmType: FarmType;
     @Field()

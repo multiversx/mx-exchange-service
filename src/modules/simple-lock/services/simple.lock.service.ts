@@ -46,9 +46,12 @@ export class SimpleLockService {
             structType,
         );
 
-        return LockedTokenAttributesModel.fromDecodedAttributes(
+        const lockedTokenAttributes = LockedTokenAttributesModel.fromDecodedAttributes(
             decodedAttributes.valueOf(),
         );
+        lockedTokenAttributes.identifier = args.identifier;
+        lockedTokenAttributes.attributes = args.attributes;
+        return lockedTokenAttributes;
     }
 
     decodeBatchLpTokenProxyAttributes(
@@ -71,9 +74,12 @@ export class SimpleLockService {
             structType,
         );
 
-        return LpProxyTokenAttributesModel.fromDecodedAttributes(
+        const lpProxyTokenAttributes = LpProxyTokenAttributesModel.fromDecodedAttributes(
             decodedAttributes.valueOf(),
         );
+        lpProxyTokenAttributes.identifier = args.identifier;
+        lpProxyTokenAttributes.attributes = args.attributes;
+        return lpProxyTokenAttributes;
     }
 
     decodeBatchFarmProxyTokenAttributes(
@@ -96,8 +102,11 @@ export class SimpleLockService {
             structType,
         );
 
-        return FarmProxyTokenAttributesModel.fromDecodedAttributes(
+        const farmProxyTokenAttributes = FarmProxyTokenAttributesModel.fromDecodedAttributes(
             decodedAttributes.valueOf(),
         );
+        farmProxyTokenAttributes.identifier = args.identifier;
+        farmProxyTokenAttributes.attributes = args.attributes;
+        return farmProxyTokenAttributes;
     }
 }
