@@ -12,6 +12,7 @@ import BigNumber from 'bignumber.js';
 import { gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
@@ -27,6 +28,7 @@ export class SimpleLockTransactionService {
         private readonly simpleLockService: SimpleLockService,
         private readonly simpleLockGetter: SimpleLockGetterService,
         private readonly pairService: PairService,
+        private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
         private readonly contextTransactions: ContextTransactionsService,
@@ -63,6 +65,7 @@ export class SimpleLockTransactionService {
     async addLiquidityLockedTokenBatch(
         sender: string,
         inputTokens: InputTokenModel[],
+        pairAddress: string,
         tolerance: number,
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
@@ -106,6 +109,7 @@ export class SimpleLockTransactionService {
             await this.addLiquidityLockedToken(
                 sender,
                 [firstTokenInput, secondTokenInput],
+                pairAddress,
                 tolerance,
             ),
         );
@@ -115,18 +119,60 @@ export class SimpleLockTransactionService {
     async addLiquidityLockedToken(
         sender: string,
         inputTokens: InputTokenModel[],
+        pairAddress: string,
         tolerance: number,
     ): Promise<TransactionModel> {
         await this.validateInputAddLiquidityLockedToken(inputTokens);
 
-        const [firstTokenInput, secondTokenInput] = inputTokens;
-        const amount0 = new BigNumber(firstTokenInput.amount);
-        const amount1 = new BigNumber(secondTokenInput.amount);
+        let [firstInputToken, secondInputToken] = inputTokens;
+        const amount0 = new BigNumber(firstInputToken.amount);
+        const amount1 = new BigNumber(secondInputToken.amount);
 
         const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
         const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const [
+            pairFirstTokenID,
+            pairSecondTokenID,
+            contract,
+        ] = await Promise.all([
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.elrondProxy.getSimpleLockSmartContract(),
+        ]);
+
+        let [firstTokenID, secondTokenID] = [
+            firstInputToken.tokenID,
+            secondInputToken.tokenID,
+        ];
+        if (firstInputToken.attributes) {
+            const decodedAttributes = this.simpleLockService.decodeLockedTokenAttributes(
+                {
+                    identifier: firstInputToken.tokenID,
+                    attributes: firstInputToken.attributes,
+                },
+            );
+            firstTokenID = decodedAttributes.originalTokenID;
+        }
+        if (secondInputToken.attributes) {
+            const decodedAttributes = this.simpleLockService.decodeLockedTokenAttributes(
+                {
+                    identifier: secondInputToken.tokenID,
+                    attributes: secondInputToken.attributes,
+                },
+            );
+            secondTokenID = decodedAttributes.originalTokenID;
+        }
+
+        if (
+            firstTokenID !== pairFirstTokenID ||
+            secondTokenID !== pairSecondTokenID
+        ) {
+            [firstInputToken, secondInputToken] = [
+                secondInputToken,
+                firstInputToken,
+            ];
+        }
 
         const endpointArgs: TypedValue[] = [
             new BigUIntValue(amount0Min),
@@ -136,7 +182,7 @@ export class SimpleLockTransactionService {
         return this.contextTransactions.multiESDTNFTTransfer(
             new Address(sender),
             contract,
-            [firstTokenInput, secondTokenInput],
+            [firstInputToken, secondInputToken],
             this.addLiquidityLockedToken.name,
             endpointArgs,
             new GasLimit(gasConfig.simpleLock.addLiquidityLockedToken),

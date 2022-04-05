@@ -8,6 +8,8 @@ export class InputTokenModel {
     nonce: number;
     @Field()
     amount: string;
+    @Field({ nullable: true })
+    attributes: string;
 
     constructor(init?: Partial<InputTokenModel>) {
         Object.assign(this, init);

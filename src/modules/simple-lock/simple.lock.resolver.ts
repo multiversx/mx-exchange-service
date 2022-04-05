@@ -124,6 +124,7 @@ export class SimpleLockResolver {
     async addLiquidityLockedTokenBatch(
         @Args('inputTokens', { type: () => [InputTokenModel] })
         inputTokens: InputTokenModel[],
+        @Args('pairAddress') pairAddress: string,
         @Args('tolerance') tolerance: number,
         @User() user: any,
     ): Promise<TransactionModel[]> {
@@ -131,6 +132,7 @@ export class SimpleLockResolver {
             return await this.simpleLockTransactions.addLiquidityLockedTokenBatch(
                 user.publicKey,
                 inputTokens,
+                pairAddress,
                 tolerance,
             );
         } catch (error) {
