@@ -40,16 +40,20 @@ export class PriceDiscoveryTransactionService {
                     inputToken.amount,
                 ),
             );
+            transactions.push(
+                await this.deposit(
+                    priceDiscoveryAddress,
+                    new InputTokenModel({
+                        tokenID: wrappedTokenID,
+                        amount: inputToken.amount,
+                    }),
+                ),
+            );
+        } else {
+            transactions.push(
+                await this.deposit(priceDiscoveryAddress, inputToken),
+            );
         }
-        transactions.push(
-            await this.deposit(
-                priceDiscoveryAddress,
-                new InputTokenModel({
-                    tokenID: wrappedTokenID,
-                    amount: inputToken.amount,
-                }),
-            ),
-        );
 
         return transactions;
     }
