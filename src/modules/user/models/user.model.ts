@@ -8,10 +8,18 @@ import { LockedAssetToken } from '../../../models/tokens/lockedAssetToken.model'
 import { StakeFarmToken } from 'src/models/tokens/stakeFarmToken.model';
 import { UnbondFarmToken } from 'src/models/tokens/unbondFarmToken.model';
 import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
+import { LockedEsdtToken } from 'src/models/tokens/lockedEsdtToken.model';
+import { LockedSimpleFarmToken } from 'src/models/tokens/lockedSimpleFarmToken.model';
+import { LockedSimpleLpToken } from 'src/models/tokens/lockedSimpleLpToken.model';
 
 @ObjectType()
 export class UserToken extends EsdtToken {
     @Field() valueUSD: string;
+
+    constructor(init?: Partial<UserToken>) {
+        super(init);
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
@@ -95,7 +103,42 @@ export class UserDualYiledToken extends DualYieldToken {
 }
 
 @ObjectType()
-export class UserRedeemToken extends UserNftToken {}
+export class UserRedeemToken extends UserNftToken {
+    constructor(init?: Partial<UserRedeemToken>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserLockedEsdtToken extends LockedEsdtToken {
+    @Field() valueUSD: string;
+
+    constructor(init?: Partial<UserLockedEsdtToken>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserLockedSimpleLpToken extends LockedSimpleLpToken {
+    @Field() valueUSD: string;
+
+    constructor(init?: Partial<UserLockedSimpleLpToken>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserLockedSimpleFarmToken extends LockedSimpleFarmToken {
+    @Field() valueUSD: string;
+
+    constructor(init?: Partial<UserLockedSimpleFarmToken>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
 
 @ObjectType()
 export class UserModel {
