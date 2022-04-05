@@ -20,17 +20,14 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
-import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PaginationArgs } from '../dex.model';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
-import { computeValueUSD } from 'src/utils/token.converters';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { StakingGetterService } from '../staking/services/staking.getter.service';
 import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
 import { scAddress } from 'src/config';
 import { StakeFarmToken } from 'src/models/tokens/stakeFarmToken.model';
 import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
-import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
 import { PriceDiscoveryService } from '../price-discovery/services/price.discovery.service';
 
 enum EsdtTokenType {
@@ -55,7 +52,6 @@ export class UserService {
         private apiService: ElrondApiService,
         private cachingService: CachingService,
         private pairService: PairService,
-        private pairComputeService: PairComputeService,
         private priceFeed: PriceFeedService,
         private proxyPairGetter: ProxyPairGetterService,
         private proxyFarmGetter: ProxyFarmGetterService,
@@ -207,28 +203,16 @@ export class UserService {
             token.identifier,
         );
         if (pairAddress) {
-            const valueUSD = await this.pairService.getLiquidityPositionUSD(
+            const userToken = await this.userComputeService.lpTokenUSD(
+                token,
                 pairAddress,
-                token.balance,
             );
-            return {
-                ...token,
-                type: EsdtTokenType.FungibleLpToken,
-                valueUSD: valueUSD,
-            };
+            userToken.type = EsdtTokenType.FungibleLpToken;
+            return userToken;
         }
-        const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
-            token.identifier,
-        );
-        return {
-            ...token,
-            type: EsdtTokenType.FungibleToken,
-            valueUSD: computeValueUSD(
-                token.balance,
-                token.decimals,
-                tokenPriceUSD.toFixed(),
-            ).toFixed(),
-        };
+        const userToken = await this.userComputeService.esdtTokenUSD(token);
+        userToken.type = EsdtTokenType.FungibleToken;
+        return userToken;
     }
 
     private async getNftTokenType(tokenID: string): Promise<NftTokenType> {

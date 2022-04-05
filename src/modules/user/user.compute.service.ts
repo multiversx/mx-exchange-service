@@ -19,6 +19,7 @@ import {
     UserLockedLPToken,
     UserRedeemToken,
     UserStakeFarmToken,
+    UserToken,
     UserUnbondFarmToken,
 } from './models/user.model';
 import { PairGetterService } from '../pair/services/pair.getter.service';
@@ -31,6 +32,8 @@ import { StakingService } from '../staking/services/staking.service';
 import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
 import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
 import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
+import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { PairComputeService } from '../pair/services/pair.compute.service';
 
 @Injectable()
 export class UserComputeService {
@@ -40,6 +43,7 @@ export class UserComputeService {
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
+        private readonly pairComputeService: PairComputeService,
         private readonly lockedAssetService: LockedAssetService,
         private readonly proxyService: ProxyService,
         private readonly proxyGetter: ProxyGetterService,
@@ -49,6 +53,34 @@ export class UserComputeService {
         private readonly stakingProxyService: StakingProxyService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
     ) {}
+
+    async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
+        const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
+            esdtToken.identifier,
+        );
+        return new UserToken({
+            ...esdtToken,
+            valueUSD: computeValueUSD(
+                esdtToken.balance,
+                esdtToken.decimals,
+                tokenPriceUSD.toFixed(),
+            ).toFixed(),
+        });
+    }
+
+    async lpTokenUSD(
+        esdtToken: EsdtToken,
+        pairAddress: string,
+    ): Promise<UserToken> {
+        const valueUSD = await this.pairService.getLiquidityPositionUSD(
+            pairAddress,
+            esdtToken.balance,
+        );
+        return new UserToken({
+            ...esdtToken,
+            valueUSD: valueUSD,
+        });
+    }
 
     async farmTokenUSD(
         nftToken: NftToken,
