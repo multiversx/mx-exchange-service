@@ -27,5 +27,6 @@ import { SimpleLockResolver } from './simple.lock.resolver';
         SimpleLockTransactionService,
         SimpleLockResolver,
     ],
+    exports: [SimpleLockService, SimpleLockGetterService],
 })
 export class SimpleLockModule {}

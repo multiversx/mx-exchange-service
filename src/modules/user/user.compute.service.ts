@@ -15,8 +15,11 @@ import {
     UserDualYiledToken,
     UserFarmToken,
     UserLockedAssetToken,
+    UserLockedEsdtToken,
     UserLockedFarmToken,
     UserLockedLPToken,
+    UserLockedSimpleFarmToken,
+    UserLockedSimpleLpToken,
     UserRedeemToken,
     UserStakeFarmToken,
     UserToken,
@@ -32,6 +35,7 @@ import { StakingService } from '../staking/services/staking.service';
 import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
 import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
 import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
+import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 
@@ -52,6 +56,7 @@ export class UserComputeService {
         private readonly stakingProxyGetter: StakingProxyGetterService,
         private readonly stakingProxyService: StakingProxyService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private readonly simpleLockService: SimpleLockService,
     ) {}
 
     async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
@@ -338,6 +343,81 @@ export class UserComputeService {
         return new UserRedeemToken({
             ...nftToken,
             valueUSD,
+        });
+    }
+
+    async lockedEsdtTokenUSD(nftToken: NftToken): Promise<UserLockedEsdtToken> {
+        const decodedAttributes = this.simpleLockService.decodeLockedTokenAttributes(
+            {
+                identifier: nftToken.identifier,
+                attributes: nftToken.attributes,
+            },
+        );
+
+        const userEsdtToken = await this.esdtTokenUSD(
+            new EsdtToken({
+                identifier: decodedAttributes.originalTokenID,
+                balance: nftToken.balance,
+                decimals: nftToken.decimals,
+            }),
+        );
+        return new UserLockedEsdtToken({
+            ...nftToken,
+            decodedAttributes,
+            valueUSD: userEsdtToken.valueUSD,
+        });
+    }
+
+    async lockedSimpleLpTokenUSD(
+        nftToken: NftToken,
+    ): Promise<UserLockedSimpleLpToken> {
+        const decodedAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
+            {
+                identifier: nftToken.identifier,
+                attributes: nftToken.attributes,
+            },
+        );
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            decodedAttributes.lpTokenID,
+        );
+        const userEsdtToken = await this.lpTokenUSD(
+            new EsdtToken({
+                identifier: decodedAttributes.lpTokenID,
+                balance: nftToken.balance,
+                decimals: nftToken.decimals,
+            }),
+            pairAddress,
+        );
+
+        return new UserLockedSimpleLpToken({
+            ...nftToken,
+            decodedAttributes,
+            valueUSD: userEsdtToken.valueUSD,
+        });
+    }
+
+    async lockedSimpleFarmTokenUSD(
+        nftToken: NftToken,
+    ): Promise<UserLockedSimpleFarmToken> {
+        const decodedAttributes = this.simpleLockService.decodeFarmProxyTokenAttributes(
+            {
+                identifier: nftToken.identifier,
+                attributes: nftToken.attributes,
+            },
+        );
+        const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
+            decodedAttributes.farmTokenID,
+        );
+        const farmToken = await this.apiService.getNftByTokenIdentifier(
+            scAddress.simpleLock,
+            decodedAttributes.farmTokenID,
+        );
+        const userFarmToken = await this.farmTokenUSD(farmToken, farmAddress);
+
+        return new UserLockedSimpleFarmToken({
+            ...nftToken,
+            decodedAttributes,
+            valueUSD: userFarmToken.valueUSD,
         });
     }
 }
