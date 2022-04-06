@@ -84,11 +84,11 @@ export class PriceDiscoveryModel {
     @Field(() => Int)
     unlockEpoch: number;
     @Field()
-    penaltyMinPercentage: string;
+    penaltyMinPercentage: number;
     @Field()
-    penaltyMaxPercentage: string;
+    penaltyMaxPercentage: number;
     @Field()
-    fixedPenaltyPercentage: string;
+    fixedPenaltyPercentage: number;
 
     constructor(init?: Partial<PriceDiscoveryModel>) {
         Object.assign(this, init);

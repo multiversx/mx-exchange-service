@@ -283,7 +283,7 @@ export class PriceDiscoveryGetterService {
 
     async getPenaltyMinPercentage(
         priceDiscoveryAddress: string,
-    ): Promise<string> {
+    ): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
             'penaltyMinPercentage',
@@ -295,7 +295,7 @@ export class PriceDiscoveryGetterService {
 
     async getPenaltyMaxPercentage(
         priceDiscoveryAddress: string,
-    ): Promise<string> {
+    ): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
             'penaltyMaxPercentage',
@@ -307,7 +307,7 @@ export class PriceDiscoveryGetterService {
 
     async getFixedPenaltyPercentage(
         priceDiscoveryAddress: string,
-    ): Promise<string> {
+    ): Promise<number> {
         return this.getData(
             priceDiscoveryAddress,
             'fixedPenaltyPercentage',
