@@ -256,7 +256,7 @@ export class PriceDiscoverySetterService {
 
     async setPenaltyMinPercentage(
         priceDiscoveryAddress: string,
-        value: string,
+        value: number,
     ): Promise<string> {
         return await this.setData(
             priceDiscoveryAddress,
@@ -268,7 +268,7 @@ export class PriceDiscoverySetterService {
 
     async setPenaltyMaxPercentage(
         priceDiscoveryAddress: string,
-        value: string,
+        value: number,
     ): Promise<string> {
         return await this.setData(
             priceDiscoveryAddress,
@@ -280,7 +280,7 @@ export class PriceDiscoverySetterService {
 
     async setFixedPenaltyPercentage(
         priceDiscoveryAddress: string,
-        value: string,
+        value: number,
     ): Promise<string> {
         return await this.setData(
             priceDiscoveryAddress,

@@ -218,7 +218,7 @@ export class PriceDiscoveryAbiService {
 
     async getPenaltyMinPercentage(
         priceDiscoveryAddress: string,
-    ): Promise<string> {
+    ): Promise<number> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -226,12 +226,15 @@ export class PriceDiscoveryAbiService {
             [],
         );
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
+        const rawPenalty: BigNumber = response.firstValue.valueOf();
+        return rawPenalty
+            .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
+            .toNumber();
     }
 
     async getPenaltyMaxPercentage(
         priceDiscoveryAddress: string,
-    ): Promise<string> {
+    ): Promise<number> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -239,12 +242,15 @@ export class PriceDiscoveryAbiService {
             [],
         );
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
+        const rawPenalty: BigNumber = response.firstValue.valueOf();
+        return rawPenalty
+            .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
+            .toNumber();
     }
 
     async getFixedPenaltyPercentage(
         priceDiscoveryAddress: string,
-    ): Promise<string> {
+    ): Promise<number> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
@@ -252,6 +258,9 @@ export class PriceDiscoveryAbiService {
             [],
         );
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().toFixed();
+        const rawPenalty: BigNumber = response.firstValue.valueOf();
+        return rawPenalty
+            .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
+            .toNumber();
     }
 }
