@@ -1,6 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
+import { gasConfig } from 'src/config';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
@@ -158,5 +159,57 @@ export class SimpleLockResolver {
         } catch (error) {
             throw new ApolloError(error);
         }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async enterFarmLockedToken(
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('farmAddress') farmAddress: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.simpleLockTransactions.enterFarmLockedToken(
+                user.publicKey,
+                inputTokens,
+                farmAddress,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async exitFarmLockedToken(
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.simpleLockTransactions.farmProxyTokenInteraction(
+                user.publicKey,
+                inputTokens,
+                this.exitFarmLockedToken.name,
+                gasConfig.simpleLock.exitFarmLockedToken,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async claimRewardsFarmLockedToken(
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.simpleLockTransactions.farmProxyTokenInteraction(
+                user.publicKey,
+                inputTokens,
+                'farmClaimRewardsLockedToken',
+                gasConfig.simpleLock.claimRewardsFarmLockedToken,
+            );
+        } catch (error) {}
     }
 }

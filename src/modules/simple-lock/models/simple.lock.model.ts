@@ -112,7 +112,7 @@ export class FarmProxyTokenAttributesModel {
     @Field()
     attributes: string;
     @Field()
-    farmType: FarmType;
+    farmType: string;
     @Field()
     farmTokenID: string;
     @Field(() => Int)

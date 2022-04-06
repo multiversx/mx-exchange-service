@@ -12,12 +12,14 @@ import BigNumber from 'bignumber.js';
 import { gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
+import { FarmRewardType } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { farmType } from 'src/utils/farm.utils';
 import { FarmTypeEnumType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
 import { SimpleLockService } from './simple.lock.service';
@@ -271,29 +273,29 @@ export class SimpleLockTransactionService {
     async enterFarmLockedToken(
         sender: string,
         inputTokens: InputTokenModel,
-        attributes: string,
+        farmAddress: string,
     ): Promise<TransactionModel> {
         await this.validateInputLpProxyToken(inputTokens);
 
-        const decodedAttributes = this.simpleLockService.decodeFarmProxyTokenAttributes(
-            {
-                attributes,
-                identifier: inputTokens.tokenID,
-            },
-        );
-
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
 
+        let farmTypeDiscriminant: number;
+        switch (farmType(farmAddress)) {
+            case FarmRewardType.UNLOCKED_REWARDS:
+                farmTypeDiscriminant = 0;
+                break;
+            case FarmRewardType.LOCKED_REWARDS:
+                farmTypeDiscriminant = 1;
+                break;
+        }
+        console.log({ farmTypeDiscriminant });
         const transactionArgs = [
             BytesValue.fromUTF8(inputTokens.tokenID),
             new U32Value(inputTokens.nonce),
             new BigUIntValue(new BigNumber(inputTokens.amount)),
             BytesValue.fromHex(contract.getAddress().hex()),
             BytesValue.fromUTF8(this.enterFarmLockedToken.name),
-            EnumValue.fromDiscriminant(
-                FarmTypeEnumType,
-                decodedAttributes.farmType,
-            ),
+            EnumValue.fromDiscriminant(FarmTypeEnumType, farmTypeDiscriminant),
         ];
 
         const transaction = this.contextTransactions.nftTransfer(
