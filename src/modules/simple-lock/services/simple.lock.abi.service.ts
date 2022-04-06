@@ -1,7 +1,6 @@
 import { Interaction, QueryResponseBundle } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { scAddress } from 'src/config';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
@@ -60,5 +59,27 @@ export class SimpleLockAbiService {
 
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async getKnownLiquidityPools(): Promise<string[]> {
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const interaction: Interaction = contract.methods.getKnownLiquidityPools(
+            [],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().map(pairAddress => {
+            return pairAddress.valueOf().toString();
+        });
+    }
+
+    async getKnownFarms(): Promise<string[]> {
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const interaction: Interaction = contract.methods.getKnownFarms([]);
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().map(farmAddress => {
+            return farmAddress.valueOf().toString();
+        });
     }
 }

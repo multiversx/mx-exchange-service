@@ -55,6 +55,20 @@ export class SimpleLockResolver {
         );
     }
 
+    @ResolveField()
+    async intermediatedPairs(): Promise<string[]> {
+        return await this.genericFieldResover(() =>
+            this.simpleLockGetter.getIntermediatedPairs(),
+        );
+    }
+
+    @ResolveField()
+    async intermediatedFarms(): Promise<string[]> {
+        return await this.genericFieldResover(() =>
+            this.simpleLockGetter.getIntermediatedFarms(),
+        );
+    }
+
     @Query(() => SimpleLockModel)
     async simpleLock(): Promise<SimpleLockModel> {
         try {

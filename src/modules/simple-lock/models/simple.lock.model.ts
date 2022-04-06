@@ -170,6 +170,10 @@ export class SimpleLockModel {
     lpProxyToken: NftCollection;
     @Field()
     farmProxyToken: NftCollection;
+    @Field(() => [String])
+    intermediatedPairs: string[];
+    @Field(() => [String])
+    intermediatedFarms: string[];
 
     constructor(init?: Partial<SimpleLockModel>) {
         Object.assign(this, init);

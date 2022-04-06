@@ -194,6 +194,10 @@
             "mutability": "mutable",
             "inputs": [
                 {
+                    "name": "lp_address",
+                    "type": "Address"
+                },
+                {
                     "name": "first_token_id",
                     "type": "TokenIdentifier"
                 },
@@ -289,6 +293,17 @@
             ]
         },
         {
+            "name": "getKnownLiquidityPools",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
             "name": "getLpProxyTokenId",
             "mutability": "readonly",
             "inputs": [],
@@ -359,6 +374,10 @@
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                },
                 {
                     "name": "farming_token_id",
                     "type": "TokenIdentifier"
@@ -473,6 +492,17 @@
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "getKnownFarms",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
                 }
             ]
         },
