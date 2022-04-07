@@ -408,9 +408,14 @@ export class UserComputeService {
         const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
             decodedAttributes.farmTokenID,
         );
-        const farmToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.simpleLock,
+
+        const farmTokenIdentifier = tokenIdentifier(
             decodedAttributes.farmTokenID,
+            decodedAttributes.farmTokenNonce,
+        );
+        const farmToken = await this.apiService.getNftByTokenIdentifier(
+            scAddress.simpleLockAddress,
+            farmTokenIdentifier,
         );
         const userFarmToken = await this.farmTokenUSD(farmToken, farmAddress);
 
