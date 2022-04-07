@@ -1,11 +1,11 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.56.0-nightly",
-            "commitHash": "29ef6cf1637aa8317f8911f93f14e18d404c1b0e",
-            "commitDate": "2021-08-31",
+            "version": "1.60.0-nightly",
+            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
+            "commitDate": "2022-01-29",
             "channel": "Nightly",
-            "short": "rustc 1.56.0-nightly (29ef6cf16 2021-08-31)"
+            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
         },
         "contractCrate": {
             "name": "pair",
@@ -13,7 +13,7 @@
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.21.0"
+            "version": "0.29.3"
         }
     },
     "name": "Pair",
@@ -42,11 +42,41 @@
             {
                 "name": "special_fee_percent",
                 "type": "u64"
+            },
+            {
+                "name": "initial_liquidity_adder",
+                "type": "optional<Address>",
+                "multi_arg": true
             }
         ],
         "outputs": []
     },
     "endpoints": [
+        {
+            "name": "addInitialLiquidity",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "opt_accept_funds_func",
+                    "type": "optional<bytes>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
         {
             "name": "addLiquidity",
             "mutability": "mutable",
@@ -302,17 +332,6 @@
             ]
         },
         {
-            "name": "getWhitelistedManagedAddresses",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<Address>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
             "name": "getFeeState",
             "mutability": "readonly",
             "inputs": [],
@@ -420,44 +439,20 @@
             ]
         },
         {
+            "name": "getWhitelistedManagedAddresses",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
             "name": "getTotalSupply",
             "mutability": "readonly",
             "inputs": [],
-            "outputs": [
-                {
-                    "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "getFirstTokenId",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getSecondTokenId",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "TokenIdentifier"
-                }
-            ]
-        },
-        {
-            "name": "getReserve",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
             "outputs": [
                 {
                     "type": "BigUint"
@@ -590,44 +585,37 @@
             ]
         },
         {
-            "name": "getGeneratedTokenAmountList",
+            "name": "getFirstTokenId",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getBurnedTokenAmountList",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "variadic<tuple<TokenIdentifier,BigUint>>",
-                    "multi_result": true
-                }
-            ]
-        },
-        {
-            "name": "getGeneratedTokenAmount",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "token_id",
                     "type": "TokenIdentifier"
                 }
-            ],
+            ]
+        },
+        {
+            "name": "getSecondTokenId",
+            "mutability": "readonly",
+            "inputs": [],
             "outputs": [
                 {
-                    "type": "BigUint"
+                    "type": "TokenIdentifier"
                 }
             ]
         },
         {
-            "name": "getBurnedTokenAmount",
+            "name": "getInitialLiquidtyAdder",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Option<Address>"
+                }
+            ]
+        },
+        {
+            "name": "getReserve",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -650,9 +638,266 @@
                     "type": "u64"
                 }
             ]
+        },
+        {
+            "name": "updateAndGetTokensForGivenPositionWithSafePrice",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "liquidity",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "updateAndGetSafePrice",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "input",
+                    "type": "EsdtTokenPayment"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "setMaxObservationsPerRecord",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "max_observations_per_record",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setBPSwapConfig",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "protect_stop_block",
+                    "type": "u64"
+                },
+                {
+                    "name": "volume_percent",
+                    "type": "u64"
+                },
+                {
+                    "name": "max_num_actions_per_address",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setBPRemoveConfig",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "protect_stop_block",
+                    "type": "u64"
+                },
+                {
+                    "name": "volume_percent",
+                    "type": "u64"
+                },
+                {
+                    "name": "max_num_actions_per_address",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setBPAddConfig",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "protect_stop_block",
+                    "type": "u64"
+                },
+                {
+                    "name": "volume_percent",
+                    "type": "u64"
+                },
+                {
+                    "name": "max_num_actions_per_address",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getBPSwapConfig",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BPConfig"
+                }
+            ]
+        },
+        {
+            "name": "getNumSwapsByAddress",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getBPRemoveConfig",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BPConfig"
+                }
+            ]
+        },
+        {
+            "name": "getNumRemovesByAddress",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getBPAddConfig",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BPConfig"
+                }
+            ]
+        },
+        {
+            "name": "getNumAddsByAddress",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "setLockingDeadlineEpoch",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_deadline",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLockingScAddress",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setUnlockEpoch",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_epoch",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getLockingScAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getUnlockEpoch",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getLockingDeadlineEpoch",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
         }
     ],
+    "hasCallback": false,
     "types": {
+        "BPConfig": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "protect_stop_block",
+                    "type": "u64"
+                },
+                {
+                    "name": "volume_percent",
+                    "type": "u64"
+                },
+                {
+                    "name": "max_num_actions_per_address",
+                    "type": "u64"
+                }
+            ]
+        },
         "EsdtTokenPayment": {
             "type": "struct",
             "fields": [
