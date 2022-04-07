@@ -35,6 +35,12 @@ export enum ESDT_EVENTS {
     ESDT_LOCAL_BURN = 'ESDTLocalBurn',
 }
 
+export enum PRICE_DISCOVERY_EVENTS {
+    DEPOSIT = 'deposit',
+    WITHDARW = 'withdraw',
+    REDEEM = 'redeem',
+}
+
 export type GenericEventType = {
     address: string;
     caller: string;

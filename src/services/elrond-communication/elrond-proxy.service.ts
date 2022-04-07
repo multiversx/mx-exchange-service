@@ -133,6 +133,16 @@ export class ElrondProxyService {
         );
     }
 
+    async getPriceDiscoverySmartContract(
+        priceDiscoveryAddress: string,
+    ): Promise<SmartContract> {
+        return this.getSmartContract(
+            priceDiscoveryAddress,
+            abiConfig.priceDiscovery,
+            'PriceDiscovery',
+        );
+    }
+
     async getMetabondingStakingSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.metabondingStakingAddress,
