@@ -29,6 +29,7 @@ import { StakingProxyGetterService } from '../staking-proxy/services/staking.pro
 import { StakingService } from '../staking/services/staking.service';
 import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
 import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
+import { ruleOfThree } from 'src/helpers/helpers';
 
 @Injectable()
 export class UserComputeService {
@@ -267,6 +268,13 @@ export class UserComputeService {
             ),
             this.farmService.getFarmAddressByFarmTokenID(farmTokenID),
         ]);
+
+        farmToken.balance = ruleOfThree(
+            new BigNumber(nftToken.balance),
+            new BigNumber(decodedAttributes[0].stakingFarmTokenAmount),
+            new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
+        ).toFixed();
+
         const farmTokenUSD = await this.farmTokenUSD(farmToken, farmAddress);
 
         return new UserDualYiledToken({
