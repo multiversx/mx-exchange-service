@@ -8,6 +8,7 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
 
 export enum FarmType {
     SIMPLE_FARM,
@@ -121,6 +122,8 @@ export class FarmProxyTokenAttributesModel {
     farmingTokenID: string;
     @Field(() => Int)
     farmingTokenLockedNonce: number;
+    @Field(() => FarmTokenAttributesModel)
+    farmTokenAttributes: FarmTokenAttributesModel;
 
     constructor(init?: Partial<FarmProxyTokenAttributesModel>) {
         Object.assign(this, init);

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { SimpleLockAbiService } from './services/simple.lock.abi.service';
@@ -17,6 +18,7 @@ import { SimpleLockResolver } from './simple.lock.resolver';
         ContextModule,
         CachingModule,
         PairModule,
+        FarmModule,
         WrappingModule,
     ],
     providers: [
