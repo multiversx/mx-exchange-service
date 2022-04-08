@@ -299,9 +299,7 @@ export class UserComputeService {
             farmTokenID,
             decodedAttributes[0].lpFarmTokenNonce,
         );
-        console.log({
-            farmTokenIdentifier,
-        });
+
         const [farmToken, farmAddress] = await Promise.all([
             this.apiService.getNftByTokenIdentifier(
                 stakingProxyAddress,

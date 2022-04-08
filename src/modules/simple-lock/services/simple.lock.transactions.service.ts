@@ -288,7 +288,7 @@ export class SimpleLockTransactionService {
                 farmTypeDiscriminant = 1;
                 break;
         }
-        console.log({ farmTypeDiscriminant });
+
         const transactionArgs = [
             BytesValue.fromUTF8(inputTokens.tokenID),
             new U32Value(inputTokens.nonce),
