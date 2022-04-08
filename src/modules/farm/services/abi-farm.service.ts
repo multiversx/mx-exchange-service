@@ -269,7 +269,7 @@ export class AbiFarmService {
             const interaction: Interaction = contract.methods.getFarmMigrationConfiguration();
             const response = await this.getGenericData(contract, interaction);
             const decodedResponse = response.firstValue.valueOf();
-            console.log(decodedResponse);
+
             if (version === FarmVersion.V1_2) {
                 return new FarmMigrationConfig({
                     migrationRole: decodedResponse.migration_role.name,

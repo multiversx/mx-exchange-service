@@ -76,7 +76,7 @@
     },
     "gasLimits": {
         "router": {
-            "createPair": 21000000,
+            "createPair": 30000000,
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
             "setState": 200000000,
