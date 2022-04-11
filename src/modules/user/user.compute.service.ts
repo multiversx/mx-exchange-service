@@ -321,9 +321,13 @@ export class UserComputeService {
         priceDiscoveryAddress: string,
     ): Promise<UserRedeemToken> {
         const [
+            launchedTokenID,
+            acceptedTokenID,
             launcedTokenPriceUSD,
             acceptedTokenPriceUSD,
         ] = await Promise.all([
+            this.priceDiscoveryGetter.getLaunchedTokenID(priceDiscoveryAddress),
+            this.priceDiscoveryGetter.getAcceptedTokenID(priceDiscoveryAddress),
             this.priceDiscoveryGetter.getLaunchedTokenPriceUSD(
                 priceDiscoveryAddress,
             ),
@@ -332,10 +336,34 @@ export class UserComputeService {
             ),
         ]);
 
+        let tokenID: string;
+        switch (nftToken.nonce) {
+            case 1:
+                tokenID = launchedTokenID;
+                break;
+            case 2:
+                tokenID = acceptedTokenID;
+                break;
+        }
+
+        let tokenIDPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+            tokenID,
+        );
+        if (new BigNumber(tokenIDPriceUSD).isZero()) {
+            switch (nftToken.nonce) {
+                case 1:
+                    tokenIDPriceUSD = launcedTokenPriceUSD;
+                    break;
+                case 2:
+                    tokenIDPriceUSD = acceptedTokenPriceUSD;
+                    break;
+            }
+        }
+
         const valueUSD = computeValueUSD(
             nftToken.balance,
             nftToken.decimals,
-            nftToken.nonce === 1 ? launcedTokenPriceUSD : acceptedTokenPriceUSD,
+            tokenIDPriceUSD,
         ).toFixed();
 
         return new UserRedeemToken({

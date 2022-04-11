@@ -16,6 +16,7 @@ import {
     FARM_EVENTS,
     METABONDING_EVENTS,
     PAIR_EVENTS,
+    PRICE_DISCOVERY_EVENTS,
     PROXY_EVENTS,
     ROUTER_EVENTS,
 } from './entities/generic.types';
@@ -36,6 +37,9 @@ import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service'
 import { CreatePairEvent } from './entities/router/createPair.event';
 import { MetabondingEvent } from './entities/metabonding/metabonding.event';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
+import { RabbitMqPriceDiscoveryHandlerService } from './rabbitmq.price.discovery.handler.service';
+import { DepositEvent } from './entities/price-discovery/deposit.event';
+import { WithdrawEvent } from './entities/price-discovery/withdraw.event';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -49,6 +53,7 @@ export class RabbitMqConsumer {
         private readonly wsRouterHandler: RabbitMQRouterHandlerService,
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
+        private readonly wsPriceDiscoveryHandler: RabbitMqPriceDiscoveryHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -168,6 +173,16 @@ export class RabbitMqConsumer {
                         new MetabondingEvent(rawEvent),
                     );
                     break;
+                case PRICE_DISCOVERY_EVENTS.DEPOSIT:
+                    await this.wsPriceDiscoveryHandler.handleEvent(
+                        new DepositEvent(rawEvent),
+                    );
+                    break;
+                case PRICE_DISCOVERY_EVENTS.WITHDARW:
+                    await this.wsPriceDiscoveryHandler.handleEvent(
+                        new WithdrawEvent(rawEvent),
+                    );
+                    break;
             }
         }
     }
@@ -179,5 +194,6 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.proxyDexAddress);
         this.filterAddresses.push(scAddress.routerAddress);
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
+        this.filterAddresses.push(...scAddress.priceDiscovery);
     }
 }

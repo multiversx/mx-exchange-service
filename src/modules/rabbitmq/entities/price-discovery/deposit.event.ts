@@ -40,11 +40,11 @@ export class DepositEvent extends PriceDiscoveryEvent {
         });
         this.redeemToken = new GenericToken({
             tokenID: decodedEvent.redeemTokenID.toString(),
-            nonce: decodedEvent.redeemTokenNonce.toNumber(),
+            nonce: decodedEvent.redeemTokenNonce,
             amount: decodedEvent.redeemTokenAmount,
         });
 
-        const penalty = decodedEvent.penaltyPercent.toFixed();
+        const penalty = decodedEvent.currentPhase.penaltyPercent?.toFixed();
         const penaltyPercent = penalty
             ? new BigNumber(penalty).dividedBy(
                   constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY,
@@ -54,6 +54,7 @@ export class DepositEvent extends PriceDiscoveryEvent {
             name: decodedEvent.currentPhase.name,
             penaltyPercent: penaltyPercent.toNumber(),
         });
+        this.launchedTokenPrice = decodedEvent.currentPrice;
     }
 
     toJSON(): DepositEventType {
