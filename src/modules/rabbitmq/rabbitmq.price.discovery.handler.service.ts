@@ -4,6 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import { PriceDiscoveryComputeService } from '../price-discovery/services/price.discovery.compute.service';
+import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
 import { PriceDiscoverySetterService } from '../price-discovery/services/price.discovery.setter.service';
 import { PRICE_DISCOVERY_EVENTS } from './entities/generic.types';
 import { DepositEvent } from './entities/price-discovery/deposit.event';
@@ -12,6 +13,7 @@ import { WithdrawEvent } from './entities/price-discovery/withdraw.event';
 @Injectable()
 export class RabbitMqPriceDiscoveryHandlerService {
     constructor(
+        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly priceDiscoverySetter: PriceDiscoverySetterService,
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -28,8 +30,12 @@ export class RabbitMqPriceDiscoveryHandlerService {
             event.getAddress(),
             event.launchedTokenAmount.toFixed(),
             event.acceptedTokenAmount.toFixed(),
-            event.launchedTokenPrice.toFixed(),
+            event.launchedTokenPrice,
         ];
+
+        const launchedToken = await this.priceDiscoveryGetter.getLaunchedToken(
+            priceDiscoveryAddress,
+        );
 
         let cacheKeys: string[] = await Promise.all([
             this.priceDiscoverySetter.setLaunchedTokenAmount(
@@ -42,7 +48,9 @@ export class RabbitMqPriceDiscoveryHandlerService {
             ),
             this.priceDiscoverySetter.setLaunchedTokenPrice(
                 priceDiscoveryAddress,
-                launchedTokenPrice,
+                launchedTokenPrice
+                    .multipliedBy(`1e-${launchedToken.decimals}`)
+                    .toFixed(),
             ),
             this.priceDiscoverySetter.setCurrentPhase(
                 priceDiscoveryAddress,
