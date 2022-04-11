@@ -379,10 +379,6 @@ export class PairTransactionService {
                 );
                 break;
         }
-        console.log({
-            endpoint: this.swapTokensFixedOutput,
-            gaslimit: transactions[0].gasLimit.toFixed(),
-        });
         return transactions;
     }
 
