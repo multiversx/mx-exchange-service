@@ -24,7 +24,7 @@ export class PriceDiscoveryCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     async cachePriceDiscovery(): Promise<void> {
         const priceDiscoveryAddresses: string[] = scAddress.priceDiscovery;
 
