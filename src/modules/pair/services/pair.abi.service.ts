@@ -163,10 +163,6 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        console.log({
-            method: this.getLockingScAddress.name,
-            pairAddress,
-        });
         try {
             const interaction: Interaction = contract.methods.getLockingScAddress(
                 [],
@@ -200,10 +196,6 @@ export class PairAbiService {
             pairAddress,
         );
         const interaction: Interaction = contract.methods.getUnlockEpoch([]);
-        console.log({
-            method: this.getUnlockEpoch.name,
-            pairAddress,
-        });
         try {
             const queryResponse = await contract.runQuery(
                 this.elrondProxy.getService(),
@@ -238,10 +230,6 @@ export class PairAbiService {
         const interaction: Interaction = contract.methods.getLockingDeadlineEpoch(
             [],
         );
-        console.log({
-            method: this.getLockingDeadlineEpoch.name,
-            pairAddress,
-        });
         try {
             const queryResponse = await contract.runQuery(
                 this.elrondProxy.getService(),
