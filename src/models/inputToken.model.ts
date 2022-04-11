@@ -9,7 +9,7 @@ export class InputTokenModel {
     @Field()
     amount: string;
     @Field({ nullable: true })
-    attributes: string;
+    attributes?: string;
 
     constructor(init?: Partial<InputTokenModel>) {
         Object.assign(this, init);
