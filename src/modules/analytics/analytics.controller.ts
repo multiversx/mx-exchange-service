@@ -2,17 +2,23 @@ import { Controller, Inject } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { PAIR_EVENTS } from '../rabbitmq/entities/generic.types';
+import {
+    PAIR_EVENTS,
+    PRICE_DISCOVERY_EVENTS,
+} from '../rabbitmq/entities/generic.types';
 import {
     AddLiquidityEventType,
     SwapEventType,
 } from '../rabbitmq/entities/pair/pair.types';
+import { DepositEventType } from '../rabbitmq/entities/price-discovery/price.discovery.types';
 import { AnalyticsEventHandlerService } from './services/analytics.event.handler.service';
+import { AnalyticsPriceDiscoveryEventHandlerService } from './services/analytics.price.discovery.event.handler.service';
 
 @Controller()
 export class AnalyticsController {
     constructor(
         private readonly eventHandler: AnalyticsEventHandlerService,
+        private readonly priceDiscoveryEventHandler: AnalyticsPriceDiscoveryEventHandlerService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -46,5 +52,19 @@ export class AnalyticsController {
         @Payload() event: { swapFixedOutputEvent: SwapEventType },
     ) {
         await this.eventHandler.handleSwapEvents(event.swapFixedOutputEvent);
+    }
+
+    @EventPattern(PRICE_DISCOVERY_EVENTS.DEPOSIT)
+    async handlePriceDiscoveryDepositEvent(
+        @Payload() event: { depositEvent: DepositEventType },
+    ) {
+        await this.priceDiscoveryEventHandler.handleEvent(event.depositEvent);
+    }
+
+    @EventPattern(PRICE_DISCOVERY_EVENTS.WITHDARW)
+    async handlePriceDiscoveryWithdrawEvent(
+        @Payload() event: { withdrawEvent: DepositEventType },
+    ) {
+        await this.priceDiscoveryEventHandler.handleEvent(event.withdrawEvent);
     }
 }
