@@ -110,7 +110,7 @@ export class PriceDiscoveryGetterService {
             'launchedTokenAmount',
             () =>
                 this.abiService.getLaunchedTokenBalance(priceDiscoveryAddress),
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
@@ -122,7 +122,7 @@ export class PriceDiscoveryGetterService {
             'acceptedTokenAmount',
             () =>
                 this.abiService.getAcceptedTokenBalance(priceDiscoveryAddress),
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
@@ -136,7 +136,7 @@ export class PriceDiscoveryGetterService {
                 this.priceDiscoveryCompute.computeLaunchedTokenPrice(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
@@ -150,7 +150,7 @@ export class PriceDiscoveryGetterService {
                 this.priceDiscoveryCompute.computeAcceptedTokenPrice(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
@@ -164,7 +164,7 @@ export class PriceDiscoveryGetterService {
                 this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
@@ -178,7 +178,7 @@ export class PriceDiscoveryGetterService {
             priceDiscoveryAddress,
             'acceptedTokenPriceUSD',
             () => this.pairGetter.getTokenPriceUSD(acceptedTokenID),
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
