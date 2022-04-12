@@ -9,7 +9,7 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { gasConfig } from 'src/config';
+import { elrondConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { FarmRewardType } from 'src/modules/farm/models/farm.model';
@@ -71,20 +71,17 @@ export class SimpleLockTransactionService {
         tolerance: number,
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
-        const [wrappedTokenID] = await this.wrapService.getWrappedEgldTokenID();
+        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
 
         if (inputTokens.length !== 2) {
             throw new Error('Invalid input tokens length');
         }
 
-        let [firstTokenInput, secondTokenInput] = inputTokens;
+        const [firstTokenInput, secondTokenInput] = inputTokens;
 
-        switch (wrappedTokenID) {
+        switch (elrondConfig.EGLDIdentifier) {
             case firstTokenInput.tokenID:
-                firstTokenInput = new InputTokenModel({
-                    ...firstTokenInput,
-                    tokenID: wrappedTokenID,
-                });
+                firstTokenInput.tokenID = wrappedTokenID;
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(
                         sender,
@@ -93,10 +90,7 @@ export class SimpleLockTransactionService {
                 );
                 break;
             case secondTokenInput.tokenID:
-                secondTokenInput = new InputTokenModel({
-                    ...secondTokenInput,
-                    tokenID: wrappedTokenID,
-                });
+                secondTokenInput.tokenID = wrappedTokenID;
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(
                         sender,
