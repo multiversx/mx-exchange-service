@@ -146,22 +146,14 @@ export class PriceDiscoveryCacheWarmerService {
             const [
                 launchedTokenAmount,
                 acceptedTokenAmount,
-                launchedTokenPrice,
-                acceptedTokenPrice,
-                launchedTokenPriceUSD,
                 currentPhase,
             ] = await Promise.all([
                 this.priceDiscoveryAbi.getLaunchedTokenBalance(address),
                 this.priceDiscoveryAbi.getAcceptedTokenBalance(address),
-                this.priceDiscoveryCompute.computeLaunchedTokenPrice(address),
-                this.priceDiscoveryCompute.computeAcceptedTokenPrice(address),
-                this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(
-                    address,
-                ),
                 this.priceDiscoveryAbi.getCurrentPhase(address),
             ]);
 
-            const invalidatedKeys = await Promise.all([
+            const invalidatedKeys: string[] = await Promise.all([
                 this.priceDiscoverySetter.setLaunchedTokenAmount(
                     address,
                     launchedTokenAmount,
@@ -170,23 +162,40 @@ export class PriceDiscoveryCacheWarmerService {
                     address,
                     acceptedTokenAmount,
                 ),
-                this.priceDiscoverySetter.setLaunchedTokenPrice(
-                    address,
-                    launchedTokenPrice,
-                ),
-                this.priceDiscoverySetter.setAcceptedTokenPrice(
-                    address,
-                    acceptedTokenPrice,
-                ),
-                this.priceDiscoverySetter.setLaunchedTokenPriceUSD(
-                    address,
-                    launchedTokenPriceUSD,
-                ),
                 this.priceDiscoverySetter.setCurrentPhase(
                     address,
                     currentPhase,
                 ),
             ]);
+
+            const [
+                launchedTokenPrice,
+                acceptedTokenPrice,
+                launchedTokenPriceUSD,
+            ] = await Promise.all([
+                this.priceDiscoveryCompute.computeLaunchedTokenPrice(address),
+                this.priceDiscoveryCompute.computeAcceptedTokenPrice(address),
+                this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(
+                    address,
+                ),
+            ]);
+
+            invalidatedKeys.push(
+                ...(await Promise.all([
+                    this.priceDiscoverySetter.setLaunchedTokenPrice(
+                        address,
+                        launchedTokenPrice,
+                    ),
+                    this.priceDiscoverySetter.setAcceptedTokenPrice(
+                        address,
+                        acceptedTokenPrice,
+                    ),
+                    this.priceDiscoverySetter.setLaunchedTokenPriceUSD(
+                        address,
+                        launchedTokenPriceUSD,
+                    ),
+                ])),
+            );
 
             await this.deleteCacheKeys(invalidatedKeys);
         }
