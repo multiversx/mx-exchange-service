@@ -121,11 +121,6 @@ export class SimpleLockTransactionService {
         await this.validateInputAddLiquidityLockedToken(inputTokens);
 
         let [firstInputToken, secondInputToken] = inputTokens;
-        const amount0 = new BigNumber(firstInputToken.amount);
-        const amount1 = new BigNumber(secondInputToken.amount);
-
-        const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
-        const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
 
         const [
             pairFirstTokenID,
@@ -169,6 +164,12 @@ export class SimpleLockTransactionService {
                 firstInputToken,
             ];
         }
+
+        const amount0 = new BigNumber(firstInputToken.amount);
+        const amount1 = new BigNumber(secondInputToken.amount);
+
+        const amount0Min = amount0.multipliedBy(1 - tolerance).integerValue();
+        const amount1Min = amount1.multipliedBy(1 - tolerance).integerValue();
 
         const endpointArgs: TypedValue[] = [
             new BigUIntValue(amount0Min),
