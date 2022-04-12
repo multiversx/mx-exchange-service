@@ -283,8 +283,8 @@
             "addLiquidityLockedToken": 20000000,
             "removeLiquidityLockedToken": 15000000,
             "enterFarmLockedToken": 15000000,
-            "exitFarmLockedToken": 15000000,
-            "claimRewardsFarmLockedToken": 15000000
+            "exitFarmLockedToken": 20000000,
+            "claimRewardsFarmLockedToken": 20000000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
