@@ -77,6 +77,28 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
+    async launchedTokenRedeemBalance(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getLaunchedTokenRedeemBalance(
+                parent.address,
+            ),
+        );
+    }
+
+    @ResolveField()
+    async acceptedTokenRedeemBalance(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getAcceptedTokenRedeemBalance(
+                parent.address,
+            ),
+        );
+    }
+
+    @ResolveField()
     async launchedTokenPrice(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {

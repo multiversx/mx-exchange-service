@@ -124,6 +124,16 @@
             "outputs": []
         },
         {
+            "name": "getCurrentPrice",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
             "name": "getMinLaunchedTokenPrice",
             "mutability": "readonly",
             "inputs": [],
@@ -211,6 +221,18 @@
                 {
                     "name": "new_address",
                     "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setUnlockEpoch",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_epoch",
+                    "type": "u64"
                 }
             ],
             "outputs": []
@@ -327,6 +349,28 @@
                 }
             ],
             "outputs": []
+        },
+        {
+            "name": "createInitialRedeemTokens",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getRedeemTokenTotalCirculatingSupply",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
         },
         {
             "name": "getRedeemTokenId",

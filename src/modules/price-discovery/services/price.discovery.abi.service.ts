@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { QueryResponseBundle } from '@elrondnetwork/erdjs';
+import { QueryResponseBundle, U64Value } from '@elrondnetwork/erdjs';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -95,6 +95,34 @@ export class PriceDiscoveryAbiService {
         );
         const interaction: Interaction = contract.methods.getAcceptedTokenBalance(
             [],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getLaunchedTokenRedeemBalance(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getRedeemTokenTotalCirculatingSupply(
+            [new U64Value(new BigNumber(1))],
+        );
+
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getAcceptedTokenRedeemBalance(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+            priceDiscoveryAddress,
+        );
+        const interaction: Interaction = contract.methods.getRedeemTokenTotalCirculatingSupply(
+            [new U64Value(new BigNumber(2))],
         );
 
         const response = await this.getGenericData(contract, interaction);

@@ -82,7 +82,7 @@ export class PriceDiscoverySetterService {
             priceDiscoveryAddress,
             'launchedTokenAmount',
             value,
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
@@ -94,7 +94,31 @@ export class PriceDiscoverySetterService {
             priceDiscoveryAddress,
             'acceptedTokenAmount',
             value,
-            oneSecond() * 6,
+            oneSecond() * 12,
+        );
+    }
+
+    async setLaunchedTokenRedeemBalance(
+        priceDiscoveryAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            priceDiscoveryAddress,
+            'launchedTokenRedeemBalance',
+            value,
+            oneSecond() * 12,
+        );
+    }
+
+    async setAcceptedTokenRedeemBalance(
+        priceDiscoveryAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            priceDiscoveryAddress,
+            'acceptedTokenRedeemBalance',
+            value,
+            oneSecond() * 12,
         );
     }
 
@@ -106,7 +130,7 @@ export class PriceDiscoverySetterService {
             priceDiscoveryAddress,
             'launchedTokenPrice',
             value,
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
@@ -118,7 +142,7 @@ export class PriceDiscoverySetterService {
             priceDiscoveryAddress,
             'acceptedTokenPrice',
             value,
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
@@ -130,7 +154,7 @@ export class PriceDiscoverySetterService {
             priceDiscoveryAddress,
             'launchedTokenPriceUSD',
             value,
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
@@ -142,7 +166,7 @@ export class PriceDiscoverySetterService {
             priceDiscoveryAddress,
             'acceptedTokenPriceUSD',
             value,
-            oneSecond() * 6,
+            oneSecond() * 12,
         );
     }
 
