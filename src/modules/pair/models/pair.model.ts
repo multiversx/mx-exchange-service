@@ -1,4 +1,4 @@
-import { ObjectType, Field, ArgsType } from '@nestjs/graphql';
+import { ObjectType, Field, ArgsType, Int } from '@nestjs/graphql';
 import { PaginationArgs } from '../../dex.model';
 import { EsdtToken } from '../../../models/tokens/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
@@ -15,6 +15,20 @@ export class LiquidityPosition {
     secondTokenAmount: string;
 
     constructor(init?: Partial<LiquidityPosition>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class LockedTokensInfo {
+    @Field()
+    lockingScAddress: string;
+    @Field(() => Int)
+    unlockEpoch: number;
+    @Field(() => Int)
+    lockingDeadlineEpoch: number;
+
+    constructor(init?: Partial<LockedTokensInfo>) {
         Object.assign(this, init);
     }
 }
@@ -89,6 +103,9 @@ export class PairModel {
 
     @Field()
     state: string;
+
+    @Field(() => LockedTokensInfo, { nullable: true })
+    lockedTokensInfo: LockedTokensInfo;
 
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);

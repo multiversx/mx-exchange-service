@@ -256,6 +256,17 @@ export class PairResolver {
         }
     }
 
+    @ResolveField()
+    async lockedTokensInfo(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getLockedTokensInfo(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @Query(() => String)
     async getAmountOut(
         @Args('pairAddress') pairAddress: string,

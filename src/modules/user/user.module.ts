@@ -16,6 +16,7 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { StakingModule } from '../staking/staking.module';
 import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
 import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
+import { SimpleLockModule } from '../simple-lock/simple.lock.module';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module'
         StakingModule,
         StakingProxyModule,
         PriceDiscoveryModule,
+        SimpleLockModule,
     ],
     providers: [UserService, UserComputeService, UserResolver],
     exports: [UserService],

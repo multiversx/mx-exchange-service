@@ -5,7 +5,6 @@ import { cacheConfig, scAddress } from 'src/config';
 import { oneHour } from 'src/helpers/helpers';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
-import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
 import { PriceDiscoverySetterService } from 'src/modules/price-discovery/services/price.discovery.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
@@ -17,14 +16,13 @@ export class PriceDiscoveryCacheWarmerService {
     constructor(
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly priceDiscoverySetter: PriceDiscoverySetterService,
-        private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         private readonly cachingService: CachingService,
         private readonly apiService: ElrondApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_5_MINUTES)
     async cachePriceDiscovery(): Promise<void> {
         const priceDiscoveryAddresses: string[] = scAddress.priceDiscovery;
 
@@ -145,10 +143,6 @@ export class PriceDiscoveryCacheWarmerService {
         const priceDiscoveryAddresses: string[] = scAddress.priceDiscovery;
 
         for (const address of priceDiscoveryAddresses) {
-            const [launchedTokenID, acceptedTokenID] = await Promise.all([
-                this.priceDiscoveryGetter.getLaunchedTokenID(address),
-                this.priceDiscoveryGetter.getAcceptedTokenID(address),
-            ]);
             const [
                 launchedTokenAmount,
                 acceptedTokenAmount,
@@ -157,14 +151,8 @@ export class PriceDiscoveryCacheWarmerService {
                 launchedTokenPriceUSD,
                 currentPhase,
             ] = await Promise.all([
-                this.apiService.getTokenBalanceForUser(
-                    address,
-                    launchedTokenID,
-                ),
-                this.apiService.getTokenBalanceForUser(
-                    address,
-                    acceptedTokenID,
-                ),
+                this.priceDiscoveryAbi.getLaunchedTokenBalance(address),
+                this.priceDiscoveryAbi.getAcceptedTokenBalance(address),
                 this.priceDiscoveryCompute.computeLaunchedTokenPrice(address),
                 this.priceDiscoveryCompute.computeAcceptedTokenPrice(address),
                 this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(

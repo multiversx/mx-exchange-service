@@ -17,4 +17,8 @@ export class EsdtToken {
     @Field() canWipe: boolean;
     @Field({ nullable: true }) type: string;
     @Field({ nullable: true }) balance?: string;
+
+    constructor(init?: Partial<EsdtToken>) {
+        Object.assign(this, init);
+    }
 }
