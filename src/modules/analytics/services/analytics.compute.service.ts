@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
+import { awsConfig } from 'src/config';
 import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
-import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
-import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { ContextService } from 'src/services/context/context.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
@@ -18,9 +18,8 @@ export class AnalyticsComputeService {
         private readonly context: ContextService,
         private readonly farmGetterService: FarmGetterService,
         private readonly farmComputeService: FarmComputeService,
-        private readonly pairCompute: PairComputeService,
         private readonly pairGetterService: PairGetterService,
-        private readonly lockedAssetGetter: LockedAssetGetterService,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
     ) {}
 
     async computeLockedValueUSDFarms(): Promise<string> {
@@ -102,6 +101,19 @@ export class AnalyticsComputeService {
             );
         }
         return totalAggregatedRewards.toFixed();
+    }
+
+    async computeTokenBurned(
+        tokenID: string,
+        time: string,
+        metric: string,
+    ): Promise<string> {
+        return await this.awsTimestreamQuery.getAggregatedValue({
+            table: awsConfig.timestream.tableName,
+            series: tokenID,
+            metric,
+            time,
+        });
     }
 
     private async fiterPairsByIssuedLpToken(

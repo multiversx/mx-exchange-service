@@ -20,18 +20,16 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
-import { PairComputeService } from '../pair/services/pair.compute.service';
 import { PaginationArgs } from '../dex.model';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
-import { computeValueUSD } from 'src/utils/token.converters';
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { StakingGetterService } from '../staking/services/staking.getter.service';
 import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
 import { scAddress } from 'src/config';
 import { StakeFarmToken } from 'src/models/tokens/stakeFarmToken.model';
 import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
-import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
 import { PriceDiscoveryService } from '../price-discovery/services/price.discovery.service';
+import { SimpleLockGetterService } from '../simple-lock/services/simple.lock.getter.service';
 
 enum EsdtTokenType {
     FungibleToken = 'FungibleESDT',
@@ -46,6 +44,9 @@ enum NftTokenType {
     StakeFarmToken,
     DualYieldToken,
     RedeemToken,
+    LockedEsdtToken,
+    LockedSimpleLpToken,
+    LockedSimpleFarmToken,
 }
 
 @Injectable()
@@ -55,7 +56,6 @@ export class UserService {
         private apiService: ElrondApiService,
         private cachingService: CachingService,
         private pairService: PairService,
-        private pairComputeService: PairComputeService,
         private priceFeed: PriceFeedService,
         private proxyPairGetter: ProxyPairGetterService,
         private proxyFarmGetter: ProxyFarmGetterService,
@@ -65,7 +65,7 @@ export class UserService {
         private stakeGetterService: StakingGetterService,
         private proxyStakeGetter: StakingProxyGetterService,
         private priceDiscoveryService: PriceDiscoveryService,
-        private priceDiscoveryGetter: PriceDiscoveryGetterService,
+        private simpleLockGetter: SimpleLockGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -194,6 +194,24 @@ export class UserService {
                             priceDiscoveryAddress,
                         ),
                     );
+                    break;
+                case NftTokenType.LockedEsdtToken:
+                    promises.push(
+                        this.userComputeService.lockedEsdtTokenUSD(userNft),
+                    );
+                    break;
+                case NftTokenType.LockedSimpleLpToken:
+                    promises.push(
+                        this.userComputeService.lockedSimpleLpTokenUSD(userNft),
+                    );
+                    break;
+                case NftTokenType.LockedSimpleFarmToken:
+                    promises.push(
+                        this.userComputeService.lockedSimpleFarmTokenUSD(
+                            userNft,
+                        ),
+                    );
+                    break;
                 default:
                     break;
             }
@@ -207,28 +225,16 @@ export class UserService {
             token.identifier,
         );
         if (pairAddress) {
-            const valueUSD = await this.pairService.getLiquidityPositionUSD(
+            const userToken = await this.userComputeService.lpTokenUSD(
+                token,
                 pairAddress,
-                token.balance,
             );
-            return {
-                ...token,
-                type: EsdtTokenType.FungibleLpToken,
-                valueUSD: valueUSD,
-            };
+            userToken.type = EsdtTokenType.FungibleLpToken;
+            return userToken;
         }
-        const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
-            token.identifier,
-        );
-        return {
-            ...token,
-            type: EsdtTokenType.FungibleToken,
-            valueUSD: computeValueUSD(
-                token.balance,
-                token.decimals,
-                tokenPriceUSD.toFixed(),
-            ).toFixed(),
-        };
+        const userToken = await this.userComputeService.esdtTokenUSD(token);
+        userToken.type = EsdtTokenType.FungibleToken;
+        return userToken;
     }
 
     private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
@@ -236,10 +242,16 @@ export class UserService {
             lockedMEXTokenID,
             lockedLpTokenID,
             lockedFarmTokenID,
+            lockedTokenID,
+            lpProxyTokenID,
+            lpFarmProxyTokenID,
         ] = await Promise.all([
             this.lockedAssetGetter.getLockedTokenID(),
             this.proxyPairGetter.getwrappedLpTokenID(),
             this.proxyFarmGetter.getwrappedFarmTokenID(),
+            this.simpleLockGetter.getLockedTokenID(),
+            this.simpleLockGetter.getLpProxyTokenID(),
+            this.simpleLockGetter.getFarmProxyTokenID(),
         ]);
 
         switch (tokenID) {
@@ -249,6 +261,12 @@ export class UserService {
                 return NftTokenType.LockedLpToken;
             case lockedFarmTokenID:
                 return NftTokenType.LockedFarmToken;
+            case lockedTokenID:
+                return NftTokenType.LockedEsdtToken;
+            case lpProxyTokenID:
+                return NftTokenType.LockedSimpleLpToken;
+            case lpFarmProxyTokenID:
+                return NftTokenType.LockedSimpleFarmToken;
         }
 
         let promises: Promise<string>[] = [];

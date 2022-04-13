@@ -156,4 +156,102 @@ export class PairAbiService {
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().name;
     }
+
+    async getLockingScAddress(
+        pairAddress: string,
+    ): Promise<string | undefined> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        try {
+            const interaction: Interaction = contract.methods.getLockingScAddress(
+                [],
+            );
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            if (queryResponse.returnMessage.includes('bad array length')) {
+                return undefined;
+            }
+            const response = interaction.interpretQueryResponse(queryResponse);
+            return response.firstValue.valueOf().bech32();
+        } catch (error) {
+            if (error.message.includes('invalid function')) {
+                return undefined;
+            }
+            const logMessage = generateRunQueryLogMessage(
+                PairAbiService.name,
+                this.getLockingScAddress.name,
+                error.message,
+            );
+            this.logger.error(logMessage);
+
+            throw error;
+        }
+    }
+
+    async getUnlockEpoch(pairAddress: string): Promise<number | undefined> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getUnlockEpoch([]);
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const unlockEpoch = response.firstValue.valueOf();
+            return unlockEpoch !== undefined
+                ? unlockEpoch.toFixed()
+                : undefined;
+        } catch (error) {
+            if (error.message.includes('invalid function')) {
+                return undefined;
+            }
+            const logMessage = generateRunQueryLogMessage(
+                PairAbiService.name,
+                this.getUnlockEpoch.name,
+                error.message,
+            );
+            this.logger.error(logMessage);
+
+            throw error;
+        }
+    }
+
+    async getLockingDeadlineEpoch(
+        pairAddress: string,
+    ): Promise<number | undefined> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getLockingDeadlineEpoch(
+            [],
+        );
+        try {
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            const response = interaction.interpretQueryResponse(queryResponse);
+            const lockingDeadlineEpoch = response.firstValue.valueOf();
+            return lockingDeadlineEpoch !== undefined
+                ? lockingDeadlineEpoch.toFixed()
+                : undefined;
+        } catch (error) {
+            if (error.message.includes('invalid function')) {
+                return undefined;
+            }
+            const logMessage = generateRunQueryLogMessage(
+                PairAbiService.name,
+                this.getLockingDeadlineEpoch.name,
+                error.message,
+            );
+            this.logger.error(logMessage);
+
+            throw error;
+        }
+    }
 }

@@ -9,14 +9,14 @@
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n",
-        "simpleLockAddress": "erd1qqqqqqqqqqqqqpgqnyrewydpx3wfftdjfcnajw4jguzshhav0n4sglpv3h",
+        "simpleLockAddress": "erd1qqqqqqqqqqqqqpgqd7av8hy5ydnrlunr6pt40wc07pfj8qv90n4srdthut",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
         "priceDiscovery": [
-            "erd1qqqqqqqqqqqqqpgqvth6l0l2ku8q44f5yh4hmk25jxv3gp690n4smxz8y3"
+            "erd1qqqqqqqqqqqqqpgq7ycg0y45frcxupcpyvqlpvnuclkuscj30n4sgla0tf"
         ],
         "staking": [
             "erd1qqqqqqqqqqqqqpgq8w0s682m88xae2ne3qkq7w2h26u5a5c00n4stt02d7"
@@ -33,13 +33,15 @@
                 "erd1qqqqqqqqqqqqqpgqcppgtwafd6q59kz2zrk8h37nmcvgdrm00n4su9tmd4",
                 "erd1qqqqqqqqqqqqqpgqs7qnuvj2t0m40xmgrrh88wc7qdx286c60n4spvrzzk",
                 "erd1qqqqqqqqqqqqqpgq85gksw0sryuywg0x72zncql0vtfwndfg0n4sx9vfpy",
-                "erd1qqqqqqqqqqqqqpgqqlxk0qar7e5cqczk7lu7rj3r8pdptgs70n4shfyl5c"
+                "erd1qqqqqqqqqqqqqpgqqlxk0qar7e5cqczk7lu7rj3r8pdptgs70n4shfyl5c",
+                "erd1qqqqqqqqqqqqqpgq4cjz5ht60lwy37ye25d6jn7hdl8cg48c0n4sgn0lzw"
             ],
             "lockedRewards": [
                 "erd1qqqqqqqqqqqqqpgq6wrtdnv7d5uypnaw2k8mtujfdl0s66t40n4sag5e7n",
                 "erd1qqqqqqqqqqqqqpgqv6j2vr8tr9rc0fwhu0s2xef9w64qww2h0n4ssmxgq0",
                 "erd1qqqqqqqqqqqqqpgq5dzs6yf47tnsk5ays2aedzmu2ahsmcqv0n4s3rsljy",
-                "erd1qqqqqqqqqqqqqpgqw88ux2l44eufvwz2uhvduhq03g8pxc4j0n4s0frzjz"
+                "erd1qqqqqqqqqqqqqpgqw88ux2l44eufvwz2uhvduhq03g8pxc4j0n4s0frzjz",
+                "erd1qqqqqqqqqqqqqpgqp57tev59tltzqv3n0256drhmzv49w6g70n4sdrty6r"
             ],
             "customRewards": []
         }

@@ -1,0 +1,559 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.60.0-nightly",
+            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
+            "commitDate": "2022-01-29",
+            "channel": "Nightly",
+            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
+        },
+        "contractCrate": {
+            "name": "simple-lock",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "elrond-wasm",
+            "version": "0.29.3"
+        }
+    },
+    "name": "SimpleLock",
+    "constructor": {
+        "inputs": [],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "docs": [
+                "Locks any token (including EGLD) until `unlock_epoch` and receive meta ESDT LOCKED tokens.",
+                "on a 1:1 ratio. If unlock epoch has already passed, the original tokens are sent instead.",
+                "",
+                "Expected payment: Any token",
+                "",
+                "Arguments:",
+                "- unlock epoch - the epoch from which the LOCKED token holder may call the unlock endpoint",
+                "- opt_destination - OPTIONAL: destination address for the LOCKED tokens",
+                "",
+                "Output payments: LOCKED tokens (or original payment if current_epoch >= unlock_epoch)"
+            ],
+            "name": "lockTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "unlock_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "opt_destination",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Unlock tokens, previously locked with the `lockTokens` endpoint",
+                "",
+                "Expected payment: LOCKED tokens",
+                "",
+                "Arguments:",
+                "- opt_destination - OPTIONAL: destination address for the unlocked tokens",
+                "",
+                "Output payments: the originally locked tokens"
+            ],
+            "name": "unlockTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "opt_destination",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "issueLockedToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                },
+                {
+                    "name": "num_decimals",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRolesLockedToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getLockedTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "issueLpProxyToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                },
+                {
+                    "name": "num_decimals",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRolesLpProxyToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Add a liquidity pool to the whitelist.",
+                "If the token pair does not have an associated pool, users may not add liquidity.",
+                "",
+                "`first_token_id` and `second_token_id` MUST match the LP's order,",
+                "otherwise all attempts at adding liquidity will fail",
+                "",
+                "May not add pools for both pairs, i.e. (first, second) and (second, first)"
+            ],
+            "name": "addLpToWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "lp_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Removes a liquidity pool from the whitelist, for the selected token pair."
+            ],
+            "name": "removeLpFromWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "lp_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Add liquidity through a LOCKED token.",
+                "Will fail if a liquidity pool is not configured for the token pair.",
+                "",
+                "Expected payments: Any one of the following pairs:",
+                "- (LOCKED token, LOCKED token)",
+                "- (LOCKED token, any token)",
+                "- (any token, LOCKED token)",
+                "",
+                "Arguments: first_token_amount_min, second_token_amount_min - Arguments forwarded to the LP pool.",
+                "May not be zero.",
+                "",
+                "Output payments:",
+                "- refunded tokens from the first payment",
+                "- refunded tokens from the second payment",
+                "- LP_PROXY tokens, which can later be used to further interact with the LP pool through this SC"
+            ],
+            "name": "addLiquidityLockedToken",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "first_token_amount_min",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_amount_min",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Remove liquidity previously added through `addLiquidityLockedToken`.",
+                "If the unlock_epoch has not passed for the original LOCKED tokens,",
+                "the caller will receive locked tokens. Otherwise, they will receive the unlocked version.",
+                "",
+                "Expected payments: LP_PROXY tokens",
+                "",
+                "Arguments: first_token_amount_min, second_token_amount_min - Arguments forwarded to the LP pool.",
+                "May not be zero.",
+                "",
+                "Output payments:",
+                "first_token original liquidity + rewards",
+                "second_token original liquidity + rewards"
+            ],
+            "name": "removeLiquidityLockedToken",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "first_token_amount_min",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "second_token_amount_min",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "getKnownLiquidityPools",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getLpProxyTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "issueFarmProxyToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                },
+                {
+                    "name": "num_decimals",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLocalRolesFarmProxyToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Add a farm to the whitelist.",
+                "Currently, two types of farms are supported, denoted by the `farm_type` argument:",
+                "`0` - SimpleFarm - rewards are fungible tokens",
+                "`1` - FarmWithLockedRewards - rewards are META ESDT locked tokens"
+            ],
+            "name": "addFarmToWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "farming_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "farm_type",
+                    "type": "FarmType"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeFarmFromWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "farm_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "farming_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "farm_type",
+                    "type": "FarmType"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Enter farm with LOCKED tokens.",
+                "User will choose if they want to enter a farm with normal rewards, or locked rewards.",
+                "",
+                "Expected payment: LOCKED LP tokens (gained from add_liquidity_locked_token)",
+                "",
+                "Arguments:",
+                "- farm_type - The farm type the user wishes to enter (unlocked or locked rewards)",
+                "",
+                "Output payments:",
+                "- FARM_PROXY token, which can later be used to further interact with the specific farm"
+            ],
+            "name": "enterFarmLockedToken",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "farm_type",
+                    "type": "FarmType"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Exit a farm previously entered through `enterFarmLockedToken`.",
+                "The original farming tokens will be unlocked automatically if unlock_epoch has passed.",
+                "",
+                "Expected payment: FARM_PROXY tokens",
+                "",
+                "Output Payments:",
+                "- original farming tokens",
+                "- farm reward tokens"
+            ],
+            "name": "exitFarmLockedToken",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Claim rewards from a previously entered farm.",
+                "The FARM_PROXY tokens are burned, and new ones are created.",
+                "This is needed because every farm action changes the farm token nonce",
+                "",
+                "Expected payment: FARM_PROXY tokens",
+                "",
+                "Output payments:",
+                "- a new FARM_PROXY token",
+                "- farm reward tokens"
+            ],
+            "name": "farmClaimRewardsLockedToken",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "getKnownFarms",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getFarmProxyTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        }
+    ],
+    "hasCallback": true,
+    "types": {
+        "EsdtTokenPayment": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_type",
+                    "type": "EsdtTokenType"
+                },
+                {
+                    "name": "token_identifier",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "EsdtTokenType": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "Fungible",
+                    "discriminant": 0
+                },
+                {
+                    "name": "NonFungible",
+                    "discriminant": 1
+                },
+                {
+                    "name": "SemiFungible",
+                    "discriminant": 2
+                },
+                {
+                    "name": "Meta",
+                    "discriminant": 3
+                },
+                {
+                    "name": "Invalid",
+                    "discriminant": 4
+                }
+            ]
+        },
+        "FarmType": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "SimpleFarm",
+                    "discriminant": 0
+                },
+                {
+                    "name": "FarmWithLockedRewards",
+                    "discriminant": 1
+                }
+            ]
+        }
+    }
+}
