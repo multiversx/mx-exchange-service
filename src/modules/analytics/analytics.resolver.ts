@@ -155,4 +155,36 @@ export class AnalyticsResolver {
     ): Promise<HistoricDataModel[]> {
         return await this.analyticsService.getValues24hSum(series, metric);
     }
+
+    @Query(() => [HistoricDataModel])
+    async latestHistoricData(
+        @Args('time') time: string,
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+        @Args('start') start: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getLatestHistoricData(
+            time,
+            series,
+            metric,
+            start,
+        );
+    }
+
+    @Query(() => [HistoricDataModel])
+    async latestBinnedHistoricData(
+        @Args('time') time: string,
+        @Args('series') series: string,
+        @Args('metric') metric: string,
+        @Args('bin') bin: string,
+        @Args('start') start: string,
+    ): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getLatestBinnedHistoricData(
+            time,
+            series,
+            metric,
+            bin,
+            start,
+        );
+    }
 }

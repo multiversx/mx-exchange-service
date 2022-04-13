@@ -253,6 +253,63 @@ export class AnalyticsService {
         );
     }
 
+    async getLatestHistoricData(
+        time: string,
+        series: string,
+        metric: string,
+        start: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'latestHistoricData',
+            time,
+            series,
+            metric,
+            start,
+        );
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.awsTimestreamQuery.getLatestHistoricData({
+                    table: awsConfig.timestream.tableName,
+                    time,
+                    series,
+                    metric,
+                    start,
+                }),
+            oneMinute() * 5,
+        );
+    }
+
+    async getLatestBinnedHistoricData(
+        time: string,
+        series: string,
+        metric: string,
+        bin: string,
+        start: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'latestBinnedHistoricData',
+            time,
+            series,
+            metric,
+            bin,
+            start,
+        );
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.awsTimestreamQuery.getLatestBinnedHistoricData({
+                    table: awsConfig.timestream.tableName,
+                    time,
+                    series,
+                    metric,
+                    bin,
+                    start,
+                }),
+            oneMinute() * 5,
+        );
+    }
+
     private getAnalyticsCacheKey(...args: any) {
         return generateCacheKeyFromParams('analytics', ...args);
     }
