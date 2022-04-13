@@ -126,6 +126,34 @@ export class PriceDiscoveryGetterService {
         );
     }
 
+    async getLaunchedTokenRedeemBalance(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'launchedTokenRedeemBalance',
+            () =>
+                this.abiService.getLaunchedTokenRedeemBalance(
+                    priceDiscoveryAddress,
+                ),
+            oneSecond() * 12,
+        );
+    }
+
+    async getAcceptedTokenRedeemBalance(
+        priceDiscoveryAddress: string,
+    ): Promise<string> {
+        return this.getData(
+            priceDiscoveryAddress,
+            'acceptedTokenRedeemBalance',
+            () =>
+                this.abiService.getAcceptedTokenRedeemBalance(
+                    priceDiscoveryAddress,
+                ),
+            oneSecond() * 12,
+        );
+    }
+
     async getLaunchedTokenPrice(
         priceDiscoveryAddress: string,
     ): Promise<string> {

@@ -146,10 +146,14 @@ export class PriceDiscoveryCacheWarmerService {
             const [
                 launchedTokenAmount,
                 acceptedTokenAmount,
+                launchedTokenRedeemBalance,
+                acceptedTokenRedeemBalance,
                 currentPhase,
             ] = await Promise.all([
                 this.priceDiscoveryAbi.getLaunchedTokenBalance(address),
                 this.priceDiscoveryAbi.getAcceptedTokenBalance(address),
+                this.priceDiscoveryAbi.getLaunchedTokenRedeemBalance(address),
+                this.priceDiscoveryAbi.getAcceptedTokenRedeemBalance(address),
                 this.priceDiscoveryAbi.getCurrentPhase(address),
             ]);
 
@@ -161,6 +165,14 @@ export class PriceDiscoveryCacheWarmerService {
                 this.priceDiscoverySetter.setAcceptedTokenAmount(
                     address,
                     acceptedTokenAmount,
+                ),
+                this.priceDiscoverySetter.setLaunchedTokenRedeemBalance(
+                    address,
+                    launchedTokenRedeemBalance,
+                ),
+                this.priceDiscoverySetter.setAcceptedTokenRedeemBalance(
+                    address,
+                    acceptedTokenRedeemBalance,
                 ),
                 this.priceDiscoverySetter.setCurrentPhase(
                     address,

@@ -98,6 +98,30 @@ export class PriceDiscoverySetterService {
         );
     }
 
+    async setLaunchedTokenRedeemBalance(
+        priceDiscoveryAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            priceDiscoveryAddress,
+            'launchedTokenRedeemBalance',
+            value,
+            oneSecond() * 12,
+        );
+    }
+
+    async setAcceptedTokenRedeemBalance(
+        priceDiscoveryAddress: string,
+        value: string,
+    ): Promise<string> {
+        return await this.setData(
+            priceDiscoveryAddress,
+            'acceptedTokenRedeemBalance',
+            value,
+            oneSecond() * 12,
+        );
+    }
+
     async setLaunchedTokenPrice(
         priceDiscoveryAddress: string,
         value: string,

@@ -58,6 +58,10 @@ export class PriceDiscoveryModel {
     @Field()
     acceptedTokenAmount: string;
     @Field()
+    launchedTokenRedeemBalance: string;
+    @Field()
+    acceptedTokenRedeemBalance: string;
+    @Field()
     launchedTokenPrice: string;
     @Field()
     acceptedTokenPrice: string;
