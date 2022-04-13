@@ -16,6 +16,8 @@ import { ProxyModule } from '../proxy/proxy.module';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairDayDataResolver } from './analytics.pair.resolver';
+import { AnalyticsPriceDiscoveryEventHandlerService } from './services/analytics.price.discovery.event.handler.service';
+import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
 
 @Module({
     imports: [
@@ -28,6 +30,7 @@ import { PairDayDataResolver } from './analytics.pair.resolver';
         FarmModule,
         ProxyModule,
         LockedAssetModule,
+        PriceDiscoveryModule,
     ],
     providers: [
         AnalyticsResolver,
@@ -35,6 +38,7 @@ import { PairDayDataResolver } from './analytics.pair.resolver';
         AnalyticsGetterService,
         AnalyticsComputeService,
         AnalyticsEventHandlerService,
+        AnalyticsPriceDiscoveryEventHandlerService,
         AnalyticsPairService,
         PairDayDataResolver,
     ],

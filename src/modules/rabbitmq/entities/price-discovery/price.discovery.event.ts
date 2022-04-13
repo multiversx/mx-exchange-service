@@ -32,6 +32,7 @@ export class PriceDiscoveryEvent {
         return {
             address: this.address,
             identifier: this.identifier,
+            decodedTopics: this.decodedTopics.toJSON(),
         };
     }
 

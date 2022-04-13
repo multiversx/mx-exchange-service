@@ -16,6 +16,7 @@ export type PhaseType = {
 export type PriceDiscoveryEventType = {
     address: string;
     identifier: string;
+    decodedTopics: PriceDiscoveryTopicsType;
 };
 
 export type ExtraRewardsEventType = PriceDiscoveryEventType & {
