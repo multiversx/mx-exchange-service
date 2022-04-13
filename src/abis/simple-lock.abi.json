@@ -394,7 +394,7 @@
                 "Enter farm with LOCKED tokens.",
                 "User will choose if they want to enter a farm with normal rewards, or locked rewards.",
                 "",
-                "Expected payment: LOCKED tokens",
+                "Expected payment: LOCKED LP tokens (gained from add_liquidity_locked_token)",
                 "",
                 "Arguments:",
                 "- farm_type - The farm type the user wishes to enter (unlocked or locked rewards)",
@@ -467,29 +467,6 @@
                 {
                     "type": "EsdtTokenPayment"
                 },
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "docs": [
-                "Compound rewards for a farm position from a previously entered farm.",
-                "The FARM_PROXY tokens are burned, and new ones are created.",
-                "This is needed because every farm action changes the farm token nonce",
-                "",
-                "Expected payment: FARM_PROXY tokens",
-                "",
-                "Output payments:",
-                "- a new FARM_PROXY token"
-            ],
-            "name": "farmCompoundRewardsLockedToken",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [],
-            "outputs": [
                 {
                     "type": "EsdtTokenPayment"
                 }

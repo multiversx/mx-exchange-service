@@ -15,6 +15,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { FarmRewardType } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
+import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
@@ -267,13 +268,9 @@ export class SimpleLockTransactionService {
 
     async enterFarmLockedToken(
         sender: string,
-        inputTokens: InputTokenModel,
+        inputTokens: InputTokenModel[],
         farmAddress: string,
     ): Promise<TransactionModel> {
-        await this.validateInputLpProxyToken(inputTokens);
-
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
-
         let farmTypeDiscriminant: number;
         switch (farmType(farmAddress)) {
             case FarmRewardType.UNLOCKED_REWARDS:
@@ -283,23 +280,32 @@ export class SimpleLockTransactionService {
                 farmTypeDiscriminant = 1;
                 break;
         }
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(inputTokens.tokenID),
-            new U32Value(inputTokens.nonce),
-            new BigUIntValue(new BigNumber(inputTokens.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8(this.enterFarmLockedToken.name),
-            EnumValue.fromDiscriminant(FarmTypeEnumType, farmTypeDiscriminant),
-        ];
-
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.simpleLock.enterFarmLockedToken),
+        await this.validateInputEnterFarmProxyToken(
+            inputTokens,
+            FarmTypeEnumType.getVariantByDiscriminant(farmTypeDiscriminant)
+                .name,
         );
-        transaction.receiver = sender;
-        return transaction;
+
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+
+        const gasLimit =
+            inputTokens.length > 1
+                ? gasConfig.simpleLock.enterFarmLockedToken.withTokenMerge
+                : gasConfig.simpleLock.enterFarmLockedToken.default;
+
+        return this.contextTransactions.multiESDTNFTTransfer(
+            new Address(sender),
+            contract,
+            inputTokens,
+            this.enterFarmLockedToken.name,
+            [
+                EnumValue.fromDiscriminant(
+                    FarmTypeEnumType,
+                    farmTypeDiscriminant,
+                ),
+            ],
+            new GasLimit(gasLimit),
+        );
     }
 
     async farmProxyTokenInteraction(
@@ -372,6 +378,55 @@ export class SimpleLockTransactionService {
 
         if (inputTokens.tokenID !== lockedLpTokenID || inputTokens.nonce < 1) {
             throw new Error('Invalid input token');
+        }
+    }
+
+    private async validateInputEnterFarmProxyToken(
+        inputTokens: InputTokenModel[],
+        farmType: string,
+    ): Promise<void> {
+        const lpProxyToken = inputTokens[0];
+        await this.validateInputLpProxyToken(lpProxyToken);
+
+        const decodeAttributesArgs: DecodeAttributesModel[] = [];
+        for (const inputToken of inputTokens.slice(1)) {
+            await this.validateInputFarmProxyToken(inputToken);
+            decodeAttributesArgs.push({
+                attributes: inputToken.attributes,
+                identifier: inputToken.tokenID,
+            });
+        }
+
+        const lpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
+            {
+                attributes: lpProxyToken.attributes,
+                identifier: lpProxyToken.tokenID,
+            },
+        );
+        const decodedAttributesBatch = await this.simpleLockService.decodeBatchFarmProxyTokenAttributes(
+            {
+                batchAttributes: decodeAttributesArgs,
+            },
+        );
+
+        for (const decodedAttributes of decodedAttributesBatch) {
+            const sameFarmingToken =
+                decodedAttributes.farmingTokenID ===
+                lpProxyTokenAttributes.lpTokenID;
+            const sameFarmingTokenNonce =
+                decodedAttributes.farmingTokenLockedNonce ===
+                lpProxyToken.nonce;
+            const sameFarmType = decodedAttributes.farmType === farmType;
+            console.log({
+                sameFarmingToken,
+                sameFarmingTokenNonce,
+                sameFarmType,
+                farmingToken: decodedAttributes.farmingTokenID,
+                lpTokenID: lpProxyTokenAttributes.lpTokenID,
+            });
+            if (!(sameFarmingToken && sameFarmingTokenNonce && sameFarmType)) {
+                throw new Error('Invalid farm proxy token');
+            }
         }
     }
 

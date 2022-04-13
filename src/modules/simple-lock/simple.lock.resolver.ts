@@ -178,7 +178,8 @@ export class SimpleLockResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async enterFarmLockedToken(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', { type: () => [InputTokenModel] })
+        inputTokens: InputTokenModel[],
         @Args('farmAddress') farmAddress: string,
         @User() user: any,
     ): Promise<TransactionModel> {
