@@ -9,14 +9,14 @@
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n",
-        "simpleLockAddress": "erd1qqqqqqqqqqqqqpgqd7av8hy5ydnrlunr6pt40wc07pfj8qv90n4srdthut",
+        "simpleLockAddress": "erd1qqqqqqqqqqqqqpgqd92vaptf6kex2p74a8sgxpdtvnphdgkd0n4spt542g",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
         "priceDiscovery": [
-            "erd1qqqqqqqqqqqqqpgq7ycg0y45frcxupcpyvqlpvnuclkuscj30n4sgla0tf"
+            "erd1qqqqqqqqqqqqqpgqpzlhg54w5upaeweyc6kugqspunpywwvx0n4sa9spnk"
         ],
         "staking": [
             "erd1qqqqqqqqqqqqqpgq8w0s682m88xae2ne3qkq7w2h26u5a5c00n4stt02d7"
