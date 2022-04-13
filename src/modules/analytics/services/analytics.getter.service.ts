@@ -1,9 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { awsConfig } from 'src/config';
-import { oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneMinute } from 'src/helpers/helpers';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -18,7 +16,6 @@ export class AnalyticsGetterService {
         private readonly cachingService: CachingService,
         private readonly analyticsCompute: AnalyticsComputeService,
         private readonly pairGetterService: PairGetterService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -89,7 +86,7 @@ export class AnalyticsGetterService {
         );
     }
 
-    async getFeeTokenBurned(time: string, tokenID: string): Promise<string> {
+    async getFeeTokenBurned(tokenID: string, time: string): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             tokenID,
             time,
@@ -98,13 +95,12 @@ export class AnalyticsGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: tokenID,
-                    metric: 'feeBurned',
+                this.analyticsCompute.computeTokenBurned(
+                    tokenID,
                     time,
-                }),
-            oneSecond(),
+                    'feeBurned',
+                ),
+            oneMinute() * 10,
         );
     }
 
@@ -120,13 +116,12 @@ export class AnalyticsGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: tokenID,
-                    metric: 'penaltyBurned',
+                this.analyticsCompute.computeTokenBurned(
+                    tokenID,
                     time,
-                }),
-            oneSecond(),
+                    'penaltyBurned',
+                ),
+            oneMinute() * 10,
         );
     }
 
