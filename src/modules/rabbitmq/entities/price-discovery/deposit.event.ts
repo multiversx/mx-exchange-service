@@ -44,7 +44,8 @@ export class DepositEvent extends PriceDiscoveryEvent {
             amount: decodedEvent.redeemTokenAmount,
         });
 
-        const penalty = decodedEvent.currentPhase.penaltyPercent?.toFixed();
+        const penalty = decodedEvent.currentPhase.fields?.penaltyPercentage?.toFixed();
+
         const penaltyPercent = penalty
             ? new BigNumber(penalty).dividedBy(
                   constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY,
