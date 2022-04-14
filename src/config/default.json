@@ -286,7 +286,7 @@
                 "default": 15000000,
                 "withTokenMerge": 20000000
             },
-            "exitFarmLockedToken": 20000000,
+            "exitFarmLockedToken": 45000000,
             "claimRewardsFarmLockedToken": 25000000
         },
         "lockedAssetCreate": 5000000,
