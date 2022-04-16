@@ -14,6 +14,7 @@ import { cacheConfig } from '../../config';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import * as Redis from 'ioredis';
+import { oneMinute } from 'src/helpers/helpers';
 
 @Injectable()
 export class CachingService {
@@ -209,6 +210,21 @@ export class CachingService {
         try {
             const value = await promise();
             if (value === undefined) {
+                if (localTtl > 0) {
+                    await this.setCacheLocal<string>(
+                        key,
+                        'undefined',
+                        oneMinute(),
+                    );
+                }
+
+                if (remoteTtl > 0) {
+                    await this.setCacheRemote<string>(
+                        key,
+                        'undefined',
+                        oneMinute() * 2,
+                    );
+                }
                 return undefined;
             }
             profiler.stop(`Cache miss for key ${key}`);
