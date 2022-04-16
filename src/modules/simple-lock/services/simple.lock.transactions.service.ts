@@ -9,8 +9,9 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { elrondConfig, gasConfig, scAddress } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
+import { NftToken } from 'src/models/tokens/nftToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { FarmRewardType } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -18,9 +19,12 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { farmType } from 'src/utils/farm.utils';
+import { tokenIdentifier } from 'src/utils/token.converters';
 import { FarmTypeEnumType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
 import { SimpleLockService } from './simple.lock.service';
@@ -35,7 +39,9 @@ export class SimpleLockTransactionService {
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
         private readonly contextTransactions: ContextTransactionsService,
+        private readonly contextGetter: ContextGetterService,
         private readonly elrondProxy: ElrondProxyService,
+        private readonly apiService: ElrondApiService,
     ) {}
 
     async unlockTokens(
@@ -196,12 +202,19 @@ export class SimpleLockTransactionService {
         await this.validateInputLpProxyToken(inputTokens);
 
         const transactions = [];
-        const [wrappedTokenID, contract] = await Promise.all([
+        const [
+            wrappedTokenID,
+            lockedTokenID,
+            contract,
+            currentEpoch,
+        ] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
+            this.simpleLockGetter.getLockedTokenID(),
             this.elrondProxy.getSimpleLockSmartContract(),
+            this.contextGetter.getCurrentEpoch(),
         ]);
 
-        const LpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
+        const lpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
             {
                 attributes: attributes,
                 identifier: inputTokens.tokenID,
@@ -209,7 +222,7 @@ export class SimpleLockTransactionService {
         );
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            LpProxyTokenAttributes.lpTokenID,
+            lpProxyTokenAttributes.lpTokenID,
         );
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             pairAddress,
@@ -245,22 +258,47 @@ export class SimpleLockTransactionService {
         transaction.receiver = sender;
         transactions.push(transaction);
 
+        let lockedWrappedToken: NftToken = undefined;
+        let unwrapAmount: string;
         switch (wrappedTokenID) {
-            case LpProxyTokenAttributes.firstTokenID:
-                transactions.push(
-                    await this.wrapTransaction.unwrapEgld(
-                        sender,
-                        amount0Min.toFixed(),
-                    ),
-                );
+            case lpProxyTokenAttributes.firstTokenID:
+                if (lpProxyTokenAttributes.firstTokenLockedNonce > 0) {
+                    unwrapAmount = amount0Min.toFixed();
+                    lockedWrappedToken = await this.apiService.getNftByTokenIdentifier(
+                        scAddress.simpleLockAddress,
+                        tokenIdentifier(
+                            lockedTokenID,
+                            lpProxyTokenAttributes.firstTokenLockedNonce,
+                        ),
+                    );
+                }
                 break;
-            case LpProxyTokenAttributes.secondTokenID:
+            case lpProxyTokenAttributes.secondTokenID:
+                if (lpProxyTokenAttributes.secondTokenLockedNonce > 0) {
+                    unwrapAmount = amount1Min.toFixed();
+                    lockedWrappedToken = await this.apiService.getNftByTokenIdentifier(
+                        scAddress.simpleLockAddress,
+                        tokenIdentifier(
+                            lockedTokenID,
+                            lpProxyTokenAttributes.secondTokenLockedNonce,
+                        ),
+                    );
+                }
+                break;
+        }
+
+        if (lockedWrappedToken) {
+            const lockedWrappedTokenAttributes = this.simpleLockService.decodeLockedTokenAttributes(
+                {
+                    identifier: lockedWrappedToken.identifier,
+                    attributes: lockedWrappedToken.attributes,
+                },
+            );
+            if (currentEpoch >= lockedWrappedTokenAttributes.unlockEpoch) {
                 transactions.push(
-                    await this.wrapTransaction.unwrapEgld(
-                        sender,
-                        amount1Min.toFixed(),
-                    ),
+                    await this.wrapTransaction.unwrapEgld(sender, unwrapAmount),
                 );
+            }
         }
 
         return transactions;
