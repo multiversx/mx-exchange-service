@@ -18,9 +18,7 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { farmType } from 'src/utils/farm.utils';
 import { FarmTypeEnumType } from '../models/simple.lock.model';
@@ -37,9 +35,7 @@ export class SimpleLockTransactionService {
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
         private readonly contextTransactions: ContextTransactionsService,
-        private readonly contextGetter: ContextGetterService,
         private readonly elrondProxy: ElrondProxyService,
-        private readonly apiService: ElrondApiService,
     ) {}
 
     async unlockTokens(
