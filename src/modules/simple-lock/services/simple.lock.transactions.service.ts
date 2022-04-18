@@ -9,9 +9,8 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig, scAddress } from 'src/config';
+import { elrondConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { NftToken } from 'src/models/tokens/nftToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { FarmRewardType } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -24,7 +23,6 @@ import { ContextTransactionsService } from 'src/services/context/context.transac
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { farmType } from 'src/utils/farm.utils';
-import { tokenIdentifier } from 'src/utils/token.converters';
 import { FarmTypeEnumType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
 import { SimpleLockService } from './simple.lock.service';
@@ -202,17 +200,7 @@ export class SimpleLockTransactionService {
         await this.validateInputLpProxyToken(inputTokens);
 
         const transactions = [];
-        const [
-            wrappedTokenID,
-            lockedTokenID,
-            contract,
-            currentEpoch,
-        ] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
-            this.simpleLockGetter.getLockedTokenID(),
-            this.elrondProxy.getSimpleLockSmartContract(),
-            this.contextGetter.getCurrentEpoch(),
-        ]);
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
 
         const lpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
             {
@@ -257,63 +245,6 @@ export class SimpleLockTransactionService {
         );
         transaction.receiver = sender;
         transactions.push(transaction);
-
-        let lockedWrappedToken: NftToken = undefined;
-        let unwrapAmount: string;
-        switch (wrappedTokenID) {
-            case lpProxyTokenAttributes.firstTokenID:
-                if (lpProxyTokenAttributes.firstTokenLockedNonce > 0) {
-                    unwrapAmount = amount0Min.toFixed();
-                    lockedWrappedToken = await this.apiService.getNftByTokenIdentifier(
-                        scAddress.simpleLockAddress,
-                        tokenIdentifier(
-                            lockedTokenID,
-                            lpProxyTokenAttributes.firstTokenLockedNonce,
-                        ),
-                    );
-                } else {
-                    transactions.push(
-                        await this.wrapTransaction.unwrapEgld(
-                            sender,
-                            amount0Min.toFixed(),
-                        ),
-                    );
-                }
-                break;
-            case lpProxyTokenAttributes.secondTokenID:
-                if (lpProxyTokenAttributes.secondTokenLockedNonce > 0) {
-                    unwrapAmount = amount1Min.toFixed();
-                    lockedWrappedToken = await this.apiService.getNftByTokenIdentifier(
-                        scAddress.simpleLockAddress,
-                        tokenIdentifier(
-                            lockedTokenID,
-                            lpProxyTokenAttributes.secondTokenLockedNonce,
-                        ),
-                    );
-                } else {
-                    transactions.push(
-                        await this.wrapTransaction.unwrapEgld(
-                            sender,
-                            amount1Min.toFixed(),
-                        ),
-                    );
-                }
-                break;
-        }
-
-        if (lockedWrappedToken) {
-            const lockedWrappedTokenAttributes = this.simpleLockService.decodeLockedTokenAttributes(
-                {
-                    identifier: lockedWrappedToken.identifier,
-                    attributes: lockedWrappedToken.attributes,
-                },
-            );
-            if (currentEpoch >= lockedWrappedTokenAttributes.unlockEpoch) {
-                transactions.push(
-                    await this.wrapTransaction.unwrapEgld(sender, unwrapAmount),
-                );
-            }
-        }
 
         return transactions;
     }
