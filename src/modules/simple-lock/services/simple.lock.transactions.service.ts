@@ -271,6 +271,13 @@ export class SimpleLockTransactionService {
                             lpProxyTokenAttributes.firstTokenLockedNonce,
                         ),
                     );
+                } else {
+                    transactions.push(
+                        await this.wrapTransaction.unwrapEgld(
+                            sender,
+                            amount0Min.toFixed(),
+                        ),
+                    );
                 }
                 break;
             case lpProxyTokenAttributes.secondTokenID:
@@ -281,6 +288,13 @@ export class SimpleLockTransactionService {
                         tokenIdentifier(
                             lockedTokenID,
                             lpProxyTokenAttributes.secondTokenLockedNonce,
+                        ),
+                    );
+                } else {
+                    transactions.push(
+                        await this.wrapTransaction.unwrapEgld(
+                            sender,
+                            amount1Min.toFixed(),
                         ),
                     );
                 }
