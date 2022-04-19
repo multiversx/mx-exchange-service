@@ -22,10 +22,8 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
             { requestIP: req.ip, request: req.headers },
         ]);
 
-        const cookies = ctx.getContext().cookies;
-
-        if (cookies !== undefined) {
-            this.impersonateAddress = cookies['Impersonate-Address'];
+        if (req.headers !== undefined) {
+            this.impersonateAddress = req.headers['impersonate-address'];
         }
         return super.canActivate(new ExecutionContextHost([req]));
     }
