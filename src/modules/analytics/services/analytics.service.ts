@@ -5,7 +5,7 @@ import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../../services/caching/cache.service';
-import { oneMinute, oneSecond } from '../../../helpers/helpers';
+import { oneMinute } from '../../../helpers/helpers';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { HistoricDataModel } from '../models/analytics.model';
 
@@ -276,7 +276,7 @@ export class AnalyticsService {
                     metric,
                     start,
                 }),
-            oneMinute() * 5,
+            oneMinute(),
         );
     }
 
@@ -306,7 +306,7 @@ export class AnalyticsService {
                     bin,
                     start,
                 }),
-            oneMinute() * 5,
+            oneMinute(),
         );
     }
 
