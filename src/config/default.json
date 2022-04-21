@@ -87,11 +87,11 @@
             "removeLiquidity": 8500000,
             "swapTokensFixedInput": {
                 "default": 8700000,
-                "withFeeSwap": 18500000
+                "withFeeSwap": 25500000
             },
             "swapTokensFixedOutput": {
                 "default": 9000000,
-                "withFeeSwap": 18500000
+                "withFeeSwap": 25500000
             }
         },
         "farms": {
@@ -286,8 +286,8 @@
                 "default": 15000000,
                 "withTokenMerge": 20000000
             },
-            "exitFarmLockedToken": 20000000,
-            "claimRewardsFarmLockedToken": 20000000
+            "exitFarmLockedToken": 45000000,
+            "claimRewardsFarmLockedToken": 30000000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,

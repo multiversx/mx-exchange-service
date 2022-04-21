@@ -5,7 +5,7 @@ import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../../services/caching/cache.service';
-import { oneMinute, oneSecond } from '../../../helpers/helpers';
+import { oneMinute } from '../../../helpers/helpers';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { HistoricDataModel } from '../models/analytics.model';
 
@@ -250,6 +250,63 @@ export class AnalyticsService {
                     metric,
                 }),
             oneMinute() * 5,
+        );
+    }
+
+    async getLatestHistoricData(
+        time: string,
+        series: string,
+        metric: string,
+        start: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'latestHistoricData',
+            time,
+            series,
+            metric,
+            start,
+        );
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.awsTimestreamQuery.getLatestHistoricData({
+                    table: awsConfig.timestream.tableName,
+                    time,
+                    series,
+                    metric,
+                    start,
+                }),
+            oneMinute(),
+        );
+    }
+
+    async getLatestBinnedHistoricData(
+        time: string,
+        series: string,
+        metric: string,
+        bin: string,
+        start: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'latestBinnedHistoricData',
+            time,
+            series,
+            metric,
+            bin,
+            start,
+        );
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.awsTimestreamQuery.getLatestBinnedHistoricData({
+                    table: awsConfig.timestream.tableName,
+                    time,
+                    series,
+                    metric,
+                    bin,
+                    start,
+                }),
+            oneMinute(),
         );
     }
 

@@ -196,12 +196,9 @@ export class SimpleLockTransactionService {
         await this.validateInputLpProxyToken(inputTokens);
 
         const transactions = [];
-        const [wrappedTokenID, contract] = await Promise.all([
-            this.wrapService.getWrappedEgldTokenID(),
-            this.elrondProxy.getSimpleLockSmartContract(),
-        ]);
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
 
-        const LpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
+        const lpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
             {
                 attributes: attributes,
                 identifier: inputTokens.tokenID,
@@ -209,7 +206,7 @@ export class SimpleLockTransactionService {
         );
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            LpProxyTokenAttributes.lpTokenID,
+            lpProxyTokenAttributes.lpTokenID,
         );
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             pairAddress,
@@ -244,24 +241,6 @@ export class SimpleLockTransactionService {
         );
         transaction.receiver = sender;
         transactions.push(transaction);
-
-        switch (wrappedTokenID) {
-            case LpProxyTokenAttributes.firstTokenID:
-                transactions.push(
-                    await this.wrapTransaction.unwrapEgld(
-                        sender,
-                        amount0Min.toFixed(),
-                    ),
-                );
-                break;
-            case LpProxyTokenAttributes.secondTokenID:
-                transactions.push(
-                    await this.wrapTransaction.unwrapEgld(
-                        sender,
-                        amount1Min.toFixed(),
-                    ),
-                );
-        }
 
         return transactions;
     }
