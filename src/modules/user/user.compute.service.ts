@@ -38,6 +38,7 @@ import { PriceDiscoveryGetterService } from '../price-discovery/services/price.d
 import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { PairComputeService } from '../pair/services/pair.compute.service';
+import { ruleOfThree } from 'src/helpers/helpers';
 
 @Injectable()
 export class UserComputeService {
@@ -307,6 +308,13 @@ export class UserComputeService {
             ),
             this.farmService.getFarmAddressByFarmTokenID(farmTokenID),
         ]);
+
+        farmToken.balance = ruleOfThree(
+            new BigNumber(nftToken.balance),
+            new BigNumber(decodedAttributes[0].stakingFarmTokenAmount),
+            new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
+        ).toFixed();
+
         const farmTokenUSD = await this.farmTokenUSD(farmToken, farmAddress);
 
         return new UserDualYiledToken({

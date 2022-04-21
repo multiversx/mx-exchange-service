@@ -15,7 +15,9 @@
             "shardID-2": "erd1qqqqqqqqqqqqqpgqmuk0q2saj0mgutxm4teywre6dl8wqf58xamqdrukln"
         },
         "staking": [
-            "erd1qqqqqqqqqqqqqpgqmqq78c5htmdnws8hm5u4suvags36eq092jpsaxv3e7"
+            "erd1qqqqqqqqqqqqqpgqmqq78c5htmdnws8hm5u4suvags36eq092jpsaxv3e7",
+            "erd1qqqqqqqqqqqqqpgqr7kdhagkqgxvjrsk7s5333l9wwnenr9g2jps8puq33",
+            "erd1qqqqqqqqqqqqqpgqzps75vsk97w9nsx2cenv2r2tyxl4fl402jpsx78m9j"
         ],
         "stakingProxy": [
             "erd1qqqqqqqqqqqqqpgq2ymdr66nk5hx32j2tqdeqv9ajm9dj9uu2jps3dtv6v",
