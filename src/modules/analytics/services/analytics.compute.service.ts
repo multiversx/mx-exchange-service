@@ -60,7 +60,7 @@ export class AnalyticsComputeService {
         if (farmsAddresses()[9] !== undefined) {
             promises.push(
                 this.farmComputeService.computeFarmLockedValueUSD(
-                    farmsAddresses()[9],
+                    farmsAddresses()[10],
                 ),
             );
         }
