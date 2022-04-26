@@ -105,6 +105,9 @@ export class FarmModel {
     @Field()
     rewardPerShare: string;
 
+    @Field()
+    rewardReserve: string;
+
     @Field(() => Int)
     lastRewardBlockNonce: number;
 

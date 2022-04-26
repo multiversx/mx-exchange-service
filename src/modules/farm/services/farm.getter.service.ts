@@ -172,6 +172,15 @@ export class FarmGetterService {
         );
     }
 
+    async getRewardReserve(farmAddress: string): Promise<string> {
+        return this.getData(
+            farmAddress,
+            'rewardReserve',
+            () => this.abiService.getRewardReserve(farmAddress),
+            oneMinute(),
+        );
+    }
+
     async getLastRewardBlockNonce(farmAddress: string): Promise<number> {
         return this.getData(
             farmAddress,
