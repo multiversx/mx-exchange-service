@@ -465,7 +465,7 @@ export class PairGetterService {
             return undefined;
         }
 
-        if (currentEpoch > lockingDeadlineEpoch) {
+        if (currentEpoch >= lockingDeadlineEpoch) {
             return undefined;
         }
 
