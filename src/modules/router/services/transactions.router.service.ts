@@ -38,6 +38,7 @@ export class TransactionRouterService {
         const createPairInteraction: Interaction = contract.methods.createPair([
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
+            BytesValue.fromHex(Address.Zero().hex()),
         ]);
 
         const transaction = createPairInteraction.buildTransaction();
