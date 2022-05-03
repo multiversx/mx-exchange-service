@@ -1,10 +1,4 @@
-import { PhaseType } from '@elrondnetwork/elrond-sdk-erdjs-dex';
-import {
-    BigUIntType,
-    EnumType,
-    EnumVariantDefinition,
-    FieldDefinition,
-} from '@elrondnetwork/erdjs/out';
+import { PriceDiscoveryPhase } from '@elrondnetwork/elrond-sdk-erdjs-dex';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';
@@ -16,30 +10,8 @@ export class PhaseModel {
     @Field()
     penaltyPercent: number;
 
-    constructor(init?: Partial<PhaseModel>) {
+    constructor(init?: Partial<PriceDiscoveryPhase>) {
         Object.assign(this, init);
-    }
-
-    toJSON(): PhaseType {
-        return {
-            name: this.name,
-            penaltyPercent: this.penaltyPercent,
-        };
-    }
-
-    static getEnum(): EnumType {
-        return new EnumType('Phase', [
-            new EnumVariantDefinition('Idle', 0),
-            new EnumVariantDefinition('NoPenalty', 1),
-            new EnumVariantDefinition('LinearIncreasingPenalty', 2, [
-                new FieldDefinition('penaltyPercentage', '', new BigUIntType()),
-            ]),
-            new EnumVariantDefinition('OnlyWithdrawFixedPenalty', 3, [
-                new FieldDefinition('penaltyPercentage', '', new BigUIntType()),
-            ]),
-            new EnumVariantDefinition('Unbond', 4),
-            new EnumVariantDefinition('Redeem', 5),
-        ]);
     }
 }
 
