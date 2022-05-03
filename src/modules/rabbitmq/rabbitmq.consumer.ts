@@ -1,45 +1,46 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EnterFarmEvent } from './entities/farm/enterFarm.event';
-import { ExitFarmEvent } from './entities/farm/exitFarm.event';
-import { RewardsEvent } from './entities/farm/rewards.event';
-import { AddLiquidityEvent } from './entities/pair/addLiquidity.event';
-import { RemoveLiquidityEvent } from './entities/pair/removeLiquidity.event';
-import { SwapFixedInputEvent } from './entities/pair/swapFixedInput.event';
-import { AddLiquidityProxyEvent } from './entities/proxy/addLiquidityProxy.event';
-import { ClaimRewardsProxyEvent } from './entities/proxy/claimRewardsProxy.event';
-import { CompoundRewardsProxyEvent } from './entities/proxy/compoundRewardsProxy.event';
-import { EnterFarmProxyEvent } from './entities/proxy/enterFarmProxy.event';
-import { ExitFarmProxyEvent } from './entities/proxy/exitFarmProxy.event';
-import { PairProxyEvent } from './entities/proxy/pairProxy.event';
-import {
-    ESDT_EVENTS,
-    FARM_EVENTS,
-    METABONDING_EVENTS,
-    PAIR_EVENTS,
-    PRICE_DISCOVERY_EVENTS,
-    PROXY_EVENTS,
-    ROUTER_EVENTS,
-} from './entities/generic.types';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { RabbitMQPairHandlerService } from './rabbitmq.pair.handler.service';
-import { SwapFixedOutputEvent } from './entities/pair/swapFixedOutput.event';
 import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { scAddress } from 'src/config';
 import { ContextService } from 'src/services/context/context.service';
-import { EsdtLocalBurnEvent } from './entities/esdtToken/esdtLocalBurn.event';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
-import { EsdtLocalMintEvent } from './entities/esdtToken/esdtLocalMint.event';
-import { farmsAddresses } from 'src/utils/farm.utils';
+import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
-import { CreatePairEvent } from './entities/router/createPair.event';
-import { MetabondingEvent } from './entities/metabonding/metabonding.event';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { RabbitMqPriceDiscoveryHandlerService } from './rabbitmq.price.discovery.handler.service';
-import { DepositEvent } from './entities/price-discovery/deposit.event';
-import { WithdrawEvent } from './entities/price-discovery/withdraw.event';
+import {
+    AddLiquidityEvent,
+    AddLiquidityProxyEvent,
+    ClaimRewardsProxyEvent,
+    CompoundRewardsProxyEvent,
+    CreatePairEvent,
+    DepositEvent,
+    EnterFarmEvent,
+    EnterFarmProxyEvent,
+    EsdtLocalBurnEvent,
+    EsdtLocalMintEvent,
+    ESDT_EVENTS,
+    ExitFarmEvent,
+    ExitFarmProxyEvent,
+    FARM_EVENTS,
+    MetabondingEvent,
+    METABONDING_EVENTS,
+    PairProxyEvent,
+    PAIR_EVENTS,
+    PRICE_DISCOVERY_EVENTS,
+    PROXY_EVENTS,
+    RemoveLiquidityEvent,
+    RewardsEvent,
+    ROUTER_EVENTS,
+    SwapFixedInputEvent,
+    SwapFixedOutputEvent,
+    WithdrawEvent,
+    RawEvent,
+} from '@elrondnetwork/elrond-sdk-erdjs-dex';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -62,7 +63,7 @@ export class RabbitMqConsumer {
         exchange: process.env.RABBITMQ_EXCHANGE,
     })
     async consumeEvents(rawEvents: any) {
-        const events = rawEvents?.events?.filter(
+        const events: RawEvent[] = rawEvents?.events?.filter(
             (rawEvent: { address: string; identifier: string }) =>
                 this.filterAddresses.find(
                     filterAddress =>
@@ -99,22 +100,34 @@ export class RabbitMqConsumer {
                     break;
                 case FARM_EVENTS.ENTER_FARM:
                     await this.wsFarmHandler.handleFarmEvent(
-                        new EnterFarmEvent(rawEvent),
+                        new EnterFarmEvent(
+                            farmVersion(rawEvent.address),
+                            rawEvent,
+                        ),
                     );
                     break;
                 case FARM_EVENTS.EXIT_FARM:
                     await this.wsFarmHandler.handleFarmEvent(
-                        new ExitFarmEvent(rawEvent),
+                        new ExitFarmEvent(
+                            farmVersion(rawEvent.address),
+                            rawEvent,
+                        ),
                     );
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
                     await this.wsFarmHandler.handleRewardsEvent(
-                        new RewardsEvent(rawEvent),
+                        new RewardsEvent(
+                            farmVersion(rawEvent.address),
+                            rawEvent,
+                        ),
                     );
                     break;
                 case FARM_EVENTS.COMPOUND_REWARDS:
                     await this.wsFarmHandler.handleRewardsEvent(
-                        new RewardsEvent(rawEvent),
+                        new RewardsEvent(
+                            farmVersion(rawEvent.address),
+                            rawEvent,
+                        ),
                     );
                     break;
                 case PROXY_EVENTS.ADD_LIQUIDITY_PROXY:

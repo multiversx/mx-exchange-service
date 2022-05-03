@@ -1,7 +1,7 @@
+import { DepositEventType } from '@elrondnetwork/elrond-sdk-erdjs-dex';
 import { Injectable } from '@nestjs/common';
 import { awsConfig } from 'src/config';
 import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
-import { DepositEventType } from 'src/modules/rabbitmq/entities/price-discovery/price.discovery.types';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
 
 @Injectable()

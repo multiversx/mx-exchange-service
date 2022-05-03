@@ -1,15 +1,17 @@
+import {
+    AddLiquidityProxyEvent,
+    ClaimRewardsProxyEvent,
+    CompoundRewardsProxyEvent,
+    EnterFarmProxyEvent,
+    ExitFarmProxyEvent,
+    PairProxyEvent,
+    PROXY_EVENTS,
+} from '@elrondnetwork/elrond-sdk-erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
-import { PROXY_EVENTS } from './entities/generic.types';
-import { AddLiquidityProxyEvent } from './entities/proxy/addLiquidityProxy.event';
-import { ClaimRewardsProxyEvent } from './entities/proxy/claimRewardsProxy.event';
-import { CompoundRewardsProxyEvent } from './entities/proxy/compoundRewardsProxy.event';
-import { EnterFarmProxyEvent } from './entities/proxy/enterFarmProxy.event';
-import { ExitFarmProxyEvent } from './entities/proxy/exitFarmProxy.event';
-import { PairProxyEvent } from './entities/proxy/pairProxy.event';
 
 @Injectable()
 export class RabbitMQProxyHandlerService {

@@ -1,10 +1,10 @@
+import { MetabondingEvent } from '@elrondnetwork/elrond-sdk-erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import { MetabondingSetterService } from '../metabonding/services/metabonding.setter.service';
-import { MetabondingEvent } from './entities/metabonding/metabonding.event';
 
 @Injectable()
 export class RabbitMQMetabondingHandlerService {

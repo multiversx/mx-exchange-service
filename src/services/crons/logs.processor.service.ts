@@ -3,8 +3,6 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { constantsConfig } from 'src/config';
-import { ExitFarmEvent } from 'src/modules/rabbitmq/entities/farm/exitFarm.event';
-import { EsdtLocalBurnEvent } from 'src/modules/rabbitmq/entities/esdtToken/esdtLocalBurn.event';
 import BigNumber from 'bignumber.js';
 import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
@@ -16,6 +14,10 @@ import { TimestreamWrite } from 'aws-sdk';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
+import {
+    EsdtLocalBurnEvent,
+    ExitFarmEvent,
+} from '@elrondnetwork/elrond-sdk-erdjs-dex';
 
 @Injectable()
 export class LogsProcessorService {

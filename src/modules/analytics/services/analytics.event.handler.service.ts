@@ -13,12 +13,12 @@ import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairSetterService } from '../../pair/services/pair.setter.service';
 import { RouterComputeService } from '../../router/services/router.compute.service';
 import { RouterSetterService } from '../../router/services/router.setter.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ContextService } from 'src/services/context/context.service';
 import {
     AddLiquidityEventType,
     SwapEventType,
-} from '../../rabbitmq/entities/pair/pair.types';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextService } from 'src/services/context/context.service';
+} from '@elrondnetwork/elrond-sdk-erdjs-dex';
 
 @Injectable()
 export class AnalyticsEventHandlerService {
