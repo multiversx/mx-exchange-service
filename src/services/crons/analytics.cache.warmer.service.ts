@@ -2,10 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
-import { cacheConfig, tokensSupplyConfig } from 'src/config';
+import { cacheConfig, constantsConfig, tokensSupplyConfig } from 'src/config';
 import { AnalyticsComputeService } from 'src/modules/analytics/services/analytics.compute.service';
 import { AnalyticsGetterService } from 'src/modules/analytics/services/analytics.getter.service';
-import { oneMinute } from '../../helpers/helpers';
+import { awsOneYear, oneMinute } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 
@@ -52,6 +52,40 @@ export class AnalyticsCacheWarmerService {
             ),
         ]);
 
+        await this.deleteCacheKeys();
+    }
+
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async cacheBurnedTokens(): Promise<void> {
+        const [feeBurned, penaltyBurned] = await Promise.all([
+            this.analyticsCompute.computeTokenBurned(
+                constantsConfig.MEX_TOKEN_ID,
+                awsOneYear(),
+                'feeBurned',
+            ),
+            this.analyticsCompute.computeTokenBurned(
+                constantsConfig.MEX_TOKEN_ID,
+                awsOneYear(),
+                'penaltyBurned',
+            ),
+        ]);
+
+        await Promise.all([
+            this.setAnalyticsCache(
+                [constantsConfig.MEX_TOKEN_ID, awsOneYear(), 'feeTokenBurned'],
+                feeBurned,
+                oneMinute() * 10,
+            ),
+            this.setAnalyticsCache(
+                [
+                    constantsConfig.MEX_TOKEN_ID,
+                    awsOneYear(),
+                    'penaltyTokenBurned',
+                ],
+                penaltyBurned,
+                oneMinute() * 10,
+            ),
+        ]);
         await this.deleteCacheKeys();
     }
 

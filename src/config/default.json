@@ -18,11 +18,15 @@
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqup60nzrkww5ukj7rxxud9txq9fakd36l0n4sthknw2",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n",
+        "simpleLockAddress": "erd1qqqqqqqqqqqqqpgq0agdv39w3s7cyn3cll3u93t3adektylz0n4sryxmaj",
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqhjdqy6rqz3vdqsr3wydvyha9xvw5n75h0n4swc0wnt",
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
+        "priceDiscovery": [
+            "erd1qqqqqqqqqqqqqpgq0p4z7krqflmcmr6ygs6kquumh7nw6k400n4spsjr29"
+        ],
         "staking": [
             "erd1qqqqqqqqqqqqqpgqqf7vhr9clwpavm59xexf3tjq0spzg3tl0n4shhszql"
         ],
@@ -44,13 +48,15 @@
                 "erd1qqqqqqqqqqqqqpgqxsy4k8fkqvllcvyrwhf80t97kyd32qfx0n4stue7cn",
                 "erd1qqqqqqqqqqqqqpgqlauj5h3wdqnmtrlljxh87f6u992jtlj80n4sjpnl56",
                 "erd1qqqqqqqqqqqqqpgqwe7relwdmhg52ra4d9t72nt5hk0qhjrd0n4spy0wnx",
-                "erd1qqqqqqqqqqqqqpgqhpu9gztn7tmznxc46q46uk6f23ttnern0n4sar7l79"
+                "erd1qqqqqqqqqqqqqpgqhpu9gztn7tmznxc46q46uk6f23ttnern0n4sar7l79",
+                "erd1qqqqqqqqqqqqqpgqhv3ddhvhq8ja78x9ayvk5evqt02yfrdm0n4suuupjv"
             ],
             "lockedRewards": [
                 "erd1qqqqqqqqqqqqqpgqg2esr6d6tfd250x4n3tkhfkw8cc4p2x50n4swatdz6",
                 "erd1qqqqqqqqqqqqqpgqpfekajgprpwzfqfctzqfqe5j2n38t3ev0n4shhyhy5",
                 "erd1qqqqqqqqqqqqqpgqfau7c39mzvmjkkkfmxtdwjgjparkgfmz0n4sfe8er6",
-                "erd1qqqqqqqqqqqqqpgq9s7ft5fj72zyt8qn8yd24xcl8rxu9v4m0n4sjlh528"
+                "erd1qqqqqqqqqqqqqpgq9s7ft5fj72zyt8qn8yd24xcl8rxu9v4m0n4sjlh528",
+                "erd1qqqqqqqqqqqqqpgqd7av8hy5ydnrlunr6pt40wc07pfj8qv90n4srdthut"
             ],
             "customRewards": []
         }
@@ -81,11 +87,11 @@
             "removeLiquidity": 8500000,
             "swapTokensFixedInput": {
                 "default": 8700000,
-                "withFeeSwap": 18500000
+                "withFeeSwap": 25500000
             },
             "swapTokensFixedOutput": {
                 "default": 9000000,
-                "withFeeSwap": 18500000
+                "withFeeSwap": 25500000
             }
         },
         "farms": {
@@ -268,6 +274,21 @@
             "defaultMergeLockedAssets": 12000000,
             "lockedAssetMerge": 4000000
         },
+        "priceDiscovery": {
+            "deposit": 5000000,
+            "withdraw": 10000000
+        },
+        "simpleLock": {
+            "unlockTokens": 5000000,
+            "addLiquidityLockedToken": 20000000,
+            "removeLiquidityLockedToken": 15000000,
+            "enterFarmLockedToken": {
+                "default": 15000000,
+                "withTokenMerge": 20000000
+            },
+            "exitFarmLockedToken": 45000000,
+            "claimRewardsFarmLockedToken": 30000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
@@ -280,6 +301,8 @@
         "metabondingStaking": "./src/abis/metabonding-staking.abi.json",
         "proxy": "./src/abis/proxy-dex.abi.json",
         "wrap": "./src/abis/egld-esdt-swap.abi.json",
+        "priceDiscovery": "./src/abis/price-discovery.abi.json",
+        "simpleLock": "./src/abis/simple-lock.abi.json",
         "farm": {
             "v1.2": "./src/abis/v1.2/farm.abi.json",
             "v1.3": {
@@ -298,6 +321,7 @@
     "constants": {
         "MAX_PENALTY_PERCENT": 10000,
         "MAX_PERCENT": 10000,
+        "MAX_PERCENTAGE_PRICE_DISCOVERY": 10000000000000,
         "BLOCKS_IN_YEAR": 5256000,
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,

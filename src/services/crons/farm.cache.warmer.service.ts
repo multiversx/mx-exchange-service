@@ -123,6 +123,7 @@ export class FarmCacheWarmerService {
                 undistributedFees,
                 currentBlockFee,
                 farmRewardPerShare,
+                rewardReserve,
             ] = await Promise.all([
                 this.abiFarmService.getFarmingTokenReserve(farmAddress),
                 this.abiFarmService.getFarmTokenSupply(farmAddress),
@@ -130,6 +131,7 @@ export class FarmCacheWarmerService {
                 this.abiFarmService.getUndistributedFees(farmAddress),
                 this.abiFarmService.getCurrentBlockFee(farmAddress),
                 this.abiFarmService.getRewardPerShare(farmAddress),
+                this.abiFarmService.getRewardReserve(farmAddress),
             ]);
             const cacheKeys = await Promise.all([
                 this.farmSetterService.setFarmingTokenReserve(
@@ -155,6 +157,10 @@ export class FarmCacheWarmerService {
                 this.farmSetterService.setRewardPerShare(
                     farmAddress,
                     farmRewardPerShare,
+                ),
+                this.farmSetterService.setRewardReserve(
+                    farmAddress,
+                    rewardReserve,
                 ),
             ]);
             this.invalidatedKeys.push(cacheKeys);

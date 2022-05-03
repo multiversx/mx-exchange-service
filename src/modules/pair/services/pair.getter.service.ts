@@ -11,6 +11,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
+import { LockedTokensInfo } from '../models/pair.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
 import { PairDBService } from './pair.db.service';
@@ -372,6 +373,107 @@ export class PairGetterService {
             () => this.pairDbService.getPairType(pairAddress),
             oneMinute(),
         );
+    }
+
+    async getLockingScAddress(
+        pairAddress: string,
+    ): Promise<string | undefined> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'lockingScAddress');
+        const cachedValue: string = await this.cachingService.getCache(
+            cacheKey,
+        );
+        if (cachedValue === '') {
+            return undefined;
+        }
+        if (cachedValue) {
+            return cachedValue;
+        }
+        const value = await this.abiService.getLockingScAddress(pairAddress);
+        if (value) {
+            await this.cachingService.setCache(cacheKey, value, oneHour());
+            return value;
+        }
+        await this.cachingService.setCache(cacheKey, '', oneMinute() * 10);
+        return undefined;
+    }
+
+    async getUnlockEpoch(pairAddress: string): Promise<number | undefined> {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'unlockEpoch');
+        const cachedValue: number = await this.cachingService.getCache(
+            cacheKey,
+        );
+        if (cachedValue === -1) {
+            return undefined;
+        }
+        if (cachedValue) {
+            return cachedValue;
+        }
+        const value = await this.abiService.getUnlockEpoch(pairAddress);
+        if (value) {
+            await this.cachingService.setCache(cacheKey, value, oneHour());
+            return value;
+        }
+        await this.cachingService.setCache(cacheKey, -1, oneMinute() * 10);
+        return undefined;
+    }
+
+    async getLockingDeadlineEpoch(
+        pairAddress: string,
+    ): Promise<number | undefined> {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'lockingDeadlineEpoch',
+        );
+        const cachedValue: number = await this.cachingService.getCache(
+            cacheKey,
+        );
+        if (cachedValue === -1) {
+            return undefined;
+        }
+        if (cachedValue) {
+            return cachedValue;
+        }
+        const value = await this.abiService.getLockingDeadlineEpoch(
+            pairAddress,
+        );
+        if (value) {
+            await this.cachingService.setCache(cacheKey, value, oneHour());
+            return value;
+        }
+        await this.cachingService.setCache(cacheKey, -1, oneMinute() * 10);
+        return undefined;
+    }
+
+    async getLockedTokensInfo(pairAddress: string): Promise<LockedTokensInfo> {
+        const [
+            lockingScAddress,
+            unlockEpoch,
+            lockingDeadlineEpoch,
+            currentEpoch,
+        ] = await Promise.all([
+            this.getLockingScAddress(pairAddress),
+            this.getUnlockEpoch(pairAddress),
+            this.getLockingDeadlineEpoch(pairAddress),
+            this.contextGetter.getCurrentEpoch(),
+        ]);
+
+        if (
+            lockingScAddress === undefined ||
+            unlockEpoch === undefined ||
+            lockingDeadlineEpoch === undefined
+        ) {
+            return undefined;
+        }
+
+        if (currentEpoch >= lockingDeadlineEpoch) {
+            return undefined;
+        }
+
+        return new LockedTokensInfo({
+            lockingScAddress,
+            unlockEpoch,
+            lockingDeadlineEpoch,
+        });
     }
 
     private getPairCacheKey(pairAddress: string, ...args: any) {

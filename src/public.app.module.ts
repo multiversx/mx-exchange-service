@@ -20,6 +20,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { StakingModule } from './modules/staking/staking.module';
 import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module';
 import { MetabondingModule } from './modules/metabonding/metabonding.module';
+import { PriceDiscoveryModule } from './modules/price-discovery/price.discovery.module';
+import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 
 @Module({
     imports: [
@@ -83,6 +85,8 @@ import { MetabondingModule } from './modules/metabonding/metabonding.module';
         ProxyModule,
         LockedAssetModule,
         MetabondingModule,
+        PriceDiscoveryModule,
+        SimpleLockModule,
         WrappingModule,
         UserModule,
         AnalyticsModule,

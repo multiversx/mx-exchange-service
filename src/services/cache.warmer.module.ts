@@ -27,6 +27,8 @@ import { StakingProxyCacheWarmerService } from './crons/staking.proxy.cache.warm
 import { StakingProxyModule } from 'src/modules/staking-proxy/staking.proxy.module';
 import { MetabondingCacheWarmerService } from './crons/metabonding.cache.warmer.service';
 import { MetabondingModule } from 'src/modules/metabonding/metabonding.module';
+import { PriceDiscoveryCacheWarmerService } from './crons/price.discovery.cache.warmer.service';
+import { PriceDiscoveryModule } from 'src/modules/price-discovery/price.discovery.module';
 
 @Module({
     imports: [
@@ -47,6 +49,7 @@ import { MetabondingModule } from 'src/modules/metabonding/metabonding.module';
         ProxyFarmModule,
         ProxyPairModule,
         AnalyticsModule,
+        PriceDiscoveryModule,
         AWSModule,
     ],
     controllers: [],
@@ -59,6 +62,7 @@ import { MetabondingModule } from 'src/modules/metabonding/metabonding.module';
         MetabondingCacheWarmerService,
         ProxyCacheWarmerService,
         AnalyticsCacheWarmerService,
+        PriceDiscoveryCacheWarmerService,
         CachingService,
         TransactionProcessorService,
         LogsProcessorService,

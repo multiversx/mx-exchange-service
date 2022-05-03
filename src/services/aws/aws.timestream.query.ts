@@ -484,4 +484,96 @@ export class AWSTimestreamQueryService {
                 }),
         );
     }
+
+    async getLatestHistoricData({
+        table,
+        time,
+        series,
+        metric,
+        start,
+    }): Promise<HistoricDataModel[]> {
+        const formattedStart = moment
+            .unix(start)
+            .utc()
+            .format('yyyy-MM-DD HH:mm:ss');
+
+        const QueryString = `
+            WITH max_timeseries AS (
+                SELECT max(time) as max_time
+                FROM "${this.DatabaseName}".${table}
+                WHERE series = '${series}'
+                AND measure_name = '${metric}' 
+            )
+            SELECT time, measure_value::double AS value
+                FROM "${this.DatabaseName}".${table} 
+                WHERE series = '${series}'
+                AND measure_name = '${metric}' 
+                AND time >= ((SELECT max_time FROM max_timeseries) - parse_duration('${time}'))
+                ${start ? `AND time > '${formattedStart}'` : ''}
+                GROUP BY time, measure_value::double
+                ORDER BY time ASC
+        `;
+
+        const params = { QueryString };
+        const { Rows } = await this.queryClient.query(params).promise();
+        return Rows.map(
+            Row =>
+                new HistoricDataModel({
+                    timestamp: Row.Data[0].ScalarValue,
+                    value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
+                }),
+        );
+    }
+
+    async getLatestBinnedHistoricData({
+        table,
+        time,
+        series,
+        metric,
+        bin,
+        start,
+    }): Promise<HistoricDataModel[]> {
+        const formattedStart = moment
+            .unix(start)
+            .utc()
+            .format('yyyy-MM-DD HH:mm:ss');
+
+        const QueryString = `
+            WITH max_timeseries AS (
+                SELECT max(time) as max_time
+                FROM "${this.DatabaseName}".${table}
+                WHERE series = '${series}'
+                AND measure_name = '${metric}' 
+            ), 
+            binned_timeseries AS (
+                SELECT series, BIN(time, ${bin}) AS binned_timestamp, AVG(measure_value::double) AS avg_value
+                FROM "${this.DatabaseName}".${table} 
+                WHERE series = '${series}'
+                AND measure_name = '${metric}' 
+                AND time >= ((SELECT max_time FROM max_timeseries) - parse_duration('${time}'))
+                ${start ? `AND time > '${formattedStart}'` : ''}
+                GROUP BY series, BIN(time, ${bin})
+            ),interpolated_timeseries AS (
+                SELECT series,
+                    INTERPOLATE_LOCF(
+                        CREATE_TIME_SERIES(binned_timestamp, avg_value),
+                            SEQUENCE(min(binned_timestamp), max(binned_timestamp), ${bin})) AS interpolated_avg_value
+                FROM binned_timeseries
+                GROUP BY series
+            )
+            SELECT time, value 
+            FROM interpolated_timeseries
+            CROSS JOIN UNNEST(interpolated_avg_value)
+        `;
+
+        const params = { QueryString };
+        const { Rows } = await this.queryClient.query(params).promise();
+        return Rows.map(
+            Row =>
+                new HistoricDataModel({
+                    timestamp: Row.Data[0].ScalarValue,
+                    value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
+                }),
+        );
+    }
 }

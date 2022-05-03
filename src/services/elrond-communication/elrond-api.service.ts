@@ -124,6 +124,29 @@ export class ElrondApiService {
         );
     }
 
+    async getTokenForUser(
+        address: string,
+        tokenID: string,
+    ): Promise<EsdtToken> {
+        return this.doGetGeneric(
+            this.getTokenForUser.name,
+            `accounts/${address}/tokens/${tokenID}`,
+            response => response,
+        );
+    }
+
+    async getTokenBalanceForUser(
+        address: string,
+        tokenID: string,
+    ): Promise<string> {
+        try {
+            const token = await this.getTokenForUser(address, tokenID);
+            return token.balance;
+        } catch (error) {
+            return '0';
+        }
+    }
+
     async getNftsForUser(
         address: string,
         from = 0,

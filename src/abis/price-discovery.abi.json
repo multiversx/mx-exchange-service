@@ -1,0 +1,426 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.60.0-nightly",
+            "commitHash": "a00e130dae74a213338e2b095ec855156d8f3d8a",
+            "commitDate": "2022-01-29",
+            "channel": "Nightly",
+            "short": "rustc 1.60.0-nightly (a00e130da 2022-01-29)"
+        },
+        "contractCrate": {
+            "name": "price-discovery",
+            "version": "0.0.0"
+        },
+        "framework": {
+            "name": "elrond-wasm",
+            "version": "0.29.3"
+        }
+    },
+    "name": "PriceDiscovery",
+    "constructor": {
+        "docs": [
+            "For explanations regarding what each parameter means, please refer to docs/setup.md"
+        ],
+        "inputs": [
+            {
+                "name": "launched_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "accepted_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "launched_token_decimals",
+                "type": "u32"
+            },
+            {
+                "name": "min_launched_token_price",
+                "type": "BigUint"
+            },
+            {
+                "name": "start_block",
+                "type": "u64"
+            },
+            {
+                "name": "no_limit_phase_duration_blocks",
+                "type": "u64"
+            },
+            {
+                "name": "linear_penalty_phase_duration_blocks",
+                "type": "u64"
+            },
+            {
+                "name": "fixed_penalty_phase_duration_blocks",
+                "type": "u64"
+            },
+            {
+                "name": "unlock_epoch",
+                "type": "u64"
+            },
+            {
+                "name": "penalty_min_percentage",
+                "type": "BigUint"
+            },
+            {
+                "name": "penalty_max_percentage",
+                "type": "BigUint"
+            },
+            {
+                "name": "fixed_penalty_percentage",
+                "type": "BigUint"
+            },
+            {
+                "name": "locking_sc_address",
+                "type": "Address"
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "docs": [
+                "Users can deposit either launched_token or accepted_token.",
+                "They will receive an SFT that can be used to withdraw said tokens"
+            ],
+            "name": "deposit",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Deposit SFTs received after deposit to withdraw the initially deposited tokens.",
+                "Depending on the current Phase, a penalty may be applied and only a part",
+                "of the initial tokens will be received."
+            ],
+            "name": "withdraw",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "After all phases have ended,",
+                "users can withdraw their fair share of either accepted or launched tokens,",
+                "depending on which token they deposited initially.",
+                "Users that deposited accepted tokens will receive Locked launched tokens.",
+                "Users that deposited launched tokens will receive Locked accepted tokens.",
+                "The users can unlock said tokens at the configured unlock_epoch,",
+                "through the SC at locking_sc_address"
+            ],
+            "name": "redeem",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getCurrentPrice",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getMinLaunchedTokenPrice",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getPricePrecision",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getLaunchedTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getAcceptedTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getLaunchedTokenBalance",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getAcceptedTokenBalance",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getStartBlock",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getEndBlock",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "setLockingScAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setUnlockEpoch",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_epoch",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getLockingScAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getUnlockEpoch",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getCurrentPhase",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Phase"
+                }
+            ]
+        },
+        {
+            "name": "getNoLimitPhaseDurationBlocks",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getLinearPenaltyPhaseDurationBlocks",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getFixedPenaltyPhaseDurationBlocks",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getPenaltyMinPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getPenaltyMaxPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getFixedPenaltyPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "issueRedeemToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                },
+                {
+                    "name": "nr_decimals",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "createInitialRedeemTokens",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getRedeemTokenTotalCirculatingSupply",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getRedeemTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        }
+    ],
+    "hasCallback": true,
+    "types": {
+        "Phase": {
+            "type": "enum",
+            "variants": [
+                {
+                    "name": "Idle",
+                    "discriminant": 0
+                },
+                {
+                    "name": "NoPenalty",
+                    "discriminant": 1
+                },
+                {
+                    "name": "LinearIncreasingPenalty",
+                    "discriminant": 2,
+                    "fields": [
+                        {
+                            "name": "penalty_percentage",
+                            "type": "BigUint"
+                        }
+                    ]
+                },
+                {
+                    "name": "OnlyWithdrawFixedPenalty",
+                    "discriminant": 3,
+                    "fields": [
+                        {
+                            "name": "penalty_percentage",
+                            "type": "BigUint"
+                        }
+                    ]
+                },
+                {
+                    "name": "Redeem",
+                    "discriminant": 4
+                }
+            ]
+        }
+    }
+}

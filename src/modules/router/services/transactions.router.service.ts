@@ -38,6 +38,7 @@ export class TransactionRouterService {
         const createPairInteraction: Interaction = contract.methods.createPair([
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
+            BytesValue.fromHex(Address.Zero().hex()),
         ]);
 
         const transaction = createPairInteraction.buildTransaction();
@@ -54,7 +55,7 @@ export class TransactionRouterService {
         lpTokenTicker: string,
     ): Promise<TransactionModel> {
         const lpTokeID = await this.pairGetterService.getLpTokenID(pairAddress);
-        if (lpTokeID !== undefined) {
+        if (lpTokeID !== 'undefined') {
             throw new Error('LP Token already issued');
         }
 

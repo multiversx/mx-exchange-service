@@ -15,6 +15,8 @@ import { RouterModule } from '../router/router.module';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { MetabondingModule } from '../metabonding/metabonding.module';
+import { RabbitMqPriceDiscoveryHandlerService } from './rabbitmq.price.discovery.handler.service';
+import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
 
 @Module({
     imports: [
@@ -26,6 +28,7 @@ import { MetabondingModule } from '../metabonding/metabonding.module';
         FarmModule,
         RouterModule,
         MetabondingModule,
+        PriceDiscoveryModule,
     ],
     providers: [
         RabbitMqConsumer,
@@ -35,6 +38,7 @@ import { MetabondingModule } from '../metabonding/metabonding.module';
         RabbitMQRouterHandlerService,
         RabbitMQEsdtTokenHandlerService,
         RabbitMQMetabondingHandlerService,
+        RabbitMqPriceDiscoveryHandlerService,
     ],
 })
 export class RabbitMqModule {

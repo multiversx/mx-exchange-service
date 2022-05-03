@@ -48,6 +48,10 @@ import { StakingService } from '../staking/services/staking.service';
 import { StakingServiceMock } from '../staking/mocks/staking.service.mock';
 import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
 import { StakingProxyServiceMock } from '../staking-proxy/mocks/staking.proxy.service.mock';
+import { PriceDiscoveryGetterServiceProvider } from '../price-discovery/mocks/price.discovery.getter.mock';
+import { PriceDiscoveryServiceProvider } from '../price-discovery/mocks/price.discovery.service.mock';
+import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
+import { SimpleLockGetterServiceProvider } from '../simple-lock/mocks/simple.lock.getter.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -175,6 +179,10 @@ describe('UserService', () => {
                 StakingGetterServiceProvider,
                 StakingProxyServiceProvider,
                 StakingProxyGetterServiceProvider,
+                PriceDiscoveryServiceProvider,
+                PriceDiscoveryGetterServiceProvider,
+                SimpleLockService,
+                SimpleLockGetterServiceProvider,
                 UserService,
                 UserComputeService,
             ],
