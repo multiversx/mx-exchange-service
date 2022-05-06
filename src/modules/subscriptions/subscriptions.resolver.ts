@@ -2,7 +2,7 @@ import {
     FARM_EVENTS,
     PAIR_EVENTS,
     PROXY_EVENTS,
-} from '@elrondnetwork/elrond-sdk-erdjs-dex';
+} from '@elrondnetwork/erdjs-dex';
 import { Inject } from '@nestjs/common';
 import { Resolver, Subscription } from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';

@@ -1,4 +1,4 @@
-import { DepositEventType } from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { DepositEventType } from '@elrondnetwork/erdjs-dex';
 import { Injectable } from '@nestjs/common';
 import { awsConfig } from 'src/config';
 import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';

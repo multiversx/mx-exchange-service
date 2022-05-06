@@ -3,7 +3,7 @@ import {
     ExitFarmEvent,
     FARM_EVENTS,
     RewardsEvent,
-} from '@elrondnetwork/elrond-sdk-erdjs-dex';
+} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

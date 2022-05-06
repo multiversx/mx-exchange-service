@@ -1,4 +1,4 @@
-import { PriceDiscoveryPhase } from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { PriceDiscoveryPhase } from '@elrondnetwork/erdjs-dex';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { NftCollection } from 'src/models/tokens/nftCollection.model';

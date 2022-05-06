@@ -14,10 +14,7 @@ import { TimestreamWrite } from 'aws-sdk';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import {
-    EsdtLocalBurnEvent,
-    ExitFarmEvent,
-} from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { EsdtLocalBurnEvent, ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
 export class LogsProcessorService {

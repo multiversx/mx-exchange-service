@@ -1,4 +1,4 @@
-import { EnterFarmEvent } from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { EnterFarmEvent } from '@elrondnetwork/erdjs-dex';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';

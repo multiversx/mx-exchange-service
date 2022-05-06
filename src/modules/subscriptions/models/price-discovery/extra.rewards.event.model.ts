@@ -1,4 +1,4 @@
-import { ExtraRewardsEvent } from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { ExtraRewardsEvent } from '@elrondnetwork/erdjs-dex';
 import { Field } from '@nestjs/graphql';
 import { GenericToken } from 'src/models/genericToken.model';
 import { PriceDiscoveryEventModel } from './price.discovery.event.model';

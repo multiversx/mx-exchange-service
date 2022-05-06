@@ -13,7 +13,7 @@ import {
     SwapFixedInputEvent,
     SwapFixedOutputEvent,
     SwapNoFeeEvent,
-} from '@elrondnetwork/elrond-sdk-erdjs-dex';
+} from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
 export class RabbitMQPairHandlerService {

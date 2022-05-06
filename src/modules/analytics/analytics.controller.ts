@@ -4,7 +4,7 @@ import {
     PAIR_EVENTS,
     PRICE_DISCOVERY_EVENTS,
     SwapEventType,
-} from '@elrondnetwork/elrond-sdk-erdjs-dex';
+} from '@elrondnetwork/erdjs-dex';
 import { Controller, Inject } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

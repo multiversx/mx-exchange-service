@@ -1,4 +1,4 @@
-import { ExitFarmProxyEvent } from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { ExitFarmProxyEvent } from '@elrondnetwork/erdjs-dex';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { ExitFarmProxyEventModel } from './exitFarmProxy.event.model';
 

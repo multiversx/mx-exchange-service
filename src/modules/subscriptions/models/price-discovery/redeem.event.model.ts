@@ -1,4 +1,4 @@
-import { RedeemEvent } from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { RedeemEvent } from '@elrondnetwork/erdjs-dex';
 import { Field } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';

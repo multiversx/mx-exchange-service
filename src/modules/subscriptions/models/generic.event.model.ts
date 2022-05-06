@@ -1,4 +1,4 @@
-import { GenericEvent } from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { GenericEvent } from '@elrondnetwork/erdjs-dex';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';

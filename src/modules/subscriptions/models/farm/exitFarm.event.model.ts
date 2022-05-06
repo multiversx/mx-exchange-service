@@ -1,4 +1,4 @@
-import { ExitFarmEvent } from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';

@@ -2,7 +2,7 @@ import {
     DepositEvent,
     PRICE_DISCOVERY_EVENTS,
     WithdrawEvent,
-} from '@elrondnetwork/elrond-sdk-erdjs-dex';
+} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

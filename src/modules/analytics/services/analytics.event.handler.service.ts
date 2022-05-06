@@ -15,10 +15,7 @@ import { RouterComputeService } from '../../router/services/router.compute.servi
 import { RouterSetterService } from '../../router/services/router.setter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextService } from 'src/services/context/context.service';
-import {
-    AddLiquidityEventType,
-    SwapEventType,
-} from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { AddLiquidityEventType, SwapEventType } from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
 export class AnalyticsEventHandlerService {

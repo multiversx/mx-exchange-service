@@ -1,7 +1,4 @@
-import {
-    CreatePairEvent,
-    ROUTER_EVENTS,
-} from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { CreatePairEvent, ROUTER_EVENTS } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

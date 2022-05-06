@@ -1,4 +1,4 @@
-import { SwapNoFeeEvent } from '@elrondnetwork/elrond-sdk-erdjs-dex';
+import { SwapNoFeeEvent } from '@elrondnetwork/erdjs-dex';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { GenericToken } from 'src/models/genericToken.model';

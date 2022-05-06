@@ -1,6 +1,6 @@
-import { CreatePairEvent } from '@elrondnetwork/elrond-sdk-erdjs-dex';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { GenericEventModel } from '../generic.event.model';
+import { CreatePairEvent } from '@elrondnetwork/erdjs-dex';
 
 @ObjectType()
 export class CreatePairEventModel extends GenericEventModel {

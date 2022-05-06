@@ -40,7 +40,7 @@ import {
     SwapFixedOutputEvent,
     WithdrawEvent,
     RawEvent,
-} from '@elrondnetwork/elrond-sdk-erdjs-dex';
+} from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
 export class RabbitMqConsumer {
