@@ -11,6 +11,8 @@ import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
 import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { AutoRouteModel } from './models/auto-router.model';
+import { AutoRouterService } from './services/auto-router/auto-router.service';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -18,6 +20,7 @@ export class RouterResolver {
         private readonly routerService: RouterService,
         private readonly routerGetterService: RouterGetterService,
         private readonly transactionService: TransactionRouterService,
+        private readonly autoRouterService: AutoRouterService
     ) {}
 
     @Query(() => FactoryModel)
@@ -158,5 +161,22 @@ export class RouterResolver {
             feeTokenID,
             enable,
         );
+    }
+
+    @Query(() => AutoRouteModel)
+    async getAutoRoute(
+        @Args('amount') amount: string,
+        @Args('tokenInID') tokenInID: string,
+        @Args('tokenOutID') tokenOutID: string,
+    ): Promise<AutoRouteModel> {
+        try {
+            return await this.autoRouterService.getAutoRoute(
+                amount,
+                tokenInID,
+                tokenOutID,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }
