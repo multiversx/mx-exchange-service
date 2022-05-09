@@ -11,6 +11,8 @@ import { PairModule } from '../pair/pair.module';
 import { RouterSetterService } from './services/router.setter.service';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { CommonAppModule } from 'src/common.app.module';
+import { AutoRouterService } from './services/auto-router/auto-router.service';
+import { ContextModule } from 'src/services/context/context.module';
 
 @Module({
     imports: [
@@ -19,6 +21,7 @@ import { CommonAppModule } from 'src/common.app.module';
         CachingModule,
         PairModule,
         AWSModule,
+        ContextModule,
     ],
     providers: [
         RouterService,
@@ -28,6 +31,7 @@ import { CommonAppModule } from 'src/common.app.module';
         RouterComputeService,
         TransactionRouterService,
         RouterResolver,
+        AutoRouterService,
     ],
     exports: [
         AbiRouterService,
@@ -35,6 +39,7 @@ import { CommonAppModule } from 'src/common.app.module';
         RouterGetterService,
         RouterSetterService,
         RouterComputeService,
+        AutoRouterService,
     ],
 })
 export class RouterModule {}

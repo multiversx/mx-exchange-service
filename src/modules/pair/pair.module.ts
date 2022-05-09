@@ -29,7 +29,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
         MongooseModule.forRootAsync({
             imports: [CommonAppModule],
             useFactory: async (configService: ApiConfigService) => ({
-                uri: `mongodb+srv://${configService.getMongoDBURL()}`,
+                uri: `mongodb://${configService.getMongoDBURL()}`,
                 dbName: configService.getMongoDBDatabase(),
                 user: configService.getMongoDBUsername(),
                 pass: configService.getMongoDBPassword(),

@@ -113,7 +113,7 @@ export class AWSTimestreamWriteService {
         }
 
         const Records = this.createRecords({ data, Time });
-        await this.writeRecords({ TableName, Records });
+        //dev//await this.writeRecords({ TableName, Records });
     }
 
     async multiRecordsIngest(
@@ -124,7 +124,7 @@ export class AWSTimestreamWriteService {
             await this.createTable({ TableName });
         }
 
-        await this.writeRecords({ TableName, Records });
+        //dev//await this.writeRecords({ TableName, Records });
     }
 
     private printRejectedRecordsException(request, Records) {
