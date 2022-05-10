@@ -13,23 +13,26 @@ export type QueueItem = {
     address: string;
 };
 
-export class MaxPriorityQueue {
-    queue: QueueItem[];
+export const PRIORITY_MODES = {
+    minInput: 0,
+    maxOutput: 1,
+};
 
-    constructor() {
+export class PriorityQueue {
+    queue: QueueItem[];
+    priorityMode: number;
+
+    constructor(_priorityMode) {
         this.queue = [];
+        this.priorityMode = _priorityMode;
     }
 
     sorter(
         a: { intermediaryAmount: string },
         b: { intermediaryAmount: string },
     ): number {
-        /*this.logger.debug(
-            'sorter ' + a.intermediaryAmount + ' ' + b.intermediaryAmount,
-            12,
-        );*/
-        const diff = new BigNumber(b.intermediaryAmount).minus(
-            a.intermediaryAmount,
+        const diff = new BigNumber(a.intermediaryAmount).minus(
+            b.intermediaryAmount,
         );
         if (new BigNumber(diff).isGreaterThan(0)) return 1;
         else if (new BigNumber(diff).isEqualTo(0)) return 0;
@@ -42,37 +45,24 @@ export class MaxPriorityQueue {
      * ps: highest priority not accurate due to different currencies.
      */
     push(item: QueueItem): void {
-        /*this.logger.debug(
-            'push ' +
-                item.tokenID +
-                ' ' +
-                item.intermediaryAmount +
-                ' ' +
-                item.address,
-            12,
-        );*/
         const length = this.queue.length;
         this.queue.push(item);
         this.swim(length);
     }
 
     parent(i: number): number {
-        //this.logger.debug('parent ' + i, 12);
         return Math.floor((i - 1) / 2);
     }
 
     left(i: number): number {
-        //this.logger.debug('left ' + i, 12);
         return i * 2 + 1;
     }
 
     right(i: number): number {
-        //this.logger.debug('right ' + i, 12);
         return i * 2 + 2;
     }
 
     swim(i: number): void {
-        //this.logger.debug('swim ' + i, 12);
         const queue = this.queue;
         while (i > 0) {
             const pi = this.parent(i);
@@ -85,7 +75,6 @@ export class MaxPriorityQueue {
     }
 
     sink(i: number): void {
-        //this.logger.debug('sink ' + i, 12);
         const queue = this.queue;
         // left child index in queue
         const li = this.left(i);
@@ -109,7 +98,6 @@ export class MaxPriorityQueue {
     }
 
     swap(i: number, j: number): void {
-        //this.logger.debug('swap ' + i + ' ' + j, 12);
         const tem = this.queue[i];
         this.queue[i] = this.queue[j];
         this.queue[j] = tem;
@@ -119,7 +107,6 @@ export class MaxPriorityQueue {
      * caller should guarantee current queue is not empty
      */
     pop(): QueueItem {
-        //this.logger.debug('pop ', 12);
         this.swap(0, this.queue.length - 1);
         const item = this.queue.pop();
         this.sink(0);
@@ -127,7 +114,6 @@ export class MaxPriorityQueue {
     }
 
     empty(): boolean {
-        //this.logger.debug('empty ', 12);
         return this.queue.length === 0;
     }
 
@@ -139,10 +125,14 @@ export class MaxPriorityQueue {
         for (let i = this.queue.length - 1; i >= 0; --i) {
             if (this.queue[i].tokenID == newItem.tokenID) {
                 if (
-                    this.queue[i].intermediaryAmount <
-                    newItem.intermediaryAmount
+                    (this.priorityMode === PRIORITY_MODES.maxOutput &&
+                        this.queue[i].intermediaryAmount <
+                            newItem.intermediaryAmount) ||
+                    (this.priorityMode === PRIORITY_MODES.minInput &&
+                        this.queue[i].intermediaryAmount <
+                            newItem.intermediaryAmount)
                 ) {
-                    // less good cost found => delete
+                    // delete old cost because is less good
                     this.queue.splice(i, 1);
                     foundLessGoodValue = true;
                 } else {
@@ -153,18 +143,11 @@ export class MaxPriorityQueue {
             }
         }
 
-        if (foundLessGoodValue && !foundBetterValue) {
-            // better cost
-            //this.logger.debug('OVERWRITING PUSH', 12);
-            this.push(newItem);
-            return true;
-        } else if (
-            !foundLessGoodValue &&
-            !foundBetterValue &&
+        // if better cost || first push
+        if (
+            (foundLessGoodValue && !foundBetterValue) ||
             typeof currentCost === 'undefined'
         ) {
-            // first cost for this position/token
-            //this.logger.debug('FIRST PUSH', 12);
             this.push(newItem);
             return true;
         }
