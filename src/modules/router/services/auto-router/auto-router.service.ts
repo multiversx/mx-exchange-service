@@ -104,7 +104,6 @@ export class AutoRouterService {
             // find the node, u, that currently has the shortest path from s.
             closest = maxPriorityQueue.pop();
             u = closest.tokenID;
-            //this.logger.debug('# NODE ' + u);
 
             // Save the best output, if a better one was found
             if (
@@ -127,19 +126,6 @@ export class AutoRouterService {
                     const currentPair = pairs.filter(
                         p => p.address == adjacent_nodes[v].address,
                     )[0];
-
-                    /*this.logger.debug(
-                        '# PAIR ' +
-                            currentPair.firstToken.identifier +
-                            ' - ' +
-                            currentPair.secondToken.identifier +
-                            ' (u = ' +
-                            u +
-                            ' & v = ' +
-                            v +
-                            ')',
-                        4,
-                    );*/
 
                     output_from_s_to_u = closest.intermediaryAmount;
 
@@ -184,12 +170,6 @@ export class AutoRouterService {
                         costs[v] = output_of_e;
                         predecessors[v] = u;
                     }
-
-                    //#region more logs
-                    /*console.log('costs[]', costs);
-                    console.log('predecessors[]', costs);
-                    console.log('maxPriorityQueue.queue', maxPriorityQueue.queue);*/
-                    //#endregion
                 }
             }
         }
