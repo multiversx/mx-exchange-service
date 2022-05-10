@@ -27,69 +27,12 @@ export class AutoRouterService {
         tokenInID: string,
         tokenOutID: string,
     ): Promise<AutoRouteModel> {
-        let pairs: PairModel[] = [];
+        const pairs: PairModel[] = await this.getAllPairs();
 
-        //#region  get required info about all pairs
-        const pairAddresses = await this.contextService.getAllPairsAddress();
-        for (const pairAddress of pairAddresses) {
-            const [
-                pairMetadata,
-                pairInfo,
-                pairTotalFeePercent,
-                pairState,
-            ] = await Promise.all([
-                this.contextService.getPairMetadata(pairAddress),
-                this.pairGetterService.getPairInfoMetadata(pairAddress),
-                this.pairGetterService.getTotalFeePercent(pairAddress),
-                this.pairGetterService.getState(pairAddress),
-            ]);
+        const graph = this.buildDijkstraGraph(pairs);
 
-            pairs.push(
-                new PairModel({
-                    address: pairMetadata.address,
-                    firstToken: new EsdtToken({
-                        identifier: pairMetadata.firstTokenID,
-                    }),
-                    secondToken: new EsdtToken({
-                        identifier: pairMetadata.secondTokenID,
-                    }),
-                    info: pairInfo,
-                    totalFeePercent: pairTotalFeePercent,
-                    state: pairState,
-                }),
-            );
-        }
-        //#endregion
-
-        //#region  build graph for our modified dijskra's algorithm
-        const graph = pairs.reduce((acc, pair) => {
-            const token1ID = pair.firstToken.identifier;
-            const token2ID = pair.secondToken.identifier;
-            const initialValue = {
-                finalAmount: 0,
-                intermediaryAmount: 0,
-                address: pair.address,
-            };
-            acc[token1ID] = acc.hasOwnProperty(token1ID)
-                ? { ...acc[token1ID] }
-                : {};
-            acc[token1ID][token2ID] = initialValue;
-            acc[token2ID] = acc.hasOwnProperty(token2ID)
-                ? { ...acc[token2ID] }
-                : {};
-            acc[token2ID][token1ID] = initialValue;
-            return acc;
-        }, {});
-        //#endregion
-
-        // get & return best found path (using modified eager Dijkstra's algorithm)
-        let autoRouterResult = new AutoRouteModel();
-        autoRouterResult.addressRoute = [];
-        let tokenRoute = [];
-        let amountOut = '0';
-        
         try {
-            const res = await this.getDijkstraMaximOutputPredecessors(
+            const [predecessors, amountOut] = await this.getDijkstraMaximOutput(
                 graph,
                 tokenInID,
                 tokenOutID,
@@ -97,43 +40,25 @@ export class AutoRouterService {
                 amount,
             );
 
-            // ps: res[0] = predecessors & res[1] = maximAmountOut
-            tokenRoute = this.getDijkstraMaximOutputPath(res[0], tokenOutID);
-            amountOut = new BigNumber(res[1]).toString();
+            const tokenRoute = this.getDijkstraMaximOutputPath(
+                predecessors,
+                tokenOutID,
+            );
 
-            // convert token route to smart contract addresses route
-            const length = tokenRoute.length;
-            for (let i = 1; i < length; i++) {
-                const tokenID1 = tokenRoute[i];
-                const tokenID2 = tokenRoute[i - 1];
-
-                const pair = pairs
-                    .filter(
-                        p =>
-                            p.firstToken.identifier == tokenID1 ||
-                            p.secondToken.identifier == tokenID1,
-                    )
-                    .filter(
-                        p =>
-                            p.firstToken.identifier == tokenID2 ||
-                            p.secondToken.identifier == tokenID2,
-                    )[0];
-
-                autoRouterResult.addressRoute.push(pair.address);
-            }
-
-            autoRouterResult.tokenInID = tokenInID;
-            autoRouterResult.tokenOutID = tokenOutID;
-            autoRouterResult.amountIn = amount;
-            autoRouterResult.amountOut = amountOut;
-            autoRouterResult.tokenRoute = tokenRoute;
-            return autoRouterResult;
+            return new AutoRouteModel({
+                tokenInID: tokenInID,
+                tokenOutID: tokenOutID,
+                amountIn: amount,
+                amountOut: new BigNumber(amountOut).toString(),
+                tokenRoute: tokenRoute,
+                addressRoute: this.getAddressRoute(pairs, tokenRoute),
+            });
         } catch (error) {
             this.logger.error('Error when computing the auto route.', error);
         }
     }
 
-    private async getDijkstraMaximOutputPredecessors(
+    private async getDijkstraMaximOutput(
         graph: Graph,
         s: string,
         d: string,
@@ -290,5 +215,88 @@ export class AutoRouterService {
         }
         nodes.reverse();
         return nodes;
+    }
+
+    private buildDijkstraGraph(pairs: PairModel[]) {
+        return pairs.reduce((acc, pair) => {
+            const token1ID = pair.firstToken.identifier;
+            const token2ID = pair.secondToken.identifier;
+            const initialValue = {
+                finalAmount: 0,
+                intermediaryAmount: 0,
+                address: pair.address,
+            };
+            acc[token1ID] = acc.hasOwnProperty(token1ID)
+                ? { ...acc[token1ID] }
+                : {};
+            acc[token1ID][token2ID] = initialValue;
+            acc[token2ID] = acc.hasOwnProperty(token2ID)
+                ? { ...acc[token2ID] }
+                : {};
+            acc[token2ID][token1ID] = initialValue;
+            return acc;
+        }, {});
+    }
+
+    private async getAllPairs() {
+        let pairs: PairModel[] = [];
+
+        //#region  get required info about all pairs
+        const pairAddresses = await this.contextService.getAllPairsAddress();
+        for (const pairAddress of pairAddresses) {
+            const [
+                pairMetadata,
+                pairInfo,
+                pairTotalFeePercent,
+                pairState,
+            ] = await Promise.all([
+                this.contextService.getPairMetadata(pairAddress),
+                this.pairGetterService.getPairInfoMetadata(pairAddress),
+                this.pairGetterService.getTotalFeePercent(pairAddress),
+                this.pairGetterService.getState(pairAddress),
+            ]);
+
+            pairs.push(
+                new PairModel({
+                    address: pairMetadata.address,
+                    firstToken: new EsdtToken({
+                        identifier: pairMetadata.firstTokenID,
+                    }),
+                    secondToken: new EsdtToken({
+                        identifier: pairMetadata.secondTokenID,
+                    }),
+                    info: pairInfo,
+                    totalFeePercent: pairTotalFeePercent,
+                    state: pairState,
+                }),
+            );
+        }
+
+        return pairs;
+    }
+
+    private getAddressRoute(pairs, tokenRoute) {
+        let addressRoute = [];
+
+        const length = tokenRoute.length;
+        for (let i = 1; i < length; i++) {
+            const tokenID1 = tokenRoute[i];
+            const tokenID2 = tokenRoute[i - 1];
+
+            const pair = pairs
+                .filter(
+                    p =>
+                        p.firstToken.identifier == tokenID1 ||
+                        p.secondToken.identifier == tokenID1,
+                )
+                .filter(
+                    p =>
+                        p.firstToken.identifier == tokenID2 ||
+                        p.secondToken.identifier == tokenID2,
+                )[0];
+
+            addressRoute.push(pair.address);
+        }
+        return addressRoute;
     }
 }
