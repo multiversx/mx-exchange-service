@@ -1,10 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import {
-    MaxPriorityQueue,
     Graph,
     GraphItem,
     QueueItem,
+    PriorityQueue,
+    PRIORITY_MODES,
 } from './auto-router.utils';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -13,7 +14,7 @@ import { AutoRouteModel } from '../../models/auto-router.model';
 import { ContextService } from 'src/services/context/context.service';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { getAmountOut } from 'src/modules/pair/pair.utils';
+import { getAmountIn, getAmountOut } from 'src/modules/pair/pair.utils';
 
 export class AutoRouterService {
     constructor(
@@ -22,34 +23,27 @@ export class AutoRouterService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    public async getAutoRoute(
-        amount: string,
+    public async getAutoRouteFixedInput(
+        amountIn: string,
         tokenInID: string,
         tokenOutID: string,
     ): Promise<AutoRouteModel> {
-        const pairs: PairModel[] = await this.getAllPairs();
+        const pairs: PairModel[] = await this.getAllActivePairs();
 
         try {
-            const [
-                predecessors,
-                amountOut,
-            ] = await this.computeMaxOutputSwapRoute(
+            const [tokenRoute, amountOut] = await this.computeBestSwapRoute(
                 this.buildDijkstraGraph(pairs),
                 tokenInID,
                 tokenOutID,
                 pairs,
-                amount,
-            );
-
-            const tokenRoute = this.getNodeRouteFromPredecessors(
-                predecessors,
-                tokenOutID,
+                amountIn,
+                PRIORITY_MODES.maxOutput,
             );
 
             return new AutoRouteModel({
                 tokenInID: tokenInID,
                 tokenOutID: tokenOutID,
-                amountIn: amount,
+                amountIn: amountIn,
                 amountOut: new BigNumber(amountOut).toString(),
                 tokenRoute: tokenRoute,
                 addressRoute: this.getAddressRoute(pairs, tokenRoute),
@@ -62,33 +56,70 @@ export class AutoRouterService {
         }
     }
 
-    /// Computes the swap route with max output using a converted Eager Dijkstra's algorithm
-    private async computeMaxOutputSwapRoute(
+    public async getAutoRouteFixedOutput(
+        amountOut: string,
+        tokenInID: string,
+        tokenOutID: string,
+    ): Promise<AutoRouteModel> {
+        const pairs: PairModel[] = await this.getAllActivePairs();
+
+        try {
+            const [tokenRoute, amountIn] = await this.computeBestSwapRoute(
+                this.buildDijkstraGraph(pairs),
+                tokenOutID,
+                tokenInID,
+                pairs,
+                amountOut,
+                PRIORITY_MODES.minInput,
+            );
+
+            return new AutoRouteModel({
+                tokenInID: tokenInID,
+                tokenOutID: tokenOutID,
+                amountIn: new BigNumber(amountIn).toString(),
+                amountOut: amountOut,
+                tokenRoute: tokenRoute,
+                addressRoute: this.getAddressRoute(pairs, tokenRoute),
+            });
+        } catch (error) {
+            this.logger.error(
+                'Error when computing the swap auto route.',
+                error,
+            );
+        }
+    }
+
+    /// Computes the best swap route (with max output / min input) using a converted Eager Dijkstra's algorithm
+    private async computeBestSwapRoute(
         graph: Graph,
         s: string,
         d: string,
         pairs: PairModel[],
-        inputAmount: string,
-    ): Promise<[Record<string, string>, string]> {
+        amount: string,
+        priorityMode: number,
+    ): Promise<[string[], string]> {
         // Predecessor map for each node that has been encountered.
         // node ID => predecessor node ID
-        const predecessors: Record<string, string> = {};
+        const predecessors: string[] = [];
 
         // Costs of shortest paths from s to all nodes encountered.
         // node ID => cost
         const costs: Record<string, string> = {};
         costs[s] = '0';
 
-        // Max possible value as best output since now
-        let maximumAmountOut = '0';
+        // Initial best output
+        let bestResult =
+            priorityMode == PRIORITY_MODES.maxOutput
+                ? '0'
+                : new BigNumber(Number.POSITIVE_INFINITY).toString();
 
         // Costs of shortest paths from s to all nodes encountered; differs from
         // `costs` in that it provides easy access to the node that currently has
         // the known shortest path from s.
-        let maxPriorityQueue = new MaxPriorityQueue();
-        maxPriorityQueue.push({
+        let priorityQueue = new PriorityQueue(priorityMode);
+        priorityQueue.push({
             tokenID: s,
-            intermediaryAmount: inputAmount,
+            intermediaryAmount: amount,
             address: '',
         });
 
@@ -99,20 +130,27 @@ export class AutoRouterService {
         let adjacent_nodes: GraphItem;
         let output_of_e: string;
 
-        while (!maxPriorityQueue.empty()) {
+        while (!priorityQueue.empty()) {
             // In the nodes remaining in graph that have a known cost from s,
             // find the node, u, that currently has the shortest path from s.
-            closest = maxPriorityQueue.pop();
+            closest = priorityQueue.pop();
             u = closest.tokenID;
 
             // Save the best output, if a better one was found
-            if (
-                u == d &&
-                new BigNumber(closest.intermediaryAmount).isGreaterThan(
-                    maximumAmountOut,
-                )
-            )
-                maximumAmountOut = closest.intermediaryAmount;
+            if (u == d) {
+                if (
+                    (priorityMode == PRIORITY_MODES.maxOutput &&
+                        new BigNumber(closest.intermediaryAmount).isGreaterThan(
+                            bestResult,
+                        )) ||
+                    (priorityMode == PRIORITY_MODES.minInput &&
+                        new BigNumber(closest.intermediaryAmount).isLessThan(
+                            bestResult,
+                        ))
+                ) {
+                    bestResult = closest.intermediaryAmount;
+                }
+            }
 
             // Get nodes adjacent to u...
             adjacent_nodes = graph[u] || {};
@@ -129,28 +167,48 @@ export class AutoRouterService {
 
                     output_from_s_to_u = closest.intermediaryAmount;
 
-                    // apply pair fees & exchange rate (maybe here can be used the official 'getAmountOut' Query)
                     switch (u) {
                         case currentPair.firstToken.identifier: {
-                            output_of_e = await getAmountOut(
-                                output_from_s_to_u,
-                                currentPair.info.reserves0,
-                                currentPair.info.reserves1,
-                                currentPair.totalFeePercent,
-                            ).toFixed();
+                            if (priorityMode === PRIORITY_MODES.maxOutput)
+                                output_of_e = await getAmountOut(
+                                    output_from_s_to_u,
+                                    currentPair.info.reserves0,
+                                    currentPair.info.reserves1,
+                                    currentPair.totalFeePercent,
+                                ).toFixed();
+                            else
+                                output_of_e = await getAmountIn(
+                                    output_from_s_to_u,
+                                    currentPair.info.reserves1,
+                                    currentPair.info.reserves0,
+                                    currentPair.totalFeePercent,
+                                ).toFixed();
                             break;
                         }
                         case currentPair.secondToken.identifier: {
-                            output_of_e = await getAmountOut(
-                                output_from_s_to_u,
-                                currentPair.info.reserves1,
-                                currentPair.info.reserves0,
-                                currentPair.totalFeePercent,
-                            ).toFixed();
+                            if (priorityMode === PRIORITY_MODES.maxOutput)
+                                output_of_e = await getAmountOut(
+                                    output_from_s_to_u,
+                                    currentPair.info.reserves1,
+                                    currentPair.info.reserves0,
+                                    currentPair.totalFeePercent,
+                                ).toFixed();
+                            else
+                                output_of_e = await getAmountIn(
+                                    output_from_s_to_u,
+                                    currentPair.info.reserves0,
+                                    currentPair.info.reserves1,
+                                    currentPair.totalFeePercent,
+                                ).toFixed();
                             break;
                         }
                         default: {
-                            output_of_e = new BigNumber(0).toFixed();
+                            output_of_e =
+                                priorityMode == PRIORITY_MODES.maxOutput
+                                    ? '0'
+                                    : new BigNumber(
+                                          Number.POSITIVE_INFINITY,
+                                      ).toString();
                             break;
                         }
                     }
@@ -158,7 +216,7 @@ export class AutoRouterService {
                     // if best cost yet => push cost to Dijkstra's max priority queue
                     // and then save cost & predecessor
                     if (
-                        maxPriorityQueue.eagerPush(
+                        priorityQueue.eagerPush(
                             {
                                 tokenID: v,
                                 intermediaryAmount: output_of_e,
@@ -183,23 +241,30 @@ export class AutoRouterService {
             throw new Error(msg);
         }
 
-        return [predecessors, maximumAmountOut];
+        return [
+            this.getNodeRouteFromPredecessors(predecessors, d, priorityMode),
+            bestResult,
+        ];
     }
 
     /// Returns node route from predecessors.
     private getNodeRouteFromPredecessors(
-        predecessors: Record<string, string>,
+        predecessors: string[],
         d: string,
+        priorityMode: number,
     ): string[] {
         const nodes: string[] = [];
         let u: string = d;
         let predecessor: string;
+
         while (u) {
             nodes.push(u);
             predecessor = predecessors[u];
             u = predecessors[u];
         }
-        nodes.reverse();
+
+        if (priorityMode === PRIORITY_MODES.maxOutput) nodes.reverse();
+
         return nodes;
     }
 
@@ -224,7 +289,7 @@ export class AutoRouterService {
         }, {});
     }
 
-    private async getAllPairs() {
+    private async getAllActivePairs() {
         let pairs: PairModel[] = [];
 
         const pairAddresses = await this.contextService.getAllPairsAddress();
@@ -241,20 +306,21 @@ export class AutoRouterService {
                 this.pairGetterService.getState(pairAddress),
             ]);
 
-            pairs.push(
-                new PairModel({
-                    address: pairMetadata.address,
-                    firstToken: new EsdtToken({
-                        identifier: pairMetadata.firstTokenID,
+            if (pairState === 'Active')
+                pairs.push(
+                    new PairModel({
+                        address: pairMetadata.address,
+                        firstToken: new EsdtToken({
+                            identifier: pairMetadata.firstTokenID,
+                        }),
+                        secondToken: new EsdtToken({
+                            identifier: pairMetadata.secondTokenID,
+                        }),
+                        info: pairInfo,
+                        totalFeePercent: pairTotalFeePercent,
+                        state: pairState,
                     }),
-                    secondToken: new EsdtToken({
-                        identifier: pairMetadata.secondTokenID,
-                    }),
-                    info: pairInfo,
-                    totalFeePercent: pairTotalFeePercent,
-                    state: pairState,
-                }),
-            );
+                );
         }
 
         return pairs;
