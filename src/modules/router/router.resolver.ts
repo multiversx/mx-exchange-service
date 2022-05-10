@@ -11,6 +11,7 @@ import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
 import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { User } from 'src/helpers/userDecorator';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -109,8 +110,13 @@ export class RouterResolver {
     async createPair(
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.createPair(firstTokenID, secondTokenID);
+        return this.transactionService.createPair(
+            user.publicKey,
+            firstTokenID,
+            secondTokenID,
+        );
     }
 
     @UseGuards(GqlAuthGuard)
