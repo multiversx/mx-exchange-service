@@ -29,18 +29,19 @@ export class AutoRouterService {
     ): Promise<AutoRouteModel> {
         const pairs: PairModel[] = await this.getAllPairs();
 
-        const graph = this.buildDijkstraGraph(pairs);
-
         try {
-            const [predecessors, amountOut] = await this.getDijkstraMaximOutput(
-                graph,
+            const [
+                predecessors,
+                amountOut,
+            ] = await this.computeMaxOutputSwapRoute(
+                this.buildDijkstraGraph(pairs),
                 tokenInID,
                 tokenOutID,
                 pairs,
                 amount,
             );
 
-            const tokenRoute = this.getDijkstraMaximOutputPath(
+            const tokenRoute = this.getNodeRouteFromPredecessors(
                 predecessors,
                 tokenOutID,
             );
@@ -54,11 +55,15 @@ export class AutoRouterService {
                 addressRoute: this.getAddressRoute(pairs, tokenRoute),
             });
         } catch (error) {
-            this.logger.error('Error when computing the auto route.', error);
+            this.logger.error(
+                'Error when computing the swap auto route.',
+                error,
+            );
         }
     }
 
-    private async getDijkstraMaximOutput(
+    /// Computes the swap route with max output using a converted Eager Dijkstra's algorithm
+    private async computeMaxOutputSwapRoute(
         graph: Graph,
         s: string,
         d: string,
@@ -201,7 +206,8 @@ export class AutoRouterService {
         return [predecessors, maximumAmountOut];
     }
 
-    private getDijkstraMaximOutputPath(
+    /// Returns node route from predecessors.
+    private getNodeRouteFromPredecessors(
         predecessors: Record<string, string>,
         d: string,
     ): string[] {
@@ -241,7 +247,6 @@ export class AutoRouterService {
     private async getAllPairs() {
         let pairs: PairModel[] = [];
 
-        //#region  get required info about all pairs
         const pairAddresses = await this.contextService.getAllPairsAddress();
         for (const pairAddress of pairAddresses) {
             const [
@@ -275,6 +280,7 @@ export class AutoRouterService {
         return pairs;
     }
 
+    /// Converts a token route to an address route (e.g. ["MEX", "USDC", "RIDE"] => ["erd...", "erd..."])
     private getAddressRoute(pairs, tokenRoute) {
         let addressRoute = [];
 
