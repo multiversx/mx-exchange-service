@@ -20,7 +20,7 @@ export class RouterResolver {
         private readonly routerService: RouterService,
         private readonly routerGetterService: RouterGetterService,
         private readonly transactionService: TransactionRouterService,
-        private readonly autoRouterService: AutoRouterService
+        private readonly autoRouterService: AutoRouterService,
     ) {}
 
     @Query(() => FactoryModel)
@@ -164,14 +164,31 @@ export class RouterResolver {
     }
 
     @Query(() => AutoRouteModel)
-    async getAutoRoute(
-        @Args('amount') amount: string,
+    async getAutoRouteFixedInput(
+        @Args('amountIn') amountIn: string,
         @Args('tokenInID') tokenInID: string,
         @Args('tokenOutID') tokenOutID: string,
     ): Promise<AutoRouteModel> {
         try {
-            return await this.autoRouterService.getAutoRoute(
-                amount,
+            return await this.autoRouterService.getAutoRouteFixedInput(
+                amountIn,
+                tokenInID,
+                tokenOutID,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @Query(() => AutoRouteModel)
+    async getAutoRouteFixedOutput(
+        @Args('amountOut') amountOut: string,
+        @Args('tokenInID') tokenInID: string,
+        @Args('tokenOutID') tokenOutID: string,
+    ): Promise<AutoRouteModel> {
+        try {
+            return await this.autoRouterService.getAutoRouteFixedOutput(
+                amountOut,
                 tokenInID,
                 tokenOutID,
             );
