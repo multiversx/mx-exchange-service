@@ -2,13 +2,28 @@ import BigNumber from 'bignumber.js';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { getAmountIn, getAmountOut } from 'src/modules/pair/pair.utils';
 import {
-    Graph,
-    GraphItem,
     PriorityQueue,
-    PRIORITY_MODES,
-    QueueItem,
-} from './auto-router.utils';
+    MinPriorityQueue,
+    MaxPriorityQueue,
+    IGetCompareValue,
+} from '@datastructures-js/priority-queue';
 
+export const PRIORITY_MODES = {
+    minInput: 0,
+    maxOutput: 1,
+};
+interface IRouteNode {
+    intermediaryAmount: string;
+    tokenID: string;
+    address: string;
+}
+type Graph = Record<string, GraphItem>;
+type GraphItem = Record<
+    string,
+    {
+        address: string;
+    }
+>;
 export class AutoRouterComputeService {
     /// Computes the best swap route (with max output / min input) using a converted Eager Dijkstra's algorithm
     public async computeBestSwapRoute(
@@ -37,24 +52,24 @@ export class AutoRouterComputeService {
         // Costs of shortest paths from s to all nodes encountered; differs from
         // `costs` in that it provides easy access to the node that currently has
         // the known shortest path from s.
-        let priorityQueue = new PriorityQueue(priorityMode);
-        priorityQueue.push({
+        let priorityQueue = this.getNewPriorityQueue(priorityMode);
+        priorityQueue.enqueue({
             tokenID: s,
             intermediaryAmount: amount,
             address: '',
         });
 
-        let closest: QueueItem;
+        let closest: IRouteNode;
         let u: string;
         let v: string;
         let output_from_s_to_u: string;
         let adjacent_nodes: GraphItem;
         let output_of_e: string;
 
-        while (!priorityQueue.empty()) {
+        while (!priorityQueue.isEmpty()) {
             // In the nodes remaining in graph that have a known cost from s,
             // find the node, u, that currently has the shortest path from s.
-            closest = priorityQueue.pop();
+            closest = priorityQueue.dequeue();
             u = closest.tokenID;
 
             // Save the best output, if a better one was found
@@ -136,16 +151,19 @@ export class AutoRouterComputeService {
 
                     // if best cost yet => push cost to Dijkstra's max priority queue
                     // and then save cost & predecessor
-                    if (
-                        priorityQueue.eagerPush(
-                            {
-                                tokenID: v,
-                                intermediaryAmount: output_of_e,
-                                address: currentPair.address,
-                            },
-                            costs[v],
-                        )
-                    ) {
+                    let pushed = false;
+                    [priorityQueue, pushed] = this.eagerPush(
+                        priorityQueue,
+                        priorityMode,
+                        {
+                            tokenID: v,
+                            intermediaryAmount: output_of_e,
+                            address: currentPair.address,
+                        },
+                        costs[v],
+                    );
+
+                    if (pushed) {
                         costs[v] = output_of_e;
                         predecessors[v] = u;
                     }
@@ -173,6 +191,53 @@ export class AutoRouterComputeService {
             this.computeSCRouteFromNodeRoute(pairs, tokenRoute),
             bestResult,
         ];
+    }
+
+    private eagerPush(
+        priorityQueue: PriorityQueue<IRouteNode>,
+        priorityMode: number,
+        newItem: IRouteNode,
+        currentCost: string,
+    ): [PriorityQueue<IRouteNode>, boolean] {
+        let foundLessGoodValue = false;
+        let foundBetterValue = false;
+
+        let queue = priorityQueue.toArray();
+
+        // parse queue, remove less good costs & add the current cost if it's the best one yet
+        for (let i = queue.length - 1; i >= 0; --i) {
+            if (queue[i].tokenID == newItem.tokenID) {
+                if (
+                    (priorityMode === PRIORITY_MODES.maxOutput &&
+                        queue[i].intermediaryAmount <
+                            newItem.intermediaryAmount) ||
+                    (priorityMode === PRIORITY_MODES.minInput &&
+                        queue[i].intermediaryAmount <
+                            newItem.intermediaryAmount)
+                ) {
+                    // delete old cost because is less good
+                    queue.splice(i, 1);
+                    foundLessGoodValue = true;
+                } else {
+                    // better cost found => break
+                    foundBetterValue = true;
+                    break;
+                }
+            }
+        }
+
+        priorityQueue = this.getNewPriorityQueue(priorityMode, queue);
+
+        // if better cost || first push
+        if (
+            (foundLessGoodValue && !foundBetterValue) ||
+            typeof currentCost === 'undefined'
+        ) {
+            priorityQueue.enqueue(newItem);
+            return [priorityQueue, true];
+        }
+
+        return [priorityQueue, false];
     }
 
     private buildDijkstraGraph(pairs: PairModel[]) {
@@ -217,7 +282,7 @@ export class AutoRouterComputeService {
         return nodes;
     }
 
-    /// Converts a token route to an address route (e.g. ["MEX", "USDC", "RIDE"] => ["erd...", "erd..."])
+    /// Converts a token route to a SC address route (e.g. ["MEX", "USDC", "RIDE"] => ["erd...", "erd..."])
     private computeSCRouteFromNodeRoute(pairs, tokenRoute) {
         let addressRoute = [];
 
@@ -241,5 +306,17 @@ export class AutoRouterComputeService {
             addressRoute.push(pair.address);
         }
         return addressRoute;
+    }
+
+    private getNewPriorityQueue(
+        priorityMode: number,
+        array: IRouteNode[] = [],
+    ): PriorityQueue<IRouteNode> {
+        const routeNodeCompareValue: IGetCompareValue<IRouteNode> = node =>
+            node.intermediaryAmount;
+
+        return priorityMode === PRIORITY_MODES.maxOutput
+            ? MaxPriorityQueue.fromArray(array, routeNodeCompareValue)
+            : MinPriorityQueue.fromArray(array, routeNodeCompareValue);
     }
 }

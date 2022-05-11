@@ -1,12 +1,5 @@
 import { Inject } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import {
-    Graph,
-    GraphItem,
-    QueueItem,
-    PriorityQueue,
-    PRIORITY_MODES,
-} from './auto-router.utils';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -14,8 +7,7 @@ import { AutoRouteModel } from '../../models/auto-router.model';
 import { ContextService } from 'src/services/context/context.service';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { getAmountIn, getAmountOut } from 'src/modules/pair/pair.utils';
-import { AutoRouterComputeService } from './auto-router.compute.service';
+import { AutoRouterComputeService, PRIORITY_MODES } from './auto-router.compute.service';
 
 export class AutoRouterService {
     constructor(
