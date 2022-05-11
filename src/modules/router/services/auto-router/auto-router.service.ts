@@ -7,7 +7,10 @@ import { AutoRouteModel } from '../../models/auto-router.model';
 import { ContextService } from 'src/services/context/context.service';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { AutoRouterComputeService, PRIORITY_MODES } from './auto-router.compute.service';
+import {
+    AutoRouterComputeService,
+    PRIORITY_MODES,
+} from './auto-router.compute.service';
 
 export class AutoRouterService {
     constructor(
