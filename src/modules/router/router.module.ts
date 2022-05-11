@@ -13,6 +13,7 @@ import { AWSModule } from 'src/services/aws/aws.module';
 import { CommonAppModule } from 'src/common.app.module';
 import { AutoRouterService } from './services/auto-router/auto-router.service';
 import { ContextModule } from 'src/services/context/context.module';
+import { AutoRouterComputeService } from './services/auto-router/auto-router.compute.service';
 
 @Module({
     imports: [
@@ -32,6 +33,7 @@ import { ContextModule } from 'src/services/context/context.module';
         TransactionRouterService,
         RouterResolver,
         AutoRouterService,
+        AutoRouterComputeService,
     ],
     exports: [
         AbiRouterService,
@@ -40,6 +42,7 @@ import { ContextModule } from 'src/services/context/context.module';
         RouterSetterService,
         RouterComputeService,
         AutoRouterService,
+        AutoRouterComputeService,
     ],
 })
 export class RouterModule {}
