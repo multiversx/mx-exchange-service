@@ -1,3 +1,4 @@
+import { float } from '@elastic/elasticsearch/api/types';
 import { ObjectType, Field } from '@nestjs/graphql';
 
 @ObjectType()
@@ -13,6 +14,9 @@ export class AutoRouteModel {
 
     @Field()
     amountOut: string;
+
+    @Field()
+    slippage: number;
 
     @Field(() => [String])
     tokenRoute: string[];

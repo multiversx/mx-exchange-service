@@ -168,12 +168,14 @@ export class RouterResolver {
         @Args('amountIn') amountIn: string,
         @Args('tokenInID') tokenInID: string,
         @Args('tokenOutID') tokenOutID: string,
+        @Args('slippage') slippage: number,
     ): Promise<AutoRouteModel> {
         try {
             return await this.autoRouterService.getAutoRouteFixedInput(
                 amountIn,
                 tokenInID,
                 tokenOutID,
+                slippage,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -185,10 +187,27 @@ export class RouterResolver {
         @Args('amountOut') amountOut: string,
         @Args('tokenInID') tokenInID: string,
         @Args('tokenOutID') tokenOutID: string,
+        @Args('slippage') slippage: number,
     ): Promise<AutoRouteModel> {
         try {
             return await this.autoRouterService.getAutoRouteFixedOutput(
                 amountOut,
+                tokenInID,
+                tokenOutID,
+                slippage,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @Query(() => String)
+    async getExchangeRate(
+        @Args('tokenInID') tokenInID: string,
+        @Args('tokenOutID') tokenOutID: string,
+    ): Promise<String> {
+        try {
+            return await this.autoRouterService.getExchangeRate(
                 tokenInID,
                 tokenOutID,
             );

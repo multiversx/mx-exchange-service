@@ -11,10 +11,12 @@ import {
     AutoRouterComputeService,
     PRIORITY_MODES,
 } from './auto-router.compute.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 
 export class AutoRouterService {
     constructor(
         private readonly contextService: ContextService,
+        private readonly contextGetterService: ContextGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -24,6 +26,7 @@ export class AutoRouterService {
         amountIn: string,
         tokenInID: string,
         tokenOutID: string,
+        slippage: number,
     ): Promise<AutoRouteModel> {
         const pairs: PairModel[] = await this.getAllActivePairs();
 
@@ -39,6 +42,8 @@ export class AutoRouterService {
                 amountIn,
                 PRIORITY_MODES.maxOutput,
             );
+
+            // todo: return transaction with slippage
 
             return new AutoRouteModel({
                 tokenInID: tokenInID,
@@ -60,6 +65,7 @@ export class AutoRouterService {
         amountOut: string,
         tokenInID: string,
         tokenOutID: string,
+        slippage: number,
     ): Promise<AutoRouteModel> {
         const pairs: PairModel[] = await this.getAllActivePairs();
 
@@ -76,6 +82,8 @@ export class AutoRouterService {
                 PRIORITY_MODES.minInput,
             );
 
+            // todo: return transaction with slippage
+
             return new AutoRouteModel({
                 tokenInID: tokenInID,
                 tokenOutID: tokenOutID,
@@ -87,6 +95,40 @@ export class AutoRouterService {
         } catch (error) {
             this.logger.error(
                 'Error when computing the swap auto route.',
+                error,
+            );
+        }
+    }
+
+    public async getExchangeRate(
+        tokenInID: string,
+        tokenOutID: string,
+    ): Promise<string> {
+        const pairs: PairModel[] = await this.getAllActivePairs();
+
+        const tokenInMetadata = await this.contextGetterService.getTokenMetadata(
+            tokenInID,
+        );
+
+        try {
+            const [
+                tokenRoute,
+                addressRoute,
+                amountOut,
+            ] = await this.autoRouterComputeService.computeBestSwapRoute(
+                tokenInID,
+                tokenOutID,
+                pairs,
+                new BigNumber(
+                    1 * Math.pow(10, tokenInMetadata.decimals),
+                ).toString(),
+                PRIORITY_MODES.maxOutput,
+            );
+
+            return amountOut;
+        } catch (error) {
+            this.logger.error(
+                'Error when computing the exchange rate.',
                 error,
             );
         }
