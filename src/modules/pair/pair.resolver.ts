@@ -335,6 +335,22 @@ export class PairResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
+    async addInitialLiquidityBatch(
+        @Args() args: AddLiquidityArgs,
+        @User() user: any,
+    ): Promise<TransactionModel[]> {
+        try {
+            return await this.transactionService.addInitialLiquidityBatch(
+                user.publicKey,
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => [TransactionModel])
     async addLiquidityBatch(
         @Args() args: AddLiquidityArgs,
         @User() user: any,

@@ -5,7 +5,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Address, GasLimit } from '@elrondnetwork/erdjs';
-import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
+import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -37,6 +37,38 @@ export class PairTransactionService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
+    async addInitialLiquidityBatch(
+        sender: string,
+        args: AddLiquidityArgs,
+    ): Promise<TransactionModel[]> {
+        const transactions: TransactionModel[] = [];
+
+        switch (elrondConfig.EGLDIdentifier) {
+            case args.tokens[0].tokenID:
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        sender,
+                        args.tokens[0].amount,
+                    ),
+                );
+                break;
+            case args.tokens[1].tokenID:
+                transactions.push(
+                    await this.wrapTransaction.wrapEgld(
+                        sender,
+                        args.tokens[1].amount,
+                    ),
+                );
+                break;
+            default:
+                break;
+        }
+
+        transactions.push(await this.addInitialLiquidity(sender, args));
+
+        return transactions;
+    }
+
     async addLiquidityBatch(
         sender: string,
         args: AddLiquidityArgs,
@@ -67,6 +99,48 @@ export class PairTransactionService {
         transactions.push(await this.addLiquidity(sender, args));
 
         return transactions;
+    }
+
+    async addInitialLiquidity(
+        sender: string,
+        args: AddLiquidityArgs,
+    ): Promise<TransactionModel> {
+        const initialLiquidityAdder = await this.pairGetterService.getInitialLiquidtyAdder(
+            args.pairAddress,
+        );
+        if (sender != initialLiquidityAdder) {
+            throw new Error('Invalid sender address');
+        }
+
+        let firstTokenInput, secondTokenInput: InputTokenModel;
+        try {
+            [firstTokenInput, secondTokenInput] = await this.validateTokens(
+                args.pairAddress,
+                args.tokens,
+            );
+        } catch (error) {
+            const logMessage = generateLogMessage(
+                PairTransactionService.name,
+                this.addInitialLiquidity.name,
+                '',
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
+
+        return this.contextTransactions.multiESDTNFTTransfer(
+            new Address(sender),
+            contract,
+            [firstTokenInput, secondTokenInput],
+            'addInitialLiquidity',
+            [],
+            new GasLimit(gasConfig.pairs.addLiquidity),
+        );
     }
 
     async addLiquidity(
