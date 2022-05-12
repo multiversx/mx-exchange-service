@@ -73,7 +73,7 @@
         "graphql-ws": "^5.4.1",
         "ioredis": "^4.27.7",
         "jsonwebtoken": "^8.5.1",
-        "moment": "^2.29.1",
+        "moment": "^2.29.3",
         "mongoose": "^5.13.14",
         "nest-winston": "^1.5.0",
         "nestjs-graphql-pagination": "^1.0.0",
@@ -90,7 +90,7 @@
         "tweetnacl": "^1.0.3",
         "winston": "^3.3.3",
         "winston-transport": "^4.4.0",
-        "ws": "^8.0.0"
+        "ws": "^8.6.0"
     },
     "devDependencies": {
         "@nestjs/cli": "^8.2.5",
