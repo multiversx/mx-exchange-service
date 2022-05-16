@@ -32,7 +32,7 @@ export class AutoRouterComputeService {
         pairs: PairModel[],
         amount: string,
         priorityMode: number,
-    ): Promise<[string[], string[], string]> {
+    ): Promise<[string[], string[], string[], string]> {
         // Predecessor map for each node that has been encountered.
         // node ID => predecessor node ID
         const graph: Graph = this.buildDijkstraGraph(pairs);
@@ -149,8 +149,7 @@ export class AutoRouterComputeService {
                         }
                     }
 
-                    // if best cost yet => push cost to Dijkstra's max priority queue
-                    // and then save cost & predecessor
+                    // if best cost yet => push cost to priority queue, then save cost & predecessors
                     let pushed = false;
                     [priorityQueue, pushed] = this.eagerPush(
                         priorityQueue,
@@ -180,14 +179,17 @@ export class AutoRouterComputeService {
             throw new Error(msg);
         }
 
-        const tokenRoute = this.computeNodeRouteFromPredecessors(
-            predecessors,
-            d,
-            priorityMode,
-        );
+        const tokenRoute = this.computeNodeRoute(predecessors, d, priorityMode);
 
         return [
             tokenRoute,
+            this.computeIntermediaryAmounts(
+                tokenRoute,
+                costs,
+                amount,
+                bestResult,
+                priorityMode,
+            ),
             this.computeSCRouteFromNodeRoute(pairs, tokenRoute),
             bestResult,
         ];
@@ -262,7 +264,7 @@ export class AutoRouterComputeService {
     }
 
     /// Returns node route from predecessors.
-    private computeNodeRouteFromPredecessors(
+    private computeNodeRoute(
         predecessors: string[],
         d: string,
         priorityMode: number,
@@ -306,6 +308,31 @@ export class AutoRouterComputeService {
             addressRoute.push(pair.address);
         }
         return addressRoute;
+    }
+
+    private computeIntermediaryAmounts(
+        tokenRoute: string[],
+        costs: Record<string, string>,
+        amount: string,
+        bestResult: string,
+        priorityMode: number,
+    ) {
+        let intermediaryAmounts: string[] = [];
+
+        intermediaryAmounts.push(
+            priorityMode === PRIORITY_MODES.maxOutput ? amount : bestResult,
+        );
+
+        const midRangeEnd = tokenRoute.length - 1;
+        for (let i = 1; i < midRangeEnd; i++) {
+            intermediaryAmounts.push(costs[tokenRoute[i]]);
+        }
+
+        intermediaryAmounts.push(
+            priorityMode === PRIORITY_MODES.maxOutput ? bestResult : amount,
+        );
+
+        return intermediaryAmounts;
     }
 
     private getNewPriorityQueue(

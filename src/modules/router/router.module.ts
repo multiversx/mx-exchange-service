@@ -14,6 +14,7 @@ import { CommonAppModule } from 'src/common.app.module';
 import { AutoRouterService } from './services/auto-router/auto-router.service';
 import { ContextModule } from 'src/services/context/context.module';
 import { AutoRouterComputeService } from './services/auto-router/auto-router.compute.service';
+import { WrappingModule } from '../wrapping/wrap.module';
 
 @Module({
     imports: [
@@ -23,6 +24,7 @@ import { AutoRouterComputeService } from './services/auto-router/auto-router.com
         PairModule,
         AWSModule,
         ContextModule,
+        WrappingModule,
     ],
     providers: [
         RouterService,

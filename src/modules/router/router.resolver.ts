@@ -13,6 +13,8 @@ import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { AutoRouteModel } from './models/auto-router.model';
 import { AutoRouterService } from './services/auto-router/auto-router.service';
+import { User } from 'src/helpers/userDecorator';
+import { MultiSwapTokensArgs } from './models/multi-swap-tokens.args';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -168,14 +170,14 @@ export class RouterResolver {
         @Args('amountIn') amountIn: string,
         @Args('tokenInID') tokenInID: string,
         @Args('tokenOutID') tokenOutID: string,
-        @Args('slippage') slippage: number,
+        @Args('tolerance') tolerance: number,
     ): Promise<AutoRouteModel> {
         try {
             return await this.autoRouterService.getAutoRouteFixedInput(
                 amountIn,
                 tokenInID,
                 tokenOutID,
-                slippage,
+                tolerance,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -187,18 +189,30 @@ export class RouterResolver {
         @Args('amountOut') amountOut: string,
         @Args('tokenInID') tokenInID: string,
         @Args('tokenOutID') tokenOutID: string,
-        @Args('slippage') slippage: number,
+        @Args('tolerance') tolerance: number,
     ): Promise<AutoRouteModel> {
         try {
             return await this.autoRouterService.getAutoRouteFixedOutput(
                 amountOut,
                 tokenInID,
                 tokenOutID,
-                slippage,
+                tolerance,
             );
         } catch (error) {
             throw new ApolloError(error);
         }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async multiPairSwap(
+        @Args() args: MultiSwapTokensArgs,
+        @User() user: any,
+    ): Promise<TransactionModel[]> {
+        return this.transactionService.multiPairSwap(
+            user.publicKey,
+            args,
+        );
     }
 
     @Query(() => String)
