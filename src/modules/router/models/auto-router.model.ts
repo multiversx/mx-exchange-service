@@ -1,7 +1,5 @@
-import { float } from '@elastic/elasticsearch/api/types';
 import { ObjectType, Field } from '@nestjs/graphql';
-import { bool } from 'aws-sdk/clients/signer';
-
+import { TransactionModel } from 'src/models/transaction.model';
 @ObjectType()
 export class AutoRouteModel {
     @Field()
@@ -28,8 +26,8 @@ export class AutoRouteModel {
     @Field()
     tolerance: number;
 
-    @Field(() => [String])
-    data: string[];
+    @Field(() => [TransactionModel])
+    transactions: TransactionModel[];
 
     constructor(init?: Partial<AutoRouteModel>) {
         Object.assign(this, init);

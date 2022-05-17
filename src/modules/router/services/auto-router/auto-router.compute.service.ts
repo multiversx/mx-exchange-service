@@ -24,6 +24,13 @@ type GraphItem = Record<
         address: string;
     }
 >;
+
+type BestSwapRoute = {
+    tokenRoute: string[];
+    intermediaryAmounts: string[];
+    addressRoute: string[];
+    bestResult: string;
+};
 export class AutoRouterComputeService {
     /// Computes the best swap route (with max output / min input) using a converted Eager Dijkstra's algorithm
     public async computeBestSwapRoute(
@@ -32,7 +39,7 @@ export class AutoRouterComputeService {
         pairs: PairModel[],
         amount: string,
         priorityMode: number,
-    ): Promise<[string[], string[], string[], string]> {
+    ): Promise<BestSwapRoute> {
         // Predecessor map for each node that has been encountered.
         // node ID => predecessor node ID
         const graph: Graph = this.buildDijkstraGraph(pairs);
@@ -181,18 +188,18 @@ export class AutoRouterComputeService {
 
         const tokenRoute = this.computeNodeRoute(predecessors, d, priorityMode);
 
-        return [
+        return {
             tokenRoute,
-            this.computeIntermediaryAmounts(
+            intermediaryAmounts: this.computeIntermediaryAmounts(
                 tokenRoute,
                 costs,
                 amount,
                 bestResult,
                 priorityMode,
             ),
-            this.computeSCRouteFromNodeRoute(pairs, tokenRoute),
+            addressRoute: this.computeSCRouteFromNodeRoute(pairs, tokenRoute),
             bestResult,
-        ];
+        };
     }
 
     private eagerPush(
@@ -316,7 +323,7 @@ export class AutoRouterComputeService {
         amount: string,
         bestResult: string,
         priorityMode: number,
-    ) {
+    ): string[] {
         let intermediaryAmounts: string[] = [];
 
         intermediaryAmounts.push(

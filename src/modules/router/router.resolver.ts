@@ -210,15 +210,6 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async multiPairSwap(
-        @Args() args: MultiSwapTokensArgs,
-        @User() user: any,
-    ): Promise<TransactionModel[]> {
-        return this.transactionService.multiPairSwap(user.publicKey, args);
-    }
-
     @Query(() => String)
     async getExchangeRate(
         @Args('tokenInID') tokenInID: string,

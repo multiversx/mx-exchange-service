@@ -13,8 +13,8 @@ import {
 } from './auto-router.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { TransactionRouterService } from '../transactions.router.service';
-import { bool } from 'aws-sdk/clients/signer';
 import { elrondConfig, tokenProviderUSD } from 'src/config';
+import { WrapService } from 'src/modules/wrapping/wrap.service';
 
 @Injectable()
 export class AutoRouterService {
@@ -24,6 +24,7 @@ export class AutoRouterService {
         private readonly pairGetterService: PairGetterService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
         private readonly transactionService: TransactionRouterService,
+        private readonly wrapService: WrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -37,27 +38,22 @@ export class AutoRouterService {
         const pairs: PairModel[] = await this.getAllActivePairs();
 
         try {
-            const [
-                tokenRoute,
-                intermediaryAmounts,
-                addressRoute,
-                amountOut,
-            ] = await this.autoRouterComputeService.computeBestSwapRoute(
-                this.toWrapped(tokenInID),
-                this.toWrapped(tokenOutID),
+            const swapRoute = await this.autoRouterComputeService.computeBestSwapRoute(
+                await this.toWrapped(tokenInID),
+                await this.toWrapped(tokenOutID),
                 pairs,
                 amountIn,
                 PRIORITY_MODES.maxOutput,
             );
 
-            const multiPairSwap = await this.transactionService.multiPairSwap(
+            const transactions = await this.transactionService.multiPairSwap(
                 sender,
                 {
                     tokenInID: tokenInID,
                     tokenOutID: tokenOutID,
-                    addressRoute: addressRoute,
-                    intermediaryAmounts: intermediaryAmounts,
-                    tokenRoute: tokenRoute,
+                    addressRoute: swapRoute.addressRoute,
+                    intermediaryAmounts: swapRoute.intermediaryAmounts,
+                    tokenRoute: swapRoute.tokenRoute,
                     tolerance: tolerance,
                 },
             );
@@ -66,12 +62,12 @@ export class AutoRouterService {
                 tokenInID: tokenInID,
                 tokenOutID: tokenOutID,
                 amountIn: amountIn,
-                amountOut: new BigNumber(amountOut).toString(),
-                tokenRoute: tokenRoute,
-                intermediaryAmounts: intermediaryAmounts,
-                addressRoute: addressRoute,
+                amountOut: new BigNumber(swapRoute.bestResult).toString(),
+                tokenRoute: swapRoute.tokenRoute,
+                intermediaryAmounts: swapRoute.intermediaryAmounts,
+                addressRoute: swapRoute.addressRoute,
                 tolerance: tolerance,
-                data: multiPairSwap.map(t => t.data),
+                transactions: transactions,
             });
         } catch (error) {
             this.logger.error(
@@ -91,27 +87,22 @@ export class AutoRouterService {
         const pairs: PairModel[] = await this.getAllActivePairs();
 
         try {
-            const [
-                tokenRoute,
-                intermediaryAmounts,
-                addressRoute,
-                amountIn,
-            ] = await this.autoRouterComputeService.computeBestSwapRoute(
-                this.toWrapped(tokenOutID),
-                this.toWrapped(tokenInID),
+            const swapRoute = await this.autoRouterComputeService.computeBestSwapRoute(
+                await this.toWrapped(tokenOutID),
+                await this.toWrapped(tokenInID),
                 pairs,
                 amountOut,
                 PRIORITY_MODES.minInput,
             );
 
-            const multiPairSwap = await this.transactionService.multiPairSwap(
+            const transactions = await this.transactionService.multiPairSwap(
                 sender,
                 {
                     tokenInID: tokenInID,
                     tokenOutID: tokenOutID,
-                    addressRoute: addressRoute,
-                    intermediaryAmounts: intermediaryAmounts,
-                    tokenRoute: tokenRoute,
+                    addressRoute: swapRoute.addressRoute,
+                    intermediaryAmounts: swapRoute.intermediaryAmounts,
+                    tokenRoute: swapRoute.tokenRoute,
                     tolerance: tolerance,
                 },
             );
@@ -119,13 +110,13 @@ export class AutoRouterService {
             return new AutoRouteModel({
                 tokenInID: tokenInID,
                 tokenOutID: tokenOutID,
-                amountIn: new BigNumber(amountIn).toString(),
+                amountIn: new BigNumber(swapRoute.bestResult).toString(),
                 amountOut: amountOut,
-                tokenRoute: tokenRoute,
-                intermediaryAmounts: intermediaryAmounts,
-                addressRoute: addressRoute,
+                tokenRoute: swapRoute.tokenRoute,
+                intermediaryAmounts: swapRoute.intermediaryAmounts,
+                addressRoute: swapRoute.addressRoute,
                 tolerance: tolerance,
-                data: multiPairSwap.map(t => t.data),
+                transactions: transactions,
             });
         } catch (error) {
             this.logger.error(
@@ -146,12 +137,7 @@ export class AutoRouterService {
         );
 
         try {
-            const [
-                tokenRoute,
-                intermediaryAmounts,
-                addressRoute,
-                amountOut,
-            ] = await this.autoRouterComputeService.computeBestSwapRoute(
+            const swapRoute = await this.autoRouterComputeService.computeBestSwapRoute(
                 tokenInID,
                 tokenOutID,
                 pairs,
@@ -161,9 +147,10 @@ export class AutoRouterService {
                 PRIORITY_MODES.maxOutput,
             );
 
-            return amountOut;
+            return swapRoute.bestResult;
         } catch (error) {
             this.logger.error('Error when computing the exchange rate.', error);
+            throw error;
         }
     }
 
@@ -204,9 +191,9 @@ export class AutoRouterService {
         return pairs;
     }
 
-    private toWrapped(tokenID) {
+    private async toWrapped(tokenID) {
         return elrondConfig.EGLDIdentifier === tokenID
-            ? tokenProviderUSD
+            ? await this.wrapService.getWrappedEgldTokenID()
             : tokenID;
     }
 }
