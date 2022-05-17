@@ -28,6 +28,7 @@ export class AutoRouterService {
     ) {}
 
     public async getAutoRouteFixedInput(
+        sender: string,
         amountIn: string,
         tokenInID: string,
         tokenOutID: string,
@@ -50,7 +51,7 @@ export class AutoRouterService {
             );
 
             const multiPairSwap = await this.transactionService.multiPairSwap(
-                '',
+                sender,
                 {
                     tokenInID: tokenInID,
                     tokenOutID: tokenOutID,
@@ -81,6 +82,7 @@ export class AutoRouterService {
     }
 
     public async getAutoRouteFixedOutput(
+        sender: string,
         amountOut: string,
         tokenInID: string,
         tokenOutID: string,
@@ -103,7 +105,7 @@ export class AutoRouterService {
             );
 
             const multiPairSwap = await this.transactionService.multiPairSwap(
-                '',
+                sender,
                 {
                     tokenInID: tokenInID,
                     tokenOutID: tokenOutID,
@@ -203,6 +205,8 @@ export class AutoRouterService {
     }
 
     private toWrapped(tokenID) {
-        return elrondConfig.EGLDIdentifier === tokenID ? tokenProviderUSD : tokenID;
+        return elrondConfig.EGLDIdentifier === tokenID
+            ? tokenProviderUSD
+            : tokenID;
     }
 }
