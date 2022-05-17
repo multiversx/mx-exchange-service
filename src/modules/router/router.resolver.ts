@@ -165,15 +165,19 @@ export class RouterResolver {
         );
     }
 
+    @UseGuards(GqlAuthGuard)
     @Query(() => AutoRouteModel)
     async getAutoRouteFixedInput(
+        @User() user: any,
         @Args('amountIn') amountIn: string,
         @Args('tokenInID') tokenInID: string,
         @Args('tokenOutID') tokenOutID: string,
         @Args('tolerance') tolerance: number,
     ): Promise<AutoRouteModel> {
+        console.log("user", user);
         try {
             return await this.autoRouterService.getAutoRouteFixedInput(
+                user.publicKey,
                 amountIn,
                 tokenInID,
                 tokenOutID,
@@ -184,8 +188,10 @@ export class RouterResolver {
         }
     }
 
+    @UseGuards(GqlAuthGuard)
     @Query(() => AutoRouteModel)
     async getAutoRouteFixedOutput(
+        @User() user: any,
         @Args('amountOut') amountOut: string,
         @Args('tokenInID') tokenInID: string,
         @Args('tokenOutID') tokenOutID: string,
@@ -193,6 +199,7 @@ export class RouterResolver {
     ): Promise<AutoRouteModel> {
         try {
             return await this.autoRouterService.getAutoRouteFixedOutput(
+                user.publicKey,
                 amountOut,
                 tokenInID,
                 tokenOutID,
@@ -209,10 +216,7 @@ export class RouterResolver {
         @Args() args: MultiSwapTokensArgs,
         @User() user: any,
     ): Promise<TransactionModel[]> {
-        return this.transactionService.multiPairSwap(
-            user.publicKey,
-            args,
-        );
+        return this.transactionService.multiPairSwap(user.publicKey, args);
     }
 
     @Query(() => String)
