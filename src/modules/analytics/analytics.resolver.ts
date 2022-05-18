@@ -1,6 +1,8 @@
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import { AWSQueryArgs } from './models/query.args';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
 import { AnalyticsService } from './services/analytics.service';
 
@@ -61,130 +63,209 @@ export class AnalyticsResolver {
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async historicData(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
-        @Args('time') time: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.analyticsService.getHistoricData(
-            series,
-            metric,
-            time,
+            args.series,
+            args.metric,
+            args.time,
         );
     }
 
     @Query(() => String)
-    async closingValue(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
-        @Args('time') time: string,
-    ): Promise<string> {
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
+    async closingValue(@Args() args: AWSQueryArgs): Promise<string> {
         return await this.analyticsService.getClosingValue(
-            series,
-            metric,
-            time,
+            args.series,
+            args.metric,
+            args.time,
         );
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async completeValues(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getCompleteValues(series, metric);
+        return await this.analyticsService.getCompleteValues(
+            args.series,
+            args.metric,
+        );
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async latestCompleteValues(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.analyticsService.getLatestCompleteValues(
-            series,
-            metric,
+            args.series,
+            args.metric,
         );
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async sumCompleteValues(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getSumCompleteValues(series, metric);
+        return await this.analyticsService.getSumCompleteValues(
+            args.series,
+            args.metric,
+        );
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async latestValues(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getLatestValues(series, metric);
+        return await this.analyticsService.getLatestValues(
+            args.series,
+            args.metric,
+        );
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async marketValues(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getMarketValues(series, metric);
+        return await this.analyticsService.getMarketValues(
+            args.series,
+            args.metric,
+        );
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async marketCompleteValues(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.analyticsService.getMarketCompleteValues(
-            series,
-            metric,
+            args.series,
+            args.metric,
         );
     }
 
     @Query(() => [HistoricDataModel])
-    async values24h(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
-    ): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getValues24h(series, metric);
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
+    async values24h(@Args() args: AWSQueryArgs): Promise<HistoricDataModel[]> {
+        return await this.analyticsService.getValues24h(
+            args.series,
+            args.metric,
+        );
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async values24hSum(
-        @Args('series') series: string,
-        @Args('metric') metric: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getValues24hSum(series, metric);
+        return await this.analyticsService.getValues24hSum(
+            args.series,
+            args.metric,
+        );
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async latestHistoricData(
-        @Args('time') time: string,
-        @Args('series') series: string,
-        @Args('metric') metric: string,
-        @Args('start') start: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.analyticsService.getLatestHistoricData(
-            time,
-            series,
-            metric,
-            start,
+            args.time,
+            args.series,
+            args.metric,
+            args.start,
         );
     }
 
     @Query(() => [HistoricDataModel])
+    @UsePipes(
+        new ValidationPipe({
+            skipNullProperties: true,
+            skipMissingProperties: true,
+            skipUndefinedProperties: true,
+        }),
+    )
     async latestBinnedHistoricData(
-        @Args('time') time: string,
-        @Args('series') series: string,
-        @Args('metric') metric: string,
-        @Args('bin') bin: string,
-        @Args('start') start: string,
+        @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.analyticsService.getLatestBinnedHistoricData(
-            time,
-            series,
-            metric,
-            bin,
-            start,
+            args.time,
+            args.series,
+            args.metric,
+            args.bin,
+            args.start,
         );
     }
 }
