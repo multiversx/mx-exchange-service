@@ -1,15 +1,20 @@
 import {
     Address,
     Balance,
+    BigUIntValue,
     BytesValue,
     GasLimit,
     Interaction,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MultiSwapTokensArgs } from '../models/multi-swap-tokens.args';
 import { RouterGetterService } from './router.getter.service';
 
 @Injectable()
@@ -18,6 +23,8 @@ export class TransactionRouterService {
         private readonly elrondProxy: ElrondProxyService,
         private readonly routerGetterService: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
+        private readonly contextTransactions: ContextTransactionsService,
+        private readonly wrapTransaction: TransactionsWrapService,
     ) {}
 
     async createPair(
@@ -151,5 +158,74 @@ export class TransactionRouterService {
             }
         }
         return false;
+    }
+
+    async multiPairSwap(
+        sender: string,
+        args: MultiSwapTokensArgs,
+    ): Promise<TransactionModel[]> {
+        const transactions = [];
+        const [contract] = await Promise.all([
+            this.elrondProxy.getRouterSmartContract(),
+        ]);
+
+        let transactionArgs = [
+            BytesValue.fromUTF8(args.tokenRoute[0]),
+            new BigUIntValue(new BigNumber(args.intermediaryAmounts[0])),
+            BytesValue.fromUTF8('multiPairSwap'),
+        ];
+
+        // wrap if needed
+        if (elrondConfig.EGLDIdentifier === args.tokenInID) {
+            transactions.push(
+                await this.wrapTransaction.wrapEgld(
+                    sender,
+                    args.intermediaryAmounts[0],
+                ),
+            );
+        }
+
+        const routeLength = args.tokenRoute.length;
+        for (let i = 1; i < routeLength; i++) {
+            const amountOutMin = new BigNumber(1)
+                .dividedBy(new BigNumber(1).plus(args.tolerance))
+                .multipliedBy(args.intermediaryAmounts[i])
+                .integerValue();
+            transactionArgs.push(
+                ...[
+                    BytesValue.fromHex(
+                        Address.fromString(args.addressRoute[i - 1]).hex(),
+                    ),
+                    BytesValue.fromUTF8('swapTokensFixedInput'),
+                    BytesValue.fromUTF8(args.tokenRoute[i]),
+                    new BigUIntValue(amountOutMin),
+                ],
+            );
+        }
+
+        transactions.push(
+            this.contextTransactions.esdtTransfer(
+                contract,
+                transactionArgs,
+                new GasLimit(
+                    args.addressRoute.length *
+                        gasConfig.router.multiPairSwapMultiplier,
+                ),
+            ),
+        );
+
+        // unwrap if needed
+        if (elrondConfig.EGLDIdentifier === args.tokenOutID) {
+            transactions.push(
+                await this.wrapTransaction.unwrapEgld(
+                    sender,
+                    args.intermediaryAmounts[
+                        args.intermediaryAmounts.length - 1
+                    ],
+                ),
+            );
+        }
+
+        return transactions;
     }
 }
