@@ -43,7 +43,6 @@ import { WrappingModule } from '../wrapping/wrap.module';
         RouterGetterService,
         RouterSetterService,
         RouterComputeService,
-        AutoRouterService,
         AutoRouterComputeService,
     ],
 })

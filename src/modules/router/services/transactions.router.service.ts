@@ -23,8 +23,8 @@ export class TransactionRouterService {
         private readonly elrondProxy: ElrondProxyService,
         private readonly routerGetterService: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
-        private readonly contextTransactions: ContextTransactionsService,
-        private readonly wrapTransaction: TransactionsWrapService,
+        private readonly contextTransactionsService: ContextTransactionsService,
+        private readonly transactionsWrapService: TransactionsWrapService,
     ) {}
 
     async createPair(
@@ -165,46 +165,40 @@ export class TransactionRouterService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const [contract] = await Promise.all([
-            this.elrondProxy.getRouterSmartContract(),
-        ]);
+        const contract = await this.elrondProxy.getRouterSmartContract();
 
-        let transactionArgs = [
+        const transactionArgs = [
             BytesValue.fromUTF8(args.tokenRoute[0]),
             new BigUIntValue(new BigNumber(args.intermediaryAmounts[0])),
             BytesValue.fromUTF8('multiPairSwap'),
         ];
 
-        // wrap if needed
-        if (elrondConfig.EGLDIdentifier === args.tokenInID) {
+        if (args.tokenInID === elrondConfig.EGLDIdentifier) {
             transactions.push(
-                await this.wrapTransaction.wrapEgld(
+                await this.transactionsWrapService.wrapEgld(
                     sender,
                     args.intermediaryAmounts[0],
                 ),
             );
         }
 
-        const routeLength = args.tokenRoute.length;
-        for (let i = 1; i < routeLength; i++) {
+        for (const [index, address] of args.addressRoute.entries()) {
             const amountOutMin = new BigNumber(1)
                 .dividedBy(new BigNumber(1).plus(args.tolerance))
-                .multipliedBy(args.intermediaryAmounts[i])
+                .multipliedBy(args.intermediaryAmounts[index + 1])
                 .integerValue();
             transactionArgs.push(
                 ...[
-                    BytesValue.fromHex(
-                        Address.fromString(args.addressRoute[i - 1]).hex(),
-                    ),
+                    BytesValue.fromHex(Address.fromString(address).hex()),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
-                    BytesValue.fromUTF8(args.tokenRoute[i]),
+                    BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(amountOutMin),
                 ],
             );
         }
 
         transactions.push(
-            this.contextTransactions.esdtTransfer(
+            this.contextTransactionsService.esdtTransfer(
                 contract,
                 transactionArgs,
                 new GasLimit(
@@ -214,10 +208,9 @@ export class TransactionRouterService {
             ),
         );
 
-        // unwrap if needed
-        if (elrondConfig.EGLDIdentifier === args.tokenOutID) {
+        if (args.tokenOutID === elrondConfig.EGLDIdentifier) {
             transactions.push(
-                await this.wrapTransaction.unwrapEgld(
+                await this.transactionsWrapService.unwrapEgld(
                     sender,
                     args.intermediaryAmounts[
                         args.intermediaryAmounts.length - 1

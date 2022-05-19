@@ -1,7 +1,7 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { TransactionModel } from 'src/models/transaction.model';
 @ObjectType()
-export class AutoRouteModel {
+export class AutoRouterModel {
     @Field()
     tokenInID: string;
 
@@ -29,7 +29,7 @@ export class AutoRouteModel {
     @Field(() => [TransactionModel])
     transactions: TransactionModel[];
 
-    constructor(init?: Partial<AutoRouteModel>) {
+    constructor(init?: Partial<AutoRouterModel>) {
         Object.assign(this, init);
     }
 }

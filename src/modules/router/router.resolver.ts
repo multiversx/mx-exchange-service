@@ -11,10 +11,10 @@ import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
 import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { AutoRouteModel } from './models/auto-router.model';
 import { AutoRouterService } from './services/auto-router/auto-router.service';
 import { User } from 'src/helpers/userDecorator';
-
+import { AutoRouterModel } from './models/auto-router.model';
+import { AutoRouterArgs } from './models/auto-router.args';
 @Resolver(() => FactoryModel)
 export class RouterResolver {
     constructor(
@@ -164,23 +164,16 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
-    @Query(() => AutoRouteModel)
+    //@UseGuards(GqlAuthGuard)
+    @Query(() => AutoRouterModel)
     async getAutoRouteFixedInput(
-        @User() user: any,
-        @Args('amountIn') amountIn: string,
-        @Args('tokenInID') tokenInID: string,
-        @Args('tokenOutID') tokenOutID: string,
-        @Args('tolerance') tolerance: number,
-    ): Promise<AutoRouteModel> {
-        console.log("user", user);
+        //@User() user: any,
+        @Args() args: AutoRouterArgs,
+    ): Promise<AutoRouterModel> {
         try {
             return await this.autoRouterService.getAutoRouteFixedInput(
-                user.publicKey,
-                amountIn,
-                tokenInID,
-                tokenOutID,
-                tolerance,
+                "",//user.publicKey,
+                args,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -188,21 +181,15 @@ export class RouterResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => AutoRouteModel)
+    @Query(() => AutoRouterModel)
     async getAutoRouteFixedOutput(
         @User() user: any,
-        @Args('amountOut') amountOut: string,
-        @Args('tokenInID') tokenInID: string,
-        @Args('tokenOutID') tokenOutID: string,
-        @Args('tolerance') tolerance: number,
-    ): Promise<AutoRouteModel> {
+        @Args() args: AutoRouterArgs,
+    ): Promise<AutoRouterModel> {
         try {
             return await this.autoRouterService.getAutoRouteFixedOutput(
                 user.publicKey,
-                amountOut,
-                tokenInID,
-                tokenOutID,
-                tolerance,
+                args,
             );
         } catch (error) {
             throw new ApolloError(error);
