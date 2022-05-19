@@ -12,6 +12,7 @@ import { constantsConfig } from 'src/config';
 import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { SetLocalRoleOwnerArgs } from './models/set-local-role-owners.args';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -121,6 +122,20 @@ export class RouterResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
+    async upgradePair(
+        @Args('firstTokenID') firstTokenID: string,
+        @Args('secondTokenID') secondTokenID: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        return this.transactionService.upgradePair(
+            user.publicKey,
+            firstTokenID,
+            secondTokenID,
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
     async issueLPToken(
         @Args('address') address: string,
         @Args('lpTokenName') lpTokenName: string,
@@ -139,6 +154,14 @@ export class RouterResolver {
         @Args('address') address: string,
     ): Promise<TransactionModel> {
         return this.transactionService.setLocalRoles(address);
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async setLocalRolesOwner(
+        @Args() args: SetLocalRoleOwnerArgs,
+    ): Promise<TransactionModel> {
+        return this.transactionService.setLocalRolesOwner(args);
     }
 
     @UseGuards(JwtAdminGuard)

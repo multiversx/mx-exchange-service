@@ -10,6 +10,10 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import {
+    EsdtLocalRoleEnumType,
+    SetLocalRoleOwnerArgs,
+} from '../models/set-local-role-owners.args';
 import { RouterGetterService } from './router.getter.service';
 
 @Injectable()
@@ -44,6 +48,39 @@ export class TransactionRouterService {
 
         const transaction = createPairInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.router.createPair));
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
+    }
+
+    async upgradePair(
+        sender: string,
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<TransactionModel> {
+        const checkPairExists = await this.checkPairExists(
+            firstTokenID,
+            secondTokenID,
+        );
+
+        if (!checkPairExists) {
+            throw new Error('Pair does not exist');
+        }
+
+        const contract = await this.elrondProxy.getRouterSmartContract();
+
+        const upgradePairInteraction: Interaction = contract.methods.upgradePair(
+            [
+                BytesValue.fromUTF8(firstTokenID),
+                BytesValue.fromUTF8(secondTokenID),
+                BytesValue.fromHex(Address.fromString(sender).hex()),
+            ],
+        );
+
+        const transaction = upgradePairInteraction.buildTransaction();
+        // todo: test gasConfig.router.upgradePair
+        transaction.setGasLimit(new GasLimit(gasConfig.router.upgradePair));
         return {
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -86,6 +123,41 @@ export class TransactionRouterService {
 
         const transaction = setLocalRolesInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.router.setLocalRoles));
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
+    }
+
+    async setLocalRolesOwner(
+        args: SetLocalRoleOwnerArgs,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getRouterSmartContract();
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.tokenID),
+            BytesValue.fromHex(new Address(args.address).hex()),
+        ];
+
+        for (const role of args.roles) {
+            transactionArgs.push(
+                BytesValue.fromUTF8(
+                    EsdtLocalRoleEnumType.getVariantByDiscriminant(role).name,
+                ),
+            );
+        }
+
+        console.log("transactionArgs", transactionArgs);
+
+        const setLocalRolesOwnerInteraction: Interaction = contract.methods.setLocalRolesOwner(
+            transactionArgs,
+        );
+
+        const transaction = setLocalRolesOwnerInteraction.buildTransaction();
+        // todo: test gasConfig.router.setLocalRolesOwner
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.router.setLocalRolesOwner),
+        );
         return {
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
