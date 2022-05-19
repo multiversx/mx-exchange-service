@@ -164,15 +164,15 @@ export class RouterResolver {
         );
     }
 
-    //@UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => AutoRouterModel)
     async getAutoRouteFixedInput(
-        //@User() user: any,
+        @User() user: any,
         @Args() args: AutoRouterArgs,
     ): Promise<AutoRouterModel> {
         try {
             return await this.autoRouterService.getAutoRouteFixedInput(
-                "",//user.publicKey,
+                user.publicKey,
                 args,
             );
         } catch (error) {
