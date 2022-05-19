@@ -139,31 +139,6 @@ export class RouterResolver {
         return this.transactionService.setLocalRoles(address);
     }
 
-    @UseGuards(JwtAdminGuard)
-    @Query(() => TransactionModel)
-    async setState(
-        @Args('address') address: string,
-        @Args('enable') enable: boolean,
-    ): Promise<TransactionModel> {
-        return this.transactionService.setState(address, enable);
-    }
-
-    @UseGuards(JwtAdminGuard)
-    @Query(() => TransactionModel)
-    async setFee(
-        @Args('pairAddress') pairAddress: string,
-        @Args('feeToAddress') feeToAddress: string,
-        @Args('feeTokenID') feeTokenID: string,
-        @Args('enable') enable: boolean,
-    ): Promise<TransactionModel> {
-        return this.transactionService.setFee(
-            pairAddress,
-            feeToAddress,
-            feeTokenID,
-            enable,
-        );
-    }
-
     @UseGuards(GqlAuthGuard)
     @Query(() => AutoRouterModel)
     async getAutoRouteFixedInput(
@@ -209,5 +184,30 @@ export class RouterResolver {
         } catch (error) {
             throw new ApolloError(error);
         }
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setState(
+        @Args('address') address: string,
+        @Args('enable') enable: boolean,
+    ): Promise<TransactionModel> {
+        return this.transactionService.setState(address, enable);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setFee(
+        @Args('pairAddress') pairAddress: string,
+        @Args('feeToAddress') feeToAddress: string,
+        @Args('feeTokenID') feeTokenID: string,
+        @Args('enable') enable: boolean,
+    ): Promise<TransactionModel> {
+        return this.transactionService.setFee(
+            pairAddress,
+            feeToAddress,
+            feeTokenID,
+            enable,
+        );
     }
 }
