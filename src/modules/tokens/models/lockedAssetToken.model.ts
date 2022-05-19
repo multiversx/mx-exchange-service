@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { LockedAssetAttributes } from '../../modules/locked-asset-factory/models/locked-asset.model';
+import { LockedAssetAttributes } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { NftToken } from './nftToken.model';
 
 @ObjectType()

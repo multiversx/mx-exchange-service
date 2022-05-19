@@ -6,7 +6,7 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { constantsConfig } from 'src/config';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @ObjectType()
 export class MetabondingStakingModel {
