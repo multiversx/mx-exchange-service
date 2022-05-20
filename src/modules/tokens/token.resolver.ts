@@ -3,7 +3,7 @@ import { ApolloError } from 'apollo-server-express';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { EsdtToken } from './models/esdtToken.model';
 import { TokensFiltersArgs } from './models/tokens.filter.args';
-import { TokenService } from './services/tokens.service';
+import { TokenService } from './services/token.service';
 
 @Resolver(() => EsdtToken)
 export class TokensResolver {
