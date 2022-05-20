@@ -88,6 +88,14 @@ export class ElrondApiService {
         );
     }
 
+    async getToken(tokenID: string): Promise<EsdtToken> {
+        return this.doGetGeneric(
+            this.getNftCollection.name,
+            `tokens/${tokenID}`,
+            response => response,
+        );
+    }
+
     async getNftCollection(tokenID: string): Promise<NftCollection> {
         return this.doGetGeneric(
             this.getNftCollection.name,
