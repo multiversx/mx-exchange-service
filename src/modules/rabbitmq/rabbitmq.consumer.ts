@@ -73,7 +73,10 @@ export class RabbitMqConsumer {
         );
 
         for (const rawEvent of events) {
-            if (rawEvent.data === '') {
+            if (
+                rawEvent.data === '' &&
+                rawEvent.identifier !== METABONDING_EVENTS.UNBOND
+            ) {
                 continue;
             }
             switch (rawEvent.identifier) {
@@ -169,6 +172,11 @@ export class RabbitMqConsumer {
                     );
                     break;
                 case METABONDING_EVENTS.UNSTAKE:
+                    await this.wsMetabondingHandler.handleMetabondingEvent(
+                        new MetabondingEvent(rawEvent),
+                    );
+                    break;
+                case METABONDING_EVENTS.UNBOND:
                     await this.wsMetabondingHandler.handleMetabondingEvent(
                         new MetabondingEvent(rawEvent),
                     );

@@ -1,4 +1,4 @@
-import { Address, BinaryCodec } from '@elrondnetwork/erdjs/out';
+import { Address, BinaryCodec, OptionType } from '@elrondnetwork/erdjs/out';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { UserEntryModel } from 'src/modules/metabonding/models/metabonding.model';
 import { MetabondingEventTopics } from './metabonding.event.topics';
@@ -22,13 +22,22 @@ export class MetabondingEvent {
     constructor(init?: Partial<MetabondingEvent>) {
         Object.assign(this, init);
         this.decodedTopics = new MetabondingEventTopics(this.topics);
-        const decodedEvent = this.decodeEvent();
-        this.userEntry = new UserEntryModel({
-            tokenNonce: decodedEvent.tokenNonce.toNumber(),
-            stakedAmount: decodedEvent.stakeAmount.toFixed(),
-            unstakedAmount: decodedEvent.unstakeAmount.toFixed(),
-            unbondEpoch: decodedEvent.unbondEpoch.toNumber(),
-        });
+
+        if (this.data != '') {
+            const decodedEvent = this.decodeEvent();
+            this.userEntry = new UserEntryModel({
+                tokenNonce: decodedEvent.tokenNonce.toNumber(),
+                stakedAmount: decodedEvent.stakeAmount.toFixed(),
+                unstakedAmount: decodedEvent.unstakeAmount.toFixed(),
+                unbondEpoch: decodedEvent.unbondEpoch.toNumber(),
+            });
+        } else {
+            this.userEntry = new UserEntryModel({
+                tokenNonce: 0,
+                stakedAmount: '0',
+                unstakedAmount: '0',
+            });
+        }
     }
 
     getTopics(): MetabondingEventTopics {
@@ -42,10 +51,13 @@ export class MetabondingEvent {
     private decodeEvent() {
         const data = Buffer.from(this.data, 'base64');
         const codec = new BinaryCodec();
-        const [decoded] = codec.decodeNested(
-            data,
-            UserEntryModel.getStructure(),
-        );
+
+        const decodingType =
+            this.identifier === 'unbond'
+                ? new OptionType(UserEntryModel.getStructure())
+                : UserEntryModel.getStructure();
+
+        const [decoded] = codec.decodeNested(data, decodingType);
         return decoded.valueOf();
     }
 }
