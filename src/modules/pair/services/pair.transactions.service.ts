@@ -9,9 +9,13 @@ import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     AddLiquidityArgs,
+    RemoveLiquidityAndBuyBackAndBurnArgs,
     RemoveLiquidityArgs,
+    SetLpTokenIdentifierArgs,
+    SwapNoFeeAndForwardArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
+    WhitelistArgs,
 } from '../models/pair.args';
 import BigNumber from 'bignumber.js';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
@@ -256,6 +260,28 @@ export class PairTransactionService {
         }
 
         return transactions;
+    }
+
+    async removeLiquidityAndBuyBackAndBurnToken(
+        args: RemoveLiquidityAndBuyBackAndBurnArgs,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.tokenInID),
+            new BigUIntValue(new BigNumber(args.amount)),
+            BytesValue.fromUTF8('removeLiquidityAndBuyBackAndBurnToken'),
+            BytesValue.fromUTF8(args.tokenToBuyBackAndBurnID),
+        ];
+
+        // todo: test gasConfig.pairs.removeLiquidityAndBuyBackAndBurnToken
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.pairs.removeLiquidityAndBuyBackAndBurnToken),
+        );
     }
 
     async swapTokensFixedInput(
@@ -549,5 +575,82 @@ export class PairTransactionService {
                 firstToken,
             ];
         }
+    }
+
+    async swapNoFeeAndForward(
+        args: SwapNoFeeAndForwardArgs,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.tokenOutID),
+            new BigUIntValue(new BigNumber(args.destination)),
+            BytesValue.fromUTF8('swapNoFeeAndForward'),
+        ];
+
+        // todo: test gasConfig.pairs.swapNoFeeAndForward
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.pairs.swapNoFeeAndForward),
+        );
+    }
+
+    async setLpTokenIdentifier(
+        args: SetLpTokenIdentifierArgs,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
+
+        const transactionArgs = [
+            BytesValue.fromUTF8(args.tokenID),
+            BytesValue.fromUTF8('setLpTokenIdentifier'),
+        ];
+
+        // todo: test gasConfig.pairs.setLpTokenIdentifier
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.pairs.setLpTokenIdentifier),
+        );
+    }
+
+    async whitelist(args: WhitelistArgs): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
+
+        const transactionArgs = [
+            BytesValue.fromHex(new Address(args.address).hex()),
+            BytesValue.fromUTF8('whitelist'),
+        ];
+
+        // todo: test gasConfig.pairs.whitelist
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.pairs.whitelist),
+        );
+    }
+
+    async removeWhitelist(args: WhitelistArgs): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
+
+        const transactionArgs = [
+            BytesValue.fromHex(new Address(args.address).hex()),
+            BytesValue.fromUTF8('removeWhitelist'),
+        ];
+
+        // todo: test gasConfig.pairs.removeWhitelist
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.pairs.removeWhitelist),
+        );
     }
 }

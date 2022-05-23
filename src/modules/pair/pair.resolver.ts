@@ -5,15 +5,21 @@ import { LiquidityPosition, PairModel } from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
+    RemoveLiquidityAndBuyBackAndBurnArgs,
     RemoveLiquidityArgs,
+    SetLpTokenIdentifierArgs,
+    SwapNoFeeAndForwardArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
+    WhitelistArgs,
 } from './models/pair.args';
 import { PairTransactionService } from './services/pair.transactions.service';
 import { ApolloError } from 'apollo-server-express';
 import { PairGetterService } from './services/pair.getter.service';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { PairInfoModel } from './models/pair-info.model';
+import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -333,6 +339,45 @@ export class PairResolver {
         }
     }
 
+    @Query(() => LiquidityPosition)
+    async getTokensForGivenPosition(
+        @Args('pairAddress') pairAddress: string,
+        @Args('liquidityAmount') liquidityAmount: string,
+    ): Promise<LiquidityPosition> {
+        try {
+            return await this.pairGetterService.getTokensForGivenPosition(
+                pairAddress,
+                liquidityAmount,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @Query(() => PairInfoModel)
+    async getReservesAndTotalSupply(
+        @Args('pairAddress') pairAddress: string,
+    ): Promise<PairInfoModel> {
+        try {
+            return await this.pairGetterService.getReservesAndTotalSupply(
+                pairAddress,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @Query(() => Boolean)
+    async getFeeState(
+        @Args('pairAddress') pairAddress: string,
+    ): Promise<Boolean> {
+        try {
+            return await this.pairGetterService.getFeeState(pairAddress);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
     async addInitialLiquidityBatch(
@@ -394,6 +439,16 @@ export class PairResolver {
     }
 
     @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async removeLiquidityAndBuyBackAndBurnToken(
+        @Args() args: RemoveLiquidityAndBuyBackAndBurnArgs,
+    ): Promise<TransactionModel> {
+        return await this.transactionService.removeLiquidityAndBuyBackAndBurnToken(
+            args,
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
@@ -415,5 +470,35 @@ export class PairResolver {
             user.publicKey,
             args,
         );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async swapNoFeeAndForward(
+        @Args() args: SwapNoFeeAndForwardArgs,
+    ): Promise<TransactionModel> {
+        return this.transactionService.swapNoFeeAndForward(args);
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async setLpTokenIdentifier(
+        @Args() args: SetLpTokenIdentifierArgs,
+    ): Promise<TransactionModel> {
+        return this.transactionService.setLpTokenIdentifier(args);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async whitelist(@Args() args: WhitelistArgs): Promise<TransactionModel> {
+        return this.transactionService.whitelist(args);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async removeWhitelist(
+        @Args() args: WhitelistArgs,
+    ): Promise<TransactionModel> {
+        return this.transactionService.removeWhitelist(args);
     }
 }

@@ -11,7 +11,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
-import { LockedTokensInfo } from '../models/pair.model';
+import { LiquidityPosition, LockedTokensInfo } from '../models/pair.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
 import { PairDBService } from './pair.db.service';
@@ -487,5 +487,25 @@ export class PairGetterService {
 
     private getPairCacheKey(pairAddress: string, ...args: any) {
         return generateCacheKeyFromParams('pair', pairAddress, ...args);
+    }
+
+    async getTokensForGivenPosition(
+        pairAddress: string,
+        liquidityAmount: string,
+    ): Promise<LiquidityPosition> {
+        return this.abiService.getTokensForGivenPosition(
+            pairAddress,
+            liquidityAmount,
+        );
+    }
+
+    async getReservesAndTotalSupply(
+        pairAddress: string,
+    ): Promise<PairInfoModel> {
+        return this.abiService.getReservesAndTotalSupply(pairAddress);
+    }
+
+    async getFeeState(pairAddress: string): Promise<Boolean> {
+        return this.abiService.getFeeState(pairAddress);
     }
 }

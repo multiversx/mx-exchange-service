@@ -1,13 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { QueryResponseBundle } from '@elrondnetwork/erdjs';
+import { BigUIntValue, QueryResponseBundle } from '@elrondnetwork/erdjs';
 import { PairInfoModel } from '../models/pair-info.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
+import BigNumber from 'bignumber.js';
+import { LiquidityPosition } from '../models/pair.model';
 
 @Injectable()
 export class PairAbiService {
@@ -288,5 +290,48 @@ export class PairAbiService {
 
             throw error;
         }
+    }
+
+    async getTokensForGivenPosition(
+        pairAddress: string,
+        liquidityAmount: string,
+    ): Promise<LiquidityPosition> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getTokensForGivenPosition(
+            [new BigUIntValue(new BigNumber(liquidityAmount))],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return new LiquidityPosition({
+            firstTokenAmount: response.values[0].valueOf().amount,
+            secondTokenAmount: response.values[1].valueOf().amount,
+        });
+    }
+
+    async getReservesAndTotalSupply(
+        pairAddress: string,
+    ): Promise<PairInfoModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getReservesAndTotalSupply(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return new PairInfoModel({
+            reserves0: response.values[0].valueOf(),
+            reserves1: response.values[1].valueOf(),
+            totalSupply: response.values[2].valueOf(),
+        });
+    }
+
+    async getFeeState(pairAddress: string): Promise<Boolean> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getFeeState([]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf();
     }
 }

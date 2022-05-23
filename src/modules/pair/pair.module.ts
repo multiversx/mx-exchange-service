@@ -26,6 +26,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
         WrappingModule,
         CachingModule,
         AWSModule,
+        CommonAppModule,
         MongooseModule.forRootAsync({
             imports: [CommonAppModule],
             useFactory: async (configService: ApiConfigService) => ({
