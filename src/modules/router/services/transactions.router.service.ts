@@ -173,14 +173,12 @@ export class TransactionRouterService {
             BytesValue.fromUTF8('multiPairSwap'),
         ];
 
-        if (args.tokenInID === elrondConfig.EGLDIdentifier) {
-            transactions.push(
-                await this.transactionsWrapService.wrapEgld(
-                    sender,
-                    args.intermediaryAmounts[0],
-                ),
-            );
-        }
+        const wrapTransaction = await this.wrapIfNeeded(
+            sender,
+            args.tokenInID,
+            args.intermediaryAmounts[0],
+        );
+        if (wrapTransaction) transactions.push(wrapTransaction);
 
         for (const [index, address] of args.addressRoute.entries()) {
             const amountOutMin = new BigNumber(1)
@@ -208,17 +206,28 @@ export class TransactionRouterService {
             ),
         );
 
-        if (args.tokenOutID === elrondConfig.EGLDIdentifier) {
-            transactions.push(
-                await this.transactionsWrapService.unwrapEgld(
-                    sender,
-                    args.intermediaryAmounts[
-                        args.intermediaryAmounts.length - 1
-                    ],
-                ),
-            );
-        }
+        const unwrapTransaction = await this.unwrapIfNeeded(
+            sender,
+            args.tokenOutID,
+            args.intermediaryAmounts[args.intermediaryAmounts.length - 1],
+        );
+        if (unwrapTransaction) transactions.push(unwrapTransaction);
 
         return transactions;
+    }
+
+    async wrapIfNeeded(sender, tokenID, amount): Promise<TransactionModel> {
+        if (tokenID === elrondConfig.EGLDIdentifier) {
+            return await this.transactionsWrapService.wrapEgld(sender, amount);
+        }
+    }
+
+    async unwrapIfNeeded(sender, tokenID, amount): Promise<TransactionModel> {
+        if (tokenID === elrondConfig.EGLDIdentifier) {
+            return await this.transactionsWrapService.unwrapEgld(
+                sender,
+                amount,
+            );
+        }
     }
 }
