@@ -88,6 +88,7 @@
         "pairs": {
             "addLiquidity": 9500000,
             "removeLiquidity": 8500000,
+            "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
                 "default": 8700000,
                 "withFeeSwap": 25500000
@@ -95,7 +96,11 @@
             "swapTokensFixedOutput": {
                 "default": 9000000,
                 "withFeeSwap": 25500000
-            }
+            },
+            "swapNoFeeAndForward": 25500000,
+            "setLpTokenIdentifier": 200000000,
+            "whitelist": 200000000,
+            "removeWhitelist": 200000000
         },
         "farms": {
             "v1.2": {
