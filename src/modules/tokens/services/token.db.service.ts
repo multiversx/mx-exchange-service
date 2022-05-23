@@ -2,15 +2,18 @@ import { BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateTokenDto } from '../dto/create.token.dto';
-import { EsdtToken, TokenDocument } from '../schemas/token.schema';
+import { EsdtTokenDbModel, TokenDocument } from '../schemas/token.schema';
 
 export class TokenDBService {
     constructor(
-        @InjectModel(EsdtToken.name)
+        @InjectModel(EsdtTokenDbModel.name)
         private readonly esdtTokenModel: Model<TokenDocument>,
     ) {}
 
-    async createToken(createTokenDto: CreateTokenDto): Promise<EsdtToken> {
+    async createToken(
+        createTokenDto: CreateTokenDto,
+    ): Promise<EsdtTokenDbModel> {
+        console.log(createTokenDto);
         const createdToken = await this.esdtTokenModel.create(createTokenDto);
         return createdToken;
     }
@@ -39,7 +42,6 @@ export class TokenDBService {
             .where('tokenID')
             .equals(tokenID)
             .exec();
-
         return esdtToken ? esdtToken.type : 'Experimental';
     }
 }

@@ -6,7 +6,7 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
-import { EsdtToken, EsdtTokenSchema } from './schemas/token.schema';
+import { EsdtTokenDbModel, EsdtTokenSchema } from './schemas/token.schema';
 import { TokenDBService } from './services/token.db.service';
 import { TokenGetterService } from './services/token.getter.service';
 import { TokenService } from './services/token.service';
@@ -30,7 +30,7 @@ import { TokensResolver } from './token.resolver';
             inject: [ApiConfigService],
         }),
         MongooseModule.forFeature([
-            { name: EsdtToken.name, schema: EsdtTokenSchema },
+            { name: EsdtTokenDbModel.name, schema: EsdtTokenSchema },
         ]),
     ],
     providers: [
@@ -38,6 +38,12 @@ import { TokensResolver } from './token.resolver';
         TokenGetterService,
         TokenDBService,
         TokensResolver,
+    ],
+    exports: [
+        TokenDBService,
+        MongooseModule.forFeature([
+            { name: EsdtTokenDbModel.name, schema: EsdtTokenSchema },
+        ]),
     ],
 })
 export class TokenModule {}
