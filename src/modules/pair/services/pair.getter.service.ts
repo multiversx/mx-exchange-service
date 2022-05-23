@@ -357,6 +357,15 @@ export class PairGetterService {
         );
     }
 
+    async getInitialLiquidtyAdder(pairAddress: string): Promise<string> {
+        return await this.getData(
+            pairAddress,
+            'initialLiquidtyAdder',
+            () => this.abiService.getInitialLiquidtyAdder(pairAddress),
+            oneHour(),
+        );
+    }
+
     async getState(pairAddress: string): Promise<string> {
         return await this.getData(
             pairAddress,

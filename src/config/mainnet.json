@@ -21,11 +21,14 @@
         "staking": [
             "erd1qqqqqqqqqqqqqpgqmqq78c5htmdnws8hm5u4suvags36eq092jpsaxv3e7",
             "erd1qqqqqqqqqqqqqpgqr7kdhagkqgxvjrsk7s5333l9wwnenr9g2jps8puq33",
-            "erd1qqqqqqqqqqqqqpgqzps75vsk97w9nsx2cenv2r2tyxl4fl402jpsx78m9j"
+            "erd1qqqqqqqqqqqqqpgqzps75vsk97w9nsx2cenv2r2tyxl4fl402jpsx78m9j",
+            "erd1qqqqqqqqqqqqqpgq45zs77q884ts6y9zj4jyqfn6ydev8ruv2jps3tteqq"
         ],
         "stakingProxy": [
             "erd1qqqqqqqqqqqqqpgq2ymdr66nk5hx32j2tqdeqv9ajm9dj9uu2jps3dtv6v",
-            "erd1qqqqqqqqqqqqqpgq389gc8qnqy0ksha948jf72c9cks9g3rf2jpsl5z0aa"
+            "erd1qqqqqqqqqqqqqpgq389gc8qnqy0ksha948jf72c9cks9g3rf2jpsl5z0aa",
+            "erd1qqqqqqqqqqqqqpgqz55dum74jl0nqxgs7z5d84f448tx0zwp2jpser4d8k",
+            "erd1qqqqqqqqqqqqqpgqxrkd0t4lzq6rfdfg03g2ymc7ygv3ayqc2jpsezhzt9"
         ]
     },
     "farms": {
