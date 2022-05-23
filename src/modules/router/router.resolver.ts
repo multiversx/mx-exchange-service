@@ -1,5 +1,12 @@
 import { RouterService } from './services/router.service';
-import { Resolver, Query, ResolveField, Args, Int } from '@nestjs/graphql';
+import {
+    Resolver,
+    Query,
+    ResolveField,
+    Args,
+    Int,
+    Float,
+} from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
@@ -13,6 +20,8 @@ import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { SetLocalRoleOwnerArgs } from './models/set-local-role-owners.args';
+import { PairMetadata } from './models/pair.metadata.model';
+import { PairTokens } from '../pair/dto/pair-tokens.model';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -81,6 +90,78 @@ export class RouterResolver {
         }
     }
 
+    @ResolveField(() => Boolean)
+    async pairCreationEnabled(): Promise<boolean> {
+        try {
+            return await this.routerGetterService.getPairCreationEnabled();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField(() => Boolean)
+    async state(): Promise<boolean> {
+        try {
+            return await this.routerGetterService.getState();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField(() => String)
+    async owner(): Promise<string> {
+        try {
+            return await this.routerGetterService.getOwner();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField(() => [String])
+    async allPairsManagedAddresses(): Promise<string[]> {
+        try {
+            return await this.routerGetterService.getAllPairsManagedAddresses();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField(() => [PairTokens])
+    async allPairTokens(): Promise<PairTokens[]> {
+        try {
+            return await this.routerGetterService.getAllPairTokens();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField(() => [PairMetadata])
+    async allPairsMetadata(): Promise<PairMetadata[]> {
+        try {
+            return await this.routerGetterService.getPairsMetadata();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField(() => String)
+    async pairTemplateAddress(): Promise<string> {
+        try {
+            return await this.routerGetterService.getPairTemplateAddress();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField(() => String)
+    async temporaryOwnerPeriod(): Promise<string> {
+        try {
+            return await this.routerGetterService.getTemporaryOwnerPeriod();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @Query(() => [String])
     async pairAddresses(): Promise<string[]> {
         try {
@@ -120,17 +201,17 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtAdminGuard)
     @Query(() => TransactionModel)
     async upgradePair(
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
-        @User() user: any,
+        @Args('fees', { type: () => [Float] }) fees: number[],
     ): Promise<TransactionModel> {
         return this.transactionService.upgradePair(
-            user.publicKey,
             firstTokenID,
             secondTokenID,
+            fees,
         );
     }
 
@@ -156,7 +237,7 @@ export class RouterResolver {
         return this.transactionService.setLocalRoles(address);
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtAdminGuard)
     @Query(() => TransactionModel)
     async setLocalRolesOwner(
         @Args() args: SetLocalRoleOwnerArgs,
@@ -187,5 +268,44 @@ export class RouterResolver {
             feeTokenID,
             enable,
         );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setPairCreationEnabled(
+        @Args('enabled') enabled: boolean,
+    ): Promise<TransactionModel> {
+        return this.transactionService.setPairCreationEnabled(enabled);
+    }
+
+    @Query(() => String)
+    async getLastErrorMessage(): Promise<string> {
+        try {
+            return await this.routerGetterService.getLastErrorMessage();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async clearPairTemporaryOwnerStorage(): Promise<TransactionModel> {
+        return this.transactionService.clearPairTemporaryOwnerStorage();
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setTemporaryOwnerPeriod(
+        @Args('periodBlocks') periodBlocks: number,
+    ): Promise<TransactionModel> {
+        return this.transactionService.setTemporaryOwnerPeriod(periodBlocks);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setPairTemplateAddress(
+        @Args('address') address: string,
+    ): Promise<TransactionModel> {
+        return this.transactionService.setPairTemplateAddress(address);
     }
 }
