@@ -5,10 +5,12 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import { Logger } from 'winston';
 import { EsdtToken } from '../models/esdtToken.model';
 import { TokensFiltersArgs } from '../models/tokens.filter.args';
+import { TokenGetterService } from './token.getter.service';
 
 @Injectable()
 export class TokenService {
     constructor(
+        private readonly tokenGetter: TokenGetterService,
         private readonly routerGetter: RouterGetterService,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -25,7 +27,18 @@ export class TokenService {
         const promises = tokenIDs.map(tokenID =>
             this.apiService.getToken(tokenID),
         );
-        return await Promise.all(promises);
+        let tokens = await Promise.all(promises);
+
+        if (filters.type) {
+            for (const token of tokens) {
+                token.type = await this.tokenGetter.getEsdtTokenType(
+                    token.identifier,
+                );
+            }
+            tokens = tokens.filter(token => token.type === filters.type);
+        }
+
+        return tokens;
     }
 
     private async getUniqueTokenIDs(): Promise<string[]> {

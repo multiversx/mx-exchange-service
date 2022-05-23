@@ -4,4 +4,6 @@ import { ArgsType, Field } from '@nestjs/graphql';
 export class TokensFiltersArgs {
     @Field(() => [String], { nullable: true })
     identifiers: string;
+    @Field({ nullable: true })
+    type: string;
 }
