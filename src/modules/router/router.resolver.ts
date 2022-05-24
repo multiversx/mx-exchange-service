@@ -16,18 +16,17 @@ import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { AutoRouterService } from './services/auto-router/auto-router.service';
 import { User } from 'src/helpers/userDecorator';
-import { PairMetadata } from './models/pair.metadata.model';
-import { PairTokens } from '../pair/dto/pair-tokens.model';
-import { PairFilterArgs, SetLocalRoleOwnerArgs } from './models/router.args';
-import { bool } from 'aws-sdk/clients/signer';
-
+import { AutoRouterModel } from './models/auto-router.model';
+import { AutoRouterArgs } from './models/auto-router.args';
 @Resolver(() => FactoryModel)
 export class RouterResolver {
     constructor(
         private readonly routerService: RouterService,
         private readonly routerGetterService: RouterGetterService,
         private readonly transactionService: TransactionRouterService,
+        private readonly autoRouterService: AutoRouterService,
     ) {}
 
     @Query(() => FactoryModel)
@@ -240,20 +239,53 @@ export class RouterResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async setLocalRolesOwner(
-        @Args() args: SetLocalRoleOwnerArgs,
+    @Query(() => AutoRouterModel)
+    async getAutoRouteFixedInput(
         @User() user: any,
-    ): Promise<TransactionModel> {
+        @Args() args: AutoRouterArgs,
+    ): Promise<AutoRouterModel> {
         try {
-            await this.routerService.requireOwner(user.publicKey);
-            return this.transactionService.setLocalRolesOwner(args);
+            return await this.autoRouterService.getAutoRouteFixedInput(
+                user.publicKey,
+                args,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
     @UseGuards(GqlAuthGuard)
+    @Query(() => AutoRouterModel)
+    async getAutoRouteFixedOutput(
+        @User() user: any,
+        @Args() args: AutoRouterArgs,
+    ): Promise<AutoRouterModel> {
+        try {
+            return await this.autoRouterService.getAutoRouteFixedOutput(
+                user.publicKey,
+                args,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @Query(() => String)
+    async getExchangeRate(
+        @Args('tokenInID') tokenInID: string,
+        @Args('tokenOutID') tokenOutID: string,
+    ): Promise<String> {
+        try {
+            return await this.autoRouterService.getExchangeRate(
+                tokenInID,
+                tokenOutID,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(JwtAdminGuard)
     @Query(() => TransactionModel)
     async setState(
         @Args('address') address: string,
