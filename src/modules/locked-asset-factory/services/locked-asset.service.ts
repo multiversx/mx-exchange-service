@@ -7,20 +7,12 @@ import {
 import { constantsConfig, scAddress } from '../../../config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import {
-    BinaryCodec,
-    BooleanType,
-    ListType,
-    FieldDefinition,
-    StructType,
-    U64Type,
-    U8Type,
-} from '@elrondnetwork/erdjs/out';
 import { DecodeAttributesArgs } from '../../proxy/models/proxy.args';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { LockedAssetGetterService } from './locked.asset.getter.service';
 import BigNumber from 'bignumber.js';
 import { tokenNonce } from 'src/utils/token.converters';
+import { LockedAssetAttributes } from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
 export class LockedAssetService {
@@ -41,27 +33,15 @@ export class LockedAssetService {
         const decodedBatchAttributes = [];
         const extendedAttributesActivationNonce = await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
         for (const lockedAsset of args.batchAttributes) {
-            const attributesBuffer = Buffer.from(
-                lockedAsset.attributes,
-                'base64',
-            );
-            const codec = new BinaryCodec();
-
             const withActivationNonce =
                 tokenNonce(lockedAsset.identifier) >=
                 extendedAttributesActivationNonce;
-            const lockedAssetAttributesStructure = await this.getLockedAssetAttributesStructure(
+            const lockedAssetAttributes = LockedAssetAttributes.fromAttributes(
                 withActivationNonce,
+                lockedAsset.attributes,
             );
-
-            const [decoded] = codec.decodeNested(
-                attributesBuffer,
-                lockedAssetAttributesStructure,
-            );
-            const decodedAttributes = decoded.valueOf();
-
-            const unlockMilestones = await this.getUnlockMilestones(
-                decodedAttributes.unlockSchedule,
+            const unlockSchedule = await this.getUnlockMilestones(
+                lockedAssetAttributes.unlockSchedule,
                 withActivationNonce,
             );
 
@@ -69,8 +49,8 @@ export class LockedAssetService {
                 new LockedAssetAttributesModel({
                     attributes: lockedAsset.attributes,
                     identifier: lockedAsset.identifier,
-                    isMerged: decodedAttributes.isMerged,
-                    unlockSchedule: unlockMilestones,
+                    unlockSchedule,
+                    isMerged: lockedAssetAttributes.isMerged,
                 }),
             );
         }
@@ -112,28 +92,6 @@ export class LockedAssetService {
         } else {
             return unlockStartEpoch + 30 - currentEpoch;
         }
-    }
-
-    private async getLockedAssetAttributesStructure(
-        withActivationNonce: boolean,
-    ): Promise<StructType> {
-        return new StructType('LockedAssetAttributes', [
-            new FieldDefinition(
-                'unlockSchedule',
-                '',
-                new ListType(
-                    new StructType('UnlockMilestone', [
-                        new FieldDefinition('epoch', '', new U64Type()),
-                        new FieldDefinition(
-                            'percent',
-                            '',
-                            withActivationNonce ? new U64Type() : new U8Type(),
-                        ),
-                    ]),
-                ),
-            ),
-            new FieldDefinition('isMerged', '', new BooleanType()),
-        ]);
     }
 
     private async getMonthStartEpoch(unlockEpoch: number): Promise<number> {
