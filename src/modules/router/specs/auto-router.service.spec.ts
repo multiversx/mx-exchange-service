@@ -106,7 +106,7 @@ describe('AutoRouterService', () => {
         expect(exchangeRate_1).toEqual('49812415857744244588');
     });
 
-    it('should get auto-route', async () => {
+    it('should get auto-route (1 node route)', async () => {
         const autoRoute_0 = await service.getAutoRouteFixedInput(
             'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
             {
@@ -147,7 +147,49 @@ describe('AutoRouterService', () => {
             ],
         });
 
-        const autoRoute_1 = await service.getAutoRouteFixedInput(
+        const autoRoute_1 = await service.getAutoRouteFixedOutput(
+            'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
+            {
+                amount: '4960273038901078',
+                tokenInID: 'USDC-1111',
+                tokenOutID: 'TOK1-1111',
+                tolerance: 0.01,
+            },
+        );
+        expect(autoRoute_1).toEqual({
+            tokenInID: 'USDC-1111',
+            tokenOutID: 'TOK1-1111',
+            amountIn: '999999999999999975',
+            amountOut: '4960273038901078',
+            tokenRoute: ['USDC-1111', 'TOK1-1111'],
+            intermediaryAmounts: ['999999999999999975', '4960273038901078'],
+            addressRoute: [
+                'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+            ],
+            tolerance: 0.01,
+            transactions: [
+                {
+                    nonce: 0,
+                    value: '0',
+                    receiver:
+                        'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+                    sender:
+                        'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                    gasPrice: 1000000000,
+                    gasLimit: 25000000,
+                    data:
+                        'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMxMzEzMUAwZGUwYjZiM2E3NjNmZmU3QDZkNzU2Yzc0Njk1MDYxNjk3MjUzNzc2MTcwQDAwMDAwMDAwMDAwMDAwMDAwNTAwMDZiZGM2MWViYmVjNzE5YjA3YjRhN2ViZmQxZmIyMTVjMDcwNmUzYzdjZWJANzM3NzYxNzA1NDZmNmI2NTZlNzM0NjY5Nzg2NTY0NDk2ZTcwNzU3NEA1NDRmNGIzMTJkMzEzMTMxMzFAMTE3MmFjZTAyNmIwYzQ=',
+                    chainID: 'T',
+                    version: 1,
+                    options: undefined,
+                    signature: undefined,
+                },
+            ],
+        });
+    });
+
+    it('should get auto-route (2 node route / 2 ways)', async () => {
+        const autoRoute_0 = await service.getAutoRouteFixedInput(
             'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
             {
                 amount: '1000000000000000000',
@@ -156,7 +198,7 @@ describe('AutoRouterService', () => {
                 tolerance: 0.01,
             },
         );
-        expect(autoRoute_1).toEqual({
+        expect(autoRoute_0).toEqual({
             tokenInID: 'USDC-1111',
             tokenOutID: 'TOK2-2222',
             amountIn: '1000000000000000000',
@@ -192,7 +234,7 @@ describe('AutoRouterService', () => {
             ],
         });
 
-        const autoRoute_2 = await service.getAutoRouteFixedInput(
+        const autoRoute_1 = await service.getAutoRouteFixedInput(
             'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
             {
                 amount: '9842111338727952',
@@ -201,7 +243,7 @@ describe('AutoRouterService', () => {
                 tolerance: 0.01,
             },
         );
-        expect(autoRoute_2).toEqual({
+        expect(autoRoute_1).toEqual({
             tokenInID: 'TOK2-2222',
             tokenOutID: 'USDC-1111',
             amountIn: '9842111338727952',
