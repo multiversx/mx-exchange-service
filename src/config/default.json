@@ -80,8 +80,13 @@
     "gasLimits": {
         "router": {
             "createPair": 30000000,
+            "upgradePair": 30000000,
+            "getPair": 30000000,
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
+            "setLocalRolesOwner": 100000000,
+            "setTemporaryOwnerPeriod": 200000000,
+            "setPairTemplateAddress": 200000000,
             "setState": 200000000,
             "setFee": 200000000,
             "multiPairSwapMultiplier": 25000000
