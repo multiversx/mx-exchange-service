@@ -1,3 +1,9 @@
+import {
+    EnterFarmEvent,
+    ExitFarmEvent,
+    FARM_EVENTS,
+    RewardsEvent,
+} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -7,10 +13,6 @@ import { Logger } from 'winston';
 import { FarmVersion } from '../farm/models/farm.model';
 import { AbiFarmService } from '../farm/services/abi-farm.service';
 import { FarmSetterService } from '../farm/services/farm.setter.service';
-import { EnterFarmEvent } from './entities/farm/enterFarm.event';
-import { ExitFarmEvent } from './entities/farm/exitFarm.event';
-import { RewardsEvent } from './entities/farm/rewards.event';
-import { FARM_EVENTS } from './entities/generic.types';
 
 @Injectable()
 export class RabbitMQFarmHandlerService {
