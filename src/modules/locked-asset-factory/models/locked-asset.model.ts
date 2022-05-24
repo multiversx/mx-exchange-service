@@ -44,6 +44,9 @@ export class LockedAssetModel {
     @Field(() => [UnlockMileStoneModel])
     unlockMilestones: UnlockMileStoneModel[];
 
+    @Field(() => Int)
+    activationNonce: number;
+
     constructor(init?: Partial<LockedAssetModel>) {
         Object.assign(this, init);
     }

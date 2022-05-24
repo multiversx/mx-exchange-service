@@ -53,6 +53,15 @@ export class LockedAssetResolver {
         }
     }
 
+    @ResolveField()
+    async activationNonce(): Promise<number> {
+        try {
+            return await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @Query(() => LockedAssetModel)
     async lockedAssetFactory(): Promise<LockedAssetModel> {
         return await this.lockedAssetService.getLockedAssetInfo();
