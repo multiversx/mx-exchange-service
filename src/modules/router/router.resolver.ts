@@ -12,16 +12,15 @@ import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './services/transactions.router.service';
-import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
-import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
-import { SetLocalRoleOwnerArgs } from './models/set-local-role-owners.args';
 import { PairMetadata } from './models/pair.metadata.model';
 import { PairTokens } from '../pair/dto/pair-tokens.model';
+import { PairFilterArgs, SetLocalRoleOwnerArgs } from './models/router.args';
+import { bool } from 'aws-sdk/clients/signer';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -201,13 +200,16 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async upgradePair(
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
         @Args('fees', { type: () => [Float] }) fees: number[],
+        @User() user: any,
     ): Promise<TransactionModel> {
+        if ((await this.routerGetterService.getOwner()) !== user.publicKey)
+            throw new Error('You are not the owner.');
         return this.transactionService.upgradePair(
             firstTokenID,
             secondTokenID,
@@ -237,45 +239,69 @@ export class RouterResolver {
         return this.transactionService.setLocalRoles(address);
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async setLocalRolesOwner(
         @Args() args: SetLocalRoleOwnerArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.setLocalRolesOwner(args);
+        try {
+            await this.routerService.requireOwner(user.publicKey);
+            return this.transactionService.setLocalRolesOwner(args);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async setState(
         @Args('address') address: string,
-        @Args('enable') enable: boolean,
+        @Args('enable') enable: bool,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.setState(address, enable);
+        try {
+            await this.routerService.requireOwner(user.publicKey);
+            return this.transactionService.setState(address, enable);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async setFee(
         @Args('pairAddress') pairAddress: string,
         @Args('feeToAddress') feeToAddress: string,
         @Args('feeTokenID') feeTokenID: string,
         @Args('enable') enable: boolean,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.setFee(
-            pairAddress,
-            feeToAddress,
-            feeTokenID,
-            enable,
-        );
+        try {
+            await this.routerService.requireOwner(user.publicKey);
+            return this.transactionService.setFee(
+                pairAddress,
+                feeToAddress,
+                feeTokenID,
+                enable,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async setPairCreationEnabled(
         @Args('enabled') enabled: boolean,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.setPairCreationEnabled(enabled);
+        try {
+            await this.routerService.requireOwner(user.publicKey);
+            return this.transactionService.setPairCreationEnabled(enabled);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @Query(() => String)
@@ -287,25 +313,46 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async clearPairTemporaryOwnerStorage(): Promise<TransactionModel> {
-        return this.transactionService.clearPairTemporaryOwnerStorage();
+    async clearPairTemporaryOwnerStorage(
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.routerService.requireOwner(user.publicKey);
+            return this.transactionService.clearPairTemporaryOwnerStorage();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async setTemporaryOwnerPeriod(
         @Args('periodBlocks') periodBlocks: number,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.setTemporaryOwnerPeriod(periodBlocks);
+        try {
+            await this.routerService.requireOwner(user.publicKey);
+            return this.transactionService.setTemporaryOwnerPeriod(
+                periodBlocks,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async setPairTemplateAddress(
         @Args('address') address: string,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.setPairTemplateAddress(address);
+        try {
+            await this.routerService.requireOwner(user.publicKey);
+            return this.transactionService.setPairTemplateAddress(address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }

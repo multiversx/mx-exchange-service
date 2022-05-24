@@ -15,7 +15,7 @@ import { ElrondProxyService } from '../../../services/elrond-communication/elron
 import {
     EsdtLocalRoleEnumType,
     SetLocalRoleOwnerArgs,
-} from '../models/set-local-role-owners.args';
+} from '../models/router.args';
 import { RouterGetterService } from './router.getter.service';
 
 @Injectable()

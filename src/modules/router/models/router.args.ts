@@ -2,6 +2,18 @@ import { EnumType, EnumVariantDefinition } from '@elrondnetwork/erdjs/out';
 import { ArgsType, Field, registerEnumType } from '@nestjs/graphql';
 
 @ArgsType()
+export class PairFilterArgs {
+    @Field({ nullable: true })
+    address: string;
+    @Field({ nullable: true })
+    firstTokenID: string;
+    @Field({ nullable: true })
+    secondTokenID: string;
+    @Field(() => Boolean)
+    issuedLpToken = true;
+}
+
+@ArgsType()
 export class SetLocalRoleOwnerArgs {
     @Field()
     tokenID: string;
@@ -21,9 +33,7 @@ export enum EsdtLocalRole {
     NftAddQuantity,
     NftBurn,
 }
-
 registerEnumType(EsdtLocalRole, { name: 'EsdtLocalRole' });
-
 export const EsdtLocalRoleEnumType = new EnumType('EsdtLocalRole', [
     new EnumVariantDefinition('None', 0),
     new EnumVariantDefinition('Mint', 1),
