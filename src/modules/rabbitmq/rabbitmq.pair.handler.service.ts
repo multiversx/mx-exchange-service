@@ -6,12 +6,14 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { PairSetterService } from '../pair/services/pair.setter.service';
-import { PAIR_EVENTS } from './entities/generic.types';
-import { AddLiquidityEvent } from './entities/pair/addLiquidity.event';
-import { RemoveLiquidityEvent } from './entities/pair/removeLiquidity.event';
-import { SwapFixedInputEvent } from './entities/pair/swapFixedInput.event';
-import { SwapFixedOutputEvent } from './entities/pair/swapFixedOutput.event';
-import { SwapNoFeeEvent } from './entities/pair/swapNoFee.event';
+import {
+    AddLiquidityEvent,
+    PAIR_EVENTS,
+    RemoveLiquidityEvent,
+    SwapFixedInputEvent,
+    SwapFixedOutputEvent,
+    SwapNoFeeEvent,
+} from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
 export class RabbitMQPairHandlerService {

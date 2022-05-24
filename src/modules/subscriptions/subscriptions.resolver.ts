@@ -1,102 +1,140 @@
-import { Inject } from '@nestjs/common';
-import { Resolver, Subscription } from '@nestjs/graphql';
-import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { EnterFarmEvent } from '../rabbitmq/entities/farm/enterFarm.event';
-import { ExitFarmEvent } from '../rabbitmq/entities/farm/exitFarm.event';
-import { RewardsEvent } from '../rabbitmq/entities/farm/rewards.event';
-import { AddLiquidityEvent } from '../rabbitmq/entities/pair/addLiquidity.event';
-import { RemoveLiquidityEvent } from '../rabbitmq/entities/pair/removeLiquidity.event';
-import { SwapFixedInputEvent } from '../rabbitmq/entities/pair/swapFixedInput.event';
-import { SwapNoFeeEvent } from '../rabbitmq/entities/pair/swapNoFee.event';
-import { AddLiquidityProxyEvent } from '../rabbitmq/entities/proxy/addLiquidityProxy.event';
-import { ClaimRewardsProxyEvent } from '../rabbitmq/entities/proxy/claimRewardsProxy.event';
-import { CompoundRewardsProxyEvent } from '../rabbitmq/entities/proxy/compoundRewardsProxy.event';
-import { EnterFarmProxyEvent } from '../rabbitmq/entities/proxy/enterFarmProxy.event';
-import { ExitFarmProxyEvent } from '../rabbitmq/entities/proxy/exitFarmProxy.event';
-import { PairProxyEvent } from '../rabbitmq/entities/proxy/pairProxy.event';
-import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import {
     FARM_EVENTS,
     PAIR_EVENTS,
     PROXY_EVENTS,
-} from '../rabbitmq/entities/generic.types';
-import { SwapFixedOutputEvent } from '../rabbitmq/entities/pair/swapFixedOutput.event';
+} from '@elrondnetwork/erdjs-dex';
+import { Inject } from '@nestjs/common';
+import { Resolver, Subscription } from '@nestjs/graphql';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { PUB_SUB } from 'src/services/redis.pubSub.module';
+import { EnterFarmEventModel } from './models/farm/enterFarm.event.model';
+import { ExitFarmEventModel } from './models/farm/exitFarm.event.model';
+import { RewardsEventModel } from './models/farm/rewards.event.model';
+import { AddLiquidityEventModel } from './models/pair/addLiquidity.event.model';
+import { RemoveLiquidityEventModel } from './models/pair/removeLiquidity.event.model';
+import { SwapFixedInputEventModel } from './models/pair/swapFixedInput.event.model';
+import { SwapFixedOutputEventModel } from './models/pair/swapFixedOutput.event.model';
+import { SwapNoFeeEventModel } from './models/pair/swapNoFee.event.model';
+import { AddLiquidityProxyEventModel } from './models/proxy/addLiquidityProxy.event.model';
+import { ClaimRewardsProxyEventModel } from './models/proxy/claimRewardsProxy.event.model';
+import { EnterFarmProxyEventModel } from './models/proxy/enterFarmProxy.event.model';
+import { ExitFarmProxyEventModel } from './models/proxy/exitFarmProxy.event.model';
+import { PairProxyEventModel } from './models/proxy/pairProxy.event.model';
+import { RewardsProxyEventModel } from './models/proxy/rewardsProxy.event.model';
 
 @Resolver()
 export class SubscriptionsResolver {
     constructor(@Inject(PUB_SUB) private pubSub: RedisPubSub) {}
 
-    @Subscription(() => SwapFixedInputEvent)
+    @Subscription(() => SwapFixedInputEventModel, {
+        resolve: event =>
+            new SwapFixedInputEventModel(event.swapFixedInputEvent),
+    })
     swapFixedInputEvent() {
         return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_FIXED_INPUT);
     }
 
-    @Subscription(() => SwapFixedOutputEvent)
+    @Subscription(() => SwapFixedOutputEventModel, {
+        resolve: event =>
+            new SwapFixedOutputEventModel(event.swapFixedOutputEvent),
+    })
     swapFixedOutputEvent() {
         return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_FIXED_OUTPUT);
     }
 
-    @Subscription(() => AddLiquidityEvent)
+    @Subscription(() => AddLiquidityEventModel, {
+        resolve: event => new AddLiquidityEventModel(event.addLiquidityEvent),
+    })
     addLiquidityEvent() {
         return this.pubSub.asyncIterator(PAIR_EVENTS.ADD_LIQUIDITY);
     }
 
-    @Subscription(() => RemoveLiquidityEvent)
+    @Subscription(() => RemoveLiquidityEventModel, {
+        resolve: event =>
+            new RemoveLiquidityEventModel(event.removeLiquidityEvent),
+    })
     removeLiquidityEvent() {
         return this.pubSub.asyncIterator(PAIR_EVENTS.REMOVE_LIQUIDITY);
     }
 
-    @Subscription(() => SwapNoFeeEvent)
+    @Subscription(() => SwapNoFeeEventModel, {
+        resolve: event => new SwapNoFeeEventModel(event.swapNoFeeEvent),
+    })
     swapNoFeeEvent() {
         return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_NO_FEE);
     }
 
-    @Subscription(() => EnterFarmEvent)
+    @Subscription(() => EnterFarmEventModel, {
+        resolve: event => new EnterFarmEventModel(event.enterFarmEvent),
+    })
     enterFarmEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.ENTER_FARM);
     }
 
-    @Subscription(() => ExitFarmEvent)
+    @Subscription(() => ExitFarmEventModel, {
+        resolve: event => new ExitFarmEventModel(event.exitFarmEvent),
+    })
     exitFarmEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.EXIT_FARM);
     }
 
-    @Subscription(() => RewardsEvent)
+    @Subscription(() => RewardsEventModel, {
+        resolve: event => new RewardsEventModel(event.claimRewardsEvent),
+    })
     claimRewardsEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.CLAIM_REWARDS);
     }
 
-    @Subscription(() => RewardsEvent)
+    @Subscription(() => RewardsEventModel, {
+        resolve: event => new RewardsEventModel(event.compoundRewardsEvent),
+    })
     compoundRewardsEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.COMPOUND_REWARDS);
     }
 
-    @Subscription(() => AddLiquidityProxyEvent)
+    @Subscription(() => AddLiquidityProxyEventModel, {
+        resolve: event =>
+            new AddLiquidityProxyEventModel(event.addLiquidityProxyEvent),
+    })
     addLiquidityProxyEvent() {
         return this.pubSub.asyncIterator(PROXY_EVENTS.ADD_LIQUIDITY_PROXY);
     }
 
-    @Subscription(() => PairProxyEvent)
+    @Subscription(() => PairProxyEventModel, {
+        resolve: event =>
+            new PairProxyEventModel(event.removeLiquidityProxyEvent),
+    })
     removeLiquidityProxyEvent() {
         return this.pubSub.asyncIterator(PROXY_EVENTS.REMOVE_LIQUIDITY_PROXY);
     }
 
-    @Subscription(() => EnterFarmProxyEvent)
+    @Subscription(() => EnterFarmProxyEventModel, {
+        resolve: event =>
+            new EnterFarmProxyEventModel(event.enterFarmProxyEvent),
+    })
     enterFarmProxyEvent() {
         return this.pubSub.asyncIterator(PROXY_EVENTS.ENTER_FARM_PROXY);
     }
 
-    @Subscription(() => ExitFarmProxyEvent)
+    @Subscription(() => ExitFarmProxyEventModel, {
+        resolve: event => new ExitFarmProxyEventModel(event.exitFarmProxyEvent),
+    })
     exitFarmProxyEvent() {
         return this.pubSub.asyncIterator(PROXY_EVENTS.EXIT_FARM_PROXY);
     }
 
-    @Subscription(() => ClaimRewardsProxyEvent)
+    @Subscription(() => ClaimRewardsProxyEventModel, {
+        resolve: event =>
+            new ClaimRewardsProxyEventModel(event.claimRewardsProxyEvent),
+    })
     claimRewardsProxyEvent() {
         return this.pubSub.asyncIterator(PROXY_EVENTS.CLAIM_REWARDS_PROXY);
     }
 
-    @Subscription(() => CompoundRewardsProxyEvent)
+    @Subscription(() => RewardsProxyEventModel, {
+        resolve: event =>
+            new RewardsProxyEventModel(event.compoundRewardsProxyEvent),
+    })
     compoundRewardsProxyEvent() {
         return this.pubSub.asyncIterator(PROXY_EVENTS.COMPOUND_REWARDS_PROXY);
     }

@@ -1,13 +1,7 @@
-import {
-    BigUIntType,
-    EnumType,
-    EnumVariantDefinition,
-    FieldDefinition,
-} from '@elrondnetwork/erdjs/out';
+import { PriceDiscoveryPhase } from '@elrondnetwork/erdjs-dex';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { PhaseType } from 'src/modules/rabbitmq/entities/price-discovery/price.discovery.types';
 
 @ObjectType()
 export class PhaseModel {
@@ -16,30 +10,8 @@ export class PhaseModel {
     @Field()
     penaltyPercent: number;
 
-    constructor(init?: Partial<PhaseModel>) {
+    constructor(init?: Partial<PriceDiscoveryPhase>) {
         Object.assign(this, init);
-    }
-
-    toJSON(): PhaseType {
-        return {
-            name: this.name,
-            penaltyPercent: this.penaltyPercent,
-        };
-    }
-
-    static getEnum(): EnumType {
-        return new EnumType('Phase', [
-            new EnumVariantDefinition('Idle', 0),
-            new EnumVariantDefinition('NoPenalty', 1),
-            new EnumVariantDefinition('LinearIncreasingPenalty', 2, [
-                new FieldDefinition('penaltyPercentage', '', new BigUIntType()),
-            ]),
-            new EnumVariantDefinition('OnlyWithdrawFixedPenalty', 3, [
-                new FieldDefinition('penaltyPercentage', '', new BigUIntType()),
-            ]),
-            new EnumVariantDefinition('Unbond', 4),
-            new EnumVariantDefinition('Redeem', 5),
-        ]);
     }
 }
 
