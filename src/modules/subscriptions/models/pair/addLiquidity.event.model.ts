@@ -20,7 +20,6 @@ export class AddLiquidityEventModel extends GenericEventModel {
     private secondTokenReserves: BigNumber;
 
     constructor(init?: Partial<AddLiquidityEvent>) {
-        console.log(init);
         super(init);
         Object.assign(this, init);
     }
