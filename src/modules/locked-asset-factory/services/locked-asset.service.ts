@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-    LockedAssetAttributes,
+    LockedAssetAttributesModel,
     LockedAssetModel,
     UnlockMileStoneModel,
 } from '../models/locked-asset.model';
@@ -37,7 +37,7 @@ export class LockedAssetService {
 
     async decodeLockedAssetAttributes(
         args: DecodeAttributesArgs,
-    ): Promise<LockedAssetAttributes[]> {
+    ): Promise<LockedAssetAttributesModel[]> {
         const decodedBatchAttributes = [];
         const extendedAttributesActivationNonce = await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
         for (const lockedAsset of args.batchAttributes) {
@@ -66,7 +66,7 @@ export class LockedAssetService {
             );
 
             decodedBatchAttributes.push(
-                new LockedAssetAttributes({
+                new LockedAssetAttributesModel({
                     attributes: lockedAsset.attributes,
                     identifier: lockedAsset.identifier,
                     isMerged: decodedAttributes.isMerged,

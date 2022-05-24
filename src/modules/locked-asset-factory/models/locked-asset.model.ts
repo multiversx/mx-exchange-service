@@ -15,7 +15,7 @@ export class UnlockMileStoneModel {
 }
 
 @ObjectType()
-export class LockedAssetAttributes {
+export class LockedAssetAttributesModel {
     @Field()
     attributes: string;
     @Field()
@@ -25,7 +25,7 @@ export class LockedAssetAttributes {
     @Field()
     isMerged: boolean;
 
-    constructor(init?: Partial<LockedAssetAttributes>) {
+    constructor(init?: Partial<LockedAssetAttributesModel>) {
         Object.assign(this, init);
     }
 }
