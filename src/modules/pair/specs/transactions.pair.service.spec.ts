@@ -103,7 +103,8 @@ describe('TransactionPairService', () => {
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress: 'pair_address_1',
+                pairAddress:
+                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 tokens: [
                     {
                         tokenID: 'EGLD',
@@ -134,7 +135,8 @@ describe('TransactionPairService', () => {
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress: 'pair_address_1',
+                pairAddress:
+                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 tokens: [
                     {
                         tokenID: 'TOK2-2222',

@@ -71,7 +71,7 @@ describe('PairService', () => {
 
     it('should get lpToken Price in USD from pair', async () => {
         const lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
-            'pair_address_1',
+            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
         expect(lpTokenPriceUSD).toEqual('400');
     });
