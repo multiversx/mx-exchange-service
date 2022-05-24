@@ -6,7 +6,6 @@ import {
     GasLimit,
     Interaction,
 } from '@elrondnetwork/erdjs/out';
-import { BigUIntValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -16,10 +15,34 @@ import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { MultiSwapTokensArgs } from '../models/multi-swap-tokens.args';
+import {
+    EsdtLocalRoleEnumType,
+    SetLocalRoleOwnerArgs,
+} from '../models/router.args';
 import { RouterGetterService } from './router.getter.service';
 
 @Injectable()
 export class TransactionRouterService {
+    setPairCreationEnabled(
+        enabled: boolean,
+    ): TransactionModel | PromiseLike<TransactionModel> {
+        throw new Error('Method not implemented.');
+    }
+    clearPairTemporaryOwnerStorage():
+        | TransactionModel
+        | PromiseLike<TransactionModel> {
+        throw new Error('Method not implemented.');
+    }
+    setTemporaryOwnerPeriod(
+        periodBlocks: number,
+    ): TransactionModel | PromiseLike<TransactionModel> {
+        throw new Error('Method not implemented.');
+    }
+    setPairTemplateAddress(
+        address: string,
+    ): TransactionModel | PromiseLike<TransactionModel> {
+        throw new Error('Method not implemented.');
+    }
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly routerGetterService: RouterGetterService,

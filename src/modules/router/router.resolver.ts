@@ -20,6 +20,10 @@ import { AutoRouterService } from './services/auto-router/auto-router.service';
 import { User } from 'src/helpers/userDecorator';
 import { AutoRouterModel } from './models/auto-router.model';
 import { AutoRouterArgs } from './models/auto-router.args';
+import { GqlAdminGuard } from '../auth/gql.admin.guard';
+import { PairTokens } from '../pair/dto/pair-tokens.model';
+import { PairMetadata } from './models/pair.metadata.model';
+import { PairFilterArgs } from './models/router.args';
 @Resolver(() => FactoryModel)
 export class RouterResolver {
     constructor(
@@ -285,11 +289,11 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setState(
         @Args('address') address: string,
-        @Args('enable') enable: bool,
+        @Args('enable') enable: boolean,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -300,7 +304,7 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setFee(
         @Args('pairAddress') pairAddress: string,
@@ -322,7 +326,7 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setPairCreationEnabled(
         @Args('enabled') enabled: boolean,
@@ -345,7 +349,7 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async clearPairTemporaryOwnerStorage(
         @User() user: any,
@@ -358,7 +362,7 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setTemporaryOwnerPeriod(
         @Args('periodBlocks') periodBlocks: number,
@@ -374,7 +378,7 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setPairTemplateAddress(
         @Args('address') address: string,
