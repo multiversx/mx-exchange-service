@@ -100,7 +100,24 @@
             "swapNoFeeAndForward": 25500000,
             "setLpTokenIdentifier": 200000000,
             "whitelist": 200000000,
-            "removeWhitelist": 200000000
+            "removeWhitelist": 200000000,
+            "addTrustedSwapPair": 200000000,
+            "removeTrustedSwapPair": 200000000,
+            "set_transfer_exec_gas_limit": 200000000,
+            "set_extern_swap_gas_limit": 200000000,
+            "pause": 200000000,
+            "resume": 200000000,
+            "setStateActiveNoSwaps": 200000000,
+            "setFeePercents": 200000000,
+            "updateAndGetTokensForGivenPositionWithSafePrice": 200000000,
+            "updateAndGetSafePrice": 200000000,
+            "setMaxObservationsPerRecord": 200000000,
+            "setBPSwapConfig": 200000000,
+            "setBPRemoveConfig": 200000000,
+            "setBPAddConfig": 200000000,
+            "setLockingDeadlineEpoch": 200000000,
+            "setLockingScAddress": 200000000,
+            "setUnlockEpoch": 200000000
         },
         "farms": {
             "v1.2": {

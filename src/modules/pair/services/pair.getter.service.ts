@@ -11,7 +11,13 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
-import { LiquidityPosition, LockedTokensInfo } from '../models/pair.model';
+import {
+    BPConfig,
+    EsdtTokenPayment,
+    FeeDestination,
+    LiquidityPosition,
+    LockedTokensInfo,
+} from '../models/pair.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
 import { PairDBService } from './pair.db.service';
@@ -357,11 +363,11 @@ export class PairGetterService {
         );
     }
 
-    async getInitialLiquidtyAdder(pairAddress: string): Promise<string> {
+    async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
         return await this.getData(
             pairAddress,
             'initialLiquidtyAdder',
-            () => this.abiService.getInitialLiquidtyAdder(pairAddress),
+            () => this.abiService.getInitialLiquidityAdder(pairAddress),
             oneHour(),
         );
     }
@@ -493,19 +499,149 @@ export class PairGetterService {
         pairAddress: string,
         liquidityAmount: string,
     ): Promise<LiquidityPosition> {
-        return this.abiService.getTokensForGivenPosition(
+        return await this.getData(
             pairAddress,
-            liquidityAmount,
+            'tokensForGivenPosition',
+            () =>
+                this.abiService.getTokensForGivenPosition(
+                    pairAddress,
+                    liquidityAmount,
+                ),
+            oneMinute(),
         );
     }
 
     async getReservesAndTotalSupply(
         pairAddress: string,
     ): Promise<PairInfoModel> {
-        return this.abiService.getReservesAndTotalSupply(pairAddress);
+        return await this.getData(
+            pairAddress,
+            'reservesAndTotalSupply',
+            () => this.abiService.getReservesAndTotalSupply(pairAddress),
+            oneMinute(),
+        );
     }
 
     async getFeeState(pairAddress: string): Promise<Boolean> {
-        return this.abiService.getFeeState(pairAddress);
+        return await this.getData(
+            pairAddress,
+            'feeState',
+            () => this.abiService.getFeeState(pairAddress),
+            oneMinute(),
+        );
+    }
+
+    async getFeeDestinations(pairAddress: string): Promise<FeeDestination[]> {
+        return await this.getData(
+            pairAddress,
+            'feeDestinations',
+            () => this.abiService.getFeeDestinations(pairAddress),
+            oneMinute(),
+        );
+    }
+
+    async getWhitelistedManagedAddresses(
+        pairAddress: string,
+    ): Promise<string[]> {
+        return await this.getData(
+            pairAddress,
+            'whitelistedManagedAddresses',
+            () => this.abiService.getWhitelistedManagedAddresses(pairAddress),
+            oneMinute(),
+        );
+    }
+
+    async getRouterManagedAddress(address: string): Promise<string> {
+        return await this.getData(
+            address,
+            'routerManagedAddress',
+            () => this.abiService.getRouterManagedAddress(address),
+            oneMinute(),
+        );
+    }
+
+    async getRouterOwnerManagedAddress(address: string): Promise<string> {
+        return await this.getData(
+            address,
+            'routerOwnerManagedAddress',
+            () => this.abiService.getRouterOwnerManagedAddress(address),
+            oneMinute(),
+        );
+    }
+
+    async getExternSwapGasLimit(pairAddress: string): Promise<string> {
+        return await this.getData(
+            pairAddress,
+            'externSwapGasLimit',
+            () => this.abiService.getExternSwapGasLimit(pairAddress),
+            oneMinute(),
+        );
+    }
+
+    async getReserve(pairAddress: string, tokenID: string): Promise<string> {
+        return await this.abiService.getReserve(pairAddress, tokenID);
+    }
+
+    async getTransferExecGasLimit(pairAddress: string): Promise<string> {
+        return await this.getData(
+            pairAddress,
+            'transferExecGasLimit',
+            () => this.abiService.getTransferExecGasLimit(pairAddress),
+            oneMinute(),
+        );
+    }
+
+    async updateAndGetSafePrice(
+        pairAddress: string,
+        esdtTokenPayment: EsdtTokenPayment,
+    ): Promise<EsdtTokenPayment> {
+        return await this.abiService.updateAndGetSafePrice(
+            pairAddress,
+            esdtTokenPayment,
+        );
+    }
+
+    async getBPSwapConfig(pairAddress: string): Promise<BPConfig> {
+        /*return await this.getData(
+            pairAddress,
+            'BPSwapConfig',
+            () => this.abiService.getBPSwapConfig(pairAddress),
+            oneMinute(),
+        );*/
+        return await this.abiService.getBPSwapConfig(pairAddress);
+    }
+
+    async getBPRemoveConfig(pairAddress: string): Promise<BPConfig> {
+        /*return await this.getData(
+            pairAddress,
+            'BPSwapConfig',
+            () => this.abiService.getBPSwapConfig(pairAddress),
+            oneMinute(),
+        );*/
+        return await this.abiService.getBPRemoveConfig(pairAddress);
+    }
+
+    async getBPAddConfig(pairAddress: string): Promise<BPConfig> {
+        /*return await this.getData(
+            pairAddress,
+            'BPSwapConfig',
+            () => this.abiService.getBPSwapConfig(pairAddress),
+            oneMinute(),
+        );*/
+        return await this.abiService.getBPAddConfig(pairAddress);
+    }
+
+    async getNumSwapsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<string> {
+        return await this.abiService.getNumSwapsByAddress(pairAddress, address);
+    }
+
+    async getNumAddsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<string> {
+        return await this.abiService.getNumAddsByAddress(pairAddress, address);
     }
 }

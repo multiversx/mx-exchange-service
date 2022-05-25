@@ -1,7 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { BigUIntValue, QueryResponseBundle } from '@elrondnetwork/erdjs';
+import {
+    Address,
+    BigUIntValue,
+    QueryResponseBundle,
+} from '@elrondnetwork/erdjs';
 import { PairInfoModel } from '../models/pair-info.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -9,7 +13,12 @@ import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import BigNumber from 'bignumber.js';
-import { LiquidityPosition } from '../models/pair.model';
+import {
+    BPConfig,
+    EsdtTokenPayment,
+    FeeDestination,
+    LiquidityPosition,
+} from '../models/pair.model';
 
 @Injectable()
 export class PairAbiService {
@@ -149,7 +158,7 @@ export class PairAbiService {
             .map(swapPair => swapPair.field1.bech32());
     }
 
-    async getInitialLiquidtyAdder(pairAddress: string): Promise<string> {
+    async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
@@ -333,5 +342,204 @@ export class PairAbiService {
         const interaction: Interaction = contract.methods.getFeeState([]);
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf();
+    }
+
+    async getFeeDestinations(pairAddress: string): Promise<FeeDestination[]> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getFeeDestinations(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().map(v => {
+            return new FeeDestination({
+                address: new Address(
+                    response.firstValue.valueOf()[0].field0,
+                ).bech32(),
+                tokenID: response.firstValue.valueOf()[0].field1.toString(),
+            });
+        });
+    }
+
+    async getWhitelistedManagedAddresses(
+        pairAddress: string,
+    ): Promise<string[]> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getWhitelistedManagedAddresses(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().map(v => {
+            return new Address(v).bech32();
+        });
+    }
+
+    async getRouterManagedAddress(address: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(address);
+        const interaction: Interaction = contract.methods.getRouterManagedAddress(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return new Address(response.firstValue.valueOf().toString()).bech32();
+    }
+
+    async getRouterOwnerManagedAddress(address: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(address);
+        const interaction: Interaction = contract.methods.getRouterOwnerManagedAddress(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return new Address(response.firstValue.valueOf().toString()).bech32();
+    }
+
+    async getExternSwapGasLimit(pairAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getExternSwapGasLimit(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
+    }
+
+    async getReserve(pairAddress: string, tokenID: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getReserve([
+            BytesValue.fromUTF8(tokenID),
+        ]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf();
+    }
+
+    async getTransferExecGasLimit(pairAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getTransferExecGasLimit(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
+    }
+
+    // in progress
+    async updateAndGetSafePrice(
+        pairAddress: string,
+        esdtTokenPayment: EsdtTokenPayment,
+    ): Promise<EsdtTokenPayment> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.updateAndGetSafePrice(
+            [
+                ...[
+                    new BigUIntValue(new BigNumber(esdtTokenPayment.tokenType)),
+                    BytesValue.fromUTF8(esdtTokenPayment.tokenID),
+                    new BigUIntValue(new BigNumber(esdtTokenPayment.nonce)),
+                    new BigUIntValue(new BigNumber(esdtTokenPayment.amount)),
+                ],
+            ],
+        );
+        const response = await this.getGenericData(contract, interaction);
+
+        console.log('response', response);
+        //return response.firstValue.valueOf().toString();
+
+        return new EsdtTokenPayment({
+            tokenID: 'eyau',
+            nonce: 0,
+            amount: '100',
+        });
+    }
+
+    // Error: user error: storage decode error: input too short
+    async getBPSwapConfig(pairAddress: string): Promise<BPConfig> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getBPSwapConfig([]);
+        const response = await this.getGenericData(contract, interaction);
+        console.log('response', response);
+        return new BPConfig({
+            protectStopBlock: response.firstValue
+                .valueOf()[0]
+                .field0.toString(),
+            volumePercent: response.firstValue.valueOf()[0].field1.toString(),
+            maxNumActionsPerAddress: response.firstValue
+                .valueOf()[0]
+                .field2.toString(),
+        });
+    }
+
+    // Error: user error: storage decode error: input too short
+    async getBPRemoveConfig(pairAddress: string): Promise<BPConfig> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getBPRemoveConfig([]);
+        const response = await this.getGenericData(contract, interaction);
+        console.log('response', response);
+        return new BPConfig({
+            protectStopBlock: response.firstValue
+                .valueOf()[0]
+                .field0.toString(),
+            volumePercent: response.firstValue.valueOf()[0].field1.toString(),
+            maxNumActionsPerAddress: response.firstValue
+                .valueOf()[0]
+                .field2.toString(),
+        });
+    }
+
+    // Error: user error: storage decode error: input too short
+    async getBPAddConfig(pairAddress: string): Promise<BPConfig> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getBPAddConfig([]);
+        const response = await this.getGenericData(contract, interaction);
+        console.log('response', response);
+        return new BPConfig({
+            protectStopBlock: response.firstValue
+                .valueOf()[0]
+                .field0.toString(),
+            volumePercent: response.firstValue.valueOf()[0].field1.toString(),
+            maxNumActionsPerAddress: response.firstValue
+                .valueOf()[0]
+                .field2.toString(),
+        });
+    }
+
+    async getNumSwapsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getNumSwapsByAddress([
+            BytesValue.fromHex(new Address(address).hex()),
+        ]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
+    }
+
+    async getNumAddsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getNumSwapsByAddress([
+            BytesValue.fromHex(new Address(address).hex()),
+        ]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
     }
 }

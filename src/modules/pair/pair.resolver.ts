@@ -1,7 +1,13 @@
 import { PairService } from './services/pair.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { LiquidityPosition, PairModel } from './models/pair.model';
+import {
+    BPConfig,
+    EsdtTokenPayment,
+    FeeDestination,
+    LiquidityPosition,
+    PairModel,
+} from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -50,7 +56,7 @@ export class PairResolver {
     @ResolveField()
     async liquidityPoolToken(@Parent() parent: PairModel) {
         try {
-            return this.pairGetterService.getLpToken(parent.address);
+            return await this.pairGetterService.getLpToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -273,6 +279,82 @@ export class PairResolver {
         }
     }
 
+    @ResolveField()
+    async whitelistedManagedAddresses(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getWhitelistedManagedAddresses(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async externSwapGasLimit(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getExternSwapGasLimit(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async initialLiquidityAdder(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getInitialLiquidityAdder(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async transferExecGasLimit(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getTransferExecGasLimit(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    // Error: user error: storage decode error: input too short
+    @ResolveField()
+    async swapBPConfig(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getBPSwapConfig(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    // Error: user error: storage decode error: input too short
+    @ResolveField()
+    async removeBPConfig(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getBPRemoveConfig(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    // Error: user error: storage decode error: input too short
+    @ResolveField()
+    async addBPConfig(@Parent() parent: PairModel) {
+        try {
+            return await this.pairGetterService.getBPAddConfig(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @Query(() => String)
     async getAmountOut(
         @Args('pairAddress') pairAddress: string,
@@ -343,7 +425,7 @@ export class PairResolver {
     async getTokensForGivenPosition(
         @Args('pairAddress') pairAddress: string,
         @Args('liquidityAmount') liquidityAmount: string,
-    ): Promise<LiquidityPosition> {
+    ) {
         try {
             return await this.pairGetterService.getTokensForGivenPosition(
                 pairAddress,
@@ -354,10 +436,16 @@ export class PairResolver {
         }
     }
 
-    @Query(() => PairInfoModel)
-    async getReservesAndTotalSupply(
+    @Query(() => String)
+    async getReserve(
         @Args('pairAddress') pairAddress: string,
-    ): Promise<PairInfoModel> {
+        @Args('tokenID') tokenID: string,
+    ) {
+        return await this.pairGetterService.getReserve(pairAddress, tokenID);
+    }
+
+    @Query(() => PairInfoModel)
+    async getReservesAndTotalSupply(@Args('pairAddress') pairAddress: string) {
         try {
             return await this.pairGetterService.getReservesAndTotalSupply(
                 pairAddress,
@@ -368,9 +456,7 @@ export class PairResolver {
     }
 
     @Query(() => Boolean)
-    async getFeeState(
-        @Args('pairAddress') pairAddress: string,
-    ): Promise<Boolean> {
+    async getFeeState(@Args('pairAddress') pairAddress: string) {
         try {
             return await this.pairGetterService.getFeeState(pairAddress);
         } catch (error) {
@@ -378,12 +464,35 @@ export class PairResolver {
         }
     }
 
+    @Query(() => String)
+    async getRouterManagedAddress(@Args('address') address: string) {
+        return await this.pairGetterService.getRouterManagedAddress(address);
+    }
+
+    @Query(() => String)
+    async getRouterOwnerManagedAddress(@Args('address') address: string) {
+        return await this.pairGetterService.getRouterOwnerManagedAddress(
+            address,
+        );
+    }
+
+    @Query(() => TransactionModel)
+    async updateAndGetTokensForGivenPositionWithSafePrice(
+        @Args('pairAddress') pairAddress: string,
+        @Args('liquidity') liquidity: string,
+    ) {
+        return await this.transactionService.updateAndGetTokensForGivenPositionWithSafePrice(
+            pairAddress,
+            liquidity,
+        );
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
     async addInitialLiquidityBatch(
         @Args() args: AddLiquidityArgs,
         @User() user: any,
-    ): Promise<TransactionModel[]> {
+    ) {
         try {
             return await this.transactionService.addInitialLiquidityBatch(
                 user.publicKey,
@@ -396,10 +505,7 @@ export class PairResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
-    async addLiquidityBatch(
-        @Args() args: AddLiquidityArgs,
-        @User() user: any,
-    ): Promise<TransactionModel[]> {
+    async addLiquidityBatch(@Args() args: AddLiquidityArgs, @User() user: any) {
         try {
             return await this.transactionService.addLiquidityBatch(
                 user.publicKey,
@@ -412,10 +518,7 @@ export class PairResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async addLiquidity(
-        @Args() args: AddLiquidityArgs,
-        @User() user: any,
-    ): Promise<TransactionModel> {
+    async addLiquidity(@Args() args: AddLiquidityArgs, @User() user: any) {
         try {
             return await this.transactionService.addLiquidity(
                 user.publicKey,
@@ -431,7 +534,7 @@ export class PairResolver {
     async removeLiquidity(
         @Args() args: RemoveLiquidityArgs,
         @User() user: any,
-    ): Promise<TransactionModel[]> {
+    ) {
         return await this.transactionService.removeLiquidity(
             user.publicKey,
             args,
@@ -442,7 +545,7 @@ export class PairResolver {
     @Query(() => TransactionModel)
     async removeLiquidityAndBuyBackAndBurnToken(
         @Args() args: RemoveLiquidityAndBuyBackAndBurnArgs,
-    ): Promise<TransactionModel> {
+    ) {
         return await this.transactionService.removeLiquidityAndBuyBackAndBurnToken(
             args,
         );
@@ -453,8 +556,8 @@ export class PairResolver {
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
         @User() user: any,
-    ): Promise<TransactionModel[]> {
-        return this.transactionService.swapTokensFixedInput(
+    ) {
+        return await this.transactionService.swapTokensFixedInput(
             user.publicKey,
             args,
         );
@@ -465,8 +568,8 @@ export class PairResolver {
     async swapTokensFixedOutput(
         @Args() args: SwapTokensFixedOutputArgs,
         @User() user: any,
-    ): Promise<TransactionModel[]> {
-        return this.transactionService.swapTokensFixedOutput(
+    ) {
+        return await this.transactionService.swapTokensFixedOutput(
             user.publicKey,
             args,
         );
@@ -474,31 +577,243 @@ export class PairResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async swapNoFeeAndForward(
-        @Args() args: SwapNoFeeAndForwardArgs,
-    ): Promise<TransactionModel> {
-        return this.transactionService.swapNoFeeAndForward(args);
+    async swapNoFeeAndForward(@Args() args: SwapNoFeeAndForwardArgs) {
+        return await this.transactionService.swapNoFeeAndForward(args);
     }
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async setLpTokenIdentifier(
-        @Args() args: SetLpTokenIdentifierArgs,
-    ): Promise<TransactionModel> {
-        return this.transactionService.setLpTokenIdentifier(args);
+    async setLpTokenIdentifier(@Args() args: SetLpTokenIdentifierArgs) {
+        return await this.transactionService.setLpTokenIdentifier(args);
     }
 
     @UseGuards(JwtAdminGuard)
     @Query(() => TransactionModel)
-    async whitelist(@Args() args: WhitelistArgs): Promise<TransactionModel> {
-        return this.transactionService.whitelist(args);
+    async whitelist(@Args() args: WhitelistArgs) {
+        return await this.transactionService.whitelist(args);
     }
 
     @UseGuards(JwtAdminGuard)
     @Query(() => TransactionModel)
-    async removeWhitelist(
-        @Args() args: WhitelistArgs,
-    ): Promise<TransactionModel> {
-        return this.transactionService.removeWhitelist(args);
+    async removeWhitelist(@Args() args: WhitelistArgs) {
+        return await this.transactionService.removeWhitelist(args);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async addTrustedSwapPair(
+        @Args('pairAddress') pairAddress: string,
+        @Args('swapPairAddress') swapPairAddress: string,
+        @Args('firstTokenID') firstTokenID: string,
+        @Args('secondTokenID') secondTokenID: string,
+    ) {
+        return await this.transactionService.addTrustedSwapPair(
+            pairAddress,
+            swapPairAddress,
+            firstTokenID,
+            secondTokenID,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async removeTrustedSwapPair(
+        @Args('pairAddress') pairAddress: string,
+        @Args('firstTokenID') firstTokenID: string,
+        @Args('secondTokenID') secondTokenID: string,
+    ) {
+        return await this.transactionService.removeTrustedSwapPair(
+            pairAddress,
+            firstTokenID,
+            secondTokenID,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => [FeeDestination])
+    async getFeeDestinations(@Args('pairAddress') pairAddress: string) {
+        return await this.pairGetterService.getFeeDestinations(pairAddress);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setTransferExecGasLimit(
+        @Args('pairAddress') pairAddress: string,
+        @Args('gasLimit') gasLimit: string,
+    ) {
+        return await this.transactionService.setTransferExecGasLimit(
+            pairAddress,
+            gasLimit,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setExternExecGasLimit(
+        @Args('pairAddress') pairAddress: string,
+        @Args('gasLimit') gasLimit: string,
+    ) {
+        return await this.transactionService.setExternExecGasLimit(
+            pairAddress,
+            gasLimit,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async pause(@Args('pairAddress') pairAddress: string) {
+        return await this.transactionService.pause(pairAddress);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async resume(@Args('pairAddress') pairAddress: string) {
+        return await this.transactionService.resume(pairAddress);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setStateActiveNoSwaps(@Args('pairAddress') pairAddress: string) {
+        return await this.transactionService.setStateActiveNoSwaps(pairAddress);
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setFeePercents(
+        @Args('pairAddress') pairAddress: string,
+        @Args('totalFeePercent') totalFeePercent: string,
+        @Args('specialFeePercent') specialFeePercent: string,
+    ) {
+        return await this.transactionService.setFeePercents(
+            pairAddress,
+            totalFeePercent,
+            specialFeePercent,
+        );
+    }
+
+    // in progress
+    @Query(() => EsdtTokenPayment)
+    async updateAndGetSafePrice(
+        @Args('pairAddress') pairAddress: string,
+        @Args('esdtTokenPayment') esdtTokenPayment: EsdtTokenPayment,
+    ) {
+        return await this.pairGetterService.updateAndGetSafePrice(
+            pairAddress,
+            esdtTokenPayment,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setMaxObservationsPerRecord(
+        @Args('pairAddress') pairAddress: string,
+        @Args('maxObservationsPerRecord') maxObservationsPerRecord: string,
+    ) {
+        return await this.transactionService.setMaxObservationsPerRecord(
+            pairAddress,
+            maxObservationsPerRecord,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setBPSwapConfig(
+        @Args('pairAddress') pairAddress: string,
+        @Args('config') config: BPConfig,
+    ) {
+        return await this.transactionService.setBPSwapConfig(
+            pairAddress,
+            config,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setBPRemoveConfig(
+        @Args('pairAddress') pairAddress: string,
+        @Args('config') config: BPConfig,
+    ) {
+        return await this.transactionService.setBPRemoveConfig(
+            pairAddress,
+            config,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setBPAddConfig(
+        @Args('pairAddress') pairAddress: string,
+        @Args('config') config: BPConfig,
+    ) {
+        return await this.transactionService.setBPAddConfig(
+            pairAddress,
+            config,
+        );
+    }
+
+    //@UseGuards(JwtAdminGuard)
+    /*@Query(() => BPConfig)
+    async getBPSwapConfig(@Args('pairAddress') pairAddress: string) {
+        return await this.pairGetterService.getBPSwapConfig(pairAddress);
+    }*/
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => String)
+    async getNumSwapsByAddress(
+        @Args('pairAddress') pairAddress: string,
+        @Args('address') address: string,
+    ) {
+        return await this.pairGetterService.getNumSwapsByAddress(
+            pairAddress,
+            address,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => String)
+    async getNumAddsByAddress(
+        @Args('pairAddress') pairAddress: string,
+        @Args('address') address: string,
+    ) {
+        return await this.pairGetterService.getNumAddsByAddress(
+            pairAddress,
+            address,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setLockingDeadlineEpoch(
+        @Args('pairAddress') pairAddress: string,
+        @Args('newDeadline') newDeadline: string,
+    ) {
+        return await this.transactionService.setLockingDeadlineEpoch(
+            pairAddress,
+            newDeadline,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setLockingScAddress(
+        @Args('pairAddress') pairAddress: string,
+        @Args('newAddress') newAddress: string,
+    ) {
+        return await this.transactionService.setLockingScAddress(
+            pairAddress,
+            newAddress,
+        );
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Query(() => TransactionModel)
+    async setUnlockEpoch(
+        @Args('pairAddress') pairAddress: string,
+        @Args('newEpoch') newEpoch: string,
+    ) {
+        return await this.transactionService.setUnlockEpoch(
+            pairAddress,
+            newEpoch,
+        );
     }
 }
