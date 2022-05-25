@@ -1,9 +1,9 @@
 import { ApiProvider } from '@elrondnetwork/erdjs';
 import { elrondConfig } from '../../config';
 import { Inject, Injectable } from '@nestjs/common';
-import { EsdtToken } from '../../models/tokens/esdtToken.model';
-import { NftCollection } from '../../models/tokens/nftCollection.model';
-import { NftToken } from '../../models/tokens/nftToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -84,6 +84,14 @@ export class ElrondApiService {
         return await this.doGetGeneric(
             this.getAccountStats.name,
             `accounts/${address}`,
+            response => response,
+        );
+    }
+
+    async getToken(tokenID: string): Promise<EsdtToken> {
+        return this.doGetGeneric(
+            this.getNftCollection.name,
+            `tokens/${tokenID}`,
             response => response,
         );
     }

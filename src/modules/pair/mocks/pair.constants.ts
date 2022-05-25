@@ -1,8 +1,15 @@
-export const Tokens = (tokenID: string) => {
+import {
+    AssetsModel,
+    EsdtToken,
+    RolesModel,
+} from 'src/modules/tokens/models/esdtToken.model';
+
+export const Tokens = (tokenID: string): EsdtToken => {
     switch (tokenID) {
         case 'TOK1-1111':
             return {
                 identifier: 'TOK1-1111',
+                ticker: 'TOK1',
                 name: 'FirstToken',
                 owner: 'owner_address',
                 supply: '1000000000000000000',
@@ -16,11 +23,29 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         case 'TOK2-2222':
             return {
                 identifier: 'TOK2-2222',
                 name: 'SecondToken',
+                ticker: 'TOK2',
                 owner: 'owner_address',
                 supply: '2000000000000000000',
                 decimals: 18,
@@ -33,11 +58,29 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         case 'USDC-1111':
             return {
                 identifier: 'USDC-1111',
                 name: 'ThirdToken',
+                ticker: 'USDC',
                 owner: 'owner_address',
                 supply: '2000000000000000000',
                 decimals: 18,
@@ -50,12 +93,30 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         case 'LPT-1234':
             return {
                 identifier: 'LPT-1234',
                 name: 'LiquidityPoolToken1',
                 owner: 'router_address',
+                ticker: 'LPT',
                 supply: '1000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -67,12 +128,30 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         case 'LPT-abcd':
             return {
                 identifier: 'LPT-abcd',
                 name: 'LiquidityPoolToken2',
                 owner: 'router_address',
+                ticker: 'LPT',
                 supply: '1000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -84,6 +163,23 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         default:
             break;
@@ -92,9 +188,10 @@ export const Tokens = (tokenID: string) => {
 
 export const PairsData = (pairAddress: string) => {
     switch (pairAddress) {
-        case 'pair_address_1':
+        case 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u':
             return {
-                address: 'pair_address_1',
+                address:
+                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 firstToken: Tokens('TOK1-1111'),
                 secondToken: Tokens('TOK2-2222'),
                 liquidityPoolToken: Tokens('LPT-1234'),
@@ -114,9 +211,10 @@ export const PairsData = (pairAddress: string) => {
                 totalFeePercent: 0.003,
                 state: 'Active',
             };
-        case 'pair_address_2':
+        case 'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx':
             return {
-                address: 'pair_address_1',
+                address:
+                    'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
                 firstToken: Tokens('TOK1-1111'),
                 secondToken: Tokens('USDC-1111'),
                 liquidityPoolToken: Tokens('LPT-abcd'),

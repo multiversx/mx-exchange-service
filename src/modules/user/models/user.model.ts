@@ -1,16 +1,16 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { EsdtToken } from '../../../models/tokens/esdtToken.model';
-import { NftToken } from '../../../models/tokens/nftToken.model';
-import { FarmToken } from '../../../models/tokens/farmToken.model';
-import { LockedLpToken } from '../../../models/tokens/lockedLpToken.model';
-import { LockedFarmToken } from '../../../models/tokens/lockedFarmToken.model';
-import { LockedAssetToken } from '../../../models/tokens/lockedAssetToken.model';
-import { StakeFarmToken } from 'src/models/tokens/stakeFarmToken.model';
-import { UnbondFarmToken } from 'src/models/tokens/unbondFarmToken.model';
-import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
-import { LockedEsdtToken } from 'src/models/tokens/lockedEsdtToken.model';
-import { LockedSimpleFarmToken } from 'src/models/tokens/lockedSimpleFarmToken.model';
-import { LockedSimpleLpToken } from 'src/models/tokens/lockedSimpleLpToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftToken } from 'src/modules/tokens/models/nftToken.model';
+import { FarmToken } from 'src/modules/tokens/models/farmToken.model';
+import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
+import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
+import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
+import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
+import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
+import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
+import { LockedEsdtToken } from 'src/modules/tokens/models/lockedEsdtToken.model';
+import { LockedSimpleFarmToken } from 'src/modules/tokens/models/lockedSimpleFarmToken.model';
+import { LockedSimpleLpToken } from 'src/modules/tokens/models/lockedSimpleLpToken.model';
 
 @ObjectType()
 export class UserToken extends EsdtToken {
