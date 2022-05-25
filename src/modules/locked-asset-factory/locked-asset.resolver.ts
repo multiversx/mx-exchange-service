@@ -9,14 +9,14 @@ import {
 } from './models/locked-asset.model';
 import { UnlockAssetsArs } from './models/locked-asset.args';
 import { TransactionsLockedAssetService } from './services/transaction-locked-asset.service';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { LockedAssetGetterService } from './services/locked.asset.getter.service';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @Resolver(() => LockedAssetModel)
 export class LockedAssetResolver {

@@ -13,7 +13,7 @@ export class UserResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => [UserToken])
-    async tokens(
+    async userTokens(
         @Args() pagination: PaginationArgs,
         @User() user: any,
     ): Promise<UserToken[]> {
