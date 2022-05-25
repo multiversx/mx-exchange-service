@@ -15,6 +15,7 @@ import { AutoRouterService } from './services/auto-router/auto-router.service';
 import { User } from 'src/helpers/userDecorator';
 import { AutoRouterModel } from './models/auto-router.model';
 import { AutoRouterArgs } from './models/auto-router.args';
+
 @Resolver(() => FactoryModel)
 export class RouterResolver {
     constructor(
