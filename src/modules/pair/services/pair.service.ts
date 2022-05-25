@@ -308,4 +308,13 @@ export class PairService {
         }
         return false;
     }
+
+    async requireOwner(pairAddress: string, sender: string) {
+        if (
+            (await this.pairGetterService.getRouterOwnerManagedAddress(
+                pairAddress,
+            )) !== sender
+        )
+            throw new Error('You are not the owner.');
+    }
 }

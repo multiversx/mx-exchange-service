@@ -25,7 +25,7 @@ import { PairGetterService } from './services/pair.getter.service';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { PairInfoModel } from './models/pair-info.model';
-import { JwtAdminGuard } from '../auth/jwt.admin.guard';
+import { GqlAdminGuard } from '../auth/gql.admin.guard';
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -487,6 +487,11 @@ export class PairResolver {
         );
     }
 
+    @Query(() => [FeeDestination])
+    async getFeeDestinations(@Args('pairAddress') pairAddress: string) {
+        return await this.pairGetterService.getFeeDestinations(pairAddress);
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
     async addInitialLiquidityBatch(
@@ -587,108 +592,168 @@ export class PairResolver {
         return await this.transactionService.setLpTokenIdentifier(args);
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
-    async whitelist(@Args() args: WhitelistArgs) {
-        return await this.transactionService.whitelist(args);
+    async whitelist(@Args() args: WhitelistArgs, @User() user: any) {
+        try {
+            await this.pairService.requireOwner(
+                args.pairAddress,
+                user.publicKey,
+            );
+            return await this.transactionService.whitelist(args);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
-    async removeWhitelist(@Args() args: WhitelistArgs) {
-        return await this.transactionService.removeWhitelist(args);
+    async removeWhitelist(@Args() args: WhitelistArgs, @User() user: any) {
+        try {
+            await this.pairService.requireOwner(
+                args.pairAddress,
+                user.publicKey,
+            );
+            return await this.transactionService.removeWhitelist(args);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async addTrustedSwapPair(
         @Args('pairAddress') pairAddress: string,
         @Args('swapPairAddress') swapPairAddress: string,
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
+        @User() user: any,
     ) {
-        return await this.transactionService.addTrustedSwapPair(
-            pairAddress,
-            swapPairAddress,
-            firstTokenID,
-            secondTokenID,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.addTrustedSwapPair(
+                pairAddress,
+                swapPairAddress,
+                firstTokenID,
+                secondTokenID,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async removeTrustedSwapPair(
         @Args('pairAddress') pairAddress: string,
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
+        @User() user: any,
     ) {
-        return await this.transactionService.removeTrustedSwapPair(
-            pairAddress,
-            firstTokenID,
-            secondTokenID,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.removeTrustedSwapPair(
+                pairAddress,
+                firstTokenID,
+                secondTokenID,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
-    @Query(() => [FeeDestination])
-    async getFeeDestinations(@Args('pairAddress') pairAddress: string) {
-        return await this.pairGetterService.getFeeDestinations(pairAddress);
-    }
-
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setTransferExecGasLimit(
         @Args('pairAddress') pairAddress: string,
         @Args('gasLimit') gasLimit: string,
+        @User() user: any,
     ) {
-        return await this.transactionService.setTransferExecGasLimit(
-            pairAddress,
-            gasLimit,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setTransferExecGasLimit(
+                pairAddress,
+                gasLimit,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setExternExecGasLimit(
         @Args('pairAddress') pairAddress: string,
         @Args('gasLimit') gasLimit: string,
+        @User() user: any,
     ) {
-        return await this.transactionService.setExternExecGasLimit(
-            pairAddress,
-            gasLimit,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setExternExecGasLimit(
+                pairAddress,
+                gasLimit,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
-    async pause(@Args('pairAddress') pairAddress: string) {
-        return await this.transactionService.pause(pairAddress);
+    async pause(@Args('pairAddress') pairAddress: string, @User() user: any) {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.pause(pairAddress);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
-    async resume(@Args('pairAddress') pairAddress: string) {
-        return await this.transactionService.resume(pairAddress);
+    async resume(@Args('pairAddress') pairAddress: string, @User() user: any) {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.resume(pairAddress);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
-    async setStateActiveNoSwaps(@Args('pairAddress') pairAddress: string) {
-        return await this.transactionService.setStateActiveNoSwaps(pairAddress);
+    async setStateActiveNoSwaps(
+        @Args('pairAddress') pairAddress: string,
+        @User() user: any,
+    ) {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setStateActiveNoSwaps(
+                pairAddress,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setFeePercents(
         @Args('pairAddress') pairAddress: string,
         @Args('totalFeePercent') totalFeePercent: string,
         @Args('specialFeePercent') specialFeePercent: string,
+        @User() user: any,
     ) {
-        return await this.transactionService.setFeePercents(
-            pairAddress,
-            totalFeePercent,
-            specialFeePercent,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setFeePercents(
+                pairAddress,
+                totalFeePercent,
+                specialFeePercent,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     // in progress
@@ -703,117 +768,165 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setMaxObservationsPerRecord(
         @Args('pairAddress') pairAddress: string,
         @Args('maxObservationsPerRecord') maxObservationsPerRecord: string,
+        @User() user: any,
     ) {
-        return await this.transactionService.setMaxObservationsPerRecord(
-            pairAddress,
-            maxObservationsPerRecord,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setMaxObservationsPerRecord(
+                pairAddress,
+                maxObservationsPerRecord,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setBPSwapConfig(
         @Args('pairAddress') pairAddress: string,
         @Args('config') config: BPConfig,
+        @User() user: any,
     ) {
-        return await this.transactionService.setBPSwapConfig(
-            pairAddress,
-            config,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setBPSwapConfig(
+                pairAddress,
+                config,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setBPRemoveConfig(
         @Args('pairAddress') pairAddress: string,
         @Args('config') config: BPConfig,
+        @User() user: any,
     ) {
-        return await this.transactionService.setBPRemoveConfig(
-            pairAddress,
-            config,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setBPRemoveConfig(
+                pairAddress,
+                config,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setBPAddConfig(
         @Args('pairAddress') pairAddress: string,
         @Args('config') config: BPConfig,
+        @User() user: any,
     ) {
-        return await this.transactionService.setBPAddConfig(
-            pairAddress,
-            config,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setBPAddConfig(
+                pairAddress,
+                config,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    //@UseGuards(JwtAdminGuard)
-    /*@Query(() => BPConfig)
-    async getBPSwapConfig(@Args('pairAddress') pairAddress: string) {
-        return await this.pairGetterService.getBPSwapConfig(pairAddress);
-    }*/
-
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => String)
     async getNumSwapsByAddress(
         @Args('pairAddress') pairAddress: string,
         @Args('address') address: string,
+        @User() user: any,
     ) {
-        return await this.pairGetterService.getNumSwapsByAddress(
-            pairAddress,
-            address,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.pairGetterService.getNumSwapsByAddress(
+                pairAddress,
+                address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => String)
     async getNumAddsByAddress(
         @Args('pairAddress') pairAddress: string,
         @Args('address') address: string,
+        @User() user: any,
     ) {
-        return await this.pairGetterService.getNumAddsByAddress(
-            pairAddress,
-            address,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.pairGetterService.getNumAddsByAddress(
+                pairAddress,
+                address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setLockingDeadlineEpoch(
         @Args('pairAddress') pairAddress: string,
         @Args('newDeadline') newDeadline: string,
+        @User() user: any,
     ) {
-        return await this.transactionService.setLockingDeadlineEpoch(
-            pairAddress,
-            newDeadline,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setLockingDeadlineEpoch(
+                pairAddress,
+                newDeadline,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setLockingScAddress(
         @Args('pairAddress') pairAddress: string,
         @Args('newAddress') newAddress: string,
+        @User() user: any,
     ) {
-        return await this.transactionService.setLockingScAddress(
-            pairAddress,
-            newAddress,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setLockingScAddress(
+                pairAddress,
+                newAddress,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
-    @UseGuards(JwtAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setUnlockEpoch(
         @Args('pairAddress') pairAddress: string,
         @Args('newEpoch') newEpoch: string,
+        @User() user: any,
     ) {
-        return await this.transactionService.setUnlockEpoch(
-            pairAddress,
-            newEpoch,
-        );
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setUnlockEpoch(
+                pairAddress,
+                newEpoch,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }
