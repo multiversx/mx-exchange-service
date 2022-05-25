@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from '../../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';

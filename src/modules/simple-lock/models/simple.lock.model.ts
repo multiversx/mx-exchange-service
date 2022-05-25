@@ -7,7 +7,7 @@ import {
     U64Type,
 } from '@elrondnetwork/erdjs/out';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
 
 export enum FarmType {

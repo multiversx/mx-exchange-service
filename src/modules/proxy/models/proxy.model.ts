@@ -1,6 +1,6 @@
 import { ObjectType, Field, registerEnumType } from '@nestjs/graphql';
-import { EsdtToken } from '../../../models/tokens/esdtToken.model';
-import { NftCollection } from '../../../models/tokens/nftCollection.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 export enum LockedTokenType {
     LOCKED_LP_TOKEN = 'LockedLpToken',
