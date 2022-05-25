@@ -4,7 +4,7 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ContextService } from 'src/services/context/context.service';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import {
     AutoRouterComputeService,

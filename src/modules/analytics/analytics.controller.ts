@@ -1,16 +1,14 @@
+import {
+    AddLiquidityEventType,
+    DepositEventType,
+    PAIR_EVENTS,
+    PRICE_DISCOVERY_EVENTS,
+    SwapEventType,
+} from '@elrondnetwork/erdjs-dex';
 import { Controller, Inject } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import {
-    PAIR_EVENTS,
-    PRICE_DISCOVERY_EVENTS,
-} from '../rabbitmq/entities/generic.types';
-import {
-    AddLiquidityEventType,
-    SwapEventType,
-} from '../rabbitmq/entities/pair/pair.types';
-import { DepositEventType } from '../rabbitmq/entities/price-discovery/price.discovery.types';
 import { AnalyticsEventHandlerService } from './services/analytics.event.handler.service';
 import { AnalyticsPriceDiscoveryEventHandlerService } from './services/analytics.price.discovery.event.handler.service';
 

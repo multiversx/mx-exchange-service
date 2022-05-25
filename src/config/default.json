@@ -42,7 +42,10 @@
     "tokensSupply": ["MEX-27f4cd"],
     "cachedTokensPrice": ["MEX-27f4cd"],
     "farms": {
-        "v1.2": [],
+        "v1.2": [
+            "erd1qqqqqqqqqqqqqpgqrlrt28le0vduj0nyqa3zglvy00wlsvav0n4sjvqsy6",
+            "erd1qqqqqqqqqqqqqpgqkjlamljf5cydc45ndsxelvshx9gxx0e30n4sxdlakr"
+        ],
         "v1.3": {
             "unlockedRewards": [
                 "erd1qqqqqqqqqqqqqpgqxsy4k8fkqvllcvyrwhf80t97kyd32qfx0n4stue7cn",

@@ -113,8 +113,13 @@ export class RouterResolver {
     async createPair(
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.createPair(firstTokenID, secondTokenID);
+        return this.transactionService.createPair(
+            user.publicKey,
+            firstTokenID,
+            secondTokenID,
+        );
     }
 
     @UseGuards(GqlAuthGuard)

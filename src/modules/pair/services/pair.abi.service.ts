@@ -147,6 +147,41 @@ export class PairAbiService {
             .map(swapPair => swapPair.field1.bech32());
     }
 
+    async getInitialLiquidtyAdder(pairAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        try {
+            const interaction: Interaction = contract.methods.getInitialLiquidtyAdder(
+                [],
+            );
+            const queryResponse = await contract.runQuery(
+                this.elrondProxy.getService(),
+                interaction.buildQuery(),
+            );
+            if (queryResponse.returnMessage.includes('bad array length')) {
+                return '';
+            }
+            const response = interaction.interpretQueryResponse(queryResponse);
+            if (!response.firstValue.valueOf()) {
+                return '';
+            }
+            return response.firstValue.valueOf().bech32();
+        } catch (error) {
+            if (error.message.includes('invalid function')) {
+                return '';
+            }
+            const logMessage = generateRunQueryLogMessage(
+                PairAbiService.name,
+                this.getLockingScAddress.name,
+                error.message,
+            );
+            this.logger.error(logMessage);
+
+            throw error;
+        }
+    }
+
     async getState(pairAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,

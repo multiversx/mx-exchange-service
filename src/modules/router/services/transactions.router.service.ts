@@ -28,6 +28,7 @@ export class TransactionRouterService {
     ) {}
 
     async createPair(
+        sender: string,
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
@@ -45,7 +46,7 @@ export class TransactionRouterService {
         const createPairInteraction: Interaction = contract.methods.createPair([
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
-            BytesValue.fromHex(Address.Zero().hex()),
+            BytesValue.fromHex(Address.fromString(sender).hex()),
         ]);
 
         const transaction = createPairInteraction.buildTransaction();
