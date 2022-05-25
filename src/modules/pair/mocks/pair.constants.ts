@@ -188,9 +188,10 @@ export const Tokens = (tokenID: string): EsdtToken => {
 
 export const PairsData = (pairAddress: string) => {
     switch (pairAddress) {
-        case 'pair_address_1':
+        case 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u':
             return {
-                address: 'pair_address_1',
+                address:
+                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 firstToken: Tokens('TOK1-1111'),
                 secondToken: Tokens('TOK2-2222'),
                 liquidityPoolToken: Tokens('LPT-1234'),
@@ -210,9 +211,10 @@ export const PairsData = (pairAddress: string) => {
                 totalFeePercent: 0.003,
                 state: 'Active',
             };
-        case 'pair_address_2':
+        case 'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx':
             return {
-                address: 'pair_address_1',
+                address:
+                    'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
                 firstToken: Tokens('TOK1-1111'),
                 secondToken: Tokens('USDC-1111'),
                 liquidityPoolToken: Tokens('LPT-abcd'),

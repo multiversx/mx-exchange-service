@@ -55,7 +55,7 @@ describe('PairService', () => {
 
     it('should get liquidity position from pair', async () => {
         const liquidityPosition = await service.getLiquidityPosition(
-            'pair_address_1',
+            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '1',
         );
         expect(liquidityPosition).toEqual({
