@@ -3,6 +3,7 @@ import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig, constantsConfig } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { EsdtToken } from 'src/models/tokens/esdtToken.model';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -12,8 +13,6 @@ import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
 import {
-    BPConfig,
-    EsdtTokenPayment,
     FeeDestination,
     LiquidityPosition,
     LockedTokensInfo,
@@ -599,36 +598,6 @@ export class PairGetterService {
             pairAddress,
             esdtTokenPayment,
         );
-    }
-
-    async getBPSwapConfig(pairAddress: string): Promise<BPConfig> {
-        /*return await this.getData(
-            pairAddress,
-            'BPSwapConfig',
-            () => this.abiService.getBPSwapConfig(pairAddress),
-            oneMinute(),
-        );*/
-        return await this.abiService.getBPSwapConfig(pairAddress);
-    }
-
-    async getBPRemoveConfig(pairAddress: string): Promise<BPConfig> {
-        /*return await this.getData(
-            pairAddress,
-            'BPSwapConfig',
-            () => this.abiService.getBPSwapConfig(pairAddress),
-            oneMinute(),
-        );*/
-        return await this.abiService.getBPRemoveConfig(pairAddress);
-    }
-
-    async getBPAddConfig(pairAddress: string): Promise<BPConfig> {
-        /*return await this.getData(
-            pairAddress,
-            'BPSwapConfig',
-            () => this.abiService.getBPSwapConfig(pairAddress),
-            oneMinute(),
-        );*/
-        return await this.abiService.getBPAddConfig(pairAddress);
     }
 
     async getNumSwapsByAddress(

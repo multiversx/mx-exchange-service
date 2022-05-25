@@ -3,7 +3,6 @@ import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import {
     BPConfig,
-    EsdtTokenPayment,
     FeeDestination,
     LiquidityPosition,
     PairModel,
@@ -26,6 +25,7 @@ import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { PairInfoModel } from './models/pair-info.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
+import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -318,38 +318,6 @@ export class PairResolver {
             return await this.pairGetterService.getTransferExecGasLimit(
                 parent.address,
             );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    // Error: user error: storage decode error: input too short
-    @ResolveField()
-    async swapBPConfig(@Parent() parent: PairModel) {
-        try {
-            return await this.pairGetterService.getBPSwapConfig(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    // Error: user error: storage decode error: input too short
-    @ResolveField()
-    async removeBPConfig(@Parent() parent: PairModel) {
-        try {
-            return await this.pairGetterService.getBPRemoveConfig(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    // Error: user error: storage decode error: input too short
-    @ResolveField()
-    async addBPConfig(@Parent() parent: PairModel) {
-        try {
-            return await this.pairGetterService.getBPAddConfig(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -756,7 +724,6 @@ export class PairResolver {
         }
     }
 
-    // in progress
     @Query(() => EsdtTokenPayment)
     async updateAndGetSafePrice(
         @Args('pairAddress') pairAddress: string,

@@ -171,20 +171,3 @@ export class FeeDestination {
         Object.assign(this, init);
     }
 }
-
-@ObjectType('EsdtTokenPayment')
-@InputType('EsdtTokenPaymentInput')
-export class EsdtTokenPayment {
-    @Field(() => Int)
-    tokenType: number;
-    @Field()
-    tokenID: string;
-    @Field(() => Int)
-    nonce: number;
-    @Field()
-    amount: string;
-
-    constructor(init?: Partial<EsdtTokenPayment>) {
-        Object.assign(this, init);
-    }
-}

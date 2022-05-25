@@ -4,7 +4,12 @@ import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction
 import {
     Address,
     BigUIntValue,
+    EnumValue,
+    Field,
     QueryResponseBundle,
+    Struct,
+    TokenIdentifierValue,
+    U64Value,
 } from '@elrondnetwork/erdjs';
 import { PairInfoModel } from '../models/pair-info.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
@@ -13,12 +18,12 @@ import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import BigNumber from 'bignumber.js';
+import { FeeDestination, LiquidityPosition } from '../models/pair.model';
 import {
-    BPConfig,
     EsdtTokenPayment,
-    FeeDestination,
-    LiquidityPosition,
-} from '../models/pair.model';
+    EsdtTokenPaymentStruct,
+    EsdtTokenType,
+} from 'src/models/esdtTokenPayment.model';
 
 @Injectable()
 export class PairAbiService {
@@ -428,7 +433,6 @@ export class PairAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    // in progress
     async updateAndGetSafePrice(
         pairAddress: string,
         esdtTokenPayment: EsdtTokenPayment,
@@ -438,80 +442,49 @@ export class PairAbiService {
         );
         const interaction: Interaction = contract.methods.updateAndGetSafePrice(
             [
-                ...[
-                    new BigUIntValue(new BigNumber(esdtTokenPayment.tokenType)),
-                    BytesValue.fromUTF8(esdtTokenPayment.tokenID),
-                    new BigUIntValue(new BigNumber(esdtTokenPayment.nonce)),
-                    new BigUIntValue(new BigNumber(esdtTokenPayment.amount)),
-                ],
+                new Struct(EsdtTokenPaymentStruct.getStructure(), [
+                    new Field(
+                        new EnumValue(
+                            EsdtTokenType.getEnum(),
+                            EsdtTokenType.getEnum().getVariantByDiscriminant(
+                                esdtTokenPayment.tokenType,
+                            ),
+                            [],
+                        ),
+                        'token_type',
+                    ),
+                    new Field(
+                        new TokenIdentifierValue(
+                            Buffer.from(esdtTokenPayment.tokenID),
+                        ),
+                        'token_identifier',
+                    ),
+                    new Field(
+                        new U64Value(new BigNumber(esdtTokenPayment.nonce)),
+                        'token_nonce',
+                    ),
+                    new Field(
+                        new BigUIntValue(
+                            new BigNumber(esdtTokenPayment.amount),
+                        ),
+                        'amount',
+                    ),
+                ]),
             ],
         );
+
         const response = await this.getGenericData(contract, interaction);
-
-        console.log('response', response);
-        //return response.firstValue.valueOf().toString();
-
         return new EsdtTokenPayment({
-            tokenID: 'eyau',
-            nonce: 0,
-            amount: '100',
-        });
-    }
-
-    // Error: user error: storage decode error: input too short
-    async getBPSwapConfig(pairAddress: string): Promise<BPConfig> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getBPSwapConfig([]);
-        const response = await this.getGenericData(contract, interaction);
-        console.log('response', response);
-        return new BPConfig({
-            protectStopBlock: response.firstValue
-                .valueOf()[0]
-                .field0.toString(),
-            volumePercent: response.firstValue.valueOf()[0].field1.toString(),
-            maxNumActionsPerAddress: response.firstValue
-                .valueOf()[0]
-                .field2.toString(),
-        });
-    }
-
-    // Error: user error: storage decode error: input too short
-    async getBPRemoveConfig(pairAddress: string): Promise<BPConfig> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getBPRemoveConfig([]);
-        const response = await this.getGenericData(contract, interaction);
-        console.log('response', response);
-        return new BPConfig({
-            protectStopBlock: response.firstValue
-                .valueOf()[0]
-                .field0.toString(),
-            volumePercent: response.firstValue.valueOf()[0].field1.toString(),
-            maxNumActionsPerAddress: response.firstValue
-                .valueOf()[0]
-                .field2.toString(),
-        });
-    }
-
-    // Error: user error: storage decode error: input too short
-    async getBPAddConfig(pairAddress: string): Promise<BPConfig> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getBPAddConfig([]);
-        const response = await this.getGenericData(contract, interaction);
-        console.log('response', response);
-        return new BPConfig({
-            protectStopBlock: response.firstValue
-                .valueOf()[0]
-                .field0.toString(),
-            volumePercent: response.firstValue.valueOf()[0].field1.toString(),
-            maxNumActionsPerAddress: response.firstValue
-                .valueOf()[0]
-                .field2.toString(),
+            tokenType: EsdtTokenType.getEnum().getVariantByName(
+                response.firstValue.valueOf().token_type.name,
+            ).discriminant,
+            tokenID: response.firstValue.valueOf().token_identifier.toString(),
+            nonce: new BigNumber(
+                response.firstValue.valueOf().token_nonce,
+            ).toNumber(),
+            amount: new BigNumber(
+                response.firstValue.valueOf().amount,
+            ).toString(),
         });
     }
 
