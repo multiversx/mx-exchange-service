@@ -20,8 +20,8 @@ import { TransactionsProxyPairService } from './services/proxy-pair/proxy-pair-t
 import { TransactionsProxyFarmService } from './services/proxy-farm/proxy-farm-transactions.service';
 import { ProxyService } from './services/proxy.service';
 import { DecodeAttributesArgs } from './models/proxy.args';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';

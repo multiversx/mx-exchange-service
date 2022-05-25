@@ -1,7 +1,7 @@
 import { Resolver, Query, ResolveField, Args } from '@nestjs/graphql';
 import { Inject, UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { EsdtToken } from '../../models/tokens/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { WrapModel } from './models/wrapping.model';
 import { WrapService } from './wrap.service';
 import { TransactionsWrapService } from './transactions-wrap.service';

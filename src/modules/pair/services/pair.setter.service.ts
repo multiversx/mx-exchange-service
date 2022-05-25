@@ -227,6 +227,18 @@ export class PairSetterService {
         return cacheKey;
     }
 
+    async setInitialLiquidtyAdder(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'initialLiquidtyAdder',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
+    }
+
     private getPairCacheKey(pairAddress: string, ...args: any) {
         return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }

@@ -15,6 +15,7 @@ import { AutoRouterService } from './services/auto-router/auto-router.service';
 import { User } from 'src/helpers/userDecorator';
 import { AutoRouterModel } from './models/auto-router.model';
 import { AutoRouterArgs } from './models/auto-router.args';
+
 @Resolver(() => FactoryModel)
 export class RouterResolver {
     constructor(
@@ -113,8 +114,13 @@ export class RouterResolver {
     async createPair(
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return this.transactionService.createPair(firstTokenID, secondTokenID);
+        return this.transactionService.createPair(
+            user.publicKey,
+            firstTokenID,
+            secondTokenID,
+        );
     }
 
     @UseGuards(GqlAuthGuard)
