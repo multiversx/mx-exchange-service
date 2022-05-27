@@ -1,4 +1,7 @@
-import { EnumType, EnumVariantDefinition } from '@elrondnetwork/erdjs/out';
+import {
+    EnumType,
+    EnumVariantDefinition,
+} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/enum';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
