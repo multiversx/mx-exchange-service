@@ -110,10 +110,12 @@ export class FarmService {
                 (currentEpoch - farmTokenAttributes.enteringEpoch),
         );
 
-        farmTokenAttributes.identifier = positon.identifier;
-        farmTokenAttributes.attributes = positon.attributes;
         return new RewardsModel({
-            decodedAttributes: farmTokenAttributes.toJSON(),
+            decodedAttributes: new FarmTokenAttributesModel({
+                ...farmTokenAttributes.toJSON(),
+                attributes: positon.attributes,
+                identifier: positon.identifier,
+            }),
             remainingFarmingEpochs: remainingFarmingEpochs,
             rewards: rewards.integerValue().toFixed(),
         });
