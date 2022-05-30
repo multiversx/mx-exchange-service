@@ -1,4 +1,5 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 
 @ObjectType()
 export class WrappedLpTokenAttributesModel {
@@ -14,6 +15,8 @@ export class WrappedLpTokenAttributesModel {
     lockedAssetsInvested: string;
     @Field(() => Int)
     lockedAssetsNonce: number;
+    @Field(() => LockedAssetAttributesModel)
+    lockedAssetsAttributes: LockedAssetAttributesModel;
 
     constructor(init?: Partial<WrappedLpTokenAttributesModel>) {
         Object.assign(this, init);
