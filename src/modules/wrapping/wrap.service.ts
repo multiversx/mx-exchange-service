@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { cacheConfig, scAddress } from '../../config';
-import { EsdtToken } from '../../models/tokens/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { WrapModel } from './models/wrapping.model';
 import { AbiWrapService } from './abi-wrap.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';

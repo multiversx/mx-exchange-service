@@ -22,6 +22,7 @@ import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module
 import { MetabondingModule } from './modules/metabonding/metabonding.module';
 import { PriceDiscoveryModule } from './modules/price-discovery/price.discovery.module';
 import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
+import { TokenModule } from './modules/tokens/token.module';
 
 @Module({
     imports: [
@@ -88,6 +89,7 @@ import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
         PriceDiscoveryModule,
         SimpleLockModule,
         WrappingModule,
+        TokenModule,
         UserModule,
         AnalyticsModule,
         SubscriptionsModule,

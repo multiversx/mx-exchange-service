@@ -27,8 +27,10 @@
         "test:e2e": "jest --config ./test/jest-e2e.json"
     },
     "dependencies": {
+        "@datastructures-js/priority-queue": "^6.0.0",
         "@elastic/elasticsearch": "^7.12.0",
         "@elrondnetwork/erdjs": "9.0.2",
+        "@elrondnetwork/erdjs-dex": "0.0.2",
         "@golevelup/nestjs-rabbitmq": "1.17.1",
         "@nestjs-query/query-graphql": "^0.26.0",
         "@nestjs/common": "^7.6.18",

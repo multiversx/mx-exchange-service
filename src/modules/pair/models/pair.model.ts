@@ -1,6 +1,6 @@
 import { ObjectType, Field, ArgsType, Int, InputType } from '@nestjs/graphql';
 import { PaginationArgs } from '../../dex.model';
-import { EsdtToken } from '../../../models/tokens/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
 
 @ArgsType()

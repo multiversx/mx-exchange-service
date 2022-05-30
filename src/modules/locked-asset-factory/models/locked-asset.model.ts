@@ -1,6 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
-import { NftCollection } from '../../../models/tokens/nftCollection.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @ObjectType()
 export class UnlockMileStoneModel {

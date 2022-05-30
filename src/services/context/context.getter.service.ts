@@ -1,9 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
-import { NftToken } from 'src/models/tokens/nftToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
