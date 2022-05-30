@@ -3,15 +3,19 @@ import { ProxyModel } from '../models/proxy.model';
 import { WrappedLpTokenAttributesModel } from '../models/wrappedLpTokenAttributes.model';
 import { WrappedFarmTokenAttributesModel } from '../models/wrappedFarmTokenAttributes.model';
 import { scAddress } from '../../../config';
-import {
-    decodeWrappedFarmTokenAttributes,
-    decodeWrappedLPTokenAttributes,
-} from '../utils';
 import { FarmService } from '../../farm/services/farm.service';
 import { DecodeAttributesArgs } from '../models/proxy.args';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import {
+    FarmTokenAttributes,
+    WrappedFarmTokenAttributes,
+    WrappedLpTokenAttributes,
+} from '@elrondnetwork/erdjs-dex';
+import { decimalToHex } from 'src/utils/token.converters';
+import { farmVersion } from 'src/utils/farm.utils';
+import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
 
 @Injectable()
 export class ProxyService {
@@ -29,18 +33,11 @@ export class ProxyService {
         args: DecodeAttributesArgs,
     ): WrappedLpTokenAttributesModel[] {
         return args.batchAttributes.map(arg => {
-            const decodedAttributes = decodeWrappedLPTokenAttributes(
-                arg.attributes,
+            return new WrappedLpTokenAttributesModel(
+                WrappedLpTokenAttributes.fromAttributes(
+                    arg.attributes,
+                ).toJSON(),
             );
-
-            return new WrappedLpTokenAttributesModel({
-                identifier: arg.identifier,
-                attributes: arg.attributes,
-                lpTokenID: decodedAttributes.lpTokenID.toString(),
-                lpTokenTotalAmount: decodedAttributes.lpTokenTotalAmount.toFixed(),
-                lockedAssetsInvested: decodedAttributes.lockedAssetsInvested.toFixed(),
-                lockedAssetsNonce: decodedAttributes.lockedAssetsNonce.toString(),
-            });
         });
     }
 
@@ -48,34 +45,32 @@ export class ProxyService {
         args: DecodeAttributesArgs,
     ): Promise<WrappedFarmTokenAttributesModel[]> {
         const promises = args.batchAttributes.map(async arg => {
-            const decodedAttributes = decodeWrappedFarmTokenAttributes(
+            const wrappedFarmTokenAttributes = WrappedFarmTokenAttributes.fromAttributes(
                 arg.attributes,
             );
-
+            const farmTokenIdentifier = `${
+                wrappedFarmTokenAttributes.farmTokenID
+            }-${decimalToHex(wrappedFarmTokenAttributes.farmTokenNonce)}`;
             const farmToken = await this.apiService.getNftByTokenIdentifier(
                 scAddress.proxyDexAddress,
-                decodedAttributes.farmTokenIdentifier,
+                farmTokenIdentifier,
             );
             const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
                 farmToken.collection,
             );
-            const decodedFarmAttributes = await this.farmService.decodeFarmTokenAttributes(
-                farmAddress,
-                decodedAttributes.farmTokenIdentifier,
+            const farmTokenAttributes = FarmTokenAttributes.fromAttributes(
+                farmVersion(farmAddress),
                 farmToken.attributes,
             );
 
             return new WrappedFarmTokenAttributesModel({
+                ...wrappedFarmTokenAttributes.toJSON(),
                 identifier: arg.identifier,
                 attributes: arg.attributes,
-                farmTokenID: decodedAttributes.farmTokenID.toString(),
-                farmTokenNonce: decodedAttributes.farmTokenNonce,
-                farmTokenAmount: decodedAttributes.farmTokenAmount,
-                farmTokenIdentifier: decodedAttributes.farmTokenIdentifier,
-                farmTokenAttributes: decodedFarmAttributes,
-                farmingTokenID: decodedAttributes.farmingTokenID.toString(),
-                farmingTokenNonce: decodedAttributes.farmingTokenNonce,
-                farmingTokenAmount: decodedAttributes.farmingTokenAmount,
+                farmTokenIdentifier,
+                farmTokenAttributes: new FarmTokenAttributesModel(
+                    farmTokenAttributes.toJSON(),
+                ),
             });
         });
 
