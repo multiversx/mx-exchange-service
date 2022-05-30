@@ -4,7 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig, constantsConfig } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
