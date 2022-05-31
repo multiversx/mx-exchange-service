@@ -23,7 +23,7 @@ import { MetabondingModule } from './modules/metabonding/metabonding.module';
 import { PriceDiscoveryModule } from './modules/price-discovery/price.discovery.module';
 import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
-
+import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -78,6 +78,7 @@ import { TokenModule } from './modules/tokens/token.module';
         }),
         HttpModule,
         RouterModule,
+        AutoRouterModule,
         PairModule,
         FarmModule,
         StakingModule,

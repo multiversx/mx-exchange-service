@@ -8,8 +8,11 @@ export class AutoRouterArgs {
     @Field()
     tokenOutID: string;
 
-    @Field()
-    amount: string;
+    @Field({ nullable: true })
+    amountIn?: string;
+
+    @Field({ nullable: true })
+    amountOut?: string;
 
     @Field()
     tolerance: number;

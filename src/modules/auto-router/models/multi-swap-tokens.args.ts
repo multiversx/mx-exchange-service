@@ -11,7 +11,9 @@ export class MultiSwapTokensArgs {
     @Field(() => [String])
     tokenRoute: string[];
 
-    @Field(() => [String])
+    @Field(() => [String], {
+        nullable: true,
+    })
     intermediaryAmounts: string[];
 
     @Field(() => [String])
