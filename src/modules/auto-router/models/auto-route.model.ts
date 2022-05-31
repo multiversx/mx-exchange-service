@@ -6,6 +6,9 @@ export class AutoRouteModel {
     sender: string;
 
     @Field()
+    swapType: SWAP_TYPE;
+
+    @Field()
     tokenInID: string;
 
     @Field()
@@ -41,4 +44,9 @@ export class AutoRouteModel {
     constructor(init?: Partial<AutoRouteModel>) {
         Object.assign(this, init);
     }
+}
+
+export enum SWAP_TYPE {
+    fixedInput = 0,
+    fixedOutput = 1,
 }

@@ -12,11 +12,6 @@ import { GqlAuthGuard } from '../auth/gql.auth.guard';
 export class AutoRouterResolver {
     constructor(private readonly autoRouterService: AutoRouterService) {}
 
-    @Query(() => AutoRouteModel)
-    async factory() {
-        return this.autoRouterService.getFactory();
-    }
-
     @UseGuards(GqlAuthGuard)
     @Query(() => AutoRouteModel)
     async swap(
@@ -33,10 +28,7 @@ export class AutoRouterResolver {
     @ResolveField(() => [TransactionModel])
     async transactions(@Parent() parent: AutoRouteModel) {
         try {
-            return await this.autoRouterService.getTransactions(
-                parent.sender,
-                parent,
-            );
+            return await this.autoRouterService.getTransactions(parent);
         } catch (error) {
             throw new ApolloError(error);
         }

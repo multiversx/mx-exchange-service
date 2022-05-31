@@ -16,7 +16,7 @@ import { elrondConfig } from 'src/config';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { AutoRouterArgs } from '../models/auto-router.args';
 import { RouterGetterService } from '../../router/services/router.getter.service';
-import { AutoRouteModel } from '../models/auto-route.model';
+import { AutoRouteModel, SWAP_TYPE } from '../models/auto-route.model';
 import { AutoRouterTransactionService } from './auto-router.transactions.service';
 import { RouterService } from 'src/modules/router/services/router.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -72,16 +72,16 @@ export class AutoRouterService {
         ]);
 
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
-        const isFixedInput = this.isFixedInput(args.amountIn, args.amountOut);
+        const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
         if (directPair) {
-            return this.singleSwap(
+            return await this.singleSwap(
                 sender,
                 args,
                 tokenInID,
                 tokenOutID,
                 directPair,
-                isFixedInput,
+                swapType,
             );
         }
 
@@ -93,7 +93,7 @@ export class AutoRouterService {
             pairs,
             tokenInMetadata,
             tokenOutMetadata,
-            isFixedInput,
+            swapType,
         );
     }
 
@@ -103,7 +103,7 @@ export class AutoRouterService {
         tokenInID: string,
         tokenOutID: string,
         pair: PairModel,
-        isFixedInput: boolean,
+        swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
         const [
             pairMetadata,
@@ -112,7 +112,7 @@ export class AutoRouterService {
             secondTokenPrice,
         ] = await Promise.all([
             this.contextService.getPairMetadata(pair.address),
-            isFixedInput
+            this.isFixedInput(swapType)
                 ? this.pairService.getAmountOut(
                       pair.address,
                       tokenInID,
@@ -127,15 +127,16 @@ export class AutoRouterService {
             this.pairGetterService.getSecondTokenPrice(pair.address),
         ]);
 
-        let [amountIn, amountOut] = isFixedInput
+        let [amountIn, amountOut] = this.isFixedInput(swapType)
             ? [args.amountIn, amount]
             : [amount, args.amountOut];
 
-        if (!isFixedInput)
+        if (!this.isFixedInput(swapType))
             amountIn = this.addTolerance(amountIn, args.tolerance);
 
         return new AutoRouteModel({
             sender: sender,
+            swapType: swapType,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
             tokenInPrice:
@@ -163,19 +164,27 @@ export class AutoRouterService {
         pairs: PairModel[],
         tokenInMetadata: EsdtToken,
         tokenOutMetadata: EsdtToken,
-        isFixedInput: boolean,
+        swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
         let swapRoute: BestSwapRoute;
         try {
-            swapRoute = await this.autoRouterComputeService.computeBestSwapRoute(
-                isFixedInput ? tokenInID : tokenOutID,
-                isFixedInput ? tokenOutID : tokenInID,
-                pairs,
-                isFixedInput ? args.amountIn : args.amountOut,
-                isFixedInput
-                    ? PRIORITY_MODES.maxOutput
-                    : PRIORITY_MODES.minInput,
-            );
+            if (this.isFixedInput(swapType)) {
+                swapRoute = await this.autoRouterComputeService.computeBestSwapRoute(
+                    tokenInID,
+                    tokenOutID,
+                    pairs,
+                    args.amountIn,
+                    PRIORITY_MODES.maxOutput,
+                );
+            } else {
+                swapRoute = await this.autoRouterComputeService.computeBestSwapRoute(
+                    tokenOutID,
+                    tokenInID,
+                    pairs,
+                    args.amountOut,
+                    PRIORITY_MODES.minInput,
+                );
+            }
         } catch (error) {
             this.logger.error(
                 'Error when computing the swap auto route.',
@@ -187,12 +196,13 @@ export class AutoRouterService {
         const [tokenInPrice, tokenOutPrice] = this.calculateExchangeRate(
             tokenInMetadata.decimals,
             tokenOutMetadata.decimals,
-            isFixedInput ? args.amountIn : swapRoute.bestResult,
-            isFixedInput ? swapRoute.bestResult : args.amountOut,
+            this.isFixedInput(swapType) ? args.amountIn : swapRoute.bestResult,
+            this.isFixedInput(swapType) ? swapRoute.bestResult : args.amountOut,
         );
 
         return new AutoRouteModel({
             sender: sender,
+            swapType: swapType,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
             tokenInPrice: tokenInPrice,
@@ -218,26 +228,31 @@ export class AutoRouterService {
         tokenInMetadata: EsdtToken,
     ): string {
         if (!args.amountOut && !args.amountIn) {
-            return new BigNumber(10).pow(tokenInMetadata.decimals).toString();
+            return new BigNumber(10).pow(tokenInMetadata.decimals).toFixed();
         }
 
         return args.amountIn;
     }
 
-    isFixedInput(amountIn: string, amountOut: string) {
+    getSwapType(amountIn: string, amountOut: string): SWAP_TYPE {
         if (amountIn && amountOut)
             throw new Error("Can't have both fixedInput & fixedOutput");
 
-        if (amountIn) return true;
-        else if (amountOut) return false;
+        if (amountIn) return SWAP_TYPE.fixedInput;
+        else if (amountOut) return SWAP_TYPE.fixedOutput;
 
-        throw new Error('You should fill amountIn or amountOut');
+        throw new Error("Can't get SWAP_TYPE");
+    }
+
+    isFixedInput(swapType: SWAP_TYPE): boolean {
+        if (swapType === SWAP_TYPE.fixedInput) return true;
+        return false;
     }
 
     addTolerance(amountIn: string, tolerance: number): string {
         return new BigNumber(amountIn)
             .plus(new BigNumber(amountIn).multipliedBy(tolerance))
-            .toString();
+            .toFixed();
     }
 
     private async getAllActivePairs() {
@@ -297,7 +312,7 @@ export class AutoRouterService {
             .pow(tokenOutDecimals)
             .multipliedBy(amountIn)
             .dividedBy(amountOut);
-        return [tokenInPrice.toString(), tokenOutPrice.toString()];
+        return [tokenInPrice.toFixed(), tokenOutPrice.toFixed()];
     }
 
     private addressesToPairs(addresses: string[]): PairModel[] {
@@ -308,8 +323,9 @@ export class AutoRouterService {
         return pairs;
     }
 
-    async getTransactions(sender: string, parent: AutoRouteModel) {
-        return await this.transactionService.multiPairSwap(sender, {
+    async getTransactions(parent: AutoRouteModel) {
+        return await this.transactionService.multiPairSwap(parent.sender, {
+            swapType: parent.swapType,
             tokenInID: parent.tokenInID,
             tokenOutID: parent.tokenOutID,
             addressRoute: parent.pairs.map(p => {

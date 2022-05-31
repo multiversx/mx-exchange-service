@@ -12,6 +12,7 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { SWAP_TYPE } from '../models/auto-route.model';
 
 @Injectable()
 export class AutoRouterTransactionService {
@@ -44,29 +45,46 @@ export class AutoRouterTransactionService {
             ),
         ]);
 
+        if (wrapTransaction) transactions.push(wrapTransaction);
+
         const transactionArgs = [
             BytesValue.fromUTF8(args.tokenRoute[0]),
-            new BigUIntValue(new BigNumber(args.intermediaryAmounts[0])),
+            new BigUIntValue(
+                new BigNumber(args.intermediaryAmounts[0])
+                    .plus(
+                        new BigNumber(args.intermediaryAmounts[0]).multipliedBy(
+                            args.tolerance,
+                        ),
+                    )
+                    .integerValue(),
+            ),
             BytesValue.fromUTF8('multiPairSwap'),
         ];
 
-        if (wrapTransaction) transactions.push(wrapTransaction);
-
         for (const [index, address] of args.addressRoute.entries()) {
-            /*const amountOutMin = new BigNumber(1)
-                .dividedBy(new BigNumber(1).plus(args.tolerance))
-                .multipliedBy(args.intermediaryAmounts[index + 1])
-                .integerValue();*/
-            transactionArgs.push(
-                ...[
-                    BytesValue.fromHex(Address.fromString(address).hex()),
-                    BytesValue.fromUTF8('swapTokensFixedInput'),
-                    BytesValue.fromUTF8(args.tokenRoute[index + 1]),
-                    new BigUIntValue(
-                        new BigNumber(args.intermediaryAmounts[index + 1]),
-                    ),
-                ],
-            );
+            if (args.swapType == SWAP_TYPE.fixedInput) {
+                transactionArgs.push(
+                    ...[
+                        BytesValue.fromHex(Address.fromString(address).hex()),
+                        BytesValue.fromUTF8('swapTokensFixedInput'),
+                        BytesValue.fromUTF8(args.tokenRoute[index + 1]),
+                        new BigUIntValue(
+                            new BigNumber(args.intermediaryAmounts[index + 1]),
+                        ),
+                    ],
+                );
+            } else {
+                transactionArgs.push(
+                    ...[
+                        BytesValue.fromHex(Address.fromString(address).hex()),
+                        BytesValue.fromUTF8('swapTokensFixedOutput'),
+                        BytesValue.fromUTF8(args.tokenRoute[index + 1]),
+                        new BigUIntValue(
+                            new BigNumber(args.intermediaryAmounts[index + 1]),
+                        ),
+                    ],
+                );
+            }
         }
 
         transactions.push(
