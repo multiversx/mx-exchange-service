@@ -1,7 +1,11 @@
 import { ArgsType, Field } from '@nestjs/graphql';
+import { SWAP_TYPE } from './auto-route.model';
 
 @ArgsType()
 export class MultiSwapTokensArgs {
+    @Field()
+    swapType: SWAP_TYPE;
+
     @Field()
     tokenInID: string;
 
@@ -11,7 +15,9 @@ export class MultiSwapTokensArgs {
     @Field(() => [String])
     tokenRoute: string[];
 
-    @Field(() => [String])
+    @Field(() => [String], {
+        nullable: true,
+    })
     intermediaryAmounts: string[];
 
     @Field(() => [String])
