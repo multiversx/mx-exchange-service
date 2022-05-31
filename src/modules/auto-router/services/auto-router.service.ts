@@ -36,10 +36,6 @@ export class AutoRouterService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getFactory(): Promise<AutoRouteModel> {
-        return new AutoRouteModel({ tokenInID: '' });
-    }
-
     async swap(sender: string, args: AutoRouterArgs): Promise<AutoRouteModel> {
         this.validateSwapArgs(args);
 
