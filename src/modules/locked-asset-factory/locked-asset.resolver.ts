@@ -3,7 +3,7 @@ import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { LockedAssetService } from './services/locked-asset.service';
 import {
-    LockedAssetAttributes,
+    LockedAssetAttributesModel,
     LockedAssetModel,
     UnlockMileStoneModel,
 } from './models/locked-asset.model';
@@ -53,6 +53,15 @@ export class LockedAssetResolver {
         }
     }
 
+    @ResolveField()
+    async activationNonce(): Promise<number> {
+        try {
+            return await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @Query(() => LockedAssetModel)
     async lockedAssetFactory(): Promise<LockedAssetModel> {
         return await this.lockedAssetService.getLockedAssetInfo();
@@ -96,10 +105,10 @@ export class LockedAssetResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => [LockedAssetAttributes])
+    @Query(() => [LockedAssetAttributesModel])
     async decodeLockedAssetAttributes(
         @Args('args') args: DecodeAttributesArgs,
-    ): Promise<LockedAssetAttributes[]> {
+    ): Promise<LockedAssetAttributesModel[]> {
         return this.lockedAssetService.decodeLockedAssetAttributes(args);
     }
 }

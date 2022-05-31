@@ -167,7 +167,7 @@ export class UserComputeService {
     async lockedLpTokenUSD(
         nftToken: LockedLpToken,
     ): Promise<UserLockedLPToken> {
-        const decodedWLPTAttributes = this.proxyService.getWrappedLpTokenAttributes(
+        const decodedWLPTAttributes = await this.proxyService.getWrappedLpTokenAttributes(
             {
                 batchAttributes: [
                     {

@@ -1,4 +1,4 @@
-import { BinaryCodec } from '@elrondnetwork/erdjs/out';
+import { DualYieldTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -165,18 +165,13 @@ export class StakingProxyService {
         args: DecodeAttributesArgs,
     ): DualYieldTokenAttributesModel[] {
         return args.batchAttributes.map(arg => {
-            const attributesBuffer = Buffer.from(arg.attributes, 'base64');
-            const codec = new BinaryCodec();
-            const structType = DualYieldTokenAttributesModel.getStructure();
-            const [decoded] = codec.decodeNested(attributesBuffer, structType);
-            const decodedAttributes = decoded.valueOf();
-            const dualYieldTokenAttributes = DualYieldTokenAttributesModel.fromDecodedAttributes(
-                decodedAttributes,
-            );
-            dualYieldTokenAttributes.identifier = arg.identifier;
-            dualYieldTokenAttributes.attributes = arg.attributes;
-
-            return dualYieldTokenAttributes;
+            return new DualYieldTokenAttributesModel({
+                ...DualYieldTokenAttributes.fromAttributes(
+                    arg.attributes,
+                ).toJSON(),
+                attributes: arg.attributes,
+                identifier: arg.identifier,
+            });
         });
     }
 
