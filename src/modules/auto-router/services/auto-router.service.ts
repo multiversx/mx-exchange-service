@@ -225,7 +225,10 @@ export class AutoRouterService {
         tokenInMetadata: EsdtToken,
     ): string {
         if (!args.amountOut && !args.amountIn) {
-            return new BigNumber(10).pow(tokenInMetadata.decimals).toFixed();
+            return new BigNumber(10)
+                .pow(tokenInMetadata.decimals)
+                .integerValue()
+                .toFixed();
         }
 
         return args.amountIn;
@@ -249,6 +252,7 @@ export class AutoRouterService {
     addTolerance(amountIn: string, tolerance: number): string {
         return new BigNumber(amountIn)
             .plus(new BigNumber(amountIn).multipliedBy(tolerance))
+            .integerValue()
             .toFixed();
     }
 
@@ -309,7 +313,10 @@ export class AutoRouterService {
             .pow(tokenOutDecimals)
             .multipliedBy(amountIn)
             .dividedBy(amountOut);
-        return [tokenInPrice.toFixed(), tokenOutPrice.toFixed()];
+        return [
+            tokenInPrice.integerValue().toFixed(),
+            tokenOutPrice.integerValue().toFixed(),
+        ];
     }
 
     private addressesToPairs(addresses: string[]): PairModel[] {

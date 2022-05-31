@@ -120,14 +120,14 @@ export class AutoRouterComputeService {
                                     currentPair.info.reserves0,
                                     currentPair.info.reserves1,
                                     currentPair.totalFeePercent,
-                                ).toFixed();
+                                ).integerValue().toFixed();
                             else
                                 output_of_e = await getAmountIn(
                                     output_from_s_to_u,
                                     currentPair.info.reserves1,
                                     currentPair.info.reserves0,
                                     currentPair.totalFeePercent,
-                                ).toFixed();
+                                ).integerValue().toFixed();
                             break;
                         }
                         case currentPair.secondToken.identifier: {
@@ -137,14 +137,14 @@ export class AutoRouterComputeService {
                                     currentPair.info.reserves1,
                                     currentPair.info.reserves0,
                                     currentPair.totalFeePercent,
-                                ).toFixed();
+                                ).integerValue().toFixed();
                             else
                                 output_of_e = await getAmountIn(
                                     output_from_s_to_u,
                                     currentPair.info.reserves0,
                                     currentPair.info.reserves1,
                                     currentPair.totalFeePercent,
-                                ).toFixed();
+                                ).integerValue().toFixed();
                             break;
                         }
                         default: {
