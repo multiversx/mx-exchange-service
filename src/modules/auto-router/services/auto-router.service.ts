@@ -20,7 +20,7 @@ import { AutoRouteModel, SWAP_TYPE } from '../models/auto-route.model';
 import { AutoRouterTransactionService } from './auto-router.transactions.service';
 import { RouterService } from 'src/modules/router/services/router.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-
+import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 @Injectable()
 export class AutoRouterService {
     constructor(
@@ -29,7 +29,8 @@ export class AutoRouterService {
         private readonly contextGetterService: ContextGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
-        private readonly transactionService: AutoRouterTransactionService,
+        private readonly autoRouterTransactionService: AutoRouterTransactionService,
+        private readonly pairTransactionService: PairTransactionService,
         private readonly wrapService: WrapService,
         private readonly routerService: RouterService,
         private readonly pairService: PairService,
@@ -320,16 +321,50 @@ export class AutoRouterService {
     }
 
     async getTransactions(parent: AutoRouteModel) {
-        return await this.transactionService.multiPairSwap(parent.sender, {
-            swapType: parent.swapType,
-            tokenInID: parent.tokenInID,
-            tokenOutID: parent.tokenOutID,
-            addressRoute: parent.pairs.map(p => {
-                return p.address;
-            }),
-            intermediaryAmounts: parent.intermediaryAmounts,
-            tokenRoute: parent.tokenRoute,
-            tolerance: parent.tolerance,
-        });
+        if (parent.pairs.length == 1) {
+            if (parent.swapType === SWAP_TYPE.fixedInput)
+                return await this.pairTransactionService.swapTokensFixedInput(
+                    parent.sender,
+                    {
+                        pairAddress: parent.pairs[0].address,
+                        tokenInID: parent.tokenInID,
+                        tokenOutID: parent.tokenOutID,
+                        amountIn: parent.amountIn,
+                        amountOut: parent.amountOut,
+                        tolerance: parent.tolerance,
+                    },
+                );
+
+            return await this.pairTransactionService.swapTokensFixedOutput(
+                parent.sender,
+                {
+                    pairAddress: parent.pairs[0].address,
+                    tokenInID: parent.tokenInID,
+                    tokenOutID: parent.tokenOutID,
+                    amountIn: parent.amountIn,
+                    amountOut: parent.amountOut,
+                },
+            );
+        }
+
+        if (parent.swapType === SWAP_TYPE.fixedOutput)
+            return new Error(
+                "Can't resolve fixedOutput with multiSwap for now...",
+            );
+
+        return await this.autoRouterTransactionService.multiPairSwap(
+            parent.sender,
+            {
+                swapType: parent.swapType,
+                tokenInID: parent.tokenInID,
+                tokenOutID: parent.tokenOutID,
+                addressRoute: parent.pairs.map(p => {
+                    return p.address;
+                }),
+                intermediaryAmounts: parent.intermediaryAmounts,
+                tokenRoute: parent.tokenRoute,
+                tolerance: parent.tolerance,
+            },
+        );
     }
 }

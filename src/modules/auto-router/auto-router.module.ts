@@ -11,6 +11,7 @@ import { WrappingModule } from '../wrapping/wrap.module';
 import { RouterModule } from '../router/router.module';
 import { AutoRouterTransactionService } from './services/auto-router.transactions.service';
 import { AutoRouterResolver } from './auto-router.resolver';
+import { PairTransactionService } from '../pair/services/pair.transactions.service';
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { AutoRouterResolver } from './auto-router.resolver';
         AutoRouterService,
         AutoRouterComputeService,
         AutoRouterTransactionService,
+        PairTransactionService,
     ],
     exports: [],
 })
