@@ -12,23 +12,23 @@ import { GqlAuthGuard } from '../auth/gql.auth.guard';
 export class AutoRouterResolver {
     constructor(private readonly autoRouterService: AutoRouterService) {}
 
-    @UseGuards(GqlAuthGuard)
     @Query(() => AutoRouteModel)
-    async swap(
-        @User() user: any,
-        @Args() args: AutoRouterArgs,
-    ): Promise<AutoRouteModel> {
+    async swap(@Args() args: AutoRouterArgs): Promise<AutoRouteModel> {
         try {
-            return await this.autoRouterService.swap(user.publicKey, args);
+            return await this.autoRouterService.swap(args);
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
+    @UseGuards(GqlAuthGuard)
     @ResolveField(() => [TransactionModel])
-    async transactions(@Parent() parent: AutoRouteModel) {
+    async transactions(@Parent() parent: AutoRouteModel, @User() user: any) {
         try {
-            return await this.autoRouterService.getTransactions(parent);
+            return await this.autoRouterService.getTransactions(
+                user.publicKey,
+                parent,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }

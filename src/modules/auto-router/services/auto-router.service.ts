@@ -37,7 +37,7 @@ export class AutoRouterService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async swap(sender: string, args: AutoRouterArgs): Promise<AutoRouteModel> {
+    async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
         this.validateSwapArgs(args);
 
         const wrappedEgldTokenID = await this.wrapService.getWrappedEgldTokenID();
@@ -68,12 +68,14 @@ export class AutoRouterService {
             this.contextGetterService.getTokenMetadata(tokenOutID),
         ]);
 
+        console.log('directPair', directPair);
+        console.log('pairs', pairs);
+
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
         if (directPair) {
             return await this.singleSwap(
-                sender,
                 args,
                 tokenInID,
                 tokenOutID,
@@ -83,7 +85,6 @@ export class AutoRouterService {
         }
 
         return await this.multiSwap(
-            sender,
             args,
             tokenInID,
             tokenOutID,
@@ -95,7 +96,6 @@ export class AutoRouterService {
     }
 
     async singleSwap(
-        sender: string,
         args: AutoRouterArgs,
         tokenInID: string,
         tokenOutID: string,
@@ -132,7 +132,6 @@ export class AutoRouterService {
             amountIn = this.addTolerance(amountIn, args.tolerance);
 
         return new AutoRouteModel({
-            sender: sender,
             swapType: swapType,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
@@ -154,7 +153,6 @@ export class AutoRouterService {
     }
 
     async multiSwap(
-        sender: string,
         args: AutoRouterArgs,
         tokenInID: string,
         tokenOutID: string,
@@ -198,7 +196,6 @@ export class AutoRouterService {
         );
 
         return new AutoRouteModel({
-            sender: sender,
             swapType: swapType,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
@@ -327,11 +324,11 @@ export class AutoRouterService {
         return pairs;
     }
 
-    async getTransactions(parent: AutoRouteModel) {
+    async getTransactions(sender: string, parent: AutoRouteModel) {
         if (parent.pairs.length == 1) {
             if (parent.swapType === SWAP_TYPE.fixedInput)
                 return await this.pairTransactionService.swapTokensFixedInput(
-                    parent.sender,
+                    sender,
                     {
                         pairAddress: parent.pairs[0].address,
                         tokenInID: parent.tokenInID,
@@ -343,7 +340,7 @@ export class AutoRouterService {
                 );
 
             return await this.pairTransactionService.swapTokensFixedOutput(
-                parent.sender,
+                sender,
                 {
                     pairAddress: parent.pairs[0].address,
                     tokenInID: parent.tokenInID,
@@ -359,19 +356,16 @@ export class AutoRouterService {
                 "Can't resolve fixedOutput with multiSwap for now...",
             );
 
-        return await this.autoRouterTransactionService.multiPairSwap(
-            parent.sender,
-            {
-                swapType: parent.swapType,
-                tokenInID: parent.tokenInID,
-                tokenOutID: parent.tokenOutID,
-                addressRoute: parent.pairs.map(p => {
-                    return p.address;
-                }),
-                intermediaryAmounts: parent.intermediaryAmounts,
-                tokenRoute: parent.tokenRoute,
-                tolerance: parent.tolerance,
-            },
-        );
+        return await this.autoRouterTransactionService.multiPairSwap(sender, {
+            swapType: parent.swapType,
+            tokenInID: parent.tokenInID,
+            tokenOutID: parent.tokenOutID,
+            addressRoute: parent.pairs.map(p => {
+                return p.address;
+            }),
+            intermediaryAmounts: parent.intermediaryAmounts,
+            tokenRoute: parent.tokenRoute,
+            tolerance: parent.tolerance,
+        });
     }
 }

@@ -3,8 +3,6 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 @ObjectType()
 export class AutoRouteModel {
-    sender: string;
-
     @Field()
     swapType: SWAP_TYPE;
 
@@ -40,7 +38,6 @@ export class AutoRouteModel {
 
     @Field(() => [TransactionModel], { nullable: true })
     transactions: TransactionModel[];
-
     constructor(init?: Partial<AutoRouteModel>) {
         Object.assign(this, init);
     }
