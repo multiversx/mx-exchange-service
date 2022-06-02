@@ -68,9 +68,6 @@ export class AutoRouterService {
             this.contextGetterService.getTokenMetadata(tokenOutID),
         ]);
 
-        console.log('directPair', directPair);
-        console.log('pairs', pairs);
-
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
@@ -80,6 +77,8 @@ export class AutoRouterService {
                 tokenInID,
                 tokenOutID,
                 directPair,
+                tokenInMetadata,
+                tokenOutMetadata,
                 swapType,
             );
         }
@@ -100,15 +99,11 @@ export class AutoRouterService {
         tokenInID: string,
         tokenOutID: string,
         pair: PairModel,
+        tokenInMetadata: EsdtToken,
+        tokenOutMetadata: EsdtToken,
         swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
-        const [
-            pairMetadata,
-            amount,
-            firstTokenPrice,
-            secondTokenPrice,
-        ] = await Promise.all([
-            this.contextService.getPairMetadata(pair.address),
+        const [amount, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
             this.isFixedInput(swapType)
                 ? this.pairService.getAmountOut(
                       pair.address,
@@ -120,13 +115,23 @@ export class AutoRouterService {
                       tokenOutID,
                       args.amountOut,
                   ),
-            this.pairGetterService.getFirstTokenPrice(pair.address),
-            this.pairGetterService.getSecondTokenPrice(pair.address),
+            this.pairGetterService.getTokenPriceUSD(tokenInID),
+            this.pairGetterService.getTokenPriceUSD(tokenOutID),
         ]);
 
         let [amountIn, amountOut] = this.isFixedInput(swapType)
             ? [args.amountIn, amount]
             : [amount, args.amountOut];
+
+        const [
+            tokenInExchangeRate,
+            tokenOutExchangeRate,
+        ] = this.calculateExchangeRate(
+            tokenInMetadata.decimals,
+            tokenOutMetadata.decimals,
+            this.isFixedInput(swapType) ? args.amountIn : amount,
+            this.isFixedInput(swapType) ? amount : args.amountOut,
+        );
 
         if (!this.isFixedInput(swapType))
             amountIn = this.addTolerance(amountIn, args.tolerance);
@@ -135,14 +140,10 @@ export class AutoRouterService {
             swapType: swapType,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
-            tokenInPrice:
-                pairMetadata.firstTokenID == tokenInID
-                    ? firstTokenPrice
-                    : secondTokenPrice,
-            tokenOutPrice:
-                pairMetadata.secondTokenID == tokenOutID
-                    ? secondTokenPrice
-                    : firstTokenPrice,
+            tokenInExchangeRate: tokenInExchangeRate,
+            tokenOutExchangeRate: tokenOutExchangeRate,
+            tokenInPriceUSD: tokenInPriceUSD,
+            tokenOutPriceUSD: tokenOutPriceUSD,
             amountIn: amountIn,
             amountOut: amountOut,
             intermediaryAmounts: [amountIn, amountOut],
@@ -188,7 +189,17 @@ export class AutoRouterService {
             throw error;
         }
 
-        const [tokenInPrice, tokenOutPrice] = this.calculateExchangeRate(
+        const pairRoute = this.addressesToPairs(swapRoute.addressRoute);
+
+        const [tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
+            this.pairGetterService.getTokenPriceUSD(tokenInID),
+            this.pairGetterService.getTokenPriceUSD(tokenOutID),
+        ]);
+
+        const [
+            tokenInExchangeRate,
+            tokenOutExchangeRate,
+        ] = this.calculateExchangeRate(
             tokenInMetadata.decimals,
             tokenOutMetadata.decimals,
             this.isFixedInput(swapType) ? args.amountIn : swapRoute.bestResult,
@@ -199,15 +210,17 @@ export class AutoRouterService {
             swapType: swapType,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
-            tokenInPrice: tokenInPrice,
-            tokenOutPrice: tokenOutPrice,
+            tokenInExchangeRate: tokenInExchangeRate,
+            tokenOutExchangeRate: tokenOutExchangeRate,
+            tokenInPriceUSD: tokenInPriceUSD,
+            tokenOutPriceUSD: tokenOutPriceUSD,
             amountIn:
                 args.amountIn ||
                 this.addTolerance(swapRoute.bestResult, args.tolerance),
             amountOut: args.amountOut || swapRoute.bestResult,
             intermediaryAmounts: swapRoute.intermediaryAmounts,
             tokenRoute: swapRoute.tokenRoute,
-            pairs: this.addressesToPairs(swapRoute.addressRoute),
+            pairs: pairRoute,
             tolerance: args.tolerance,
         });
     }
@@ -282,7 +295,6 @@ export class AutoRouterService {
                         }),
                         info: pairInfo,
                         totalFeePercent: pairTotalFeePercent,
-                        state: pairState,
                     }),
                 );
         }

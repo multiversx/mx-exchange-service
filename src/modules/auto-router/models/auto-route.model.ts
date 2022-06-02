@@ -13,10 +13,16 @@ export class AutoRouteModel {
     tokenOutID: string;
 
     @Field()
-    tokenInPrice: string;
+    tokenInExchangeRate: string;
 
     @Field()
-    tokenOutPrice: string;
+    tokenOutExchangeRate: string;
+
+    @Field()
+    tokenInPriceUSD: string;
+
+    @Field()
+    tokenOutPriceUSD: string;
 
     @Field({ nullable: true })
     amountIn: string;
