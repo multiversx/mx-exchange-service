@@ -353,11 +353,6 @@ export class AutoRouterService {
             );
         }
 
-        if (parent.swapType === SWAP_TYPE.fixedOutput)
-            return new Error(
-                "Can't resolve fixedOutput with multiSwap for now...",
-            );
-
         return await this.autoRouterTransactionService.multiPairSwap(sender, {
             swapType: parent.swapType,
             tokenInID: parent.tokenInID,
