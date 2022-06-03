@@ -75,6 +75,7 @@ import { AutoRouterModule } from './modules/auto-router/auto-router.module';
                 logger.error(error.message, error.extensions);
                 return graphQLFormattedError;
             },
+            fieldResolverEnhancers: ['guards'],
         }),
         HttpModule,
         RouterModule,

@@ -37,19 +37,14 @@ export class AutoRouterService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async swap(sender: string, args: AutoRouterArgs): Promise<AutoRouteModel> {
-        this.validateSwapArgs(args);
+    async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
+        if (args.amountIn && args.amountOut)
+            throw new Error("Can't have both amountIn & amountOut");
 
-        const wrappedEgldTokenID = await this.wrapService.getWrappedEgldTokenID();
-
-        const tokenInID = this.toWrappedIfEGLD(
+        const [tokenInID, tokenOutID] = await this.toWrappedIfEGLD([
             args.tokenInID,
-            wrappedEgldTokenID,
-        );
-        const tokenOutID = this.toWrappedIfEGLD(
             args.tokenOutID,
-            wrappedEgldTokenID,
-        );
+        ]);
 
         const [
             directPair,
@@ -73,17 +68,17 @@ export class AutoRouterService {
 
         if (directPair) {
             return await this.singleSwap(
-                sender,
                 args,
                 tokenInID,
                 tokenOutID,
                 directPair,
+                tokenInMetadata,
+                tokenOutMetadata,
                 swapType,
             );
         }
 
         return await this.multiSwap(
-            sender,
             args,
             tokenInID,
             tokenOutID,
@@ -95,20 +90,15 @@ export class AutoRouterService {
     }
 
     async singleSwap(
-        sender: string,
         args: AutoRouterArgs,
         tokenInID: string,
         tokenOutID: string,
         pair: PairModel,
+        tokenInMetadata: EsdtToken,
+        tokenOutMetadata: EsdtToken,
         swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
-        const [
-            pairMetadata,
-            amount,
-            firstTokenPrice,
-            secondTokenPrice,
-        ] = await Promise.all([
-            this.contextService.getPairMetadata(pair.address),
+        const [result, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
             this.isFixedInput(swapType)
                 ? this.pairService.getAmountOut(
                       pair.address,
@@ -120,30 +110,35 @@ export class AutoRouterService {
                       tokenOutID,
                       args.amountOut,
                   ),
-            this.pairGetterService.getFirstTokenPrice(pair.address),
-            this.pairGetterService.getSecondTokenPrice(pair.address),
+            this.pairGetterService.getTokenPriceUSD(tokenInID),
+            this.pairGetterService.getTokenPriceUSD(tokenOutID),
         ]);
 
         let [amountIn, amountOut] = this.isFixedInput(swapType)
-            ? [args.amountIn, amount]
-            : [amount, args.amountOut];
+            ? [args.amountIn, result]
+            : [result, args.amountOut];
+
+        const [
+            tokenInExchangeRate,
+            tokenOutExchangeRate,
+        ] = this.calculateExchangeRate(
+            tokenInMetadata.decimals,
+            tokenOutMetadata.decimals,
+            amountIn,
+            amountOut,
+        );
 
         if (!this.isFixedInput(swapType))
             amountIn = this.addTolerance(amountIn, args.tolerance);
 
         return new AutoRouteModel({
-            sender: sender,
             swapType: swapType,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
-            tokenInPrice:
-                pairMetadata.firstTokenID == tokenInID
-                    ? firstTokenPrice
-                    : secondTokenPrice,
-            tokenOutPrice:
-                pairMetadata.secondTokenID == tokenOutID
-                    ? secondTokenPrice
-                    : firstTokenPrice,
+            tokenInExchangeRate: tokenInExchangeRate,
+            tokenOutExchangeRate: tokenOutExchangeRate,
+            tokenInPriceUSD: tokenInPriceUSD,
+            tokenOutPriceUSD: tokenOutPriceUSD,
             amountIn: amountIn,
             amountOut: amountOut,
             intermediaryAmounts: [amountIn, amountOut],
@@ -154,7 +149,6 @@ export class AutoRouterService {
     }
 
     async multiSwap(
-        sender: string,
         args: AutoRouterArgs,
         tokenInID: string,
         tokenOutID: string,
@@ -163,25 +157,30 @@ export class AutoRouterService {
         tokenOutMetadata: EsdtToken,
         swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
-        let swapRoute: BestSwapRoute;
+        let swapRoute: BestSwapRoute,
+            tokenInPriceUSD: string,
+            tokenOutPriceUSD: string;
+
         try {
-            if (this.isFixedInput(swapType)) {
-                swapRoute = await this.autoRouterComputeService.computeBestSwapRoute(
-                    tokenInID,
-                    tokenOutID,
-                    pairs,
-                    args.amountIn,
-                    PRIORITY_MODES.maxOutput,
-                );
-            } else {
-                swapRoute = await this.autoRouterComputeService.computeBestSwapRoute(
-                    tokenOutID,
-                    tokenInID,
-                    pairs,
-                    args.amountOut,
-                    PRIORITY_MODES.minInput,
-                );
-            }
+            [swapRoute, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
+                this.isFixedInput(swapType)
+                    ? this.autoRouterComputeService.computeBestSwapRoute(
+                          tokenInID,
+                          tokenOutID,
+                          pairs,
+                          args.amountIn,
+                          PRIORITY_MODES.maxOutput,
+                      )
+                    : this.autoRouterComputeService.computeBestSwapRoute(
+                          tokenOutID,
+                          tokenInID,
+                          pairs,
+                          args.amountOut,
+                          PRIORITY_MODES.minInput,
+                      ),
+                this.pairGetterService.getTokenPriceUSD(tokenInID),
+                this.pairGetterService.getTokenPriceUSD(tokenOutID),
+            ]);
         } catch (error) {
             this.logger.error(
                 'Error when computing the swap auto route.',
@@ -190,7 +189,10 @@ export class AutoRouterService {
             throw error;
         }
 
-        const [tokenInPrice, tokenOutPrice] = this.calculateExchangeRate(
+        const [
+            tokenInExchangeRate,
+            tokenOutExchangeRate,
+        ] = this.calculateExchangeRate(
             tokenInMetadata.decimals,
             tokenOutMetadata.decimals,
             this.isFixedInput(swapType) ? args.amountIn : swapRoute.bestResult,
@@ -198,12 +200,13 @@ export class AutoRouterService {
         );
 
         return new AutoRouteModel({
-            sender: sender,
             swapType: swapType,
             tokenInID: args.tokenInID,
             tokenOutID: args.tokenOutID,
-            tokenInPrice: tokenInPrice,
-            tokenOutPrice: tokenOutPrice,
+            tokenInExchangeRate: tokenInExchangeRate,
+            tokenOutExchangeRate: tokenOutExchangeRate,
+            tokenInPriceUSD: tokenInPriceUSD,
+            tokenOutPriceUSD: tokenOutPriceUSD,
             amountIn:
                 args.amountIn ||
                 this.addTolerance(swapRoute.bestResult, args.tolerance),
@@ -213,11 +216,6 @@ export class AutoRouterService {
             pairs: this.addressesToPairs(swapRoute.addressRoute),
             tolerance: args.tolerance,
         });
-    }
-
-    validateSwapArgs(args: AutoRouterArgs) {
-        if (args.amountIn && args.amountOut)
-            throw new Error("Can't have both amountIn & amountOut");
     }
 
     setDefaultAmountInIfNeeded(
@@ -285,7 +283,6 @@ export class AutoRouterService {
                         }),
                         info: pairInfo,
                         totalFeePercent: pairTotalFeePercent,
-                        state: pairState,
                     }),
                 );
         }
@@ -293,10 +290,12 @@ export class AutoRouterService {
         return pairs;
     }
 
-    private toWrappedIfEGLD(tokenID: string, wrappedEgldTokenID: string) {
-        return elrondConfig.EGLDIdentifier === tokenID
-            ? wrappedEgldTokenID
-            : tokenID;
+    private async toWrappedIfEGLD(tokensIDs: string[]) {
+        const wrappedEgldTokenID = await this.wrapService.getWrappedEgldTokenID();
+
+        return tokensIDs.map(t => {
+            return elrondConfig.EGLDIdentifier === t ? wrappedEgldTokenID : t;
+        });
     }
 
     private calculateExchangeRate(
@@ -327,11 +326,11 @@ export class AutoRouterService {
         return pairs;
     }
 
-    async getTransactions(parent: AutoRouteModel) {
+    async getTransactions(sender: string, parent: AutoRouteModel) {
         if (parent.pairs.length == 1) {
             if (parent.swapType === SWAP_TYPE.fixedInput)
                 return await this.pairTransactionService.swapTokensFixedInput(
-                    parent.sender,
+                    sender,
                     {
                         pairAddress: parent.pairs[0].address,
                         tokenInID: parent.tokenInID,
@@ -343,7 +342,7 @@ export class AutoRouterService {
                 );
 
             return await this.pairTransactionService.swapTokensFixedOutput(
-                parent.sender,
+                sender,
                 {
                     pairAddress: parent.pairs[0].address,
                     tokenInID: parent.tokenInID,
@@ -354,24 +353,16 @@ export class AutoRouterService {
             );
         }
 
-        if (parent.swapType === SWAP_TYPE.fixedOutput)
-            return new Error(
-                "Can't resolve fixedOutput with multiSwap for now...",
-            );
-
-        return await this.autoRouterTransactionService.multiPairSwap(
-            parent.sender,
-            {
-                swapType: parent.swapType,
-                tokenInID: parent.tokenInID,
-                tokenOutID: parent.tokenOutID,
-                addressRoute: parent.pairs.map(p => {
-                    return p.address;
-                }),
-                intermediaryAmounts: parent.intermediaryAmounts,
-                tokenRoute: parent.tokenRoute,
-                tolerance: parent.tolerance,
-            },
-        );
+        return await this.autoRouterTransactionService.multiPairSwap(sender, {
+            swapType: parent.swapType,
+            tokenInID: parent.tokenInID,
+            tokenOutID: parent.tokenOutID,
+            addressRoute: parent.pairs.map(p => {
+                return p.address;
+            }),
+            intermediaryAmounts: parent.intermediaryAmounts,
+            tokenRoute: parent.tokenRoute,
+            tolerance: parent.tolerance,
+        });
     }
 }

@@ -59,33 +59,11 @@ export class AutoRouterTransactionService {
                     .integerValue(),
             ),
             BytesValue.fromUTF8('multiPairSwap'),
-        ];
-
-        for (const [index, address] of args.addressRoute.entries()) {
-            if (args.swapType == SWAP_TYPE.fixedInput) {
-                transactionArgs.push(
-                    ...[
-                        BytesValue.fromHex(Address.fromString(address).hex()),
-                        BytesValue.fromUTF8('swapTokensFixedInput'),
-                        BytesValue.fromUTF8(args.tokenRoute[index + 1]),
-                        new BigUIntValue(
-                            new BigNumber(args.intermediaryAmounts[index + 1]),
-                        ),
-                    ],
-                );
-            } else {
-                transactionArgs.push(
-                    ...[
-                        BytesValue.fromHex(Address.fromString(address).hex()),
-                        BytesValue.fromUTF8('swapTokensFixedOutput'),
-                        BytesValue.fromUTF8(args.tokenRoute[index + 1]),
-                        new BigUIntValue(
-                            new BigNumber(args.intermediaryAmounts[index + 1]),
-                        ),
-                    ],
-                );
-            }
-        }
+        ].concat(
+            args.swapType == SWAP_TYPE.fixedInput
+                ? this.multiPairFixedInputSwaps(args)
+                : this.multiPairFixedOutputSwaps(args),
+        );
 
         transactions.push(
             this.contextTransactionsService.esdtTransfer(
@@ -101,6 +79,101 @@ export class AutoRouterTransactionService {
         if (unwrapTransaction) transactions.push(unwrapTransaction);
 
         return transactions;
+    }
+
+    private multiPairFixedInputSwaps(args: MultiSwapTokensArgs): any[] {
+        const swaps = [];
+        for (const [index, address] of args.addressRoute.entries()) {
+            swaps.push(
+                ...[
+                    BytesValue.fromHex(Address.fromString(address).hex()),
+                    BytesValue.fromUTF8('swapTokensFixedInput'),
+                    BytesValue.fromUTF8(args.tokenRoute[index + 1]),
+                    new BigUIntValue(
+                        new BigNumber(args.intermediaryAmounts[index + 1]),
+                    ),
+                ],
+            );
+        }
+        return swaps;
+    }
+
+    private multiPairFixedOutputSwaps(args: MultiSwapTokensArgs): any[] {
+        const swaps = [];
+
+        const toleranceDecrementer = args.tolerance / args.addressRoute.length;
+
+        for (const [index, address] of args.addressRoute.entries()) {
+            // method #1
+            // [A -> B -> C -> D], all with swap_tokens_fixed_output
+            // overall: less input, more gas, rest/dust in A, B & C
+            const amountOut = new BigNumber(args.intermediaryAmounts[index + 1])
+                .plus(
+                    new BigNumber(
+                        args.intermediaryAmounts[index + 1],
+                    ).multipliedBy(
+                        (args.addressRoute.length - index - 1) *
+                            toleranceDecrementer,
+                    ),
+                )
+                .integerValue()
+                .toFixed();
+
+            swaps.push(
+                ...[
+                    BytesValue.fromHex(Address.fromString(address).hex()),
+                    BytesValue.fromUTF8('swapTokensFixedOutput'),
+                    BytesValue.fromUTF8(args.tokenRoute[index + 1]),
+                    new BigUIntValue(new BigNumber(amountOut)),
+                ],
+            );
+            // method #2
+            // [A -> B -> C] with swap_tokens_fixed_input + [C -> D] with swap_tokens_fixed_output
+            // overall: more input, less gas, rest in C
+            /*if (index < args.addressRoute.length - 1) {
+                const amountOutMin = new BigNumber(
+                    args.intermediaryAmounts[index + 1],
+                )
+                    .plus(
+                        new BigNumber(
+                            args.intermediaryAmounts[index + 1],
+                        ).multipliedBy(
+                            (args.addressRoute.length - index - 1) *
+                                toleranceDecrementer,
+                        ),
+                    )
+                    .integerValue()
+                    .toFixed();
+                console.log(
+                    'swapTokensFixedInput with amountOutMin ',
+                    amountOutMin,
+                );
+
+                swaps.push(
+                    ...[
+                        BytesValue.fromHex(Address.fromString(address).hex()),
+                        BytesValue.fromUTF8('swapTokensFixedInput'),
+                        BytesValue.fromUTF8(args.tokenRoute[index + 1]),
+                        new BigUIntValue(
+                            new BigNumber(args.intermediaryAmounts[index + 1]),
+                        ),
+                    ],
+                );
+            } else {
+                console.log('swapTokensFixedOutput');
+                swaps.push(
+                    ...[
+                        BytesValue.fromHex(Address.fromString(address).hex()),
+                        BytesValue.fromUTF8('swapTokensFixedOutput'),
+                        BytesValue.fromUTF8(args.tokenRoute[index + 1]),
+                        new BigUIntValue(
+                            new BigNumber(args.intermediaryAmounts[index + 1]),
+                        ),
+                    ],
+                );
+            }*/
+        }
+        return swaps;
     }
 
     async wrapIfNeeded(sender, tokenID, amount): Promise<TransactionModel> {

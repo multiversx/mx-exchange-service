@@ -127,4 +127,10 @@ export class PairGetterServiceMock {
     async getState(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).state;
     }
+
+    async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
+        return [
+            'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
+        ];
+    }
 }

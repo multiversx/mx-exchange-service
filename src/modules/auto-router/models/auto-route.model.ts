@@ -3,8 +3,6 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 @ObjectType()
 export class AutoRouteModel {
-    sender: string;
-
     @Field()
     swapType: SWAP_TYPE;
 
@@ -15,10 +13,16 @@ export class AutoRouteModel {
     tokenOutID: string;
 
     @Field()
-    tokenInPrice: string;
+    tokenInExchangeRate: string;
 
     @Field()
-    tokenOutPrice: string;
+    tokenOutExchangeRate: string;
+
+    @Field()
+    tokenInPriceUSD: string;
+
+    @Field()
+    tokenOutPriceUSD: string;
 
     @Field({ nullable: true })
     amountIn: string;
@@ -40,7 +44,6 @@ export class AutoRouteModel {
 
     @Field(() => [TransactionModel], { nullable: true })
     transactions: TransactionModel[];
-
     constructor(init?: Partial<AutoRouteModel>) {
         Object.assign(this, init);
     }
