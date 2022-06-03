@@ -1,4 +1,4 @@
-import { BinaryCodec } from '@elrondnetwork/erdjs/out';
+import { Address, BinaryCodec } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -149,5 +149,25 @@ export class StakingService {
         }
 
         return undefined;
+    }
+
+    async isWhitelisted(
+        stakeAddress: string,
+        address: string,
+    ): Promise<boolean> {
+        return await this.abiService.isWhitelisted(stakeAddress, address);
+    }
+
+    async requireWhitelist(stakeAddress, sender) {
+        if (!(await this.abiService.isWhitelisted(stakeAddress, sender)))
+            throw new Error('You are not whitelisted.');
+    }
+
+    async requireOwner(stakeAddress, sender) {
+        // todo: find owner somehow
+    }
+
+    async endProduceRewards(stakeAddress: string) {
+        await this.abiService.end_produce_rewards(stakeAddress);
     }
 }

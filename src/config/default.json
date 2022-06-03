@@ -250,11 +250,24 @@
                 "withTokenMerge": 10000000
             },
             "unstakeFarm": 9500000,
+            "stakeFarmThroughProxy": 7500000,
+            "unstakeFarmThroughProxy": 7500000,
             "unboundFarm": 7500000,
             "claimRewards": 8500000,
             "claimRewardsWithNewValue": 7500000,
             "compoundRewards": 8500000,
-            "mergeTokens": 20000000
+            "mergeTokens": 20000000,
+            "topUpRewards": 20000000,
+            "set_penalty_percent": 20000000,
+            "set_minimum_farming_epochs": 20000000,
+            "set_transfer_exec_gas_limit": 20000000,
+            "set_burn_gas_limit": 20000000,
+            "pause": 20000000,
+            "resume": 20000000,
+            "registerFarmToken": 20000000,
+            "setLocalRolesFarmToken": 20000000,
+            "addAddressToWhitelist": 20000000,
+            "removeAddressFromWhitelist": 20000000
         },
         "stakeProxy": {
             "stakeFarmTokens": {

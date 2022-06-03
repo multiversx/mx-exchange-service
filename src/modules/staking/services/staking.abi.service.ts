@@ -1,4 +1,5 @@
 import {
+    Address,
     BigUIntValue,
     BytesValue,
     Interaction,
@@ -204,6 +205,26 @@ export class AbiStakingService {
         return response === '01';
     }
 
+    async getBurnGasLimit(stakeAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction = contract.methods.getBurnGasLimit([]);
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().name;
+    }
+
+    async getTransferExecGasLimit(stakeAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction = contract.methods.getTransferExecGasLimit(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().name;
+    }
+
     async getState(stakeAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
@@ -231,5 +252,54 @@ export class AbiStakingService {
         );
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf();
+    }
+
+    async end_produce_rewards(stakeAddress: string) {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction = contract.methods.end_produce_rewards(
+            [],
+        );
+        await this.getGenericData(contract, interaction);
+    }
+
+    async getLockedAssetFactoryManagedAddress(
+        stakeAddress: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction = contract.methods.getLockedAssetFactoryManagedAddress(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().hex32();
+    }
+
+    async isWhitelisted(
+        stakeAddress: string,
+        address: string,
+    ): Promise<boolean> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction = contract.methods.isWhitelisted([
+            BytesValue.fromHex(new Address(address).hex()),
+        ]);
+        const response = await this.getGenericData(contract, interaction);
+        console.log('response', response);
+        return response.firstValue.valueOf();
+    }
+
+    async getLastErrorMessage(stakeAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction = contract.methods.getLastErrorMessage(
+            [],
+        );
+        const response = await this.getGenericData(contract, interaction);
+        return response.firstValue.valueOf().toString();
     }
 }
