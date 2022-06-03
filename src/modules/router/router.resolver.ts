@@ -118,33 +118,6 @@ export class RouterResolver {
         }
     }
 
-    @ResolveField(() => [String])
-    async allPairsManagedAddresses(): Promise<string[]> {
-        try {
-            return await this.routerGetterService.getAllPairsManagedAddresses();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField(() => [PairTokens])
-    async allPairTokens(): Promise<PairTokens[]> {
-        try {
-            return await this.routerGetterService.getAllPairTokens();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField(() => [PairMetadata])
-    async allPairsMetadata(): Promise<PairMetadata[]> {
-        try {
-            return await this.routerGetterService.getPairsMetadata();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
     @ResolveField(() => String)
     async pairTemplateAddress(): Promise<string> {
         try {
@@ -202,7 +175,7 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async upgradePair(
         @Args('firstTokenID') firstTokenID: string,
@@ -210,8 +183,7 @@ export class RouterResolver {
         @Args('fees', { type: () => [Float] }) fees: number[],
         @User() user: any,
     ): Promise<TransactionModel> {
-        if ((await this.routerGetterService.getOwner()) !== user.publicKey)
-            throw new Error('You are not the owner.');
+        await this.routerService.requireOwner(user.publicKey);
         return this.transactionService.upgradePair(
             firstTokenID,
             secondTokenID,

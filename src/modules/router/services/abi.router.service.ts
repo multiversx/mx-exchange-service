@@ -1,8 +1,4 @@
-import {
-    Address,
-    Interaction,
-    QueryResponseBundle,
-} from '@elrondnetwork/erdjs/out';
+import { Interaction, QueryResponseBundle } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateRunQueryLogMessage } from '../../../utils/generate-log-message';
@@ -10,8 +6,7 @@ import { Logger } from 'winston';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
-import { PairTokens } from 'src/modules/pair/dto/pair-tokens.model';
-
+import { PairTokens } from 'src/modules/pair/models/pair.model';
 @Injectable()
 export class AbiRouterService {
     constructor(
@@ -97,7 +92,7 @@ export class AbiRouterService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction = contract.methods.getOwner([]);
         const response = await this.getGenericData(contract, interaction);
-        return new Address(response.firstValue.valueOf().toString()).bech32();
+        return response.firstValue.valueOf().bech32();
     }
 
     async getAllPairsManagedAddresses(): Promise<string[]> {
@@ -106,9 +101,7 @@ export class AbiRouterService {
             [],
         );
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().map(item => {
-            return new Address(item).bech32();
-        });
+        return response.firstValue.valueOf().map(address => address.bech32());
     }
 
     async getAllPairTokens(): Promise<PairTokens[]> {
@@ -129,7 +122,7 @@ export class AbiRouterService {
             [],
         );
         const response = await this.getGenericData(contract, interaction);
-        return new Address(response.firstValue.valueOf().toString()).bech32();
+        return response.firstValue.valueOf().bech32();
     }
 
     async getTemporaryOwnerPeriod(): Promise<string> {

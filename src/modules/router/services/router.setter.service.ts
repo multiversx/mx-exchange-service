@@ -25,6 +25,18 @@ export class RouterSetterService {
         return cacheKey;
     }
 
+    async setAllPairTokens(value: string[]): Promise<string> {
+        const cacheKey = this.getRouterCacheKey('pairsTokens');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setAllPairsManagedAddresses(value: string[]): Promise<string> {
+        const cacheKey = this.getRouterCacheKey('pairsManagedAddresses');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     async setTotalLockedValueUSD(value: string): Promise<string> {
         const cacheKey = this.getRouterCacheKey('totalLockedValueUSD');
         await this.cachingService.setCache(cacheKey, value, oneMinute());

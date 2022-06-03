@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
@@ -92,7 +92,7 @@ export class RouterGetterService {
         return this.getData(
             'pairCreationEnabled',
             () => this.abiService.getPairCreationEnabled(),
-            oneMinute(),
+            oneHour(),
         );
     }
 
@@ -106,15 +106,15 @@ export class RouterGetterService {
 
     async getState(): Promise<boolean> {
         return this.getData(
-            'getState',
+            'state',
             () => this.abiService.getState(),
-            oneMinute(),
+            oneHour(),
         );
     }
 
     async getOwner(): Promise<string> {
         return this.getData(
-            'getState',
+            'owner',
             () => this.abiService.getOwner(),
             oneMinute(),
         );
@@ -122,33 +122,33 @@ export class RouterGetterService {
 
     async getAllPairsManagedAddresses(): Promise<string[]> {
         return this.getData(
-            'getAllPairsManagedAddresses',
+            'pairsManagedAddresses',
             () => this.abiService.getAllPairsManagedAddresses(),
-            oneMinute(),
+            oneHour(),
         );
     }
 
     async getAllPairTokens(): Promise<PairTokens[]> {
         return this.getData(
-            'getAllPairTokens',
+            'pairsTokens',
             () => this.abiService.getAllPairTokens(),
-            oneSecond(),
+            oneHour(),
         );
     }
 
     async getPairTemplateAddress(): Promise<string> {
         return this.getData(
-            'getPairTemplateAddress',
+            'pairTemplateAddress',
             () => this.abiService.getPairTemplateAddress(),
-            oneSecond(),
+            oneHour(),
         );
     }
 
     async getTemporaryOwnerPeriod(): Promise<string> {
         return this.getData(
-            'getTemporaryOwnerPeriod',
+            'temporaryOwnerPeriod',
             () => this.abiService.getTemporaryOwnerPeriod(),
-            oneSecond(),
+            oneMinute() * 10,
         );
     }
 }
