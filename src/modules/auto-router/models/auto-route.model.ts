@@ -19,6 +19,12 @@ export class AutoRouteModel {
     tokenOutExchangeRate: string;
 
     @Field()
+    tokenInExchangeRateDenom: string;
+
+    @Field()
+    tokenOutExchangeRateDenom: string;
+
+    @Field()
     tokenInPriceUSD: string;
 
     @Field()
