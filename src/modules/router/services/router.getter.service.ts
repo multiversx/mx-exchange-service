@@ -116,7 +116,7 @@ export class RouterGetterService {
         return this.getData(
             'owner',
             () => this.abiService.getOwner(),
-            oneMinute(),
+            oneHour(),
         );
     }
 

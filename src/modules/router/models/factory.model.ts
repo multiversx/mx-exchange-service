@@ -1,5 +1,4 @@
 import { ObjectType, Field } from '@nestjs/graphql';
-import { stringList } from 'aws-sdk/clients/datapipeline';
 
 @ObjectType()
 export class FactoryModel {
