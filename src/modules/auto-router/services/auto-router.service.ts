@@ -21,6 +21,7 @@ import { AutoRouterTransactionService } from './auto-router.transactions.service
 import { RouterService } from 'src/modules/router/services/router.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
+import { denominateAmount } from 'src/utils/token.converters';
 @Injectable()
 export class AutoRouterService {
     constructor(
@@ -137,6 +138,14 @@ export class AutoRouterService {
             tokenOutID: args.tokenOutID,
             tokenInExchangeRate: tokenInExchangeRate,
             tokenOutExchangeRate: tokenOutExchangeRate,
+            tokenInExchangeRateDenom: denominateAmount(
+                tokenInExchangeRate,
+                tokenOutMetadata.decimals,
+            ).toString(),
+            tokenOutExchangeRateDenom: denominateAmount(
+                tokenOutExchangeRate,
+                tokenInMetadata.decimals,
+            ).toString(),
             tokenInPriceUSD: tokenInPriceUSD,
             tokenOutPriceUSD: tokenOutPriceUSD,
             amountIn: amountIn,
@@ -205,6 +214,14 @@ export class AutoRouterService {
             tokenOutID: args.tokenOutID,
             tokenInExchangeRate: tokenInExchangeRate,
             tokenOutExchangeRate: tokenOutExchangeRate,
+            tokenInExchangeRateDenom: denominateAmount(
+                tokenInExchangeRate,
+                tokenOutMetadata.decimals,
+            ).toString(),
+            tokenOutExchangeRateDenom: denominateAmount(
+                tokenOutExchangeRate,
+                tokenInMetadata.decimals,
+            ).toString(),
             tokenInPriceUSD: tokenInPriceUSD,
             tokenOutPriceUSD: tokenOutPriceUSD,
             amountIn:
