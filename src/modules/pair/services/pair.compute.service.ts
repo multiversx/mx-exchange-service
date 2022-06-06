@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { constantsConfig } from 'src/config';
+import { constantsConfig, tokenProviderUSD } from 'src/config';
+import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
 
@@ -11,6 +12,7 @@ export class PairComputeService {
         private readonly pairGetterService: PairGetterService,
         @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
+        private readonly priceFeed: PriceFeedService,
     ) {}
 
     async computeFirstTokenPrice(pairAddress: string): Promise<string> {
@@ -18,6 +20,13 @@ export class PairComputeService {
             this.pairGetterService.getFirstToken(pairAddress),
             this.pairGetterService.getSecondToken(pairAddress),
         ]);
+
+        if (
+            firstToken.identifier === tokenProviderUSD &&
+            secondToken.identifier === constantsConfig.USDC_TOKEN_ID
+        ) {
+            return (await this.priceFeed.getTokenPrice('egld')).toFixed();
+        }
 
         const firstTokenPrice = await this.pairService.getEquivalentForLiquidity(
             pairAddress,
