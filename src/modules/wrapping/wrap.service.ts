@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { cacheConfig, scAddress } from '../../config';
+import { cacheConfig, scAddress, tokenProviderUSD } from '../../config';
 import { EsdtToken } from '../../models/tokens/esdtToken.model';
 import { WrapModel } from './models/wrapping.model';
 import { AbiWrapService } from './abi-wrap.service';
@@ -60,9 +60,10 @@ export class WrapService {
     }
 
     async getWrappedEgldTokenID(): Promise<string> {
-        return this.getTokenID('wrappedTokenID', () =>
-            this.abiService.getWrappedEgldTokenID(),
-        );
+        return tokenProviderUSD;
+        // return this.getTokenID('wrappedTokenID', () =>
+        //     this.abiService.getWrappedEgldTokenID(),
+        // );
     }
 
     async getWrappedEgldToken(): Promise<EsdtToken> {
