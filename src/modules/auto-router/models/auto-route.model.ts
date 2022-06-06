@@ -42,6 +42,12 @@ export class AutoRouteModel {
     @Field(() => [String])
     tokenRoute: string[];
 
+    @Field(() => [String])
+    fees: string[];
+
+    @Field(() => [String])
+    pricesImpact: string[];
+
     @Field(() => [PairModel])
     pairs: PairModel[];
 

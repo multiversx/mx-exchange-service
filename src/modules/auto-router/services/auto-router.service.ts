@@ -53,12 +53,7 @@ export class AutoRouterService {
             tokenInMetadata,
             tokenOutMetadata,
         ] = await Promise.all([
-            this.routerService.getAllPairs(0, 1, {
-                address: null,
-                firstTokenID: tokenInID,
-                secondTokenID: tokenOutID,
-                issuedLpToken: true,
-            })[0],
+            this.getDirectPair(tokenInID, tokenOutID),
             this.getAllActivePairs(),
             this.contextGetterService.getTokenMetadata(tokenInID),
             this.contextGetterService.getTokenMetadata(tokenOutID),
@@ -99,7 +94,14 @@ export class AutoRouterService {
         tokenOutMetadata: EsdtToken,
         swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
-        const [result, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
+        const [
+            result,
+            tokenInPriceUSD,
+            tokenOutPriceUSD,
+            pairTotalFeePercent,
+            pairInfo,
+            firstToken,
+        ] = await Promise.all([
             this.isFixedInput(swapType)
                 ? this.pairService.getAmountOut(
                       pair.address,
@@ -113,6 +115,9 @@ export class AutoRouterService {
                   ),
             this.pairGetterService.getTokenPriceUSD(tokenInID),
             this.pairGetterService.getTokenPriceUSD(tokenOutID),
+            this.pairGetterService.getTotalFeePercent(pair.address),
+            this.pairGetterService.getPairInfoMetadata(pair.address),
+            this.pairGetterService.getFirstToken(pair.address),
         ]);
 
         let [amountIn, amountOut] = this.isFixedInput(swapType)
@@ -126,6 +131,19 @@ export class AutoRouterService {
             tokenInMetadata.decimals,
             tokenOutMetadata.decimals,
             amountIn,
+            amountOut,
+        );
+
+        const fee = this.calculateFeeDenom(
+            pairTotalFeePercent,
+            amountIn,
+            tokenInMetadata.decimals,
+        );
+
+        const priceImpact = this.calculatePriceImpactPercent(
+            firstToken.identifier === tokenInID
+                ? pairInfo.reserves1
+                : pairInfo.reserves0,
             amountOut,
         );
 
@@ -152,6 +170,8 @@ export class AutoRouterService {
             amountOut: amountOut,
             intermediaryAmounts: [amountIn, amountOut],
             tokenRoute: [tokenInID, tokenOutID],
+            fees: [fee],
+            pricesImpact: [priceImpact],
             pairs: [pair],
             tolerance: args.tolerance,
         });
@@ -208,6 +228,13 @@ export class AutoRouterService {
             this.isFixedInput(swapType) ? swapRoute.bestResult : args.amountOut,
         );
 
+        const fees = this.calculateFeesDenom(swapRoute, pairs);
+
+        const pricesImpact = this.calculatePriceImpactPercents(
+            pairs,
+            swapRoute,
+        );
+
         return new AutoRouteModel({
             swapType: swapType,
             tokenInID: args.tokenInID,
@@ -230,6 +257,8 @@ export class AutoRouterService {
             amountOut: args.amountOut || swapRoute.bestResult,
             intermediaryAmounts: swapRoute.intermediaryAmounts,
             tokenRoute: swapRoute.tokenRoute,
+            fees: fees,
+            pricesImpact: pricesImpact,
             pairs: this.addressesToPairs(swapRoute.addressRoute),
             tolerance: args.tolerance,
         });
@@ -271,6 +300,19 @@ export class AutoRouterService {
             .toFixed();
     }
 
+    private async getDirectPair(
+        tokenInID: string,
+        tokenOutID: string,
+    ): Promise<PairModel> {
+        const pairs = await this.routerService.getAllPairs(0, 1, {
+            address: null,
+            firstTokenID: tokenInID,
+            secondTokenID: tokenOutID,
+            issuedLpToken: true,
+        });
+        return pairs[0];
+    }
+
     private async getAllActivePairs() {
         const pairs: PairModel[] = [];
 
@@ -281,11 +323,15 @@ export class AutoRouterService {
                 pairInfo,
                 pairTotalFeePercent,
                 pairState,
+                firstToken,
+                secondToken,
             ] = await Promise.all([
                 this.contextService.getPairMetadata(pairAddress),
                 this.pairGetterService.getPairInfoMetadata(pairAddress),
                 this.pairGetterService.getTotalFeePercent(pairAddress),
                 this.pairGetterService.getState(pairAddress),
+                this.pairGetterService.getFirstToken(pairAddress),
+                this.pairGetterService.getSecondToken(pairAddress),
             ]);
 
             if (pairState === 'Active')
@@ -293,10 +339,12 @@ export class AutoRouterService {
                     new PairModel({
                         address: pairMetadata.address,
                         firstToken: new EsdtToken({
-                            identifier: pairMetadata.firstTokenID,
+                            identifier: firstToken.identifier,
+                            decimals: firstToken.decimals,
                         }),
                         secondToken: new EsdtToken({
-                            identifier: pairMetadata.secondTokenID,
+                            identifier: secondToken.identifier,
+                            decimals: secondToken.decimals,
                         }),
                         info: pairInfo,
                         totalFeePercent: pairTotalFeePercent,
@@ -333,6 +381,58 @@ export class AutoRouterService {
             tokenInPrice.integerValue().toFixed(),
             tokenOutPrice.integerValue().toFixed(),
         ];
+    }
+
+    private calculateFeeDenom(
+        feePercent: number,
+        amount: string,
+        decimals: number,
+    ): string {
+        return denominateAmount(
+            new BigNumber(amount).multipliedBy(feePercent).toFixed(),
+            decimals,
+        ).toFixed();
+    }
+
+    private calculateFeesDenom(
+        swapRoute: BestSwapRoute,
+        pairs: PairModel[],
+    ): string[] {
+        return swapRoute.addressRoute.map((pairAddress, index) => {
+            const pair = pairs.find(p => p.address === pairAddress);
+            return this.calculateFeeDenom(
+                pair.totalFeePercent,
+                swapRoute.intermediaryAmounts[index],
+                pair.firstToken.identifier === swapRoute.tokenRoute[index]
+                    ? pair.firstToken.decimals
+                    : pair.secondToken.decimals,
+            );
+        });
+    }
+
+    private calculatePriceImpactPercent(
+        reserves: string,
+        amount: string,
+    ): string {
+        return new BigNumber(amount)
+            .dividedBy(reserves)
+            .times(100)
+            .toFixed();
+    }
+
+    private calculatePriceImpactPercents(
+        pairs: PairModel[],
+        swapRoute: BestSwapRoute,
+    ): string[] {
+        return swapRoute.addressRoute.map((pairAddress, index) => {
+            const pair = pairs.find(p => p.address === pairAddress);
+            return this.calculatePriceImpactPercent(
+                pair.firstToken.identifier === swapRoute.tokenRoute[index + 1]
+                    ? pair.info.reserves0
+                    : pair.info.reserves1,
+                swapRoute.intermediaryAmounts[index + 1],
+            );
+        });
     }
 
     private addressesToPairs(addresses: string[]): PairModel[] {
