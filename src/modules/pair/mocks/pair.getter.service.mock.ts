@@ -1,3 +1,4 @@
+import { Address } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from '../models/pair-info.model';
@@ -129,8 +130,6 @@ export class PairGetterServiceMock {
     }
 
     async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
-        return [
-            'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
-        ];
+        return [Address.Zero().bech32()];
     }
 }
