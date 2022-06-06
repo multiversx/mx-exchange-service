@@ -399,7 +399,7 @@ export class AutoRouterService {
         pairs: PairModel[],
     ): string[] {
         return swapRoute.addressRoute.map((pairAddress, index) => {
-            const pair = pairs.filter(p => p.address === pairAddress)[0];
+            const pair = pairs.find(p => p.address === pairAddress);
             return this.calculateFeeDenom(
                 pair.totalFeePercent,
                 swapRoute.intermediaryAmounts[index],
@@ -425,7 +425,7 @@ export class AutoRouterService {
         swapRoute: BestSwapRoute,
     ): string[] {
         return swapRoute.addressRoute.map((pairAddress, index) => {
-            const pair = pairs.filter(p => p.address === pairAddress)[0];
+            const pair = pairs.find(p => p.address === pairAddress);
             return this.calculatePriceImpactPercent(
                 pair.firstToken.identifier === swapRoute.tokenRoute[index + 1]
                     ? pair.info.reserves0
