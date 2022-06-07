@@ -234,5 +234,28 @@ export const PairsData = (pairAddress: string) => {
                 totalFeePercent: 0.003,
                 state: 'Active',
             };
+        case 'erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2':
+            return {
+                address:
+                    'erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2',
+                firstToken: Tokens('TOK3-3333'),
+                secondToken: Tokens('USDC-1111'),
+                liquidityPoolToken: undefined,
+                info: {
+                    reserves0: '1000000000000000000',
+                    reserves1: '200000000000000000000',
+                    totalSupply: '1000000000000000000',
+                },
+                firstTokenPrice: '200',
+                firstTokenPriceUSD: '200',
+                secondTokenPrice: '0.005',
+                secondTokenPriceUSD: '1',
+                liquidityPoolTokenPriceUSD: '400',
+                firstTokenLockedValueUSD: '200',
+                secondTokenLockedValueUSD: '200',
+                lockedValueUSD: '400',
+                totalFeePercent: 0.003,
+                state: 'Active',
+            };
     }
 };

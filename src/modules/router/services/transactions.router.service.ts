@@ -5,6 +5,7 @@ import {
     BytesValue,
     GasLimit,
     Interaction,
+    TypedValue,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -63,7 +64,7 @@ export class TransactionRouterService {
         lpTokenTicker: string,
     ): Promise<TransactionModel> {
         const lpTokeID = await this.pairGetterService.getLpTokenID(pairAddress);
-        if (lpTokeID !== 'undefined') {
+        if (lpTokeID !== 'undefined' && lpTokeID !== undefined) {
             throw new Error('LP Token already issued');
         }
 
@@ -125,15 +126,15 @@ export class TransactionRouterService {
         enable: boolean,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const args = [
+        const args: TypedValue[] = [
             BytesValue.fromHex(new Address(pairAddress).hex()),
             BytesValue.fromHex(new Address(feeToAddress).hex()),
             BytesValue.fromUTF8(feeTokenID),
         ];
 
         const setFeeInteraction: Interaction = enable
-            ? contract.methods.setFeeOn([args])
-            : contract.methods.setFeeOff([args]);
+            ? contract.methods.setFeeOn(args)
+            : contract.methods.setFeeOff(args);
 
         const transaction = setFeeInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.router.setFee));
