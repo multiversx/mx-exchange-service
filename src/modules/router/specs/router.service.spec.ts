@@ -23,16 +23,6 @@ import { PairFilterArgs } from '../models/filter.args';
 describe('RouterService', () => {
     let service: RouterService;
 
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
-
-    const ContextGetterServiceProvider = {
-        provide: ContextGetterService,
-        useClass: ContextGetterServiceMock,
-    };
-
     const PairGetterServiceProvider = {
         provide: PairGetterService,
         useClass: PairGetterServiceMock,
@@ -41,11 +31,6 @@ describe('RouterService', () => {
     const RouterGetterServiceProvider = {
         provide: RouterGetterService,
         useClass: RouterGetterServiceMock,
-    };
-
-    const WrapServiceProvider = {
-        provide: WrapService,
-        useClass: WrapServiceMock,
     };
 
     const logTransports: Transport[] = [

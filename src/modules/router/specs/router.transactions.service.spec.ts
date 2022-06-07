@@ -8,7 +8,7 @@ import { ContextServiceMock } from 'src/services/context/mocks/context.service.m
 import { TransactionRouterService } from '../services/transactions.router.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
 import { RouterGetterServiceMock } from '../mocks/router.getter.service.mock';
 import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
@@ -23,7 +23,6 @@ import {
 import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { PairFilterArgs } from '../models/filter.args';
 import { Address } from '@elrondnetwork/erdjs/out';
 
 describe('RouterService', () => {
