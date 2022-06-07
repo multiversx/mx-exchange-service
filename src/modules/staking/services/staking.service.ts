@@ -70,7 +70,7 @@ export class StakingService {
             const structType = UnbondTokenAttributesModel.getStructure();
             const [decoded] = codec.decodeNested(attributesBuffer, structType);
             const decodedAttributes = decoded.valueOf();
-            const remainingEpochs = await this.getUnbondigRemaingEpochs(
+            const remainingEpochs = await this.getUnboundigRemainingEpochs(
                 decodedAttributes.unlockEpoch.toNumber(),
             );
             const unboundFarmTokenAttributes = new UnbondTokenAttributesModel({
@@ -126,7 +126,7 @@ export class StakingService {
         });
     }
 
-    private async getUnbondigRemaingEpochs(
+    private async getUnboundigRemainingEpochs(
         unlockEpoch: number,
     ): Promise<number> {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
