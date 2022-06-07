@@ -955,25 +955,6 @@ export class PairTransactionService {
         );
     }
 
-    async setLockingScAddress(
-        pairAddress: string,
-        newAddress: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const transactionArgs = [
-            BytesValue.fromUTF8('setLockingScAddress'),
-            BytesValue.fromHex(new Address(newAddress).hex()),
-        ];
-        // todo: test gasConfig.pairs.setLockingScAddress
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.pairs.setLockingScAddress),
-        );
-    }
-
     async setUnlockEpoch(
         pairAddress: string,
         newEpoch: string,
@@ -990,6 +971,25 @@ export class PairTransactionService {
             contract,
             transactionArgs,
             new GasLimit(gasConfig.pairs.setUnlockEpoch),
+        );
+    }
+
+    async setLockingScAddress(
+        pairAddress: string,
+        newAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('setLockingScAddress'),
+            BytesValue.fromHex(new Address(newAddress).hex()),
+        ];
+        // todo: test gasConfig.pairs.setLockingScAddress
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.pairs.setLockingScAddress),
         );
     }
 }
