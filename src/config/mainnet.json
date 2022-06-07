@@ -68,7 +68,7 @@
     "constants": {
         "MEX_TOKEN_ID": "MEX-455c57",
         "USDC_TOKEN_ID": "USDC-c76f1f",
-        "MAINTENANCE": true
+        "MAINTENANCE": false
     },
     "aws": {
         "region": "eu-central-1",
