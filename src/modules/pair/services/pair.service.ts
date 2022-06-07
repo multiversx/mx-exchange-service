@@ -14,7 +14,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairGetterService } from './pair.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
-import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 
 @Injectable()
 export class PairService {
@@ -24,7 +23,6 @@ export class PairService {
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,
-        private readonly priceFeed: PriceFeedService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -217,16 +215,14 @@ export class PairService {
     async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
         const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
         if (wrappedTokenID === tokenID) {
-            return await this.priceFeed.getTokenPrice('egld');
-
-            // const pair = await this.context.getPairByTokens(
-            //     wrappedTokenID,
-            //     constantsConfig.USDC_TOKEN_ID,
-            // );
-            // const tokenPriceUSD = await this.pairGetterService.getFirstTokenPrice(
-            //     pair.address,
-            // );
-            // return new BigNumber(tokenPriceUSD);
+            const pair = await this.context.getPairByTokens(
+                wrappedTokenID,
+                constantsConfig.USDC_TOKEN_ID,
+            );
+            const tokenPriceUSD = await this.pairGetterService.getFirstTokenPrice(
+                pair.address,
+            );
+            return new BigNumber(tokenPriceUSD);
         }
 
         const path: string[] = [];
