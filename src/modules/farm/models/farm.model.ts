@@ -159,6 +159,21 @@ export class FarmModel {
     @Field({ nullable: true })
     rewardType: FarmRewardType;
 
+    @Field({ nullable: true })
+    burnGasLimit: string;
+
+    @Field({ nullable: true })
+    transferExecGasLimit: string;
+
+    @Field({ nullable: true })
+    pairContractManagedAddress: string;
+
+    @Field({ nullable: true })
+    lockedAssetFactoryManagedAddress: string;
+
+    @Field()
+    lastErrorMessage: string;
+
     @Field(() => FarmMigrationConfig, { nullable: true })
     migrationConfig: FarmMigrationConfig;
 

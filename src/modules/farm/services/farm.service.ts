@@ -180,4 +180,8 @@ export class FarmService {
         farmTokenAttributes.identifier = identifier;
         return farmTokenAttributes;
     }
+
+    async requireOwner(farmAddress, sender) {
+        // todo: find owner somehow
+    }
 }

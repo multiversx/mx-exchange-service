@@ -347,6 +347,58 @@ export class FarmGetterService {
         );
     }
 
+    async getBurnGasLimit(farmAddresses: string): Promise<string> {
+        return await this.getData(
+            farmAddresses,
+            'burnGasLimit',
+            () => this.abiService.getBurnGasLimit(farmAddresses),
+            oneMinute(),
+        );
+    }
+
+    async getTransferExecGasLimit(farmAddresses: string): Promise<string> {
+        return await this.getData(
+            farmAddresses,
+            'transferExecGasLimit',
+            () => this.abiService.getTransferExecGasLimit(farmAddresses),
+            oneMinute(),
+        );
+    }
+
+    async getPairContractManagedAddress(
+        farmAddresses: string,
+    ): Promise<string> {
+        return await this.getData(
+            farmAddresses,
+            'pairContractManagedAddress',
+            () => this.abiService.getPairContractManagedAddress(farmAddresses),
+            oneMinute(),
+        );
+    }
+
+    async getLockedAssetFactoryManagedAddress(
+        farmAddresses: string,
+    ): Promise<string> {
+        return await this.getData(
+            farmAddresses,
+            'lockedAssetFactoryManagedAddress',
+            () =>
+                this.abiService.getLockedAssetFactoryManagedAddress(
+                    farmAddresses,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getLastErrorMessage(farmAddresses: string): Promise<string> {
+        return await this.getData(
+            farmAddresses,
+            'lastErrorMessage',
+            () => this.abiService.getLastErrorMessage(farmAddresses),
+            oneMinute(),
+        );
+    }
+
     private getFarmCacheKey(farmAddress: string, ...args: any) {
         return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }

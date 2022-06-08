@@ -233,6 +233,256 @@ export class TransactionsFarmService {
         return transaction.toPlainObject();
     }
 
+    async endProduceRewards(farmAddress: string): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.end_produce_rewards(
+            [],
+        );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.farms[version].admin.end_produce_rewards),
+        );
+        return transaction.toPlainObject();
+    }
+
+    async startProduceRewards(farmAddress: string): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [BytesValue.fromUTF8('startProduceRewards')];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.farms[version].admin.startProduceRewards),
+        );
+    }
+
+    async setPerBlockRewardAmount(
+        farmAddress: string,
+        amount: string,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('setPerBlockRewardAmount'),
+            new BigUIntValue(new BigNumber(amount)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(
+                gasConfig.farms[version].admin.setPerBlockRewardAmount,
+            ),
+        );
+    }
+
+    async set_penalty_percent(
+        farmAddress: string,
+        percent: string,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('set_penalty_percent'),
+            new BigUIntValue(new BigNumber(percent)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.farms[version].admin.set_penalty_percent),
+        );
+    }
+
+    async set_minimum_farming_epochs(
+        farmAddress: string,
+        epochs: string,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('set_minimum_farming_epochs'),
+            new BigUIntValue(new BigNumber(epochs)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(
+                gasConfig.farms[version].admin.set_minimum_farming_epochs,
+            ),
+        );
+    }
+
+    async set_transfer_exec_gas_limit(
+        farmAddress: string,
+        gasLimit: string,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('set_transfer_exec_gas_limit'),
+            new BigUIntValue(new BigNumber(gasLimit)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(
+                gasConfig.farms[version].admin.set_transfer_exec_gas_limit,
+            ),
+        );
+    }
+
+    async set_burn_gas_limit(
+        farmAddress: string,
+        gasLimit: string,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('set_burn_gas_limit'),
+            new BigUIntValue(new BigNumber(gasLimit)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.farms[version].admin.set_burn_gas_limit),
+        );
+    }
+
+    async pause(farmAddress: string): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [BytesValue.fromUTF8('pause')];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.farms[version].admin.pause),
+        );
+    }
+
+    async resume(farmAddress: string): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [BytesValue.fromUTF8('resume')];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.farms[version].admin.resume),
+        );
+    }
+
+    async registerFarmToken(
+        farmAddress: string,
+        tokenName: string,
+        tokenID: string,
+        decimals: number,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('registerFarmToken'),
+            BytesValue.fromUTF8(tokenName),
+            BytesValue.fromUTF8(tokenID),
+            new BigUIntValue(new BigNumber(decimals)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.farms[version].admin.registerFarmToken),
+        );
+    }
+
+    async setLocalRolesFarmToken(
+        farmAddress: string,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [BytesValue.fromUTF8('setLocalRolesFarmToken')];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.farms[version].admin.setLocalRolesFarmToken),
+        );
+    }
+
+    async mergeFarmTokens(
+        sender: string,
+        farmAddress: string,
+        payments: InputTokenModel[],
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        // todo: test gas limit
+        return this.contextTransactions.multiESDTNFTTransfer(
+            new Address(sender),
+            contract,
+            payments,
+            this.mergeFarmTokens.name,
+            [],
+            new GasLimit(gasConfig.farms[version].mergeFarmTokens),
+        );
+    }
+
+    async migrateFromV1_2Farm(
+        farmAddress: string,
+        origCaller: string,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('migrateFromV1_2Farm'),
+            BytesValue.fromHex(new Address(origCaller).hex()),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.farms[version].migrateFromV1_2Farm),
+        );
+    }
+
+    async setRpsAndStartRewards(
+        farmAddress: string,
+        rps: string,
+    ): Promise<TransactionModel> {
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('setRpsAndStartRewards'),
+            new BigUIntValue(new BigNumber(rps)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.farms[version].setRpsAndStartRewards),
+        );
+    }
+
     private async SftFarmInteraction(
         sender: string,
         args: SftFarmInteractionArgs,
