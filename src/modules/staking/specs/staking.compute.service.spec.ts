@@ -75,28 +75,30 @@ describe('StakingComputeService', () => {
                 currentFarmAmount: '1000000',
             }),
         );
-        expect(stakeRewardsForPosition).toEqual(new BigNumber(1000000));
+        expect(stakeRewardsForPosition).toEqual(new BigNumber(950000));
     });
 
     it('should compute future rewards per share', async () => {
         const futureRewardsPerShare = await service.computeFutureRewardsPerShare(
             Address.Zero().bech32(),
         );
-        expect(futureRewardsPerShare).toEqual(new BigNumber(150000));
+        expect(futureRewardsPerShare).toEqual(new BigNumber(147500));
     });
 
     it('should compute extra rewards since last allocation', async () => {
         const extraRewardsSinceLastAllocation = await service.computeExtraRewardsSinceLastAllocation(
             Address.Zero().bech32(),
         );
-        expect(extraRewardsSinceLastAllocation).toEqual(new BigNumber(0));
+        expect(extraRewardsSinceLastAllocation).toEqual(
+            new BigNumber(0.000285388127853881),
+        );
     });
 
     it('should compute extra rewards bounded', async () => {
         const extraRewardsBounded = await service.computeExtraRewardsBounded(
             Address.Zero().bech32(),
-            new BigNumber(0),
+            new BigNumber(10),
         );
-        expect(extraRewardsBounded).toEqual(new BigNumber(0));
+        expect(extraRewardsBounded).toEqual(new BigNumber(0.00285388127853881));
     });
 });
