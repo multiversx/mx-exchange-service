@@ -92,7 +92,7 @@ export class StakingTransactionService {
             new BigUIntValue(new BigNumber(amount)),
         ];
 
-        // todo: test gasConfig.stake.stakeFarmThroughProxy
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
@@ -113,7 +113,7 @@ export class StakingTransactionService {
             new BigUIntValue(new BigNumber(amount)),
         ];
 
-        // todo: test gasConfig.stake.unstakeFarmThroughProxy
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
@@ -228,11 +228,11 @@ export class StakingTransactionService {
             BytesValue.fromUTF8('set_penalty_percent'),
             new BigUIntValue(new BigNumber(percent)),
         ];
-        // todo: test gasConfig.stake.set_penalty_percent
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.stake.set_penalty_percent),
+            new GasLimit(gasConfig.stake.admin.set_penalty_percent),
         );
     }
 
@@ -247,11 +247,11 @@ export class StakingTransactionService {
             BytesValue.fromUTF8('set_minimum_farming_epochs'),
             new BigUIntValue(new BigNumber(epochs)),
         ];
-        // todo: test gasConfig.stake.set_minimum_farming_epochs
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.stake.set_minimum_farming_epochs),
+            new GasLimit(gasConfig.stake.admin.set_minimum_farming_epochs),
         );
     }
 
@@ -266,11 +266,11 @@ export class StakingTransactionService {
             BytesValue.fromUTF8('set_burn_gas_limit'),
             new BigUIntValue(new BigNumber(gasLimit)),
         ];
-        // todo: test gasConfig.stake.set_burn_gas_limit
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.stake.set_burn_gas_limit),
+            new GasLimit(gasConfig.stake.admin.set_burn_gas_limit),
         );
     }
 
@@ -285,11 +285,11 @@ export class StakingTransactionService {
             BytesValue.fromUTF8('set_transfer_exec_gas_limit'),
             new BigUIntValue(new BigNumber(gasLimit)),
         ];
-        // todo: test gasConfig.stake.set_transfer_exec_gas_limit
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.stake.set_transfer_exec_gas_limit),
+            new GasLimit(gasConfig.stake.admin.set_transfer_exec_gas_limit),
         );
     }
 
@@ -304,11 +304,11 @@ export class StakingTransactionService {
             BytesValue.fromUTF8('addAddressToWhitelist'),
             BytesValue.fromHex(new Address(address).hex()),
         ];
-        // todo: test gasConfig.stake.addAddressToWhitelist
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.stake.addAddressToWhitelist),
+            new GasLimit(gasConfig.stake.admin.addAddressToWhitelist),
         );
     }
 
@@ -323,11 +323,11 @@ export class StakingTransactionService {
             BytesValue.fromUTF8('removeAddressFromWhitelist'),
             BytesValue.fromHex(new Address(address).hex()),
         ];
-        // todo: test gasConfig.stake.removeAddressFromWhitelist
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.stake.removeAddressFromWhitelist),
+            new GasLimit(gasConfig.stake.admin.removeAddressFromWhitelist),
         );
     }
 
@@ -336,11 +336,11 @@ export class StakingTransactionService {
             farmStakeAddress,
         );
         const transactionArgs = [BytesValue.fromUTF8('pause')];
-        // todo: test gasConfig.stake.pause
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.stake.pause),
+            new GasLimit(gasConfig.stake.admin.pause),
         );
     }
 
@@ -349,11 +349,26 @@ export class StakingTransactionService {
             farmStakeAddress,
         );
         const transactionArgs = [BytesValue.fromUTF8('resume')];
-        // todo: test gasConfig.stake.resume
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.stake.resume),
+            new GasLimit(gasConfig.stake.admin.resume),
+        );
+    }
+
+    async setLocalRolesFarmToken(
+        farmStakeAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            farmStakeAddress,
+        );
+        const transactionArgs = [BytesValue.fromUTF8('setLocalRolesFarmToken')];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.stake.admin.setLocalRolesFarmToken),
         );
     }
 
@@ -372,11 +387,98 @@ export class StakingTransactionService {
             BytesValue.fromUTF8(tokenID),
             new BigUIntValue(new BigNumber(decimals)),
         ];
-        // todo: test gasConfig.stake.registerFarmToken
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.stake.registerFarmToken),
+            new GasLimit(gasConfig.stake.admin.registerFarmToken),
+        );
+    }
+
+    async setPerBlockRewardAmount(
+        farmStakeAddress: string,
+        perBlockAmount: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            farmStakeAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('setPerBlockRewardAmount'),
+            new BigUIntValue(new BigNumber(perBlockAmount)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.stake.admin.setPerBlockRewardAmount),
+        );
+    }
+
+    async setMaxApr(
+        farmStakeAddress: string,
+        maxApr: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            farmStakeAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('setMaxApr'),
+            new BigUIntValue(new BigNumber(maxApr)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.stake.admin.setMaxApr),
+        );
+    }
+
+    async setMinUnbondEpochs(
+        farmStakeAddress: string,
+        minUnboundEpoch: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            farmStakeAddress,
+        );
+        const transactionArgs = [
+            BytesValue.fromUTF8('setMinUnbondEpochs'),
+            new BigUIntValue(new BigNumber(minUnboundEpoch)),
+        ];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.stake.admin.setMinUnbondEpochs),
+        );
+    }
+
+    async startProduceRewards(
+        farmStakeAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            farmStakeAddress,
+        );
+        const transactionArgs = [BytesValue.fromUTF8('startProduceRewards')];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.stake.admin.startProduceRewards),
+        );
+    }
+
+    async endProduceRewards(
+        farmStakeAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            farmStakeAddress,
+        );
+        const transactionArgs = [BytesValue.fromUTF8('end_produce_rewards')];
+        // todo: test gas limit
+        return this.contextTransactions.esdtTransfer(
+            contract,
+            transactionArgs,
+            new GasLimit(gasConfig.stake.admin.end_produce_rewards),
         );
     }
 

@@ -45,14 +45,18 @@ export class AbiStakingService {
     }
 
     async getPairContractManagedAddress(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        const interaction: Interaction = contract.methods.getPairContractManagedAddress(
-            [],
-        );
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().hex32();
+        try {
+            const contract = await this.elrondProxy.getStakingSmartContract(
+                stakeAddress,
+            );
+            const interaction: Interaction = contract.methods.getPairContractManagedAddress(
+                [],
+            );
+            const response = await this.getGenericData(contract, interaction);
+            return response.firstValue.valueOf().hex32();
+        } catch {
+            return undefined;
+        }
     }
 
     async getFarmTokenID(stakeAddress: string): Promise<string> {
@@ -254,27 +258,21 @@ export class AbiStakingService {
         return response.firstValue.valueOf();
     }
 
-    async end_produce_rewards(stakeAddress: string) {
-        const contract = await this.elrondProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        const interaction: Interaction = contract.methods.end_produce_rewards(
-            [],
-        );
-        await this.getGenericData(contract, interaction);
-    }
-
     async getLockedAssetFactoryManagedAddress(
         stakeAddress: string,
     ): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        const interaction: Interaction = contract.methods.getLockedAssetFactoryManagedAddress(
-            [],
-        );
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().hex32();
+        try {
+            const contract = await this.elrondProxy.getStakingSmartContract(
+                stakeAddress,
+            );
+            const interaction: Interaction = contract.methods.getLockedAssetFactoryManagedAddress(
+                [],
+            );
+            const response = await this.getGenericData(contract, interaction);
+            return response.firstValue.valueOf().hex32();
+        } catch {
+            return undefined;
+        }
     }
 
     async isWhitelisted(
