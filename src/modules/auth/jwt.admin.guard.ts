@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { ForbiddenError } from 'apollo-server-express';
-import { verify } from 'jsonwebtoken';
+import { JwtPayload, verify } from 'jsonwebtoken';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
@@ -20,11 +20,11 @@ export class JwtAdminGuard implements CanActivate {
             const jwtSecret = process.env.JWT_SECRET;
             let user: any;
             await new Promise((resolve, reject) => {
-                verify(jwt, jwtSecret, (err, decoded) => {
+                verify(jwt, jwtSecret, (err, decoded: JwtPayload) => {
                     if (err) {
                         reject(err);
                     }
-                    resolve(decoded.user);
+                    resolve(decoded);
                     user = decoded.user;
                 });
             });

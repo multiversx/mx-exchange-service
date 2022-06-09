@@ -23,13 +23,15 @@ import { MetabondingModule } from './modules/metabonding/metabonding.module';
 import { PriceDiscoveryModule } from './modules/price-discovery/price.discovery.module';
 import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 @Module({
     imports: [
         CommonAppModule,
         AuthModule,
         CacheModule.register(),
-        GraphQLModule.forRoot({
+        GraphQLModule.forRoot<ApolloDriverConfig>({
+            driver: ApolloDriver,
             autoSchemaFile: 'schema.gql',
             installSubscriptionHandlers: true,
             formatError: (error: GraphQLError) => {
