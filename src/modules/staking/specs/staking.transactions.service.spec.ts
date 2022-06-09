@@ -309,4 +309,61 @@ describe('StakingTransactionService', () => {
             'RVNEVFRyYW5zZmVyQDcyNjU2NzY5NzM3NDY1NzI0NjYxNzI2ZDU0NmY2YjY1NmVANTQ2ZjZiNjU2ZTU0NmY1MjY1Njc2OTczNzQ2NTcyNGU2MTZkNjVANTQ2ZjZiNjU2ZTU0NmY1MjY1Njc2OTczNzQ2NTcyNDk0NEAxMg==',
         );
     });
+
+    it('should get set local roles farm token transaction', async () => {
+        const rsetLocalRolesFarmTokenTransaction = await service.setLocalRolesFarmToken(
+            Address.Zero().bech32(),
+        );
+        expect(rsetLocalRolesFarmTokenTransaction.data).toEqual(
+            'RVNEVFRyYW5zZmVyQDczNjU3NDRjNmY2MzYxNmM1MjZmNmM2NTczNDY2MTcyNmQ1NDZmNmI2NTZl',
+        );
+    });
+
+    it('should get set per block reward amount transaction', async () => {
+        const setPerBlockRewardAmountTransaction = await service.setPerBlockRewardAmount(
+            Address.Zero().bech32(),
+            '100',
+        );
+        expect(setPerBlockRewardAmountTransaction.data).toEqual(
+            'RVNEVFRyYW5zZmVyQDczNjU3NDUwNjU3MjQyNmM2ZjYzNmI1MjY1Nzc2MTcyNjQ0MTZkNmY3NTZlNzRANjQ=',
+        );
+    });
+
+    it('should get set max APR transaction', async () => {
+        const setMaxAprTransaction = await service.setMaxApr(
+            Address.Zero().bech32(),
+            '100',
+        );
+        expect(setMaxAprTransaction.data).toEqual(
+            'RVNEVFRyYW5zZmVyQDczNjU3NDRkNjE3ODQxNzA3MkA2NA==',
+        );
+    });
+
+    it('should get set min unbound epochs transaction', async () => {
+        const setMinUnbondEpochsTransaction = await service.setMinUnbondEpochs(
+            Address.Zero().bech32(),
+            '100',
+        );
+        expect(setMinUnbondEpochsTransaction.data).toEqual(
+            'RVNEVFRyYW5zZmVyQDczNjU3NDRkNjk2ZTU1NmU2MjZmNmU2NDQ1NzA2ZjYzNjg3M0A2NA==',
+        );
+    });
+
+    it('should get start produce rewards transaction', async () => {
+        const startProduceRewardsTransaction = await service.startProduceRewards(
+            Address.Zero().bech32(),
+        );
+        expect(startProduceRewardsTransaction.data).toEqual(
+            'RVNEVFRyYW5zZmVyQDczNzQ2MTcyNzQ1MDcyNmY2NDc1NjM2NTUyNjU3NzYxNzI2NDcz',
+        );
+    });
+
+    it('should get end produce rewards transaction', async () => {
+        const endProduceRewardsTransaction = await service.endProduceRewards(
+            Address.Zero().bech32(),
+        );
+        expect(endProduceRewardsTransaction.data).toEqual(
+            'RVNEVFRyYW5zZmVyQDY1NmU2NDVmNzA3MjZmNjQ3NTYzNjU1ZjcyNjU3NzYxNzI2NDcz',
+        );
+    });
 });
