@@ -24,6 +24,8 @@ import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { Address } from '@elrondnetwork/erdjs/out';
+import { EsdtLocalRole, SetLocalRoleOwnerArgs } from '../models/router.args';
+import { fail } from 'assert';
 
 describe('RouterService', () => {
     let service: TransactionRouterService;
@@ -189,6 +191,68 @@ describe('RouterService', () => {
         );
         expect(setFeeTransaction.data).toEqual(
             'c2V0RmVlT25AMDAwMDAwMDAwMDAwMDAwMDA1MDBjOWY2NTc3YjBjNTY2Y2RjMjhlMGE3NmY2ZTE0ZDFiZTA3OTQwMDMzN2NlYkAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwQDU0NGY0YjMxMmQzMTMxMzEzMQ==',
+        );
+    });
+
+    it('should get set local roles owner', async () => {
+        const setLocalRolesOwnerTransaction = await service.setLocalRolesOwner({
+            tokenID: 'TOK1-1111',
+            address: Address.Zero().bech32(),
+            roles: [EsdtLocalRole.None],
+        });
+        expect(setLocalRolesOwnerTransaction.data).toEqual(
+            'RVNEVFRyYW5zZmVyQDczNjU3NDRjNmY2MzYxNmM1MjZmNmM2NTczNGY3NzZlNjU3MkA1NDRmNGIzMTJkMzEzMTMxMzFAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEA=',
+        );
+    });
+
+    it('should get remove pair transaction', async () => {
+        const removePairTransaction = await service.removePair(
+            'TOK1-1111',
+            'USDC-1111',
+        );
+        expect(removePairTransaction.data).toEqual(
+            'dXBncmFkZVBhaXJANTQ0ZjRiMzEyZDMxMzEzMTMxQDU1NTM0NDQzMmQzMTMxMzEzMQ==',
+        );
+    });
+
+    it('should get set pair creation enabled transaction', async () => {
+        const setPairCreationEnabledTransaction_OFF = await service.setPairCreationEnabled(
+            false,
+        );
+        expect(setPairCreationEnabledTransaction_OFF.data).toEqual(
+            'RVNEVFRyYW5zZmVyQDczNjU3NDUwNjE2OTcyNDM3MjY1NjE3NDY5NmY2ZTQ1NmU2MTYyNmM2NTY0QA==',
+        );
+
+        const setPairCreationEnabledTransaction_ON = await service.setPairCreationEnabled(
+            true,
+        );
+        expect(setPairCreationEnabledTransaction_ON.data).toEqual(
+            'RVNEVFRyYW5zZmVyQDczNjU3NDUwNjE2OTcyNDM3MjY1NjE3NDY5NmY2ZTQ1NmU2MTYyNmM2NTY0QDAx',
+        );
+    });
+
+    it('should get clear pair temporary owner storage transaction', async () => {
+        const clearPairTemporaryOwnerStorageTransaction = await service.clearPairTemporaryOwnerStorage();
+        expect(clearPairTemporaryOwnerStorageTransaction.data).toEqual(
+            'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
+        );
+    });
+
+    it('should get set temporary owner period transaction', async () => {
+        const setTemporaryOwnerPeriodTransaction = await service.setTemporaryOwnerPeriod(
+            '1000',
+        );
+        expect(setTemporaryOwnerPeriodTransaction.data).toEqual(
+            'c2V0UGFpclRlbXBsYXRlQWRkcmVzc0AwM2U4',
+        );
+    });
+
+    it('should get set set pair template address transaction', async () => {
+        const setPairTemplateAddressTransaction = await service.setPairTemplateAddress(
+            Address.Zero().bech32(),
+        );
+        expect(setPairTemplateAddressTransaction.data).toEqual(
+            'c2V0UGFpclRlbXBsYXRlQWRkcmVzc0AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw',
         );
     });
 });

@@ -18,7 +18,7 @@ import {
 import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { PairFilterArgs } from '../models/filter.args';
+import { PairFilterArgs } from '../models/router.args';
 
 describe('RouterService', () => {
     let service: RouterService;
