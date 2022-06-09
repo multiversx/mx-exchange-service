@@ -5,7 +5,6 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { RedisModule } from 'nestjs-redis';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
@@ -66,13 +65,6 @@ describe('TransactionPairService', () => {
                 WinstonModule.forRoot({
                     transports: logTransports,
                 }),
-                RedisModule.register([
-                    {
-                        host: process.env.REDIS_URL,
-                        port: parseInt(process.env.REDIS_PORT),
-                        password: process.env.REDIS_PASSWORD,
-                    },
-                ]),
             ],
             providers: [
                 ConfigService,
