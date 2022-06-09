@@ -277,7 +277,7 @@ export class PairTransactionService {
             BytesValue.fromUTF8(args.tokenToBuyBackAndBurnID),
         ];
 
-        // todo: test gasConfig.pairs.removeLiquidityAndBuyBackAndBurnToken
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
@@ -584,14 +584,12 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             args.pairAddress,
         );
-
         const transactionArgs = [
             BytesValue.fromUTF8(args.tokenOutID),
             new BigUIntValue(new BigNumber(args.destination)),
             BytesValue.fromUTF8('swapNoFeeAndForward'),
         ];
-
-        // todo: test gasConfig.pairs.swapNoFeeAndForward
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
@@ -605,13 +603,11 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             args.pairAddress,
         );
-
         const transactionArgs = [
             BytesValue.fromUTF8('setLpTokenIdentifier'),
             BytesValue.fromUTF8(args.tokenID),
         ];
-
-        // todo: test gasConfig.pairs.setLpTokenIdentifier
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
@@ -623,17 +619,15 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             args.pairAddress,
         );
-
         const transactionArgs = [
             BytesValue.fromUTF8('whitelist'),
             BytesValue.fromHex(new Address(args.address).hex()),
         ];
-
-        // todo: test gasConfig.pairs.whitelist
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.whitelist),
+            new GasLimit(gasConfig.pairs.admin.whitelist),
         );
     }
 
@@ -641,17 +635,15 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             args.pairAddress,
         );
-
         const transactionArgs = [
             BytesValue.fromUTF8('removeWhitelist'),
             BytesValue.fromHex(new Address(args.address).hex()),
         ];
-
-        // todo: test gasConfig.pairs.removeWhitelist
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.removeWhitelist),
+            new GasLimit(gasConfig.pairs.admin.removeWhitelist),
         );
     }
 
@@ -672,11 +664,11 @@ export class PairTransactionService {
             BytesValue.fromUTF8(secondTokenID),
         ];
 
-        // todo: test gasConfig.pairs.addTrustedSwapPair
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.addTrustedSwapPair),
+            new GasLimit(gasConfig.pairs.admin.addTrustedSwapPair),
         );
     }
 
@@ -688,18 +680,16 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-
         const transactionArgs = [
             BytesValue.fromUTF8('addTrustedSwapPair'),
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
         ];
-
-        // todo: test gasConfig.pairs.removeTrustedSwapPair
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.removeTrustedSwapPair),
+            new GasLimit(gasConfig.pairs.admin.removeTrustedSwapPair),
         );
     }
 
@@ -710,17 +700,15 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-
         const transactionArgs = [
             BytesValue.fromUTF8('set_transfer_exec_gas_limit'),
             new BigUIntValue(new BigNumber(gasLimit)),
         ];
-
-        // todo: test gasConfig.pairs.set_transfer_exec_gas_limit
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.set_transfer_exec_gas_limit),
+            new GasLimit(gasConfig.pairs.admin.set_transfer_exec_gas_limit),
         );
     }
 
@@ -731,17 +719,15 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-
         const transactionArgs = [
             BytesValue.fromUTF8('set_extern_swap_gas_limit'),
             new BigUIntValue(new BigNumber(gasLimit)),
         ];
-
-        // todo: test gasConfig.pairs.set_extern_swap_gas_limit
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.set_extern_swap_gas_limit),
+            new GasLimit(gasConfig.pairs.admin.set_extern_swap_gas_limit),
         );
     }
 
@@ -750,11 +736,11 @@ export class PairTransactionService {
             pairAddress,
         );
         const transactionArgs = [BytesValue.fromUTF8('pause')];
-        // todo: test gasConfig.pairs.pause
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.pause),
+            new GasLimit(gasConfig.pairs.admin.pause),
         );
     }
 
@@ -763,11 +749,11 @@ export class PairTransactionService {
             pairAddress,
         );
         const transactionArgs = [BytesValue.fromUTF8('resume')];
-        // todo: test gasConfig.pairs.resume
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.resume),
+            new GasLimit(gasConfig.pairs.admin.resume),
         );
     }
 
@@ -778,11 +764,11 @@ export class PairTransactionService {
             pairAddress,
         );
         const transactionArgs = [BytesValue.fromUTF8('setStateActiveNoSwaps')];
-        // todo: test gasConfig.pairs.setStateActiveNoSwaps
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.setStateActiveNoSwaps),
+            new GasLimit(gasConfig.pairs.admin.setStateActiveNoSwaps),
         );
     }
 
@@ -799,11 +785,11 @@ export class PairTransactionService {
             new BigUIntValue(new BigNumber(totalFeePercent)),
             new BigUIntValue(new BigNumber(specialFeePercent)),
         ];
-        // todo: test gasConfig.pairs.setFeePercents
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.setFeePercents),
+            new GasLimit(gasConfig.pairs.admin.setFeePercents),
         );
     }
 
@@ -820,7 +806,7 @@ export class PairTransactionService {
             ),
             new BigUIntValue(new BigNumber(liquidity)),
         ];
-        // todo: test gasConfig.pairs.updateAndGetTokensForGivenPositionWithSafePrice
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
@@ -829,30 +815,6 @@ export class PairTransactionService {
             ),
         );
     }
-
-    /*async updateAndGetSafePrice(
-        pairAddress: string,
-        esdtTokenPayment: InputTokenModel,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const transactionArgs = [
-            BytesValue.fromUTF8('updateAndGetSafePrice'),
-            ...[
-                BytesValue.fromUTF8(esdtTokenPayment.tokenID),
-                new BigUIntValue(new BigNumber(esdtTokenPayment.nonce)),
-                new BigUIntValue(new BigNumber(esdtTokenPayment.amount)),
-            ],
-        ];
-
-        // todo: test gasConfig.pairs.updateAndGetSafePrice
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.pairs.updateAndGetSafePrice),
-        );
-    }*/
 
     async setMaxObservationsPerRecord(
         pairAddress: string,
@@ -865,11 +827,11 @@ export class PairTransactionService {
             BytesValue.fromUTF8('setMaxObservationsPerRecord'),
             new BigUIntValue(new BigNumber(maxObservationsPerRecord)),
         ];
-        // todo: test gasConfig.pairs.setMaxObservationsPerRecord
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.setMaxObservationsPerRecord),
+            new GasLimit(gasConfig.pairs.admin.setMaxObservationsPerRecord),
         );
     }
 
@@ -886,11 +848,11 @@ export class PairTransactionService {
             new BigUIntValue(new BigNumber(config.volumePercent)),
             new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
         ];
-        // todo: test gasConfig.pairs.setBPSwapConfig
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.setBPSwapConfig),
+            new GasLimit(gasConfig.pairs.admin.setBPSwapConfig),
         );
     }
 
@@ -907,11 +869,11 @@ export class PairTransactionService {
             new BigUIntValue(new BigNumber(config.volumePercent)),
             new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
         ];
-        // todo: test gasConfig.pairs.setBPRemoveConfig
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.setBPRemoveConfig),
+            new GasLimit(gasConfig.pairs.admin.setBPRemoveConfig),
         );
     }
 
@@ -928,11 +890,11 @@ export class PairTransactionService {
             new BigUIntValue(new BigNumber(config.volumePercent)),
             new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
         ];
-        // todo: test gasConfig.pairs.setBPAddConfig
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.setBPAddConfig),
+            new GasLimit(gasConfig.pairs.admin.setBPAddConfig),
         );
     }
 
@@ -947,11 +909,11 @@ export class PairTransactionService {
             BytesValue.fromUTF8('setLockingDeadlineEpoch'),
             new BigUIntValue(new BigNumber(newDeadline)),
         ];
-        // todo: test gasConfig.pairs.setLockingDeadlineEpoch
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.setLockingDeadlineEpoch),
+            new GasLimit(gasConfig.pairs.admin.setLockingDeadlineEpoch),
         );
     }
 
@@ -966,11 +928,11 @@ export class PairTransactionService {
             BytesValue.fromUTF8('setLockingScAddress'),
             BytesValue.fromHex(new Address(newAddress).hex()),
         ];
-        // todo: test gasConfig.pairs.setLockingScAddress
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.setLockingScAddress),
+            new GasLimit(gasConfig.pairs.admin.setLockingScAddress),
         );
     }
 
@@ -985,11 +947,11 @@ export class PairTransactionService {
             BytesValue.fromUTF8('setUnlockEpoch'),
             new BigUIntValue(new BigNumber(newEpoch)),
         ];
-        // todo: test gasConfig.pairs.setUnlockEpoch
+        // todo: test gas limit
         return this.contextTransactions.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.pairs.setUnlockEpoch),
+            new GasLimit(gasConfig.pairs.admin.setUnlockEpoch),
         );
     }
 }

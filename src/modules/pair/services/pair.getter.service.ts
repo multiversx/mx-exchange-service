@@ -564,7 +564,7 @@ export class PairGetterService {
             address,
             'routerOwnerManagedAddress',
             () => this.abiService.getRouterOwnerManagedAddress(address),
-            oneMinute(),
+            oneHour(),
         );
     }
 
