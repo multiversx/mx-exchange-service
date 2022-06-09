@@ -505,17 +505,17 @@ export class StakingResolver {
         }
     }
 
-    //@UseGuards(GqlAdminGuard)
+    @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async endProduceRewards(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        //@User() user: any,
+        @User() user: any,
     ): Promise<TransactionModel> {
         try {
-            /*await this.stakingService.requireOwner(
+            await this.stakingService.requireOwner(
                         farmStakeAddress,
                         user.publicKey,
-                    );*/
+                    );
             return await this.stakingTransactionService.endProduceRewards(
                 farmStakeAddress,
             );
