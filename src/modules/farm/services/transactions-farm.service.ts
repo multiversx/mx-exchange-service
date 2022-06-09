@@ -214,7 +214,10 @@ export class TransactionsFarmService {
         );
         const transaction = interaction.buildTransaction();
         transaction.setGasLimit(
-            new GasLimit(gasConfig.farms[version].farmMigrationConfig),
+            new GasLimit(
+                gasConfig.farms[version].farmMigrationConfig ||
+                    gasConfig.farms[version].admin.setFarmMigrationConfig,
+            ),
         );
         return transaction.toPlainObject();
     }

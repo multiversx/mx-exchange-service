@@ -173,7 +173,8 @@
                     "pause": 200000000,
                     "resume": 200000000,
                     "registerFarmToken": 200000000,
-                    "setLocalRolesFarmToken": 20000000
+                    "setLocalRolesFarmToken": 20000000,
+                    "setFarmMigrationConfig": 7300000
                 }
             }
         },
