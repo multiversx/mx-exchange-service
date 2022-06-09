@@ -166,8 +166,4 @@ export class StakingService {
     async requireOwner(stakeAddress, sender) {
         // todo: find owner somehow
     }
-
-    async endProduceRewards(stakeAddress: string) {
-        await this.abiService.end_produce_rewards(stakeAddress);
-    }
 }
