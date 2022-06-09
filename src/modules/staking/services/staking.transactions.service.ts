@@ -187,13 +187,13 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        // todo: set gasConfig.stake.topUpRewards
+        // todo: set gas limit
         return await this.SftInteraction(
             sender,
             stakeAddress,
             payment,
             this.topUpRewards.name,
-            gasConfig.stake.topUpRewards,
+            gasConfig.stake.admin.topUpRewards,
             [],
         );
     }
