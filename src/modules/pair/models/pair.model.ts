@@ -133,15 +133,6 @@ export class PairModel {
     @Field()
     initialLiquidityAdder: string;
 
-    @Field(() => BPConfig)
-    swapBPConfig: BPConfig;
-
-    @Field(() => BPConfig)
-    removeBPConfig: BPConfig;
-
-    @Field(() => BPConfig)
-    addBPConfig: BPConfig;
-
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);
     }

@@ -489,6 +489,17 @@ export class PairResolver {
         }
     }
 
+    @Query(() => EsdtTokenPayment)
+    async updateAndGetSafePrice(
+        @Args('pairAddress') pairAddress: string,
+        @Args('esdtTokenPayment') esdtTokenPayment: EsdtTokenPayment,
+    ) {
+        return await this.pairGetterService.updateAndGetSafePrice(
+            pairAddress,
+            esdtTokenPayment,
+        );
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async addLiquidity(@Args() args: AddLiquidityArgs, @User() user: any) {
@@ -558,6 +569,38 @@ export class PairResolver {
     @Query(() => TransactionModel)
     async setLpTokenIdentifier(@Args() args: SetLpTokenIdentifierArgs) {
         return await this.transactionService.setLpTokenIdentifier(args);
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => String)
+    async getNumSwapsByAddress(
+        @Args('pairAddress') pairAddress: string,
+        @Args('address') address: string,
+    ) {
+        try {
+            return await this.pairGetterService.getNumSwapsByAddress(
+                pairAddress,
+                address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => String)
+    async getNumAddsByAddress(
+        @Args('pairAddress') pairAddress: string,
+        @Args('address') address: string,
+    ) {
+        try {
+            return await this.pairGetterService.getNumAddsByAddress(
+                pairAddress,
+                address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAdminGuard)
@@ -724,17 +767,6 @@ export class PairResolver {
         }
     }
 
-    @Query(() => EsdtTokenPayment)
-    async updateAndGetSafePrice(
-        @Args('pairAddress') pairAddress: string,
-        @Args('esdtTokenPayment') esdtTokenPayment: EsdtTokenPayment,
-    ) {
-        return await this.pairGetterService.updateAndGetSafePrice(
-            pairAddress,
-            esdtTokenPayment,
-        );
-    }
-
     @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async setMaxObservationsPerRecord(
@@ -801,42 +833,6 @@ export class PairResolver {
             return await this.transactionService.setBPAddConfig(
                 pairAddress,
                 config,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAdminGuard)
-    @Query(() => String)
-    async getNumSwapsByAddress(
-        @Args('pairAddress') pairAddress: string,
-        @Args('address') address: string,
-        @User() user: any,
-    ) {
-        try {
-            await this.pairService.requireOwner(pairAddress, user.publicKey);
-            return await this.pairGetterService.getNumSwapsByAddress(
-                pairAddress,
-                address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAdminGuard)
-    @Query(() => String)
-    async getNumAddsByAddress(
-        @Args('pairAddress') pairAddress: string,
-        @Args('address') address: string,
-        @User() user: any,
-    ) {
-        try {
-            await this.pairService.requireOwner(pairAddress, user.publicKey);
-            return await this.pairGetterService.getNumAddsByAddress(
-                pairAddress,
-                address,
             );
         } catch (error) {
             throw new ApolloError(error);
