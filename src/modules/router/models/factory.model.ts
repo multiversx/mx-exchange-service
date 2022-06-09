@@ -26,6 +26,8 @@ export class FactoryModel {
     totalFeesUSD24h: string;
     @Field()
     maintenance: boolean;
+    @Field()
+    lastErrorMessage: string;
 
     constructor(init?: Partial<FactoryModel>) {
         Object.assign(this, init);

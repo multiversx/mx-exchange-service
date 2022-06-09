@@ -1,5 +1,5 @@
 import { EnumType, EnumVariantDefinition } from '@elrondnetwork/erdjs/out';
-import { ArgsType, Field, registerEnumType } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
 
 @ArgsType()
 export class PairFilterArgs {
@@ -13,7 +13,7 @@ export class PairFilterArgs {
     issuedLpToken = true;
 }
 
-@ArgsType()
+@InputType()
 export class SetLocalRoleOwnerArgs {
     @Field()
     tokenID: string;
