@@ -7,7 +7,6 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { RedisModule } from 'nestjs-redis';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-transactions.service';
 import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
@@ -70,13 +69,6 @@ describe('TransactionProxyPairService', () => {
                 WinstonModule.forRoot({
                     transports: logTransports,
                 }),
-                RedisModule.register([
-                    {
-                        host: process.env.REDIS_URL,
-                        port: parseInt(process.env.REDIS_PORT),
-                        password: process.env.REDIS_PASSWORD,
-                    },
-                ]),
             ],
             providers: [
                 ApiConfigService,
