@@ -102,13 +102,6 @@ export class AutoRouterTransactionService {
                 )
                 .integerValue();
 
-            console.log(
-                'from ' +
-                    args.intermediaryAmounts[index + 1] +
-                    ' to ' +
-                    amountOutMin,
-            );
-
             swaps.push(
                 ...[
                     BytesValue.fromHex(Address.fromString(address).hex()),
