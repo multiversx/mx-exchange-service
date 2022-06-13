@@ -30,12 +30,10 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { RouterService } from 'src/modules/router/services/router.service';
 import { AutoRouteModel } from '../models/auto-route.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
+import { Address } from '@elrondnetwork/erdjs/out';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
-
-    const dummySender =
-        'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x';
 
     const ContextServiceProvider = {
         provide: ContextService,
@@ -124,12 +122,16 @@ describe('AutoRouterService', () => {
             tokenOutID: 'TOK1-1111',
             tokenInExchangeRate: '4960273038901078',
             tokenOutExchangeRate: '201601805416248751341',
+            tokenInExchangeRateDenom: '0.004960273038901078',
+            tokenOutExchangeRateDenom: '201.601805416248751341',
             tokenInPriceUSD: '1',
             tokenOutPriceUSD: '200',
             amountIn: '1000000000000000000',
             amountOut: '4960273038901078',
             intermediaryAmounts: ['1000000000000000000', '4960273038901078'],
             tokenRoute: ['USDC-1111', 'TOK1-1111'],
+            fees: ['0.003'],
+            pricesImpact: ['0.4960273038901078'],
             pairs: [
                 {
                     address:
@@ -153,12 +155,16 @@ describe('AutoRouterService', () => {
             tokenOutID: 'TOK1-1111',
             tokenInExchangeRate: '4935790171985306',
             tokenOutExchangeRate: '202601805416248766526',
+            tokenInExchangeRateDenom: '0.004935790171985306',
+            tokenOutExchangeRateDenom: '202.601805416248766526',
             tokenInPriceUSD: '1',
             tokenOutPriceUSD: '200',
             amountIn: '2000000000000000000',
             amountOut: '9871580343970612',
             intermediaryAmounts: ['2000000000000000000', '9871580343970612'],
             tokenRoute: ['USDC-1111', 'TOK1-1111'],
+            fees: ['0.006'],
+            pricesImpact: ['0.9871580343970612'],
             pairs: [
                 {
                     address:
@@ -182,6 +188,8 @@ describe('AutoRouterService', () => {
             tokenOutID: 'TOK2-2222',
             tokenInExchangeRate: '4962567499999999',
             tokenOutExchangeRate: '201508594089652181902',
+            tokenInExchangeRateDenom: '0.004962567499999999',
+            tokenOutExchangeRateDenom: '201.508594089652181902',
             tokenInPriceUSD: '1',
             tokenOutPriceUSD: '100',
             amountIn: '101761840015274351860',
@@ -192,6 +200,8 @@ describe('AutoRouterService', () => {
                 '500000000000000000',
             ],
             tokenRoute: ['USDC-1111', 'TOK1-1111', 'TOK2-2222'],
+            fees: ['0.302262891134478272853', '0.001003009027081243734'],
+            pricesImpact: ['33.4336342360414578', '25'],
             pairs: [
                 {
                     address:
@@ -207,8 +217,8 @@ describe('AutoRouterService', () => {
     });
 
     it('should get a wrap tx + a fixed input simple swap tx', async () => {
-        const transaction = await service.getTransactions(
-            dummySender,
+        const transactions = await service.getTransactions(
+            Address.Zero().bech32(),
             new AutoRouteModel({
                 swapType: 0,
                 tokenInID: 'EGLD',
@@ -233,7 +243,7 @@ describe('AutoRouterService', () => {
                 tolerance: 0.01,
             }),
         );
-        expect(transaction).toEqual([
+        expect(transactions).toEqual([
             {
                 nonce: 0,
                 value: '1000000000000000000',
@@ -268,10 +278,9 @@ describe('AutoRouterService', () => {
         ]);
     });
 
-    // Can't resolve fixedOutput with multiSwap for now...
-    /*it('should get a fixed output multi swap tx + unwrap tx', async () => {
-        const transaction = await service.getTransactions(
-            dummySender,
+    it('should get a fixed output multi swap tx + unwrap tx', async () => {
+        const transactions = await service.getTransactions(
+            Address.Zero().bech32(),
             new AutoRouteModel({
                 swapType: 1,
                 tokenInID: 'USDC-1111',
@@ -301,6 +310,39 @@ describe('AutoRouterService', () => {
                 tolerance: 0.01,
             }),
         );
-        expect(transaction).toEqual(...);
-    });*/
+        expect(transactions).toEqual([
+            {
+                nonce: 0,
+                value: '0',
+                receiver:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                gasPrice: 1000000000,
+                gasLimit: 50000000,
+                data:
+                    'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMxMzEzMUAwNTg0M2FhZTU2Mjg4ZjFjZjRANmQ3NTZjNzQ2OTUwNjE2OTcyNTM3NzYxNzBAMDAwMDAwMDAwMDAwMDAwMDA1MDAwNmJkYzYxZWJiZWM3MTliMDdiNGE3ZWJmZDFmYjIxNWMwNzA2ZTNjN2NlYkA3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzRANTQ0ZjRiMzEyZDMxMzEzMTMxQDA0YTliZDg0ODQ4MTYwNGFAMDAwMDAwMDAwMDAwMDAwMDA1MDBjOWY2NTc3YjBjNTY2Y2RjMjhlMGE3NmY2ZTE0ZDFiZTA3OTQwMDMzN2NlYkA3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzRANTQ0ZjRiMzIyZDMyMzIzMjMyQDA2ZjA1YjU5ZDNiMjAwMDA=',
+                chainID: 'T',
+                version: 1,
+                options: undefined,
+                signature: undefined,
+            },
+            {
+                nonce: 0,
+                value: '0',
+                receiver:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender:
+                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                gasPrice: 1000000000,
+                gasLimit: 4200000,
+                data:
+                    'RVNEVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUAwNmYwNWI1OWQzYjIwMDAwQDc1NmU3NzcyNjE3MDQ1Njc2YzY0',
+                chainID: 'T',
+                version: 1,
+                options: undefined,
+                signature: undefined,
+            },
+        ]);
+    });
 });

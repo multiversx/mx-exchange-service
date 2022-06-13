@@ -53,7 +53,9 @@ export class AutoRouterTransactionService {
                 new BigNumber(args.intermediaryAmounts[0])
                     .plus(
                         new BigNumber(args.intermediaryAmounts[0]).multipliedBy(
-                            args.tolerance,
+                            args.swapType === SWAP_TYPE.fixedOutput
+                                ? args.tolerance
+                                : 0,
                         ),
                     )
                     .integerValue(),
@@ -83,15 +85,31 @@ export class AutoRouterTransactionService {
 
     private multiPairFixedInputSwaps(args: MultiSwapTokensArgs): any[] {
         const swaps = [];
+
+        const intermediaryTolerance = args.tolerance / args.addressRoute.length;
+
         for (const [index, address] of args.addressRoute.entries()) {
+            const intermediaryToleranceMultiplier =
+                args.addressRoute.length - index;
+
+            const toleranceAmount = new BigNumber(
+                args.intermediaryAmounts[index + 1],
+            ).multipliedBy(
+                intermediaryToleranceMultiplier * intermediaryTolerance,
+            );
+
+            const amountOutMin = new BigNumber(
+                args.intermediaryAmounts[index + 1],
+            )
+                .minus(toleranceAmount)
+                .integerValue();
+
             swaps.push(
                 ...[
                     BytesValue.fromHex(Address.fromString(address).hex()),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
-                    new BigUIntValue(
-                        new BigNumber(args.intermediaryAmounts[index + 1]),
-                    ),
+                    new BigUIntValue(amountOutMin),
                 ],
             );
         }
@@ -101,21 +119,23 @@ export class AutoRouterTransactionService {
     private multiPairFixedOutputSwaps(args: MultiSwapTokensArgs): any[] {
         const swaps = [];
 
-        const toleranceDecrementer = args.tolerance / args.addressRoute.length;
+        const intermediaryTolerance = args.tolerance / args.addressRoute.length;
 
         for (const [index, address] of args.addressRoute.entries()) {
             // method #1
             // [A -> B -> C -> D], all with swap_tokens_fixed_output
             // overall: less input, more gas, rest/dust in A, B & C
+            const intermediaryToleranceMultiplier =
+                args.addressRoute.length - index - 1;
+
+            const toleranceAmount = new BigNumber(
+                args.intermediaryAmounts[index + 1],
+            ).multipliedBy(
+                intermediaryToleranceMultiplier * intermediaryTolerance,
+            );
+
             const amountOut = new BigNumber(args.intermediaryAmounts[index + 1])
-                .plus(
-                    new BigNumber(
-                        args.intermediaryAmounts[index + 1],
-                    ).multipliedBy(
-                        (args.addressRoute.length - index - 1) *
-                            toleranceDecrementer,
-                    ),
-                )
+                .plus(toleranceAmount)
                 .integerValue()
                 .toFixed();
 
@@ -139,7 +159,7 @@ export class AutoRouterTransactionService {
                             args.intermediaryAmounts[index + 1],
                         ).multipliedBy(
                             (args.addressRoute.length - index - 1) *
-                                toleranceDecrementer,
+                                intermediaryTolerance,
                         ),
                     )
                     .integerValue()
