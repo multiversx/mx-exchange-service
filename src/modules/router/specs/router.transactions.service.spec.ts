@@ -24,8 +24,7 @@ import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { Address } from '@elrondnetwork/erdjs/out';
-import { EsdtLocalRole, SetLocalRoleOwnerArgs } from '../models/router.args';
-import { fail } from 'assert';
+import { EsdtLocalRole } from '../models/router.args';
 
 describe('RouterService', () => {
     let service: TransactionRouterService;
