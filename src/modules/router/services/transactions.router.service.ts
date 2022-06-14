@@ -260,10 +260,10 @@ export class TransactionRouterService {
 
     async clearPairTemporaryOwnerStorage(): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const setFeeInteraction: Interaction = contract.methods.clearPairTemporaryOwnerStorage(
+        const interaction: Interaction = contract.methods.clearPairTemporaryOwnerStorage(
             [],
         );
-        const transaction = setFeeInteraction.buildTransaction();
+        const transaction = interaction.buildTransaction();
         transaction.setGasLimit(
             new GasLimit(gasConfig.router.admin.clearPairTemporaryOwnerStorage),
         );
@@ -295,10 +295,10 @@ export class TransactionRouterService {
         periodBlocks: string,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const setFeeInteraction: Interaction = contract.methods.setTemporaryOwnerPeriod(
+        const interaction: Interaction = contract.methods.setTemporaryOwnerPeriod(
             [new BigUIntValue(new BigNumber(periodBlocks))],
         );
-        const transaction = setFeeInteraction.buildTransaction();
+        const transaction = interaction.buildTransaction();
         transaction.setGasLimit(
             new GasLimit(gasConfig.router.admin.setTemporaryOwnerPeriod),
         );
@@ -310,10 +310,10 @@ export class TransactionRouterService {
 
     async setPairTemplateAddress(address: string): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const setFeeInteraction: Interaction = contract.methods.setPairTemplateAddress(
+        const interaction: Interaction = contract.methods.setPairTemplateAddress(
             [BytesValue.fromHex(Address.fromString(address).hex())],
         );
-        const transaction = setFeeInteraction.buildTransaction();
+        const transaction = interaction.buildTransaction();
         transaction.setGasLimit(
             new GasLimit(gasConfig.router.admin.setPairTemplateAddress),
         );
