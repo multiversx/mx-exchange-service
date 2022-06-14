@@ -12,6 +12,7 @@ import { Logger } from 'winston';
 import { ProxyNetworkProviderProfiler } from '../../helpers/proxy.network.provider.profiler';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
+import { promises } from 'fs';
 
 @Injectable()
 export class ElrondProxyService {
@@ -165,14 +166,16 @@ export class ElrondProxyService {
         contractAbiPath: string,
         contractInterface: string,
     ): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({
-            files: [contractAbiPath],
+        const jsonContent: string = await promises.readFile(contractAbiPath, {
+            encoding: 'utf8',
         });
+        const json = JSON.parse(jsonContent);
+        const abiRegistry = AbiRegistry.create(json);
         const abi = new SmartContractAbi(abiRegistry, [contractInterface]);
 
-        return new SmartContractProfiler({
-            address: new Address(contractAddress),
-            abi: abi,
+        return new SmartContract({
+            address: Address.fromString(contractAddress),
+            abi,
         });
     }
 }
