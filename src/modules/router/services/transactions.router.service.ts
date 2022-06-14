@@ -2,7 +2,9 @@ import {
     Address,
     Balance,
     BigUIntValue,
+    BooleanValue,
     BytesValue,
+    ContractFunction,
     GasLimit,
     Interaction,
     TypedValue,
@@ -77,7 +79,6 @@ export class TransactionRouterService {
         }
 
         const contract = await this.elrondProxy.getRouterSmartContract();
-
         const transactionArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
@@ -90,7 +91,6 @@ export class TransactionRouterService {
         const upgradePairInteraction: Interaction = contract.methods.upgradePair(
             transactionArgs,
         );
-
         const transaction = upgradePairInteraction.buildTransaction();
         // todo: test gas limit
         transaction.setGasLimit(
@@ -116,20 +116,17 @@ export class TransactionRouterService {
         }
 
         const contract = await this.elrondProxy.getRouterSmartContract();
-
         const transactionArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
         ];
-
-        const upgradePairInteraction: Interaction = contract.methods.upgradePair(
+        const upgradePairInteraction: Interaction = contract.methods.removePair(
             transactionArgs,
         );
-
         const transaction = upgradePairInteraction.buildTransaction();
         // todo: test gas limit
         transaction.setGasLimit(
-            new GasLimit(gasConfig.router.admin.upgradePair),
+            new GasLimit(gasConfig.router.admin.removePair),
         );
         return new TransactionModel({
             ...transaction.toPlainObject(),
@@ -170,7 +167,6 @@ export class TransactionRouterService {
         const setLocalRolesInteraction: Interaction = contract.methods.setLocalRoles(
             [BytesValue.fromHex(new Address(pairAddress).hex())],
         );
-
         const transaction = setLocalRolesInteraction.buildTransaction();
         transaction.setGasLimit(new GasLimit(gasConfig.router.setLocalRoles));
         return {
@@ -191,11 +187,16 @@ export class TransactionRouterService {
         for (const role of args.roles) {
             transactionArgs.push(...[new BigUIntValue(new BigNumber(role))]);
         }
-        return this.contextTransactionsService.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.router.admin.setLocalRolesOwner),
-        );
+        // todo: test gas limit
+        const transaction = contract.call({
+            func: new ContractFunction('ESDTTransfer'),
+            args: transactionArgs,
+            gasLimit: new GasLimit(gasConfig.router.admin.setLocalRolesOwner),
+        });
+        return {
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        };
     }
 
     async setState(
@@ -210,6 +211,7 @@ export class TransactionRouterService {
             : contract.methods.pause(args);
 
         const transaction = stateInteraction.buildTransaction();
+        // todo: test gas limit
         transaction.setGasLimit(new GasLimit(gasConfig.router.admin.setState));
         return {
             ...transaction.toPlainObject(),
@@ -221,12 +223,13 @@ export class TransactionRouterService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const transactionArgs: TypedValue[] = [
             BytesValue.fromUTF8('setPairCreationEnabled'),
-            new BigUIntValue(new BigNumber(enable ? 1 : 0)),
+            new BooleanValue(enable),
         ];
+        // todo: test gas limit
         return this.contextTransactionsService.esdtTransfer(
             contract,
             transactionArgs,
-            new GasLimit(gasConfig.router.admin.setLocalRolesOwner),
+            new GasLimit(gasConfig.router.admin.setPairCreationEnabled),
         );
     }
 
@@ -261,7 +264,9 @@ export class TransactionRouterService {
             [],
         );
         const transaction = setFeeInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.router.admin.setFee));
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.router.admin.clearPairTemporaryOwnerStorage),
+        );
         return {
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -290,12 +295,12 @@ export class TransactionRouterService {
         periodBlocks: string,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const setFeeInteraction: Interaction = contract.methods.setPairTemplateAddress(
+        const setFeeInteraction: Interaction = contract.methods.setTemporaryOwnerPeriod(
             [new BigUIntValue(new BigNumber(periodBlocks))],
         );
         const transaction = setFeeInteraction.buildTransaction();
         transaction.setGasLimit(
-            new GasLimit(gasConfig.router.admin.setPairTemplateAddress),
+            new GasLimit(gasConfig.router.admin.setTemporaryOwnerPeriod),
         );
         return {
             ...transaction.toPlainObject(),
