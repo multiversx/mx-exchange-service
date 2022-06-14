@@ -80,7 +80,6 @@
     "gasLimits": {
         "router": {
             "createPair": 30000000,
-            "getPair": 30000000,
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
             "multiPairSwapMultiplier": 25000000,
