@@ -15,7 +15,7 @@ export class WrappedLpTokenAttributesModel {
     lockedAssetsInvested: string;
     @Field(() => Int)
     lockedAssetsNonce: number;
-    @Field(() => LockedAssetAttributesModel)
+    @Field(() => LockedAssetAttributesModel, { nullable: true })
     lockedAssetsAttributes: LockedAssetAttributesModel;
 
     constructor(init?: Partial<WrappedLpTokenAttributesModel>) {

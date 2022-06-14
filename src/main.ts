@@ -42,9 +42,7 @@ async function bootstrap() {
     );
 
     if (apiConfigService.isPublicApiActive()) {
-        pubSubApp.listen(() =>
-            console.log('Started Redis pub/sub microservice'),
-        );
+        pubSubApp.listen();
 
         await app.listen(
             apiConfigService.getPublicAppPort(),
@@ -91,9 +89,7 @@ async function bootstrap() {
                 },
             },
         });
-        analyticsApp.listen(() =>
-            console.log('Started analytics microservice'),
-        );
+        analyticsApp.listen();
     }
 }
 bootstrap();
