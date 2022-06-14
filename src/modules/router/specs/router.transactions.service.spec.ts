@@ -98,24 +98,24 @@ describe('RouterService', () => {
     });
 
     it('should get create pair transaction', async () => {
-        const createPairTransaction = await service.createPair(
+        const transaction = await service.createPair(
             Address.Zero().bech32(),
             'TOK3-3333',
             'TOK4-4444',
         );
-        expect(createPairTransaction.data).toEqual(
-            'Y3JlYXRlUGFpckA1NDRmNGIzMzJkMzMzMzMzMzNANTQ0ZjRiMzQyZDM0MzQzNDM0QDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'createPair@544f4b332d33333333@544f4b342d34343434@0000000000000000000000000000000000000000000000000000000000000000',
         );
     });
 
     it('should get issue LP token transaction', async () => {
-        const issueLpTokenTransaction = await service.issueLpToken(
+        const transaction = await service.issueLpToken(
             'erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2',
             'LiquidityPoolToken3',
             'LPT-3333',
         );
-        expect(issueLpTokenTransaction.data).toEqual(
-            'aXNzdWVMcFRva2VuQDg2N2JhODkyYmVlNTM0NTljMjI2YTZjMTI0ZDU5MzIyMjY1NzVlZDZmMDc0MzI1NDY5MDgwOGRkMGRiNGViNWFANGM2OTcxNzU2OTY0Njk3NDc5NTA2ZjZmNmM1NDZmNmI2NTZlMzNANGM1MDU0MmQzMzMzMzMzMw==',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'issueLpToken@867ba892bee53459c226a6c124d5932226575ed6f0743254690808dd0db4eb5a@4c6971756964697479506f6f6c546f6b656e33@4c50542d33333333',
         );
     });
 
@@ -132,127 +132,120 @@ describe('RouterService', () => {
     });
 
     it('should get set local roles transaction', async () => {
-        const setLocalRolesTransaction = await service.setLocalRoles(
+        const transaction = await service.setLocalRoles(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
-        expect(setLocalRolesTransaction.data).toEqual(
-            'c2V0TG9jYWxSb2xlc0AwMDAwMDAwMDAwMDAwMDAwMDUwMGM5ZjY1NzdiMGM1NjZjZGMyOGUwYTc2ZjZlMTRkMWJlMDc5NDAwMzM3Y2Vi',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setLocalRoles@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb',
         );
     });
 
     it('should get set pause state transaction', async () => {
-        const setStateTransaction = await service.setState(
+        const transaction = await service.setState(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             false,
         );
-        expect(setStateTransaction.data).toEqual(
-            'cGF1c2VAMDAwMDAwMDAwMDAwMDAwMDA1MDBjOWY2NTc3YjBjNTY2Y2RjMjhlMGE3NmY2ZTE0ZDFiZTA3OTQwMDMzN2NlYg==',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'pause@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb',
         );
     });
 
     it('should get set resume state transaction', async () => {
-        const setStateTransaction = await service.setState(
+        const transaction = await service.setState(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             true,
         );
-        expect(setStateTransaction.data).toEqual(
-            'cmVzdW1lQDAwMDAwMDAwMDAwMDAwMDAwNTAwYzlmNjU3N2IwYzU2NmNkYzI4ZTBhNzZmNmUxNGQxYmUwNzk0MDAzMzdjZWI=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'resume@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb',
         );
     });
 
     it('should get set resume state transaction', async () => {
-        const setStateTransaction = await service.setState(
+        const transaction = await service.setState(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             true,
         );
-        expect(setStateTransaction.data).toEqual(
-            'cmVzdW1lQDAwMDAwMDAwMDAwMDAwMDAwNTAwYzlmNjU3N2IwYzU2NmNkYzI4ZTBhNzZmNmUxNGQxYmUwNzk0MDAzMzdjZWI=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'resume@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb',
         );
     });
 
     it('should get set fee OFF transaction', async () => {
-        const setFeeTransaction = await service.setFee(
+        const transaction = await service.setFee(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
             'TOK1-1111',
             false,
         );
-        expect(setFeeTransaction.data).toEqual(
-            'c2V0RmVlT2ZmQDAwMDAwMDAwMDAwMDAwMDAwNTAwYzlmNjU3N2IwYzU2NmNkYzI4ZTBhNzZmNmUxNGQxYmUwNzk0MDAzMzdjZWJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEA1NDRmNGIzMTJkMzEzMTMxMzE=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setFeeOff@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb@0000000000000000000000000000000000000000000000000000000000000000@544f4b312d31313131',
         );
     });
 
     it('should get set fee ON transaction', async () => {
-        const setFeeTransaction = await service.setFee(
+        const transaction = await service.setFee(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
             'TOK1-1111',
             true,
         );
-        expect(setFeeTransaction.data).toEqual(
-            'c2V0RmVlT25AMDAwMDAwMDAwMDAwMDAwMDA1MDBjOWY2NTc3YjBjNTY2Y2RjMjhlMGE3NmY2ZTE0ZDFiZTA3OTQwMDMzN2NlYkAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwQDU0NGY0YjMxMmQzMTMxMzEzMQ==',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setFeeOn@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb@0000000000000000000000000000000000000000000000000000000000000000@544f4b312d31313131',
         );
     });
 
     it('should get set local roles owner', async () => {
-        const setLocalRolesOwnerTransaction = await service.setLocalRolesOwner({
+        const transaction = await service.setLocalRolesOwner({
             tokenID: 'TOK1-1111',
             address: Address.Zero().bech32(),
             roles: [EsdtLocalRole.None],
         });
-        expect(setLocalRolesOwnerTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDRjNmY2MzYxNmM1MjZmNmM2NTczNGY3NzZlNjU3MkA1NDRmNGIzMTJkMzEzMTMxMzFAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEA=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setLocalRolesOwner@544f4b312d31313131@0000000000000000000000000000000000000000000000000000000000000000@',
         );
     });
 
     it('should get remove pair transaction', async () => {
-        const removePairTransaction = await service.removePair(
-            'TOK1-1111',
-            'USDC-1111',
-        );
-        expect(removePairTransaction.data).toEqual(
-            'dXBncmFkZVBhaXJANTQ0ZjRiMzEyZDMxMzEzMTMxQDU1NTM0NDQzMmQzMTMxMzEzMQ==',
+        const transaction = await service.removePair('TOK1-1111', 'USDC-1111');
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'removePair@544f4b312d31313131@555344432d31313131',
         );
     });
 
-    it('should get set pair creation enabled transaction', async () => {
-        const setPairCreationEnabledTransaction_OFF = await service.setPairCreationEnabled(
-            false,
+    it('should get set pair creation enabled ON transaction', async () => {
+        const transaction = await service.setPairCreationEnabled(true);
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setPairCreationEnabled@01',
         );
-        expect(setPairCreationEnabledTransaction_OFF.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDUwNjE2OTcyNDM3MjY1NjE3NDY5NmY2ZTQ1NmU2MTYyNmM2NTY0QA==',
-        );
+    });
 
-        const setPairCreationEnabledTransaction_ON = await service.setPairCreationEnabled(
-            true,
-        );
-        expect(setPairCreationEnabledTransaction_ON.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDUwNjE2OTcyNDM3MjY1NjE3NDY5NmY2ZTQ1NmU2MTYyNmM2NTY0QDAx',
+    it('should get set pair creation enabled OFF transaction', async () => {
+        const transaction = await service.setPairCreationEnabled(false);
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setPairCreationEnabled@',
         );
     });
 
     it('should get clear pair temporary owner storage transaction', async () => {
-        const clearPairTemporaryOwnerStorageTransaction = await service.clearPairTemporaryOwnerStorage();
-        expect(clearPairTemporaryOwnerStorageTransaction.data).toEqual(
-            'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
+        const transaction = await service.clearPairTemporaryOwnerStorage();
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'clearPairTemporaryOwnerStorage',
         );
     });
 
     it('should get set temporary owner period transaction', async () => {
-        const setTemporaryOwnerPeriodTransaction = await service.setTemporaryOwnerPeriod(
-            '1000',
-        );
-        expect(setTemporaryOwnerPeriodTransaction.data).toEqual(
-            'c2V0UGFpclRlbXBsYXRlQWRkcmVzc0AwM2U4',
+        const transaction = await service.setTemporaryOwnerPeriod('1000');
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setTemporaryOwnerPeriod@03e8',
         );
     });
 
     it('should get set set pair template address transaction', async () => {
-        const setPairTemplateAddressTransaction = await service.setPairTemplateAddress(
+        const transaction = await service.setPairTemplateAddress(
             Address.Zero().bech32(),
         );
-        expect(setPairTemplateAddressTransaction.data).toEqual(
-            'c2V0UGFpclRlbXBsYXRlQWRkcmVzc0AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setPairTemplateAddress@0000000000000000000000000000000000000000000000000000000000000000',
         );
     });
 });
