@@ -61,4 +61,3 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
     ],
 })
 export class PairModule {}
-//test
