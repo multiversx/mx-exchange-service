@@ -215,7 +215,7 @@ export class AbiStakingService {
         );
         const interaction: Interaction = contract.methods.getBurnGasLimit([]);
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().name;
+        return response.firstValue.valueOf();
     }
 
     async getTransferExecGasLimit(stakeAddress: string): Promise<string> {
@@ -226,7 +226,7 @@ export class AbiStakingService {
             [],
         );
         const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf().name;
+        return response.firstValue.valueOf();
     }
 
     async getState(stakeAddress: string): Promise<string> {
@@ -286,7 +286,6 @@ export class AbiStakingService {
             BytesValue.fromHex(new Address(address).hex()),
         ]);
         const response = await this.getGenericData(contract, interaction);
-        console.log('response', response);
         return response.firstValue.valueOf();
     }
 

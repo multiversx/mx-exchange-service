@@ -305,7 +305,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async stakeFarm(
         @Args() args: StakeFarmArgs,
@@ -322,7 +322,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async unstakeFarm(
         @Args() args: GenericStakeFarmArgs,
@@ -333,48 +333,6 @@ export class StakingResolver {
                 user.publicKey,
                 args.farmStakeAddress,
                 args.payment,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAdminGuard)
-    @Query(() => TransactionModel)
-    async stakeFarmThroughProxy(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('amount') amount: string,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireWhitelist(
-                farmStakeAddress,
-                user.publicKey,
-            );
-            return await this.stakingTransactionService.stakeFarmThroughProxy(
-                farmStakeAddress,
-                amount,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAdminGuard)
-    @Query(() => TransactionModel)
-    async unstakeFarmThroughProxy(
-        @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('amount') amount: string,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        try {
-            await this.stakingService.requireWhitelist(
-                farmStakeAddress,
-                user.publicKey,
-            );
-            return await this.stakingTransactionService.unstakeFarmThroughProxy(
-                farmStakeAddress,
-                amount,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -448,7 +406,7 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async setMaxApr(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('maxApr') maxApr: string,
+        @Args('maxApr') maxApr: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -469,7 +427,7 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async setMinUnbondEpochs(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('minUnboundEpoch') minUnboundEpoch: string,
+        @Args('minUnboundEpoch') minUnboundEpoch: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -513,9 +471,9 @@ export class StakingResolver {
     ): Promise<TransactionModel> {
         try {
             await this.stakingService.requireOwner(
-                        farmStakeAddress,
-                        user.publicKey,
-                    );
+                farmStakeAddress,
+                user.publicKey,
+            );
             return await this.stakingTransactionService.endProduceRewards(
                 farmStakeAddress,
             );
@@ -528,7 +486,7 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async setBurnGasLimit(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('gasLimit') gasLimit: string,
+        @Args('gasLimit') gasLimit: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -549,7 +507,7 @@ export class StakingResolver {
     @Query(() => TransactionModel)
     async setTransferExecGasLimit(
         @Args('farmStakeAddress') farmStakeAddress: string,
-        @Args('gasLimit') gasLimit: string,
+        @Args('gasLimit') gasLimit: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -613,7 +571,7 @@ export class StakingResolver {
     async registerFarmToken(
         @Args('farmStakeAddress') farmStakeAddress: string,
         @Args('tokenDisplayName') tokenDisplayName: string,
-        @Args('tokenID') tokenID: string,
+        @Args('tokenTicker') tokenTicker: string,
         @Args('decimals') decimals: number,
         @User() user: any,
     ): Promise<TransactionModel> {
@@ -625,7 +583,7 @@ export class StakingResolver {
             return await this.stakingTransactionService.registerFarmToken(
                 farmStakeAddress,
                 tokenDisplayName,
-                tokenID,
+                tokenTicker,
                 decimals,
             );
         } catch (error) {
@@ -769,7 +727,6 @@ export class StakingResolver {
                 user.publicKey,
             );
             return await this.stakingTransactionService.topUpRewards(
-                user.publicKey,
                 args.farmStakeAddress,
                 args.payment,
             );
@@ -778,7 +735,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAdminGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async mergeStakeFarmTokens(
         @Args() args: StakeFarmArgs,
