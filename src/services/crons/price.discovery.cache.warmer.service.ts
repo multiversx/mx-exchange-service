@@ -71,8 +71,8 @@ export class PriceDiscoveryCacheWarmerService {
                 acceptedToken,
                 redeemToken,
             ] = await Promise.all([
-                this.apiService.getService().getToken(launchedTokenID),
-                this.apiService.getService().getToken(acceptedTokenID),
+                this.apiService.getToken(launchedTokenID),
+                this.apiService.getToken(acceptedTokenID),
                 this.apiService.getNftCollection(redeemTokenID),
             ]);
 
