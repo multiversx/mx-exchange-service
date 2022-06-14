@@ -1,73 +1,68 @@
-import { Interaction, QueryResponseBundle } from '@elrondnetwork/erdjs/out';
+import { Interaction } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
+import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
 
 @Injectable()
-export class SimpleLockAbiService {
+export class SimpleLockAbiService extends GenericAbiService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async getGenericData(
-        contract: SmartContractProfiler,
-        interaction: Interaction,
-    ): Promise<QueryResponseBundle> {
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            return interaction.interpretQueryResponse(queryResponse);
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                SimpleLockAbiService.name,
-                interaction.getEndpoint().name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-
-            throw error;
-        }
+        protected readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    ) {
+        super(elrondProxy, logger);
     }
 
     async getLockedTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methods.getLockedTokenId([]);
+        const interaction: Interaction = contract.methodsExplicit.getLockedTokenId(
+            [],
+        );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            SimpleLockAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
     async getLpProxyTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methods.getLpProxyTokenId([]);
+        const interaction: Interaction = contract.methodsExplicit.getLpProxyTokenId(
+            [],
+        );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            SimpleLockAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
     async getFarmProxyTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methods.getFarmProxyTokenId(
+        const interaction: Interaction = contract.methodsExplicit.getFarmProxyTokenId(
             [],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            SimpleLockAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
     async getKnownLiquidityPools(): Promise<string[]> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methods.getKnownLiquidityPools(
+        const interaction: Interaction = contract.methodsExplicit.getKnownLiquidityPools(
             [],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            SimpleLockAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().map(pairAddress => {
             return pairAddress.valueOf().toString();
         });
@@ -75,9 +70,14 @@ export class SimpleLockAbiService {
 
     async getKnownFarms(): Promise<string[]> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methods.getKnownFarms([]);
+        const interaction: Interaction = contract.methodsExplicit.getKnownFarms(
+            [],
+        );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            SimpleLockAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().map(farmAddress => {
             return farmAddress.valueOf().toString();
         });

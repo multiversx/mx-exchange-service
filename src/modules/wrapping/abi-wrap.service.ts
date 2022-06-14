@@ -3,35 +3,26 @@ import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction
 import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateRunQueryLogMessage } from '../../utils/generate-log-message';
+import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
 @Injectable()
-export class AbiWrapService {
+export class AbiWrapService extends GenericAbiService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+        protected readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    ) {
+        super(elrondProxy, logger);
+    }
 
     async getWrappedEgldTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getWrapSmartContract();
-        const interaction: Interaction = contract.methods.getWrappedEgldTokenId(
+        const interaction: Interaction = contract.methodsExplicit.getWrappedEgldTokenId(
             [],
         );
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            const result = interaction.interpretQueryResponse(queryResponse);
-            return result.firstValue.valueOf().toString();
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiWrapService.name,
-                this.getWrappedEgldTokenID.name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        const response = await this.getGenericData(
+            AbiWrapService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().toString();
     }
 }

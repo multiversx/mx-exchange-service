@@ -1,53 +1,35 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import { QueryResponseBundle, U64Value } from '@elrondnetwork/erdjs';
+import { U64Value } from '@elrondnetwork/erdjs';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
-import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import { PhaseModel } from '../models/price.discovery.model';
 import BigNumber from 'bignumber.js';
 import { constantsConfig } from 'src/config';
+import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
 @Injectable()
-export class PriceDiscoveryAbiService {
+export class PriceDiscoveryAbiService extends GenericAbiService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    async getGenericData(
-        contract: SmartContractProfiler,
-        interaction: Interaction,
-    ): Promise<QueryResponseBundle> {
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            return interaction.interpretQueryResponse(queryResponse);
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                PriceDiscoveryAbiService.name,
-                interaction.getEndpoint().name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-
-            throw error;
-        }
+        protected readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    ) {
+        super(elrondProxy, logger);
     }
 
     async getLaunchedTokenID(priceDiscoveryAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getLaunchedTokenId(
+        const interaction: Interaction = contract.methodsExplicit.getLaunchedTokenId(
             [],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -55,11 +37,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getAcceptedTokenId(
+        const interaction: Interaction = contract.methodsExplicit.getAcceptedTokenId(
             [],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -67,9 +52,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getRedeemTokenId([]);
+        const interaction: Interaction = contract.methodsExplicit.getRedeemTokenId(
+            [],
+        );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -79,11 +69,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getLaunchedTokenBalance(
+        const interaction: Interaction = contract.methodsExplicit.getLaunchedTokenBalance(
             [],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -93,11 +86,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getAcceptedTokenBalance(
+        const interaction: Interaction = contract.methodsExplicit.getAcceptedTokenBalance(
             [],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -107,11 +103,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getRedeemTokenTotalCirculatingSupply(
+        const interaction: Interaction = contract.methodsExplicit.getRedeemTokenTotalCirculatingSupply(
             [new U64Value(new BigNumber(1))],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -121,11 +120,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getRedeemTokenTotalCirculatingSupply(
+        const interaction: Interaction = contract.methodsExplicit.getRedeemTokenTotalCirculatingSupply(
             [new U64Value(new BigNumber(2))],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -133,9 +135,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getStartBlock([]);
+        const interaction: Interaction = contract.methodsExplicit.getStartBlock(
+            [],
+        );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -143,9 +150,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getEndBlock([]);
+        const interaction: Interaction = contract.methodsExplicit.getEndBlock(
+            [],
+        );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -153,9 +165,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getCurrentPhase([]);
+        const interaction: Interaction = contract.methodsExplicit.getCurrentPhase(
+            [],
+        );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
 
         const phaseName = response.firstValue.valueOf().name;
         const penalty = response.firstValue.valueOf().fields.penalty_percentage;
@@ -177,11 +194,14 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getMinLaunchedTokenPrice(
+        const interaction: Interaction = contract.methodsExplicit.getMinLaunchedTokenPrice(
             [],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -191,10 +211,13 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getNoLimitPhaseDurationBlocks(
+        const interaction: Interaction = contract.methodsExplicit.getNoLimitPhaseDurationBlocks(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -204,10 +227,13 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getLinearPenaltyPhaseDurationBlocks(
+        const interaction: Interaction = contract.methodsExplicit.getLinearPenaltyPhaseDurationBlocks(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -217,10 +243,13 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getFixedPenaltyPhaseDurationBlocks(
+        const interaction: Interaction = contract.methodsExplicit.getFixedPenaltyPhaseDurationBlocks(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -228,10 +257,13 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getLockingScAddress(
+        const interaction: Interaction = contract.methodsExplicit.getLockingScAddress(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -239,8 +271,13 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getUnlockEpoch([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getUnlockEpoch(
+            [],
+        );
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -250,10 +287,13 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getPenaltyMinPercentage(
+        const interaction: Interaction = contract.methodsExplicit.getPenaltyMinPercentage(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         const rawPenalty: BigNumber = response.firstValue.valueOf();
         return rawPenalty
             .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
@@ -266,10 +306,13 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getPenaltyMaxPercentage(
+        const interaction: Interaction = contract.methodsExplicit.getPenaltyMaxPercentage(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         const rawPenalty: BigNumber = response.firstValue.valueOf();
         return rawPenalty
             .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
@@ -282,10 +325,13 @@ export class PriceDiscoveryAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methods.getFixedPenaltyPercentage(
+        const interaction: Interaction = contract.methodsExplicit.getFixedPenaltyPercentage(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PriceDiscoveryAbiService.name,
+            interaction,
+        );
         const rawPenalty: BigNumber = response.firstValue.valueOf();
         return rawPenalty
             .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
