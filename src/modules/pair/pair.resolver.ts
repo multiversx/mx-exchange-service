@@ -497,19 +497,9 @@ export class PairResolver {
     async removeLiquidity(
         @Args() args: RemoveLiquidityArgs,
         @User() user: any,
-    ) {
+    ): Promise<TransactionModel[]> {
         return await this.transactionService.removeLiquidity(
             user.publicKey,
-            args,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async removeLiquidityAndBuyBackAndBurnToken(
-        @Args() args: RemoveLiquidityAndBuyBackAndBurnArgs,
-    ): Promise<TransactionModel> {
-        return await this.transactionService.removeLiquidityAndBuyBackAndBurnToken(
             args,
         );
     }

@@ -267,34 +267,6 @@ export class PairTransactionService {
         return transactions;
     }
 
-    async removeLiquidityAndBuyBackAndBurnToken(
-        args: RemoveLiquidityAndBuyBackAndBurnArgs,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            args.pairAddress,
-        );
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromUTF8('removeLiquidityAndBuyBackAndBurnToken'),
-            BytesValue.fromUTF8(args.tokenToBuyBackAndBurnID),
-        ];
-
-        // todo: test gas limit
-        const transaction = contract.call({
-            func: new ContractFunction('ESDTTransfer'),
-            args: transactionArgs,
-            gasLimit: new GasLimit(
-                gasConfig.pairs.removeLiquidityAndBuyBackAndBurnToken,
-            ),
-        });
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
-    }
-
     async swapTokensFixedInput(
         sender: string,
         args: SwapTokensFixedInputArgs,
