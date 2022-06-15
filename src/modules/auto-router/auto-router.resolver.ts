@@ -25,7 +25,7 @@ export class AutoRouterResolver {
     @ResolveField(() => [TransactionModel])
     async transactions(@Parent() parent: AutoRouteModel, @User() user: any) {
         try {
-            return await this.autoRouterService.getTransactions(
+            return await this.autoRouterService.getSwapTransactions(
                 user.publicKey,
                 parent,
             );

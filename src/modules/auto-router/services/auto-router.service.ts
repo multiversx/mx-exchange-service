@@ -22,6 +22,9 @@ import { RouterService } from 'src/modules/router/services/router.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 import { denominateAmount } from 'src/utils/token.converters';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { MetricsCollector } from 'src/utils/metrics.collector';
+import { TransactionModel } from 'src/models/transaction.model';
 @Injectable()
 export class AutoRouterService {
     constructor(
@@ -41,6 +44,9 @@ export class AutoRouterService {
     async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
         if (args.amountIn && args.amountOut)
             throw new Error("Can't have both amountIn & amountOut");
+
+        const profiler = new PerformanceProfiler();
+        let autoRoute: AutoRouteModel = null;
 
         const [tokenInID, tokenOutID] = await this.toWrappedIfEGLD([
             args.tokenInID,
@@ -63,7 +69,7 @@ export class AutoRouterService {
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
         if (directPair) {
-            return await this.singleSwap(
+            autoRoute = await this.singleSwap(
                 args,
                 tokenInID,
                 tokenOutID,
@@ -72,17 +78,21 @@ export class AutoRouterService {
                 tokenOutMetadata,
                 swapType,
             );
-        }
+        } else
+            autoRoute = await this.multiSwap(
+                args,
+                tokenInID,
+                tokenOutID,
+                pairs,
+                tokenInMetadata,
+                tokenOutMetadata,
+                swapType,
+            );
 
-        return await this.multiSwap(
-            args,
-            tokenInID,
-            tokenOutID,
-            pairs,
-            tokenInMetadata,
-            tokenOutMetadata,
-            swapType,
-        );
+        profiler.stop();
+        MetricsCollector.setQueryDuration(this.swap.name, profiler.duration);
+
+        return autoRoute;
     }
 
     async singleSwap(
@@ -443,10 +453,16 @@ export class AutoRouterService {
         return pairs;
     }
 
-    async getTransactions(sender: string, parent: AutoRouteModel) {
+    async getSwapTransactions(
+        sender: string,
+        parent: AutoRouteModel,
+    ): Promise<TransactionModel[]> {
+        const profiler = new PerformanceProfiler();
+        let transactions: TransactionModel[] = [];
+
         if (parent.pairs.length == 1) {
             if (parent.swapType === SWAP_TYPE.fixedInput)
-                return await this.pairTransactionService.swapTokensFixedInput(
+                transactions = await this.pairTransactionService.swapTokensFixedInput(
                     sender,
                     {
                         pairAddress: parent.pairs[0].address,
@@ -457,29 +473,39 @@ export class AutoRouterService {
                         tolerance: parent.tolerance,
                     },
                 );
-
-            return await this.pairTransactionService.swapTokensFixedOutput(
+            else
+                transactions = await this.pairTransactionService.swapTokensFixedOutput(
+                    sender,
+                    {
+                        pairAddress: parent.pairs[0].address,
+                        tokenInID: parent.tokenInID,
+                        tokenOutID: parent.tokenOutID,
+                        amountIn: parent.amountIn,
+                        amountOut: parent.amountOut,
+                    },
+                );
+        } else
+            transactions = await this.autoRouterTransactionService.multiPairSwap(
                 sender,
                 {
-                    pairAddress: parent.pairs[0].address,
+                    swapType: parent.swapType,
                     tokenInID: parent.tokenInID,
                     tokenOutID: parent.tokenOutID,
-                    amountIn: parent.amountIn,
-                    amountOut: parent.amountOut,
+                    addressRoute: parent.pairs.map(p => {
+                        return p.address;
+                    }),
+                    intermediaryAmounts: parent.intermediaryAmounts,
+                    tokenRoute: parent.tokenRoute,
+                    tolerance: parent.tolerance,
                 },
             );
-        }
 
-        return await this.autoRouterTransactionService.multiPairSwap(sender, {
-            swapType: parent.swapType,
-            tokenInID: parent.tokenInID,
-            tokenOutID: parent.tokenOutID,
-            addressRoute: parent.pairs.map(p => {
-                return p.address;
-            }),
-            intermediaryAmounts: parent.intermediaryAmounts,
-            tokenRoute: parent.tokenRoute,
-            tolerance: parent.tolerance,
-        });
+        profiler.stop();
+        MetricsCollector.setQueryDuration(
+            this.getSwapTransactions.name,
+            profiler.duration,
+        );
+
+        return transactions;
     }
 }
