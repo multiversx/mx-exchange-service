@@ -59,7 +59,6 @@ describe('PairService', () => {
             'TOK1-1111',
             '10000000000000000',
         );
-        //console.log('amountIn', amountIn);
         expect(amountIn).toEqual('20262808627903914');
     });
 
@@ -69,7 +68,6 @@ describe('PairService', () => {
             'TOK1-1111',
             '10000000000000000',
         );
-        //console.log('amountOut', amountOut);
         expect(amountOut).toEqual('19743160687941225');
     });
 
@@ -79,7 +77,6 @@ describe('PairService', () => {
             'TOK1-1111',
             '10000000000000000',
         );
-        //console.log('equivalent', equivalent);
         expect(equivalent).toEqual('20000000000000000');
     });
 
@@ -104,7 +101,6 @@ describe('PairService', () => {
 
     it('should get USD price by path', async () => {
         const priceByPathUSD = await service.getPriceUSDByPath('TOK2-2222');
-        //console.log('priceByPathUSD', priceByPathUSD.toFixed());
         expect(priceByPathUSD.toFixed()).toEqual('100');
     });
 
@@ -113,13 +109,11 @@ describe('PairService', () => {
             'TOK2-2222',
             'TOK1-1111',
         );
-        //console.log('priceByTokenUSD', priceByTokenUSD.toFixed());
         expect(priceByTokenUSD.toFixed()).toEqual('100');
     });
 
     it('should get pair address by LP token ID', async () => {
         const address = await service.getPairAddressByLpTokenID('LPT-1234');
-        //console.log('address', address);
         expect(address).toEqual(address);
     });
 
@@ -130,8 +124,4 @@ describe('PairService', () => {
         const isPair1 = await service.isPairEsdtToken('LPT-4321');
         expect(isPair1).toEqual(false);
     });
-
-    /*it('should check if address is owner', async () => {
-        // todo
-    });*/
 });

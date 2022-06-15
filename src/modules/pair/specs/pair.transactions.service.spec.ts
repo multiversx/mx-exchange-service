@@ -128,8 +128,10 @@ describe('TransactionPairService', () => {
             addLiquidityTransaction,
         ] = initialLiquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
-        expect(addLiquidityTransaction.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDU0NGY0YjMyMmQzMjMyMzIzMkBAMGFANjE2NDY0NDk2ZTY5NzQ2OTYxNmM0YzY5NzE3NTY5NjQ2OTc0Nzk=',
+        expect(
+            Buffer.from(addLiquidityTransaction.data, 'base64').toString(),
+        ).toEqual(
+            'MultiESDTNFTTransfer@0000000000000000000000000000000000000000000000000000000000000000@02@544f4b312d31313131@@09@544f4b322d32323232@@0a@616464496e697469616c4c6971756964697479',
         );
     });
 
@@ -158,8 +160,10 @@ describe('TransactionPairService', () => {
             },
         );
 
-        expect(addLiquidityTransaction.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDU0NGY0YjMyMmQzMjMyMzIzMkBAMGFANjE2NDY0NDk2ZTY5NzQ2OTYxNmM0YzY5NzE3NTY5NjQ2OTc0Nzk=',
+        expect(
+            Buffer.from(addLiquidityTransaction.data, 'base64').toString(),
+        ).toEqual(
+            'MultiESDTNFTTransfer@0000000000000000000000000000000000000000000000000000000000000000@02@544f4b312d31313131@@09@544f4b322d32323232@@0a@616464496e697469616c4c6971756964697479',
         );
     });
 
@@ -188,8 +192,10 @@ describe('TransactionPairService', () => {
             },
         );
 
-        expect(addLiquidityTransaction.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDU0NGY0YjMyMmQzMjMyMzIzMkBAMGFANjE2NDY0NGM2OTcxNzU2OTY0Njk3NDc5QDA4QDA5',
+        expect(
+            Buffer.from(addLiquidityTransaction.data, 'base64').toString(),
+        ).toEqual(
+            'MultiESDTNFTTransfer@0000000000000000000000000000000000000000000000000000000000000000@02@544f4b312d31313131@@09@544f4b322d32323232@@0a@6164644c6971756964697479@08@09',
         );
     });
 
@@ -220,8 +226,8 @@ describe('TransactionPairService', () => {
 
         const [wrapEgldTransaction, addLiquidity] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(firstTokenAmount);
-        expect(addLiquidity.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDBhQDU0NGY0YjMyMmQzMjMyMzIzMkBAMDlANjE2NDY0NGM2OTcxNzU2OTY0Njk3NDc5QDA5QDA4',
+        expect(Buffer.from(addLiquidity.data, 'base64').toString()).toEqual(
+            'MultiESDTNFTTransfer@0000000000000000000000000000000000000000000000000000000000000000@02@544f4b312d31313131@@0a@544f4b322d32323232@@09@6164644c6971756964697479@09@08',
         );
     });
 
@@ -252,13 +258,13 @@ describe('TransactionPairService', () => {
 
         const [wrapEgldTransaction, addLiquidity] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
-        expect(addLiquidity.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDU0NGY0YjMyMmQzMjMyMzIzMkBAMGFANjE2NDY0NGM2OTcxNzU2OTY0Njk3NDc5QDA4QDA5',
+        expect(Buffer.from(addLiquidity.data, 'base64').toString()).toEqual(
+            'MultiESDTNFTTransfer@0000000000000000000000000000000000000000000000000000000000000000@02@544f4b312d31313131@@09@544f4b322d32323232@@0a@6164644c6971756964697479@08@09',
         );
     });
 
     it('should get remove liquidity transaction', async () => {
-        const removeLiquidityTransactions = await service.removeLiquidity(
+        const transactions = await service.removeLiquidity(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress:
@@ -269,33 +275,17 @@ describe('TransactionPairService', () => {
             },
         );
 
-        expect(removeLiquidityTransactions.length).toEqual(2);
-        expect(removeLiquidityTransactions[0].data).toEqual(
-            'RVNEVFRyYW5zZmVyQDQ1NDc0YzQ0QDA5QDcyNjU2ZDZmNzY2NTRjNjk3MTc1Njk2NDY5NzQ3OUAwOEAxMQ==',
+        expect(transactions.length).toEqual(2);
+        expect(Buffer.from(transactions[0].data, 'base64').toString()).toEqual(
+            'ESDTTransfer@45474c44@09@72656d6f76654c6971756964697479@08@11',
         );
-        expect(removeLiquidityTransactions[1].data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUAwOEA3NTZlNzc3MjYxNzA0NTY3NmM2NA==',
-        );
-    });
-
-    it('should get remove liquidity and buy back and burn token transaction', async () => {
-        const removeLiquidityAndBuyBackAndBurnTokenTransaction = await service.removeLiquidityAndBuyBackAndBurnToken(
-            {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                tokenToBuyBackAndBurnID: 'TOK2-2222',
-                tokenInID: 'EGLD',
-                amount: '5',
-            },
-        );
-
-        expect(removeLiquidityAndBuyBackAndBurnTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDQ1NDc0YzQ0QDA1QDcyNjU2ZDZmNzY2NTRjNjk3MTc1Njk2NDY5NzQ3OTQxNmU2NDQyNzU3OTQyNjE2MzZiNDE2ZTY0NDI3NTcyNmU1NDZmNmI2NTZlQDU0NGY0YjMyMmQzMjMyMzIzMg==',
+        expect(Buffer.from(transactions[1].data, 'base64').toString()).toEqual(
+            'ESDTTransfer@544f4b312d31313131@08@756e7772617045676c64',
         );
     });
 
     it('should get swap tokens fixed input transaction + wrap tx', async () => {
-        const swapTokensFixedInputTransactions = await service.swapTokensFixedInput(
+        const transactions = await service.swapTokensFixedInput(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress:
@@ -308,17 +298,17 @@ describe('TransactionPairService', () => {
             },
         );
 
-        expect(swapTokensFixedInputTransactions.length).toEqual(2);
-        expect(swapTokensFixedInputTransactions[0].data).toEqual(
-            'd3JhcEVnbGQ=',
+        expect(transactions.length).toEqual(2);
+        expect(Buffer.from(transactions[0].data, 'base64').toString()).toEqual(
+            'wrapEgld',
         );
-        expect(swapTokensFixedInputTransactions[1].data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUAwNUA3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0OTZlNzA3NTc0QDU0NGY0YjMyMmQzMjMyMzIzMkAwNA==',
+        expect(Buffer.from(transactions[1].data, 'base64').toString()).toEqual(
+            'ESDTTransfer@544f4b312d31313131@05@73776170546f6b656e734669786564496e707574@544f4b322d32323232@04',
         );
     });
 
     it('should get swap tokens fixed output transaction + unwrap tx', async () => {
-        const swapTokensFixedOutputTransactions = await service.swapTokensFixedOutput(
+        const transactions = await service.swapTokensFixedOutput(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress:
@@ -330,25 +320,25 @@ describe('TransactionPairService', () => {
             },
         );
 
-        expect(swapTokensFixedOutputTransactions.length).toEqual(2);
-        expect(swapTokensFixedOutputTransactions[0].data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU0NGY0YjMyMmQzMjMyMzIzMkAwNUA3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzRANTQ0ZjRiMzEyZDMxMzEzMTMxQDA1',
+        expect(transactions.length).toEqual(2);
+        expect(Buffer.from(transactions[0].data, 'base64').toString()).toEqual(
+            'ESDTTransfer@544f4b322d32323232@05@73776170546f6b656e7346697865644f7574707574@544f4b312d31313131@05',
         );
-        expect(swapTokensFixedOutputTransactions[1].data).toEqual(
-            'RVNEVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUAwNUA3NTZlNzc3MjYxNzA0NTY3NmM2NA==',
+        expect(Buffer.from(transactions[1].data, 'base64').toString()).toEqual(
+            'ESDTTransfer@544f4b312d31313131@05@756e7772617045676c64',
         );
     });
 
     it('should validate tokens', async () => {
-        const validateInputTokensResponse_0 = await service.validateTokens(
+        const transactions = await service.validateTokens(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             [
                 new InputTokenModel({ tokenID: 'TOK2-2222' }),
                 new InputTokenModel({ tokenID: 'EGLD' }),
             ],
         );
-        expect(validateInputTokensResponse_0[0].tokenID).toEqual('TOK1-1111');
-        expect(validateInputTokensResponse_0[1].tokenID).toEqual('TOK2-2222');
+        expect(transactions[0].tokenID).toEqual('TOK1-1111');
+        expect(transactions[1].tokenID).toEqual('TOK2-2222');
 
         try {
             await service.validateTokens(
@@ -375,160 +365,121 @@ describe('TransactionPairService', () => {
         }
     });
 
-    it('should get swap with no fee and forward transaction', async () => {
-        const swapNoFeeAndForwardTransaction = await service.swapNoFeeAndForward(
-            {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                tokenOutID: 'EGLD',
-                destination: Address.Zero().bech32(),
-            },
-        );
-        expect(swapNoFeeAndForwardTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDQ1NDc0YzQ0QEA3Mzc3NjE3MDRlNmY0NjY1NjU0MTZlNjQ0NjZmNzI3NzYxNzI2NA==',
-        );
-    });
-
-    it('should get set LP token identifier transaction', async () => {
-        const setLpTokenIdentifierTransaction = await service.setLpTokenIdentifier(
-            {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                tokenID: 'LPT-1234',
-            },
-        );
-        expect(setLpTokenIdentifierTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDRjNzA1NDZmNmI2NTZlNDk2NDY1NmU3NDY5NjY2OTY1NzJANGM1MDU0MmQzMTMyMzMzNA==',
-        );
-    });
-
     it('should get add to whitelist transaction', async () => {
-        const addToWhitelistTransaction = await service.whitelist({
+        const transaction = await service.whitelist({
             pairAddress:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             address: Address.Zero().bech32(),
         });
-        expect(addToWhitelistTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDc3Njg2OTc0NjU2YzY5NzM3NEAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'whitelist@0000000000000000000000000000000000000000000000000000000000000000',
         );
     });
 
     it('should get remove from whitelist transaction', async () => {
-        const removeFromWhitelistTransaction = await service.removeWhitelist({
+        const transaction = await service.removeWhitelist({
             pairAddress:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             address: Address.Zero().bech32(),
         });
-        expect(removeFromWhitelistTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDcyNjU2ZDZmNzY2NTU3Njg2OTc0NjU2YzY5NzM3NEAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'removeWhitelist@0000000000000000000000000000000000000000000000000000000000000000',
         );
     });
 
     it('should get add trusted swap pair transaction', async () => {
-        const addTrustedSwapPairTransaction = await service.addTrustedSwapPair(
+        const transaction = await service.addTrustedSwapPair(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
             'TOK1-1111',
             'TOK2-2222',
         );
-        expect(addTrustedSwapPairTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDYxNjQ2NDU0NzI3NTczNzQ2NTY0NTM3NzYxNzA1MDYxNjk3MkAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwQDU0NGY0YjMxMmQzMTMxMzEzMUA1NDRmNGIzMjJkMzIzMjMyMzI=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'addTrustedSwapPair@0000000000000000000000000000000000000000000000000000000000000000@544f4b312d31313131@544f4b322d32323232',
         );
     });
 
     it('should get remove trusted swap pair transaction', async () => {
-        const removeTrustedSwapPairTransaction = await service.removeTrustedSwapPair(
+        const transaction = await service.removeTrustedSwapPair(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             'TOK1-1111',
             'TOK2-2222',
         );
-        expect(removeTrustedSwapPairTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDYxNjQ2NDU0NzI3NTczNzQ2NTY0NTM3NzYxNzA1MDYxNjk3MkA1NDRmNGIzMTJkMzEzMTMxMzFANTQ0ZjRiMzIyZDMyMzIzMjMy',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'removeTrustedSwapPair@544f4b312d31313131@544f4b322d32323232',
         );
     });
 
     it('should get set transfer execution gas limit transaction', async () => {
-        const setTransferExecGasLimitTransaction = await service.setTransferExecGasLimit(
+        const transaction = await service.setTransferExecGasLimit(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '50000000',
         );
-        expect(setTransferExecGasLimitTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDVmNzQ3MjYxNmU3MzY2NjU3MjVmNjU3ODY1NjM1ZjY3NjE3MzVmNmM2OTZkNjk3NEAwMmZhZjA4MA==',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'set_transfer_exec_gas_limit@02faf080',
         );
     });
 
-    it('should get set transfer execution gas limit transaction', async () => {
-        const setExternExecGasLimitTransaction = await service.setExternExecGasLimit(
+    it('should get set extern swap gas limit transaction', async () => {
+        const transaction = await service.setExternSwapGasLimit(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '50000000',
         );
-        expect(setExternExecGasLimitTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDVmNjU3ODc0NjU3MjZlNWY3Mzc3NjE3MDVmNjc2MTczNWY2YzY5NmQ2OTc0QDAyZmFmMDgw',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'set_extern_swap_gas_limit@02faf080',
         );
     });
 
     it('should get pause transaction', async () => {
-        const pauseTransaction = await service.pause(
+        const transaction = await service.pause(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
-        expect(pauseTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDcwNjE3NTczNjU=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'pause',
         );
     });
 
     it('should get resume transaction', async () => {
-        const resumeTransaction = await service.pause(
+        const transaction = await service.resume(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
-        expect(resumeTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDcwNjE3NTczNjU=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'resume',
         );
     });
 
     it('should get set state active no swaps transaction', async () => {
-        const setStateActiveNoSwapsTransaction = await service.setStateActiveNoSwaps(
+        const transaction = await service.setStateActiveNoSwaps(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
-        expect(setStateActiveNoSwapsTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDUzNzQ2MTc0NjU0MTYzNzQ2OTc2NjU0ZTZmNTM3NzYxNzA3Mw==',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setStateActiveNoSwaps',
         );
     });
 
     it('should get set fee percents transaction', async () => {
-        const setFeePercentsTransaction = await service.setFeePercents(
+        const transaction = await service.setFeePercents(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '0.003',
             '0.0005',
         );
-        expect(setFeePercentsTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDQ2NjU2NTUwNjU3MjYzNjU2ZTc0NzNAQA==',
-        );
-    });
-
-    it('should get update and get tokens for given position with save price transaction', async () => {
-        const updateAndGetTokensForGivenPositionWithSafePriceTransaction = await service.updateAndGetTokensForGivenPositionWithSafePrice(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            '1000000000000000000',
-        );
-        expect(
-            updateAndGetTokensForGivenPositionWithSafePriceTransaction.data,
-        ).toEqual(
-            'RVNEVFRyYW5zZmVyQDc1NzA2NDYxNzQ2NTQxNmU2NDQ3NjU3NDU0NmY2YjY1NmU3MzQ2NmY3MjQ3Njk3NjY1NmU1MDZmNzM2OTc0Njk2ZjZlNTc2OTc0Njg1MzYxNjY2NTUwNzI2OTYzNjVAMGRlMGI2YjNhNzY0MDAwMA==',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setFeePercents@@',
         );
     });
 
     it('should get set max observations per period transaction', async () => {
-        const setMaxObservationsPerRecordTransaction = await service.setMaxObservationsPerRecord(
+        const transaction = await service.setMaxObservationsPerRecord(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '1000',
         );
-        expect(setMaxObservationsPerRecordTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDRkNjE3ODRmNjI3MzY1NzI3NjYxNzQ2OTZmNmU3MzUwNjU3MjUyNjU2MzZmNzI2NEAwM2U4',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setMaxObservationsPerRecord@03e8',
         );
     });
 
     it('should get set BP swap config transaction', async () => {
-        const setBPSwapConfigTransaction = await service.setBPSwapConfig(
+        const transaction = await service.setBPSwapConfig(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             {
                 protectStopBlock: '1000',
@@ -536,13 +487,13 @@ describe('TransactionPairService', () => {
                 maxNumActionsPerAddress: '100',
             },
         );
-        expect(setBPSwapConfigTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDQyNTA1Mzc3NjE3MDQzNmY2ZTY2Njk2N0AwM2U4QDBkZTBiNmIzYTc2NDAwMDBANjQ=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setBPSwapConfig@03e8@0de0b6b3a7640000@64',
         );
     });
 
     it('should get set BP remove config transaction', async () => {
-        const setBPRemoveConfigTransaction = await service.setBPRemoveConfig(
+        const transaction = await service.setBPRemoveConfig(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             {
                 protectStopBlock: '1000',
@@ -550,13 +501,13 @@ describe('TransactionPairService', () => {
                 maxNumActionsPerAddress: '100',
             },
         );
-        expect(setBPRemoveConfigTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDQyNTA1MjY1NmQ2Zjc2NjU0MzZmNmU2NjY5NjdAMDNlOEAwZGUwYjZiM2E3NjQwMDAwQDY0',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setBPRemoveConfig@03e8@0de0b6b3a7640000@64',
         );
     });
 
     it('should get set BP add config transaction', async () => {
-        const setBPAddConfigTransaction = await service.setBPAddConfig(
+        const transaction = await service.setBPAddConfig(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             {
                 protectStopBlock: '1000',
@@ -564,38 +515,38 @@ describe('TransactionPairService', () => {
                 maxNumActionsPerAddress: '100',
             },
         );
-        expect(setBPAddConfigTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDQyNTA0MTY0NjQ0MzZmNmU2NjY5NjdAMDNlOEAwZGUwYjZiM2E3NjQwMDAwQDY0',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setBPAddConfig@03e8@0de0b6b3a7640000@64',
         );
     });
 
     it('should get set locking deadline epoch transaction', async () => {
-        const setLockingDeadlineEpochTransaction = await service.setLockingDeadlineEpoch(
+        const transaction = await service.setLockingDeadlineEpoch(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '1000',
         );
-        expect(setLockingDeadlineEpochTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDRjNmY2MzZiNjk2ZTY3NDQ2NTYxNjQ2YzY5NmU2NTQ1NzA2ZjYzNjhAMDNlOA==',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setLockingDeadlineEpoch@03e8',
         );
     });
 
     it('should get set unlocking epoch transaction', async () => {
-        const setUnlockEpochTransaction = await service.setUnlockEpoch(
+        const transaction = await service.setUnlockEpoch(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '1005',
         );
-        expect(setUnlockEpochTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDU1NmU2YzZmNjM2YjQ1NzA2ZjYzNjhAMDNlZA==',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setUnlockEpoch@03ed',
         );
     });
 
     it('should get set locking SC address transaction', async () => {
-        const setLockingScAddressTransaction = await service.setLockingScAddress(
+        const transaction = await service.setLockingScAddress(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             Address.Zero().bech32(),
         );
-        expect(setLockingScAddressTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDRjNmY2MzZiNjk2ZTY3NTM2MzQxNjQ2NDcyNjU3MzczQDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=',
+        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
+            'setLockingScAddress@0000000000000000000000000000000000000000000000000000000000000000',
         );
     });
 });
