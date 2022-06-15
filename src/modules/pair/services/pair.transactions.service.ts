@@ -2,17 +2,21 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
     BigUIntValue,
     TypedValue,
+    U64Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Address, GasLimit } from '@elrondnetwork/erdjs';
+import {
+    Address,
+    ContractFunction,
+    GasLimit,
+    Interaction,
+} from '@elrondnetwork/erdjs';
 import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     AddLiquidityArgs,
     RemoveLiquidityAndBuyBackAndBurnArgs,
     RemoveLiquidityArgs,
-    SetLpTokenIdentifierArgs,
-    SwapNoFeeAndForwardArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
     WhitelistArgs,
@@ -27,8 +31,8 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { BPConfig } from '../models/pair.model';
+import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 @Injectable()
 export class PairTransactionService {
@@ -261,28 +265,6 @@ export class PairTransactionService {
         }
 
         return transactions;
-    }
-
-    async removeLiquidityAndBuyBackAndBurnToken(
-        args: RemoveLiquidityAndBuyBackAndBurnArgs,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            args.pairAddress,
-        );
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenInID),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromUTF8('removeLiquidityAndBuyBackAndBurnToken'),
-            BytesValue.fromUTF8(args.tokenToBuyBackAndBurnID),
-        ];
-
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.pairs.removeLiquidityAndBuyBackAndBurnToken),
-        );
     }
 
     async swapTokensFixedInput(
@@ -578,73 +560,44 @@ export class PairTransactionService {
         }
     }
 
-    async swapNoFeeAndForward(
-        args: SwapNoFeeAndForwardArgs,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            args.pairAddress,
-        );
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenOutID),
-            new BigUIntValue(new BigNumber(args.destination)),
-            BytesValue.fromUTF8('swapNoFeeAndForward'),
-        ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.pairs.swapNoFeeAndForward),
-        );
-    }
-
-    async setLpTokenIdentifier(
-        args: SetLpTokenIdentifierArgs,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            args.pairAddress,
-        );
-        const transactionArgs = [
-            BytesValue.fromUTF8('setLpTokenIdentifier'),
-            BytesValue.fromUTF8(args.tokenID),
-        ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.pairs.setLpTokenIdentifier),
-        );
-    }
-
     async whitelist(args: WhitelistArgs): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             args.pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('whitelist'),
+        const transactionArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(args.address).hex()),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.whitelist(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.whitelist),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(new GasLimit(gasConfig.pair.admin.whitelist));
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async removeWhitelist(args: WhitelistArgs): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             args.pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('removeWhitelist'),
+        const transactionArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(args.address).hex()),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.removeWhitelist(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.removeWhitelist),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.removeWhitelist),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async addTrustedSwapPair(
@@ -656,20 +609,23 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-
-        const transactionArgs = [
-            BytesValue.fromUTF8('addTrustedSwapPair'),
+        const transactionArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(swapPairAddress).hex()),
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
         ];
-
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.addTrustedSwapPair(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.addTrustedSwapPair),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.addTrustedSwapPair),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async removeTrustedSwapPair(
@@ -680,17 +636,22 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('addTrustedSwapPair'),
+        const transactionArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.removeTrustedSwapPair(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.removeTrustedSwapPair),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.removeTrustedSwapPair),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setTransferExecGasLimit(
@@ -700,61 +661,73 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('set_transfer_exec_gas_limit'),
-            new BigUIntValue(new BigNumber(gasLimit)),
+        const transactionArgs: TypedValue[] = [
+            new U64Value(new BigNumber(gasLimit)),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setTransferExecGasLimit(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.set_transfer_exec_gas_limit),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.set_transfer_exec_gas_limit),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
-    async setExternExecGasLimit(
+    async setExternSwapGasLimit(
         pairAddress: string,
         gasLimit: string,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('set_extern_swap_gas_limit'),
-            new BigUIntValue(new BigNumber(gasLimit)),
+        const transactionArgs: TypedValue[] = [
+            new U64Value(new BigNumber(gasLimit)),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setExternSwapGasLimit(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.set_extern_swap_gas_limit),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.set_extern_swap_gas_limit),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async pause(pairAddress: string): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [BytesValue.fromUTF8('pause')];
+        const interaction: Interaction = contract.methods.pause([]);
+        const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.pause),
-        );
+        transaction.setGasLimit(new GasLimit(gasConfig.pair.admin.pause));
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async resume(pairAddress: string): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [BytesValue.fromUTF8('resume')];
+        const interaction: Interaction = contract.methods.resume([]);
+        const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.resume),
-        );
+        transaction.setGasLimit(new GasLimit(gasConfig.pair.admin.resume));
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setStateActiveNoSwaps(
@@ -763,13 +736,18 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [BytesValue.fromUTF8('setStateActiveNoSwaps')];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.setStateActiveNoSwaps),
+        const interaction: Interaction = contract.methods.setStateActiveNoSwaps(
+            [],
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.setStateActiveNoSwaps),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setFeePercents(
@@ -780,40 +758,22 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('setFeePercents'),
+        const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(totalFeePercent)),
             new BigUIntValue(new BigNumber(specialFeePercent)),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setFeePercents(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.setFeePercents),
         );
-    }
-
-    async updateAndGetTokensForGivenPositionWithSafePrice(
-        pairAddress: string,
-        liquidity: string,
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const transactionArgs = [
-            BytesValue.fromUTF8(
-                'updateAndGetTokensForGivenPositionWithSafePrice',
-            ),
-            new BigUIntValue(new BigNumber(liquidity)),
-        ];
+        const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(
-                gasConfig.pairs.updateAndGetTokensForGivenPositionWithSafePrice,
-            ),
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.setFeePercents),
         );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setMaxObservationsPerRecord(
@@ -823,16 +783,21 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('setMaxObservationsPerRecord'),
+        const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(maxObservationsPerRecord)),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setMaxObservationsPerRecord(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.setMaxObservationsPerRecord),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.setMaxObservationsPerRecord),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setBPSwapConfig(
@@ -842,18 +807,23 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('setBPSwapConfig'),
+        const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(config.protectStopBlock)),
             new BigUIntValue(new BigNumber(config.volumePercent)),
             new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setBPSwapConfig(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.setBPSwapConfig),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.setBPSwapConfig),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setBPRemoveConfig(
@@ -863,18 +833,23 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('setBPRemoveConfig'),
+        const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(config.protectStopBlock)),
             new BigUIntValue(new BigNumber(config.volumePercent)),
             new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setBPRemoveConfig(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.setBPRemoveConfig),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.setBPRemoveConfig),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setBPAddConfig(
@@ -884,18 +859,23 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('setBPAddConfig'),
+        const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(config.protectStopBlock)),
             new BigUIntValue(new BigNumber(config.volumePercent)),
             new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setBPAddConfig(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.setBPAddConfig),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.setBPAddConfig),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setLockingDeadlineEpoch(
@@ -905,16 +885,21 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('setLockingDeadlineEpoch'),
+        const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(newDeadline)),
         ];
-        // todo: test gas limit
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setLockingDeadlineEpoch(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.setLockingDeadlineEpoch),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.setLockingDeadlineEpoch),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setUnlockEpoch(
@@ -924,6 +909,7 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
+<<<<<<< HEAD
         const transactionArgs = [
             BytesValue.fromUTF8('setUnlockEpoch'),
             new BigUIntValue(new BigNumber(newEpoch)),
@@ -933,7 +919,23 @@ export class PairTransactionService {
             contract,
             transactionArgs,
             new GasLimit(gasConfig.pairs.admin.setUnlockEpoch),
+=======
+        const transactionArgs: TypedValue[] = [
+            BytesValue.fromHex(new Address(newAddress).hex()),
+        ];
+        const interaction: Interaction = contract.methods.setLockingScAddress(
+            transactionArgs,
+>>>>>>> SERVICES-70-pair-admin-transactions
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.setLockingScAddress),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 
     async setLockingScAddress(
@@ -943,15 +945,20 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8('setLockingScAddress'),
+        const transactionArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(newAddress).hex()),
         ];
-        // todo: test gasConfig.pairs.setLockingScAddress
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setLockingScAddress(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.setLockingScAddress),
         );
+        const transaction = interaction.buildTransaction();
+        // todo: test gas limit
+        transaction.setGasLimit(
+            new GasLimit(gasConfig.pair.admin.setLockingScAddress),
+        );
+        return new TransactionModel({
+            ...transaction.toPlainObject(),
+            chainID: elrondConfig.chainID,
+        });
     }
 }

@@ -18,7 +18,7 @@ import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import BigNumber from 'bignumber.js';
-import { FeeDestination, LiquidityPosition } from '../models/pair.model';
+import { FeeDestination } from '../models/pair.model';
 import {
     EsdtTokenPayment,
     EsdtTokenPaymentStruct,
@@ -306,40 +306,6 @@ export class PairAbiService {
         }
     }
 
-    async getTokensForGivenPosition(
-        pairAddress: string,
-        liquidityAmount: string,
-    ): Promise<LiquidityPosition> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getTokensForGivenPosition(
-            [new BigUIntValue(new BigNumber(liquidityAmount))],
-        );
-        const response = await this.getGenericData(contract, interaction);
-        return new LiquidityPosition({
-            firstTokenAmount: response.values[0].valueOf().amount,
-            secondTokenAmount: response.values[1].valueOf().amount,
-        });
-    }
-
-    async getReservesAndTotalSupply(
-        pairAddress: string,
-    ): Promise<PairInfoModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getReservesAndTotalSupply(
-            [],
-        );
-        const response = await this.getGenericData(contract, interaction);
-        return new PairInfoModel({
-            reserves0: response.values[0].valueOf(),
-            reserves1: response.values[1].valueOf(),
-            totalSupply: response.values[2].valueOf(),
-        });
-    }
-
     async getFeeState(pairAddress: string): Promise<Boolean> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
@@ -409,17 +375,6 @@ export class PairAbiService {
         );
         const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toString();
-    }
-
-    async getReserve(pairAddress: string, tokenID: string): Promise<string> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getReserve([
-            BytesValue.fromUTF8(tokenID),
-        ]);
-        const response = await this.getGenericData(contract, interaction);
-        return response.firstValue.valueOf();
     }
 
     async getTransferExecGasLimit(pairAddress: string): Promise<string> {

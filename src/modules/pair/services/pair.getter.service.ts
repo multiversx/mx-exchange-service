@@ -12,11 +12,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
-import {
-    FeeDestination,
-    LiquidityPosition,
-    LockedTokensInfo,
-} from '../models/pair.model';
+import { FeeDestination, LockedTokensInfo } from '../models/pair.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
 import { PairDBService } from './pair.db.service';
@@ -494,33 +490,6 @@ export class PairGetterService {
         return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }
 
-    async getTokensForGivenPosition(
-        pairAddress: string,
-        liquidityAmount: string,
-    ): Promise<LiquidityPosition> {
-        return await this.getData(
-            pairAddress,
-            'tokensForGivenPosition',
-            () =>
-                this.abiService.getTokensForGivenPosition(
-                    pairAddress,
-                    liquidityAmount,
-                ),
-            oneMinute(),
-        );
-    }
-
-    async getReservesAndTotalSupply(
-        pairAddress: string,
-    ): Promise<PairInfoModel> {
-        return await this.getData(
-            pairAddress,
-            'reservesAndTotalSupply',
-            () => this.abiService.getReservesAndTotalSupply(pairAddress),
-            oneMinute(),
-        );
-    }
-
     async getFeeState(pairAddress: string): Promise<Boolean> {
         return await this.getData(
             pairAddress,
@@ -535,7 +504,7 @@ export class PairGetterService {
             pairAddress,
             'feeDestinations',
             () => this.abiService.getFeeDestinations(pairAddress),
-            oneMinute(),
+            oneHour(),
         );
     }
 
@@ -546,7 +515,7 @@ export class PairGetterService {
             pairAddress,
             'whitelistedManagedAddresses',
             () => this.abiService.getWhitelistedManagedAddresses(pairAddress),
-            oneMinute(),
+            oneHour(),
         );
     }
 
@@ -555,7 +524,7 @@ export class PairGetterService {
             address,
             'routerManagedAddress',
             () => this.abiService.getRouterManagedAddress(address),
-            oneMinute(),
+            oneHour(),
         );
     }
 
@@ -573,12 +542,8 @@ export class PairGetterService {
             pairAddress,
             'externSwapGasLimit',
             () => this.abiService.getExternSwapGasLimit(pairAddress),
-            oneMinute(),
+            oneHour(),
         );
-    }
-
-    async getReserve(pairAddress: string, tokenID: string): Promise<string> {
-        return await this.abiService.getReserve(pairAddress, tokenID);
     }
 
     async getTransferExecGasLimit(pairAddress: string): Promise<string> {
@@ -586,7 +551,7 @@ export class PairGetterService {
             pairAddress,
             'transferExecGasLimit',
             () => this.abiService.getTransferExecGasLimit(pairAddress),
-            oneMinute(),
+            oneHour(),
         );
     }
 
@@ -594,9 +559,15 @@ export class PairGetterService {
         pairAddress: string,
         esdtTokenPayment: EsdtTokenPayment,
     ): Promise<EsdtTokenPayment> {
-        return await this.abiService.updateAndGetSafePrice(
+        return await this.getData(
             pairAddress,
-            esdtTokenPayment,
+            'safePrice',
+            () =>
+                this.abiService.updateAndGetSafePrice(
+                    pairAddress,
+                    esdtTokenPayment,
+                ),
+            oneMinute(),
         );
     }
 
@@ -604,13 +575,23 @@ export class PairGetterService {
         pairAddress: string,
         address: string,
     ): Promise<string> {
-        return await this.abiService.getNumSwapsByAddress(pairAddress, address);
+        return await this.getData(
+            pairAddress,
+            'numSwapsByAddress',
+            () => this.abiService.getNumSwapsByAddress(pairAddress, address),
+            oneMinute(),
+        );
     }
 
     async getNumAddsByAddress(
         pairAddress: string,
         address: string,
     ): Promise<string> {
-        return await this.abiService.getNumAddsByAddress(pairAddress, address);
+        return await this.getData(
+            pairAddress,
+            'numAddsByAddress',
+            () => this.abiService.getNumAddsByAddress(pairAddress, address),
+            oneMinute(),
+        );
     }
 }
