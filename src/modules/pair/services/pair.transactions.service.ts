@@ -688,7 +688,7 @@ export class PairTransactionService {
         const transactionArgs: TypedValue[] = [
             new U64Value(new BigNumber(gasLimit)),
         ];
-        const interaction: Interaction = contract.methods.setExternSwapGasLimit(
+        const interaction: Interaction = contract.methods.set_extern_swap_gas_limit(
             transactionArgs,
         );
         const transaction = interaction.buildTransaction();
