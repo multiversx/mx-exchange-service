@@ -23,6 +23,7 @@ import { MetabondingModule } from './modules/metabonding/metabonding.module';
 import { PriceDiscoveryModule } from './modules/price-discovery/price.discovery.module';
 import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
+import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 @Module({
@@ -77,9 +78,11 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
                 logger.error(error.message, error.extensions);
                 return graphQLFormattedError;
             },
+            fieldResolverEnhancers: ['guards'],
         }),
         HttpModule,
         RouterModule,
+        AutoRouterModule,
         PairModule,
         FarmModule,
         StakingModule,
