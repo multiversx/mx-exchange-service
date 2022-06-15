@@ -255,13 +255,13 @@ export class TransactionsFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.startProduceRewards(
+        const interaction: Interaction = contract.methods.start_produce_rewards(
             [],
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
         transaction.setGasLimit(
-            new GasLimit(gasConfig.farms.admin.startProduceRewards),
+            new GasLimit(gasConfig.farms.admin.start_produce_rewards),
         );
         return new TransactionModel({
             ...transaction.toPlainObject(),
