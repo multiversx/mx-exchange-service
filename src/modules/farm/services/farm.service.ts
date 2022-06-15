@@ -17,6 +17,7 @@ import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 
 @Injectable()
 export class FarmService {
@@ -26,6 +27,7 @@ export class FarmService {
         private readonly farmGetterService: FarmGetterService,
         private readonly farmComputeService: FarmComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -182,6 +184,9 @@ export class FarmService {
     }
 
     async requireOwner(farmAddress, sender) {
-        // todo: find owner somehow
+        return (
+            (await this.apiService.getAccountStats(farmAddress))
+                .ownerAddress === sender
+        );
     }
 }

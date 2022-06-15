@@ -540,32 +540,6 @@ export class FarmResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async migrateFromV1_2Farm(
-        @Args('farmAddress') farmAddress: string,
-        @Args('origCaller') origCaller: string,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        return await this.transactionsService.migrateFromV1_2Farm(
-            farmAddress,
-            origCaller,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async setRpsAndStartRewards(
-        @Args('farmAddress') farmAddress: string,
-        @Args('rps') rps: string,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        return await this.transactionsService.setRpsAndStartRewards(
-            farmAddress,
-            rps,
-        );
-    }
-
     @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async endProduceRewards(
@@ -620,7 +594,7 @@ export class FarmResolver {
     @Query(() => TransactionModel)
     async setPenaltyPercent(
         @Args('farmAddress') farmAddress: string,
-        @Args('percent') percent: string,
+        @Args('percent') percent: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -638,7 +612,7 @@ export class FarmResolver {
     @Query(() => TransactionModel)
     async setMinimumFarmingEpochs(
         @Args('farmAddress') farmAddress: string,
-        @Args('epochs') epochs: string,
+        @Args('epochs') epochs: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -656,7 +630,7 @@ export class FarmResolver {
     @Query(() => TransactionModel)
     async setTransferExecGasLimit(
         @Args('farmAddress') farmAddress: string,
-        @Args('gasLimit') gasLimit: string,
+        @Args('gasLimit') gasLimit: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -674,7 +648,7 @@ export class FarmResolver {
     @Query(() => TransactionModel)
     async setBurnGasLimit(
         @Args('farmAddress') farmAddress: string,
-        @Args('gasLimit') gasLimit: string,
+        @Args('gasLimit') gasLimit: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -721,7 +695,7 @@ export class FarmResolver {
     async registerFarmToken(
         @Args('farmAddress') farmAddress: string,
         @Args('tokenDisplayName') tokenDisplayName: string,
-        @Args('tokenID') tokenID: string,
+        @Args('tokenTicker') tokenTicker: string,
         @Args('decimals') decimals: number,
         @User() user: any,
     ): Promise<TransactionModel> {
@@ -730,7 +704,7 @@ export class FarmResolver {
             return await this.transactionsService.registerFarmToken(
                 farmAddress,
                 tokenDisplayName,
-                tokenID,
+                tokenTicker,
                 decimals,
             );
         } catch (error) {

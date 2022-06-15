@@ -352,7 +352,7 @@ export class FarmGetterService {
             farmAddresses,
             'burnGasLimit',
             () => this.abiService.getBurnGasLimit(farmAddresses),
-            oneMinute(),
+            oneHour(),
         );
     }
 
@@ -361,7 +361,7 @@ export class FarmGetterService {
             farmAddresses,
             'transferExecGasLimit',
             () => this.abiService.getTransferExecGasLimit(farmAddresses),
-            oneMinute(),
+            oneHour(),
         );
     }
 
@@ -372,7 +372,7 @@ export class FarmGetterService {
             farmAddresses,
             'pairContractManagedAddress',
             () => this.abiService.getPairContractManagedAddress(farmAddresses),
-            oneMinute(),
+            oneHour(),
         );
     }
 
@@ -386,7 +386,7 @@ export class FarmGetterService {
                 this.abiService.getLockedAssetFactoryManagedAddress(
                     farmAddresses,
                 ),
-            oneMinute(),
+            oneHour(),
         );
     }
 

@@ -159,10 +159,10 @@ export class FarmModel {
     @Field({ nullable: true })
     rewardType: FarmRewardType;
 
-    @Field({ nullable: true })
+    @Field()
     burnGasLimit: string;
 
-    @Field({ nullable: true })
+    @Field()
     transferExecGasLimit: string;
 
     @Field({ nullable: true })
