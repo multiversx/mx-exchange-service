@@ -664,7 +664,7 @@ export class PairTransactionService {
         const transactionArgs: TypedValue[] = [
             new U64Value(new BigNumber(gasLimit)),
         ];
-        const interaction: Interaction = contract.methods.setTransferExecGasLimit(
+        const interaction: Interaction = contract.methods.set_transfer_exec_gas_limit(
             transactionArgs,
         );
         const transaction = interaction.buildTransaction();
