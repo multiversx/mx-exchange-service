@@ -909,28 +909,16 @@ export class PairTransactionService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-<<<<<<< HEAD
-        const transactionArgs = [
-            BytesValue.fromUTF8('setUnlockEpoch'),
+        const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(newEpoch)),
         ];
-        // todo: test gasConfig.pairs.setUnlockEpoch
-        return this.contextTransactions.esdtTransfer(
-            contract,
+        const interaction: Interaction = contract.methods.setUnlockEpoch(
             transactionArgs,
-            new GasLimit(gasConfig.pairs.admin.setUnlockEpoch),
-=======
-        const transactionArgs: TypedValue[] = [
-            BytesValue.fromHex(new Address(newAddress).hex()),
-        ];
-        const interaction: Interaction = contract.methods.setLockingScAddress(
-            transactionArgs,
->>>>>>> SERVICES-70-pair-admin-transactions
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
         transaction.setGasLimit(
-            new GasLimit(gasConfig.pair.admin.setLockingScAddress),
+            new GasLimit(gasConfig.pair.admin.setUnlockEpoch),
         );
         return new TransactionModel({
             ...transaction.toPlainObject(),
