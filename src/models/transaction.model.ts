@@ -1,6 +1,4 @@
-import { Transaction } from '@elrondnetwork/erdjs/out';
 import { ObjectType, Field } from '@nestjs/graphql';
-import { elrondConfig } from '../config';
 
 @ObjectType()
 export class TransactionModel {
@@ -16,8 +14,8 @@ export class TransactionModel {
     gasPrice: number;
     @Field()
     gasLimit: number;
-    @Field()
-    data: string;
+    @Field({ nullable: true })
+    data?: string;
     @Field()
     chainID: string;
     @Field()

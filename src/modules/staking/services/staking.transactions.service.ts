@@ -1,19 +1,11 @@
-import {
-    Address,
-    BigUIntValue,
-    BytesValue,
-    GasLimit,
-    TypedValue,
-    U32Value,
-} from '@elrondnetwork/erdjs/out';
+import { Address, BigUIntValue, TokenPayment } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { gasConfig } from 'src/config';
+import { elrondConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TransactionsFarmService } from 'src/modules/farm/services/transactions-farm.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -23,7 +15,6 @@ import { StakingGetterService } from './staking.getter.service';
 export class StakingTransactionService {
     constructor(
         private readonly stakeGetterService: StakingGetterService,
-        private readonly contextTransactions: ContextTransactionsService,
         private readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -54,14 +45,24 @@ export class StakingTransactionService {
             payments.length > 1
                 ? gasConfig.stake.stakeFarm.withTokenMerge
                 : gasConfig.stake.stakeFarm.default;
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            payments,
-            this.stakeFarm.name,
-            [],
-            new GasLimit(gasLimit),
+        const mappedPayments = payments.map(payment =>
+            TokenPayment.metaEsdtFromBigInteger(
+                payment.tokenID,
+                payment.nonce,
+                new BigNumber(payment.amount),
+            ),
         );
+
+        return contract.methodsExplicit
+            .stakeFarm()
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async unstakeFarm(
@@ -69,14 +70,23 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.SftInteraction(
-            sender,
+        const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
-            payment,
-            this.unstakeFarm.name,
-            gasConfig.stake.unstakeFarm,
-            [],
         );
+        return contract.methodsExplicit
+            .unstakeFarm()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    payment.tokenID,
+                    payment.nonce,
+                    new BigNumber(payment.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.stake.unstakeFarm)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async unbondFarm(
@@ -84,14 +94,23 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.SftInteraction(
-            sender,
+        const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
-            payment,
-            this.unbondFarm.name,
-            gasConfig.stake.unboundFarm,
-            [],
         );
+        return contract.methodsExplicit
+            .unbondFarm()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    payment.tokenID,
+                    payment.nonce,
+                    new BigNumber(payment.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.stake.unbondFarm)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async claimRewards(
@@ -99,14 +118,23 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.SftInteraction(
-            sender,
+        const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
-            payment,
-            this.claimRewards.name,
-            gasConfig.stake.claimRewards,
-            [],
         );
+        return contract.methodsExplicit
+            .claimRewards()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    payment.tokenID,
+                    payment.nonce,
+                    new BigNumber(payment.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.stake.claimRewards)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async claimRewardsWithNewValue(
@@ -115,14 +143,25 @@ export class StakingTransactionService {
         payment: InputTokenModel,
         newValue: string,
     ): Promise<TransactionModel> {
-        return await this.SftInteraction(
-            sender,
+        const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
-            payment,
-            this.claimRewardsWithNewValue.name,
-            gasConfig.stake.claimRewardsWithNewValue,
-            [new BigUIntValue(new BigNumber(newValue))],
         );
+        return contract.methodsExplicit
+            .claimRewardsWithNewValue([
+                new BigUIntValue(new BigNumber(newValue)),
+            ])
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    payment.tokenID,
+                    payment.nonce,
+                    new BigNumber(payment.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.stake.claimRewardsWithNewValue)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async compoundRewards(
@@ -130,14 +169,23 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        return await this.SftInteraction(
-            sender,
+        const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
-            payment,
-            this.compoundRewards.name,
-            gasConfig.stake.compoundRewards,
-            [],
         );
+        return contract.methodsExplicit
+            .compoundRewards()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    payment.tokenID,
+                    payment.nonce,
+                    new BigNumber(payment.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.stake.compoundRewards)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async mergeFarmTokens(
@@ -148,47 +196,23 @@ export class StakingTransactionService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            payments,
-            this.mergeFarmTokens.name,
-            [],
-            new GasLimit(gasConfig.stake.mergeTokens),
+        const mappedPayments = payments.map(payment =>
+            TokenPayment.metaEsdtFromBigInteger(
+                payment.tokenID,
+                payment.nonce,
+                new BigNumber(payment.amount),
+            ),
         );
-    }
-
-    private async SftInteraction(
-        sender: string,
-        stakeAddress: string,
-        payment: InputTokenModel,
-        method: string,
-        gasLimit: number,
-        endpointArgs: TypedValue[],
-    ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(payment.tokenID),
-            new U32Value(payment.nonce),
-            new BigUIntValue(new BigNumber(payment.amount)),
-            BytesValue.fromHex(new Address(stakeAddress).hex()),
-            BytesValue.fromUTF8(method),
-            ...endpointArgs,
-        ];
-
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasLimit),
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .compoundRewards()
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.stake.mergeTokens)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async validateInputTokens(

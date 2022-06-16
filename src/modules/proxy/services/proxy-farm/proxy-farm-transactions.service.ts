@@ -1,11 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { constantsConfig, gasConfig } from '../../../../config';
-import {
-    BigUIntValue,
-    BytesValue,
-    U32Value,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Address, GasLimit } from '@elrondnetwork/erdjs';
+import { constantsConfig, elrondConfig, gasConfig } from '../../../../config';
+import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
+import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs';
 import { TransactionModel } from '../../../../models/transaction.model';
 import BigNumber from 'bignumber.js';
 
@@ -23,7 +19,6 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { ProxyPairGetterService } from '../proxy-pair/proxy-pair.getter.service';
 import { ProxyGetterService } from '../proxy.getter.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import {
     FarmRewardType,
@@ -37,7 +32,6 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 export class TransactionsProxyFarmService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly contextTransactions: ContextTransactionsService,
         private readonly proxyFarmGetter: ProxyFarmGetterService,
         private readonly proxyPairService: ProxyPairGetterService,
         private readonly proxyGetter: ProxyGetterService,
@@ -68,29 +62,38 @@ export class TransactionsProxyFarmService {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
         const version = farmVersion(args.farmAddress);
 
-        const method =
+        const endpointArgs = [
+            BytesValue.fromHex(new Address(args.farmAddress).hex()),
+        ];
+        const contractMethod: Interaction =
             version === FarmVersion.V1_2
                 ? args.lockRewards
-                    ? 'enterFarmAndLockRewardsProxy'
-                    : 'enterFarmProxy'
-                : 'enterFarmProxy';
+                    ? contract.methodsExplicit.enterFarmAndLockRewardsProxy(
+                          endpointArgs,
+                      )
+                    : contract.methodsExplicit.enterFarmProxy(endpointArgs)
+                : contract.methodsExplicit.enterFarmProxy(endpointArgs);
+
         const gasLimit =
             args.tokens.length > 1
                 ? gasConfig.proxy.farms[version].enterFarm.withTokenMerge
                 : gasConfig.proxy.farms[version].enterFarm.default;
-
-        const endpointArgs = [
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-        ];
-
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            args.tokens,
-            method,
-            endpointArgs,
-            new GasLimit(gasLimit),
+        const mappedPayments = args.tokens.map(token =>
+            TokenPayment.metaEsdtFromBigInteger(
+                token.tokenID,
+                token.nonce,
+                new BigNumber(token.amount),
+            ),
         );
+        return contractMethod
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async exitFarmProxy(
@@ -99,24 +102,25 @@ export class TransactionsProxyFarmService {
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.wrappedFarmTokenID),
-            new U32Value(args.wrappedFarmTokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('exitFarmProxy'),
+        const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
         const gasLimit = await this.getExitFarmProxyGasLimit(args);
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasLimit),
-        );
 
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .exitFarmProxy(endpointArgs)
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.wrappedFarmTokenID,
+                    args.wrappedFarmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async claimFarmRewardsProxy(
@@ -125,12 +129,7 @@ export class TransactionsProxyFarmService {
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.wrappedFarmTokenID),
-            new U32Value(args.wrappedFarmTokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('claimRewardsProxy'),
+        const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
@@ -145,18 +144,24 @@ export class TransactionsProxyFarmService {
             type === FarmRewardType.LOCKED_REWARDS
                 ? gasConfig.lockedAssetCreate
                 : 0;
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(
-                gasConfig.proxy.farms[version][type].claimRewards +
-                    lockedAssetCreateGas,
-            ),
-        );
+        const gasLimit =
+            gasConfig.proxy.farms[version][type].claimRewards +
+            lockedAssetCreateGas;
 
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .claimFarmRewardsProxy(endpointArgs)
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.wrappedFarmTokenID,
+                    args.wrappedFarmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async compoundRewardsProxy(
@@ -165,26 +170,26 @@ export class TransactionsProxyFarmService {
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenID),
-            new U32Value(args.tokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('compoundRewardsProxy'),
+        const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
 
         const version = farmVersion(args.farmAddress);
 
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.proxy.farms[version].compoundRewards),
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .compoundRewardsProxy(endpointArgs)
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.tokenID,
+                    args.tokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.proxy.farms[version].compoundRewards)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async migrateToNewFarmProxy(
@@ -193,25 +198,25 @@ export class TransactionsProxyFarmService {
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.wrappedFarmTokenID),
-            new U32Value(args.wrappedFarmTokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('migrateV1_2Position'),
+        const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
         const version = farmVersion(args.farmAddress);
 
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.proxy.farms[version].migrateToNewFarm),
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .migrateV1_2Position(endpointArgs)
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.wrappedFarmTokenID,
+                    args.wrappedFarmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.proxy.farms[version].migrateToNewFarm)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async mergeWrappedFarmTokens(
@@ -244,17 +249,25 @@ export class TransactionsProxyFarmService {
         const endpointArgs = [
             BytesValue.fromHex(new Address(farmAddress).hex()),
         ];
-
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            tokens,
-            'mergeWrappedFarmTokens',
-            endpointArgs,
-            new GasLimit(
-                gasConfig.proxy.farms.defaultMergeWFMT * tokens.length,
+        const gasLimit = gasConfig.proxy.farms.defaultMergeWFMT * tokens.length;
+        const mappedPayments = tokens.map(token =>
+            TokenPayment.metaEsdtFromBigInteger(
+                token.tokenID,
+                token.nonce,
+                new BigNumber(token.amount),
             ),
         );
+
+        return contract.methodsExplicit
+            .mergeWrappedFarmTokens(endpointArgs)
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async validateWFMTInputTokens(

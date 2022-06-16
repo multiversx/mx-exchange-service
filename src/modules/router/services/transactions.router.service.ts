@@ -1,16 +1,14 @@
 import {
     Address,
-    Balance,
     BigUIntValue,
     BytesValue,
-    GasLimit,
-    Interaction,
+    TokenPayment,
+    TypedValue,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
@@ -23,7 +21,6 @@ export class TransactionRouterService {
         private readonly elrondProxy: ElrondProxyService,
         private readonly routerGetterService: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
-        private readonly contextTransactionsService: ContextTransactionsService,
         private readonly transactionsWrapService: TransactionsWrapService,
     ) {}
 
@@ -43,18 +40,16 @@ export class TransactionRouterService {
 
         const contract = await this.elrondProxy.getRouterSmartContract();
 
-        const createPairInteraction: Interaction = contract.methods.createPair([
-            BytesValue.fromUTF8(firstTokenID),
-            BytesValue.fromUTF8(secondTokenID),
-            BytesValue.fromHex(Address.fromString(sender).hex()),
-        ]);
-
-        const transaction = createPairInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.router.createPair));
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+        return contract.methodsExplicit
+            .createPair([
+                BytesValue.fromUTF8(firstTokenID),
+                BytesValue.fromUTF8(secondTokenID),
+                BytesValue.fromHex(Address.fromString(sender).hex()),
+            ])
+            .withGasLimit(gasConfig.router.createPair)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async issueLpToken(
@@ -68,35 +63,27 @@ export class TransactionRouterService {
         }
 
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const issueLPTokenInteraction: Interaction = contract.methods.issueLpToken(
-            [
+        return contract.methodsExplicit
+            .issueLpToken([
                 BytesValue.fromHex(new Address(pairAddress).hex()),
                 BytesValue.fromUTF8(lpTokenName),
                 BytesValue.fromUTF8(lpTokenTicker),
-            ],
-        );
-
-        const transaction = issueLPTokenInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.router.issueToken));
-        transaction.setValue(Balance.egld(constantsConfig.ISSUE_LP_TOKEN_COST));
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+            ])
+            .withValue(constantsConfig.ISSUE_LP_TOKEN_COST)
+            .withGasLimit(gasConfig.router.issueToken)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const setLocalRolesInteraction: Interaction = contract.methods.setLocalRoles(
-            [BytesValue.fromHex(new Address(pairAddress).hex())],
-        );
-
-        const transaction = setLocalRolesInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.router.setLocalRoles));
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+        return contract.methodsExplicit
+            .setLocalRoles([BytesValue.fromHex(new Address(pairAddress).hex())])
+            .withGasLimit(gasConfig.router.setLocalRoles)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async setState(
@@ -106,16 +93,15 @@ export class TransactionRouterService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const args = [BytesValue.fromHex(new Address(address).hex())];
 
-        const stateInteraction: Interaction = enable
-            ? contract.methods.resume(args)
-            : contract.methods.pause(args);
+        const contractMethod = enable
+            ? contract.methodsExplicit.resume(args)
+            : contract.methodsExplicit.pause(args);
 
-        const transaction = stateInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.router.setState));
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+        return contractMethod
+            .withGasLimit(gasConfig.router.setState)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async setFee(
@@ -131,16 +117,15 @@ export class TransactionRouterService {
             BytesValue.fromUTF8(feeTokenID),
         ];
 
-        const setFeeInteraction: Interaction = enable
-            ? contract.methods.setFeeOn([args])
-            : contract.methods.setFeeOff([args]);
+        const contractMethod = enable
+            ? contract.methodsExplicit.setFeeOn(args)
+            : contract.methodsExplicit.setFeeOff(args);
 
-        const transaction = setFeeInteraction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.router.setFee));
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+        return contractMethod
+            .withGasLimit(gasConfig.router.setFee)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async checkPairExists(
@@ -168,12 +153,6 @@ export class TransactionRouterService {
         const transactions = [];
         const contract = await this.elrondProxy.getRouterSmartContract();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenRoute[0]),
-            new BigUIntValue(new BigNumber(args.intermediaryAmounts[0])),
-            BytesValue.fromUTF8('multiPairSwap'),
-        ];
-
         const wrapTransaction = await this.wrapIfNeeded(
             sender,
             args.tokenInID,
@@ -181,12 +160,13 @@ export class TransactionRouterService {
         );
         if (wrapTransaction) transactions.push(wrapTransaction);
 
+        const endpointArgs: TypedValue[] = [];
         for (const [index, address] of args.addressRoute.entries()) {
             const amountOutMin = new BigNumber(1)
                 .dividedBy(new BigNumber(1).plus(args.tolerance))
                 .multipliedBy(args.intermediaryAmounts[index + 1])
                 .integerValue();
-            transactionArgs.push(
+            endpointArgs.push(
                 ...[
                     BytesValue.fromHex(Address.fromString(address).hex()),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
@@ -197,14 +177,21 @@ export class TransactionRouterService {
         }
 
         transactions.push(
-            this.contextTransactionsService.esdtTransfer(
-                contract,
-                transactionArgs,
-                new GasLimit(
+            contract.methodsExplicit
+                .multiPairSwap(endpointArgs)
+                .withSingleESDTTransfer(
+                    TokenPayment.fungibleFromBigInteger(
+                        args.tokenRoute[0],
+                        args.intermediaryAmounts[0],
+                    ),
+                )
+                .withGasLimit(
                     args.addressRoute.length *
                         gasConfig.router.multiPairSwapMultiplier,
-                ),
-            ),
+                )
+                .withChainID(elrondConfig.chainID)
+                .buildTransaction()
+                .toPlainObject(),
         );
 
         const unwrapTransaction = await this.unwrapIfNeeded(
