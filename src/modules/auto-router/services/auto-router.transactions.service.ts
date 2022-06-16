@@ -63,7 +63,7 @@ export class AutoRouterTransactionService {
                 .withSingleESDTTransfer(
                     TokenPayment.fungibleFromBigInteger(
                         args.tokenRoute[0],
-                        amountIn,
+                        amountIn.integerValue(),
                     ),
                 )
                 .withGasLimit(gasLimit)
