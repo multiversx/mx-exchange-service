@@ -7,12 +7,12 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
+import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { MultiSwapTokensArgs } from '../models/multi-swap-tokens.args';
 import { RouterGetterService } from './router.getter.service';
 
 @Injectable()
