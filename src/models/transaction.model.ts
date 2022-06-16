@@ -1,6 +1,4 @@
-import { Transaction } from '@elrondnetwork/erdjs/out';
 import { ObjectType, Field } from '@nestjs/graphql';
-import { elrondConfig } from '../config';
 
 @ObjectType()
 export class TransactionModel {
@@ -16,8 +14,8 @@ export class TransactionModel {
     gasPrice: number;
     @Field()
     gasLimit: number;
-    @Field()
-    data: string;
+    @Field({ nullable: true })
+    data?: string;
     @Field()
     chainID: string;
     @Field()
@@ -31,23 +29,5 @@ export class TransactionModel {
 
     constructor(init?: Partial<TransactionModel>) {
         Object.assign(this, init);
-    }
-
-    static fromTransaction(transaction: Transaction) {
-        return transaction
-            ? new TransactionModel({
-                  nonce: transaction.getNonce().valueOf(),
-                  value: transaction.getValue().toString(),
-                  sender: transaction.getSender().bech32(),
-                  receiver: transaction.getReceiver().bech32(),
-                  gasPrice: transaction.getGasPrice().valueOf(),
-                  gasLimit: transaction.getGasLimit().valueOf(),
-                  data: transaction.getData().encoded(),
-                  chainID: elrondConfig.chainID,
-                  version: transaction.getVersion().valueOf(),
-                  options: transaction.options.valueOf(),
-                  status: transaction.getStatus().valueOf(),
-              })
-            : null;
     }
 }

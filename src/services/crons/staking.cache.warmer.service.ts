@@ -36,8 +36,8 @@ export class StakingCacheWarmerService {
 
             const [farmToken, farmingToken, rewardToken] = await Promise.all([
                 this.apiService.getNftCollection(farmTokenID),
-                this.apiService.getService().getToken(farmingTokenID),
-                this.apiService.getService().getToken(rewardTokenID),
+                this.apiService.getToken(farmingTokenID),
+                this.apiService.getToken(rewardTokenID),
             ]);
 
             const cacheKeys = await Promise.all([

@@ -4,7 +4,6 @@ import { ContextService } from './context.service';
 import { RouterModule } from '../../modules/router/router.module';
 import { CachingModule } from '../caching/cache.module';
 import { ContextGetterService } from './context.getter.service';
-import { ContextTransactionsService } from './context.transactions.service';
 
 @Module({
     imports: [
@@ -12,11 +11,7 @@ import { ContextTransactionsService } from './context.transactions.service';
         CachingModule,
         forwardRef(() => RouterModule),
     ],
-    providers: [
-        ContextService,
-        ContextGetterService,
-        ContextTransactionsService,
-    ],
-    exports: [ContextService, ContextGetterService, ContextTransactionsService],
+    providers: [ContextService, ContextGetterService],
+    exports: [ContextService, ContextGetterService],
 })
 export class ContextModule {}

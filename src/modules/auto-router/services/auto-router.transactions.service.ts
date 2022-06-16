@@ -2,14 +2,13 @@ import {
     Address,
     BigUIntValue,
     BytesValue,
-    GasLimit,
+    TokenPayment,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { elrondConfig, gasConfig } from 'src/config';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
@@ -18,7 +17,6 @@ import { SWAP_TYPE } from '../models/auto-route.model';
 export class AutoRouterTransactionService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly contextTransactionsService: ContextTransactionsService,
         private readonly transactionsWrapService: TransactionsWrapService,
     ) {}
 
@@ -47,35 +45,31 @@ export class AutoRouterTransactionService {
 
         if (wrapTransaction) transactions.push(wrapTransaction);
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.tokenRoute[0]),
-            new BigUIntValue(
-                new BigNumber(args.intermediaryAmounts[0])
-                    .plus(
-                        new BigNumber(args.intermediaryAmounts[0]).multipliedBy(
-                            args.swapType === SWAP_TYPE.fixedOutput
-                                ? args.tolerance
-                                : 0,
-                        ),
-                    )
-                    .integerValue(),
+        const amountIn = new BigNumber(args.intermediaryAmounts[0]).plus(
+            new BigNumber(args.intermediaryAmounts[0]).multipliedBy(
+                args.swapType === SWAP_TYPE.fixedOutput ? args.tolerance : 0,
             ),
-            BytesValue.fromUTF8('multiPairSwap'),
-        ].concat(
-            args.swapType == SWAP_TYPE.fixedInput
-                ? this.multiPairFixedInputSwaps(args)
-                : this.multiPairFixedOutputSwaps(args),
         );
+        const gasLimit =
+            args.addressRoute.length * gasConfig.router.multiPairSwapMultiplier;
 
         transactions.push(
-            this.contextTransactionsService.esdtTransfer(
-                contract,
-                transactionArgs,
-                new GasLimit(
-                    args.addressRoute.length *
-                        gasConfig.router.multiPairSwapMultiplier,
-                ),
-            ),
+            contract.methodsExplicit
+                .multiPairSwap(
+                    args.swapType == SWAP_TYPE.fixedInput
+                        ? this.multiPairFixedInputSwaps(args)
+                        : this.multiPairFixedOutputSwaps(args),
+                )
+                .withSingleESDTTransfer(
+                    TokenPayment.fungibleFromBigInteger(
+                        args.tokenRoute[0],
+                        amountIn.integerValue(),
+                    ),
+                )
+                .withGasLimit(gasLimit)
+                .withChainID(elrondConfig.chainID)
+                .buildTransaction()
+                .toPlainObject(),
         );
 
         if (unwrapTransaction) transactions.push(unwrapTransaction);
@@ -196,13 +190,21 @@ export class AutoRouterTransactionService {
         return swaps;
     }
 
-    async wrapIfNeeded(sender, tokenID, amount): Promise<TransactionModel> {
+    async wrapIfNeeded(
+        sender: string,
+        tokenID: string,
+        amount: string,
+    ): Promise<TransactionModel> {
         if (tokenID === elrondConfig.EGLDIdentifier) {
             return await this.transactionsWrapService.wrapEgld(sender, amount);
         }
     }
 
-    async unwrapIfNeeded(sender, tokenID, amount): Promise<TransactionModel> {
+    async unwrapIfNeeded(
+        sender: string,
+        tokenID: string,
+        amount: string,
+    ): Promise<TransactionModel> {
         if (tokenID === elrondConfig.EGLDIdentifier) {
             return await this.transactionsWrapService.unwrapEgld(
                 sender,
