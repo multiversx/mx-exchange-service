@@ -62,7 +62,7 @@ export class TransactionsFarmService {
             args.farmAddress,
         );
 
-        const contractMethod =
+        const interaction =
             version === FarmVersion.V1_2
                 ? args.lockRewards
                     ? contract.methodsExplicit.enterFarmAndLockRewards([])
@@ -81,7 +81,7 @@ export class TransactionsFarmService {
             ),
         );
 
-        return contractMethod
+        return interaction
             .withMultiESDTNFTTransfer(
                 mappedPayments,
                 Address.fromString(sender),

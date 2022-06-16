@@ -17,9 +17,7 @@ export class AbiRouterService extends GenericAbiService {
 
     async getAllPairsAddress(): Promise<string[]> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getAllPairsManagedAddresses(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getAllPairsManagedAddresses();
 
         const response = await this.getGenericData(
             AbiRouterService.name,
@@ -32,9 +30,7 @@ export class AbiRouterService extends GenericAbiService {
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getAllPairContractMetadata(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getAllPairContractMetadata();
 
         const response = await this.getGenericData(
             AbiRouterService.name,

@@ -65,7 +65,7 @@ export class TransactionsProxyFarmService {
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
-        const contractMethod: Interaction =
+        const interaction: Interaction =
             version === FarmVersion.V1_2
                 ? args.lockRewards
                     ? contract.methodsExplicit.enterFarmAndLockRewardsProxy(
@@ -85,7 +85,7 @@ export class TransactionsProxyFarmService {
                 new BigNumber(token.amount),
             ),
         );
-        return contractMethod
+        return interaction
             .withMultiESDTNFTTransfer(
                 mappedPayments,
                 Address.fromString(sender),

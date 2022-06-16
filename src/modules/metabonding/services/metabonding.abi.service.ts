@@ -17,9 +17,7 @@ export class MetabondingAbiService extends GenericAbiService {
 
     async getLockedAssetTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getLockedAssetTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLockedAssetTokenId();
 
         const response = await this.getGenericData(
             MetabondingAbiService.name,
@@ -30,9 +28,7 @@ export class MetabondingAbiService extends GenericAbiService {
 
     async getTotalLockedAssetSupply(): Promise<string> {
         const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getTotalLockedAssetSupply(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getTotalLockedAssetSupply();
 
         const response = await this.getGenericData(
             MetabondingAbiService.name,

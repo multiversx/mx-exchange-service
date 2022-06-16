@@ -19,9 +19,7 @@ export class AbiDistributionService extends GenericAbiService {
 
     async getCommunityDistribution(): Promise<CommunityDistributionModel> {
         const contract = await this.elrondProxy.getDistributionSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getLastCommunityDistributionAmountAndEpoch(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLastCommunityDistributionAmountAndEpoch();
         const response = await this.getGenericData(
             AbiDistributionService.name,
             interaction,

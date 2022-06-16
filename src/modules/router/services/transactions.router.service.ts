@@ -93,11 +93,11 @@ export class TransactionRouterService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const args = [BytesValue.fromHex(new Address(address).hex())];
 
-        const contractMethod = enable
+        const interaction = enable
             ? contract.methodsExplicit.resume(args)
             : contract.methodsExplicit.pause(args);
 
-        return contractMethod
+        return interaction
             .withGasLimit(gasConfig.router.setState)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
@@ -117,11 +117,11 @@ export class TransactionRouterService {
             BytesValue.fromUTF8(feeTokenID),
         ];
 
-        const contractMethod = enable
+        const interaction = enable
             ? contract.methodsExplicit.setFeeOn(args)
             : contract.methodsExplicit.setFeeOff(args);
 
-        return contractMethod
+        return interaction
             .withGasLimit(gasConfig.router.setFee)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()

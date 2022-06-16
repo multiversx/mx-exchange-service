@@ -16,9 +16,7 @@ export class AbiWrapService extends GenericAbiService {
 
     async getWrappedEgldTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getWrapSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getWrappedEgldTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getWrappedEgldTokenId();
         const response = await this.getGenericData(
             AbiWrapService.name,
             interaction,

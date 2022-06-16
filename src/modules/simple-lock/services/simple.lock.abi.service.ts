@@ -16,9 +16,7 @@ export class SimpleLockAbiService extends GenericAbiService {
 
     async getLockedTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getLockedTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLockedTokenId();
 
         const response = await this.getGenericData(
             SimpleLockAbiService.name,
@@ -29,9 +27,7 @@ export class SimpleLockAbiService extends GenericAbiService {
 
     async getLpProxyTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getLpProxyTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLpProxyTokenId();
 
         const response = await this.getGenericData(
             SimpleLockAbiService.name,
@@ -42,9 +38,7 @@ export class SimpleLockAbiService extends GenericAbiService {
 
     async getFarmProxyTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getFarmProxyTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getFarmProxyTokenId();
 
         const response = await this.getGenericData(
             SimpleLockAbiService.name,
@@ -55,9 +49,7 @@ export class SimpleLockAbiService extends GenericAbiService {
 
     async getKnownLiquidityPools(): Promise<string[]> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getKnownLiquidityPools(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getKnownLiquidityPools();
 
         const response = await this.getGenericData(
             SimpleLockAbiService.name,
@@ -70,9 +62,7 @@ export class SimpleLockAbiService extends GenericAbiService {
 
     async getKnownFarms(): Promise<string[]> {
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getKnownFarms(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getKnownFarms();
 
         const response = await this.getGenericData(
             SimpleLockAbiService.name,

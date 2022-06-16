@@ -134,17 +134,17 @@ export class PriceDiscoveryTransactionService {
             priceDiscoveryAddress,
         );
 
-        let contractMethod: Interaction;
+        let interaction: Interaction;
         switch (endpointName) {
             case 'redeem':
-                contractMethod = contract.methodsExplicit.redeem();
+                interaction = contract.methodsExplicit.redeem();
                 break;
             case 'withdraw':
-                contractMethod = contract.methodsExplicit.withdraw();
+                interaction = contract.methodsExplicit.withdraw();
                 break;
         }
 
-        return contractMethod
+        return interaction
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     inputToken.tokenID,

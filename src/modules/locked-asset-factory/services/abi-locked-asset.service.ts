@@ -17,9 +17,7 @@ export class AbiLockedAssetService extends GenericAbiService {
 
     async getAssetTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getAssetTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getAssetTokenId();
         const response = await this.getGenericData(
             AbiLockedAssetService.name,
             interaction,
@@ -29,9 +27,7 @@ export class AbiLockedAssetService extends GenericAbiService {
 
     async getLockedTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getLockedAssetTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLockedAssetTokenId();
         const response = await this.getGenericData(
             AbiLockedAssetService.name,
             interaction,
@@ -41,9 +37,7 @@ export class AbiLockedAssetService extends GenericAbiService {
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getDefaultUnlockPeriod(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getDefaultUnlockPeriod();
         const response = await this.getGenericData(
             AbiLockedAssetService.name,
             interaction,
@@ -60,9 +54,7 @@ export class AbiLockedAssetService extends GenericAbiService {
 
     async getInitEpoch(): Promise<number> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getInitEpoch(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getInitEpoch();
         const response = await this.getGenericData(
             AbiLockedAssetService.name,
             interaction,
@@ -72,9 +64,7 @@ export class AbiLockedAssetService extends GenericAbiService {
 
     async getExtendedAttributesActivationNonce(): Promise<number> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getExtendedAttributesActivationNonce(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getExtendedAttributesActivationNonce();
         const response = await this.getGenericData(
             AbiLockedAssetService.name,
             interaction,

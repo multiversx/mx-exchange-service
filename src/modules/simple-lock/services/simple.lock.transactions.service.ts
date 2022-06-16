@@ -316,19 +316,19 @@ export class SimpleLockTransactionService {
 
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
 
-        let contractMethod: Interaction;
+        let interaction: Interaction;
         switch (endpointName) {
             case 'exitFarmLockedToken':
-                contractMethod = contract.methodsExplicit.exitFarmLockedToken();
+                interaction = contract.methodsExplicit.exitFarmLockedToken();
                 break;
             case 'farmClaimRewardsLockedToken':
-                contractMethod = contract.methodsExplicit.farmClaimRewardsLockedToken();
+                interaction = contract.methodsExplicit.farmClaimRewardsLockedToken();
                 break;
             default:
                 break;
         }
 
-        return contractMethod
+        return interaction
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     inputTokens.tokenID,

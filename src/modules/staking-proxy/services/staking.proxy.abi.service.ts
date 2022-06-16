@@ -18,9 +18,7 @@ export class AbiStakingProxyService extends GenericAbiService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLpFarmAddress(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLpFarmAddress();
         const response = await this.getGenericData(
             AbiStakingProxyService.name,
             interaction,
@@ -32,9 +30,7 @@ export class AbiStakingProxyService extends GenericAbiService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getStakingFarmAddress(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getStakingFarmAddress();
         const response = await this.getGenericData(
             AbiStakingProxyService.name,
             interaction,
@@ -46,9 +42,7 @@ export class AbiStakingProxyService extends GenericAbiService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getPairAddress(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getPairAddress();
         const response = await this.getGenericData(
             AbiStakingProxyService.name,
             interaction,
@@ -60,9 +54,7 @@ export class AbiStakingProxyService extends GenericAbiService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getStakingTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getStakingTokenId();
         const response = await this.getGenericData(
             AbiStakingProxyService.name,
             interaction,
@@ -74,9 +66,7 @@ export class AbiStakingProxyService extends GenericAbiService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getFarmTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getFarmTokenId();
         const response = await this.getGenericData(
             AbiStakingProxyService.name,
             interaction,
@@ -88,9 +78,7 @@ export class AbiStakingProxyService extends GenericAbiService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getDualYieldTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getDualYieldTokenId();
         const response = await this.getGenericData(
             AbiStakingProxyService.name,
             interaction,
@@ -102,9 +90,7 @@ export class AbiStakingProxyService extends GenericAbiService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             stakingProxyAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLpFarmTokenId(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLpFarmTokenId();
         const response = await this.getGenericData(
             AbiStakingProxyService.name,
             interaction,
