@@ -18,9 +18,9 @@ import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
+import { Address } from '@elrondnetwork/erdjs/out';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
@@ -72,7 +72,6 @@ describe('TransactionPairService', () => {
                 ElrondProxyServiceProvider,
                 ContextServiceProvider,
                 ContextGetterServiceProvider,
-                ContextTransactionsService,
                 PairService,
                 PairGetterServiceProvider,
                 WrapServiceProvider,
@@ -91,12 +90,12 @@ describe('TransactionPairService', () => {
     it('should get add liquidity batch transaction EGLD first token', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
-
+        const pairAddress =
+            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u';
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress,
                 tokens: [
                     {
                         tokenID: 'EGLD',
@@ -116,19 +115,23 @@ describe('TransactionPairService', () => {
         const [wrapEgldTransaction, addLiquidity] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(firstTokenAmount);
         expect(addLiquidity.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDBhQDU0NGY0YjMyMmQzMjMyMzIzMkBAMDlANjE2NDY0NGM2OTcxNzU2OTY0Njk3NDc5QDA5QDA4',
+            Buffer.from(
+                `MultiESDTNFTTransfer@${Address.fromString(
+                    pairAddress,
+                ).hex()}@02@544f4b312d31313131@@0a@544f4b322d32323232@@09@6164644c6971756964697479@09@08`,
+            ).toString('base64'),
         );
     });
 
     it('should get add liquidity batch transaction EGLD second token', async () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
-
+        const pairAddress =
+            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u';
         const liquidityBatchTransactions = await service.addLiquidityBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
-                pairAddress:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                pairAddress,
                 tokens: [
                     {
                         tokenID: 'TOK2-2222',
@@ -148,7 +151,11 @@ describe('TransactionPairService', () => {
         const [wrapEgldTransaction, addLiquidity] = liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
         expect(addLiquidity.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDU0NGY0YjMyMmQzMjMyMzIzMkBAMGFANjE2NDY0NGM2OTcxNzU2OTY0Njk3NDc5QDA4QDA5',
+            Buffer.from(
+                `MultiESDTNFTTransfer@${Address.fromString(
+                    pairAddress,
+                ).hex()}@02@544f4b312d31313131@@09@544f4b322d32323232@@0a@6164644c6971756964697479@08@09`,
+            ).toString('base64'),
         );
     });
 });

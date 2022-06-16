@@ -18,7 +18,6 @@ import { Address } from '@elrondnetwork/erdjs/out';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { ProxyGetterServiceMock } from '../mocks/proxy.getter.service.mock';
 import { ProxyPairGetterService } from '../services//proxy-pair/proxy-pair.getter.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ProxyPairGetterServiceMock } from '../mocks/proxy.pair.getter.service.mock';
 import { ProxyGetterService } from '../services/proxy.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -75,7 +74,6 @@ describe('TransactionProxyPairService', () => {
                 ConfigService,
                 ElrondProxyService,
                 ContextServiceProvider,
-                ContextTransactionsService,
                 ProxyGetterServiceProvider,
                 ProxyPairGetterServiceProvider,
                 PairService,
