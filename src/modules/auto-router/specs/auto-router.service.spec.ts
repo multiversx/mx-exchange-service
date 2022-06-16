@@ -24,7 +24,6 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { TransactionRouterService } from 'src/modules/router/services/transactions.router.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { RouterService } from 'src/modules/router/services/router.service';
@@ -94,7 +93,6 @@ describe('AutoRouterService', () => {
                 PairTransactionService,
                 WrapServiceProvider,
                 TransactionsWrapService,
-                ContextTransactionsService,
                 TransactionRouterService,
                 AutoRouterService,
                 AutoRouterComputeService,
@@ -248,7 +246,7 @@ describe('AutoRouterService', () => {
                 nonce: 0,
                 value: '1000000000000000000',
                 receiver:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                    'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
                 sender:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
@@ -263,7 +261,7 @@ describe('AutoRouterService', () => {
                 nonce: 0,
                 value: '0',
                 receiver:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                    'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
                 sender:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
@@ -315,7 +313,7 @@ describe('AutoRouterService', () => {
                 nonce: 0,
                 value: '0',
                 receiver:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                    'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
                 sender:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
@@ -331,7 +329,7 @@ describe('AutoRouterService', () => {
                 nonce: 0,
                 value: '0',
                 receiver:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                    'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
                 sender:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
