@@ -35,6 +35,6 @@ export class PairRepositoryService extends EntityRepository<PairDocument> {
             .equals(pairAddress)
             .exec();
 
-        return pair ? pair.type : 'Experimental';
+        return pair ? pair.type : 'Jungle';
     }
 }
