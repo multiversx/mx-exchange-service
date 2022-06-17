@@ -1,4 +1,7 @@
-import { BinaryCodec } from '@elrondnetwork/erdjs/out';
+import {
+    StakingFarmTokenAttributes,
+    UnbondFarmTokenAttributes,
+} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -44,19 +47,13 @@ export class StakingService {
         args: DecodeAttributesArgs,
     ): StakingTokenAttributesModel[] {
         return args.batchAttributes.map(arg => {
-            const attributesBuffer = Buffer.from(arg.attributes, 'base64');
-            const codec = new BinaryCodec();
-            const structType = StakingTokenAttributesModel.getStructure();
-            const [decoded] = codec.decodeNested(attributesBuffer, structType);
-            const decodedAttributes = decoded.valueOf();
-            const stakingTokenAttributes = StakingTokenAttributesModel.fromDecodedAttributes(
-                decodedAttributes,
-            );
-
-            stakingTokenAttributes.identifier = arg.identifier;
-            stakingTokenAttributes.attributes = arg.attributes;
-
-            return stakingTokenAttributes;
+            return new StakingTokenAttributesModel({
+                ...StakingFarmTokenAttributes.fromAttributes(
+                    arg.attributes,
+                ).toJSON(),
+                attributes: arg.attributes,
+                identifier: arg.identifier,
+            });
         });
     }
 
@@ -65,21 +62,20 @@ export class StakingService {
     ): Promise<UnbondTokenAttributesModel[]> {
         const decodedAttributesBatch = [];
         for (const arg of args.batchAttributes) {
-            const attributesBuffer = Buffer.from(arg.attributes, 'base64');
-            const codec = new BinaryCodec();
-            const structType = UnbondTokenAttributesModel.getStructure();
-            const [decoded] = codec.decodeNested(attributesBuffer, structType);
-            const decodedAttributes = decoded.valueOf();
-            const remainingEpochs = await this.getUnbondigRemaingEpochs(
-                decodedAttributes.unlockEpoch.toNumber(),
+            const unboundFarmTokenAttributes = UnbondFarmTokenAttributes.fromAttributes(
+                arg.attributes,
             );
-            const unboundFarmTokenAttributes = new UnbondTokenAttributesModel({
-                identifier: arg.identifier,
-                attributes: arg.attributes,
-                remainingEpochs,
-            });
-
-            decodedAttributesBatch.push(unboundFarmTokenAttributes);
+            const remainingEpochs = await this.getUnbondigRemaingEpochs(
+                unboundFarmTokenAttributes.remainingEpochs,
+            );
+            decodedAttributesBatch.push(
+                new UnbondTokenAttributesModel({
+                    ...unboundFarmTokenAttributes.toJSON(),
+                    remainingEpochs,
+                    attributes: arg.attributes,
+                    identifier: arg.identifier,
+                }),
+            );
         }
 
         return decodedAttributesBatch;

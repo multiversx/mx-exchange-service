@@ -1,20 +1,13 @@
-import {
-    Address,
-    BigUIntValue,
-    BytesValue,
-    GasLimit,
-    U32Value,
-} from '@elrondnetwork/erdjs/out';
+import { Address, BigUIntValue, TokenPayment } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { gasConfig } from 'src/config';
+import { elrondConfig, gasConfig } from 'src/config';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { FarmService } from 'src/modules/farm/services/farm.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -35,7 +28,6 @@ export class StakingProxyTransactionService {
         private readonly stakeProxyGetter: StakingProxyGetterService,
         private readonly pairService: PairService,
         private readonly farmService: FarmService,
-        private readonly contextTransactions: ContextTransactionsService,
         private readonly elrondProxy: ElrondProxyService,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -69,14 +61,24 @@ export class StakingProxyTransactionService {
             args.payments.length > 1
                 ? gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge
                 : gasConfig.stakeProxy.stakeFarmTokens.default;
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            args.payments,
-            this.stakeFarmTokens.name,
-            [],
-            new GasLimit(gasLimit),
+        const mappedPayments = args.payments.map(payment =>
+            TokenPayment.metaEsdtFromBigInteger(
+                payment.tokenID,
+                payment.nonce,
+                new BigNumber(payment.amount),
+            ),
         );
+
+        return contract.methodsExplicit
+            .stakeFarmTokens()
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async claimDualYield(
@@ -95,15 +97,24 @@ export class StakingProxyTransactionService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             args.proxyStakingAddress,
         );
-
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            args.payments,
-            this.claimDualYield.name,
-            [],
-            new GasLimit(gasConfig.stakeProxy.claimDualYield),
+        const mappedPayments = args.payments.map(payment =>
+            TokenPayment.metaEsdtFromBigInteger(
+                payment.tokenID,
+                payment.nonce,
+                new BigNumber(payment.amount),
+            ),
         );
+
+        return contract.methodsExplicit
+            .claimDualYield()
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.stakeProxy.claimDualYield)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async unstakeFarmTokens(
@@ -165,25 +176,25 @@ export class StakingProxyTransactionService {
             args.proxyStakingAddress,
         );
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.payment.tokenID),
-            new U32Value(args.payment.nonce),
-            new BigUIntValue(new BigNumber(args.payment.amount)),
-            BytesValue.fromHex(new Address(args.proxyStakingAddress).hex()),
-            BytesValue.fromUTF8(this.unstakeFarmTokens.name),
+        const endpointArgs = [
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
         ];
 
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.stakeProxy.unstakeFarmTokens),
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .unstakeFarmTokens(endpointArgs)
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.payment.tokenID,
+                    args.payment.nonce,
+                    new BigNumber(args.payment.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.stakeProxy.unstakeFarmTokens)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async validateInputTokens(

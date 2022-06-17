@@ -44,6 +44,8 @@ import { TokensResolver } from './token.resolver';
         MongooseModule.forFeature([
             { name: EsdtTokenDbModel.name, schema: EsdtTokenSchema },
         ]),
+        TokenService,
+        TokenGetterService,
     ],
 })
 export class TokenModule {}

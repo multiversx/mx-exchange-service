@@ -1,13 +1,8 @@
 import { TransactionModel } from '../../../models/transaction.model';
 import { Inject, Injectable } from '@nestjs/common';
-import {
-    BigUIntValue,
-    TypedValue,
-    U32Value,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Address, GasLimit, Interaction } from '@elrondnetwork/erdjs';
-import { gasConfig } from '../../../config';
+import { Address, TokenPayment } from '@elrondnetwork/erdjs';
+import { elrondConfig, gasConfig } from '../../../config';
 import { BigNumber } from 'bignumber.js';
 import {
     ClaimRewardsArgs,
@@ -15,7 +10,6 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
     FarmMigrationConfigArgs,
-    SftFarmInteractionArgs,
 } from '../models/farm.args';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -23,7 +17,6 @@ import { FarmGetterService } from './farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { FarmRewardType, FarmVersion } from '../models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -33,7 +26,6 @@ import { farmType, farmVersion } from 'src/utils/farm.utils';
 export class TransactionsFarmService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly contextTransactions: ContextTransactionsService,
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
@@ -70,25 +62,34 @@ export class TransactionsFarmService {
             args.farmAddress,
         );
 
-        const method =
+        const interaction =
             version === FarmVersion.V1_2
                 ? args.lockRewards
-                    ? 'enterFarmAndLockRewards'
-                    : 'enterFarm'
-                : 'enterFarm';
+                    ? contract.methodsExplicit.enterFarmAndLockRewards([])
+                    : contract.methodsExplicit.enterFarm([])
+                : contract.methodsExplicit.enterFarm([]);
         const gasLimit =
             args.tokens.length > 1
                 ? gasConfig.farms[version].enterFarm.withTokenMerge
                 : gasConfig.farms[version].enterFarm.default;
 
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            args.tokens,
-            method,
-            [],
-            new GasLimit(gasLimit),
+        const mappedPayments = args.tokens.map(tokenPayment =>
+            TokenPayment.metaEsdtFromBigInteger(
+                tokenPayment.tokenID,
+                tokenPayment.nonce,
+                new BigNumber(tokenPayment.amount),
+            ),
         );
+
+        return interaction
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async exitFarm(
@@ -103,8 +104,25 @@ export class TransactionsFarmService {
                 `whitelisted addresses only for farm ${args.farmAddress}`,
             );
         }
+        const [contract] = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
+        );
         const gasLimit = await this.getExitFarmGasLimit(args);
-        return this.SftFarmInteraction(sender, args, 'exitFarm', gasLimit, []);
+
+        return contract.methodsExplicit
+            .exitFarm([])
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.farmTokenID,
+                    args.farmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async claimRewards(
@@ -119,7 +137,9 @@ export class TransactionsFarmService {
                 `whitelisted addresses only for farm ${args.farmAddress}`,
             );
         }
-        const version = farmVersion(args.farmAddress);
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
+        );
         const type =
             version === FarmVersion.V1_2
                 ? args.lockRewards
@@ -131,13 +151,22 @@ export class TransactionsFarmService {
             type === FarmRewardType.LOCKED_REWARDS
                 ? gasConfig.lockedAssetCreate
                 : 0;
-        return this.SftFarmInteraction(
-            sender,
-            args,
-            'claimRewards',
-            gasConfig.farms[version][type].claimRewards + lockedAssetCreateGas,
-            [],
-        );
+        const gasLimit =
+            gasConfig.farms[version][type].claimRewards + lockedAssetCreateGas;
+        return contract.methodsExplicit
+            .claimRewards([])
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.farmTokenID,
+                    args.farmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async compoundRewards(
@@ -161,16 +190,24 @@ export class TransactionsFarmService {
         if (farmedTokenID !== farmingTokenID) {
             throw new Error('failed to compound different tokens');
         }
-
-        const version = farmVersion(args.farmAddress);
-
-        return this.SftFarmInteraction(
-            sender,
-            args,
-            'compoundRewards',
-            gasConfig.farms[version].compoundRewards,
-            [],
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
         );
+        const gasLimit = gasConfig.farms[version].compoundRewards;
+        return contract.methodsExplicit
+            .compoundRewards([])
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.farmTokenID,
+                    args.farmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async migrateToNewFarm(
@@ -185,14 +222,26 @@ export class TransactionsFarmService {
                 `whitelisted addresses only for farm ${args.farmAddress}`,
             );
         }
-        const version = farmVersion(args.farmAddress);
-        return this.SftFarmInteraction(
-            sender,
-            args,
-            'migrateToNewFarm',
-            gasConfig.farms[version].migrateToNewFarm,
-            [BytesValue.fromHex(Address.fromString(sender).hex())],
+        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
         );
+        const gasLimit = gasConfig.farms[version].migrateToNewFarm;
+        return contract.methodsExplicit
+            .migrateToNewFarm([
+                BytesValue.fromHex(Address.fromString(sender).hex()),
+            ])
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.farmTokenID,
+                    args.farmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async setFarmMigrationConfig(
@@ -209,14 +258,12 @@ export class TransactionsFarmService {
             BytesValue.fromHex(new Address(args.newLockedFarmAddress).hex()),
         ];
 
-        const interaction: Interaction = contract.methods.setFarmMigrationConfig(
-            transactionArgs,
-        );
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.farms[version].farmMigrationConfig),
-        );
-        return transaction.toPlainObject();
+        return contract.methodsExplicit
+            .setFarmMigrationConfig(transactionArgs)
+            .withGasLimit(gasConfig.farms[version].farmMigrationConfig)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async stopRewardsAndMigrateRps(
@@ -225,43 +272,12 @@ export class TransactionsFarmService {
         const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.stopRewardsAndMigrateRps();
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.farms[version].stopRewards),
-        );
-        return transaction.toPlainObject();
-    }
-
-    private async SftFarmInteraction(
-        sender: string,
-        args: SftFarmInteractionArgs,
-        method: string,
-        gasLimit: number,
-        endpointArgs: TypedValue[],
-    ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
-            args.farmAddress,
-        );
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.farmTokenID),
-            new U32Value(args.farmTokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(new Address(args.farmAddress).hex()),
-            BytesValue.fromUTF8(method),
-            ...endpointArgs,
-        ];
-
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasLimit),
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .stopRewardsAndMigrateRps()
+            .withGasLimit(gasConfig.farms[version].stopRewards)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async validateInputTokens(

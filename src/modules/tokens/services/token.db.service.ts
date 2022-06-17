@@ -42,6 +42,6 @@ export class TokenDBService {
             .where('tokenID')
             .equals(tokenID)
             .exec();
-        return esdtToken ? esdtToken.type : 'Experimental';
+        return esdtToken ? esdtToken.type : 'Jungle';
     }
 }

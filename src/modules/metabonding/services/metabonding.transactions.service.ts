@@ -1,10 +1,4 @@
-import {
-    BigUIntValue,
-    BytesValue,
-    GasLimit,
-    Interaction,
-    U32Value,
-} from '@elrondnetwork/erdjs/out';
+import { Address, BigUIntValue, TokenPayment } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -12,7 +6,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { elrondConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -24,7 +17,6 @@ export class MetabondingTransactionService {
     constructor(
         private readonly metabondingGetter: MetabondingGetterService,
         private readonly elrondProxy: ElrondProxyService,
-        private readonly contextTransactions: ContextTransactionsService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -51,62 +43,46 @@ export class MetabondingTransactionService {
             this.metabondingGetter.getUserEntry(sender),
         ]);
 
-        let gasLimit: GasLimit;
-        if (userEntry.tokenNonce > 0) {
-            gasLimit = new GasLimit(
-                gasConfig.metabonding.stakeLockedAsset.withTokenMerge,
-            );
-        } else {
-            gasLimit = new GasLimit(
-                gasConfig.metabonding.stakeLockedAsset.default,
-            );
-        }
+        const gasLimit =
+            userEntry.tokenNonce > 0
+                ? gasConfig.metabonding.stakeLockedAsset.withTokenMerge
+                : gasConfig.metabonding.stakeLockedAsset.default;
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(inputToken.tokenID),
-            new U32Value(inputToken.nonce),
-            new BigUIntValue(new BigNumber(inputToken.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8(this.stakeLockedAsset.name),
-        ];
-
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            gasLimit,
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .stakeLockedAsset()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    inputToken.tokenID,
+                    inputToken.nonce,
+                    new BigNumber(inputToken.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async unstake(unstakeAmount: string): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methods.unstake([
-            new BigUIntValue(new BigNumber(unstakeAmount)),
-        ]);
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.metabonding.unstake));
-
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+        return contract.methodsExplicit
+            .unstake([new BigUIntValue(new BigNumber(unstakeAmount))])
+            .withGasLimit(gasConfig.metabonding.unstake)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async unbond(sender: string): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methods.unbond([]);
-        const transaction = interaction.buildTransaction();
-        transaction.setGasLimit(new GasLimit(gasConfig.metabonding.unbond));
-
         await this.pubSub.publish('deleteCacheKeys', [`${sender}.userEntry`]);
-
-        return {
-            ...transaction.toPlainObject(),
-            chainID: elrondConfig.chainID,
-        };
+        return contract.methodsExplicit
+            .unbond([])
+            .withGasLimit(gasConfig.metabonding.unbond)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async validateInputToken(

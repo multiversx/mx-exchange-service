@@ -241,21 +241,4 @@ export class ProxyResolver {
             args,
         );
     }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => [WrappedLpTokenAttributesModel])
-    async wrappedLpTokenAttributes(
-        @Args('args') args: DecodeAttributesArgs,
-    ): Promise<WrappedLpTokenAttributesModel[]> {
-        return this.proxyService.getWrappedLpTokenAttributes(args);
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => [WrappedFarmTokenAttributesModel])
-    async wrappedFarmTokenAttributes(
-        @Args('args')
-        args: DecodeAttributesArgs,
-    ): Promise<WrappedFarmTokenAttributesModel[]> {
-        return await this.proxyService.getWrappedFarmTokenAttributes(args);
-    }
 }
