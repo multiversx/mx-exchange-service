@@ -33,6 +33,9 @@ export class ElrondApiService {
             timeout: elrondConfig.proxyTimeout,
             httpAgent: elrondConfig.keepAlive ? httpAgent : null,
             httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+            headers: {
+                origin: 'MaiarExchangeService',
+            },
         });
     }
 
