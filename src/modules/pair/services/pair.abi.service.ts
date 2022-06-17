@@ -207,9 +207,13 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-            if (queryResponse.returnMessage.includes('bad array length')) {
+            if (
+                queryResponse.returnMessage.includes('bad array length') ||
+                queryResponse.returnCode == 'function not found'
+            ) {
                 return undefined;
             }
+            console.log(queryResponse);
             const endpointDefinition = interaction.getEndpoint();
             const response = new ResultsParser().parseQueryResponse(
                 queryResponse,
@@ -241,7 +245,9 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-
+            if (queryResponse.returnCode == 'function not found') {
+                return undefined;
+            }
             const endpointDefinition = interaction.getEndpoint();
             const response = new ResultsParser().parseQueryResponse(
                 queryResponse,
@@ -278,7 +284,10 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-
+            if (queryResponse.returnCode == 'function not found') {
+                return undefined;
+            }
+            console.log(queryResponse);
             const endpointDefinition = interaction.getEndpoint();
             const response = new ResultsParser().parseQueryResponse(
                 queryResponse,
