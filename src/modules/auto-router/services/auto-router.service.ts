@@ -167,7 +167,7 @@ export class AutoRouterService {
             tokenRoute: [tokenInID, tokenOutID],
             fees: [fee],
             pricesImpact: [priceImpact],
-            pairs: [pair],
+            pairs: [new PairModel({ address: pair.address })],
             tolerance: args.tolerance,
         });
     }
