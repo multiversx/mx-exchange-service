@@ -47,13 +47,7 @@ export class AutoRouterService {
             args.tokenOutID,
         ]);
 
-        const [
-            directPair,
-            pairs,
-            tokenInMetadata,
-            tokenOutMetadata,
-        ] = await Promise.all([
-            this.getDirectPair(tokenInID, tokenOutID),
+        const [pairs, tokenInMetadata, tokenOutMetadata] = await Promise.all([
             this.getAllActivePairs(),
             this.contextGetterService.getTokenMetadata(tokenInID),
             this.contextGetterService.getTokenMetadata(tokenOutID),
@@ -62,6 +56,7 @@ export class AutoRouterService {
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
+        const directPair = this.getDirectPair(tokenInID, tokenOutID, pairs);
         if (directPair) {
             return await this.singleSwap(
                 args,
@@ -300,17 +295,18 @@ export class AutoRouterService {
             .toFixed();
     }
 
-    private async getDirectPair(
+    private getDirectPair(
         tokenInID: string,
         tokenOutID: string,
-    ): Promise<PairModel> {
-        const pairs = await this.routerService.getAllPairs(0, 1, {
-            address: null,
-            firstTokenID: tokenInID,
-            secondTokenID: tokenOutID,
-            issuedLpToken: true,
-        });
-        return pairs[0];
+        pairs: PairModel[],
+    ): PairModel {
+        return pairs.find(
+            p =>
+                (p.firstToken.identifier === tokenInID &&
+                    p.secondToken.identifier === tokenOutID) ||
+                (p.firstToken.identifier === tokenOutID &&
+                    p.secondToken.identifier === tokenInID),
+        );
     }
 
     private async getAllActivePairs() {
