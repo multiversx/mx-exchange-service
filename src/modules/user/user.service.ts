@@ -233,7 +233,6 @@ export class UserService {
             return userToken;
         }
         const userToken = await this.userComputeService.esdtTokenUSD(token);
-        userToken.type = EsdtTokenType.FungibleToken;
         return userToken;
     }
 
