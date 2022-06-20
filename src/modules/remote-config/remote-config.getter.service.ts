@@ -18,36 +18,12 @@ export class RemoteConfigGetterService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    private async getFlagData(
-        flagName: string,
+    private async getData(
+        name: string,
         createValueFunc: () => any,
         ttl: number,
     ): Promise<any> {
-        const cacheKey = this.getFlagCacheKey(flagName);
-        try {
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                RemoteConfigGetterService.name,
-                createValueFunc.name,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    private async getSCAddressData(
-        category: SCAddressType,
-        createValueFunc: () => any,
-        ttl: number,
-    ): Promise<any> {
-        const cacheKey = this.getSCAddressCacheKey(category);
+        const cacheKey = this.getFlagCacheKey(name);
         try {
             return await this.cachingService.getOrSet(
                 cacheKey,
@@ -75,7 +51,7 @@ export class RemoteConfigGetterService {
     }
 
     async getMaintenanceFlagValue(): Promise<boolean> {
-        return await this.getFlagData(
+        return await this.getData(
             'MAINTENANCE',
             () =>
                 this.flagRepositoryService
@@ -90,7 +66,7 @@ export class RemoteConfigGetterService {
     }
 
     async getStakingAddresses(): Promise<string[]> {
-        return await this.getSCAddressData(
+        return await this.getData(
             SCAddressType.STAKING,
             () =>
                 this.scAddressRepositoryService
@@ -105,7 +81,7 @@ export class RemoteConfigGetterService {
     }
 
     async getStakingProxyAddresses(): Promise<string[]> {
-        return await this.getSCAddressData(
+        return await this.getData(
             SCAddressType.STAKING_PROXY,
             () =>
                 this.scAddressRepositoryService

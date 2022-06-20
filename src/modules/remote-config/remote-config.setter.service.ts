@@ -14,33 +14,12 @@ export class RemoteConfigSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    private async setFlagData(
-        flagName: string,
-        value: boolean,
-        ttl: number = cacheConfig.default,
-    ): Promise<string> {
-        const cacheKey = this.getFlagCacheKey(flagName);
-        try {
-            await this.cachingService.setCache(cacheKey, value, ttl);
-            return cacheKey;
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                RemoteConfigSetterService.name,
-                '',
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-    }
-
-    private async setSCAddressData(
-        category: SCAddressType,
+    private async setData(
+        name: string,
         value: any,
         ttl: number = cacheConfig.default,
     ): Promise<string> {
-        const cacheKey = this.getSCAddressCacheKey(category);
+        const cacheKey = this.getFlagCacheKey(name);
         try {
             await this.cachingService.setCache(cacheKey, value, ttl);
             return cacheKey;
@@ -57,7 +36,7 @@ export class RemoteConfigSetterService {
     }
 
     async setFlag(name: string, value: boolean): Promise<string> {
-        return await this.setFlagData(name, value, oneHour());
+        return await this.setData(name, value, oneHour());
     }
 
     async deleteFlag(name: string): Promise<void> {
@@ -68,14 +47,14 @@ export class RemoteConfigSetterService {
         addresses: string[],
         category: SCAddressType,
     ): Promise<string> {
-        return await this.setSCAddressData(category, addresses, oneHour());
+        return await this.setData(category, addresses, oneHour());
     }
 
     async setStakingProxyAddresses(
         addresses: string[],
         category: SCAddressType,
     ): Promise<string> {
-        return await this.setSCAddressData(category, addresses, oneHour());
+        return await this.setData(category, addresses, oneHour());
     }
 
     async deleteSCAddresses(category: SCAddressType): Promise<void> {
