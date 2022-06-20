@@ -7,6 +7,8 @@ import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { ResultsParser, TokenIdentifierValue } from '@elrondnetwork/erdjs/out';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
+import { elrondConfig } from 'src/config';
+import { VM_QUERY_ERROR } from 'src/utils/errors.constants';
 
 @Injectable()
 export class PairAbiService extends GenericAbiService {
@@ -54,7 +56,9 @@ export class PairAbiService extends GenericAbiService {
             interaction,
         );
         const lpTokenID = response.firstValue.valueOf().toString();
-        return lpTokenID !== 'EGLD' ? lpTokenID : undefined;
+        return lpTokenID !== elrondConfig.EGLDIdentifier
+            ? lpTokenID
+            : undefined;
     }
 
     async getTokenReserve(
@@ -155,7 +159,11 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-            if (queryResponse.returnMessage.includes('bad array length')) {
+            if (
+                queryResponse.returnMessage.includes(
+                    VM_QUERY_ERROR.BAD_ARRAY_LENGTH,
+                )
+            ) {
                 return '';
             }
             const endpointDefinition = interaction.getEndpoint();
@@ -168,7 +176,7 @@ export class PairAbiService extends GenericAbiService {
             }
             return response.firstValue.valueOf().bech32();
         } catch (error) {
-            if (error.message.includes('invalid function')) {
+            if (error.message.includes(VM_QUERY_ERROR.INVALID_FUNCTION)) {
                 return '';
             }
             const logMessage = generateRunQueryLogMessage(
@@ -208,8 +216,10 @@ export class PairAbiService extends GenericAbiService {
                 .getService()
                 .queryContract(query);
             if (
-                queryResponse.returnMessage.includes('bad array length') ||
-                queryResponse.returnCode == 'function not found'
+                queryResponse.returnMessage.includes(
+                    VM_QUERY_ERROR.BAD_ARRAY_LENGTH,
+                ) ||
+                queryResponse.returnCode == VM_QUERY_ERROR.FUNCTION_NOT_FOUND
             ) {
                 return undefined;
             }
@@ -220,7 +230,7 @@ export class PairAbiService extends GenericAbiService {
             );
             return response.firstValue.valueOf().bech32();
         } catch (error) {
-            if (error.message.includes('invalid function')) {
+            if (error.message.includes(VM_QUERY_ERROR.INVALID_FUNCTION)) {
                 return undefined;
             }
             const logMessage = generateRunQueryLogMessage(
@@ -244,7 +254,7 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-            if (queryResponse.returnCode == 'function not found') {
+            if (queryResponse.returnCode == VM_QUERY_ERROR.FUNCTION_NOT_FOUND) {
                 return undefined;
             }
             const endpointDefinition = interaction.getEndpoint();
@@ -257,7 +267,7 @@ export class PairAbiService extends GenericAbiService {
                 ? unlockEpoch.toFixed()
                 : undefined;
         } catch (error) {
-            if (error.message.includes('invalid function')) {
+            if (error.message.includes(VM_QUERY_ERROR.INVALID_FUNCTION)) {
                 return undefined;
             }
             const logMessage = generateRunQueryLogMessage(
@@ -283,7 +293,7 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-            if (queryResponse.returnCode == 'function not found') {
+            if (queryResponse.returnCode == VM_QUERY_ERROR.FUNCTION_NOT_FOUND) {
                 return undefined;
             }
             const endpointDefinition = interaction.getEndpoint();
@@ -296,7 +306,7 @@ export class PairAbiService extends GenericAbiService {
                 ? lockingDeadlineEpoch.toFixed()
                 : undefined;
         } catch (error) {
-            if (error.message.includes('invalid function')) {
+            if (error.message.includes(VM_QUERY_ERROR.INVALID_FUNCTION)) {
                 return undefined;
             }
             const logMessage = generateRunQueryLogMessage(
