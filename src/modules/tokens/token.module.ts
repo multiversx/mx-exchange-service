@@ -28,6 +28,6 @@ import { DatabaseModule } from 'src/services/database/database.module';
         TokenRepositoryService,
         TokensResolver,
     ],
-    exports: [TokenRepositoryService],
+    exports: [TokenRepositoryService, TokenService, TokenGetterService],
 })
 export class TokenModule {}

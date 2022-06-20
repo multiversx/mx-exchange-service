@@ -213,7 +213,7 @@ describe('UserService', () => {
                 identifier: 'TOK2-2222',
                 ticker: 'TOK2',
                 name: 'SecondToken',
-                type: 'FungibleESDT',
+                type: '',
                 owner: 'owner_address',
                 supply: '2000000000000000000',
                 decimals: 18,
