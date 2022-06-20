@@ -8,7 +8,7 @@ import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { ResultsParser, TokenIdentifierValue } from '@elrondnetwork/erdjs/out';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { elrondConfig } from 'src/config';
-import { VM_QUERY_ERROR } from 'src/utils/errors.constants';
+import { VmQueryError } from 'src/utils/errors.constants';
 
 @Injectable()
 export class PairAbiService extends GenericAbiService {
@@ -161,7 +161,7 @@ export class PairAbiService extends GenericAbiService {
                 .queryContract(query);
             if (
                 queryResponse.returnMessage.includes(
-                    VM_QUERY_ERROR.BAD_ARRAY_LENGTH,
+                    VmQueryError.BAD_ARRAY_LENGTH,
                 )
             ) {
                 return '';
@@ -176,7 +176,7 @@ export class PairAbiService extends GenericAbiService {
             }
             return response.firstValue.valueOf().bech32();
         } catch (error) {
-            if (error.message.includes(VM_QUERY_ERROR.INVALID_FUNCTION)) {
+            if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return '';
             }
             const logMessage = generateRunQueryLogMessage(
@@ -217,9 +217,9 @@ export class PairAbiService extends GenericAbiService {
                 .queryContract(query);
             if (
                 queryResponse.returnMessage.includes(
-                    VM_QUERY_ERROR.BAD_ARRAY_LENGTH,
+                    VmQueryError.BAD_ARRAY_LENGTH,
                 ) ||
-                queryResponse.returnCode == VM_QUERY_ERROR.FUNCTION_NOT_FOUND
+                queryResponse.returnCode == VmQueryError.FUNCTION_NOT_FOUND
             ) {
                 return undefined;
             }
@@ -230,7 +230,7 @@ export class PairAbiService extends GenericAbiService {
             );
             return response.firstValue.valueOf().bech32();
         } catch (error) {
-            if (error.message.includes(VM_QUERY_ERROR.INVALID_FUNCTION)) {
+            if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return undefined;
             }
             const logMessage = generateRunQueryLogMessage(
@@ -254,7 +254,7 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-            if (queryResponse.returnCode == VM_QUERY_ERROR.FUNCTION_NOT_FOUND) {
+            if (queryResponse.returnCode == VmQueryError.FUNCTION_NOT_FOUND) {
                 return undefined;
             }
             const endpointDefinition = interaction.getEndpoint();
@@ -267,7 +267,7 @@ export class PairAbiService extends GenericAbiService {
                 ? unlockEpoch.toFixed()
                 : undefined;
         } catch (error) {
-            if (error.message.includes(VM_QUERY_ERROR.INVALID_FUNCTION)) {
+            if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return undefined;
             }
             const logMessage = generateRunQueryLogMessage(
@@ -293,7 +293,7 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-            if (queryResponse.returnCode == VM_QUERY_ERROR.FUNCTION_NOT_FOUND) {
+            if (queryResponse.returnCode == VmQueryError.FUNCTION_NOT_FOUND) {
                 return undefined;
             }
             const endpointDefinition = interaction.getEndpoint();
@@ -306,7 +306,7 @@ export class PairAbiService extends GenericAbiService {
                 ? lockingDeadlineEpoch.toFixed()
                 : undefined;
         } catch (error) {
-            if (error.message.includes(VM_QUERY_ERROR.INVALID_FUNCTION)) {
+            if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return undefined;
             }
             const logMessage = generateRunQueryLogMessage(
