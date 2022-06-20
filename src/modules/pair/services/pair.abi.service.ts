@@ -219,7 +219,7 @@ export class PairAbiService extends GenericAbiService {
                 queryResponse.returnMessage.includes(
                     VmQueryError.BAD_ARRAY_LENGTH,
                 ) ||
-                queryResponse.returnCode == VmQueryError.FUNCTION_NOT_FOUND
+                queryResponse.returnCode === VmQueryError.FUNCTION_NOT_FOUND
             ) {
                 return undefined;
             }
@@ -254,7 +254,7 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-            if (queryResponse.returnCode == VmQueryError.FUNCTION_NOT_FOUND) {
+            if (queryResponse.returnCode === VmQueryError.FUNCTION_NOT_FOUND) {
                 return undefined;
             }
             const endpointDefinition = interaction.getEndpoint();
@@ -293,7 +293,7 @@ export class PairAbiService extends GenericAbiService {
             const queryResponse = await this.elrondProxy
                 .getService()
                 .queryContract(query);
-            if (queryResponse.returnCode == VmQueryError.FUNCTION_NOT_FOUND) {
+            if (queryResponse.returnCode === VmQueryError.FUNCTION_NOT_FOUND) {
                 return undefined;
             }
             const endpointDefinition = interaction.getEndpoint();
