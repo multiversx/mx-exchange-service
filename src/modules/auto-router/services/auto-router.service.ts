@@ -47,7 +47,13 @@ export class AutoRouterService {
             args.tokenOutID,
         ]);
 
-        const [pairs, tokenInMetadata, tokenOutMetadata] = await Promise.all([
+        const [
+            directPair,
+            pairs,
+            tokenInMetadata,
+            tokenOutMetadata,
+        ] = await Promise.all([
+            this.getActiveDirectPair(tokenInID, tokenOutID),
             this.getAllActivePairs(),
             this.contextGetterService.getTokenMetadata(tokenInID),
             this.contextGetterService.getTokenMetadata(tokenOutID),
@@ -56,7 +62,6 @@ export class AutoRouterService {
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
-        const directPair = this.getDirectPair(tokenInID, tokenOutID, pairs);
         if (directPair) {
             return await this.singleSwap(
                 args,
@@ -167,7 +172,7 @@ export class AutoRouterService {
             tokenRoute: [tokenInID, tokenOutID],
             fees: [fee],
             pricesImpact: [priceImpact],
-            pairs: [new PairModel({ address: pair.address })],
+            pairs: [pair],
             tolerance: args.tolerance,
         });
     }
@@ -295,18 +300,19 @@ export class AutoRouterService {
             .toFixed();
     }
 
-    private getDirectPair(
+    private async getActiveDirectPair(
         tokenInID: string,
         tokenOutID: string,
-        pairs: PairModel[],
-    ): PairModel {
-        return pairs.find(
-            p =>
-                (p.firstToken.identifier === tokenInID &&
-                    p.secondToken.identifier === tokenOutID) ||
-                (p.firstToken.identifier === tokenOutID &&
-                    p.secondToken.identifier === tokenInID),
-        );
+    ): Promise<PairModel> {
+        return (
+            await this.routerService.getAllPairs(0, 1, {
+                address: null,
+                firstTokenID: tokenInID,
+                secondTokenID: tokenOutID,
+                issuedLpToken: true,
+                state: 'Active',
+            })
+        )[0];
     }
 
     private async getAllActivePairs() {
