@@ -83,7 +83,6 @@ export class RemoteConfigGetterService {
                         name: 'MAINTENANCE',
                     })
                     .then(res => {
-                        console.log('return ' + res);
                         return res.value;
                     }),
             oneHour(),
@@ -99,9 +98,6 @@ export class RemoteConfigGetterService {
                         category: SCAddressType.STAKING,
                     })
                     .then(res => {
-                        console.log(
-                            'return ' + res.map(scAddress => scAddress.address),
-                        );
                         return res.map(scAddress => scAddress.address);
                     }),
             oneHour(),
