@@ -213,7 +213,6 @@ export class PairAbiService extends GenericAbiService {
             ) {
                 return undefined;
             }
-            console.log(queryResponse);
             const endpointDefinition = interaction.getEndpoint();
             const response = new ResultsParser().parseQueryResponse(
                 queryResponse,
@@ -287,7 +286,6 @@ export class PairAbiService extends GenericAbiService {
             if (queryResponse.returnCode == 'function not found') {
                 return undefined;
             }
-            console.log(queryResponse);
             const endpointDefinition = interaction.getEndpoint();
             const response = new ResultsParser().parseQueryResponse(
                 queryResponse,
