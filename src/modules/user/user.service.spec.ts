@@ -53,6 +53,8 @@ import { PriceDiscoveryServiceProvider } from '../price-discovery/mocks/price.di
 import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
 import { SimpleLockGetterServiceProvider } from '../simple-lock/mocks/simple.lock.getter.service.mock';
 import { AssetsModel, RolesModel } from '../tokens/models/esdtToken.model';
+import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
+import { RemoteConfigGetterServiceMock } from '../remote-config/mocks/remote-config.getter.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -147,6 +149,11 @@ describe('UserService', () => {
         useClass: StakingProxyGetterServiceMock,
     };
 
+    const RemoteConfigGetterServiceProvider = {
+        provide: RemoteConfigGetterService,
+        useClass: RemoteConfigGetterServiceMock,
+    };
+
     const logTransports: Transport[] = [
         new winston.transports.Console({
             format: winston.format.combine(
@@ -186,6 +193,7 @@ describe('UserService', () => {
                 SimpleLockGetterServiceProvider,
                 UserService,
                 UserComputeService,
+                RemoteConfigGetterServiceProvider,
             ],
             imports: [
                 WinstonModule.forRoot({

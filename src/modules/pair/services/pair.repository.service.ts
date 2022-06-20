@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { EntityRepository } from 'src/services/database/entity.repository';
+import { EntityRepository } from 'src/services/database/repositories/entity.repository';
 import { CreatePairDto } from '../dto/create.pair.dto';
 import { Pair, PairDocument } from '../schemas/pair.schema';
 

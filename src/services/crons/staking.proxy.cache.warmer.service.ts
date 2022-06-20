@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { cacheConfig, scAddress } from 'src/config';
 import { oneHour } from 'src/helpers/helpers';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { AbiStakingProxyService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingProxySetterService } from 'src/modules/staking-proxy/services/staking.proxy.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -17,12 +18,13 @@ export class StakingProxyCacheWarmerService {
         private readonly stakingProxySetter: StakingProxySetterService,
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_30_MINUTES)
     async cacheFarmsStaking(): Promise<void> {
-        const stakingProxiesAddress: string[] = scAddress.stakingProxy;
+        const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
         for (const address of stakingProxiesAddress) {
             const [
                 lpFarmAddress,

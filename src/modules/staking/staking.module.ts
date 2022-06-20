@@ -3,6 +3,7 @@ import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { AbiStakingService } from './services/staking.abi.service';
 import { StakingComputeService } from './services/staking.compute.service';
 import { StakingGetterService } from './services/staking.getter.service';
@@ -17,6 +18,7 @@ import { StakingResolver } from './staking.resolver';
         ContextModule,
         CachingModule,
         ElrondCommunicationModule,
+        RemoteConfigModule,
     ],
     providers: [
         AbiStakingService,
