@@ -275,7 +275,6 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
-        console.log(this.gatewayService.constructor.name);
         const response = await this.gatewayService.getSCStorageKey(
             farmAddress,
             'produce_rewards_enabled',
