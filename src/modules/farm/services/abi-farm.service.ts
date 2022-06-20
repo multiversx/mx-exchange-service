@@ -21,8 +21,8 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 export class AbiFarmService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
-        private readonly gatewayService: ElrondGatewayService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly gatewayService: ElrondGatewayService,
     ) {
         super(elrondProxy, logger);
     }
@@ -275,6 +275,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
+        console.log(this.gatewayService.constructor.name);
         const response = await this.gatewayService.getSCStorageKey(
             farmAddress,
             'produce_rewards_enabled',
