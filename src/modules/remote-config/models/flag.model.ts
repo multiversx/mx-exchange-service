@@ -1,6 +1,6 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 
-@ObjectType() //{ isAbstract: true }
+@ObjectType()
 export class FlagModel {
     @Field()
     name: string;

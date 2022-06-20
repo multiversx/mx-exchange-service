@@ -4,7 +4,6 @@ import { ArgsType, Field } from '@nestjs/graphql';
 export class FlagArgs {
     @Field()
     name: string;
-
     @Field()
     value: boolean;
 }

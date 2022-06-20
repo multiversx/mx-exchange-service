@@ -17,6 +17,7 @@ import { FlagModel } from './models/flag.model';
 import { SCAddressModel, SCAddressType } from './models/sc-address.model';
 import { Response } from 'express';
 import { RemoteConfigSetterService } from './remote-config.setter.service';
+import mongoose from 'mongoose';
 
 @Controller('remote-config')
 export class RemoteConfigController {
@@ -82,9 +83,20 @@ export class RemoteConfigController {
     }
 
     @UseGuards(JwtAdminGuard)
-    @Get('/flags/:name')
-    async getRemoteConfigFlag(@Param('name') name: string): Promise<FlagModel> {
-        return await this.flagRepositoryService.findOne({ name: name });
+    @Get('/flags/:nameOrID')
+    async getRemoteConfigFlag(
+        @Param('nameOrID') nameOrID: string,
+    ): Promise<FlagModel> {
+        return await this.flagRepositoryService
+            .findOne(
+                mongoose.Types.ObjectId.isValid(nameOrID)
+                    ? { _id: nameOrID }
+                    : { name: nameOrID },
+            )
+            .then(async res => {
+                console.log('Res', res);
+                return res;
+            });
     }
 
     @UseGuards(JwtAdminGuard)
@@ -93,13 +105,12 @@ export class RemoteConfigController {
         @Param('nameOrID') nameOrID: string,
     ): Promise<boolean> {
         try {
-            const flag =
-                (await this.flagRepositoryService.findOneAndDelete({
-                    name: nameOrID,
-                })) ||
-                (await this.flagRepositoryService.findOneAndDelete({
-                    _id: nameOrID,
-                }));
+            const flag = await this.flagRepositoryService.findOneAndDelete(
+                mongoose.Types.ObjectId.isValid(nameOrID)
+                    ? { _id: nameOrID }
+                    : { name: nameOrID },
+            );
+
             if (flag) {
                 await this.remoteConfigSetterService.deleteFlag(flag.name);
                 return true;
@@ -151,13 +162,15 @@ export class RemoteConfigController {
     }
 
     @UseGuards(JwtAdminGuard)
-    @Get('/sc-address/:address')
+    @Get('/sc-address/:addressOrID')
     async getRemoteConfigSCAddress(
-        @Param('address') address: string,
+        @Param('addressOrID') addressOrID: string,
     ): Promise<SCAddressModel> {
-        return await this.scAddressRepositoryService.findOne({
-            address: address,
-        });
+        return await this.scAddressRepositoryService.findOne(
+            mongoose.Types.ObjectId.isValid(addressOrID)
+                ? { _id: addressOrID }
+                : { address: addressOrID },
+        );
     }
 
     @UseGuards(JwtAdminGuard)
@@ -166,19 +179,20 @@ export class RemoteConfigController {
         @Param('addressOrID') addressOrID: string,
     ): Promise<boolean> {
         try {
-            const entity =
-                (await this.scAddressRepositoryService.findOneAndDelete({
-                    address: addressOrID,
-                })) ||
-                (await this.scAddressRepositoryService.findOneAndDelete({
-                    _id: addressOrID,
-                }));
+            const entity = await this.scAddressRepositoryService.findOneAndDelete(
+                mongoose.Types.ObjectId.isValid(addressOrID)
+                    ? { _id: addressOrID }
+                    : { address: addressOrID },
+            );
+
             if (entity) {
                 await this.remoteConfigSetterService.deleteSCAddresses(
                     entity.category,
                 );
                 return true;
             }
+
+            return false;
         } catch {
             return false;
         }
