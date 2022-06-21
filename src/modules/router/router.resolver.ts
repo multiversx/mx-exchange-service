@@ -18,7 +18,8 @@ import { constantsConfig } from 'src/config';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
-import { PairFilterArgs, SetLocalRoleOwnerArgs } from './models/router.args';
+import { SetLocalRoleOwnerArgs } from './models/router.args';
+import { PairFilterArgs } from './models/filter.args';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {

@@ -1,17 +1,5 @@
 import { EnumType, EnumVariantDefinition } from '@elrondnetwork/erdjs/out';
-import { ArgsType, Field, InputType, registerEnumType } from '@nestjs/graphql';
-
-@ArgsType()
-export class PairFilterArgs {
-    @Field({ nullable: true })
-    address: string;
-    @Field({ nullable: true })
-    firstTokenID: string;
-    @Field({ nullable: true })
-    secondTokenID: string;
-    @Field(() => Boolean)
-    issuedLpToken = true;
-}
+import { Field, InputType, registerEnumType } from '@nestjs/graphql';
 
 @InputType()
 export class SetLocalRoleOwnerArgs {

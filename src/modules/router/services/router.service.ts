@@ -14,7 +14,8 @@ import {
 import { RouterGetterService } from '../services/router.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from '../models/pair.metadata.model';
-import { PairFilterArgs } from '../models/router.args';
+import { PairFilterArgs } from '../models/filter.args';
+
 
 @Injectable()
 export class RouterService {
