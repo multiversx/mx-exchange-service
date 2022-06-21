@@ -53,6 +53,7 @@ import { PriceDiscoveryServiceProvider } from '../price-discovery/mocks/price.di
 import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
 import { SimpleLockGetterServiceProvider } from '../simple-lock/mocks/simple.lock.getter.service.mock';
 import { AssetsModel, RolesModel } from '../tokens/models/esdtToken.model';
+import { TokenGetterServiceProvider } from '../tokens/mocks/token.getter.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -184,6 +185,7 @@ describe('UserService', () => {
                 PriceDiscoveryGetterServiceProvider,
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
+                TokenGetterServiceProvider,
                 UserService,
                 UserComputeService,
             ],
