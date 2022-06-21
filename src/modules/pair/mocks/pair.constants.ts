@@ -187,75 +187,52 @@ export const Tokens = (tokenID: string): EsdtToken => {
 };
 
 export const PairsData = (pairAddress: string) => {
-    switch (pairAddress) {
-        case 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u':
-            return {
-                address:
-                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                firstToken: Tokens('TOK1-1111'),
-                secondToken: Tokens('TOK2-2222'),
-                liquidityPoolToken: Tokens('LPT-1234'),
-                info: {
-                    reserves0: '1000000000000000000',
-                    reserves1: '2000000000000000000',
-                    totalSupply: '1000000000000000000',
-                },
-                firstTokenPrice: '2',
-                firstTokenPriceUSD: '200',
-                secondTokenPrice: '0.5',
-                secondTokenPriceUSD: '100',
-                liquidityPoolTokenPriceUSD: '2',
-                firstTokenLockedValueUSD: '500',
-                secondTokenLockedValueUSD: '500',
-                lockedValueUSD: '1000',
-                totalFeePercent: 0.003,
-                state: 'Active',
-            };
-        case 'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx':
-            return {
-                address:
-                    'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                firstToken: Tokens('TOK1-1111'),
-                secondToken: Tokens('USDC-1111'),
-                liquidityPoolToken: Tokens('LPT-abcd'),
-                info: {
-                    reserves0: '1000000000000000000',
-                    reserves1: '200000000000000000000',
-                    totalSupply: '1000000000000000000',
-                },
-                firstTokenPrice: '200',
-                firstTokenPriceUSD: '200',
-                secondTokenPrice: '0.005',
-                secondTokenPriceUSD: '1',
-                liquidityPoolTokenPriceUSD: '400',
-                firstTokenLockedValueUSD: '200',
-                secondTokenLockedValueUSD: '200',
-                lockedValueUSD: '400',
-                totalFeePercent: 0.003,
-                state: 'Active',
-            };
-        case 'erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2':
-            return {
-                address:
-                    'erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2',
-                firstToken: Tokens('TOK3-3333'),
-                secondToken: Tokens('USDC-1111'),
-                liquidityPoolToken: undefined,
-                info: {
-                    reserves0: '1000000000000000000',
-                    reserves1: '200000000000000000000',
-                    totalSupply: '1000000000000000000',
-                },
-                firstTokenPrice: '200',
-                firstTokenPriceUSD: '200',
-                secondTokenPrice: '0.005',
-                secondTokenPriceUSD: '1',
-                liquidityPoolTokenPriceUSD: '400',
-                firstTokenLockedValueUSD: '200',
-                secondTokenLockedValueUSD: '200',
-                lockedValueUSD: '400',
-                totalFeePercent: 0.003,
-                state: 'Active',
-            };
-    }
+    return pairs.filter(p => p.address == pairAddress)[0];
 };
+
+export const pairs = [
+    {
+        address:
+            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+        firstToken: Tokens('TOK1-1111'),
+        secondToken: Tokens('TOK2-2222'),
+        liquidityPoolToken: Tokens('LPT-1234'),
+        info: {
+            reserves0: '1000000000000000000',
+            reserves1: '2000000000000000000',
+            totalSupply: '1000000000000000000',
+        },
+        firstTokenPrice: '2',
+        firstTokenPriceUSD: '200',
+        secondTokenPrice: '0.5',
+        secondTokenPriceUSD: '100',
+        liquidityPoolTokenPriceUSD: '2',
+        firstTokenLockedValueUSD: '500',
+        secondTokenLockedValueUSD: '500',
+        lockedValueUSD: '1000',
+        totalFeePercent: 0.003,
+        state: 'Active',
+    },
+    {
+        address:
+            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+        firstToken: Tokens('TOK1-1111'),
+        secondToken: Tokens('USDC-1111'),
+        liquidityPoolToken: Tokens('LPT-abcd'),
+        info: {
+            reserves0: '1000000000000000000',
+            reserves1: '200000000000000000000',
+            totalSupply: '1000000000000000000',
+        },
+        firstTokenPrice: '200',
+        firstTokenPriceUSD: '200',
+        secondTokenPrice: '0.005',
+        secondTokenPriceUSD: '1',
+        liquidityPoolTokenPriceUSD: '400',
+        firstTokenLockedValueUSD: '200',
+        secondTokenLockedValueUSD: '200',
+        lockedValueUSD: '400',
+        totalFeePercent: 0.003,
+        state: 'Active',
+    },
+];

@@ -1,10 +1,4 @@
-import {
-    Address,
-    BigUIntValue,
-    BytesValue,
-    GasLimit,
-    U32Value,
-} from '@elrondnetwork/erdjs/out';
+import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { elrondConfig, gasConfig } from 'src/config';
@@ -12,7 +6,6 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
 
@@ -21,7 +14,6 @@ export class PriceDiscoveryTransactionService {
     constructor(
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly elrondProxy: ElrondProxyService,
-        private readonly contextTransactions: ContextTransactionsService,
         private readonly wrappingService: WrapService,
         private readonly wrappingTransactions: TransactionsWrapService,
     ) {}
@@ -70,16 +62,19 @@ export class PriceDiscoveryTransactionService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const transactionArgs = [
-            BytesValue.fromUTF8(inputToken.tokenID),
-            new BigUIntValue(new BigNumber(inputToken.amount)),
-            BytesValue.fromUTF8(this.deposit.name),
-        ];
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.priceDiscovery.deposit),
-        );
+
+        return contract.methodsExplicit
+            .deposit()
+            .withSingleESDTTransfer(
+                TokenPayment.fungibleFromBigInteger(
+                    inputToken.tokenID,
+                    new BigNumber(inputToken.amount),
+                ),
+            )
+            .withGasLimit(gasConfig.priceDiscovery.deposit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async genericBatchRedeemInteraction(
@@ -139,23 +134,29 @@ export class PriceDiscoveryTransactionService {
             priceDiscoveryAddress,
         );
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(inputToken.tokenID),
-            new U32Value(inputToken.nonce),
-            new BigUIntValue(new BigNumber(inputToken.amount)),
-            BytesValue.fromHex(new Address(priceDiscoveryAddress).hex()),
-            BytesValue.fromUTF8(endpointName),
-        ];
+        let interaction: Interaction;
+        switch (endpointName) {
+            case 'redeem':
+                interaction = contract.methodsExplicit.redeem();
+                break;
+            case 'withdraw':
+                interaction = contract.methodsExplicit.withdraw();
+                break;
+        }
 
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.priceDiscovery.withdraw),
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
+        return interaction
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    inputToken.tokenID,
+                    inputToken.nonce,
+                    new BigNumber(inputToken.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.priceDiscovery.withdraw)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async validateDepositInputTokens(

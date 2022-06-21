@@ -14,7 +14,8 @@ import {
 import { RouterGetterService } from '../services/router.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from '../models/pair.metadata.model';
-import { PairFilterArgs } from '../models/router.args';
+import { PairFilterArgs } from '../models/filter.args';
+
 
 @Injectable()
 export class RouterService {
@@ -47,6 +48,10 @@ export class RouterService {
         pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
         pairsMetadata = this.filterPairsByTokens(pairFilter, pairsMetadata);
         pairsMetadata = await this.filterPairsByIssuedLpToken(
+            pairFilter,
+            pairsMetadata,
+        );
+        pairsMetadata = await this.filterPairsByState(
             pairFilter,
             pairsMetadata,
         );
@@ -200,6 +205,24 @@ export class RouterService {
                 pair.address,
             );
             if (lpTokenID !== 'undefined') {
+                filteredPairsMetadata.push(pair);
+            }
+        }
+        return filteredPairsMetadata;
+    }
+
+    private async filterPairsByState(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.state) {
+            return pairsMetadata;
+        }
+
+        const filteredPairsMetadata = [];
+        for (const pair of pairsMetadata) {
+            const state = await this.pairGetterService.getState(pair.address);
+            if (state === pairFilter.state) {
                 filteredPairsMetadata.push(pair);
             }
         }

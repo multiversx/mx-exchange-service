@@ -9,26 +9,24 @@ import {
 } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { GetPairsArgs, PairModel, PairTokens } from '../pair/models/pair.model';
+import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
 import { FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './services/transactions.router.service';
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { AutoRouterService } from './services/auto-router/auto-router.service';
 import { User } from 'src/helpers/userDecorator';
-import { AutoRouterModel } from './models/auto-router.model';
-import { AutoRouterArgs } from './models/auto-router.args';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
-import { PairFilterArgs, SetLocalRoleOwnerArgs } from './models/router.args';
+import { SetLocalRoleOwnerArgs } from './models/router.args';
+import { PairFilterArgs } from './models/filter.args';
+
 @Resolver(() => FactoryModel)
 export class RouterResolver {
     constructor(
         private readonly routerService: RouterService,
         private readonly routerGetterService: RouterGetterService,
         private readonly transactionService: TransactionRouterService,
-        private readonly autoRouterService: AutoRouterService,
     ) {}
 
     @Query(() => FactoryModel)
@@ -219,53 +217,6 @@ export class RouterResolver {
         @Args('address') address: string,
     ): Promise<TransactionModel> {
         return this.transactionService.setLocalRoles(address);
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => AutoRouterModel)
-    async getAutoRouteFixedInput(
-        @User() user: any,
-        @Args() args: AutoRouterArgs,
-    ): Promise<AutoRouterModel> {
-        try {
-            return await this.autoRouterService.getAutoRouteFixedInput(
-                user.publicKey,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => AutoRouterModel)
-    async getAutoRouteFixedOutput(
-        @User() user: any,
-        @Args() args: AutoRouterArgs,
-    ): Promise<AutoRouterModel> {
-        try {
-            return await this.autoRouterService.getAutoRouteFixedOutput(
-                user.publicKey,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @Query(() => String)
-    async getExchangeRate(
-        @Args('tokenInID') tokenInID: string,
-        @Args('tokenOutID') tokenOutID: string,
-    ): Promise<String> {
-        try {
-            return await this.autoRouterService.getExchangeRate(
-                tokenInID,
-                tokenOutID,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
     }
 
     @UseGuards(GqlAdminGuard)
