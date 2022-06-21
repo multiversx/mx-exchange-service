@@ -16,6 +16,7 @@ import { PairRepositoryService } from './services/pair.repository.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Pair, PairSchema } from './schemas/pair.schema';
 import { DatabaseModule } from 'src/services/database/database.module';
+import { TokenModule } from '../tokens/token.module';
 @Module({
     imports: [
         ElrondCommunicationModule,
@@ -26,6 +27,7 @@ import { DatabaseModule } from 'src/services/database/database.module';
         AWSModule,
         DatabaseModule,
         MongooseModule.forFeature([{ name: Pair.name, schema: PairSchema }]),
+        TokenModule,
     ],
     providers: [
         PairService,

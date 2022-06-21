@@ -379,7 +379,7 @@ export class PairGetterService {
         return await this.getData(
             pairAddress,
             'type',
-            () => this.pairRepositoryService.getPairType(pairAddress),
+            () => this.pairComputeService.computeTypeFromTokens(pairAddress),
             oneMinute(),
         );
     }
