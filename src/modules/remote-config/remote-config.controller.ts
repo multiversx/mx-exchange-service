@@ -67,9 +67,6 @@ export class RemoteConfigController {
                 );
 
                 if (result) {
-                    await this.remoteConfigSetterService.deleteFlag(
-                        result.name,
-                    );
                     await this.remoteConfigSetterService.setFlag(
                         result.name,
                         result.value,
@@ -119,22 +116,18 @@ export class RemoteConfigController {
     async deleteRemoteConfigFlag(
         @Param('nameOrID') nameOrID: string,
     ): Promise<boolean> {
-        try {
-            const flag = await this.flagRepositoryService.findOneAndDelete(
-                mongoose.Types.ObjectId.isValid(nameOrID)
-                    ? { _id: nameOrID }
-                    : { name: nameOrID },
-            );
+        const flag = await this.flagRepositoryService.findOneAndDelete(
+            mongoose.Types.ObjectId.isValid(nameOrID)
+                ? { _id: nameOrID }
+                : { name: nameOrID },
+        );
 
-            if (flag) {
-                await this.remoteConfigSetterService.deleteFlag(flag.name);
-                return true;
-            }
-
-            return false;
-        } catch (error) {
-            return false;
+        if (flag) {
+            await this.remoteConfigSetterService.deleteFlag(flag.name);
+            return true;
         }
+
+        return false;
     }
 
     @UseGuards(JwtAdminGuard)
@@ -153,7 +146,8 @@ export class RemoteConfigController {
                     scAddress,
                 );
                 if (newSCAddress) {
-                    await this.remoteConfigSetterService.deleteSCAddresses(
+                    await this.remoteConfigSetterService.addSCAddress(
+                        scAddress.address,
                         scAddress.category,
                     );
                     return res.status(201).send(newSCAddress);
@@ -199,23 +193,20 @@ export class RemoteConfigController {
     async deleteRemoteConfigSCAddress(
         @Param('addressOrID') addressOrID: string,
     ): Promise<boolean> {
-        try {
-            const entity = await this.scAddressRepositoryService.findOneAndDelete(
-                mongoose.Types.ObjectId.isValid(addressOrID)
-                    ? { _id: addressOrID }
-                    : { address: addressOrID },
+        const entity = await this.scAddressRepositoryService.findOneAndDelete(
+            mongoose.Types.ObjectId.isValid(addressOrID)
+                ? { _id: addressOrID }
+                : { address: addressOrID },
+        );
+
+        if (entity) {
+            await this.remoteConfigSetterService.removeSCAddress(
+                entity.address,
+                entity.category,
             );
-
-            if (entity) {
-                await this.remoteConfigSetterService.deleteSCAddresses(
-                    entity.category,
-                );
-                return true;
-            }
-
-            return false;
-        } catch {
-            return false;
+            return true;
         }
+
+        return false;
     }
 }

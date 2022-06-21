@@ -19,11 +19,10 @@ export class RemoteConfigGetterService {
     ) {}
 
     private async getData(
-        name: string,
+        cacheKey: string,
         createValueFunc: () => any,
         ttl: number,
     ): Promise<any> {
-        const cacheKey = this.getFlagCacheKey(name);
         try {
             return await this.cachingService.getOrSet(
                 cacheKey,
@@ -42,17 +41,10 @@ export class RemoteConfigGetterService {
         }
     }
 
-    private getFlagCacheKey(flagName: string, ...args: any) {
-        return generateCacheKeyFromParams('flag', flagName, ...args);
-    }
-
-    private getSCAddressCacheKey(category: SCAddressType, ...args: any) {
-        return generateCacheKeyFromParams('scAddress', category, ...args);
-    }
-
     async getMaintenanceFlagValue(): Promise<boolean> {
+        const cacheKey = this.getFlagCacheKey('MAINTENANCE');
         return await this.getData(
-            'MAINTENANCE',
+            cacheKey,
             () =>
                 this.flagRepositoryService
                     .findOne({
@@ -65,9 +57,28 @@ export class RemoteConfigGetterService {
         );
     }
 
-    async getStakingAddresses(): Promise<string[]> {
+    async getSCAddresses(
+        cacheKey: string,
+        category: SCAddressType,
+    ): Promise<string[]> {
         return await this.getData(
-            SCAddressType.STAKING,
+            cacheKey,
+            () =>
+                this.scAddressRepositoryService
+                    .find({
+                        category: category,
+                    })
+                    .then(res => {
+                        return res.map(scAddress => scAddress.address);
+                    }),
+            oneHour(),
+        );
+    }
+
+    async getStakingAddresses(): Promise<string[]> {
+        const cacheKey = this.getSCAddressCacheKey(SCAddressType.STAKING);
+        return await this.getData(
+            cacheKey,
             () =>
                 this.scAddressRepositoryService
                     .find({
@@ -81,8 +92,9 @@ export class RemoteConfigGetterService {
     }
 
     async getStakingProxyAddresses(): Promise<string[]> {
+        const cacheKey = this.getSCAddressCacheKey(SCAddressType.STAKING_PROXY);
         return await this.getData(
-            SCAddressType.STAKING_PROXY,
+            cacheKey,
             () =>
                 this.scAddressRepositoryService
                     .find({
@@ -93,5 +105,13 @@ export class RemoteConfigGetterService {
                     }),
             oneHour(),
         );
+    }
+
+    private getFlagCacheKey(flagName: string, ...args: any) {
+        return generateCacheKeyFromParams('flag', flagName, ...args);
+    }
+
+    private getSCAddressCacheKey(category: SCAddressType, ...args: any) {
+        return generateCacheKeyFromParams('scAddress', category, ...args);
     }
 }
