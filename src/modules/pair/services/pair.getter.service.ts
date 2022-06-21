@@ -14,7 +14,6 @@ import { PairInfoModel } from '../models/pair-info.model';
 import { LockedTokensInfo } from '../models/pair.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
-import { PairRepositoryService } from './pair.repository.service';
 
 @Injectable()
 export class PairGetterService {
@@ -24,7 +23,6 @@ export class PairGetterService {
         private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
-        private readonly pairRepositoryService: PairRepositoryService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
