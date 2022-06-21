@@ -74,6 +74,25 @@ export class SimpleLockService {
         });
     }
 
+    async getLpTokenProxyAttributes(
+        tokenNonce: number,
+    ): Promise<LpProxyTokenAttributesModel> {
+        const lockedLpTokenCollection = await this.simpleLockGetter.getLpProxyTokenID();
+        const lockedLpTokenIdentifier = tokenIdentifier(
+            lockedLpTokenCollection,
+            tokenNonce,
+        );
+        const lockedLpToken = await this.apiService.getNftByTokenIdentifier(
+            scAddress.simpleLockAddress,
+            lockedLpTokenIdentifier,
+        );
+
+        return this.decodeLpProxyTokenAttributes({
+            identifier: lockedLpTokenIdentifier,
+            attributes: lockedLpToken.attributes,
+        });
+    }
+
     decodeBatchLpTokenProxyAttributes(
         args: DecodeAttributesArgs,
     ): LpProxyTokenAttributesModel[] {
@@ -115,26 +134,29 @@ export class SimpleLockService {
             },
         );
 
+        return lockedFarmTokenAttributesModel;
+    }
+
+    async getFarmTokenAttributes(
+        farmTokenID: string,
+        farmTokenNonce: number,
+    ): Promise<FarmTokenAttributesModel> {
         const farmTokenIdentifier = tokenIdentifier(
-            lockedFarmTokenAttributesModel.farmTokenID,
-            lockedFarmTokenAttributesModel.farmTokenNonce,
+            farmTokenID,
+            farmTokenNonce,
         );
         const [farmToken, farmAddress] = await Promise.all([
             this.apiService.getNftByTokenIdentifier(
                 scAddress.simpleLockAddress,
                 farmTokenIdentifier,
             ),
-            this.farmService.getFarmAddressByFarmTokenID(
-                lockedFarmTokenAttributesModel.farmTokenID,
-            ),
+            this.farmService.getFarmAddressByFarmTokenID(farmTokenID),
         ]);
 
-        const farmTokenAttributes: FarmTokenAttributesModel = this.farmService.decodeFarmTokenAttributes(
+        return this.farmService.decodeFarmTokenAttributes(
             farmAddress,
             farmTokenIdentifier,
             farmToken.attributes,
         );
-        lockedFarmTokenAttributesModel.farmTokenAttributes = farmTokenAttributes;
-        return lockedFarmTokenAttributesModel;
     }
 }

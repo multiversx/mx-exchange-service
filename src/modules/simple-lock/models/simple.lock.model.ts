@@ -78,6 +78,8 @@ export class FarmProxyTokenAttributesModel {
     farmingTokenID: string;
     @Field(() => Int)
     farmingTokenLockedNonce: number;
+    @Field(() => LpProxyTokenAttributesModel)
+    farmingTokenAttributes: LpProxyTokenAttributesModel;
     @Field(() => FarmTokenAttributesModel)
     farmTokenAttributes: FarmTokenAttributesModel;
 
