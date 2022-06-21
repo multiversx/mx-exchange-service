@@ -91,20 +91,6 @@ export class SimpleLockResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => [LpProxyTokenAttributesModel])
-    async lpProxyTokenAttributes(
-        @Args('args') args: DecodeAttributesArgs,
-    ): Promise<LpProxyTokenAttributesModel[]> {
-        try {
-            return this.simpleLockService.decodeBatchLpTokenProxyAttributes(
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
     @Query(() => [FarmProxyTokenAttributesModel])
     async farmProxyTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,

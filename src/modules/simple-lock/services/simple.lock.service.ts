@@ -21,10 +21,12 @@ import {
     LpProxyTokenAttributesModel,
     SimpleLockModel,
 } from '../models/simple.lock.model';
+import { SimpleLockGetterService } from './simple.lock.getter.service';
 
 @Injectable()
 export class SimpleLockService {
     constructor(
+        private readonly simpleLockGetter: SimpleLockGetterService,
         private readonly farmService: FarmService,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -33,6 +35,24 @@ export class SimpleLockService {
     getSimpleLock() {
         return new SimpleLockModel({
             address: scAddress.simpleLockAddress,
+        });
+    }
+
+    async getLockedTokenAttributes(
+        tokenNonce: number,
+    ): Promise<LockedTokenAttributesModel> {
+        const lockedEsdtCollection = await this.simpleLockGetter.getLockedTokenID();
+        const lockedTokenIdentifier = tokenIdentifier(
+            lockedEsdtCollection,
+            tokenNonce,
+        );
+        const lockedToken = await this.apiService.getNftByTokenIdentifier(
+            scAddress.simpleLockAddress,
+            lockedTokenIdentifier,
+        );
+        return this.decodeLockedTokenAttributes({
+            identifier: lockedTokenIdentifier,
+            attributes: lockedToken.attributes,
         });
     }
 

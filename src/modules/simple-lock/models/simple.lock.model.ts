@@ -48,10 +48,14 @@ export class LpProxyTokenAttributesModel {
     firstTokenID: string;
     @Field(() => Int)
     firstTokenLockedNonce: number;
+    @Field(() => LockedTokenAttributesModel, { nullable: true })
+    firstTokenLockedAttributes: LockedTokenAttributesModel;
     @Field()
     secondTokenID: string;
     @Field(() => Int)
     secondTokenLockedNonce: number;
+    @Field(() => LockedTokenAttributesModel, { nullable: true })
+    secondTokenLockedAttributes: LockedTokenAttributesModel;
 
     constructor(init?: Partial<LpProxyTokenAttributesModel>) {
         Object.assign(this, init);
