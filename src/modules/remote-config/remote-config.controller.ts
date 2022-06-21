@@ -146,8 +146,7 @@ export class RemoteConfigController {
                     scAddress,
                 );
                 if (newSCAddress) {
-                    await this.remoteConfigSetterService.addSCAddress(
-                        scAddress.address,
+                    await this.remoteConfigSetterService.setSCAddressesFromDB(
                         scAddress.category,
                     );
                     return res.status(201).send(newSCAddress);
@@ -200,8 +199,7 @@ export class RemoteConfigController {
         );
 
         if (entity) {
-            await this.remoteConfigSetterService.removeSCAddress(
-                entity.address,
+            await this.remoteConfigSetterService.setSCAddressesFromDB(
                 entity.category,
             );
             return true;

@@ -4,19 +4,18 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from 'src/config';
 import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { SCAddressType } from './models/sc-address.model';
-import { RemoteConfigGetterService } from './remote-config.getter.service';
-
 @Injectable()
 export class RemoteConfigSetterService {
     constructor(
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-        private readonly getterService: RemoteConfigGetterService,
+        private readonly scAddressRepositoryService: SCAddressRepositoryService,
     ) {}
 
     private async setData(
@@ -53,32 +52,17 @@ export class RemoteConfigSetterService {
         return cacheKey;
     }
 
-    async addSCAddress(
-        newAddress: string,
-        category: SCAddressType,
-    ): Promise<string> {
-        const cacheKey = await this.getSCAddressCacheKey(category);
-        const addresses = await this.getterService.getSCAddresses(
-            cacheKey,
-            category,
-        );
+    async setSCAddressesFromDB(category: SCAddressType): Promise<string> {
+        const [cacheKey, addresses] = await Promise.all([
+            this.getSCAddressCacheKey(category),
+            this.scAddressRepositoryService.find({
+                category: category,
+            }),
+        ]);
         return await this.setSCAddresses(
             cacheKey,
-            addresses.concat(newAddress),
+            addresses.map(a => a.address),
         );
-    }
-
-    async removeSCAddress(
-        oldAddress: string,
-        category: SCAddressType,
-    ): Promise<string> {
-        const cacheKey = await this.getSCAddressCacheKey(category);
-        const addresses = await this.getterService.getSCAddresses(
-            cacheKey,
-            category,
-        );
-        const index = addresses.indexOf(oldAddress);
-        return await this.setSCAddresses(cacheKey, addresses.slice(index, 1));
     }
 
     async deleteFlag(name: string): Promise<void> {
