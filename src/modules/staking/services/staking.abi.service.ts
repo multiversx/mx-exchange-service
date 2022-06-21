@@ -15,8 +15,8 @@ import { Logger } from 'winston';
 export class AbiStakingService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
-        private readonly gatewayService: ElrondGatewayService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly gatewayService: ElrondGatewayService,
     ) {
         super(elrondProxy, logger);
     }

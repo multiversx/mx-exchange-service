@@ -1,21 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { EntityRepository } from 'src/services/database/entity.repository';
 import { CreateTokenDto } from '../dto/create.token.dto';
 import { EsdtTokenDbModel, TokenDocument } from '../schemas/token.schema';
 
-export class TokenDBService {
+export class TokenRepositoryService extends EntityRepository<TokenDocument> {
     constructor(
         @InjectModel(EsdtTokenDbModel.name)
         private readonly esdtTokenModel: Model<TokenDocument>,
-    ) {}
-
-    async createToken(
-        createTokenDto: CreateTokenDto,
-    ): Promise<EsdtTokenDbModel> {
-        console.log(createTokenDto);
-        const createdToken = await this.esdtTokenModel.create(createTokenDto);
-        return createdToken;
+    ) {
+        super(esdtTokenModel);
     }
 
     async updateToken(updateTokenDto: CreateTokenDto): Promise<void> {

@@ -53,7 +53,7 @@ export class AutoRouterService {
             tokenInMetadata,
             tokenOutMetadata,
         ] = await Promise.all([
-            this.getDirectPair(tokenInID, tokenOutID),
+            this.getActiveDirectPair(tokenInID, tokenOutID),
             this.getAllActivePairs(),
             this.contextGetterService.getTokenMetadata(tokenInID),
             this.contextGetterService.getTokenMetadata(tokenOutID),
@@ -300,17 +300,19 @@ export class AutoRouterService {
             .toFixed();
     }
 
-    private async getDirectPair(
+    private async getActiveDirectPair(
         tokenInID: string,
         tokenOutID: string,
     ): Promise<PairModel> {
-        const pairs = await this.routerService.getAllPairs(0, 1, {
-            address: null,
-            firstTokenID: tokenInID,
-            secondTokenID: tokenOutID,
-            issuedLpToken: true,
-        });
-        return pairs[0];
+        return (
+            await this.routerService.getAllPairs(0, 1, {
+                address: null,
+                firstTokenID: tokenInID,
+                secondTokenID: tokenOutID,
+                issuedLpToken: true,
+                state: 'Active',
+            })
+        )[0];
     }
 
     private async getAllActivePairs() {

@@ -50,6 +50,10 @@ export class RouterService {
             pairFilter,
             pairsMetadata,
         );
+        pairsMetadata = await this.filterPairsByState(
+            pairFilter,
+            pairsMetadata,
+        );
 
         for (const pair of pairsMetadata) {
             pairs.push(
@@ -200,6 +204,24 @@ export class RouterService {
                 pair.address,
             );
             if (lpTokenID !== 'undefined') {
+                filteredPairsMetadata.push(pair);
+            }
+        }
+        return filteredPairsMetadata;
+    }
+
+    private async filterPairsByState(
+        pairFilter: PairFilterArgs,
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
+        if (!pairFilter.state) {
+            return pairsMetadata;
+        }
+
+        const filteredPairsMetadata = [];
+        for (const pair of pairsMetadata) {
+            const state = await this.pairGetterService.getState(pair.address);
+            if (state === pairFilter.state) {
                 filteredPairsMetadata.push(pair);
             }
         }

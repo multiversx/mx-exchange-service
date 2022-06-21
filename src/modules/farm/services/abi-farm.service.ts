@@ -21,8 +21,8 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 export class AbiFarmService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
-        private readonly gatewayService: ElrondGatewayService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly gatewayService: ElrondGatewayService,
     ) {
         super(elrondProxy, logger);
     }
