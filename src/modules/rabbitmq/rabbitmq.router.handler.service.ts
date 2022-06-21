@@ -21,10 +21,16 @@ export class RabbitMQRouterHandlerService {
         const [pairsMetadata, pairsAddresses] = await Promise.all([
             this.routerAbiService.getPairsMetadata(),
             this.routerAbiService.getAllPairsAddress(),
+            this.routerAbiService.getAllPairTokens(),
+            this.routerAbiService.getAllPairsManagedAddresses(),
         ]);
         const keys = await Promise.all([
             this.routerSetterService.setPairsMetadata(pairsMetadata),
             this.routerSetterService.setAllPairsAddress(pairsAddresses),
+            this.routerSetterService.setAllPairTokens(pairsAddresses),
+            this.routerSetterService.setAllPairsManagedAddresses(
+                pairsAddresses,
+            ),
         ]);
         this.invalidatedKeys.push(...keys);
         await this.deleteCacheKeys();
