@@ -29,7 +29,10 @@ export class RemoteConfigController {
 
     @UseGuards(JwtAdminGuard)
     @Post('/flags')
-    async addRemoteConfigFlag(@Body() flag: FlagArgs, @Res() res: Response) {
+    async addRemoteConfigFlag(
+        @Body() flag: FlagArgs,
+        @Res() res: Response,
+    ): Promise<FlagModel | Response> {
         try {
             if (flag.name && flag.value != null) {
                 const result = await this.flagRepositoryService.create(flag);
@@ -52,18 +55,29 @@ export class RemoteConfigController {
 
     @UseGuards(JwtAdminGuard)
     @Put('/flags')
-    async updateRemoteConfigFlag(@Body() flag: FlagArgs, @Res() res: Response) {
+    async updateRemoteConfigFlag(
+        @Body() flag: FlagArgs,
+        @Res() res: Response,
+    ): Promise<FlagModel | Response> {
         try {
             if (flag.name && flag.value != null) {
                 const result = await this.flagRepositoryService.findOneAndUpdate(
                     { name: flag.name },
                     flag,
                 );
-                await this.remoteConfigSetterService.setFlag(
-                    result.name,
-                    result.value,
-                );
-                return res.status(201).send(result);
+
+                if (result) {
+                    await this.remoteConfigSetterService.deleteFlag(
+                        result.name,
+                    );
+                    await this.remoteConfigSetterService.setFlag(
+                        result.name,
+                        result.value,
+                    );
+                    return res.status(201).send(result);
+                }
+
+                return res.status(404);
             }
 
             return res
@@ -86,16 +100,17 @@ export class RemoteConfigController {
     @Get('/flags/:nameOrID')
     async getRemoteConfigFlag(
         @Param('nameOrID') nameOrID: string,
-    ): Promise<FlagModel> {
+        @Res() res: Response,
+    ): Promise<FlagModel | Response> {
         return await this.flagRepositoryService
             .findOne(
                 mongoose.Types.ObjectId.isValid(nameOrID)
                     ? { _id: nameOrID }
                     : { name: nameOrID },
             )
-            .then(async res => {
-                console.log('Res', res);
-                return res;
+            .then(result => {
+                if (result) return res.status(200).send(result);
+                return res.status(404).send();
             });
     }
 
@@ -165,12 +180,18 @@ export class RemoteConfigController {
     @Get('/sc-address/:addressOrID')
     async getRemoteConfigSCAddress(
         @Param('addressOrID') addressOrID: string,
-    ): Promise<SCAddressModel> {
-        return await this.scAddressRepositoryService.findOne(
-            mongoose.Types.ObjectId.isValid(addressOrID)
-                ? { _id: addressOrID }
-                : { address: addressOrID },
-        );
+        @Res() res: Response,
+    ): Promise<SCAddressModel | Response> {
+        return await this.scAddressRepositoryService
+            .findOne(
+                mongoose.Types.ObjectId.isValid(addressOrID)
+                    ? { _id: addressOrID }
+                    : { address: addressOrID },
+            )
+            .then(result => {
+                if (result) return res.status(200).send(result);
+                return res.status(404).send();
+            });
     }
 
     @UseGuards(JwtAdminGuard)
