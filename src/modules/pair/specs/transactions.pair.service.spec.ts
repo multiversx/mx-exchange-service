@@ -21,6 +21,7 @@ import { ContextGetterServiceMock } from 'src/services/context/mocks/context.get
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
 import { Address } from '@elrondnetwork/erdjs/out';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
@@ -77,6 +78,7 @@ describe('TransactionPairService', () => {
                 WrapServiceProvider,
                 TransactionsWrapService,
                 PairTransactionService,
+                TokenGetterServiceProvider,
             ],
         }).compile();
 

@@ -12,10 +12,8 @@ import { PairGetterService } from './services/pair.getter.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { PairSetterService } from './services/pair.setter.service';
 import { AWSModule } from 'src/services/aws/aws.module';
-import { PairRepositoryService } from './services/pair.repository.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Pair, PairSchema } from './schemas/pair.schema';
 import { DatabaseModule } from 'src/services/database/database.module';
+import { TokenModule } from '../tokens/token.module';
 @Module({
     imports: [
         ElrondCommunicationModule,
@@ -25,14 +23,13 @@ import { DatabaseModule } from 'src/services/database/database.module';
         CachingModule,
         AWSModule,
         DatabaseModule,
-        MongooseModule.forFeature([{ name: Pair.name, schema: PairSchema }]),
+        TokenModule,
     ],
     providers: [
         PairService,
         PairGetterService,
         PairSetterService,
         PairComputeService,
-        PairRepositoryService,
         PairAbiService,
         PairTransactionService,
         PairResolver,
@@ -42,7 +39,6 @@ import { DatabaseModule } from 'src/services/database/database.module';
         PairGetterService,
         PairSetterService,
         PairComputeService,
-        PairRepositoryService,
         PairAbiService,
     ],
 })
