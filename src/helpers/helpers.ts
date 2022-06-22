@@ -19,18 +19,19 @@ export function decodeTransactionData(data: string): string {
 
     const args = base64Decode(data).split(delimiter);
 
-    let decoded = args[0];
-    for (let i = 1; i < args.length; i++) {
+    let decoded = args.shift();
+    for (const arg of args) {
         decoded += delimiter;
 
-        if (args[i].length == 64) {
-            decoded += Address.fromHex(args[i]).bech32();
-        } else if (args[i]) {
-            const number = hex2dec(args[i]);
+        const address = decodeAddress(arg);
+        if (address) {
+            decoded += address;
+        } else {
+            const number = parseInt(arg, 16);
             if (isNumber(number) && !number.toString().includes('e'))
                 decoded += number.toString();
             else {
-                decoded += hex2ascii(args[i]);
+                decoded += Buffer.from(arg, 'hex').toString();
             }
         }
     }
@@ -43,31 +44,34 @@ export function encodeTransactionData(data: string): string {
 
     const args = data.split(delimiter);
 
-    let toEncode = args[0];
-    for (let i = 1; i < args.length; i++) {
-        toEncode += delimiter;
+    let encoded = args.shift();
+    for (const arg of args) {
+        encoded += delimiter;
 
-        if (args[i].length == 62) {
-            toEncode += Address.fromString(args[i]).hex();
+        if (decodeAddress(arg)) {
+            encoded += Address.fromString(arg).hex();
         } else {
-            if (isNumber(parseInt(args[i])))
-                toEncode += deci2hex(args[i], true);
+            if (isNumber(parseInt(arg))) encoded += deci2hex(arg, true);
             else {
-                toEncode += ascii2hex(args[i]);
+                encoded += ascii2hex(arg);
             }
         }
     }
 
-    return base64Encode(toEncode);
+    return base64Encode(encoded);
 }
 
-function hex2ascii(hexx: string): string {
-    var hex = hexx.toString();
-    var str = '';
-    for (var i = 0; i < hex.length; i += 2)
-        str += String.fromCharCode(parseInt(hex.substring(i, i + 2), 16));
-    return str.toString();
+function decodeAddress(str: string): string | undefined {
+    try {
+        if (str.length === 62) {
+            return Address.fromString(str).bech32();
+        }
+        return Address.fromHex(str).bech32();
+    } catch {
+        return undefined;
+    }
 }
+
 
 function ascii2hex(str: string): string {
     const res = [];
@@ -77,10 +81,6 @@ function ascii2hex(str: string): string {
         res.push(hex);
     }
     return res.join('');
-}
-
-function hex2dec(hex: string): number {
-    return parseInt(hex, 16);
 }
 
 function deci2hex(d, toEvenLength = false) {

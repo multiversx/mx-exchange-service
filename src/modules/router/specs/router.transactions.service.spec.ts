@@ -168,18 +168,6 @@ describe('RouterService', () => {
         );
     });
 
-    it('should get set resume state transaction', async () => {
-        const transaction = await service.setState(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            true,
-        );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
-                'resume@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            ),
-        );
-    });
-
     it('should get set fee OFF transaction', async () => {
         const transaction = await service.setFee(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -231,7 +219,7 @@ describe('RouterService', () => {
     it('should get set pair creation enabled ON transaction', async () => {
         const transaction = await service.setPairCreationEnabled(true);
         expect(transaction.data).toMatch(
-            encodeTransactionData('setPairCreationEnabled@1'),
+            encodeTransactionData('setPairCreationEnabled@01'),
         );
     });
 
@@ -256,7 +244,7 @@ describe('RouterService', () => {
         );
     });
 
-    it('should get set set pair template address transaction', async () => {
+    it('should get set pair template address transaction', async () => {
         const transaction = await service.setPairTemplateAddress(
             Address.Zero().bech32(),
         );
