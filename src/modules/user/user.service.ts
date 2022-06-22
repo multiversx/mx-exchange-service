@@ -25,12 +25,12 @@ import { LockedAssetGetterService } from '../locked-asset-factory/services/locke
 import { farmsAddresses } from 'src/utils/farm.utils';
 import { StakingGetterService } from '../staking/services/staking.getter.service';
 import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
-import { scAddress } from 'src/config';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryService } from '../price-discovery/services/price.discovery.service';
 import { SimpleLockGetterService } from '../simple-lock/services/simple.lock.getter.service';
 import { EsdtTokenType } from '../tokens/models/esdtToken.model';
+import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 
 enum NftTokenType {
     FarmToken,
@@ -62,6 +62,7 @@ export class UserService {
         private proxyStakeGetter: StakingProxyGetterService,
         private priceDiscoveryService: PriceDiscoveryService,
         private simpleLockGetter: SimpleLockGetterService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -274,7 +275,8 @@ export class UserService {
         }
 
         promises = [];
-        for (const address of scAddress.staking) {
+        const staking = await this.remoteConfigGetterService.getStakingAddresses();
+        for (const address of staking) {
             promises.push(this.stakeGetterService.getFarmTokenID(address));
         }
         const stakeFarmTokenIDs = await Promise.all(promises);
@@ -287,7 +289,8 @@ export class UserService {
         }
 
         promises = [];
-        for (const address of scAddress.stakingProxy) {
+        const stakingProxy = await this.remoteConfigGetterService.getStakingProxyAddresses();
+        for (const address of stakingProxy) {
             promises.push(this.proxyStakeGetter.getDualYieldTokenID(address));
         }
         const dualYieldTokenIDs = await Promise.all(promises);

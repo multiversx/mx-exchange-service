@@ -132,7 +132,7 @@ export class StakingProxyResolver {
     @Query(() => [StakingProxyModel])
     async stakingProxies(): Promise<StakingProxyModel[]> {
         try {
-            return this.stakingProxyService.getStakingProxies();
+            return await this.stakingProxyService.getStakingProxies();
         } catch (error) {
             throw new ApolloError(error);
         }

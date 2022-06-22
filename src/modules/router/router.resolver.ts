@@ -8,10 +8,10 @@ import { TransactionRouterService } from './services/transactions.router.service
 import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
-import { constantsConfig } from 'src/config';
 import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -19,6 +19,7 @@ export class RouterResolver {
         private readonly routerService: RouterService,
         private readonly routerGetterService: RouterGetterService,
         private readonly transactionService: TransactionRouterService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
     ) {}
 
     @Query(() => FactoryModel)
@@ -74,7 +75,7 @@ export class RouterResolver {
     @ResolveField()
     async maintenance() {
         try {
-            return constantsConfig.MAINTENANCE;
+            return await this.remoteConfigGetterService.getMaintenanceFlagValue();
         } catch (error) {
             throw new ApolloError(error);
         }

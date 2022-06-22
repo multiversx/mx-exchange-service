@@ -19,6 +19,7 @@ import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module'
 import { SimpleLockModule } from '../simple-lock/simple.lock.module';
 import { UserTokenResolver } from './user.token.resolver';
 import { TokenModule } from '../tokens/token.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
 
 @Module({
     imports: [
@@ -38,6 +39,7 @@ import { TokenModule } from '../tokens/token.module';
         PriceDiscoveryModule,
         SimpleLockModule,
         TokenModule,
+        RemoteConfigModule,
     ],
     providers: [
         UserService,

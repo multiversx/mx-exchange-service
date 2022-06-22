@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
@@ -15,8 +15,8 @@ import { DatabaseModule } from 'src/services/database/database.module';
     imports: [
         ElrondCommunicationModule,
         CachingModule,
-        RouterModule,
-        PairModule,
+        forwardRef(() => PairModule),
+        forwardRef(() => RouterModule),
         DatabaseModule,
         MongooseModule.forFeature([
             { name: EsdtTokenDbModel.name, schema: EsdtTokenSchema },

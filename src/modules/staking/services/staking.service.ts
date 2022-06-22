@@ -5,9 +5,9 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { scAddress } from 'src/config';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { Logger } from 'winston';
 import { StakingModel, StakingRewardsModel } from '../models/staking.model';
@@ -26,11 +26,13 @@ export class StakingService {
         private readonly stakingGetterService: StakingGetterService,
         private readonly stakingComputeService: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    getFarmsStaking(): StakingModel[] {
-        const farmsStakingAddresses = scAddress.staking;
+    async getFarmsStaking(): Promise<StakingModel[]> {
+        const farmsStakingAddresses = await this.remoteConfigGetterService.getStakingAddresses();
+
         const farmsStaking: StakingModel[] = [];
         for (const address of farmsStakingAddresses) {
             farmsStaking.push(
@@ -133,7 +135,7 @@ export class StakingService {
     async getStakeFarmAddressByStakeFarmTokenID(
         tokenID: string,
     ): Promise<string> {
-        const stakeFarmAddresses: string[] = scAddress.staking;
+        const stakeFarmAddresses: string[] = await this.remoteConfigGetterService.getStakingAddresses();
 
         for (const address of stakeFarmAddresses) {
             const stakeFarmTokenID = await this.stakingGetterService.getFarmTokenID(

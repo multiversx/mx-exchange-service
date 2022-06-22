@@ -29,6 +29,7 @@ import { MetabondingCacheWarmerService } from './crons/metabonding.cache.warmer.
 import { MetabondingModule } from 'src/modules/metabonding/metabonding.module';
 import { PriceDiscoveryCacheWarmerService } from './crons/price.discovery.cache.warmer.service';
 import { PriceDiscoveryModule } from 'src/modules/price-discovery/price.discovery.module';
+import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
 
 @Module({
     imports: [
@@ -51,6 +52,7 @@ import { PriceDiscoveryModule } from 'src/modules/price-discovery/price.discover
         AnalyticsModule,
         PriceDiscoveryModule,
         AWSModule,
+        RemoteConfigModule,
     ],
     controllers: [],
     providers: [
