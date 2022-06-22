@@ -11,7 +11,6 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
 import { RouterGetterServiceMock } from '../mocks/router.getter.service.mock';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
@@ -24,6 +23,7 @@ import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { Address } from '@elrondnetwork/erdjs/out';
+import { encodeTransactionData } from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
 
 describe('RouterService', () => {
@@ -79,7 +79,6 @@ describe('RouterService', () => {
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
                 TransactionsWrapService,
-                ContextTransactionsService,
                 ApiConfigService,
                 ElrondProxyService,
                 TransactionRouterService,
@@ -102,8 +101,10 @@ describe('RouterService', () => {
             'TOK3-3333',
             'TOK4-4444',
         );
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'createPair@544f4b332d33333333@544f4b342d34343434@0000000000000000000000000000000000000000000000000000000000000000',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'createPair@TOK3-3333@TOK4-4444@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            ),
         );
     });
 
@@ -113,8 +114,10 @@ describe('RouterService', () => {
             'LiquidityPoolToken3',
             'LPT-3333',
         );
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'issueLpToken@867ba892bee53459c226a6c124d5932226575ed6f0743254690808dd0db4eb5a@4c6971756964697479506f6f6c546f6b656e33@4c50542d33333333',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'issueLpToken@erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2@LiquidityPoolToken3@LPT-3333',
+            ),
         );
     });
 
@@ -134,8 +137,10 @@ describe('RouterService', () => {
         const transaction = await service.setLocalRoles(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'setLocalRoles@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'setLocalRoles@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            ),
         );
     });
 
@@ -144,8 +149,10 @@ describe('RouterService', () => {
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             false,
         );
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'pause@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'pause@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            ),
         );
     });
 
@@ -154,8 +161,10 @@ describe('RouterService', () => {
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             true,
         );
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'resume@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'resume@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            ),
         );
     });
 
@@ -164,8 +173,10 @@ describe('RouterService', () => {
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             true,
         );
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'resume@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'resume@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            ),
         );
     });
 
@@ -176,8 +187,10 @@ describe('RouterService', () => {
             'TOK1-1111',
             false,
         );
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'setFeeOff@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb@0000000000000000000000000000000000000000000000000000000000000000@544f4b312d31313131',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'setFeeOff@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
+            ),
         );
     });
 
@@ -188,8 +201,10 @@ describe('RouterService', () => {
             'TOK1-1111',
             true,
         );
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'setFeeOn@00000000000000000500c9f6577b0c566cdc28e0a76f6e14d1be079400337ceb@0000000000000000000000000000000000000000000000000000000000000000@544f4b312d31313131',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'setFeeOn@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
+            ),
         );
     });
 
@@ -199,43 +214,45 @@ describe('RouterService', () => {
             address: Address.Zero().bech32(),
             roles: [EsdtLocalRole.None],
         });
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'setLocalRolesOwner@544f4b312d31313131@0000000000000000000000000000000000000000000000000000000000000000@',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'setLocalRolesOwner@TOK1-1111@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@',
+            ),
         );
     });
 
     it('should get remove pair transaction', async () => {
         const transaction = await service.removePair('TOK1-1111', 'USDC-1111');
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'removePair@544f4b312d31313131@555344432d31313131',
+        expect(transaction.data).toMatch(
+            encodeTransactionData('removePair@TOK1-1111@USDC-1111'),
         );
     });
 
     it('should get set pair creation enabled ON transaction', async () => {
         const transaction = await service.setPairCreationEnabled(true);
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'setPairCreationEnabled@01',
+        expect(transaction.data).toMatch(
+            encodeTransactionData('setPairCreationEnabled@1'),
         );
     });
 
     it('should get set pair creation enabled OFF transaction', async () => {
         const transaction = await service.setPairCreationEnabled(false);
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'setPairCreationEnabled@',
+        expect(transaction.data).toMatch(
+            encodeTransactionData('setPairCreationEnabled@'),
         );
     });
 
     it('should get clear pair temporary owner storage transaction', async () => {
         const transaction = await service.clearPairTemporaryOwnerStorage();
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'clearPairTemporaryOwnerStorage',
+        expect(transaction.data).toMatch(
+            encodeTransactionData('clearPairTemporaryOwnerStorage'),
         );
     });
 
     it('should get set temporary owner period transaction', async () => {
         const transaction = await service.setTemporaryOwnerPeriod('1000');
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'setTemporaryOwnerPeriod@03e8',
+        expect(transaction.data).toMatch(
+            encodeTransactionData('setTemporaryOwnerPeriod@1000'),
         );
     });
 
@@ -243,8 +260,10 @@ describe('RouterService', () => {
         const transaction = await service.setPairTemplateAddress(
             Address.Zero().bech32(),
         );
-        expect(Buffer.from(transaction.data, 'base64').toString()).toEqual(
-            'setPairTemplateAddress@0000000000000000000000000000000000000000000000000000000000000000',
+        expect(transaction.data).toMatch(
+            encodeTransactionData(
+                'setPairTemplateAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            ),
         );
     });
 });

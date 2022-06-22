@@ -1,15 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextService } from 'src/services/context/context.service';
-import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
 import { RouterGetterServiceMock } from '../mocks/router.getter.service.mock';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import winston from 'winston';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -18,7 +12,7 @@ import {
 import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { PairFilterArgs } from '../models/router.args';
+import { PairFilterArgs } from '../models/filter.args';
 
 describe('RouterService', () => {
     let service: RouterService;
@@ -88,10 +82,6 @@ describe('RouterService', () => {
                 address:
                     'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
             },
-            {
-                address:
-                    'erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2',
-            },
         ]);
     });
 
@@ -101,6 +91,7 @@ describe('RouterService', () => {
             issuedLpToken: true,
             address: null,
             secondTokenID: null,
+            state: null,
         });
         expect(filteredPairs).toEqual([]);
     });
@@ -111,6 +102,7 @@ describe('RouterService', () => {
             issuedLpToken: true,
             address: null,
             secondTokenID: null,
+            state: null,
         });
         expect(filteredPairs).toEqual([]);
     });
