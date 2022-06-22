@@ -15,7 +15,10 @@ export class PairGetterServiceMock {
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {
-        return PairsData(pairAddress).liquidityPoolToken.identifier;
+        const pair = PairsData(pairAddress);
+        if (pair && pair.liquidityPoolToken)
+            return pair.liquidityPoolToken.identifier;
+        return undefined;
     }
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
