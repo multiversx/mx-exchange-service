@@ -14,34 +14,6 @@ export function base64Encode(str: string): string {
     return Buffer.from(str, 'binary').toString('base64');
 }
 
-export function decodeTransactionData(data: string): string {
-    const delimiter = '@';
-
-    const args = base64Decode(data).split(delimiter);
-
-    let decoded = args.shift();
-    for (const arg of args) {
-        decoded += delimiter;
-
-        const address = decodeAddress(arg);
-        if (address) {
-            decoded += address;
-        } else {
-            const number = parseInt(arg, 16);
-            if (isNumber(number) && !number.toString().includes('e'))
-                decoded +=
-                    number.toString().length % 2 === 1
-                        ? '0' + number.toString()
-                        : number.toString();
-            else {
-                decoded += Buffer.from(arg, 'hex').toString();
-            }
-        }
-    }
-
-    return decoded;
-}
-
 export function encodeTransactionData(data: string): string {
     const delimiter = '@';
 
@@ -51,12 +23,16 @@ export function encodeTransactionData(data: string): string {
     for (const arg of args) {
         encoded += delimiter;
 
-        if (decodeAddress(arg)) {
-            encoded += Address.fromString(arg).hex();
+        const address = encodeAddress(arg);
+        if (address !== undefined) {
+            encoded += address;
         } else {
-            if (isNumber(parseInt(arg))) encoded += deci2hex(arg, true);
-            else {
-                encoded += ascii2hex(arg);
+            let bigNumber = decodeBigNumber(arg);
+            if (bigNumber !== undefined) {
+                const hex = bigNumber.toString(16);
+                encoded += hex.length % 2 === 1 ? '0' + hex : hex;
+            } else {
+                encoded += Buffer.from(arg).toString('hex');
             }
         }
     }
@@ -64,30 +40,21 @@ export function encodeTransactionData(data: string): string {
     return base64Encode(encoded);
 }
 
-function decodeAddress(str: string): string | undefined {
+function decodeBigNumber(bignumber: string) {
     try {
-        if (str.length === 62) {
-            return Address.fromString(str).bech32();
-        }
-        return Address.fromHex(str).bech32();
-    } catch {
+        const bigNumber = new BigNumber(bignumber);
+        return bigNumber.isPositive() ? bigNumber : undefined;
+    } catch (error) {
         return undefined;
     }
 }
 
-function ascii2hex(str: string): string {
-    const res = [];
-    const { length: len } = str;
-    for (let n = 0, l = len; n < l; n++) {
-        const hex = Number(str.charCodeAt(n)).toString(16);
-        res.push(hex);
+function encodeAddress(str: string): string | undefined {
+    try {
+        return new Address(str).hex();
+    } catch {
+        return undefined;
     }
-    return res.join('');
-}
-
-function deci2hex(d, toEvenLength = false): string {
-    var h = (+d).toString(16);
-    return toEvenLength && h.length % 2 === 1 ? '0' + h : h;
 }
 
 export function ruleOfThree(

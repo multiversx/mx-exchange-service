@@ -23,7 +23,9 @@ import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { Address } from '@elrondnetwork/erdjs/out';
-import { encodeTransactionData } from 'src/helpers/helpers';
+import {
+    encodeTransactionData,
+} from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
 
 describe('RouterService', () => {
@@ -238,9 +240,9 @@ describe('RouterService', () => {
     });
 
     it('should get set temporary owner period transaction', async () => {
-        const transaction = await service.setTemporaryOwnerPeriod('1000');
+        const transaction = await service.setTemporaryOwnerPeriod('1000000000000000000000000000000000');
         expect(transaction.data).toMatch(
-            encodeTransactionData('setTemporaryOwnerPeriod@1000'),
+            encodeTransactionData('setTemporaryOwnerPeriod@1000000000000000000000000000000000'),
         );
     });
 
