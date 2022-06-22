@@ -10,6 +10,7 @@ import { PairComputeService } from '../services/pair.compute.service';
 import { PairService } from '../services/pair.service';
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('PairService', () => {
     let service: PairComputeService;
@@ -44,6 +45,7 @@ describe('PairService', () => {
                 ContextServiceProvider,
                 WrapServiceProvider,
                 PriceFeedProvider,
+                TokenGetterServiceProvider,
             ],
         }).compile();
 

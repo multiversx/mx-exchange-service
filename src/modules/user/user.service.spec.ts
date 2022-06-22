@@ -55,6 +55,7 @@ import { SimpleLockGetterServiceProvider } from '../simple-lock/mocks/simple.loc
 import { AssetsModel, RolesModel } from '../tokens/models/esdtToken.model';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from '../remote-config/mocks/remote-config.getter.mock';
+import { TokenGetterServiceProvider } from '../tokens/mocks/token.getter.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -191,6 +192,7 @@ describe('UserService', () => {
                 PriceDiscoveryGetterServiceProvider,
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
+                TokenGetterServiceProvider,
                 UserService,
                 UserComputeService,
                 RemoteConfigGetterServiceProvider,
