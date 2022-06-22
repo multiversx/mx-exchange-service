@@ -3,13 +3,13 @@ import BigNumber from 'bignumber.js';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextService } from 'src/services/context/context.service';
 import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
-import { AnalyticsService } from './analytics.service';
+import { AnalyticsAWSGetterService } from './analytics.service';
 
 @Injectable()
 export class AnalyticsPairService {
     constructor(
         private readonly pairGetterService: PairGetterService,
-        private readonly analyticsService: AnalyticsService,
+        private readonly analyticsService: AnalyticsAWSGetterService,
         private readonly context: ContextService,
     ) {}
 

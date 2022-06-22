@@ -5,47 +5,24 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { oneHour } from 'src/helpers/helpers';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { cacheConfig } from 'src/config';
+import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 
 @Injectable()
-export class ProxyPairGetterService {
+export class ProxyPairGetterService extends GenericGetterService {
     constructor(
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private abiService: AbiProxyPairService,
         private contextGetter: ContextGetterService,
-        private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async getData(
-        key: string,
-        createValueFunc: () => any,
-        ttl: number = cacheConfig.default,
-    ): Promise<any> {
-        const cacheKey = this.getProxyPairCacheKey(key);
-        try {
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                ProxyPairGetterService.name,
-                createValueFunc.name,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+    ) {
+        super(cachingService, logger);
     }
 
     async getwrappedLpTokenID(): Promise<string> {
         return await this.getData(
-            'wrappedLpTokenID',
+            this.getProxyPairCacheKey('wrappedLpTokenID'),
             () => this.abiService.getWrappedLpTokenID(),
             oneHour(),
         );
@@ -60,7 +37,7 @@ export class ProxyPairGetterService {
 
     async getIntermediatedPairs(): Promise<string[]> {
         return await this.getData(
-            'intermediatedPairs',
+            this.getProxyPairCacheKey('intermediatedPairs'),
             () => this.abiService.getIntermediatedPairsAddress(),
             oneHour(),
         );
