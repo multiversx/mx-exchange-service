@@ -9,9 +9,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import {
-    FarmProxyTokenAttributesModel,
     LockedTokenAttributesModel,
-    LpProxyTokenAttributesModel,
     SimpleLockModel,
 } from './models/simple.lock.model';
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
@@ -83,34 +81,6 @@ export class SimpleLockResolver {
     ): Promise<LockedTokenAttributesModel[]> {
         try {
             return this.simpleLockService.decodeBatchLockedTokenAttributes(
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => [LpProxyTokenAttributesModel])
-    async lpProxyTokenAttributes(
-        @Args('args') args: DecodeAttributesArgs,
-    ): Promise<LpProxyTokenAttributesModel[]> {
-        try {
-            return this.simpleLockService.decodeBatchLpTokenProxyAttributes(
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => [FarmProxyTokenAttributesModel])
-    async farmProxyTokenAttributes(
-        @Args('args') args: DecodeAttributesArgs,
-    ): Promise<FarmProxyTokenAttributesModel[]> {
-        try {
-            return this.simpleLockService.decodeBatchFarmProxyTokenAttributes(
                 args,
             );
         } catch (error) {
