@@ -29,7 +29,10 @@ export function decodeTransactionData(data: string): string {
         } else {
             const number = parseInt(arg, 16);
             if (isNumber(number) && !number.toString().includes('e'))
-                decoded += number.toString();
+                decoded +=
+                    number.toString().length % 2 === 1
+                        ? '0' + number.toString()
+                        : number.toString();
             else {
                 decoded += Buffer.from(arg, 'hex').toString();
             }
@@ -72,7 +75,6 @@ function decodeAddress(str: string): string | undefined {
     }
 }
 
-
 function ascii2hex(str: string): string {
     const res = [];
     const { length: len } = str;
@@ -83,7 +85,7 @@ function ascii2hex(str: string): string {
     return res.join('');
 }
 
-function deci2hex(d, toEvenLength = false) {
+function deci2hex(d, toEvenLength = false): string {
     var h = (+d).toString(16);
     return toEvenLength && h.length % 2 === 1 ? '0' + h : h;
 }

@@ -10,7 +10,6 @@ export class RouterComputeService {
     constructor(
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetterService: RouterGetterService,
-        @Inject(forwardRef(() => RouterGetterService))
         private readonly pairComputeService: PairComputeService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
     ) {}

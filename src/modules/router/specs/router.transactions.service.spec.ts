@@ -200,11 +200,11 @@ describe('RouterService', () => {
         const transaction = await service.setLocalRolesOwner({
             tokenID: 'TOK1-1111',
             address: Address.Zero().bech32(),
-            roles: [EsdtLocalRole.None],
+            roles: [EsdtLocalRole.Mint],
         });
         expect(transaction.data).toMatch(
             encodeTransactionData(
-                'setLocalRolesOwner@TOK1-1111@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@',
+                'setLocalRolesOwner@TOK1-1111@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
             ),
         );
     });

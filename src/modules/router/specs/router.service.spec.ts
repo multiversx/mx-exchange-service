@@ -13,6 +13,7 @@ import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { PairFilterArgs } from '../models/filter.args';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 
 describe('RouterService', () => {
     let service: RouterService;
@@ -59,14 +60,6 @@ describe('RouterService', () => {
         expect(service).toBeDefined();
     });
 
-    it('should get factory', async () => {
-        const factory = await service.getFactory();
-        expect(factory).toEqual({
-            address:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-        });
-    });
-
     it('should get all pairs', async () => {
         const allPairs = await service.getAllPairs(
             0,
@@ -74,26 +67,15 @@ describe('RouterService', () => {
             new PairFilterArgs(),
         );
         expect(allPairs).toEqual([
-            {
+            new PairModel({
                 address:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            },
-            {
+            }),
+            new PairModel({
                 address:
                     'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-            },
+            }),
         ]);
-    });
-
-    it('should get filtered pairs', async () => {
-        const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
-            firstTokenID: 'TOK2-2222',
-            issuedLpToken: true,
-            address: null,
-            secondTokenID: null,
-            state: null,
-        });
-        expect(filteredPairs).toEqual([]);
     });
 
     it('should get filtered pairs', async () => {
