@@ -4,6 +4,7 @@ import {
     BigUIntValue,
     BooleanValue,
     BytesValue,
+    TokenIdentifierValue,
     TokenPayment,
     TypedValue,
 } from '@elrondnetwork/erdjs/out';
@@ -119,14 +120,14 @@ export class TransactionRouterService {
         lpTokenTicker: string,
     ): Promise<TransactionModel> {
         const lpTokeID = await this.pairGetterService.getLpTokenID(pairAddress);
-        if (lpTokeID !== 'undefined') {
+        if (lpTokeID !== 'undefined' && lpTokeID !== undefined) {
             throw new Error('LP Token already issued');
         }
 
         const contract = await this.elrondProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .issueLpToken([
-                BytesValue.fromHex(new Address(pairAddress).hex()),
+                new AddressValue(Address.fromString(pairAddress)),
                 BytesValue.fromUTF8(lpTokenName),
                 BytesValue.fromUTF8(lpTokenTicker),
             ])
@@ -171,14 +172,14 @@ export class TransactionRouterService {
         enable: boolean,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const args = [BytesValue.fromHex(new Address(address).hex())];
+        const args = [new AddressValue(Address.fromString(address))];
 
         const interaction = enable
             ? contract.methodsExplicit.resume(args)
             : contract.methodsExplicit.pause(args);
 
         return interaction
-            .withGasLimit(gasConfig.router.setState)
+            .withGasLimit(gasConfig.router.admin.setState)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
@@ -201,10 +202,10 @@ export class TransactionRouterService {
         enable: boolean,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getRouterSmartContract();
-        const args = [
-            BytesValue.fromHex(new Address(pairAddress).hex()),
-            BytesValue.fromHex(new Address(feeToAddress).hex()),
-            BytesValue.fromUTF8(feeTokenID),
+        const args: TypedValue[] = [
+            new AddressValue(Address.fromString(pairAddress)),
+            new AddressValue(Address.fromString(feeToAddress)),
+            new TokenIdentifierValue(feeTokenID),
         ];
 
         const interaction = enable
@@ -212,7 +213,7 @@ export class TransactionRouterService {
             : contract.methodsExplicit.setFeeOff(args);
 
         return interaction
-            .withGasLimit(gasConfig.router.setFee)
+            .withGasLimit(gasConfig.router.admin.setFee)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();

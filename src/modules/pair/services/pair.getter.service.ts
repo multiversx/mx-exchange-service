@@ -94,7 +94,7 @@ export class PairGetterService {
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.getLpTokenID(pairAddress);
-        if (lpTokenID === 'undefined') {
+        if (lpTokenID === 'undefined' || lpTokenID === undefined) {
             return undefined;
         }
         return this.contextGetter.getTokenMetadata(lpTokenID);
