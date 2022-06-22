@@ -106,13 +106,4 @@ describe('RouterService', () => {
         });
         expect(filteredPairs).toEqual([]);
     });
-
-    // Timeout - Async callback was not invoked within the 5000ms timeout specified by
-    // jest.setTimeout.Timeout - Async callback was not invoked within the 5000ms timeout
-    // specified by jest.setTimeout.Error: ...
-    /*it('should get pairs count', async () => {
-        const pairCount = await service.getPairCount();
-        console.log('pairsCount', pairCount);
-        expect(pairCount).toEqual(pairCount);
-    });*/
 });
