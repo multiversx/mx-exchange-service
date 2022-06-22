@@ -25,11 +25,13 @@ import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { RemoteConfigModule } from './modules/remote-config/remote-config.module';
 
 @Module({
     imports: [
         CommonAppModule,
         AuthModule,
+        RemoteConfigModule,
         CacheModule.register(),
         GraphQLModule.forRoot<ApolloDriverConfig>({
             driver: ApolloDriver,

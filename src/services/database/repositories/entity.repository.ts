@@ -15,33 +15,46 @@ export abstract class EntityRepository<T extends Document> {
         return this.entityModel
             .findOne(entityFilterQuery, {
                 _id: 0,
+                __v: 0,
                 ...projection,
             })
             .exec();
     }
 
-    async find(entityFilterQuery: FilterQuery<T>): Promise<T[] | null> {
-        return this.entityModel.find(entityFilterQuery);
+    async find(
+        entityFilterQuery: FilterQuery<T>,
+        projection?: Record<string, unknown>,
+    ): Promise<T[] | null> {
+        return this.entityModel.find(entityFilterQuery, {
+            _id: 0,
+            __v: 0,
+            ...projection,
+        });
     }
 
     async findOneAndUpdate(
         entityFilterQuery: FilterQuery<T>,
         updateEntityData: UpdateQuery<any>,
+        projection?: Record<string, unknown>,
     ): Promise<T | null> {
         return this.entityModel.findOneAndUpdate(
             entityFilterQuery,
             updateEntityData,
             {
                 new: true,
+                projection: {
+                    _id: 0,
+                    __v: 0,
+                    ...projection,
+                },
             },
         );
     }
 
     async findOneAndDelete(
         entityFilterQuery: FilterQuery<T>,
-    ): Promise<boolean> {
-        const entity = this.entityModel.findOneAndDelete(entityFilterQuery);
-        return (await entity).$isDeleted();
+    ): Promise<T | null> {
+        return await this.entityModel.findOneAndDelete(entityFilterQuery);
     }
 
     async deleteMany(entityFilterQuery: FilterQuery<T>): Promise<boolean> {
