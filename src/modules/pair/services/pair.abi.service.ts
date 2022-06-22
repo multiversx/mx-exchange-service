@@ -12,7 +12,17 @@ import {
     EsdtTokenPaymentStruct,
     EsdtTokenType,
 } from 'src/models/esdtTokenPayment.model';
-import { ResultsParser, TokenIdentifierValue } from '@elrondnetwork/erdjs/out';
+import {
+    Address,
+    BigUIntValue,
+    BytesValue,
+    EnumValue,
+    Field,
+    ResultsParser,
+    Struct,
+    TokenIdentifierValue,
+    U64Value,
+} from '@elrondnetwork/erdjs/out';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { elrondConfig } from 'src/config';
 import { VmQueryError } from 'src/utils/errors.constants';
@@ -332,7 +342,10 @@ export class PairAbiService extends GenericAbiService {
             pairAddress,
         );
         const interaction: Interaction = contract.methods.getFeeState([]);
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf();
     }
 
@@ -343,7 +356,10 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getFeeDestinations(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().map(v => {
             return new FeeDestination({
                 address: new Address(
@@ -363,7 +379,10 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getWhitelistedManagedAddresses(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().map(v => {
             return new Address(v).bech32();
         });
@@ -374,7 +393,10 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getRouterManagedAddress(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return new Address(response.firstValue.valueOf().toString()).bech32();
     }
 
@@ -383,7 +405,10 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getRouterOwnerManagedAddress(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return new Address(response.firstValue.valueOf().toString()).bech32();
     }
 
@@ -394,7 +419,10 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getExternSwapGasLimit(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -405,7 +433,10 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getTransferExecGasLimit(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -431,7 +462,7 @@ export class PairAbiService extends GenericAbiService {
                     ),
                     new Field(
                         new TokenIdentifierValue(
-                            Buffer.from(esdtTokenPayment.tokenID),
+                            Buffer.from(esdtTokenPayment.tokenID).toString(),
                         ),
                         'token_identifier',
                     ),
@@ -449,7 +480,10 @@ export class PairAbiService extends GenericAbiService {
             ],
         );
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return new EsdtTokenPayment({
             tokenType: EsdtTokenType.getEnum().getVariantByName(
                 response.firstValue.valueOf().token_type.name,
@@ -474,7 +508,10 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getNumSwapsByAddress([
             BytesValue.fromHex(new Address(address).hex()),
         ]);
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -488,7 +525,10 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getNumSwapsByAddress([
             BytesValue.fromHex(new Address(address).hex()),
         ]);
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 }

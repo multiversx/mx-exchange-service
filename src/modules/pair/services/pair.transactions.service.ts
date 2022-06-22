@@ -25,6 +25,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { BPConfig } from '../models/pair.model';
 
 @Injectable()
 export class PairTransactionService {
@@ -594,7 +595,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(new GasLimit(gasConfig.pairs.admin.whitelist));
+        transaction.setGasLimit(gasConfig.pairs.admin.whitelist);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -613,9 +614,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.removeWhitelist),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.removeWhitelist);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -641,9 +640,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.addTrustedSwapPair),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.addTrustedSwapPair);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -667,9 +664,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.removeTrustedSwapPair),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.removeTrustedSwapPair);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -692,7 +687,7 @@ export class PairTransactionService {
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
         transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.set_transfer_exec_gas_limit),
+            gasConfig.pairs.admin.set_transfer_exec_gas_limit,
         );
         return new TransactionModel({
             ...transaction.toPlainObject(),
@@ -716,7 +711,7 @@ export class PairTransactionService {
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
         transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.set_extern_swap_gas_limit),
+            gasConfig.pairs.admin.set_extern_swap_gas_limit,
         );
         return new TransactionModel({
             ...transaction.toPlainObject(),
@@ -731,7 +726,7 @@ export class PairTransactionService {
         const interaction: Interaction = contract.methods.pause([]);
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(new GasLimit(gasConfig.pairs.admin.pause));
+        transaction.setGasLimit(gasConfig.pairs.admin.pause);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -745,7 +740,7 @@ export class PairTransactionService {
         const interaction: Interaction = contract.methods.resume([]);
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(new GasLimit(gasConfig.pairs.admin.resume));
+        transaction.setGasLimit(gasConfig.pairs.admin.resume);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -763,9 +758,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.setStateActiveNoSwaps),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.setStateActiveNoSwaps);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -789,9 +782,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.setFeePercents),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.setFeePercents);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -814,7 +805,7 @@ export class PairTransactionService {
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
         transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.setMaxObservationsPerRecord),
+            gasConfig.pairs.admin.setMaxObservationsPerRecord,
         );
         return new TransactionModel({
             ...transaction.toPlainObject(),
@@ -839,9 +830,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.setBPSwapConfig),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.setBPSwapConfig);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -865,9 +854,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.setBPRemoveConfig),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.setBPRemoveConfig);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -891,9 +878,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.setBPAddConfig),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.setBPAddConfig);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -915,9 +900,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.setLockingDeadlineEpoch),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.setLockingDeadlineEpoch);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -939,9 +922,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.setLockingScAddress),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.setLockingScAddress);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
@@ -963,9 +944,7 @@ export class PairTransactionService {
         );
         const transaction = interaction.buildTransaction();
         // todo: test gas limit
-        transaction.setGasLimit(
-            new GasLimit(gasConfig.pairs.admin.setUnlockEpoch),
-        );
+        transaction.setGasLimit(gasConfig.pairs.admin.setUnlockEpoch);
         return new TransactionModel({
             ...transaction.toPlainObject(),
             chainID: elrondConfig.chainID,
