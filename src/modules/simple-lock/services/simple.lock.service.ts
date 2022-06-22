@@ -1,4 +1,8 @@
-import { BinaryCodec } from '@elrondnetwork/erdjs/out';
+import {
+    LockedFarmTokenAttributes,
+    LockedLpTokenAttributes,
+    LockedTokenAttributes,
+} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
@@ -8,7 +12,6 @@ import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
 } from 'src/modules/proxy/models/proxy.args';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
@@ -44,21 +47,11 @@ export class SimpleLockService {
     decodeLockedTokenAttributes(
         args: DecodeAttributesModel,
     ): LockedTokenAttributesModel {
-        const attributesBuffer = Buffer.from(args.attributes, 'base64');
-        const codec = new BinaryCodec();
-        const structType = LockedTokenAttributesModel.getStructure();
-
-        const [decodedAttributes] = codec.decodeNested(
-            attributesBuffer,
-            structType,
-        );
-
-        const lockedTokenAttributes = LockedTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes.valueOf(),
-        );
-        lockedTokenAttributes.identifier = args.identifier;
-        lockedTokenAttributes.attributes = args.attributes;
-        return lockedTokenAttributes;
+        return new LockedTokenAttributesModel({
+            ...LockedTokenAttributes.fromAttributes(args.attributes).toJSON(),
+            attributes: args.attributes,
+            identifier: args.identifier,
+        });
     }
 
     decodeBatchLpTokenProxyAttributes(
@@ -72,21 +65,11 @@ export class SimpleLockService {
     decodeLpProxyTokenAttributes(
         args: DecodeAttributesModel,
     ): LpProxyTokenAttributesModel {
-        const attributesBuffer = Buffer.from(args.attributes, 'base64');
-        const codec = new BinaryCodec();
-        const structType = LpProxyTokenAttributesModel.getStructure();
-
-        const [decodedAttributes] = codec.decodeNested(
-            attributesBuffer,
-            structType,
-        );
-
-        const lpProxyTokenAttributes = LpProxyTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes.valueOf(),
-        );
-        lpProxyTokenAttributes.identifier = args.identifier;
-        lpProxyTokenAttributes.attributes = args.attributes;
-        return lpProxyTokenAttributes;
+        return new LpProxyTokenAttributesModel({
+            ...LockedLpTokenAttributes.fromAttributes(args.attributes).toJSON(),
+            attributes: args.attributes,
+            identifier: args.identifier,
+        });
     }
 
     async decodeBatchFarmProxyTokenAttributes(
@@ -104,24 +87,17 @@ export class SimpleLockService {
     async decodeFarmProxyTokenAttributes(
         args: DecodeAttributesModel,
     ): Promise<FarmProxyTokenAttributesModel> {
-        const attributesBuffer = Buffer.from(args.attributes, 'base64');
-        const codec = new BinaryCodec();
-        const structType = FarmProxyTokenAttributesModel.getStructure();
-
-        const [decodedAttributes] = codec.decodeNested(
-            attributesBuffer,
-            structType,
+        const lockedFarmTokenAttributesModel = new FarmProxyTokenAttributesModel(
+            {
+                ...LockedFarmTokenAttributes.fromAttributes(args.attributes),
+                attributes: args.attributes,
+                identifier: args.identifier,
+            },
         );
-
-        const farmProxyTokenAttributes = FarmProxyTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes.valueOf(),
-        );
-        farmProxyTokenAttributes.identifier = args.identifier;
-        farmProxyTokenAttributes.attributes = args.attributes;
 
         const farmTokenIdentifier = tokenIdentifier(
-            farmProxyTokenAttributes.farmTokenID,
-            farmProxyTokenAttributes.farmTokenNonce,
+            lockedFarmTokenAttributesModel.farmTokenID,
+            lockedFarmTokenAttributesModel.farmTokenNonce,
         );
         const [farmToken, farmAddress] = await Promise.all([
             this.apiService.getNftByTokenIdentifier(
@@ -129,7 +105,7 @@ export class SimpleLockService {
                 farmTokenIdentifier,
             ),
             this.farmService.getFarmAddressByFarmTokenID(
-                farmProxyTokenAttributes.farmTokenID,
+                lockedFarmTokenAttributesModel.farmTokenID,
             ),
         ]);
 
@@ -138,7 +114,7 @@ export class SimpleLockService {
             farmTokenIdentifier,
             farmToken.attributes,
         );
-        farmProxyTokenAttributes.farmTokenAttributes = farmTokenAttributes;
-        return farmProxyTokenAttributes;
+        lockedFarmTokenAttributesModel.farmTokenAttributes = farmTokenAttributes;
+        return lockedFarmTokenAttributesModel;
     }
 }

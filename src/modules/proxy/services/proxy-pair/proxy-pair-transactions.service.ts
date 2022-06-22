@@ -4,9 +4,8 @@ import {
     BigUIntValue,
     BytesValue,
     TypedValue,
-    U32Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Address, GasLimit } from '@elrondnetwork/erdjs';
+import { Address, TokenPayment } from '@elrondnetwork/erdjs';
 import { TransactionModel } from 'src/models/transaction.model';
 import BigNumber from 'bignumber.js';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -24,13 +23,11 @@ import { ProxyPairGetterService } from './proxy-pair.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 @Injectable()
 export class TransactionsProxyPairService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly contextTransactions: ContextTransactionsService,
         private readonly proxyGetter: ProxyGetterService,
         private readonly proxyPairGetter: ProxyPairGetterService,
         private readonly pairService: PairService,
@@ -114,19 +111,28 @@ export class TransactionsProxyPairService {
             new BigUIntValue(amount1Min),
         ];
 
-        const gasLimit: GasLimit = new GasLimit(
+        const gasLimit =
             inputTokens.length > 2
                 ? gasConfig.proxy.pairs.addLiquidity.withTokenMerge
-                : gasConfig.proxy.pairs.addLiquidity.default,
+                : gasConfig.proxy.pairs.addLiquidity.default;
+        const mappedPayments: TokenPayment[] = inputTokens.map(inputToken =>
+            TokenPayment.metaEsdtFromBigInteger(
+                inputToken.tokenID,
+                inputToken.nonce,
+                new BigNumber(inputToken.amount),
+            ),
         );
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            inputTokens,
-            'addLiquidityProxy',
-            endpointArgs,
-            gasLimit,
-        );
+
+        return contract.methodsExplicit
+            .addLiquidityProxy(endpointArgs)
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async removeLiquidityProxy(
@@ -161,24 +167,28 @@ export class TransactionsProxyPairService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.wrappedLpTokenID),
-            new U32Value(args.wrappedLpTokenNonce),
-            new BigUIntValue(new BigNumber(args.liquidity)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('removeLiquidityProxy'),
+        const endpointArgs = [
             BytesValue.fromHex(new Address(args.pairAddress).hex()),
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
         ];
 
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.proxy.pairs.removeLiquidity),
+        transactions.push(
+            contract.methodsExplicit
+                .removeLiquidityProxy(endpointArgs)
+                .withSingleESDTNFTTransfer(
+                    TokenPayment.metaEsdtFromBigInteger(
+                        args.wrappedLpTokenID,
+                        args.wrappedLpTokenNonce,
+                        new BigNumber(args.liquidity),
+                    ),
+                    Address.fromString(sender),
+                )
+                .withGasLimit(gasConfig.proxy.pairs.removeLiquidity)
+                .withChainID(elrondConfig.chainID)
+                .buildTransaction()
+                .toPlainObject(),
         );
-        transaction.receiver = sender;
-        transactions.push(transaction);
 
         switch (wrappedTokenID) {
             case firstTokenID:
@@ -225,17 +235,25 @@ export class TransactionsProxyPairService {
             throw error;
         }
         const contract = await this.elrondProxy.getProxyDexSmartContract();
-
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            tokens,
-            'mergeWrappedLpTokens',
-            [],
-            new GasLimit(
-                gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length,
+        const gasLimit = gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length;
+        const mappedPayments = tokens.map(token =>
+            TokenPayment.metaEsdtFromBigInteger(
+                token.tokenID,
+                token.nonce,
+                new BigNumber(token.amount),
             ),
         );
+
+        return contract.methodsExplicit
+            .mergeWrappedLpTokens()
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async convertInputTokenstoESDTTokens(

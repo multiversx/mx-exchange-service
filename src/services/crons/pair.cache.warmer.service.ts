@@ -11,7 +11,7 @@ import { oneHour } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
-import { PairDBService } from 'src/modules/pair/services/pair.db.service';
+import { PairRepositoryService } from 'src/modules/pair/services/pair.repository.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -20,7 +20,7 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: PairAbiService,
-        private readonly pairDbService: PairDBService,
+        private readonly pairRepositoryService: PairRepositoryService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
         private readonly cachingService: CachingService,
@@ -42,13 +42,9 @@ export class PairCacheWarmerService {
                 totalFeePercent,
                 specialFeePercent,
             ] = await Promise.all([
-                this.apiService
-                    .getService()
-                    .getToken(pairMetadata.firstTokenID),
-                this.apiService
-                    .getService()
-                    .getToken(pairMetadata.secondTokenID),
-                this.apiService.getService().getToken(lpTokenID),
+                this.apiService.getToken(pairMetadata.firstTokenID),
+                this.apiService.getToken(pairMetadata.secondTokenID),
+                this.apiService.getToken(lpTokenID),
                 this.abiPairService.getTotalFeePercent(pairMetadata.address),
                 this.abiPairService.getSpecialFeePercent(pairMetadata.address),
             ]);
@@ -101,7 +97,7 @@ export class PairCacheWarmerService {
             const [feesAPR, state, type] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.abiPairService.getState(pairAddress),
-                this.pairDbService.getPairType(pairAddress),
+                this.pairRepositoryService.getPairType(pairAddress),
             ]);
 
             this.invalidatedKeys = await Promise.all([

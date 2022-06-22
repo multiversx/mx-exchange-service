@@ -30,11 +30,7 @@ import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryService } from '../price-discovery/services/price.discovery.service';
 import { SimpleLockGetterService } from '../simple-lock/services/simple.lock.getter.service';
-
-enum EsdtTokenType {
-    FungibleToken = 'FungibleESDT',
-    FungibleLpToken = 'FungibleESDT-LP',
-}
+import { EsdtTokenType } from '../tokens/models/esdtToken.model';
 
 enum NftTokenType {
     FarmToken,
@@ -233,7 +229,6 @@ export class UserService {
             return userToken;
         }
         const userToken = await this.userComputeService.esdtTokenUSD(token);
-        userToken.type = EsdtTokenType.FungibleToken;
         return userToken;
     }
 

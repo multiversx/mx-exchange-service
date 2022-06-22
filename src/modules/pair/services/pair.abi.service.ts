@@ -1,22 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
-import {
-    Address,
-    BigUIntValue,
-    EnumValue,
-    Field,
-    QueryResponseBundle,
-    Struct,
-    TokenIdentifierValue,
-    U64Value,
-} from '@elrondnetwork/erdjs';
 import { PairInfoModel } from '../models/pair-info.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
-import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import BigNumber from 'bignumber.js';
 import { FeeDestination } from '../models/pair.model';
 import {
@@ -24,43 +12,30 @@ import {
     EsdtTokenPaymentStruct,
     EsdtTokenType,
 } from 'src/models/esdtTokenPayment.model';
+import { ResultsParser, TokenIdentifierValue } from '@elrondnetwork/erdjs/out';
+import { GenericAbiService } from 'src/services/generics/generic.abi.service';
+import { elrondConfig } from 'src/config';
+import { VmQueryError } from 'src/utils/errors.constants';
 
 @Injectable()
-export class PairAbiService {
+export class PairAbiService extends GenericAbiService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    async getGenericData(
-        contract: SmartContractProfiler,
-        interaction: Interaction,
-    ): Promise<QueryResponseBundle> {
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            return interaction.interpretQueryResponse(queryResponse);
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                PairAbiService.name,
-                interaction.getEndpoint().name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-
-            throw error;
-        }
+        protected readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    ) {
+        super(elrondProxy, logger);
     }
 
     async getFirstTokenID(pairAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getFirstTokenId([]);
+        const interaction: Interaction = contract.methodsExplicit.getFirstTokenId();
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -68,9 +43,12 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getSecondTokenId([]);
+        const interaction: Interaction = contract.methodsExplicit.getSecondTokenId();
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -78,13 +56,16 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getLpTokenIdentifier(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLpTokenIdentifier();
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         const lpTokenID = response.firstValue.valueOf().toString();
-        return lpTokenID !== 'EGLD' ? lpTokenID : undefined;
+        return lpTokenID !== elrondConfig.EGLDIdentifier
+            ? lpTokenID
+            : undefined;
     }
 
     async getTokenReserve(
@@ -94,10 +75,13 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getReserve([
-            BytesValue.fromUTF8(tokenID),
+        const interaction: Interaction = contract.methodsExplicit.getReserve([
+            new TokenIdentifierValue(tokenID),
         ]);
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -105,9 +89,12 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getTotalSupply([]);
+        const interaction: Interaction = contract.methodsExplicit.getTotalSupply();
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -115,11 +102,12 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getReservesAndTotalSupply(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getReservesAndTotalSupply();
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return new PairInfoModel({
             reserves0: response.values[0].valueOf().toFixed(),
             reserves1: response.values[1].valueOf().toFixed(),
@@ -131,11 +119,12 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getTotalFeePercent(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getTotalFeePercent();
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -143,9 +132,12 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getSpecialFee([]);
+        const interaction: Interaction = contract.methodsExplicit.getSpecialFee();
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -153,11 +145,12 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getTrustedSwapPairs(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getTrustedSwapPairs();
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue
             .valueOf()
             .map(swapPair => swapPair.field1.bech32());
@@ -168,23 +161,29 @@ export class PairAbiService {
             pairAddress,
         );
         try {
-            const interaction: Interaction = contract.methods.getInitialLiquidtyAdder(
-                [],
-            );
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            if (queryResponse.returnMessage.includes('bad array length')) {
+            const interaction: Interaction = contract.methodsExplicit.getInitialLiquidtyAdder();
+            const query = interaction.check().buildQuery();
+            const queryResponse = await this.elrondProxy
+                .getService()
+                .queryContract(query);
+            if (
+                queryResponse.returnMessage.includes(
+                    VmQueryError.BAD_ARRAY_LENGTH,
+                )
+            ) {
                 return '';
             }
-            const response = interaction.interpretQueryResponse(queryResponse);
+            const endpointDefinition = interaction.getEndpoint();
+            const response = new ResultsParser().parseQueryResponse(
+                queryResponse,
+                endpointDefinition,
+            );
             if (!response.firstValue.valueOf()) {
                 return '';
             }
             return response.firstValue.valueOf().bech32();
         } catch (error) {
-            if (error.message.includes('invalid function')) {
+            if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return '';
             }
             const logMessage = generateRunQueryLogMessage(
@@ -202,9 +201,12 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getState([]);
+        const interaction: Interaction = contract.methodsExplicit.getState([]);
 
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().name;
     }
 
@@ -215,20 +217,27 @@ export class PairAbiService {
             pairAddress,
         );
         try {
-            const interaction: Interaction = contract.methods.getLockingScAddress(
-                [],
-            );
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            if (queryResponse.returnMessage.includes('bad array length')) {
+            const interaction: Interaction = contract.methodsExplicit.getLockingScAddress();
+            const query = interaction.check().buildQuery();
+            const queryResponse = await this.elrondProxy
+                .getService()
+                .queryContract(query);
+            if (
+                queryResponse.returnMessage.includes(
+                    VmQueryError.BAD_ARRAY_LENGTH,
+                ) ||
+                queryResponse.returnCode === VmQueryError.FUNCTION_NOT_FOUND
+            ) {
                 return undefined;
             }
-            const response = interaction.interpretQueryResponse(queryResponse);
+            const endpointDefinition = interaction.getEndpoint();
+            const response = new ResultsParser().parseQueryResponse(
+                queryResponse,
+                endpointDefinition,
+            );
             return response.firstValue.valueOf().bech32();
         } catch (error) {
-            if (error.message.includes('invalid function')) {
+            if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return undefined;
             }
             const logMessage = generateRunQueryLogMessage(
@@ -246,19 +255,26 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getUnlockEpoch([]);
+        const interaction: Interaction = contract.methodsExplicit.getUnlockEpoch();
         try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
+            const query = interaction.check().buildQuery();
+            const queryResponse = await this.elrondProxy
+                .getService()
+                .queryContract(query);
+            if (queryResponse.returnCode === VmQueryError.FUNCTION_NOT_FOUND) {
+                return undefined;
+            }
+            const endpointDefinition = interaction.getEndpoint();
+            const response = new ResultsParser().parseQueryResponse(
+                queryResponse,
+                endpointDefinition,
             );
-            const response = interaction.interpretQueryResponse(queryResponse);
             const unlockEpoch = response.firstValue.valueOf();
             return unlockEpoch !== undefined
                 ? unlockEpoch.toFixed()
                 : undefined;
         } catch (error) {
-            if (error.message.includes('invalid function')) {
+            if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return undefined;
             }
             const logMessage = generateRunQueryLogMessage(
@@ -278,21 +294,26 @@ export class PairAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getLockingDeadlineEpoch(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLockingDeadlineEpoch();
         try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
+            const query = interaction.check().buildQuery();
+            const queryResponse = await this.elrondProxy
+                .getService()
+                .queryContract(query);
+            if (queryResponse.returnCode === VmQueryError.FUNCTION_NOT_FOUND) {
+                return undefined;
+            }
+            const endpointDefinition = interaction.getEndpoint();
+            const response = new ResultsParser().parseQueryResponse(
+                queryResponse,
+                endpointDefinition,
             );
-            const response = interaction.interpretQueryResponse(queryResponse);
             const lockingDeadlineEpoch = response.firstValue.valueOf();
             return lockingDeadlineEpoch !== undefined
                 ? lockingDeadlineEpoch.toFixed()
                 : undefined;
         } catch (error) {
-            if (error.message.includes('invalid function')) {
+            if (error.message.includes(VmQueryError.INVALID_FUNCTION)) {
                 return undefined;
             }
             const logMessage = generateRunQueryLogMessage(

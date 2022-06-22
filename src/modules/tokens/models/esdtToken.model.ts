@@ -1,5 +1,10 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
+export enum EsdtTokenType {
+    FungibleToken = 'FungibleESDT',
+    FungibleLpToken = 'FungibleESDT-LP',
+}
+
 @ObjectType()
 export class AssetsModel {
     @Field({ nullable: true }) website: string;
