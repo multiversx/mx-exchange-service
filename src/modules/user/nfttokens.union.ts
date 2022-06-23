@@ -1,5 +1,5 @@
 import { createUnionType } from '@nestjs/graphql';
-import { StakingTokenType } from '../staking/models/stakingTokenAttributes.model';
+import { StakingFarmTokenType } from '@elrondnetwork/erdjs-dex';
 
 import {
     UserFarmToken,
@@ -58,12 +58,14 @@ export const UserNftTokens = createUnionType({
             return UserLockedAssetToken.name;
         }
         if (
-            value.decodedAttributes.type === StakingTokenType.STAKING_FARM_TOKEN
+            value.decodedAttributes.type ===
+            StakingFarmTokenType.STAKING_FARM_TOKEN
         ) {
             return UserStakeFarmToken.name;
         }
         if (
-            value.decodedAttributes.type === StakingTokenType.UNBOND_FARM_TOKEN
+            value.decodedAttributes.type ===
+            StakingFarmTokenType.UNBOND_FARM_TOKEN
         ) {
             return UserUnbondFarmToken.name;
         }

@@ -1,7 +1,6 @@
 import {
     AbiRegistry,
     Address,
-    ProxyProvider,
     SmartContract,
     SmartContractAbi,
 } from '@elrondnetwork/erdjs/out';
@@ -10,13 +9,14 @@ import { abiConfig, elrondConfig, scAddress } from '../../config';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { SmartContractProfiler } from '../../helpers/smartcontract.profiler';
+import { ProxyNetworkProviderProfiler } from '../../helpers/proxy.network.provider.profiler';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
+import { promises } from 'fs';
 
 @Injectable()
 export class ElrondProxyService {
-    private readonly proxy: ProxyProvider;
+    private readonly proxy: ProxyNetworkProviderProfiler;
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
@@ -32,21 +32,23 @@ export class ElrondProxyService {
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
 
-        this.proxy = new ProxyProvider(process.env.ELRONDAPI_URL, {
-            timeout: elrondConfig.proxyTimeout,
-            httpAgent: elrondConfig.keepAlive ? httpAgent : null,
-            httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
-        });
+        this.proxy = new ProxyNetworkProviderProfiler(
+            process.env.ELRONDAPI_URL,
+            {
+                timeout: elrondConfig.proxyTimeout,
+                httpAgent: elrondConfig.keepAlive ? httpAgent : null,
+                httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+            },
+        );
     }
 
-    getService(): ProxyProvider {
+    getService(): ProxyNetworkProviderProfiler {
         return this.proxy;
     }
 
     async getAddressShardID(address: string): Promise<number> {
         const response = await this.getService().doGetGeneric(
             `address/${address}/shard`,
-            response => response,
         );
         return response.shardID;
     }
@@ -164,14 +166,16 @@ export class ElrondProxyService {
         contractAbiPath: string,
         contractInterface: string,
     ): Promise<SmartContract> {
-        const abiRegistry = await AbiRegistry.load({
-            files: [contractAbiPath],
+        const jsonContent: string = await promises.readFile(contractAbiPath, {
+            encoding: 'utf8',
         });
+        const json = JSON.parse(jsonContent);
+        const abiRegistry = AbiRegistry.create(json);
         const abi = new SmartContractAbi(abiRegistry, [contractInterface]);
 
-        return new SmartContractProfiler({
-            address: new Address(contractAddress),
-            abi: abi,
+        return new SmartContract({
+            address: Address.fromString(contractAddress),
+            abi,
         });
     }
 }

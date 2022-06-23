@@ -10,4 +10,6 @@ export class PairFilterArgs {
     secondTokenID: string;
     @Field(() => Boolean)
     issuedLpToken = true;
+    @Field({ nullable: true })
+    state: string;
 }

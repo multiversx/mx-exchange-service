@@ -3,45 +3,23 @@ import {
     BigUIntValue,
     BytesValue,
     Interaction,
-    QueryResponseBundle,
 } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
+import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
 
 @Injectable()
-export class AbiStakingService {
+export class AbiStakingService extends GenericAbiService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        protected readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly gatewayService: ElrondGatewayService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    async getGenericData(
-        contract: SmartContractProfiler,
-        interaction: Interaction,
-    ): Promise<QueryResponseBundle> {
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            return interaction.interpretQueryResponse(queryResponse);
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiStakingService.name,
-                interaction.getEndpoint().name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-
-            throw error;
-        }
+    ) {
+        super(elrondProxy, logger);
     }
 
     async getPairContractManagedAddress(stakeAddress: string): Promise<string> {
@@ -52,7 +30,10 @@ export class AbiStakingService {
             const interaction: Interaction = contract.methods.getPairContractManagedAddress(
                 [],
             );
-            const response = await this.getGenericData(contract, interaction);
+            const response = await this.getGenericData(
+                AbiStakingService.name,
+                interaction,
+            );
             return response.firstValue.valueOf().hex32();
         } catch {
             return undefined;
@@ -63,8 +44,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getFarmTokenId([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getFarmTokenId();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -72,8 +56,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getFarmingTokenId([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getFarmingTokenId();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -81,8 +68,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getRewardTokenId([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getRewardTokenId();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -90,10 +80,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getFarmTokenSupply(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getFarmTokenSupply();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -101,8 +92,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getRewardPerShare([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getRewardPerShare();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -110,10 +104,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getAccumulatedRewards(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getAccumulatedRewards();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -121,8 +116,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getRewardCapacity([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getRewardCapacity();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -130,10 +128,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getAnnualPercentageRewards(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getAnnualPercentageRewards();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -141,10 +140,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getMinUnbondEpochs(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getMinUnbondEpochs();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -152,8 +152,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getPenaltyPercent([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getPenaltyPercent();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -161,10 +164,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getMinimumFarmingEpoch(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getMinimumFarmingEpoch();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -172,10 +176,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getPerBlockRewardAmount(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getPerBlockRewardAmount();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -183,10 +188,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getLastRewardBlockNonce(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getLastRewardBlockNonce();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -194,10 +200,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getDivisionSafetyConstant(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getDivisionSafetyConstant();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -214,7 +221,10 @@ export class AbiStakingService {
             stakeAddress,
         );
         const interaction: Interaction = contract.methods.getBurnGasLimit([]);
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf();
     }
 
@@ -225,7 +235,10 @@ export class AbiStakingService {
         const interaction: Interaction = contract.methods.getTransferExecGasLimit(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf();
     }
 
@@ -233,8 +246,11 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.getState([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getState([]);
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().name;
     }
 
@@ -246,7 +262,7 @@ export class AbiStakingService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const interaction: Interaction = contract.methods.calculateRewardsForGivenPosition(
+        const interaction: Interaction = contract.methodsExplicit.calculateRewardsForGivenPosition(
             [
                 new BigUIntValue(new BigNumber(amount)),
                 BytesValue.fromHex(
@@ -254,7 +270,10 @@ export class AbiStakingService {
                 ),
             ],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf();
     }
 
@@ -268,7 +287,10 @@ export class AbiStakingService {
             const interaction: Interaction = contract.methods.getLockedAssetFactoryManagedAddress(
                 [],
             );
-            const response = await this.getGenericData(contract, interaction);
+            const response = await this.getGenericData(
+                AbiStakingService.name,
+                interaction,
+            );
             return response.firstValue.valueOf().hex32();
         } catch {
             return undefined;
@@ -285,7 +307,10 @@ export class AbiStakingService {
         const interaction: Interaction = contract.methods.isWhitelisted([
             BytesValue.fromHex(new Address(address).hex()),
         ]);
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf();
     }
 
@@ -296,7 +321,10 @@ export class AbiStakingService {
         const interaction: Interaction = contract.methods.getLastErrorMessage(
             [],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 }

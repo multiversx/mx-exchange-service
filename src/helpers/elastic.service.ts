@@ -82,7 +82,7 @@ export class ElasticService {
         const elasticQuery = buildElasticQuery(elasticQueryAdapter);
 
         try {
-            return  await this.scrollSearch({
+            return await this.scrollSearch({
                 index: collection,
                 size: 10000,
                 scroll: '5s',

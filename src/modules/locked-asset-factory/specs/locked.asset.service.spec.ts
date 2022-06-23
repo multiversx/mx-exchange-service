@@ -10,7 +10,7 @@ import { AbiLockedAssetService } from '../services/abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from '../mocks/abi.locked.asset.service.mock';
 import { LockedAssetService } from '../services/locked-asset.service';
 import {
-    LockedAssetAttributes,
+    LockedAssetAttributesModel,
     UnlockMileStoneModel,
 } from '../models/locked-asset.model';
 import { LockedAssetGetterService } from '../services/locked.asset.getter.service';
@@ -68,7 +68,7 @@ describe('LockedAssetService', () => {
             ],
         });
         expect(decodedLockedMEX).toEqual([
-            new LockedAssetAttributes({
+            new LockedAssetAttributesModel({
                 attributes: 'AAAAAgAAAAAAAAABCgAAAAAAAAAeWgA=',
                 identifier: 'LKTOK-1234-01',
                 isMerged: false,
@@ -101,7 +101,7 @@ describe('LockedAssetService', () => {
             ],
         });
         expect(decodedLockedMEX).toEqual([
-            new LockedAssetAttributes({
+            new LockedAssetAttributesModel({
                 attributes: 'AAAAAgAAAAAAAAABCgAAAAAAAAAeWgA=',
                 identifier: 'LKTOK-1234-01',
                 isMerged: false,
@@ -134,7 +134,7 @@ describe('LockedAssetService', () => {
             ],
         });
         expect(decodedLockedMEX).toEqual([
-            new LockedAssetAttributes({
+            new LockedAssetAttributesModel({
                 attributes: 'AAAAAgAAAAAAAAACCgAAAAAAAAAfWgA=',
                 identifier: 'LKTOK-1234-01',
                 isMerged: false,
