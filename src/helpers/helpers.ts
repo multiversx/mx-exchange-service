@@ -1,6 +1,5 @@
 import { Address } from '@elrondnetwork/erdjs/out';
 import { BigNumber } from 'bignumber.js';
-import { isNumber } from 'class-validator';
 
 export function base64DecodeBinary(str: string): Buffer {
     return Buffer.from(str, 'base64');
@@ -56,43 +55,6 @@ function encodeAddress(str: string): string | undefined {
         return undefined;
     }
 }
-
-/* TEMP DEBUG CODE */
-export function decodeTransactionData(data: string | undefined): string {
-    const delimiter = '@';
-
-    const args = base64Decode(data).split(delimiter);
-
-    let decoded = args.shift();
-    for (const arg of args) {
-        decoded += delimiter;
-
-        const address = decodeAddress(arg);
-        if (address !== undefined) {
-            decoded += address;
-        } else {
-            let bigNumber = new BigNumber(`0x${arg}`); // parseInt(arg, 16);
-            if (bigNumber && !bigNumber.toString().includes('e'))
-                decoded +=
-                    bigNumber.toString().length % 2 === 1
-                        ? '0' + bigNumber.toString()
-                        : bigNumber.toString();
-            else {
-                decoded += Buffer.from(arg, 'hex').toString();
-            }
-        }
-    }
-
-    return decoded;
-}
-function decodeAddress(str: string): string | undefined {
-    try {
-        return new Address(str).bech32();
-    } catch {
-        return undefined;
-    }
-}
-/* REMOVE */
 
 export function ruleOfThree(
     part: BigNumber,

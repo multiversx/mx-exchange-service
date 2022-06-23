@@ -23,7 +23,9 @@ import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { Address } from '@elrondnetwork/erdjs/out';
-import { encodeTransactionData } from 'src/helpers/helpers';
+import {
+    encodeTransactionData,
+} from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
 
 describe('RouterService', () => {
@@ -168,18 +170,6 @@ describe('RouterService', () => {
         );
     });
 
-    it('should get set resume state transaction', async () => {
-        const transaction = await service.setState(
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            true,
-        );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
-                'resume@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            ),
-        );
-    });
-
     it('should get set fee OFF transaction', async () => {
         const transaction = await service.setFee(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -212,11 +202,11 @@ describe('RouterService', () => {
         const transaction = await service.setLocalRolesOwner({
             tokenID: 'TOK1-1111',
             address: Address.Zero().bech32(),
-            roles: [EsdtLocalRole.None],
+            roles: [EsdtLocalRole.Mint],
         });
         expect(transaction.data).toMatch(
             encodeTransactionData(
-                'setLocalRolesOwner@TOK1-1111@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@',
+                'setLocalRolesOwner@TOK1-1111@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
             ),
         );
     });
@@ -231,7 +221,7 @@ describe('RouterService', () => {
     it('should get set pair creation enabled ON transaction', async () => {
         const transaction = await service.setPairCreationEnabled(true);
         expect(transaction.data).toMatch(
-            encodeTransactionData('setPairCreationEnabled@1'),
+            encodeTransactionData('setPairCreationEnabled@01'),
         );
     });
 
@@ -250,13 +240,13 @@ describe('RouterService', () => {
     });
 
     it('should get set temporary owner period transaction', async () => {
-        const transaction = await service.setTemporaryOwnerPeriod('1000');
+        const transaction = await service.setTemporaryOwnerPeriod('1000000000000000000000000000000000');
         expect(transaction.data).toMatch(
-            encodeTransactionData('setTemporaryOwnerPeriod@1000'),
+            encodeTransactionData('setTemporaryOwnerPeriod@1000000000000000000000000000000000'),
         );
     });
 
-    it('should get set set pair template address transaction', async () => {
+    it('should get set pair template address transaction', async () => {
         const transaction = await service.setPairTemplateAddress(
             Address.Zero().bech32(),
         );

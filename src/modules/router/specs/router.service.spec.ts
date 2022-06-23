@@ -60,14 +60,6 @@ describe('RouterService', () => {
         expect(service).toBeDefined();
     });
 
-    it('should get factory', async () => {
-        const factory = await service.getFactory();
-        expect(factory).toEqual({
-            address:
-                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-        });
-    });
-
     it('should get all pairs', async () => {
         const allPairs = await service.getAllPairs(
             0,
@@ -83,7 +75,6 @@ describe('RouterService', () => {
                 address:
                     'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
             }),
-
             new PairModel({
                 address:
                     'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
@@ -99,17 +90,6 @@ describe('RouterService', () => {
                     'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             }),
         ]);
-    });
-
-    it('should get filtered pairs', async () => {
-        const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
-            firstTokenID: 'TOK2-2222',
-            issuedLpToken: true,
-            address: null,
-            secondTokenID: null,
-            state: null,
-        });
-        expect(filteredPairs).toEqual([]);
     });
 
     it('should get filtered pairs', async () => {
