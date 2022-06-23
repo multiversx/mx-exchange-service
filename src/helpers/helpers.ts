@@ -14,79 +14,85 @@ export function base64Encode(str: string): string {
     return Buffer.from(str, 'binary').toString('base64');
 }
 
-export function decodeTransactionData(data: string): string {
+export function encodeTransactionData(data: string): string {
+    const delimiter = '@';
+
+    const args = data.split(delimiter);
+
+    let encoded = args.shift();
+    for (const arg of args) {
+        encoded += delimiter;
+
+        const address = encodeAddress(arg);
+        if (address !== undefined) {
+            encoded += address;
+        } else {
+            let bigNumber = decodeBigNumber(arg);
+            if (bigNumber !== undefined) {
+                const hex = bigNumber.toString(16);
+                encoded += hex.length % 2 === 1 ? '0' + hex : hex;
+            } else {
+                encoded += Buffer.from(arg).toString('hex');
+            }
+        }
+    }
+
+    return base64Encode(encoded);
+}
+
+function decodeBigNumber(bignumber: string) {
+    try {
+        const bigNumber = new BigNumber(bignumber);
+        return bigNumber.isPositive() ? bigNumber : undefined;
+    } catch (error) {
+        return undefined;
+    }
+}
+
+function encodeAddress(str: string): string | undefined {
+    try {
+        return new Address(str).hex();
+    } catch {
+        return undefined;
+    }
+}
+
+/* TEMP DEBUG CODE */
+export function decodeTransactionData(data: string | undefined): string {
     const delimiter = '@';
 
     const args = base64Decode(data).split(delimiter);
 
-    let decoded = args[0];
-    for (let i = 1; i < args.length; i++) {
+    let decoded = args.shift();
+    for (const arg of args) {
         decoded += delimiter;
 
-        if (args[i].length == 64) {
-            decoded += Address.fromHex(args[i]).bech32();
-        } else if (args[i]) {
-            const number = hex2dec(args[i]);
-            if (isNumber(number) && !number.toString().includes('e'))
-                decoded += number.toString();
+        const address = decodeAddress(arg);
+        if (address !== undefined) {
+            decoded += address;
+        } else {
+            let bigNumber = new BigNumber(`0x${arg}`); // parseInt(arg, 16);
+            if (bigNumber && !bigNumber.toString().includes('e'))
+                decoded +=
+                    bigNumber.toString().length % 2 === 1
+                        ? '0' + bigNumber.toString()
+                        : bigNumber.toString();
             else {
-                decoded += hex2ascii(args[i]);
+                decoded += Buffer.from(arg, 'hex').toString();
             }
         }
     }
 
     return decoded;
 }
-
-export function encodeTransactionData(data: string): string {
-    const delimiter = '@';
-
-    const args = data.split(delimiter);
-
-    let toEncode = args[0];
-    for (let i = 1; i < args.length; i++) {
-        toEncode += delimiter;
-
-        if (args[i].length == 62) {
-            toEncode += Address.fromString(args[i]).hex();
-        } else {
-            if (isNumber(parseInt(args[i])))
-                toEncode += deci2hex(args[i], true);
-            else {
-                toEncode += ascii2hex(args[i]);
-            }
-        }
+function decodeAddress(str: string): string | undefined {
+    try {
+        return new Address(str).bech32();
+    } catch {
+        return undefined;
     }
-
-    return base64Encode(toEncode);
 }
-
-function hex2ascii(hexx: string): string {
-    var hex = hexx.toString();
-    var str = '';
-    for (var i = 0; i < hex.length; i += 2)
-        str += String.fromCharCode(parseInt(hex.substring(i, i + 2), 16));
-    return str.toString();
-}
-
-function ascii2hex(str: string): string {
-    const res = [];
-    const { length: len } = str;
-    for (let n = 0, l = len; n < l; n++) {
-        const hex = Number(str.charCodeAt(n)).toString(16);
-        res.push(hex);
-    }
-    return res.join('');
-}
-
-function hex2dec(hex: string): number {
-    return parseInt(hex, 16);
-}
-
-function deci2hex(d, toEvenLength = false) {
-    var h = (+d).toString(16);
-    return toEvenLength && h.length % 2 === 1 ? '0' + h : h;
-}
+/* REMOVE */
 
 export function ruleOfThree(
     part: BigNumber,

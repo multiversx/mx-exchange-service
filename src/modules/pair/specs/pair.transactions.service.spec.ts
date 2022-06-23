@@ -95,7 +95,7 @@ describe('TransactionPairService', () => {
         const secondTokenAmount = '9';
 
         const initialLiquidityBatchTransactions = await service.addInitialLiquidityBatch(
-            'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
+            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -139,7 +139,7 @@ describe('TransactionPairService', () => {
             nonce: 0,
             value: '0',
             receiver:
-                'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
@@ -159,7 +159,7 @@ describe('TransactionPairService', () => {
         const secondTokenAmount = '9';
 
         const addLiquidityTransaction = await service.addInitialLiquidity(
-            'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
+            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -183,7 +183,7 @@ describe('TransactionPairService', () => {
             nonce: 0,
             value: '0',
             receiver:
-                'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
@@ -203,7 +203,7 @@ describe('TransactionPairService', () => {
         const secondTokenAmount = '9';
 
         const addLiquidityTransaction = await service.addLiquidity(
-            'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
+            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             {
                 pairAddress:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -227,7 +227,7 @@ describe('TransactionPairService', () => {
             nonce: 0,
             value: '0',
             receiver:
-                'erd173spamvzs8gv0ln4e4x605t7tucg892xgt2wmgw3pmrt43mwp3ys2lqp9x',
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
@@ -451,7 +451,7 @@ describe('TransactionPairService', () => {
                 sender:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
-                gasLimit: gasConfig.pairs.swapTokensFixedInput.withFeeSwap,
+                gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
                 data: encodeTransactionData(
                     'ESDTTransfer@TOK1-1111@5@swapTokensFixedInput@TOK2-2222@4',
                 ),
@@ -485,7 +485,7 @@ describe('TransactionPairService', () => {
                 sender:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
-                gasLimit: gasConfig.pairs.swapTokensFixedOutput.withFeeSwap,
+                gasLimit: gasConfig.pairs.swapTokensFixedOutput.default,
                 data: encodeTransactionData(
                     'ESDTTransfer@TOK2-2222@05@swapTokensFixedOutput@TOK1-1111@05',
                 ),

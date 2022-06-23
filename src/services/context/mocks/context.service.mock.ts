@@ -13,6 +13,28 @@ export const pairsMetadata: PairMetadata[] = [
         address:
             'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
     },
+    {
+        firstTokenID: 'TOK1-1111',
+        secondTokenID: 'USDC-1111',
+        address:
+            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+    },
+    {
+        firstTokenID: 'TOK1-1111',
+        secondTokenID: 'USDC-1111',
+        address: 'farm_address_2',
+    },
+    {
+        firstTokenID: 'TOK1-1111',
+        secondTokenID: 'USDC-1111',
+        address: 'farm_address_3',
+    },
+    {
+        firstTokenID: 'TOK1-1111',
+        secondTokenID: 'USDC-1111',
+        address:
+            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+    },
 ];
 
 export class ContextServiceMock {

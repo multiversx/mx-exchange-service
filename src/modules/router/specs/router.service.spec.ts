@@ -13,6 +13,7 @@ import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { PairFilterArgs } from '../models/filter.args';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 
 describe('RouterService', () => {
     let service: RouterService;
@@ -74,14 +75,29 @@ describe('RouterService', () => {
             new PairFilterArgs(),
         );
         expect(allPairs).toEqual([
-            {
+            new PairModel({
                 address:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            },
-            {
+            }),
+            new PairModel({
                 address:
                     'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-            },
+            }),
+
+            new PairModel({
+                address:
+                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            }),
+            new PairModel({
+                address: 'farm_address_2',
+            }),
+            new PairModel({
+                address: 'farm_address_3',
+            }),
+            new PairModel({
+                address:
+                    'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+            }),
         ]);
     });
 

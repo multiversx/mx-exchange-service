@@ -316,4 +316,82 @@ export class AbiFarmService extends GenericAbiService {
             return undefined;
         }
     }
+
+    async getBurnGasLimit(farmAddress: string): Promise<string> {
+        const [contract] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getBurnGasLimit([]);
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getTransferExecGasLimit(farmAddress: string): Promise<string> {
+        const [contract] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getTransferExecGasLimit(
+            [],
+        );
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getPairContractManagedAddress(farmAddress: string): Promise<string> {
+        try {
+            const [contract] = await this.elrondProxy.getFarmSmartContract(
+                farmAddress,
+            );
+            const interaction: Interaction = contract.methods.getPairContractManagedAddress(
+                [],
+            );
+            const response = await this.getGenericData(
+                AbiFarmService.name,
+                interaction,
+            );
+            return response.firstValue.valueOf().bech32();
+        } catch {
+            return undefined;
+        }
+    }
+
+    async getLockedAssetFactoryManagedAddress(
+        farmAddress: string,
+    ): Promise<string> {
+        try {
+            const [contract] = await this.elrondProxy.getFarmSmartContract(
+                farmAddress,
+            );
+            const interaction: Interaction = contract.methods.getLockedAssetFactoryManagedAddress(
+                [],
+            );
+            const response = await this.getGenericData(
+                AbiFarmService.name,
+                interaction,
+            );
+            return response.firstValue.valueOf().bech32();
+        } catch {
+            return undefined;
+        }
+    }
+
+    async getLastErrorMessage(farmAddress: string): Promise<string> {
+        const [contract] = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        const interaction: Interaction = contract.methods.getLastErrorMessage(
+            [],
+        );
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().toString();
+    }
 }

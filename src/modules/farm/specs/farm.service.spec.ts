@@ -23,10 +23,18 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
+import { farmVersion } from 'src/utils/farm.utils';
+import {
+    BigUIntType,
+    BigUIntValue,
+    BinaryCodec,
+    TypedValue,
+    U64Value,
+} from '@elrondnetwork/erdjs/out';
+import BigNumber from 'bignumber.js';
 
 describe('FarmService', () => {
     let service: FarmService;
-    let computeService: FarmComputeService;
 
     const AbiFarmServiceProvider = {
         provide: AbiFarmService,
@@ -88,7 +96,6 @@ describe('FarmService', () => {
         }).compile();
 
         service = module.get<FarmService>(FarmService);
-        computeService = module.get<FarmComputeService>(FarmComputeService);
     });
 
     it('should be defined', () => {
@@ -101,7 +108,8 @@ describe('FarmService', () => {
         const identifier = 'MEXFARM-abcd-01';
         const liquidity = '2000000000000000000';
         const rewards = await service.getRewardsForPosition({
-            farmAddress: 'farm_address_1',
+            farmAddress:
+                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             identifier: identifier,
             attributes: attributes,
             liquidity: liquidity,
@@ -129,10 +137,128 @@ describe('FarmService', () => {
         );
     });
 
-    it('should get unlocked rewards APR', async () => {
-        const farmAPR = await computeService.computeUnlockedRewardsAPR(
-            'farm_address_1',
-        );
-        expect(farmAPR).toEqual('1314010');
+    it('should get farms', async () => {
+        const farms = await service.getFarms();
+        expect(farms).toEqual([
+            {
+                address:
+                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                rewardType: undefined,
+                version: 'v1.2',
+            },
+            {
+                address: 'farm_address_2',
+                rewardType: 'unlockedRewards',
+                version: 'v1.3',
+            },
+            {
+                address: 'farm_address_3',
+                rewardType: 'lockedRewards',
+                version: 'v1.3',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+                rewardType: 'customRewards',
+                version: 'v1.3',
+            },
+        ]);
     });
+
+    it('should check if farm token', async () => {
+        const isFarmToken_0 = await service.isFarmToken('FMT-4321');
+        expect(isFarmToken_0).toEqual(false);
+
+        const isFarmToken_1 = await service.isFarmToken('FMT-1234');
+        expect(isFarmToken_1).toEqual(true);
+    });
+
+    it('should get farm address by farm token ID', async () => {
+        const farmAddress = await service.getFarmAddressByFarmTokenID(
+            'FMT-1234',
+        );
+        expect(farmAddress).toEqual(
+            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+        );
+    });
+
+    // RangeError: Attempt to access memory outside buffer boundsRangeError
+    // [ERR_BUFFER_OUT_OF_BOUNDS]: Attempt to access memory outside buffer bounds
+    /*it('should get batch rewards for position', async () => {
+        const batchRewardsForPosition = await service.getBatchRewardsForPosition(
+            [
+                {
+                    farmAddress:
+                        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+                    liquidity: '1000',
+                    identifier: '',
+                    attributes: '',
+                    vmQuery: true,
+                },
+            ],
+        );
+        expect(batchRewardsForPosition).toEqual('...');
+    });
+
+    it('should get tokens for exit farm', async () => {
+        const tokensForExitFarm = await service.getTokensForExitFarm({
+            farmAddress:
+                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            liquidity: '1000',
+            identifier: '',
+            attributes: '',
+            vmQuery: true,
+        });
+        expect(tokensForExitFarm).toEqual('...');
+    });*/
+
+    /*it('should get tokens for exit farm', async () => {
+        const farmAddress =
+            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye';
+        const version = farmVersion(farmAddress);
+
+        const attributes = new FarmTokenAttributesModel({
+            //identifier: "",
+            //attributes: "",
+            rewardPerShare: '100',
+            originalEnteringEpoch: 100,
+            enteringEpoch: 100,
+            //aprMultiplier: 10,
+            //lockedRewards: true,
+            initialFarmingAmount: '100',
+            compoundedReward: '100',
+            currentFarmAmount: '100',
+        });
+        
+        const attributesEncoded: TypedValue[] = [
+            new BigUIntValue(new BigNumber(100)),
+            new U64Value(new BigNumber(100)),
+            new U64Value(new BigNumber(100)),
+            new BigUIntValue(new BigNumber(100)),
+            new BigUIntValue(new BigNumber(100)),
+        ];
+
+        const codec = new BinaryCodec();
+
+        const tokensForExitFarm = await service.decodeFarmTokenAttributes(
+            farmAddress,
+            '',
+            attributesEncoded,
+        );
+        expect(tokensForExitFarm).toEqual('...');
+    });*/
+
+    /*
+    it('should get require owner error', async () => {
+        const tokensForExitFarm = await service.requireOwner({
+            farmAddress:
+                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            liquidity: '1000',
+            identifier: '',
+            attributes: '',
+            vmQuery: true,
+        });
+        expect(tokensForExitFarm).toEqual('...');
+    });
+    */
 });

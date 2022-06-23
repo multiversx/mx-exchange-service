@@ -16,10 +16,12 @@ import { PairRepositoryService } from './services/pair.repository.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Pair, PairSchema } from './schemas/pair.schema';
 import { DatabaseModule } from 'src/services/database/database.module';
+import { CommonAppModule } from 'src/common.app.module';
 @Module({
     imports: [
         ElrondCommunicationModule,
         ContextModule,
+        CommonAppModule,
         PriceFeedModule,
         WrappingModule,
         CachingModule,
