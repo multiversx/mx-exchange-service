@@ -48,7 +48,7 @@ export class ProxyCacheWarmerService {
             wrappedLpToken,
             wrappedFarmToken,
         ] = await Promise.all([
-            this.apiService.getService().getToken(assetTokenID),
+            this.apiService.getToken(assetTokenID),
             this.apiService.getNftCollection(lockedAssetTokenID),
             this.apiService.getNftCollection(wrappedLpTokenID),
             this.apiService.getNftCollection(wrappedFarmTokenID),

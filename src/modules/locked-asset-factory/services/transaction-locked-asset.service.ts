@@ -1,11 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Address, GasLimit } from '@elrondnetwork/erdjs';
-import { constantsConfig, gasConfig } from 'src/config';
-import {
-    BigUIntValue,
-    BytesValue,
-    U32Value,
-} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
+import { Address, TokenPayment } from '@elrondnetwork/erdjs';
+import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { BigNumber } from 'bignumber.js';
 import { UnlockAssetsArs } from '../models/locked-asset.args';
@@ -14,14 +9,12 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { LockedAssetGetterService } from './locked.asset.getter.service';
 
 @Injectable()
 export class TransactionsLockedAssetService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly contextTransactions: ContextTransactionsService,
         private readonly lockedAssetGetter: LockedAssetGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -31,42 +24,37 @@ export class TransactionsLockedAssetService {
         args: UnlockAssetsArs,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.lockedTokenID),
-            new U32Value(args.lockedTokenNonce),
-            new BigUIntValue(new BigNumber(args.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('unlockAssets'),
-        ];
-
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.lockedAssetFactory.unlockAssets),
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .unlockAssets()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.lockedTokenID,
+                    args.lockedTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.lockedAssetFactory.unlockAssets)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async lockAssets(token: InputTokenModel): Promise<TransactionModel> {
         await this.validateLockAssetsInputTokens(token);
-
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
-
-        const transactionArgs = [
-            BytesValue.fromUTF8(token.tokenID),
-            new BigUIntValue(new BigNumber(token.amount)),
-            BytesValue.fromUTF8(this.lockAssets.name),
-        ];
-
-        return this.contextTransactions.esdtTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.lockedAssetFactory.lockAssets),
-        );
+        return contract.methodsExplicit
+            .lockAssets()
+            .withSingleESDTTransfer(
+                TokenPayment.fungibleFromBigInteger(
+                    token.tokenID,
+                    new BigNumber(token.amount),
+                ),
+            )
+            .withGasLimit(gasConfig.lockedAssetFactory.lockAssets)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async mergeLockedAssetTokens(
@@ -96,19 +84,30 @@ export class TransactionsLockedAssetService {
 
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
 
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            tokens,
-            'mergeLockedAssetTokens',
-            [],
-            new GasLimit(
-                new BigNumber(gasConfig.lockedAssetFactory.lockedAssetMerge)
-                    .times(tokens.length)
-                    .plus(gasConfig.lockedAssetFactory.defaultMergeLockedAssets)
-                    .toNumber(),
+        const mappedPayments = tokens.map(tokenPayment =>
+            TokenPayment.metaEsdtFromBigInteger(
+                tokenPayment.tokenID,
+                tokenPayment.nonce,
+                new BigNumber(tokenPayment.amount),
             ),
         );
+        const gasLimit = new BigNumber(
+            gasConfig.lockedAssetFactory.lockedAssetMerge,
+        )
+            .times(tokens.length)
+            .plus(gasConfig.lockedAssetFactory.defaultMergeLockedAssets)
+            .toNumber();
+
+        return contract.methodsExplicit
+            .mergeLockedAssetTokens()
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async validateInputTokens(tokens: InputTokenModel[]): Promise<void> {

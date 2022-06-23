@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { BinaryCodec } from '@elrondnetwork/erdjs';
 import { constantsConfig } from '../../../config';
 import {
     ExitFarmTokensModel,
@@ -12,12 +11,13 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import BigNumber from 'bignumber.js';
 import { ruleOfThree } from '../../../helpers/helpers';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { FarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
+import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 
 @Injectable()
 export class FarmService {
@@ -84,9 +84,8 @@ export class FarmService {
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
-        const farmTokenAttributes = this.decodeFarmTokenAttributes(
-            positon.farmAddress,
-            positon.identifier,
+        const farmTokenAttributes: FarmTokenAttributes = FarmTokenAttributes.fromAttributes(
+            farmVersion(positon.farmAddress),
             positon.attributes,
         );
         let rewards: BigNumber;
@@ -114,7 +113,11 @@ export class FarmService {
         );
 
         return new RewardsModel({
-            decodedAttributes: farmTokenAttributes,
+            decodedAttributes: new FarmTokenAttributesModel({
+                ...farmTokenAttributes.toJSON(),
+                attributes: positon.attributes,
+                identifier: positon.identifier,
+            }),
             remainingFarmingEpochs: remainingFarmingEpochs,
             rewards: rewards.integerValue().toFixed(),
         });
@@ -123,23 +126,22 @@ export class FarmService {
     async getTokensForExitFarm(
         args: CalculateRewardsArgs,
     ): Promise<ExitFarmTokensModel> {
-        const decodedAttributes = this.decodeFarmTokenAttributes(
-            args.farmAddress,
-            args.identifier,
+        const farmTokenAttributes = FarmTokenAttributes.fromAttributes(
+            farmVersion(args.farmAddress),
             args.attributes,
         );
         let initialFarmingAmount = ruleOfThree(
             new BigNumber(args.liquidity),
-            new BigNumber(decodedAttributes.currentFarmAmount),
-            new BigNumber(decodedAttributes.initialFarmingAmount),
+            new BigNumber(farmTokenAttributes.currentFarmAmount),
+            new BigNumber(farmTokenAttributes.initialFarmingAmount),
         );
         const rewardsForPosition = await this.getRewardsForPosition(args);
         let rewards = new BigNumber(rewardsForPosition.rewards);
         rewards = rewards.plus(
             ruleOfThree(
                 new BigNumber(args.liquidity),
-                new BigNumber(decodedAttributes.currentFarmAmount),
-                new BigNumber(decodedAttributes.compoundedReward),
+                new BigNumber(farmTokenAttributes.currentFarmAmount),
+                new BigNumber(farmTokenAttributes.compoundedReward),
             ),
         );
 
@@ -166,21 +168,15 @@ export class FarmService {
         identifier: string,
         attributes: string,
     ): FarmTokenAttributesModel {
-        const version = farmVersion(farmAddress);
-        const attributesBuffer = Buffer.from(attributes, 'base64');
-        const codec = new BinaryCodec();
-
-        const structType = FarmTokenAttributesModel.getStructure(version);
-        const [decoded] = codec.decodeNested(attributesBuffer, structType);
-
-        const decodedAttributes = decoded.valueOf();
-        const farmTokenAttributes = FarmTokenAttributesModel.fromDecodedAttributes(
-            decodedAttributes,
-            version,
+        const farmTokenAttributes = FarmTokenAttributes.fromAttributes(
+            farmVersion(farmAddress),
+            attributes,
         );
-        farmTokenAttributes.attributes = attributes;
-        farmTokenAttributes.identifier = identifier;
-        return farmTokenAttributes;
+        return new FarmTokenAttributesModel({
+            ...farmTokenAttributes.toJSON(),
+            attributes: attributes,
+            identifier: identifier,
+        });
     }
 
     async requireOwner(farmAddress, sender) {

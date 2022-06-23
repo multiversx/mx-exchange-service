@@ -35,7 +35,7 @@ export type BestSwapRoute = {
 /// Modified eager Dijkstra's algorithm inspired from https://github.com/tcort/dijkstrajs
 export class AutoRouterComputeService {
     /// Computes the best swap route (with max output / min input) using a converted Eager Dijkstra's algorithm
-    public async computeBestSwapRoute(
+    async computeBestSwapRoute(
         s: string,
         d: string,
         pairs: PairModel[],

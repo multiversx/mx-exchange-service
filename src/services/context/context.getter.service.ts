@@ -50,7 +50,7 @@ export class ContextGetterService {
         const cacheKey = this.getContextCacheKey(tokenID);
         return await this.getData(
             cacheKey,
-            () => this.apiService.getService().getToken(tokenID),
+            () => this.apiService.getToken(tokenID),
             oneMinute() * 2,
         );
     }
@@ -61,15 +61,6 @@ export class ContextGetterService {
             cacheKey,
             () => this.apiService.getNftCollection(collection),
             oneMinute() * 2,
-        );
-    }
-
-    async getNftMetadata(nftTokenID: string): Promise<NftToken> {
-        const cacheKey = this.getContextCacheKey(nftTokenID);
-        return await this.getData(
-            cacheKey,
-            () => this.apiService.getService().getNFTToken(nftTokenID),
-            oneHour(),
         );
     }
 
