@@ -23,15 +23,6 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
-import { farmVersion } from 'src/utils/farm.utils';
-import {
-    BigUIntType,
-    BigUIntValue,
-    BinaryCodec,
-    TypedValue,
-    U64Value,
-} from '@elrondnetwork/erdjs/out';
-import BigNumber from 'bignumber.js';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -182,83 +173,75 @@ describe('FarmService', () => {
         );
     });
 
-    // RangeError: Attempt to access memory outside buffer boundsRangeError
-    // [ERR_BUFFER_OUT_OF_BOUNDS]: Attempt to access memory outside buffer bounds
-    /*it('should get batch rewards for position', async () => {
+    it('should get batch rewards for position', async () => {
         const batchRewardsForPosition = await service.getBatchRewardsForPosition(
             [
                 {
                     farmAddress:
                         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-                    liquidity: '1000',
-                    identifier: '',
-                    attributes: '',
-                    vmQuery: true,
+                    liquidity: '1000000000000000',
+                    identifier: 'EGLDMEXFL-a329b6-0b',
+                    attributes:
+                        'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+                    vmQuery: false,
                 },
             ],
         );
-        expect(batchRewardsForPosition).toEqual('...');
+        expect(batchRewardsForPosition).toEqual([
+            {
+                decodedAttributes: {
+                    aprMultiplier: null,
+                    attributes:
+                        'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+                    compoundedReward: '0',
+                    currentFarmAmount: '1256235401928812748',
+                    enteringEpoch: 1045,
+                    identifier: 'EGLDMEXFL-a329b6-0b',
+                    initialFarmingAmount: '1256235401928812748',
+                    lockedRewards: null,
+                    originalEnteringEpoch: 1045,
+                    rewardPerShare: '0',
+                },
+                remainingFarmingEpochs: 1047,
+                rewards: '150000000000',
+            },
+        ]);
     });
 
     it('should get tokens for exit farm', async () => {
         const tokensForExitFarm = await service.getTokensForExitFarm({
             farmAddress:
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-            liquidity: '1000',
-            identifier: '',
-            attributes: '',
-            vmQuery: true,
+                'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+            liquidity: '1000000000000000',
+            identifier: 'EGLDMEXFL-a329b6-0b',
+            attributes:
+                'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+            vmQuery: false,
         });
-        expect(tokensForExitFarm).toEqual('...');
-    });*/
-
-    /*it('should get tokens for exit farm', async () => {
-        const farmAddress =
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye';
-        const version = farmVersion(farmAddress);
-
-        const attributes = new FarmTokenAttributesModel({
-            //identifier: "",
-            //attributes: "",
-            rewardPerShare: '100',
-            originalEnteringEpoch: 100,
-            enteringEpoch: 100,
-            //aprMultiplier: 10,
-            //lockedRewards: true,
-            initialFarmingAmount: '100',
-            compoundedReward: '100',
-            currentFarmAmount: '100',
+        expect(tokensForExitFarm).toEqual({
+            farmingTokens: '999000000000000',
+            rewards: '150000000000',
         });
-        
-        const attributesEncoded: TypedValue[] = [
-            new BigUIntValue(new BigNumber(100)),
-            new U64Value(new BigNumber(100)),
-            new U64Value(new BigNumber(100)),
-            new BigUIntValue(new BigNumber(100)),
-            new BigUIntValue(new BigNumber(100)),
-        ];
-
-        const codec = new BinaryCodec();
-
-        const tokensForExitFarm = await service.decodeFarmTokenAttributes(
-            farmAddress,
-            '',
-            attributesEncoded,
-        );
-        expect(tokensForExitFarm).toEqual('...');
-    });*/
-
-    /*
-    it('should get require owner error', async () => {
-        const tokensForExitFarm = await service.requireOwner({
-            farmAddress:
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-            liquidity: '1000',
-            identifier: '',
-            attributes: '',
-            vmQuery: true,
-        });
-        expect(tokensForExitFarm).toEqual('...');
     });
-    */
+
+    it('should get tokens for exit farm', async () => {
+        const tokensForExitFarm = await service.decodeFarmTokenAttributes(
+            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+            'EGLDMEXFL-a329b6-0b',
+            'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+        );
+        expect(tokensForExitFarm).toEqual({
+            aprMultiplier: null,
+            attributes:
+                'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+            compoundedReward: '0',
+            currentFarmAmount: '1256235401928812748',
+            enteringEpoch: 1045,
+            identifier: 'EGLDMEXFL-a329b6-0b',
+            initialFarmingAmount: '1256235401928812748',
+            lockedRewards: null,
+            originalEnteringEpoch: 1045,
+            rewardPerShare: '0',
+        });
+    });
 });
