@@ -85,28 +85,31 @@ describe('StakingService', () => {
         expect(farmsStaking.length).toBeGreaterThanOrEqual(1);
     });
 
+    // Attempt to access memory outside buffer bounds
     /*it('should get rewards for position', async () => {
         const rewards = await service.getRewardsForPosition({
-            farmAddress: '',
-            liquidity: '',
+            farmAddress:
+                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            liquidity: '1000000000000000',
             identifier: '',
             attributes: '',
             vmQuery: false,
         });
-        expect(rewards).toEqual(rewards);
+        expect(rewards).toEqual('0');
     });
 
     it('should get batch rewards for position', async () => {
         const batchRewards = await service.getBatchRewardsForPosition([
             {
-                farmAddress: '',
-                liquidity: '',
+                farmAddress:
+                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                liquidity: '1000000000000000',
                 identifier: '',
                 attributes: '',
                 vmQuery: false,
             },
         ]);
-        expect(batchRewards).toEqual(batchRewards);
+        expect(batchRewards).toEqual('1');
     });*/
 
     // An error occurred while runQuery

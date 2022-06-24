@@ -38,6 +38,18 @@ describe('ContextService', () => {
         expectedMap.set('TOK1-1111', ['TOK2-2222', 'USDC-1111']);
         expectedMap.set('TOK2-2222', ['TOK1-1111']);
         expectedMap.set('USDC-1111', ['TOK1-1111']);
+        expectedMap.set('FDT-1234', [
+            'FMT-1234',
+            'FMT-1234',
+            'FMT-1234',
+            'FMT-1234',
+        ]);
+        expectedMap.set('FMT-1234', [
+            'FDT-1234',
+            'FDT-1234',
+            'FDT-1234',
+            'FDT-1234',
+        ]);
 
         expect(pairsMap).toEqual(expectedMap);
     });

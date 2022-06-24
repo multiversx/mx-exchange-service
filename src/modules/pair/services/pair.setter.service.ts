@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { FeeDestination } from '../models/pair.model';
 
 @Injectable()
 export class PairSetterService {
@@ -234,6 +235,57 @@ export class PairSetterService {
         const cacheKey = this.getPairCacheKey(
             pairAddress,
             'initialLiquidtyAdder',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
+    }
+
+    async setExternSwapGasLimit(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'externSwapGasLimit',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
+    }
+
+    async setRouterManagedAddress(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'routerManagedAddress',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
+    }
+
+    async setWhitelistedManagedAddresses(
+        pairAddress: string,
+        value: string[],
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'whitelistedManagedAddresses',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
+    }
+
+    async setFeeDestinations(pairAddress: string, value: FeeDestination[]) {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'feeDestinations');
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
+    }
+
+    async setTransferExecGasLimit(pairAddress: string, value: string) {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'transferExecGasLimit',
         );
         await this.cachingService.setCache(cacheKey, value, oneHour());
         return cacheKey;

@@ -7,26 +7,31 @@ import { PairsData } from './pair.constants';
 @Injectable()
 export class PairGetterServiceMock {
     async getFirstTokenID(pairAddress: string): Promise<string> {
-        return PairsData(pairAddress).firstToken.identifier;
+        return PairsData(pairAddress)?.firstToken.identifier;
     }
 
     async getSecondTokenID(pairAddress: string): Promise<string> {
-        return PairsData(pairAddress).secondToken.identifier;
+        return PairsData(pairAddress)?.secondToken.identifier;
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {
-        const pair = PairsData(pairAddress);
-        if (pair && pair.liquidityPoolToken)
-            return pair.liquidityPoolToken.identifier;
-        return undefined;
+        return PairsData(pairAddress)?.liquidityPoolToken.identifier;
     }
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
-        return PairsData(pairAddress).firstToken;
+        try {
+            return PairsData(pairAddress).firstToken;
+        } catch {
+            console.log('getFirstToken pairAddress', pairAddress);
+        }
     }
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
-        return PairsData(pairAddress).secondToken;
+        try {
+            return PairsData(pairAddress).secondToken;
+        } catch {
+            console.log('getSecondToken pairAddress', pairAddress);
+        }
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
@@ -63,6 +68,12 @@ export class PairGetterServiceMock {
                 return '100';
             case 'USDC-1111':
                 return '1';
+            case 'FDT-1234':
+                return '10';
+            case 'FMT-1234':
+                return '15';
+            case 'LPT-1111':
+                return '50';
         }
     }
 
@@ -133,6 +144,10 @@ export class PairGetterServiceMock {
     }
 
     async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
-        return [Address.Zero().bech32()];
+        return [];
+    }
+
+    async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
+        return Address.Zero().bech32();
     }
 }

@@ -1,4 +1,4 @@
-import { ObjectType, Field, ArgsType, Int } from '@nestjs/graphql';
+import { ObjectType, Field, ArgsType, Int, InputType } from '@nestjs/graphql';
 import { PaginationArgs } from '../../dex.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
@@ -33,6 +33,20 @@ export class LockedTokensInfo {
     }
 }
 
+@ObjectType('BPConfig')
+@InputType('BPConfigInput')
+export class BPConfig {
+    @Field()
+    protectStopBlock: string;
+    @Field()
+    volumePercent: string;
+    @Field()
+    maxNumActionsPerAddress: string;
+
+    constructor(init?: Partial<BPConfig>) {
+        Object.assign(this, init);
+    }
+}
 @ObjectType()
 export class PairModel {
     @Field()
@@ -107,6 +121,18 @@ export class PairModel {
     @Field(() => LockedTokensInfo, { nullable: true })
     lockedTokensInfo: LockedTokensInfo;
 
+    @Field(() => [String])
+    whitelistedManagedAddresses: string[];
+
+    @Field()
+    externSwapGasLimit: string;
+
+    @Field()
+    transferExecGasLimit: string;
+
+    @Field()
+    initialLiquidityAdder: string;
+
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);
     }
@@ -121,6 +147,18 @@ export class PairTokens {
     secondTokenID: string;
 
     constructor(init?: Partial<PairTokens>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class FeeDestination {
+    @Field()
+    address: string;
+    @Field()
+    tokenID: string;
+
+    constructor(init?: Partial<FeeDestination>) {
         Object.assign(this, init);
     }
 }

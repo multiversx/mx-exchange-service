@@ -265,7 +265,7 @@ describe('AutoRouterService', () => {
                 sender:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
-                gasLimit: 25500000,
+                gasLimit: 8700000,
                 data:
                     'RVNEVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUAwZGUwYjZiM2E3NjQwMDAwQDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzRANTQ0ZjRiMzEyZDMxMzEzMTMxQDExNzJhY2UwMjZiMGM0',
                 chainID: 'T',

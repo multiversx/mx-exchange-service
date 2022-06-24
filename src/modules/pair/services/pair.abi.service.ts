@@ -5,7 +5,24 @@ import { ElrondProxyService } from 'src/services/elrond-communication/elrond-pro
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
-import { ResultsParser, TokenIdentifierValue } from '@elrondnetwork/erdjs/out';
+import BigNumber from 'bignumber.js';
+import { FeeDestination } from '../models/pair.model';
+import {
+    EsdtTokenPayment,
+    EsdtTokenPaymentStruct,
+    EsdtTokenType,
+} from 'src/models/esdtTokenPayment.model';
+import {
+    Address,
+    BigUIntValue,
+    BytesValue,
+    EnumValue,
+    Field,
+    ResultsParser,
+    Struct,
+    TokenIdentifierValue,
+    U64Value,
+} from '@elrondnetwork/erdjs/out';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { elrondConfig } from 'src/config';
 import { VmQueryError } from 'src/utils/errors.constants';
@@ -149,7 +166,7 @@ export class PairAbiService extends GenericAbiService {
             .map(swapPair => swapPair.field1.bech32());
     }
 
-    async getInitialLiquidtyAdder(pairAddress: string): Promise<string> {
+    async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
@@ -318,5 +335,200 @@ export class PairAbiService extends GenericAbiService {
 
             throw error;
         }
+    }
+
+    async getFeeState(pairAddress: string): Promise<Boolean> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getFeeState([]);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf();
+    }
+
+    async getFeeDestinations(pairAddress: string): Promise<FeeDestination[]> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getFeeDestinations(
+            [],
+        );
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().map(v => {
+            return new FeeDestination({
+                address: new Address(
+                    response.firstValue.valueOf()[0].field0,
+                ).bech32(),
+                tokenID: response.firstValue.valueOf()[0].field1.toString(),
+            });
+        });
+    }
+
+    async getWhitelistedManagedAddresses(
+        pairAddress: string,
+    ): Promise<string[]> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getWhitelistedManagedAddresses(
+            [],
+        );
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().map(v => {
+            return new Address(v).bech32();
+        });
+    }
+
+    async getRouterManagedAddress(address: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(address);
+        const interaction: Interaction = contract.methods.getRouterManagedAddress(
+            [],
+        );
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return new Address(response.firstValue.valueOf().toString()).bech32();
+    }
+
+    async getRouterOwnerManagedAddress(address: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(address);
+        const interaction: Interaction = contract.methods.getRouterOwnerManagedAddress(
+            [],
+        );
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return new Address(response.firstValue.valueOf().toString()).bech32();
+    }
+
+    async getExternSwapGasLimit(pairAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getExternSwapGasLimit(
+            [],
+        );
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().toString();
+    }
+
+    async getTransferExecGasLimit(pairAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getTransferExecGasLimit(
+            [],
+        );
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().toString();
+    }
+
+    async updateAndGetSafePrice(
+        pairAddress: string,
+        esdtTokenPayment: EsdtTokenPayment,
+    ): Promise<EsdtTokenPayment> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.updateAndGetSafePrice(
+            [
+                new Struct(EsdtTokenPaymentStruct.getStructure(), [
+                    new Field(
+                        new EnumValue(
+                            EsdtTokenType.getEnum(),
+                            EsdtTokenType.getEnum().getVariantByDiscriminant(
+                                esdtTokenPayment.tokenType,
+                            ),
+                            [],
+                        ),
+                        'token_type',
+                    ),
+                    new Field(
+                        new TokenIdentifierValue(
+                            Buffer.from(esdtTokenPayment.tokenID).toString(),
+                        ),
+                        'token_identifier',
+                    ),
+                    new Field(
+                        new U64Value(new BigNumber(esdtTokenPayment.nonce)),
+                        'token_nonce',
+                    ),
+                    new Field(
+                        new BigUIntValue(
+                            new BigNumber(esdtTokenPayment.amount),
+                        ),
+                        'amount',
+                    ),
+                ]),
+            ],
+        );
+
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return new EsdtTokenPayment({
+            tokenType: EsdtTokenType.getEnum().getVariantByName(
+                response.firstValue.valueOf().token_type.name,
+            ).discriminant,
+            tokenID: response.firstValue.valueOf().token_identifier.toString(),
+            nonce: new BigNumber(
+                response.firstValue.valueOf().token_nonce,
+            ).toNumber(),
+            amount: new BigNumber(
+                response.firstValue.valueOf().amount,
+            ).toString(),
+        });
+    }
+
+    async getNumSwapsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getNumSwapsByAddress([
+            BytesValue.fromHex(new Address(address).hex()),
+        ]);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().toString();
+    }
+
+    async getNumAddsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methods.getNumSwapsByAddress([
+            BytesValue.fromHex(new Address(address).hex()),
+        ]);
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().toString();
     }
 }

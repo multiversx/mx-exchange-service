@@ -3,11 +3,15 @@
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl"
     },
     "farms": {
-        "v1.2": ["farm_address_1"],
+        "v1.2": [
+            "erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye"
+        ],
         "v1.3": {
             "unlockedRewards": ["farm_address_2"],
             "lockedRewards": ["farm_address_3"],
-            "customRewards": ["farm_address_4"]
+            "customRewards": [
+                "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u"
+            ]
         }
     },
     "tokenProviderUSD": "TOK1-1111",

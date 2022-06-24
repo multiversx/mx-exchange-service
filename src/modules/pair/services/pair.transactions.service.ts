@@ -2,9 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
     BigUIntValue,
     TypedValue,
+    U64Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Address, TokenPayment } from '@elrondnetwork/erdjs';
+import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs';
 import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
@@ -12,6 +13,7 @@ import {
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
+    WhitelistArgs,
 } from '../models/pair.args';
 import BigNumber from 'bignumber.js';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
@@ -23,6 +25,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { BPConfig } from '../models/pair.model';
 
 @Injectable()
 export class PairTransactionService {
@@ -103,7 +106,7 @@ export class PairTransactionService {
         sender: string,
         args: AddLiquidityArgs,
     ): Promise<TransactionModel> {
-        const initialLiquidityAdder = await this.pairGetterService.getInitialLiquidtyAdder(
+        const initialLiquidityAdder = await this.pairGetterService.getInitialLiquidityAdder(
             args.pairAddress,
         );
         if (sender != initialLiquidityAdder) {
@@ -578,5 +581,303 @@ export class PairTransactionService {
                 firstToken,
             ];
         }
+    }
+
+    async whitelist(args: WhitelistArgs): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            BytesValue.fromHex(new Address(args.address).hex()),
+        ];
+        return contract.methodsExplicit
+            .whitelist(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.whitelist)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async removeWhitelist(args: WhitelistArgs): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            args.pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            BytesValue.fromHex(new Address(args.address).hex()),
+        ];
+        return contract.methodsExplicit
+            .removeWhitelist(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.removeWhitelist)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async addTrustedSwapPair(
+        pairAddress: string,
+        swapPairAddress: string,
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            BytesValue.fromHex(new Address(swapPairAddress).hex()),
+            BytesValue.fromUTF8(firstTokenID),
+            BytesValue.fromUTF8(secondTokenID),
+        ];
+        return contract.methodsExplicit
+            .addTrustedSwapPair(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.addTrustedSwapPair)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async removeTrustedSwapPair(
+        pairAddress: string,
+        firstTokenID: string,
+        secondTokenID: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            BytesValue.fromUTF8(firstTokenID),
+            BytesValue.fromUTF8(secondTokenID),
+        ];
+        return contract.methodsExplicit
+            .removeTrustedSwapPair(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.removeTrustedSwapPair)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setTransferExecGasLimit(
+        pairAddress: string,
+        gasLimit: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new U64Value(new BigNumber(gasLimit)),
+        ];
+        return contract.methodsExplicit
+            .set_transfer_exec_gas_limit(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.set_transfer_exec_gas_limit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setExternSwapGasLimit(
+        pairAddress: string,
+        gasLimit: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new U64Value(new BigNumber(gasLimit)),
+        ];
+        return contract.methodsExplicit
+            .set_extern_swap_gas_limit(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.set_extern_swap_gas_limit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async pause(pairAddress: string): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        return contract.methodsExplicit
+            .pause()
+            .withGasLimit(gasConfig.pairs.admin.pause)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async resume(pairAddress: string): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        return contract.methodsExplicit
+            .resume()
+            .withGasLimit(gasConfig.pairs.admin.resume)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setStateActiveNoSwaps(
+        pairAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        return contract.methodsExplicit
+            .setStateActiveNoSwaps()
+            .withGasLimit(gasConfig.pairs.admin.setStateActiveNoSwaps)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setFeePercents(
+        pairAddress: string,
+        totalFeePercent: string,
+        specialFeePercent: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new BigUIntValue(new BigNumber(totalFeePercent)),
+            new BigUIntValue(new BigNumber(specialFeePercent)),
+        ];
+        return contract.methodsExplicit
+            .setFeePercents(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.setFeePercents)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setMaxObservationsPerRecord(
+        pairAddress: string,
+        maxObservationsPerRecord: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new BigUIntValue(new BigNumber(maxObservationsPerRecord)),
+        ];
+        return contract.methodsExplicit
+            .setMaxObservationsPerRecord(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.setMaxObservationsPerRecord)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setBPSwapConfig(
+        pairAddress: string,
+        config: BPConfig,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new BigUIntValue(new BigNumber(config.protectStopBlock)),
+            new BigUIntValue(new BigNumber(config.volumePercent)),
+            new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
+        ];
+        return contract.methodsExplicit
+            .setBPSwapConfig(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.setBPSwapConfig)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setBPRemoveConfig(
+        pairAddress: string,
+        config: BPConfig,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new BigUIntValue(new BigNumber(config.protectStopBlock)),
+            new BigUIntValue(new BigNumber(config.volumePercent)),
+            new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
+        ];
+        return contract.methodsExplicit
+            .setBPRemoveConfig(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.setBPRemoveConfig)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setBPAddConfig(
+        pairAddress: string,
+        config: BPConfig,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new BigUIntValue(new BigNumber(config.protectStopBlock)),
+            new BigUIntValue(new BigNumber(config.volumePercent)),
+            new BigUIntValue(new BigNumber(config.maxNumActionsPerAddress)),
+        ];
+        return contract.methodsExplicit
+            .setBPAddConfig(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.setBPAddConfig)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setLockingDeadlineEpoch(
+        pairAddress: string,
+        newDeadline: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new BigUIntValue(new BigNumber(newDeadline)),
+        ];
+        return contract.methodsExplicit
+            .setLockingDeadlineEpoch(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.setLockingDeadlineEpoch)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setUnlockEpoch(
+        pairAddress: string,
+        newEpoch: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new BigUIntValue(new BigNumber(newEpoch)),
+        ];
+        return contract.methodsExplicit
+            .setUnlockEpoch(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.setUnlockEpoch)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setLockingScAddress(
+        pairAddress: string,
+        newAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            BytesValue.fromHex(new Address(newAddress).hex()),
+        ];
+        return contract.methodsExplicit
+            .setLockingScAddress(transactionArgs)
+            .withGasLimit(gasConfig.pairs.admin.setLockingScAddress)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 }

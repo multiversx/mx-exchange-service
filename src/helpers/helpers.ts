@@ -1,6 +1,5 @@
 import { Address } from '@elrondnetwork/erdjs/out';
 import { BigNumber } from 'bignumber.js';
-import { isNumber } from 'class-validator';
 
 export function base64DecodeBinary(str: string): Buffer {
     return Buffer.from(str, 'base64');

@@ -264,7 +264,7 @@ describe('UserService', () => {
                 balance: '1000000000000000000',
                 identifier: 'FMT-1234-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
-                creator: 'farm_address_1',
+                creator: 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 nonce: 1,
                 royalties: 0,
                 valueUSD: '400',
