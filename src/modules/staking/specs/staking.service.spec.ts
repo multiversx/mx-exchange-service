@@ -85,17 +85,29 @@ describe('StakingService', () => {
         expect(farmsStaking.length).toBeGreaterThanOrEqual(1);
     });
 
-    // Attempt to access memory outside buffer bounds
-    /*it('should get rewards for position', async () => {
+    it('should get rewards for position', async () => {
         const rewards = await service.getRewardsForPosition({
             farmAddress:
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             liquidity: '1000000000000000',
-            identifier: '',
-            attributes: '',
+            identifier: 'MEXFARML-772223-14',
+            attributes:
+                'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
             vmQuery: false,
         });
-        expect(rewards).toEqual('0');
+        expect(rewards).toEqual({
+            decodedAttributes: {
+                attributes:
+                    'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
+                compoundedReward: '0',
+                currentFarmAmount:
+                    '519205458813209018315265407815173060004346493743728287017479820327455628280230924139593728',
+                identifier: 'MEXFARML-772223-14',
+                rewardPerShare: '0',
+                type: 'stakingFarmToken',
+            },
+            rewards: '2850000000000000095129375',
+        });
     });
 
     it('should get batch rewards for position', async () => {
@@ -104,22 +116,26 @@ describe('StakingService', () => {
                 farmAddress:
                     'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 liquidity: '1000000000000000',
-                identifier: '',
-                attributes: '',
+                identifier: 'MEXFARML-772223-14',
+                attributes:
+                    'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
                 vmQuery: false,
             },
         ]);
-        expect(batchRewards).toEqual('1');
-    });*/
-
-    // An error occurred while runQuery
-    // {"path":"AbiStakingService.isWhitelisted","error":"Cannot GET vm-values/query: [Bad Request]"}
-    /*it('should check if whitelisted', async () => {
-        const stakeAddress = await service.getFarmsStaking()[0].address;
-        const isWhitelisted = await service.isWhitelisted(
-            stakeAddress,
-            Address.Zero().bech32(),
-        );
-        expect(isWhitelisted).toEqual(false);
-    });*/
+        expect(batchRewards).toEqual([
+            {
+                decodedAttributes: {
+                    attributes:
+                        'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
+                    compoundedReward: '0',
+                    currentFarmAmount:
+                        '519205458813209018315265407815173060004346493743728287017479820327455628280230924139593728',
+                    identifier: 'MEXFARML-772223-14',
+                    rewardPerShare: '0',
+                    type: 'stakingFarmToken',
+                },
+                rewards: '2850000000000000095129375',
+            },
+        ]);
+    });
 });
