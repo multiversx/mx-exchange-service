@@ -5,12 +5,12 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { TokenDBService } from './token.db.service';
+import { TokenRepositoryService } from './token.repository.service';
 
 @Injectable()
 export class TokenGetterService {
     constructor(
-        private readonly tokenDbService: TokenDBService,
+        private readonly tokenRepositoryService: TokenRepositoryService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -44,7 +44,7 @@ export class TokenGetterService {
         return await this.getData(
             tokenID,
             'type',
-            () => this.tokenDbService.getTokenType(tokenID),
+            () => this.tokenRepositoryService.getTokenType(tokenID),
             oneSecond(),
         );
     }

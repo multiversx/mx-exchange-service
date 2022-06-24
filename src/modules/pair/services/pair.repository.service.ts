@@ -1,18 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { EntityRepository } from 'src/services/database/entity.repository';
 import { CreatePairDto } from '../dto/create.pair.dto';
 import { Pair, PairDocument } from '../schemas/pair.schema';
 
 @Injectable()
-export class PairDBService {
+export class PairRepositoryService extends EntityRepository<PairDocument> {
     constructor(
         @InjectModel(Pair.name) private readonly pairModel: Model<PairDocument>,
-    ) {}
-
-    async createPair(createPairDto: CreatePairDto): Promise<Pair> {
-        const createdPair = await this.pairModel.create(createPairDto);
-        return createdPair;
+    ) {
+        super(pairModel);
     }
 
     async updatePair(updatePairDto: CreatePairDto): Promise<void> {
@@ -37,6 +35,6 @@ export class PairDBService {
             .equals(pairAddress)
             .exec();
 
-        return pair ? pair.type : 'Experimental';
+        return pair ? pair.type : 'Jungle';
     }
 }

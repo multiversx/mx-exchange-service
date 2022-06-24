@@ -7,7 +7,6 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { RedisModule } from 'nestjs-redis';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-transactions.service';
 import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
@@ -19,7 +18,6 @@ import { Address } from '@elrondnetwork/erdjs/out';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { ProxyGetterServiceMock } from '../mocks/proxy.getter.service.mock';
 import { ProxyPairGetterService } from '../services//proxy-pair/proxy-pair.getter.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ProxyPairGetterServiceMock } from '../mocks/proxy.pair.getter.service.mock';
 import { ProxyGetterService } from '../services/proxy.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -70,20 +68,12 @@ describe('TransactionProxyPairService', () => {
                 WinstonModule.forRoot({
                     transports: logTransports,
                 }),
-                RedisModule.register([
-                    {
-                        host: process.env.REDIS_URL,
-                        port: parseInt(process.env.REDIS_PORT),
-                        password: process.env.REDIS_PASSWORD,
-                    },
-                ]),
             ],
             providers: [
                 ApiConfigService,
                 ConfigService,
                 ElrondProxyService,
                 ContextServiceProvider,
-                ContextTransactionsService,
                 ProxyGetterServiceProvider,
                 ProxyPairGetterServiceProvider,
                 PairService,

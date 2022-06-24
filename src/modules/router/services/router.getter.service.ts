@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute } from 'src/helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
@@ -8,6 +8,7 @@ import { Logger } from 'winston';
 import { AbiRouterService } from './abi.router.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { RouterComputeService } from './router.compute.service';
+import { PairTokens } from 'src/modules/pair/models/pair.model';
 
 @Injectable()
 export class RouterGetterService {
@@ -54,7 +55,7 @@ export class RouterGetterService {
     async getPairsMetadata(): Promise<PairMetadata[]> {
         return this.getData(
             'pairsMetadata',
-            () => this.abiService.getPairsMetadata(),
+            async () => this.abiService.getPairsMetadata(),
             oneMinute(),
         );
     }
@@ -85,5 +86,69 @@ export class RouterGetterService {
 
     private getRouterCacheKey(...args: any) {
         return generateCacheKeyFromParams('router', ...args);
+    }
+
+    async getPairCreationEnabled(): Promise<boolean> {
+        return this.getData(
+            'pairCreationEnabled',
+            () => this.abiService.getPairCreationEnabled(),
+            oneHour(),
+        );
+    }
+
+    async getLastErrorMessage(): Promise<string> {
+        return this.getData(
+            'lastErrorMessage',
+            () => this.abiService.getLastErrorMessage(),
+            oneSecond(),
+        );
+    }
+
+    async getState(): Promise<boolean> {
+        return this.getData(
+            'state',
+            () => this.abiService.getState(),
+            oneHour(),
+        );
+    }
+
+    async getOwner(): Promise<string> {
+        return this.getData(
+            'owner',
+            () => this.abiService.getOwner(),
+            oneHour(),
+        );
+    }
+
+    async getAllPairsManagedAddresses(): Promise<string[]> {
+        return this.getData(
+            'pairsManagedAddresses',
+            () => this.abiService.getAllPairsManagedAddresses(),
+            oneHour(),
+        );
+    }
+
+    async getAllPairTokens(): Promise<PairTokens[]> {
+        return this.getData(
+            'pairsTokens',
+            () => this.abiService.getAllPairTokens(),
+            oneHour(),
+        );
+    }
+
+    async getPairTemplateAddress(): Promise<string> {
+        return this.getData(
+            'pairTemplateAddress',
+            () => this.abiService.getPairTemplateAddress(),
+            oneHour(),
+        );
+    }
+
+    async getTemporaryOwnerPeriod(): Promise<string> {
+        return this.getData(
+            'temporaryOwnerPeriod',
+            () => this.abiService.getTemporaryOwnerPeriod(),
+            oneMinute() * 10,
+        );
     }
 }

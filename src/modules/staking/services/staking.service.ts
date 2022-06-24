@@ -1,4 +1,7 @@
-import { Address, BinaryCodec } from '@elrondnetwork/erdjs/out';
+import {
+    StakingFarmTokenAttributes,
+    UnbondFarmTokenAttributes,
+} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -6,6 +9,7 @@ import { scAddress } from 'src/config';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { Logger } from 'winston';
 import { StakingModel, StakingRewardsModel } from '../models/staking.model';
 import {
@@ -23,6 +27,7 @@ export class StakingService {
         private readonly stakingGetterService: StakingGetterService,
         private readonly stakingComputeService: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -44,19 +49,13 @@ export class StakingService {
         args: DecodeAttributesArgs,
     ): StakingTokenAttributesModel[] {
         return args.batchAttributes.map(arg => {
-            const attributesBuffer = Buffer.from(arg.attributes, 'base64');
-            const codec = new BinaryCodec();
-            const structType = StakingTokenAttributesModel.getStructure();
-            const [decoded] = codec.decodeNested(attributesBuffer, structType);
-            const decodedAttributes = decoded.valueOf();
-            const stakingTokenAttributes = StakingTokenAttributesModel.fromDecodedAttributes(
-                decodedAttributes,
-            );
-
-            stakingTokenAttributes.identifier = arg.identifier;
-            stakingTokenAttributes.attributes = arg.attributes;
-
-            return stakingTokenAttributes;
+            return new StakingTokenAttributesModel({
+                ...StakingFarmTokenAttributes.fromAttributes(
+                    arg.attributes,
+                ).toJSON(),
+                attributes: arg.attributes,
+                identifier: arg.identifier,
+            });
         });
     }
 
@@ -65,21 +64,20 @@ export class StakingService {
     ): Promise<UnbondTokenAttributesModel[]> {
         const decodedAttributesBatch = [];
         for (const arg of args.batchAttributes) {
-            const attributesBuffer = Buffer.from(arg.attributes, 'base64');
-            const codec = new BinaryCodec();
-            const structType = UnbondTokenAttributesModel.getStructure();
-            const [decoded] = codec.decodeNested(attributesBuffer, structType);
-            const decodedAttributes = decoded.valueOf();
-            const remainingEpochs = await this.getUnboundigRemainingEpochs(
-                decodedAttributes.unlockEpoch.toNumber(),
+            const unboundFarmTokenAttributes = UnbondFarmTokenAttributes.fromAttributes(
+                arg.attributes,
             );
-            const unboundFarmTokenAttributes = new UnbondTokenAttributesModel({
-                identifier: arg.identifier,
-                attributes: arg.attributes,
-                remainingEpochs,
-            });
-
-            decodedAttributesBatch.push(unboundFarmTokenAttributes);
+            const remainingEpochs = await this.getUnboundigRemainingEpochs(
+                unboundFarmTokenAttributes.remainingEpochs,
+            );
+            decodedAttributesBatch.push(
+                new UnbondTokenAttributesModel({
+                    ...unboundFarmTokenAttributes.toJSON(),
+                    remainingEpochs,
+                    attributes: arg.attributes,
+                    identifier: arg.identifier,
+                }),
+            );
         }
 
         return decodedAttributesBatch;
@@ -164,6 +162,9 @@ export class StakingService {
     }
 
     async requireOwner(stakeAddress, sender) {
-        // todo: find owner somehow
+        return (
+            (await this.apiService.getAccountStats(stakeAddress))
+                .ownerAddress === sender
+        );
     }
 }
