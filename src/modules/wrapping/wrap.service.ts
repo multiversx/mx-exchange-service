@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { cacheConfig, scAddress } from '../../config';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { cacheConfig, scAddress, tokenProviderUSD } from '../../config';
 import { WrapModel } from './models/wrapping.model';
 import { AbiWrapService } from './abi-wrap.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
@@ -9,6 +8,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { EsdtToken } from '../tokens/models/esdtToken.model';
 
 @Injectable()
 export class WrapService {
@@ -60,9 +60,10 @@ export class WrapService {
     }
 
     async getWrappedEgldTokenID(): Promise<string> {
-        return this.getTokenID('wrappedTokenID', () =>
-            this.abiService.getWrappedEgldTokenID(),
-        );
+        return tokenProviderUSD;
+        // return this.getTokenID('wrappedTokenID', () =>
+        //     this.abiService.getWrappedEgldTokenID(),
+        // );
     }
 
     async getWrappedEgldToken(): Promise<EsdtToken> {
