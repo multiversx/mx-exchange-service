@@ -25,23 +25,23 @@ export class StakingGetterServiceMock {
     }
 
     async getAccumulatedRewards(stakeAddress: string): Promise<string> {
-        return '150000';
+        return '10000000000000000000';
     }
 
     async getRewardCapacity(stakeAddress: string): Promise<string> {
-        return '100000';
+        return '10000000000000000000000';
     }
 
     async getRewardPerShare(stakeAddress: string): Promise<string> {
-        return '150000';
+        return '149796000000000000000';
     }
 
     async getFarmTokenSupply(stakeAddress: string): Promise<string> {
-        return '1000000';
+        return '5256000000000000000';
     }
 
     async getDivisionSafetyConstant(stakeAddress: string): Promise<BigNumber> {
-        return new BigNumber(50000);
+        return new BigNumber(52560000000);
     }
 
     async getLastRewardBlockNonce(stakeAddress: string): Promise<BigNumber> {
@@ -49,7 +49,7 @@ export class StakingGetterServiceMock {
     }
 
     async getPerBlockRewardAmount(stakeAddress: string): Promise<string> {
-        return new BigNumber(50000).toFixed();
+        return new BigNumber(50000000000).toFixed();
     }
 
     async getProduceRewardsEnabled(stakeAddress: string): Promise<boolean> {
@@ -57,6 +57,6 @@ export class StakingGetterServiceMock {
     }
 
     async getAnnualPercentageRewards(stakeAddress: string): Promise<string> {
-        return new BigNumber(15).toFixed();
+        return new BigNumber(1000).toFixed();
     }
 }

@@ -17,7 +17,8 @@ import { StakingGetterServiceMock } from '../mocks/staking.getter.service.mock';
 import { StakingComputeService } from '../services/staking.compute.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
 
 describe('StakingService', () => {
     let service: StakingService;
@@ -46,6 +47,11 @@ describe('StakingService', () => {
         }),
     ];
 
+    const ElrondApiServiceProvider = {
+        provide: ElrondApiService,
+        useClass: ElrondApiServiceMock,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [
@@ -61,6 +67,7 @@ describe('StakingService', () => {
                 StakingComputeService,
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,
+                ElrondApiServiceProvider,
                 ElrondGatewayService,
                 ApiConfigService,
             ],
@@ -78,22 +85,7 @@ describe('StakingService', () => {
         expect(farmsStaking.length).toBeGreaterThanOrEqual(1);
     });
 
-    // todo: find out how to call these functions :)
-    /*it('should decode staking token attributes', async () => {
-        const stakingTokenAttributes = await service.decodeStakingTokenAttributes(
-            { batchAttributes: [{ identifier: '', attributes: '' }] },
-        );
-        expect(stakingTokenAttributes).toEqual("...");
-    });
-
-    it('should decode unbound token attributes', async () => {
-        const unboundTokenAttributes = await service.decodeUnboundTokenAttributes(
-            { batchAttributes: [{ identifier: '', attributes: '' }] },
-        );
-        expect(unboundTokenAttributes).toEqual("...");
-    });
-
-    it('should get rewards for position', async () => {
+    /*it('should get rewards for position', async () => {
         const rewards = await service.getRewardsForPosition({
             farmAddress: '',
             liquidity: '',

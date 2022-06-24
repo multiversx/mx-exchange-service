@@ -12,11 +12,9 @@ import { StakingGetterService } from '../services/staking.getter.service';
 import { StakingGetterServiceMock } from '../mocks/staking.getter.service.mock';
 import { StakingComputeService } from '../services/staking.compute.service';
 import { Address } from '@elrondnetwork/erdjs/out';
-import {
-    StakingTokenAttributesModel,
-    StakingTokenType,
-} from '../models/stakingTokenAttributes.model';
+import { StakingTokenAttributesModel } from '../models/stakingTokenAttributes.model';
 import BigNumber from 'bignumber.js';
+import { StakingFarmTokenType } from '@elrondnetwork/erdjs-dex';
 
 describe('StakingComputeService', () => {
     let service: StakingComputeService;
@@ -65,24 +63,26 @@ describe('StakingComputeService', () => {
     it('should compute stake rewards for position', async () => {
         const stakeRewardsForPosition = await service.computeStakeRewardsForPosition(
             Address.Zero().bech32(),
-            '1000000',
+            '52560000000',
             new StakingTokenAttributesModel({
-                //identifier: "",
-                //attributes: "",
-                type: StakingTokenType.STAKING_FARM_TOKEN,
-                rewardPerShare: '100000',
+                type: StakingFarmTokenType.STAKING_FARM_TOKEN,
+                rewardPerShare: '1000000',
                 compoundedReward: '1000000',
                 currentFarmAmount: '1000000',
             }),
         );
-        expect(stakeRewardsForPosition).toEqual(new BigNumber(950000));
+        expect(stakeRewardsForPosition.toFixed()).toEqual(
+            '149795999999999005000',
+        );
     });
 
     it('should compute future rewards per share', async () => {
         const futureRewardsPerShare = await service.computeFutureRewardsPerShare(
             Address.Zero().bech32(),
         );
-        expect(futureRewardsPerShare).toEqual(new BigNumber(147500));
+        expect(futureRewardsPerShare.toFixed()).toEqual(
+            '149796000000000005000',
+        );
     });
 
     it('should compute extra rewards since last allocation', async () => {
@@ -90,15 +90,17 @@ describe('StakingComputeService', () => {
             Address.Zero().bech32(),
         );
         expect(extraRewardsSinceLastAllocation).toEqual(
-            new BigNumber(0.000285388127853881),
+            new BigNumber(500000000000),
         );
     });
 
     it('should compute extra rewards bounded', async () => {
         const extraRewardsBounded = await service.computeExtraRewardsBounded(
             Address.Zero().bech32(),
-            new BigNumber(10),
+            new BigNumber(100000000),
         );
-        expect(extraRewardsBounded).toEqual(new BigNumber(0.00285388127853881));
+        expect(extraRewardsBounded).toEqual(
+            new BigNumber(10000000000000000000),
+        );
     });
 });

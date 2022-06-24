@@ -15,9 +15,11 @@ import { StakingGetterServiceMock } from '../mocks/staking.getter.service.mock';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 import { StakingTransactionService } from '../services/staking.transactions.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
+
 import { Address } from '@elrondnetwork/erdjs/out';
 import { InputTokenModel } from 'src/models/inputToken.model';
+import { encodeTransactionData } from 'src/helpers/helpers';
+import { elrondConfig, gasConfig } from 'src/config';
 
 describe('StakingTransactionService', () => {
     let service: StakingTransactionService;
@@ -58,7 +60,6 @@ describe('StakingTransactionService', () => {
                 StakingTransactionService,
                 StakingGetterServiceProvider,
                 ContextGetterServiceProvider,
-                ContextTransactionsService,
                 ElrondProxyServiceProvider,
                 ElrondGatewayService,
                 ApiConfigService,
@@ -75,7 +76,7 @@ describe('StakingTransactionService', () => {
     });
 
     it('should get stake farm transaction', async () => {
-        const stakeFarmTransaction = await service.stakeFarm(
+        const transaction = await service.stakeFarm(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             [
@@ -86,13 +87,27 @@ describe('StakingTransactionService', () => {
                 }),
             ],
         );
-        expect(stakeFarmTransaction.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMUA1NDRmNGIzMTJkMzEzMTMxMzFAQDAzZThANzM3NDYxNmI2NTQ2NjE3MjZk',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.stakeFarm.default,
+            data: encodeTransactionData(
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01@TOK1-1111@@1000@stakeFarm',
+            ),
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get unstake farm transaction', async () => {
-        const unstakeFarmTransaction = await service.unstakeFarm(
+        const transaction = await service.unstakeFarm(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
@@ -101,33 +116,27 @@ describe('StakingTransactionService', () => {
                 amount: '1000',
             }),
         );
-        expect(unstakeFarmTransaction.data).toEqual(
-            'RVNEVE5GVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUBAMDNlOEAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwQDc1NmU3Mzc0NjE2YjY1NDY2MTcyNmQ=',
-        );
-    });
-
-    it('should get stake farm throguh proxy transaction', async () => {
-        const stakeFarmThroughProxyTransaction = await service.stakeFarmThroughProxy(
-            Address.Zero().bech32(),
-            '1000000',
-        );
-        expect(stakeFarmThroughProxyTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNzQ2MTZiNjU0NjYxNzI2ZDU0Njg3MjZmNzU2NzY4NTA3MjZmNzg3OUAwZjQyNDA=',
-        );
-    });
-
-    it('should get unstake farm throguh proxy transaction', async () => {
-        const unstakeFarmThroughProxyTransaction = await service.unstakeFarmThroughProxy(
-            Address.Zero().bech32(),
-            '1000000',
-        );
-        expect(unstakeFarmThroughProxyTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDc1NmU3Mzc0NjE2YjY1NDY2MTcyNmQ1NDY4NzI2Zjc1Njc2ODUwNzI2Zjc4NzlAMGY0MjQw',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.unstakeFarm,
+            data: encodeTransactionData(
+                'ESDTNFTTransfer@TOK1-1111@@1000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unstakeFarm',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get unbound farm transaction', async () => {
-        const unboundFarmTransaction = await service.unbondFarm(
+        const transaction = await service.unbondFarm(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
@@ -136,13 +145,27 @@ describe('StakingTransactionService', () => {
                 amount: '1000000',
             }),
         );
-        expect(unboundFarmTransaction.data).toEqual(
-            'RVNEVE5GVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUBAMGY0MjQwQDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBANzU2ZTYyNmY2ZTY0NDY2MTcyNmQ=',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.unboundFarm,
+            data: encodeTransactionData(
+                'ESDTNFTTransfer@TOK1-1111@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@unbondFarm',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get claim rewards transaction', async () => {
-        const claimRewardsTransaction = await service.claimRewards(
+        const transaction = await service.claimRewards(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
@@ -151,13 +174,27 @@ describe('StakingTransactionService', () => {
                 amount: '1000000',
             }),
         );
-        expect(claimRewardsTransaction.data).toEqual(
-            'RVNEVE5GVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUBAMGY0MjQwQDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBANjM2YzYxNjk2ZDUyNjU3NzYxNzI2NDcz',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.claimRewards,
+            data: encodeTransactionData(
+                'ESDTNFTTransfer@TOK1-1111@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewards',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get claim rewards with new value transaction', async () => {
-        const claimRewardsWithNewValueTransaction = await service.claimRewardsWithNewValue(
+        const transaction = await service.claimRewardsWithNewValue(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
@@ -167,13 +204,27 @@ describe('StakingTransactionService', () => {
             }),
             '2000000',
         );
-        expect(claimRewardsWithNewValueTransaction.data).toEqual(
-            'RVNEVE5GVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUBAMGY0MjQwQDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBANjM2YzYxNjk2ZDUyNjU3NzYxNzI2NDczNTc2OTc0Njg0ZTY1Nzc1NjYxNmM3NTY1QDFlODQ4MA==',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.claimRewardsWithNewValue,
+            data: encodeTransactionData(
+                'ESDTNFTTransfer@TOK1-1111@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewardsWithNewValue@02000000',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get compound rewards transaction', async () => {
-        const compoundRewardsTransaction = await service.compoundRewards(
+        const transaction = await service.compoundRewards(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             new InputTokenModel({
@@ -182,14 +233,27 @@ describe('StakingTransactionService', () => {
                 amount: '1000000',
             }),
         );
-        expect(compoundRewardsTransaction.data).toEqual(
-            'RVNEVE5GVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUBAMGY0MjQwQDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBANjM2ZjZkNzA2Zjc1NmU2NDUyNjU3NzYxNzI2NDcz',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.compoundRewards,
+            data: encodeTransactionData(
+                'ESDTNFTTransfer@TOK1-1111@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@compoundRewards',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get top up rewards transaction', async () => {
-        const topUpRewardsTransaction = await service.topUpRewards(
-            Address.Zero().bech32(),
+        const transaction = await service.topUpRewards(
             Address.Zero().bech32(),
             new InputTokenModel({
                 tokenID: 'TOK1-1111',
@@ -197,13 +261,27 @@ describe('StakingTransactionService', () => {
                 amount: '1000000',
             }),
         );
-        expect(topUpRewardsTransaction.data).toEqual(
-            'RVNEVE5GVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUBAMGY0MjQwQDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDBANzQ2ZjcwNTU3MDUyNjU3NzYxNzI2NDcz',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.topUpRewards,
+            data: encodeTransactionData(
+                'ESDTTransfer@TOK1-1111@01000000@topUpRewards@TOK1-1111@01000000',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get merge farm tokens transaction', async () => {
-        const mergeFarmTokensTransaction = await service.mergeFarmTokens(
+        const transaction = await service.mergeFarmTokens(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
             [
@@ -219,151 +297,351 @@ describe('StakingTransactionService', () => {
                 }),
             ],
         );
-        expect(mergeFarmTokensTransaction.data).toEqual(
-            'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDBmNDI0MEA1NTUzNDQ0MzJkMzEzMTMxMzFAQDBmNDI0MEA2ZDY1NzI2NzY1NDY2MTcyNmQ1NDZmNmI2NTZlNzM=',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.mergeTokens,
+            data: encodeTransactionData(
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@02@TOK1-1111@@01000000@USDC-1111@@01000000@mergeFarmTokens',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set penalty percent transaction', async () => {
-        const setPenaltyPercentTransaction = await service.setPenaltyPercent(
+        const transaction = await service.setPenaltyPercent(
             Address.Zero().bech32(),
-            0.01,
+            5,
         );
-        expect(setPenaltyPercentTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDVmNzA2NTZlNjE2Yzc0Nzk1ZjcwNjU3MjYzNjU2ZTc0QA==',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.set_penalty_percent,
+            data: encodeTransactionData('set_penalty_percent@05'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set minimum farming epochs transaction', async () => {
-        const setMinimumFarmingEpochsTransaction = await service.setMinimumFarmingEpochs(
+        const transaction = await service.setMinimumFarmingEpochs(
             Address.Zero().bech32(),
             10,
         );
-        expect(setMinimumFarmingEpochsTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDVmNmQ2OTZlNjk2ZDc1NmQ1ZjY2NjE3MjZkNjk2ZTY3NWY2NTcwNmY2MzY4NzNAMGE=',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.set_minimum_farming_epochs,
+            data: encodeTransactionData('set_minimum_farming_epochs@10'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set burn gas limit transaction', async () => {
-        const setBurnGasLimitTransaction = await service.setBurnGasLimit(
+        const transaction = await service.setBurnGasLimit(
             Address.Zero().bech32(),
-            '1000000',
+            1000000,
         );
-        expect(setBurnGasLimitTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDVmNjI3NTcyNmU1ZjY3NjE3MzVmNmM2OTZkNjk3NEAwZjQyNDA=',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.set_burn_gas_limit,
+            data: encodeTransactionData('set_burn_gas_limit@01000000'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set transfer exec gas limit transaction', async () => {
-        const setTransferExecGasLimitTransaction = await service.setTransferExecGasLimit(
+        const transaction = await service.setTransferExecGasLimit(
             Address.Zero().bech32(),
-            '1000000',
+            1000000,
         );
-        expect(setTransferExecGasLimitTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDVmNzQ3MjYxNmU3MzY2NjU3MjVmNjU3ODY1NjM1ZjY3NjE3MzVmNmM2OTZkNjk3NEAwZjQyNDA=',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.set_transfer_exec_gas_limit,
+            data: encodeTransactionData('set_transfer_exec_gas_limit@01000000'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get add address to whitelist transaction', async () => {
-        const addAddressToWhitelistTransaction = await service.addAddressToWhitelist(
+        const transaction = await service.addAddressToWhitelist(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
         );
-        expect(addAddressToWhitelistTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDYxNjQ2NDQxNjQ2NDcyNjU3MzczNTQ2ZjU3Njg2OTc0NjU2YzY5NzM3NEAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.addAddressToWhitelist,
+            data: encodeTransactionData(
+                'addAddressToWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get remove address from whitelist transaction', async () => {
-        const removeAddressFromWhitelisTransaction = await service.removeAddressFromWhitelist(
+        const transaction = await service.removeAddressFromWhitelist(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
         );
-        expect(removeAddressFromWhitelisTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDcyNjU2ZDZmNzY2NTQxNjQ2NDcyNjU3MzczNDY3MjZmNmQ1NzY4Njk3NDY1NmM2OTczNzRAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.removeAddressFromWhitelist,
+            data: encodeTransactionData(
+                'removeAddressFromWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get pause transaction', async () => {
-        const pauseTransaction = await service.pause(Address.Zero().bech32());
-        expect(pauseTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDcwNjE3NTczNjU=',
-        );
+        const transaction = await service.pause(Address.Zero().bech32());
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.pause,
+            data: encodeTransactionData('pause'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get resume transaction', async () => {
-        const resumeTransaction = await service.resume(Address.Zero().bech32());
-        expect(resumeTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDcyNjU3Mzc1NmQ2NQ==',
-        );
+        const transaction = await service.resume(Address.Zero().bech32());
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.resume,
+            data: encodeTransactionData('resume'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get register farm token transaction', async () => {
-        const registerFarmTokenTransaction = await service.registerFarmToken(
+        const transaction = await service.registerFarmToken(
             Address.Zero().bech32(),
             'TokenToRegisterName',
             'TokenToRegisterID',
             18,
         );
-        expect(registerFarmTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDcyNjU2NzY5NzM3NDY1NzI0NjYxNzI2ZDU0NmY2YjY1NmVANTQ2ZjZiNjU2ZTU0NmY1MjY1Njc2OTczNzQ2NTcyNGU2MTZkNjVANTQ2ZjZiNjU2ZTU0NmY1MjY1Njc2OTczNzQ2NTcyNDk0NEAxMg==',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.registerFarmToken,
+            data: encodeTransactionData(
+                'registerFarmToken@TokenToRegisterName@TokenToRegisterID@18',
+            ),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set local roles farm token transaction', async () => {
-        const rsetLocalRolesFarmTokenTransaction = await service.setLocalRolesFarmToken(
+        const transaction = await service.setLocalRolesFarmToken(
             Address.Zero().bech32(),
         );
-        expect(rsetLocalRolesFarmTokenTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDRjNmY2MzYxNmM1MjZmNmM2NTczNDY2MTcyNmQ1NDZmNmI2NTZl',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.setLocalRolesFarmToken,
+            data: encodeTransactionData('setLocalRolesFarmToken'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set per block reward amount transaction', async () => {
-        const setPerBlockRewardAmountTransaction = await service.setPerBlockRewardAmount(
+        const transaction = await service.setPerBlockRewardAmount(
             Address.Zero().bech32(),
             '100',
         );
-        expect(setPerBlockRewardAmountTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDUwNjU3MjQyNmM2ZjYzNmI1MjY1Nzc2MTcyNjQ0MTZkNmY3NTZlNzRANjQ=',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.setPerBlockRewardAmount,
+            data: encodeTransactionData('setPerBlockRewardAmount@0100'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set max APR transaction', async () => {
-        const setMaxAprTransaction = await service.setMaxApr(
+        const transaction = await service.setMaxApr(
             Address.Zero().bech32(),
-            '100',
+            100,
         );
-        expect(setMaxAprTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDRkNjE3ODQxNzA3MkA2NA==',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.setMaxApr,
+            data: encodeTransactionData('setMaxApr@0100'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set min unbound epochs transaction', async () => {
-        const setMinUnbondEpochsTransaction = await service.setMinUnbondEpochs(
+        const transaction = await service.setMinUnbondEpochs(
             Address.Zero().bech32(),
-            '100',
+            100,
         );
-        expect(setMinUnbondEpochsTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNjU3NDRkNjk2ZTU1NmU2MjZmNmU2NDQ1NzA2ZjYzNjg3M0A2NA==',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.setMinUnbondEpochs,
+            data: encodeTransactionData('setMinUnbondEpochs@0100'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get start produce rewards transaction', async () => {
-        const startProduceRewardsTransaction = await service.startProduceRewards(
+        const transaction = await service.startProduceRewards(
             Address.Zero().bech32(),
         );
-        expect(startProduceRewardsTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDczNzQ2MTcyNzQ1MDcyNmY2NDc1NjM2NTUyNjU3NzYxNzI2NDcz',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.stake.admin.start_produce_rewards,
+            data: encodeTransactionData('startProduceRewards'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get end produce rewards transaction', async () => {
-        const endProduceRewardsTransaction = await service.endProduceRewards(
+        const transaction = await service.endProduceRewards(
             Address.Zero().bech32(),
         );
-        expect(endProduceRewardsTransaction.data).toEqual(
-            'RVNEVFRyYW5zZmVyQDY1NmU2NDVmNzA3MjZmNjQ3NTYzNjU1ZjcyNjU3NzYxNzI2NDcz',
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: 200000000,
+            data: encodeTransactionData('end_produce_rewards'),
+            chainID: 'T',
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 });
