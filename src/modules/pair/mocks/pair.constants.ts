@@ -338,7 +338,7 @@ export const pairs = [
     },
     {
         address:
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+            'erd1a42xw92g8n78v6y4p3qj9ed2gjmr20kd9h2pkhuuuxf5tgn44q3sxy8unx',
         firstToken: Tokens('FDT-1234'),
         secondToken: Tokens('FMT-1234'),
         liquidityPoolToken: Tokens('LPT-1111'),
@@ -359,7 +359,7 @@ export const pairs = [
         state: 'Active',
     },
     {
-        address: 'farm_address_2',
+        address: 'erd1e6w95arcwe3mph66cvvarr9hgdzzg7ljujw95rrefhunl0d4rr6qzd0g2g',
         firstToken: Tokens('FDT-1234'),
         secondToken: Tokens('FMT-1234'),
         liquidityPoolToken: Tokens('LPT-1111'),
@@ -380,7 +380,7 @@ export const pairs = [
         state: 'Active',
     },
     {
-        address: 'farm_address_3',
+        address: 'erd1ak7v7n3qxg0uduuvmqx63308k3ksf50cw85jl3w6rad5jj7cmu9sn7c40x',
         firstToken: Tokens('FDT-1234'),
         secondToken: Tokens('FMT-1234'),
         liquidityPoolToken: Tokens('LPT-1111'),
@@ -402,7 +402,7 @@ export const pairs = [
     },
     {
         address:
-            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+            'erd1h26nrm7flz24mfruqajr4e6esfesup6hjpl6r4zav9cn0wec0fcs842lcw',
         firstToken: Tokens('FDT-1234'),
         secondToken: Tokens('FMT-1234'),
         liquidityPoolToken: Tokens('LPT-1111'),
