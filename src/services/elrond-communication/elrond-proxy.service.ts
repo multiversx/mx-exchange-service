@@ -17,7 +17,7 @@ import { promises } from 'fs';
 @Injectable()
 export class ElrondProxyService {
     private readonly proxy: ProxyNetworkProviderProfiler;
-    private smartContracts: SmartContract[];
+    private static smartContracts: SmartContract[];
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
@@ -45,7 +45,7 @@ export class ElrondProxyService {
             },
         );
 
-        this.smartContracts = [];
+        ElrondProxyService.smartContracts = [];
     }
 
     getService(): ProxyNetworkProviderProfiler {
@@ -173,7 +173,7 @@ export class ElrondProxyService {
         contractInterface: string,
     ): Promise<SmartContract> {
         return (
-            this.smartContracts[contractAddress] ||
+            ElrondProxyService.smartContracts[contractAddress] ||
             this.createSmartContract(
                 contractAddress,
                 contractAbiPath,
@@ -196,7 +196,7 @@ export class ElrondProxyService {
             address: Address.fromString(contractAddress),
             abi: new SmartContractAbi(abiRegistry, [contractInterface]),
         });
-        this.smartContracts[contractAddress] = newSC;
+        ElrondProxyService.smartContracts[contractAddress] = newSC;
         return newSC;
     }
 }
