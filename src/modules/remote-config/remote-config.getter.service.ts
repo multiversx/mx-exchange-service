@@ -4,41 +4,20 @@ import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { FlagRepositoryService } from 'src/services/database/repositories/flag.repository';
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
+import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { SCAddressType } from './models/sc-address.model';
 
 @Injectable()
-export class RemoteConfigGetterService {
+export class RemoteConfigGetterService extends GenericGetterService {
     constructor(
-        private readonly cachingService: CachingService,
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly flagRepositoryService: FlagRepositoryService,
         private readonly scAddressRepositoryService: SCAddressRepositoryService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async getData(
-        cacheKey: string,
-        createValueFunc: () => any,
-        ttl: number,
-    ): Promise<any> {
-        try {
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                RemoteConfigGetterService.name,
-                createValueFunc.name,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+    ) {
+        super(cachingService, logger);
     }
 
     async getMaintenanceFlagValue(): Promise<boolean> {

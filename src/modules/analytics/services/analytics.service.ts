@@ -8,37 +8,16 @@ import { CachingService } from '../../../services/caching/cache.service';
 import { oneMinute } from '../../../helpers/helpers';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { HistoricDataModel } from '../models/analytics.model';
+import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 
 @Injectable()
-export class AnalyticsService {
+export class AnalyticsAWSGetterService extends GenericGetterService {
     constructor(
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-        private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async getData(
-        key: string,
-        createValueFunc: () => any,
-        ttl: number,
-    ): Promise<any> {
-        const cacheKey = this.getAnalyticsCacheKey(key);
-        try {
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                AnalyticsService.name,
-                this.getData.name,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+    ) {
+        super(cachingService, logger);
     }
 
     async getHistoricData(
