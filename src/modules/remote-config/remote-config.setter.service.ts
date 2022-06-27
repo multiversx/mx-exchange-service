@@ -1,46 +1,27 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { cacheConfig } from 'src/config';
 import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
+import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
+import { Logger } from 'winston';
 import { SCAddressType } from './models/sc-address.model';
 @Injectable()
-export class RemoteConfigSetterService {
+export class RemoteConfigSetterService extends GenericSetterService {
     constructor(
-        private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         private readonly scAddressRepositoryService: SCAddressRepositoryService,
-    ) {}
-
-    private async setData(
-        cacheKey: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ): Promise<string> {
-        try {
-            await this.cachingService.setCache(cacheKey, value, ttl);
-            return cacheKey;
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                RemoteConfigSetterService.name,
-                '',
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+    ) {
+        super(cachingService, logger);
     }
 
     async setFlag(name: string, value: boolean): Promise<string> {
-        const cacheKey = await this.getFlagCacheKey(name);
-        return await this.setData(cacheKey, value, oneHour());
+        return await this.setData(this.getFlagCacheKey(name), value, oneHour());
     }
 
     async setSCAddresses(
@@ -66,7 +47,7 @@ export class RemoteConfigSetterService {
     }
 
     async deleteFlag(name: string): Promise<void> {
-        const cacheKey = await this.getFlagCacheKey(name);
+        const cacheKey = this.getFlagCacheKey(name);
         await this.cachingService.delete(cacheKey);
         await this.deleteCacheKeys([cacheKey]);
     }
