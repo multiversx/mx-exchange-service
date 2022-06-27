@@ -459,9 +459,6 @@ export class PairTransactionService {
                 break;
             default:
                 endpointArgs = [
-                    BytesValue.fromUTF8(args.tokenInID),
-                    new BigUIntValue(amountIn),
-                    BytesValue.fromUTF8('swapTokensFixedOutput'),
                     BytesValue.fromUTF8(args.tokenOutID),
                     new BigUIntValue(amountOut),
                 ];

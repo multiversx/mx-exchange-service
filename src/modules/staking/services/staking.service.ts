@@ -68,7 +68,7 @@ export class StakingService {
                 arg.attributes,
             );
             const remainingEpochs = await this.getUnbondigRemaingEpochs(
-                unboundFarmTokenAttributes.remainingEpochs,
+                unboundFarmTokenAttributes.unlockEpoch,
             );
             decodedAttributesBatch.push(
                 new UnbondTokenAttributesModel({
