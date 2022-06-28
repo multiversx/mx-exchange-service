@@ -203,9 +203,16 @@ export class RouterService {
             const lpTokenID = await this.pairGetterService.getLpTokenID(
                 pair.address,
             );
-            if (lpTokenID !== 'undefined') {
-                filteredPairsMetadata.push(pair);
+
+            if (lpTokenID === undefined || lpTokenID === 'undefined') {
+                continue;
             }
+            console.log({
+                method: this.filterPairsByIssuedLpToken.name,
+                address: pair.address,
+                lpTokenID,
+            });
+            filteredPairsMetadata.push(pair);
         }
         return filteredPairsMetadata;
     }

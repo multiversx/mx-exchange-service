@@ -36,13 +36,11 @@ export class PairCacheWarmerService {
             const [
                 firstToken,
                 secondToken,
-                lpToken,
                 totalFeePercent,
                 specialFeePercent,
             ] = await Promise.all([
                 this.apiService.getToken(pairMetadata.firstTokenID),
                 this.apiService.getToken(pairMetadata.secondTokenID),
-                this.apiService.getToken(lpTokenID),
                 this.abiPairService.getTotalFeePercent(pairMetadata.address),
                 this.abiPairService.getSpecialFeePercent(pairMetadata.address),
             ]);
@@ -56,10 +54,6 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     pairMetadata.secondTokenID,
                 ),
-                this.pairSetterService.setLpTokenID(
-                    pairMetadata.address,
-                    lpTokenID,
-                ),
                 this.pairSetterService.setTotalFeePercent(
                     pairMetadata.address,
                     totalFeePercent,
@@ -69,6 +63,16 @@ export class PairCacheWarmerService {
                     specialFeePercent,
                 ),
             ]);
+            if (lpTokenID !== undefined) {
+                const lpToken = await this.apiService.getToken(lpTokenID);
+                cacheKeys.push(
+                    await this.pairSetterService.setLpTokenID(
+                        pairMetadata.address,
+                        lpTokenID,
+                    ),
+                );
+                await this.setContextCache(lpTokenID, lpToken, oneHour());
+            }
             this.invalidatedKeys.push(cacheKeys);
 
             await this.setContextCache(
@@ -81,7 +85,6 @@ export class PairCacheWarmerService {
                 secondToken,
                 oneHour(),
             );
-            await this.setContextCache(lpTokenID, lpToken, oneHour());
 
             await this.deleteCacheKeys();
         }
