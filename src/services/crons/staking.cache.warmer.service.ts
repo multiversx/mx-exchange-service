@@ -1,13 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { cacheConfig } from 'src/config';
-import { oneHour } from 'src/helpers/helpers';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { AbiStakingService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { CachingService } from '../caching/cache.service';
+import { ContextSetterService } from '../context/context.setter.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
@@ -17,7 +14,7 @@ export class StakingCacheWarmerService {
         private readonly abiStakeService: AbiStakingService,
         private readonly stakeSetterService: StakingSetterService,
         private readonly apiService: ElrondApiService,
-        private readonly cachingService: CachingService,
+        private readonly contextSetter: ContextSetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -52,9 +49,15 @@ export class StakingCacheWarmerService {
                     address,
                     rewardTokenID,
                 ),
-                this.setContextCache(farmTokenID, farmToken, oneHour()),
-                this.setContextCache(farmingTokenID, farmingToken, oneHour()),
-                this.setContextCache(rewardTokenID, rewardToken, oneHour()),
+                this.contextSetter.setNftCollectionMetadata(
+                    farmTokenID,
+                    farmToken,
+                ),
+                this.contextSetter.setTokenMetadata(
+                    farmingTokenID,
+                    farmingToken,
+                ),
+                this.contextSetter.setTokenMetadata(rewardTokenID, rewardToken),
             ]);
 
             await this.deleteCacheKeys(cacheKeys);
@@ -158,16 +161,6 @@ export class StakingCacheWarmerService {
 
             await this.deleteCacheKeys(cacheKeys);
         }
-    }
-
-    private async setContextCache(
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ): Promise<string> {
-        const cacheKey = generateCacheKeyFromParams('context', key);
-        await this.cachingService.setCache(cacheKey, value, ttl);
-        return cacheKey;
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

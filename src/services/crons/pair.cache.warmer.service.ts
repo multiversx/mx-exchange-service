@@ -1,16 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { cacheConfig } from '../../config';
 import { ContextService } from '../context/context.service';
-import { CachingService } from '../caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
-import { oneHour } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
+import { ContextSetterService } from '../context/context.setter.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -21,7 +18,7 @@ export class PairCacheWarmerService {
         private readonly abiPairService: PairAbiService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
-        private readonly cachingService: CachingService,
+        private readonly contextSetter: ContextSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -71,19 +68,25 @@ export class PairCacheWarmerService {
                         lpTokenID,
                     ),
                 );
-                await this.setContextCache(lpTokenID, lpToken, oneHour());
+                cacheKeys.push(
+                    await this.contextSetter.setTokenMetadata(
+                        lpTokenID,
+                        lpToken,
+                    ),
+                );
             }
             this.invalidatedKeys.push(cacheKeys);
-
-            await this.setContextCache(
-                pairMetadata.firstTokenID,
-                firstToken,
-                oneHour(),
+            cacheKeys.push(
+                await this.contextSetter.setTokenMetadata(
+                    pairMetadata.firstTokenID,
+                    firstToken,
+                ),
             );
-            await this.setContextCache(
-                pairMetadata.secondTokenID,
-                secondToken,
-                oneHour(),
+            cacheKeys.push(
+                await this.contextSetter.setTokenMetadata(
+                    pairMetadata.secondTokenID,
+                    secondToken,
+                ),
             );
 
             await this.deleteCacheKeys();
@@ -202,16 +205,6 @@ export class PairCacheWarmerService {
             this.invalidatedKeys.push(...cacheKeys);
         }
         await this.deleteCacheKeys();
-    }
-
-    private async setContextCache(
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ) {
-        const cacheKey = generateCacheKeyFromParams('context', key);
-        await this.cachingService.setCache(cacheKey, value, ttl);
-        this.invalidatedKeys.push(cacheKey);
     }
 
     private async deleteCacheKeys() {
