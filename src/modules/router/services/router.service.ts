@@ -207,11 +207,6 @@ export class RouterService {
             if (lpTokenID === undefined || lpTokenID === 'undefined') {
                 continue;
             }
-            console.log({
-                method: this.filterPairsByIssuedLpToken.name,
-                address: pair.address,
-                lpTokenID,
-            });
             filteredPairsMetadata.push(pair);
         }
         return filteredPairsMetadata;
