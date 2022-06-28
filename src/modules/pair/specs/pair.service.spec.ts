@@ -10,6 +10,7 @@ import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairAbiServiceMock } from '../mocks/pair.abi.service.mock';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('PairService', () => {
     let service: PairService;
@@ -43,6 +44,7 @@ describe('PairService', () => {
                 ContextServiceProvider,
                 PairService,
                 WrapServiceProvider,
+                TokenGetterServiceProvider,
             ],
         }).compile();
 
@@ -55,7 +57,7 @@ describe('PairService', () => {
 
     it('should get liquidity position from pair', async () => {
         const liquidityPosition = await service.getLiquidityPosition(
-            'pair_address_1',
+            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '1',
         );
         expect(liquidityPosition).toEqual({

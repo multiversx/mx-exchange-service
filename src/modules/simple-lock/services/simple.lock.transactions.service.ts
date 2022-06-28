@@ -1,11 +1,10 @@
 import {
     Address,
     BigUIntValue,
-    BytesValue,
     EnumValue,
-    GasLimit,
+    Interaction,
+    TokenPayment,
     TypedValue,
-    U32Value,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -18,7 +17,6 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { farmType } from 'src/utils/farm.utils';
 import { FarmTypeEnumType } from '../models/simple.lock.model';
@@ -34,7 +32,6 @@ export class SimpleLockTransactionService {
         private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
-        private readonly contextTransactions: ContextTransactionsService,
         private readonly elrondProxy: ElrondProxyService,
     ) {}
 
@@ -46,23 +43,20 @@ export class SimpleLockTransactionService {
 
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(inputTokens.tokenID),
-            new U32Value(inputTokens.nonce),
-            new BigUIntValue(new BigNumber(inputTokens.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8('unlockTokens'),
-        ];
-
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.simpleLock.unlockTokens),
-        );
-
-        transaction.receiver = sender;
-
-        return transaction;
+        return contract.methodsExplicit
+            .unlockTokens()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.simpleLock.unlockTokens)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async addLiquidityLockedTokenBatch(
@@ -177,14 +171,27 @@ export class SimpleLockTransactionService {
             new BigUIntValue(amount1Min),
         ];
 
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            [firstInputToken, secondInputToken],
-            this.addLiquidityLockedToken.name,
-            endpointArgs,
-            new GasLimit(gasConfig.simpleLock.addLiquidityLockedToken),
-        );
+        return contract.methodsExplicit
+            .addLiquidityLockedToken(endpointArgs)
+            .withMultiESDTNFTTransfer(
+                [
+                    TokenPayment.metaEsdtFromBigInteger(
+                        firstInputToken.tokenID,
+                        firstInputToken.nonce,
+                        new BigNumber(firstInputToken.amount),
+                    ),
+                    TokenPayment.metaEsdtFromBigInteger(
+                        secondInputToken.tokenID,
+                        secondInputToken.nonce,
+                        new BigNumber(secondInputToken.amount),
+                    ),
+                ],
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.simpleLock.addLiquidityLockedToken)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async removeLiquidityLockedToken(
@@ -224,23 +231,27 @@ export class SimpleLockTransactionService {
             .multipliedBy(1 - tolerance)
             .integerValue();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(inputTokens.tokenID),
-            new U32Value(inputTokens.nonce),
-            new BigUIntValue(new BigNumber(inputTokens.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8(this.removeLiquidityLockedToken.name),
+        const endpointArgs = [
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
         ];
 
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasConfig.simpleLock.removeLiquidityLockedToken),
+        transactions.push(
+            contract.methodsExplicit
+                .removeLiquidityLockedToken(endpointArgs)
+                .withSingleESDTNFTTransfer(
+                    TokenPayment.metaEsdtFromBigInteger(
+                        inputTokens.tokenID,
+                        inputTokens.nonce,
+                        new BigNumber(inputTokens.amount),
+                    ),
+                    Address.fromString(sender),
+                )
+                .withGasLimit(gasConfig.simpleLock.removeLiquidityLockedToken)
+                .withChainID(elrondConfig.chainID)
+                .buildTransaction()
+                .toPlainObject(),
         );
-        transaction.receiver = sender;
-        transactions.push(transaction);
 
         return transactions;
     }
@@ -271,20 +282,28 @@ export class SimpleLockTransactionService {
             inputTokens.length > 1
                 ? gasConfig.simpleLock.enterFarmLockedToken.withTokenMerge
                 : gasConfig.simpleLock.enterFarmLockedToken.default;
-
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            inputTokens,
-            this.enterFarmLockedToken.name,
-            [
+        const mappedPayments = inputTokens.map(inputToken =>
+            TokenPayment.metaEsdtFromBigInteger(
+                inputToken.tokenID,
+                inputToken.nonce,
+                new BigNumber(inputToken.amount),
+            ),
+        );
+        return contract.methodsExplicit
+            .enterFarmLockedToken([
                 EnumValue.fromDiscriminant(
                     FarmTypeEnumType,
                     farmTypeDiscriminant,
                 ),
-            ],
-            new GasLimit(gasLimit),
-        );
+            ])
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async farmProxyTokenInteraction(
@@ -297,21 +316,31 @@ export class SimpleLockTransactionService {
 
         const contract = await this.elrondProxy.getSimpleLockSmartContract();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(inputTokens.tokenID),
-            new U32Value(inputTokens.nonce),
-            new BigUIntValue(new BigNumber(inputTokens.amount)),
-            BytesValue.fromHex(contract.getAddress().hex()),
-            BytesValue.fromUTF8(endpointName),
-        ];
+        let interaction: Interaction;
+        switch (endpointName) {
+            case 'exitFarmLockedToken':
+                interaction = contract.methodsExplicit.exitFarmLockedToken();
+                break;
+            case 'farmClaimRewardsLockedToken':
+                interaction = contract.methodsExplicit.farmClaimRewardsLockedToken();
+                break;
+            default:
+                break;
+        }
 
-        const transaction = this.contextTransactions.nftTransfer(
-            contract,
-            transactionArgs,
-            new GasLimit(gasLimit),
-        );
-        transaction.receiver = sender;
-        return transaction;
+        return interaction
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     private async validateInputUnlockTokens(

@@ -1,6 +1,8 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { constantsConfig } from 'src/config';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { leastType } from 'src/utils/token.type.compare';
 import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
 
@@ -11,6 +13,7 @@ export class PairComputeService {
         private readonly pairGetterService: PairGetterService,
         @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
+        private readonly tokenGetter: TokenGetterService,
     ) {}
 
     async computeFirstTokenPrice(pairAddress: string): Promise<string> {
@@ -178,5 +181,19 @@ export class PairComputeService {
             .times(365)
             .div(lockedValueUSD)
             .toFixed();
+    }
+
+    async computeTypeFromTokens(pairAddress: string): Promise<string> {
+        const [firstTokenID, secondTokenID] = await Promise.all([
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairGetterService.getSecondTokenID(pairAddress),
+        ]);
+
+        const [firstTokenType, secondTokenType] = await Promise.all([
+            this.tokenGetter.getEsdtTokenType(firstTokenID),
+            this.tokenGetter.getEsdtTokenType(secondTokenID),
+        ]);
+
+        return leastType(firstTokenType, secondTokenType);
     }
 }

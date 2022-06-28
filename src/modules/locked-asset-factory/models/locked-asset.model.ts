@@ -1,6 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
-import { NftCollection } from '../../../models/tokens/nftCollection.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @ObjectType()
 export class UnlockMileStoneModel {
@@ -15,7 +15,7 @@ export class UnlockMileStoneModel {
 }
 
 @ObjectType()
-export class LockedAssetAttributes {
+export class LockedAssetAttributesModel {
     @Field()
     attributes: string;
     @Field()
@@ -25,7 +25,7 @@ export class LockedAssetAttributes {
     @Field()
     isMerged: boolean;
 
-    constructor(init?: Partial<LockedAssetAttributes>) {
+    constructor(init?: Partial<LockedAssetAttributesModel>) {
         Object.assign(this, init);
     }
 }
@@ -43,6 +43,9 @@ export class LockedAssetModel {
 
     @Field(() => [UnlockMileStoneModel])
     unlockMilestones: UnlockMileStoneModel[];
+
+    @Field(() => Int)
+    activationNonce: number;
 
     constructor(init?: Partial<LockedAssetModel>) {
         Object.assign(this, init);

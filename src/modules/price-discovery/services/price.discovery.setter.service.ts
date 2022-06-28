@@ -2,40 +2,17 @@ import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';
 
-export class PriceDiscoverySetterService {
+export class PriceDiscoverySetterService extends GenericSetterService {
     constructor(
-        private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async setData(
-        priceDiscoveryAddress: string,
-        key: string,
-        value: any,
-        ttl: number,
-    ): Promise<string> {
-        const cacheKey = this.getPriceDiscoveryCacheKey(
-            priceDiscoveryAddress,
-            key,
-        );
-        try {
-            await this.cachingService.setCache(cacheKey, value, ttl);
-            return cacheKey;
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                PriceDiscoverySetterService.name,
-                this.setData.name,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    ) {
+        super(cachingService, logger);
     }
 
     async setLaunchedTokenID(
@@ -43,8 +20,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'launchedTokenID',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'launchedTokenID',
+            ),
             value,
             oneHour(),
         );
@@ -55,8 +34,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'acceptedTokenID',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'acceptedTokenID',
+            ),
             value,
             oneHour(),
         );
@@ -67,8 +48,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'redeemTokenID',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'redeemTokenID',
+            ),
             value,
             oneHour(),
         );
@@ -79,8 +62,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'launchedTokenAmount',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'launchedTokenAmount',
+            ),
             value,
             oneSecond() * 12,
         );
@@ -91,8 +76,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'acceptedTokenAmount',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'acceptedTokenAmount',
+            ),
             value,
             oneSecond() * 12,
         );
@@ -103,8 +90,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'launchedTokenRedeemBalance',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'launchedTokenRedeemBalance',
+            ),
             value,
             oneSecond() * 12,
         );
@@ -115,8 +104,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'acceptedTokenRedeemBalance',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'acceptedTokenRedeemBalance',
+            ),
             value,
             oneSecond() * 12,
         );
@@ -127,8 +118,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'launchedTokenPrice',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'launchedTokenPrice',
+            ),
             value,
             oneSecond() * 12,
         );
@@ -139,8 +132,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'acceptedTokenPrice',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'acceptedTokenPrice',
+            ),
             value,
             oneSecond() * 12,
         );
@@ -151,8 +146,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'launchedTokenPriceUSD',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'launchedTokenPriceUSD',
+            ),
             value,
             oneSecond() * 12,
         );
@@ -163,8 +160,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'acceptedTokenPriceUSD',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'acceptedTokenPriceUSD',
+            ),
             value,
             oneSecond() * 12,
         );
@@ -175,8 +174,7 @@ export class PriceDiscoverySetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'startEpoch',
+            this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'startEpoch'),
             value,
             oneHour(),
         );
@@ -187,8 +185,7 @@ export class PriceDiscoverySetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'endEpoch',
+            this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'endEpoch'),
             value,
             oneHour(),
         );
@@ -199,8 +196,10 @@ export class PriceDiscoverySetterService {
         value: PhaseModel,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'currentPhase',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'currentPhase',
+            ),
             value,
             oneMinute(),
         );
@@ -211,8 +210,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'minLaunchedTokenPrice',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'minLaunchedTokenPrice',
+            ),
             value,
             oneHour(),
         );
@@ -223,8 +224,10 @@ export class PriceDiscoverySetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'noLimitPhaseDurationBlocks',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'noLimitPhaseDurationBlocks',
+            ),
             value,
             oneHour(),
         );
@@ -235,8 +238,10 @@ export class PriceDiscoverySetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'linearPenaltyPhaseDurationBlocks',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'linearPenaltyPhaseDurationBlocks',
+            ),
             value,
             oneHour(),
         );
@@ -247,8 +252,10 @@ export class PriceDiscoverySetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'fixedPenaltyPhaseDurationBlocks',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'fixedPenaltyPhaseDurationBlocks',
+            ),
             value,
             oneHour(),
         );
@@ -259,8 +266,10 @@ export class PriceDiscoverySetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'lockingScAddress',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'lockingScAddress',
+            ),
             value,
             oneHour(),
         );
@@ -271,8 +280,10 @@ export class PriceDiscoverySetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'unlockEpoch',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'unlockEpoch',
+            ),
             value,
             oneHour(),
         );
@@ -283,8 +294,10 @@ export class PriceDiscoverySetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'penaltyMinPercentage',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'penaltyMinPercentage',
+            ),
             value,
             oneHour(),
         );
@@ -295,8 +308,10 @@ export class PriceDiscoverySetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'penaltyMaxPercentage',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'penaltyMaxPercentage',
+            ),
             value,
             oneHour(),
         );
@@ -307,8 +322,10 @@ export class PriceDiscoverySetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            priceDiscoveryAddress,
-            'fixedPenaltyPercentage',
+            this.getPriceDiscoveryCacheKey(
+                priceDiscoveryAddress,
+                'fixedPenaltyPercentage',
+            ),
             value,
             oneHour(),
         );

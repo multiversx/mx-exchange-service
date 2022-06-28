@@ -22,13 +22,19 @@ import { StakingProxyModule } from './modules/staking-proxy/staking.proxy.module
 import { MetabondingModule } from './modules/metabonding/metabonding.module';
 import { PriceDiscoveryModule } from './modules/price-discovery/price.discovery.module';
 import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
+import { TokenModule } from './modules/tokens/token.module';
+import { AutoRouterModule } from './modules/auto-router/auto-router.module';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { RemoteConfigModule } from './modules/remote-config/remote-config.module';
 
 @Module({
     imports: [
         CommonAppModule,
         AuthModule,
+        RemoteConfigModule,
         CacheModule.register(),
-        GraphQLModule.forRoot({
+        GraphQLModule.forRoot<ApolloDriverConfig>({
+            driver: ApolloDriver,
             autoSchemaFile: 'schema.gql',
             installSubscriptionHandlers: true,
             formatError: (error: GraphQLError) => {
@@ -74,9 +80,11 @@ import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
                 logger.error(error.message, error.extensions);
                 return graphQLFormattedError;
             },
+            fieldResolverEnhancers: ['guards'],
         }),
         HttpModule,
         RouterModule,
+        AutoRouterModule,
         PairModule,
         FarmModule,
         StakingModule,
@@ -88,6 +96,7 @@ import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
         PriceDiscoveryModule,
         SimpleLockModule,
         WrappingModule,
+        TokenModule,
         UserModule,
         AnalyticsModule,
         SubscriptionsModule,

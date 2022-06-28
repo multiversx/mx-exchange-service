@@ -10,6 +10,7 @@ import { PairComputeService } from '../services/pair.compute.service';
 import { PairService } from '../services/pair.service';
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('PairService', () => {
     let service: PairComputeService;
@@ -44,6 +45,7 @@ describe('PairService', () => {
                 ContextServiceProvider,
                 WrapServiceProvider,
                 PriceFeedProvider,
+                TokenGetterServiceProvider,
             ],
         }).compile();
 
@@ -71,7 +73,7 @@ describe('PairService', () => {
 
     it('should get lpToken Price in USD from pair', async () => {
         const lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
-            'pair_address_1',
+            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
         expect(lpTokenPriceUSD).toEqual('400');
     });

@@ -1,4 +1,4 @@
-import { BinaryCodec } from '@elrondnetwork/erdjs/out';
+import { DualYieldTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -8,6 +8,7 @@ import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { FarmService } from 'src/modules/farm/services/farm.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
@@ -28,11 +29,13 @@ export class StakingProxyService {
         private readonly farmService: FarmService,
         private readonly pairService: PairService,
         private readonly apiService: ElrondApiService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    getStakingProxies(): StakingProxyModel[] {
-        const stakingProxiesAddress: string[] = scAddress.stakingProxy;
+    async getStakingProxies(): Promise<StakingProxyModel[]> {
+        const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
+
         const stakingProxies: StakingProxyModel[] = [];
         for (const address of stakingProxiesAddress) {
             stakingProxies.push(
@@ -165,25 +168,20 @@ export class StakingProxyService {
         args: DecodeAttributesArgs,
     ): DualYieldTokenAttributesModel[] {
         return args.batchAttributes.map(arg => {
-            const attributesBuffer = Buffer.from(arg.attributes, 'base64');
-            const codec = new BinaryCodec();
-            const structType = DualYieldTokenAttributesModel.getStructure();
-            const [decoded] = codec.decodeNested(attributesBuffer, structType);
-            const decodedAttributes = decoded.valueOf();
-            const dualYieldTokenAttributes = DualYieldTokenAttributesModel.fromDecodedAttributes(
-                decodedAttributes,
-            );
-            dualYieldTokenAttributes.identifier = arg.identifier;
-            dualYieldTokenAttributes.attributes = arg.attributes;
-
-            return dualYieldTokenAttributes;
+            return new DualYieldTokenAttributesModel({
+                ...DualYieldTokenAttributes.fromAttributes(
+                    arg.attributes,
+                ).toJSON(),
+                attributes: arg.attributes,
+                identifier: arg.identifier,
+            });
         });
     }
 
     async getStakingProxyAddressByDualYieldTokenID(
         tokenID: string,
     ): Promise<string> {
-        const stakingProxiesAddress: string[] = scAddress.stakingProxy;
+        const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
 
         for (const address of stakingProxiesAddress) {
             const dualYieldTokenID = await this.stakingProxyGetter.getDualYieldTokenID(

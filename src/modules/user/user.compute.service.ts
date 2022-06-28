@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { scAddress } from '../../config';
-import { LockedAssetToken } from '../../models/tokens/lockedAssetToken.model';
-import { LockedFarmToken } from '../../models/tokens/lockedFarmToken.model';
-import { LockedLpToken } from '../../models/tokens/lockedLpToken.model';
-import { NftToken } from '../../models/tokens/nftToken.model';
+import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
+import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
+import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
+import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
 import { FarmGetterService } from '../farm/services/farm.getter.service';
 import { FarmService } from '../farm/services/farm.service';
@@ -28,15 +28,15 @@ import {
 import { PairGetterService } from '../pair/services/pair.getter.service';
 import { computeValueUSD, tokenIdentifier } from '../../utils/token.converters';
 import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
-import { StakeFarmToken } from 'src/models/tokens/stakeFarmToken.model';
+import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { StakingGetterService } from '../staking/services/staking.getter.service';
 import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
 import { StakingService } from '../staking/services/staking.service';
 import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
-import { DualYieldToken } from 'src/models/tokens/dualYieldToken.model';
+import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
 import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairComputeService } from '../pair/services/pair.compute.service';
 import { ruleOfThree } from 'src/helpers/helpers';
 
@@ -167,7 +167,7 @@ export class UserComputeService {
     async lockedLpTokenUSD(
         nftToken: LockedLpToken,
     ): Promise<UserLockedLPToken> {
-        const decodedWLPTAttributes = this.proxyService.getWrappedLpTokenAttributes(
+        const decodedWLPTAttributes = await this.proxyService.getWrappedLpTokenAttributes(
             {
                 batchAttributes: [
                     {

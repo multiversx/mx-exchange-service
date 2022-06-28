@@ -4,14 +4,12 @@ import { ApolloError } from 'apollo-server-express';
 import { gasConfig } from 'src/config';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import {
-    FarmProxyTokenAttributesModel,
     LockedTokenAttributesModel,
-    LpProxyTokenAttributesModel,
     SimpleLockModel,
 } from './models/simple.lock.model';
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
@@ -83,34 +81,6 @@ export class SimpleLockResolver {
     ): Promise<LockedTokenAttributesModel[]> {
         try {
             return this.simpleLockService.decodeBatchLockedTokenAttributes(
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => [LpProxyTokenAttributesModel])
-    async lpProxyTokenAttributes(
-        @Args('args') args: DecodeAttributesArgs,
-    ): Promise<LpProxyTokenAttributesModel[]> {
-        try {
-            return this.simpleLockService.decodeBatchLpTokenProxyAttributes(
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => [FarmProxyTokenAttributesModel])
-    async farmProxyTokenAttributes(
-        @Args('args') args: DecodeAttributesArgs,
-    ): Promise<FarmProxyTokenAttributesModel[]> {
-        try {
-            return this.simpleLockService.decodeBatchFarmProxyTokenAttributes(
                 args,
             );
         } catch (error) {

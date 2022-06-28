@@ -12,12 +12,8 @@ import { PairGetterService } from './services/pair.getter.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { PairSetterService } from './services/pair.setter.service';
 import { AWSModule } from 'src/services/aws/aws.module';
-import { PairDBService } from './services/pair.db.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Pair, PairSchema } from './schemas/pair.schema';
-import { CommonAppModule } from 'src/common.app.module';
-import { ApiConfigService } from 'src/helpers/api.config.service';
-
+import { DatabaseModule } from 'src/services/database/database.module';
+import { TokenModule } from '../tokens/token.module';
 @Module({
     imports: [
         ElrondCommunicationModule,
@@ -26,25 +22,14 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
         WrappingModule,
         CachingModule,
         AWSModule,
-        MongooseModule.forRootAsync({
-            imports: [CommonAppModule],
-            useFactory: async (configService: ApiConfigService) => ({
-                uri: `mongodb+srv://${configService.getMongoDBURL()}`,
-                dbName: configService.getMongoDBDatabase(),
-                user: configService.getMongoDBUsername(),
-                pass: configService.getMongoDBPassword(),
-                tlsAllowInvalidCertificates: true,
-            }),
-            inject: [ApiConfigService],
-        }),
-        MongooseModule.forFeature([{ name: Pair.name, schema: PairSchema }]),
+        DatabaseModule,
+        TokenModule,
     ],
     providers: [
         PairService,
         PairGetterService,
         PairSetterService,
         PairComputeService,
-        PairDBService,
         PairAbiService,
         PairTransactionService,
         PairResolver,
@@ -54,9 +39,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
         PairGetterService,
         PairSetterService,
         PairComputeService,
-        PairDBService,
         PairAbiService,
-        MongooseModule.forFeature([{ name: Pair.name, schema: PairSchema }]),
     ],
 })
 export class PairModule {}

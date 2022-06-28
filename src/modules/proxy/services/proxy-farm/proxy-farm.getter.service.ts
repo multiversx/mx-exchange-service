@@ -1,51 +1,28 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AbiProxyFarmService } from './proxy-farm-abi.service';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from '../../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../../../utils/generate-cache-key';
-import { generateGetLogMessage } from '../../../../utils/generate-log-message';
 import { oneHour } from '../../../../helpers/helpers';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { cacheConfig } from 'src/config';
+import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 
 @Injectable()
-export class ProxyFarmGetterService {
+export class ProxyFarmGetterService extends GenericGetterService {
     constructor(
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private abiService: AbiProxyFarmService,
         private contextGetter: ContextGetterService,
-        private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async getData(
-        key: string,
-        createValueFunc: () => any,
-        ttl: number = cacheConfig.default,
-    ): Promise<any> {
-        const cacheKey = this.getProxyFarmCacheKey(key);
-        try {
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                ProxyFarmGetterService.name,
-                createValueFunc.name,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+    ) {
+        super(cachingService, logger);
     }
 
     async getwrappedFarmTokenID(): Promise<string> {
         return this.getData(
-            'wrappedFarmTokenID',
+            this.getProxyFarmCacheKey('wrappedFarmTokenID'),
             () => this.abiService.getWrappedFarmTokenID(),
             oneHour(),
         );
@@ -58,7 +35,7 @@ export class ProxyFarmGetterService {
 
     async getIntermediatedFarms(): Promise<string[]> {
         return await this.getData(
-            'intermediatedFarms',
+            this.getProxyFarmCacheKey('intermediatedFarms'),
             () => this.abiService.getIntermediatedFarmsAddress(),
             oneHour(),
         );

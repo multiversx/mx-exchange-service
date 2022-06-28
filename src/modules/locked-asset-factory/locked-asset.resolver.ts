@@ -3,20 +3,20 @@ import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { LockedAssetService } from './services/locked-asset.service';
 import {
-    LockedAssetAttributes,
+    LockedAssetAttributesModel,
     LockedAssetModel,
     UnlockMileStoneModel,
 } from './models/locked-asset.model';
 import { UnlockAssetsArs } from './models/locked-asset.args';
 import { TransactionsLockedAssetService } from './services/transaction-locked-asset.service';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { LockedAssetGetterService } from './services/locked.asset.getter.service';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @Resolver(() => LockedAssetModel)
 export class LockedAssetResolver {
@@ -48,6 +48,15 @@ export class LockedAssetResolver {
     async unlockMilestones(): Promise<UnlockMileStoneModel[]> {
         try {
             return await this.lockedAssetGetter.getDefaultUnlockPeriod();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async activationNonce(): Promise<number> {
+        try {
+            return await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -96,10 +105,10 @@ export class LockedAssetResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => [LockedAssetAttributes])
+    @Query(() => [LockedAssetAttributesModel])
     async decodeLockedAssetAttributes(
         @Args('args') args: DecodeAttributesArgs,
-    ): Promise<LockedAssetAttributes[]> {
+    ): Promise<LockedAssetAttributesModel[]> {
         return this.lockedAssetService.decodeLockedAssetAttributes(args);
     }
 }

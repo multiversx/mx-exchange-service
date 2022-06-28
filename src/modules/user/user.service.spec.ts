@@ -18,7 +18,7 @@ import * as Transport from 'winston-transport';
 import { WrapService } from '../wrapping/wrap.service';
 import { WrapServiceMock } from '../wrapping/wrap.test-mocks';
 import { ElrondApiServiceMock } from '../../services/elrond-communication/elrond.api.service.mock';
-import { UserFarmToken } from './models/user.model';
+import { UserFarmToken, UserToken } from './models/user.model';
 import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
 import { UserComputeService } from './user.compute.service';
 import { CachingModule } from '../../services/caching/cache.module';
@@ -52,6 +52,10 @@ import { PriceDiscoveryGetterServiceProvider } from '../price-discovery/mocks/pr
 import { PriceDiscoveryServiceProvider } from '../price-discovery/mocks/price.discovery.service.mock';
 import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
 import { SimpleLockGetterServiceProvider } from '../simple-lock/mocks/simple.lock.getter.service.mock';
+import { AssetsModel, RolesModel } from '../tokens/models/esdtToken.model';
+import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
+import { RemoteConfigGetterServiceMock } from '../remote-config/mocks/remote-config.getter.mock';
+import { TokenGetterServiceProvider } from '../tokens/mocks/token.getter.service.mock';
 
 describe('UserService', () => {
     let service: UserService;
@@ -146,6 +150,11 @@ describe('UserService', () => {
         useClass: StakingProxyGetterServiceMock,
     };
 
+    const RemoteConfigGetterServiceProvider = {
+        provide: RemoteConfigGetterService,
+        useClass: RemoteConfigGetterServiceMock,
+    };
+
     const logTransports: Transport[] = [
         new winston.transports.Console({
             format: winston.format.combine(
@@ -183,8 +192,10 @@ describe('UserService', () => {
                 PriceDiscoveryGetterServiceProvider,
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
+                TokenGetterServiceProvider,
                 UserService,
                 UserComputeService,
+                RemoteConfigGetterServiceProvider,
             ],
             imports: [
                 WinstonModule.forRoot({
@@ -208,10 +219,11 @@ describe('UserService', () => {
                 limit: 10,
             }),
         ).toEqual([
-            {
+            new UserToken({
                 identifier: 'TOK2-2222',
+                ticker: 'TOK2',
                 name: 'SecondToken',
-                type: 'FungibleESDT',
+                type: '',
                 owner: 'owner_address',
                 supply: '2000000000000000000',
                 decimals: 18,
@@ -225,7 +237,25 @@ describe('UserService', () => {
                 canWipe: true,
                 balance: '1000000000000000000',
                 valueUSD: '100',
-            },
+                accounts: 1,
+                initialMinted: '1',
+                burnt: '1',
+                minted: '1',
+                circulatingSupply: '1',
+                transactions: 1,
+                price: '1',
+                roles: new RolesModel(),
+
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    svgUrl: '',
+                    pngUrl: '',
+                    status: '',
+                    website: '',
+                }),
+            }),
         ]);
     });
 

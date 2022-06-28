@@ -29,6 +29,7 @@ import { ProxyGetterServiceMock } from 'src/modules/proxy/mocks/proxy.getter.ser
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -107,6 +108,7 @@ describe('AnalyticsService', () => {
                 LockedAssetGetterService,
                 PriceFeedServiceProvider,
                 WrapServiceProvider,
+                TokenGetterServiceProvider,
                 AnalyticsComputeService,
             ],
         }).compile();

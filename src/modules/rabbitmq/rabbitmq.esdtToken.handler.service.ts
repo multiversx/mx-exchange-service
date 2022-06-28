@@ -1,3 +1,7 @@
+import {
+    EsdtLocalBurnEvent,
+    EsdtLocalMintEvent,
+} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -7,8 +11,6 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
-import { EsdtLocalBurnEvent } from './entities/esdtToken/esdtLocalBurn.event';
-import { EsdtLocalMintEvent } from './entities/esdtToken/esdtLocalMint.event';
 
 @Injectable()
 export class RabbitMQEsdtTokenHandlerService {
@@ -28,9 +30,7 @@ export class RabbitMQEsdtTokenHandlerService {
             'context',
             event.getTopics().tokenID,
         );
-        const token = await this.apiService
-            .getService()
-            .getToken(event.getTopics().tokenID);
+        const token = await this.apiService.getToken(event.getTopics().tokenID);
         await this.cachingService.setCache(cacheKey, token, oneHour());
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();

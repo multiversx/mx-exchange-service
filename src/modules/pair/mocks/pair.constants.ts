@@ -1,8 +1,15 @@
-export const Tokens = (tokenID: string) => {
+import {
+    AssetsModel,
+    EsdtToken,
+    RolesModel,
+} from 'src/modules/tokens/models/esdtToken.model';
+
+export const Tokens = (tokenID: string): EsdtToken => {
     switch (tokenID) {
         case 'TOK1-1111':
             return {
                 identifier: 'TOK1-1111',
+                ticker: 'TOK1',
                 name: 'FirstToken',
                 owner: 'owner_address',
                 supply: '1000000000000000000',
@@ -16,11 +23,29 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         case 'TOK2-2222':
             return {
                 identifier: 'TOK2-2222',
                 name: 'SecondToken',
+                ticker: 'TOK2',
                 owner: 'owner_address',
                 supply: '2000000000000000000',
                 decimals: 18,
@@ -33,11 +58,29 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         case 'USDC-1111':
             return {
                 identifier: 'USDC-1111',
                 name: 'ThirdToken',
+                ticker: 'USDC',
                 owner: 'owner_address',
                 supply: '2000000000000000000',
                 decimals: 18,
@@ -50,12 +93,30 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         case 'LPT-1234':
             return {
                 identifier: 'LPT-1234',
                 name: 'LiquidityPoolToken1',
                 owner: 'router_address',
+                ticker: 'LPT',
                 supply: '1000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -67,12 +128,30 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         case 'LPT-abcd':
             return {
                 identifier: 'LPT-abcd',
                 name: 'LiquidityPoolToken2',
                 owner: 'router_address',
+                ticker: 'LPT',
                 supply: '1000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -84,6 +163,23 @@ export const Tokens = (tokenID: string) => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
             };
         default:
             break;
@@ -91,50 +187,52 @@ export const Tokens = (tokenID: string) => {
 };
 
 export const PairsData = (pairAddress: string) => {
-    switch (pairAddress) {
-        case 'pair_address_1':
-            return {
-                address: 'pair_address_1',
-                firstToken: Tokens('TOK1-1111'),
-                secondToken: Tokens('TOK2-2222'),
-                liquidityPoolToken: Tokens('LPT-1234'),
-                info: {
-                    reserves0: '1000000000000000000',
-                    reserves1: '2000000000000000000',
-                    totalSupply: '1000000000000000000',
-                },
-                firstTokenPrice: '2',
-                firstTokenPriceUSD: '200',
-                secondTokenPrice: '0.5',
-                secondTokenPriceUSD: '100',
-                liquidityPoolTokenPriceUSD: '2',
-                firstTokenLockedValueUSD: '500',
-                secondTokenLockedValueUSD: '500',
-                lockedValueUSD: '1000',
-                totalFeePercent: 0.003,
-                state: 'Active',
-            };
-        case 'pair_address_2':
-            return {
-                address: 'pair_address_1',
-                firstToken: Tokens('TOK1-1111'),
-                secondToken: Tokens('USDC-1111'),
-                liquidityPoolToken: Tokens('LPT-abcd'),
-                info: {
-                    reserves0: '1000000000000000000',
-                    reserves1: '200000000000000000000',
-                    totalSupply: '1000000000000000000',
-                },
-                firstTokenPrice: '200',
-                firstTokenPriceUSD: '200',
-                secondTokenPrice: '0.005',
-                secondTokenPriceUSD: '1',
-                liquidityPoolTokenPriceUSD: '400',
-                firstTokenLockedValueUSD: '200',
-                secondTokenLockedValueUSD: '200',
-                lockedValueUSD: '400',
-                totalFeePercent: 0.003,
-                state: 'Active',
-            };
-    }
+    return pairs.filter(p => p.address == pairAddress)[0];
 };
+
+export const pairs = [
+    {
+        address:
+            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+        firstToken: Tokens('TOK1-1111'),
+        secondToken: Tokens('TOK2-2222'),
+        liquidityPoolToken: Tokens('LPT-1234'),
+        info: {
+            reserves0: '1000000000000000000',
+            reserves1: '2000000000000000000',
+            totalSupply: '1000000000000000000',
+        },
+        firstTokenPrice: '2',
+        firstTokenPriceUSD: '200',
+        secondTokenPrice: '0.5',
+        secondTokenPriceUSD: '100',
+        liquidityPoolTokenPriceUSD: '2',
+        firstTokenLockedValueUSD: '500',
+        secondTokenLockedValueUSD: '500',
+        lockedValueUSD: '1000',
+        totalFeePercent: 0.003,
+        state: 'Active',
+    },
+    {
+        address:
+            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+        firstToken: Tokens('TOK1-1111'),
+        secondToken: Tokens('USDC-1111'),
+        liquidityPoolToken: Tokens('LPT-abcd'),
+        info: {
+            reserves0: '1000000000000000000',
+            reserves1: '200000000000000000000',
+            totalSupply: '1000000000000000000',
+        },
+        firstTokenPrice: '200',
+        firstTokenPriceUSD: '200',
+        secondTokenPrice: '0.005',
+        secondTokenPriceUSD: '1',
+        liquidityPoolTokenPriceUSD: '400',
+        firstTokenLockedValueUSD: '200',
+        secondTokenLockedValueUSD: '200',
+        lockedValueUSD: '400',
+        totalFeePercent: 0.003,
+        state: 'Active',
+    },
+];

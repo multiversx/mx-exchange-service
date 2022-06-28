@@ -1,22 +1,19 @@
 import { PairMetadata } from '../models/pair.metadata.model';
-
+import { pairs } from 'src/modules/pair/mocks/pair.constants';
 export class RouterGetterServiceMock {
     async getAllPairsAddress(): Promise<string[]> {
-        return ['pair_address_1', 'pair_address_2'];
+        return pairs.map(p => {
+            return p.address;
+        });
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
-        return [
-            new PairMetadata({
-                address: 'pair_address_1',
-                firstTokenID: 'TOK1-1111',
-                secondTokenID: 'TOK2-2222',
-            }),
-            new PairMetadata({
-                address: 'pair_address_2',
-                firstTokenID: 'TOK1-1111',
-                secondTokenID: 'USDC-1111',
-            }),
-        ];
+        return pairs.map(p => {
+            return new PairMetadata({
+                firstTokenID: p.firstToken.identifier,
+                secondTokenID: p.secondToken.identifier,
+                address: p.address,
+            });
+        });
     }
 }

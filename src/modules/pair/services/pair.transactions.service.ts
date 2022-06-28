@@ -4,7 +4,7 @@ import {
     TypedValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Address, GasLimit } from '@elrondnetwork/erdjs';
+import { Address, TokenPayment } from '@elrondnetwork/erdjs';
 import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
@@ -23,7 +23,6 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ContextTransactionsService } from 'src/services/context/context.transactions.service';
 
 @Injectable()
 export class PairTransactionService {
@@ -31,7 +30,6 @@ export class PairTransactionService {
         private readonly elrondProxy: ElrondProxyService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly contextTransactions: ContextTransactionsService,
         private readonly wrapService: WrapService,
         private readonly wrapTransaction: TransactionsWrapService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -112,7 +110,7 @@ export class PairTransactionService {
             throw new Error('Invalid sender address');
         }
 
-        let firstTokenInput, secondTokenInput: InputTokenModel;
+        let firstTokenInput: InputTokenModel, secondTokenInput: InputTokenModel;
         try {
             [firstTokenInput, secondTokenInput] = await this.validateTokens(
                 args.pairAddress,
@@ -133,21 +131,32 @@ export class PairTransactionService {
             args.pairAddress,
         );
 
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            [firstTokenInput, secondTokenInput],
-            'addInitialLiquidity',
-            [],
-            new GasLimit(gasConfig.pairs.addLiquidity),
-        );
+        return contract.methodsExplicit
+            .addInitialLiquidity()
+            .withMultiESDTNFTTransfer(
+                [
+                    TokenPayment.fungibleFromBigInteger(
+                        firstTokenInput.tokenID,
+                        new BigNumber(firstTokenInput.amount),
+                    ),
+                    TokenPayment.fungibleFromBigInteger(
+                        secondTokenInput.tokenID,
+                        new BigNumber(secondTokenInput.amount),
+                    ),
+                ],
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.pairs.addLiquidity)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async addLiquidity(
         sender: string,
         args: AddLiquidityArgs,
     ): Promise<TransactionModel> {
-        let firstTokenInput, secondTokenInput: InputTokenModel;
+        let firstTokenInput: InputTokenModel, secondTokenInput: InputTokenModel;
         try {
             [firstTokenInput, secondTokenInput] = await this.validateTokens(
                 args.pairAddress,
@@ -183,14 +192,25 @@ export class PairTransactionService {
             new BigUIntValue(amount1Min),
         ];
 
-        return this.contextTransactions.multiESDTNFTTransfer(
-            new Address(sender),
-            contract,
-            [firstTokenInput, secondTokenInput],
-            'addLiquidity',
-            endpointArgs,
-            new GasLimit(gasConfig.pairs.addLiquidity),
-        );
+        return contract.methodsExplicit
+            .addLiquidity(endpointArgs)
+            .withMultiESDTNFTTransfer(
+                [
+                    TokenPayment.fungibleFromBigInteger(
+                        firstTokenInput.tokenID,
+                        new BigNumber(firstTokenInput.amount),
+                    ),
+                    TokenPayment.fungibleFromBigInteger(
+                        secondTokenInput.tokenID,
+                        new BigNumber(secondTokenInput.amount),
+                    ),
+                ],
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.pairs.addLiquidity)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async removeLiquidity(
@@ -222,19 +242,23 @@ export class PairTransactionService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const transactionArgs = [
-            BytesValue.fromUTF8(args.liquidityTokenID),
-            new BigUIntValue(new BigNumber(args.liquidity)),
-            BytesValue.fromUTF8('removeLiquidity'),
+        const endpointArgs = [
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
         ];
         transactions.push(
-            this.contextTransactions.esdtTransfer(
-                contract,
-                transactionArgs,
-                new GasLimit(gasConfig.pairs.removeLiquidity),
-            ),
+            contract.methodsExplicit
+                .removeLiquidity(endpointArgs)
+                .withSingleESDTTransfer(
+                    TokenPayment.fungibleFromBigInteger(
+                        args.liquidityTokenID,
+                        new BigNumber(args.liquidity),
+                    ),
+                )
+                .withGasLimit(gasConfig.pairs.removeLiquidity)
+                .withChainID(elrondConfig.chainID)
+                .buildTransaction()
+                .toPlainObject(),
         );
 
         switch (wrappedTokenID) {
@@ -263,7 +287,7 @@ export class PairTransactionService {
         args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        let transactionArgs: TypedValue[];
+        let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
             this.elrondProxy.getPairSmartContract(args.pairAddress),
@@ -277,52 +301,53 @@ export class PairTransactionService {
             .multipliedBy(amountOut)
             .integerValue();
 
+        const gasLimit =
+            trustedSwapPairs.length === 0
+                ? gasConfig.pairs.swapTokensFixedInput.default
+                : gasConfig.pairs.swapTokensFixedInput.withFeeSwap;
+
         switch (elrondConfig.EGLDIdentifier) {
             case args.tokenInID:
                 transactions.push(
                     await this.wrapTransaction.wrapEgld(sender, args.amountIn),
                 );
-
-                transactionArgs = [
-                    BytesValue.fromUTF8(wrappedTokenID),
-                    new BigUIntValue(amountIn),
-                    BytesValue.fromUTF8('swapTokensFixedInput'),
+                endpointArgs = [
                     BytesValue.fromUTF8(args.tokenOutID),
                     new BigUIntValue(amountOutMin),
                 ];
-
                 transactions.push(
-                    this.contextTransactions.esdtTransfer(
-                        contract,
-                        transactionArgs,
-                        new GasLimit(
-                            trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokensFixedInput.default
-                                : gasConfig.pairs.swapTokensFixedInput
-                                      .withFeeSwap,
-                        ),
-                    ),
+                    contract.methodsExplicit
+                        .swapTokensFixedInput(endpointArgs)
+                        .withSingleESDTTransfer(
+                            TokenPayment.fungibleFromBigInteger(
+                                wrappedTokenID,
+                                new BigNumber(amountIn),
+                            ),
+                        )
+                        .withGasLimit(gasLimit)
+                        .withChainID(elrondConfig.chainID)
+                        .buildTransaction()
+                        .toPlainObject(),
                 );
                 break;
             case args.tokenOutID:
-                transactionArgs = [
-                    BytesValue.fromUTF8(args.tokenInID),
-                    new BigUIntValue(amountIn),
-                    BytesValue.fromUTF8('swapTokensFixedInput'),
+                endpointArgs = [
                     BytesValue.fromUTF8(wrappedTokenID),
                     new BigUIntValue(amountOutMin),
                 ];
                 transactions.push(
-                    this.contextTransactions.esdtTransfer(
-                        contract,
-                        transactionArgs,
-                        new GasLimit(
-                            trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokensFixedInput.default
-                                : gasConfig.pairs.swapTokensFixedInput
-                                      .withFeeSwap,
-                        ),
-                    ),
+                    contract.methodsExplicit
+                        .swapTokensFixedInput(endpointArgs)
+                        .withSingleESDTTransfer(
+                            TokenPayment.fungibleFromBigInteger(
+                                args.tokenInID,
+                                new BigNumber(amountIn),
+                            ),
+                        )
+                        .withGasLimit(gasLimit)
+                        .withChainID(elrondConfig.chainID)
+                        .buildTransaction()
+                        .toPlainObject(),
                 );
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
@@ -332,25 +357,24 @@ export class PairTransactionService {
                 );
                 break;
             default:
-                transactionArgs = [
-                    BytesValue.fromUTF8(args.tokenInID),
-                    new BigUIntValue(amountIn),
-                    BytesValue.fromUTF8('swapTokensFixedInput'),
+                endpointArgs = [
                     BytesValue.fromUTF8(args.tokenOutID),
                     new BigUIntValue(amountOutMin),
                 ];
 
                 transactions.push(
-                    this.contextTransactions.esdtTransfer(
-                        contract,
-                        transactionArgs,
-                        new GasLimit(
-                            trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokensFixedInput.default
-                                : gasConfig.pairs.swapTokensFixedInput
-                                      .withFeeSwap,
-                        ),
-                    ),
+                    contract.methodsExplicit
+                        .swapTokensFixedInput(endpointArgs)
+                        .withSingleESDTTransfer(
+                            TokenPayment.fungibleFromBigInteger(
+                                args.tokenInID,
+                                new BigNumber(amountIn),
+                            ),
+                        )
+                        .withGasLimit(gasLimit)
+                        .withChainID(elrondConfig.chainID)
+                        .buildTransaction()
+                        .toPlainObject(),
                 );
                 break;
         }
@@ -363,7 +387,7 @@ export class PairTransactionService {
         args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
-        let transactionArgs: TypedValue[];
+        let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
             this.elrondProxy.getPairSmartContract(args.pairAddress),
@@ -372,6 +396,11 @@ export class PairTransactionService {
 
         const amountIn = new BigNumber(args.amountIn);
         const amountOut = new BigNumber(args.amountOut);
+
+        const gasLimit =
+            trustedSwapPairs.length === 0
+                ? gasConfig.pairs.swapTokensFixedOutput.default
+                : gasConfig.pairs.swapTokensFixedOutput.withFeeSwap;
 
         switch (elrondConfig.EGLDIdentifier) {
             case args.tokenInID:
@@ -382,46 +411,44 @@ export class PairTransactionService {
                     ),
                 );
 
-                transactionArgs = [
-                    BytesValue.fromUTF8(wrappedTokenID),
-                    new BigUIntValue(amountIn),
-                    BytesValue.fromUTF8('swapTokensFixedOutput'),
+                endpointArgs = [
                     BytesValue.fromUTF8(args.tokenOutID),
                     new BigUIntValue(amountOut),
                 ];
 
                 transactions.push(
-                    this.contextTransactions.esdtTransfer(
-                        contract,
-                        transactionArgs,
-                        new GasLimit(
-                            trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokensFixedOutput.default
-                                : gasConfig.pairs.swapTokensFixedOutput
-                                      .withFeeSwap,
-                        ),
-                    ),
+                    contract.methodsExplicit
+                        .swapTokensFixedOutput(endpointArgs)
+                        .withSingleESDTTransfer(
+                            TokenPayment.fungibleFromBigInteger(
+                                wrappedTokenID,
+                                new BigNumber(amountIn),
+                            ),
+                        )
+                        .withGasLimit(gasLimit)
+                        .withChainID(elrondConfig.chainID)
+                        .buildTransaction()
+                        .toPlainObject(),
                 );
                 break;
             case args.tokenOutID:
-                transactionArgs = [
-                    BytesValue.fromUTF8(args.tokenInID),
-                    new BigUIntValue(amountIn),
-                    BytesValue.fromUTF8('swapTokensFixedOutput'),
+                endpointArgs = [
                     BytesValue.fromUTF8(wrappedTokenID),
                     new BigUIntValue(amountOut),
                 ];
                 transactions.push(
-                    this.contextTransactions.esdtTransfer(
-                        contract,
-                        transactionArgs,
-                        new GasLimit(
-                            trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokensFixedOutput.default
-                                : gasConfig.pairs.swapTokensFixedOutput
-                                      .withFeeSwap,
-                        ),
-                    ),
+                    contract.methodsExplicit
+                        .swapTokensFixedOutput(endpointArgs)
+                        .withSingleESDTTransfer(
+                            TokenPayment.fungibleFromBigInteger(
+                                args.tokenInID,
+                                new BigNumber(amountIn),
+                            ),
+                        )
+                        .withGasLimit(gasLimit)
+                        .withChainID(elrondConfig.chainID)
+                        .buildTransaction()
+                        .toPlainObject(),
                 );
                 transactions.push(
                     await this.wrapTransaction.unwrapEgld(
@@ -431,25 +458,24 @@ export class PairTransactionService {
                 );
                 break;
             default:
-                transactionArgs = [
-                    BytesValue.fromUTF8(args.tokenInID),
-                    new BigUIntValue(amountIn),
-                    BytesValue.fromUTF8('swapTokensFixedOutput'),
+                endpointArgs = [
                     BytesValue.fromUTF8(args.tokenOutID),
                     new BigUIntValue(amountOut),
                 ];
 
                 transactions.push(
-                    this.contextTransactions.esdtTransfer(
-                        contract,
-                        transactionArgs,
-                        new GasLimit(
-                            trustedSwapPairs.length === 0
-                                ? gasConfig.pairs.swapTokensFixedOutput.default
-                                : gasConfig.pairs.swapTokensFixedOutput
-                                      .withFeeSwap,
-                        ),
-                    ),
+                    contract.methodsExplicit
+                        .swapTokensFixedOutput(endpointArgs)
+                        .withSingleESDTTransfer(
+                            TokenPayment.fungibleFromBigInteger(
+                                args.tokenInID,
+                                new BigNumber(amountIn),
+                            ),
+                        )
+                        .withGasLimit(gasLimit)
+                        .withChainID(elrondConfig.chainID)
+                        .buildTransaction()
+                        .toPlainObject(),
                 );
                 break;
         }

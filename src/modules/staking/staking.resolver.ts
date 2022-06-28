@@ -241,7 +241,7 @@ export class StakingResolver {
     @Query(() => [StakingModel])
     async stakingFarms(): Promise<StakingModel[]> {
         try {
-            return this.stakingService.getFarmsStaking();
+            return await this.stakingService.getFarmsStaking();
         } catch (error) {
             throw new ApolloError(error);
         }

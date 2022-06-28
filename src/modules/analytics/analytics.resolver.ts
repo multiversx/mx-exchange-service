@@ -4,12 +4,12 @@ import { Args, Resolver } from '@nestjs/graphql';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { AWSQueryArgs } from './models/query.args';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
-import { AnalyticsService } from './services/analytics.service';
+import { AnalyticsAWSGetterService } from './services/analytics.service';
 
 @Resolver()
 export class AnalyticsResolver {
     constructor(
-        private readonly analyticsService: AnalyticsService,
+        private readonly analyticsService: AnalyticsAWSGetterService,
         private readonly analyticsGetterService: AnalyticsGetterService,
     ) {}
 

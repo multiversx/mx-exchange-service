@@ -1,50 +1,28 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
 
 @Injectable()
-export class SimpleLockGetterService {
+export class SimpleLockGetterService extends GenericGetterService {
     constructor(
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: SimpleLockAbiService,
-        private readonly cachingService: CachingService,
         private readonly contextGetter: ContextGetterService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async getData(
-        key: string,
-        createValueFunc: () => any,
-        ttl: number,
-    ): Promise<any> {
-        const cacheKey = this.getSimpleLockCacheKey(key);
-        try {
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                SimpleLockGetterService.name,
-                this.getData.name,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+    ) {
+        super(cachingService, logger);
     }
 
     async getLockedTokenID(): Promise<string> {
         return await this.getData(
-            'lockedTokenID',
+            this.getSimpleLockCacheKey('lockedTokenID'),
             () => this.abiService.getLockedTokenID(),
             oneHour(),
         );
@@ -52,7 +30,7 @@ export class SimpleLockGetterService {
 
     async getLpProxyTokenID(): Promise<string> {
         return await this.getData(
-            'lpProxyTokenID',
+            this.getSimpleLockCacheKey('lpProxyTokenID'),
             () => this.abiService.getLpProxyTokenID(),
             oneHour(),
         );
@@ -60,7 +38,7 @@ export class SimpleLockGetterService {
 
     async getFarmProxyTokenID(): Promise<string> {
         return await this.getData(
-            'farmProxyTokenID',
+            this.getSimpleLockCacheKey('farmProxyTokenID'),
             () => this.abiService.getFarmProxyTokenID(),
             oneHour(),
         );
@@ -83,7 +61,7 @@ export class SimpleLockGetterService {
 
     async getIntermediatedPairs(): Promise<string[]> {
         return await this.getData(
-            'intermediatedPairs',
+            this.getSimpleLockCacheKey('intermediatedPairs'),
             () => this.abiService.getKnownLiquidityPools(),
             oneMinute(),
         );
@@ -91,7 +69,7 @@ export class SimpleLockGetterService {
 
     async getIntermediatedFarms(): Promise<string[]> {
         return await this.getData(
-            'intermediatedFarms',
+            this.getSimpleLockCacheKey('intermediatedFarms'),
             () => this.abiService.getKnownFarms(),
             oneMinute(),
         );

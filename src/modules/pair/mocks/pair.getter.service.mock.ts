@@ -1,5 +1,6 @@
+import { Address } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from '../models/pair-info.model';
 import { PairsData } from './pair.constants';
 
@@ -126,5 +127,9 @@ export class PairGetterServiceMock {
 
     async getState(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).state;
+    }
+
+    async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
+        return [Address.Zero().bech32()];
     }
 }

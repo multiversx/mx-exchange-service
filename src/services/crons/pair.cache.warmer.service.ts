@@ -1,17 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { cacheConfig } from '../../config';
 import { ContextService } from '../context/context.service';
-import { CachingService } from '../caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
-import { oneHour } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
-import { PairDBService } from 'src/modules/pair/services/pair.db.service';
+import { ContextSetterService } from '../context/context.setter.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -20,10 +16,9 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: PairAbiService,
-        private readonly pairDbService: PairDBService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
-        private readonly cachingService: CachingService,
+        private readonly contextSetter: ContextSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -38,17 +33,11 @@ export class PairCacheWarmerService {
             const [
                 firstToken,
                 secondToken,
-                lpToken,
                 totalFeePercent,
                 specialFeePercent,
             ] = await Promise.all([
-                this.apiService
-                    .getService()
-                    .getToken(pairMetadata.firstTokenID),
-                this.apiService
-                    .getService()
-                    .getToken(pairMetadata.secondTokenID),
-                this.apiService.getService().getToken(lpTokenID),
+                this.apiService.getToken(pairMetadata.firstTokenID),
+                this.apiService.getToken(pairMetadata.secondTokenID),
                 this.abiPairService.getTotalFeePercent(pairMetadata.address),
                 this.abiPairService.getSpecialFeePercent(pairMetadata.address),
             ]);
@@ -62,10 +51,6 @@ export class PairCacheWarmerService {
                     pairMetadata.address,
                     pairMetadata.secondTokenID,
                 ),
-                this.pairSetterService.setLpTokenID(
-                    pairMetadata.address,
-                    lpTokenID,
-                ),
                 this.pairSetterService.setTotalFeePercent(
                     pairMetadata.address,
                     totalFeePercent,
@@ -75,19 +60,34 @@ export class PairCacheWarmerService {
                     specialFeePercent,
                 ),
             ]);
+            if (lpTokenID !== undefined) {
+                const lpToken = await this.apiService.getToken(lpTokenID);
+                cacheKeys.push(
+                    await this.pairSetterService.setLpTokenID(
+                        pairMetadata.address,
+                        lpTokenID,
+                    ),
+                );
+                cacheKeys.push(
+                    await this.contextSetter.setTokenMetadata(
+                        lpTokenID,
+                        lpToken,
+                    ),
+                );
+            }
             this.invalidatedKeys.push(cacheKeys);
-
-            await this.setContextCache(
-                pairMetadata.firstTokenID,
-                firstToken,
-                oneHour(),
+            cacheKeys.push(
+                await this.contextSetter.setTokenMetadata(
+                    pairMetadata.firstTokenID,
+                    firstToken,
+                ),
             );
-            await this.setContextCache(
-                pairMetadata.secondTokenID,
-                secondToken,
-                oneHour(),
+            cacheKeys.push(
+                await this.contextSetter.setTokenMetadata(
+                    pairMetadata.secondTokenID,
+                    secondToken,
+                ),
             );
-            await this.setContextCache(lpTokenID, lpToken, oneHour());
 
             await this.deleteCacheKeys();
         }
@@ -101,7 +101,7 @@ export class PairCacheWarmerService {
             const [feesAPR, state, type] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.abiPairService.getState(pairAddress),
-                this.pairDbService.getPairType(pairAddress),
+                this.pairComputeService.computeTypeFromTokens(pairAddress),
             ]);
 
             this.invalidatedKeys = await Promise.all([
@@ -205,16 +205,6 @@ export class PairCacheWarmerService {
             this.invalidatedKeys.push(...cacheKeys);
         }
         await this.deleteCacheKeys();
-    }
-
-    private async setContextCache(
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ) {
-        const cacheKey = generateCacheKeyFromParams('context', key);
-        await this.cachingService.setCache(cacheKey, value, ttl);
-        this.invalidatedKeys.push(cacheKey);
     }
 
     private async deleteCacheKeys() {

@@ -3,57 +3,39 @@ import {
     BigUIntValue,
     BytesValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Interaction, QueryResponseBundle } from '@elrondnetwork/erdjs';
+import { Interaction } from '@elrondnetwork/erdjs';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../models/farm.args';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { generateRunQueryLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { SmartContractProfiler } from 'src/helpers/smartcontract.profiler';
 import {
     FarmMigrationConfig,
     FarmRewardType,
     FarmVersion,
 } from '../models/farm.model';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
+import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
 @Injectable()
-export class AbiFarmService {
+export class AbiFarmService extends GenericAbiService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        protected readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly gatewayService: ElrondGatewayService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    async getGenericData(
-        contract: SmartContractProfiler,
-        interaction: Interaction,
-    ): Promise<QueryResponseBundle> {
-        try {
-            const queryResponse = await contract.runQuery(
-                this.elrondProxy.getService(),
-                interaction.buildQuery(),
-            );
-            return interaction.interpretQueryResponse(queryResponse);
-        } catch (error) {
-            const logMessage = generateRunQueryLogMessage(
-                AbiFarmService.name,
-                interaction.getEndpoint().name,
-                error.message,
-            );
-            this.logger.error(logMessage);
-
-            throw error;
-        }
+    ) {
+        super(elrondProxy, logger);
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getRewardTokenId([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getRewardTokenId();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -61,8 +43,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getFarmTokenId([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getFarmTokenId();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -70,8 +55,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getFarmingTokenId([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getFarmingTokenId();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toString();
     }
 
@@ -86,8 +74,11 @@ export class AbiFarmService {
             return null;
         }
 
-        const interaction: Interaction = contract.methods.getWhitelist([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getWhitelist();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
 
         return response.firstValue.valueOf().map(address => address.bech32());
     }
@@ -96,10 +87,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getFarmTokenSupply(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getFarmTokenSupply();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
 
         return response.firstValue.valueOf().toFixed();
     }
@@ -111,10 +103,11 @@ export class AbiFarmService {
         if (version !== FarmVersion.V1_2) {
             return null;
         }
-        const interaction: Interaction = contract.methods.getFarmingTokenReserve(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getFarmingTokenReserve();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -122,10 +115,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getPerBlockRewardAmount(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getPerBlockRewardAmount();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -133,8 +127,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getPenaltyPercent([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getPenaltyPercent();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -142,10 +139,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getMinimumFarmingEpoch(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getMinimumFarmingEpoch();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -153,8 +151,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getRewardPerShare([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getRewardPerShare();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -162,8 +163,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getRewardReserve([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getRewardReserve();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -171,10 +175,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getLastRewardBlockNonce(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getLastRewardBlockNonce();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -185,10 +190,11 @@ export class AbiFarmService {
         if (version !== FarmVersion.V1_2) {
             return null;
         }
-        const interaction: Interaction = contract.methods.getUndistributedFees(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getUndistributedFees();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -199,10 +205,11 @@ export class AbiFarmService {
         if (version !== FarmVersion.V1_2) {
             return null;
         }
-        const interaction: Interaction = contract.methods.getCurrentBlockFee(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getCurrentBlockFee();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         const currentBlockFee = response.firstValue.valueOf();
         return currentBlockFee ? currentBlockFee[1].toFixed() : '0';
     }
@@ -214,10 +221,11 @@ export class AbiFarmService {
         if (version !== FarmVersion.V1_2) {
             return null;
         }
-        const interaction: Interaction = contract.methods.getLockedRewardAprMuliplier(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getLockedRewardAprMuliplier();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().integerValue();
     }
 
@@ -225,10 +233,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getDivisionSafetyConstant(
-            [],
+        const interaction: Interaction = contract.methodsExplicit.getDivisionSafetyConstant();
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
         );
-        const response = await this.getGenericData(contract, interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -238,7 +247,7 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
-        const interaction: Interaction = contract.methods.calculateRewardsForGivenPosition(
+        const interaction: Interaction = contract.methodsExplicit.calculateRewardsForGivenPosition(
             [
                 new BigUIntValue(new BigNumber(args.liquidity)),
                 BytesValue.fromHex(
@@ -246,7 +255,10 @@ export class AbiFarmService {
                 ),
             ],
         );
-        const response = await this.getGenericData(contract, interaction);
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
         return response.firstValue.valueOf();
     }
 
@@ -254,8 +266,11 @@ export class AbiFarmService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getState([]);
-        const response = await this.getGenericData(contract, interaction);
+        const interaction: Interaction = contract.methodsExplicit.getState([]);
+        const response = await this.getGenericData(
+            AbiFarmService.name,
+            interaction,
+        );
         return response.firstValue.valueOf().name;
     }
 
@@ -275,8 +290,11 @@ export class AbiFarmService {
         );
 
         try {
-            const interaction: Interaction = contract.methods.getFarmMigrationConfiguration();
-            const response = await this.getGenericData(contract, interaction);
+            const interaction: Interaction = contract.methodsExplicit.getFarmMigrationConfiguration();
+            const response = await this.getGenericData(
+                AbiFarmService.name,
+                interaction,
+            );
             const decodedResponse = response.firstValue.valueOf();
 
             if (version === FarmVersion.V1_2) {

@@ -1,54 +1,29 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { cacheConfig } from 'src/config';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
-import { EsdtToken } from 'src/models/tokens/esdtToken.model';
-import { NftCollection } from 'src/models/tokens/nftCollection.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { AbiStakingService } from './staking.abi.service';
 
 @Injectable()
-export class StakingGetterService {
+export class StakingGetterService extends GenericGetterService {
     constructor(
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: AbiStakingService,
         private readonly contextGetterService: ContextGetterService,
-        private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async getData(
-        stakeAddress: string,
-        cacheKeyArg: string,
-        createValueFunc: () => any,
-        ttl: number = cacheConfig.default,
-    ): Promise<any> {
-        const cacheKey = this.getStakeCacheKey(stakeAddress, cacheKeyArg);
-        try {
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                StakingGetterService.name,
-                createValueFunc.name,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+    ) {
+        super(cachingService, logger);
     }
 
     async getPairContractManagedAddress(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'pairAddress',
+            this.getStakeCacheKey(stakeAddress, 'pairAddress'),
             () => this.abiService.getPairContractManagedAddress(stakeAddress),
             oneHour(),
         );
@@ -56,8 +31,7 @@ export class StakingGetterService {
 
     async getFarmTokenID(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'farmTokenID',
+            this.getStakeCacheKey(stakeAddress, 'farmTokenID'),
             () => this.abiService.getFarmTokenID(stakeAddress),
             oneHour(),
         );
@@ -65,8 +39,7 @@ export class StakingGetterService {
 
     async getFarmingTokenID(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'farmingTokenID',
+            this.getStakeCacheKey(stakeAddress, 'farmingTokenID'),
             () => this.abiService.getFarmingTokenID(stakeAddress),
             oneHour(),
         );
@@ -74,8 +47,7 @@ export class StakingGetterService {
 
     async getRewardTokenID(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'rewardTokenID',
+            this.getStakeCacheKey(stakeAddress, 'rewardTokenID'),
             () => this.abiService.getRewardTokenID(stakeAddress),
             oneHour(),
         );
@@ -100,8 +72,7 @@ export class StakingGetterService {
 
     async getFarmTokenSupply(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'farmTokenSupply',
+            this.getStakeCacheKey(stakeAddress, 'farmTokenSupply'),
             () => this.abiService.getFarmTokenSupply(stakeAddress),
             oneMinute(),
         );
@@ -109,8 +80,7 @@ export class StakingGetterService {
 
     async getRewardPerShare(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'rewardPerShare',
+            this.getStakeCacheKey(stakeAddress, 'rewardPerShare'),
             () => this.abiService.getRewardPerShare(stakeAddress),
             oneMinute(),
         );
@@ -118,8 +88,7 @@ export class StakingGetterService {
 
     async getAccumulatedRewards(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'accumulatedRewards',
+            this.getStakeCacheKey(stakeAddress, 'accumulatedRewards'),
             () => this.abiService.getAccumulatedRewards(stakeAddress),
             oneMinute(),
         );
@@ -127,8 +96,7 @@ export class StakingGetterService {
 
     async getRewardCapacity(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'rewardCapacity',
+            this.getStakeCacheKey(stakeAddress, 'rewardCapacity'),
             () => this.abiService.getRewardCapacity(stakeAddress),
             oneMinute(),
         );
@@ -136,8 +104,7 @@ export class StakingGetterService {
 
     async getAnnualPercentageRewards(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'annualPercentageRewards',
+            this.getStakeCacheKey(stakeAddress, 'annualPercentageRewards'),
             () => this.abiService.getAnnualPercentageRewards(stakeAddress),
             oneMinute(),
         );
@@ -145,8 +112,7 @@ export class StakingGetterService {
 
     async getMinUnbondEpochs(stakeAddress: string): Promise<number> {
         return await this.getData(
-            stakeAddress,
-            'minUnboundEpochs',
+            this.getStakeCacheKey(stakeAddress, 'minUnboundEpochs'),
             () => this.abiService.getMinUnbondEpochs(stakeAddress),
             oneMinute(),
         );
@@ -154,8 +120,7 @@ export class StakingGetterService {
 
     async getPenaltyPercent(stakeAddress: string): Promise<number> {
         return await this.getData(
-            stakeAddress,
-            'penaltyPercent',
+            this.getStakeCacheKey(stakeAddress, 'penaltyPercent'),
             () => this.abiService.getPenaltyPercent(stakeAddress),
             oneMinute(),
         );
@@ -163,8 +128,7 @@ export class StakingGetterService {
 
     async getMinimumFarmingEpoch(stakeAddress: string): Promise<number> {
         return await this.getData(
-            stakeAddress,
-            'minimumFarmingEpochs',
+            this.getStakeCacheKey(stakeAddress, 'minimumFarmingEpochs'),
             () => this.abiService.getMinimumFarmingEpoch(stakeAddress),
             oneMinute(),
         );
@@ -172,8 +136,7 @@ export class StakingGetterService {
 
     async getPerBlockRewardAmount(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'perBlockRewards',
+            this.getStakeCacheKey(stakeAddress, 'perBlockRewards'),
             () => this.abiService.getPerBlockRewardAmount(stakeAddress),
             oneMinute(),
         );
@@ -181,8 +144,7 @@ export class StakingGetterService {
 
     async getLastRewardBlockNonce(stakeAddress: string): Promise<number> {
         return await this.getData(
-            stakeAddress,
-            'lastRewardBlockNonce',
+            this.getStakeCacheKey(stakeAddress, 'lastRewardBlockNonce'),
             () => this.abiService.getLastRewardBlockNonce(stakeAddress),
             oneMinute(),
         );
@@ -190,26 +152,23 @@ export class StakingGetterService {
 
     async getDivisionSafetyConstant(stakeAddress: string): Promise<number> {
         return await this.getData(
-            stakeAddress,
-            'divisionSafetyConstant',
+            this.getStakeCacheKey(stakeAddress, 'divisionSafetyConstant'),
             () => this.abiService.getDivisionSafetyConstant(stakeAddress),
             oneMinute(),
         );
     }
 
-    async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
+    async getProduceRewardsEnabled(stakeAddress: string): Promise<boolean> {
         return this.getData(
-            farmAddress,
-            'produceRewardsEnabled',
-            () => this.abiService.getProduceRewardsEnabled(farmAddress),
+            this.getStakeCacheKey(stakeAddress, 'produceRewardsEnabled'),
+            () => this.abiService.getProduceRewardsEnabled(stakeAddress),
             oneMinute() * 2,
         );
     }
 
     async getState(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'state',
+            this.getStakeCacheKey(stakeAddress, 'state'),
             () => this.abiService.getState(stakeAddress),
             oneMinute(),
         );

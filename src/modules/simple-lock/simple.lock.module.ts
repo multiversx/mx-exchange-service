@@ -5,6 +5,8 @@ import { ElrondCommunicationModule } from 'src/services/elrond-communication/elr
 import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { WrappingModule } from '../wrapping/wrap.module';
+import { LockedFarmTokenResolver } from './lockedFarmToken.resolver';
+import { LockedLpTokenResolver } from './lockedLpToken.resolver';
 import { SimpleLockAbiService } from './services/simple.lock.abi.service';
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
@@ -28,6 +30,8 @@ import { SimpleLockResolver } from './simple.lock.resolver';
         SimpleLockSetterService,
         SimpleLockTransactionService,
         SimpleLockResolver,
+        LockedLpTokenResolver,
+        LockedFarmTokenResolver,
     ],
     exports: [SimpleLockService, SimpleLockGetterService],
 })

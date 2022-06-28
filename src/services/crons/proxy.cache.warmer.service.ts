@@ -10,6 +10,7 @@ import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour } from '../../helpers/helpers';
+import { ContextSetterService } from '../context/context.setter.service';
 
 @Injectable()
 export class ProxyCacheWarmerService {
@@ -21,6 +22,7 @@ export class ProxyCacheWarmerService {
         private readonly abiProxyFarmService: AbiProxyFarmService,
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
+        private readonly contextSetter: ContextSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -48,7 +50,7 @@ export class ProxyCacheWarmerService {
             wrappedLpToken,
             wrappedFarmToken,
         ] = await Promise.all([
-            this.apiService.getService().getToken(assetTokenID),
+            this.apiService.getToken(assetTokenID),
             this.apiService.getNftCollection(lockedAssetTokenID),
             this.apiService.getNftCollection(wrappedLpTokenID),
             this.apiService.getNftCollection(wrappedFarmTokenID),
@@ -91,17 +93,18 @@ export class ProxyCacheWarmerService {
                 intermediatedFarms,
                 oneHour(),
             ),
-            this.setContextCache(assetTokenID, assetToken, oneHour()),
-            this.setContextCache(
+            this.contextSetter.setTokenMetadata(assetTokenID, assetToken),
+            this.contextSetter.setNftCollectionMetadata(
                 lockedAssetTokenID,
                 lockedAssetToken,
-                oneHour(),
             ),
-            this.setContextCache(wrappedLpTokenID, wrappedLpToken, oneHour()),
-            this.setContextCache(
+            this.contextSetter.setNftCollectionMetadata(
+                wrappedLpTokenID,
+                wrappedLpToken,
+            ),
+            this.contextSetter.setNftCollectionMetadata(
                 wrappedFarmTokenID,
                 wrappedFarmToken,
-                oneHour(),
             ),
         ]);
         await this.deleteCacheKeys();
@@ -114,16 +117,6 @@ export class ProxyCacheWarmerService {
         ttl: number = cacheConfig.default,
     ) {
         const cacheKey = generateCacheKeyFromParams(proxy, key);
-        await this.cachingService.setCache(cacheKey, value, ttl);
-        this.invalidatedKeys.push(cacheKey);
-    }
-
-    private async setContextCache(
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ) {
-        const cacheKey = generateCacheKeyFromParams('context', key);
         await this.cachingService.setCache(cacheKey, value, ttl);
         this.invalidatedKeys.push(cacheKey);
     }

@@ -1,3 +1,8 @@
+import {
+    DepositEvent,
+    PRICE_DISCOVERY_EVENTS,
+    WithdrawEvent,
+} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -6,9 +11,6 @@ import { Logger } from 'winston';
 import { PriceDiscoveryComputeService } from '../price-discovery/services/price.discovery.compute.service';
 import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
 import { PriceDiscoverySetterService } from '../price-discovery/services/price.discovery.setter.service';
-import { PRICE_DISCOVERY_EVENTS } from './entities/generic.types';
-import { DepositEvent } from './entities/price-discovery/deposit.event';
-import { WithdrawEvent } from './entities/price-discovery/withdraw.event';
 
 @Injectable()
 export class RabbitMqPriceDiscoveryHandlerService {
