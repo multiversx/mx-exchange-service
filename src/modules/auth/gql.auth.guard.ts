@@ -18,7 +18,7 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
     canActivate(context: ExecutionContext) {
         const ctx = GqlExecutionContext.create(context);
         const { req } = ctx.getContext();
-        this.logger.error('request header', [
+        this.logger.info('request header', [
             { requestIP: req.ip, request: req.headers },
         ]);
 
@@ -30,7 +30,7 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
 
     handleRequest(err: any, user: any, info: any) {
         if (!err && !!user) {
-            this.logger.error('address', [{ user: user }]);
+            this.logger.info('address', [{ user: user }]);
             if (this.impersonateAddress) {
                 const admins = process.env.SECURITY_ADMINS.split(',');
                 if (admins.find(admin => admin === user.publicKey)) {
