@@ -1,4 +1,4 @@
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PairModule } from '../modules/pair/pair.module';
 import { ContextModule } from './context/context.module';
@@ -36,7 +36,6 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         ScheduleModule.forRoot(),
         CommonAppModule,
         CacheModule.register(),
-        HttpModule,
         PriceFeedModule,
         PairModule,
         ServicesModule,
