@@ -1,4 +1,4 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, HttpStatus, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
@@ -45,20 +45,19 @@ import { RemoteConfigModule } from './modules/remote-config/remote-config.module
                         code: error.extensions.code,
                     },
                 };
+
+                const loglevel = !!process.env.LOG_LEVEL
+                    ? process.env.LOG_LEVEL
+                    : 'error';
                 const logTransports: Transport[] = [
                     new winston.transports.Console({
                         format: winston.format.combine(
                             winston.format.timestamp(),
                             nestWinstonModuleUtilities.format.nestLike(),
                         ),
-                        level: 'error',
+                        level: loglevel,
                     }),
                 ];
-
-                const loglevel = !!process.env.LOG_LEVEL
-                    ? process.env.LOG_LEVEL
-                    : 'error';
-
                 if (!!process.env.LOG_FILE) {
                     logTransports.push(
                         new winston.transports.File({
@@ -74,10 +73,22 @@ import { RemoteConfigModule } from './modules/remote-config/remote-config.module
                         winston.format.timestamp(),
                         nestWinstonModuleUtilities.format.nestLike(),
                     ),
-                    level: 'error',
+                    level: loglevel,
                     transports: logTransports,
                 });
-                logger.error(error.message, error.extensions);
+
+                const errorStatus: number = error.toJSON().extensions[
+                    'exception'
+                ]['status'];
+                switch (errorStatus) {
+                    case HttpStatus.FORBIDDEN:
+                        logger.info(error.message, { path: error.path });
+                        break;
+                    default:
+                        logger.error(error.message, error.extensions);
+                        break;
+                }
+
                 return graphQLFormattedError;
             },
             fieldResolverEnhancers: ['guards'],
