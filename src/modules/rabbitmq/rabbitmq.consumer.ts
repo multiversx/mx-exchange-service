@@ -63,6 +63,9 @@ export class RabbitMqConsumer {
         exchange: process.env.RABBITMQ_EXCHANGE,
     })
     async consumeEvents(rawEvents: any) {
+        if (!rawEvents.events) {
+            return;
+        }
         const events: RawEvent[] = rawEvents?.events?.filter(
             (rawEvent: { address: string; identifier: string }) =>
                 this.filterAddresses.find(
