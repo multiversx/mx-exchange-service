@@ -1,4 +1,4 @@
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -9,6 +9,7 @@ import { CachingService } from '../caching/cache.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { GenericGetterService } from '../generics/generic.getter.service';
 
+@Injectable()
 export class ContextGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
