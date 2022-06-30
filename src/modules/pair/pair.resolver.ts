@@ -257,6 +257,15 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async feeState(@Parent() parent: PairModel): Promise<boolean> {
+        try {
+            return await this.pairGetterService.getFeeState(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async lockedTokensInfo(@Parent() parent: PairModel) {
         try {
             return await this.pairGetterService.getLockedTokensInfo(

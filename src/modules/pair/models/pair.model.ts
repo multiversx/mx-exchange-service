@@ -104,6 +104,9 @@ export class PairModel {
     @Field()
     state: string;
 
+    @Field()
+    feeState: boolean;
+
     @Field(() => LockedTokensInfo, { nullable: true })
     lockedTokensInfo: LockedTokensInfo;
 
