@@ -1,4 +1,4 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { CachingService } from '../caching/cache.service';
@@ -8,6 +8,7 @@ import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { MetricsCollector } from '../../utils/metrics.collector';
 import { oneMinute } from '../../helpers/helpers';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class PriceFeedService {

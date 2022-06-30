@@ -1,10 +1,11 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { Module } from '@nestjs/common';
 import { CachingModule } from '../caching/cache.module';
 import { ServicesModule } from '../services.module';
 import { PriceFeedService } from './price-feed.service';
 
 @Module({
-    imports: [HttpModule, ServicesModule, CachingModule],
+    imports: [ServicesModule, CachingModule, HttpModule],
     providers: [PriceFeedService],
     exports: [PriceFeedService],
 })
