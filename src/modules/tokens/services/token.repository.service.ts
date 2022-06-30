@@ -37,6 +37,6 @@ export class TokenRepositoryService extends EntityRepository<TokenDocument> {
             .where('tokenID')
             .equals(tokenID)
             .exec();
-        return esdtToken ? esdtToken.type : 'Unqualified';
+        return esdtToken ? esdtToken.type : 'Unlisted';
     }
 }
