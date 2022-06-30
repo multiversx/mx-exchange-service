@@ -22,6 +22,15 @@ export function leastType(typeA: string, typeB: string): string {
             }
             return typeB;
         case 'Jungle':
+            if (
+                typeB === 'Core' ||
+                typeB === 'Ecosystem' ||
+                typeB === 'Community' ||
+                typeB === 'Experimental'
+            ) {
+                return typeA;
+            }
+        case 'Unlisted':
             return typeA;
     }
 }
