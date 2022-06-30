@@ -47,7 +47,7 @@ export class StakingProxyCacheWarmerService {
                 dualYieldToken,
                 lpFarmToken,
             ] = await Promise.all([
-                this.apiService.getNftCollection(stakingTokenID),
+                this.apiService.getToken(stakingTokenID),
                 this.apiService.getNftCollection(farmTokenID),
                 this.apiService.getNftCollection(dualYieldTokenID),
                 this.apiService.getNftCollection(lpFarmTokenID),
@@ -62,7 +62,7 @@ export class StakingProxyCacheWarmerService {
                 this.stakingProxySetter.setFarmTokenID(farmTokenID),
                 this.stakingProxySetter.setDualYieldTokenID(dualYieldTokenID),
                 this.stakingProxySetter.setLpFarmTokenID(lpFarmTokenID),
-                this.contextSetter.setNftCollectionMetadata(
+                this.contextSetter.setTokenMetadata(
                     stakingTokenID,
                     stakingToken,
                 ),
