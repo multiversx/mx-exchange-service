@@ -213,16 +213,28 @@ export class PairService {
     }
 
     async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
-        const wrappedTokenID = await this.wrapService.getWrappedEgldTokenID();
-        if (wrappedTokenID === tokenID) {
-            const pair = await this.context.getPairByTokens(
-                wrappedTokenID,
-                constantsConfig.USDC_TOKEN_ID,
-            );
-            const tokenPriceUSD = await this.pairGetterService.getFirstTokenPrice(
-                pair.address,
-            );
-            return new BigNumber(tokenPriceUSD);
+        const pair = await this.context.getPairByTokens(
+            tokenID,
+            constantsConfig.USDC_TOKEN_ID,
+        );
+        if (pair) {
+            const state = await this.pairGetterService.getState(pair.address);
+            if (state == 'Active') {
+                let tokenPriceUSD: string;
+                switch (tokenID) {
+                    case pair.firstTokenID:
+                        tokenPriceUSD = await this.pairGetterService.getFirstTokenPrice(
+                            pair.address,
+                        );
+                        break;
+                    case pair.secondTokenID:
+                        tokenPriceUSD = await this.pairGetterService.getSecondTokenPrice(
+                            pair.address,
+                        );
+                        break;
+                }
+                return new BigNumber(tokenPriceUSD);
+            }
         }
 
         const path: string[] = [];
