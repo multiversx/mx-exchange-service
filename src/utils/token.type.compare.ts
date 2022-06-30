@@ -30,7 +30,7 @@ export function leastType(typeA: string, typeB: string): string {
             ) {
                 return typeA;
             }
-        case 'Unqualified':
+        case 'Unlisted':
             return typeA;
     }
 }
