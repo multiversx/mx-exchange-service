@@ -325,6 +325,14 @@ export class PairGetterService extends GenericGetterService {
         );
     }
 
+    async getFeeState(pairAddress: string): Promise<boolean> {
+        return await this.getData(
+            this.getPairCacheKey(pairAddress, 'feeState'),
+            () => this.abiService.getFeeState(pairAddress),
+            oneMinute(),
+        );
+    }
+
     async getType(pairAddress: string): Promise<string> {
         return await this.getData(
             this.getPairCacheKey(pairAddress, 'type'),

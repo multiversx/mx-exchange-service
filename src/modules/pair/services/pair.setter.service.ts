@@ -72,6 +72,14 @@ export class PairSetterService extends GenericSetterService {
         );
     }
 
+    async setFeeState(pairAddress: string, value: boolean): Promise<string> {
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'feeState'),
+            value,
+            oneHour(),
+        );
+    }
+
     async setFirstTokenReserve(
         pairAddress: string,
         value: string,
