@@ -76,12 +76,9 @@ import { RemoteConfigModule } from './modules/remote-config/remote-config.module
                     level: loglevel,
                     transports: logTransports,
                 });
-
-                const errorStatus: number = error.toJSON().extensions[
-                    'exception'
-                ]['status'];
+                const errorStatus = error.toJSON().extensions['code'];
                 switch (errorStatus) {
-                    case HttpStatus.FORBIDDEN:
+                    case 'FORBIDDEN':
                         logger.info(error.message, { path: error.path });
                         break;
                     default:
