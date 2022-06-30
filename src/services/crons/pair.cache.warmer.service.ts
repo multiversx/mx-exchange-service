@@ -98,16 +98,18 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.context.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [feesAPR, state, type] = await Promise.all([
+            const [feesAPR, state, type, feeState] = await Promise.all([
                 this.pairComputeService.computeFeesAPR(pairAddress),
                 this.abiPairService.getState(pairAddress),
                 this.pairComputeService.computeTypeFromTokens(pairAddress),
+                this.abiPairService.getFeeState(pairAddress),
             ]);
 
             this.invalidatedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
                 this.pairSetterService.setState(pairAddress, state),
                 this.pairSetterService.setType(pairAddress, type),
+                this.pairSetterService.setFeeState(pairAddress, feeState),
             ]);
             await this.deleteCacheKeys();
         }
