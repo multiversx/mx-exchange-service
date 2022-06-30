@@ -1,5 +1,6 @@
 import {
     ExecutionContext,
+    ForbiddenException,
     HttpException,
     HttpStatus,
     Inject,
@@ -46,16 +47,15 @@ export class GqlAuthGuard extends AuthGuard('jwt') {
         }
 
         if (info?.name === 'TokenExpiredError') {
-            throw new HttpException('token expired', HttpStatus.FORBIDDEN);
+            throw new ForbiddenException('token expired');
         }
 
         if (info?.name === 'JsonWebTokenError') {
-            throw new HttpException('invalid token', HttpStatus.FORBIDDEN);
+            throw new ForbiddenException('invalid token');
         }
 
-        throw new HttpException(
+        throw new ForbiddenException(
             'You are not authorized to make this request',
-            HttpStatus.FORBIDDEN,
         );
     }
 }
