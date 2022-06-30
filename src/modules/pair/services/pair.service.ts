@@ -219,7 +219,7 @@ export class PairService {
         );
         if (pair) {
             const state = await this.pairGetterService.getState(pair.address);
-            if (state == 'Active') {
+            if (state === 'Active') {
                 let tokenPriceUSD: string;
                 switch (tokenID) {
                     case pair.firstTokenID:
