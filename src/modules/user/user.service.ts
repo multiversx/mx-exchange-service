@@ -32,6 +32,8 @@ import { SimpleLockGetterService } from '../simple-lock/services/simple.lock.get
 import { EsdtTokenType } from '../tokens/models/esdtToken.model';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { IEsdtToken } from '../tokens/models/esdtToken.interface';
+import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
+import { INFTToken } from '../tokens/models/nft.interface';
 
 enum NftTokenType {
     FarmToken,
@@ -102,37 +104,43 @@ export class UserService {
     async getAllNftTokens(
         userAddress: string,
         pagination: PaginationArgs,
+        nfts?: INFTToken[],
     ): Promise<Array<typeof UserNftTokens>> {
-        const userStats = await this.apiService.getAccountStats(userAddress);
-        const cacheKey = this.getUserCacheKey(
-            userAddress,
-            userStats.nonce,
-            'nfts',
-        );
-        const getUserNfts = () =>
-            this.apiService.getNftsForUser(
-                userAddress,
-                pagination.offset,
-                pagination.limit,
-            );
-
         let userNFTs: NftToken[];
+        if (nfts) {
+            userNFTs = nfts;
+        } else {
+            const userStats = await this.apiService.getAccountStats(
+                userAddress,
+            );
+            const cacheKey = this.getUserCacheKey(
+                userAddress,
+                userStats.nonce,
+                'nfts',
+            );
+            const getUserNfts = () =>
+                this.apiService.getNftsForUser(
+                    userAddress,
+                    pagination.offset,
+                    pagination.limit,
+                );
 
-        try {
-            userNFTs = await this.cachingService.getOrSet(
-                cacheKey,
-                getUserNfts,
-                oneSecond(),
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                PairService.name,
-                this.getAllNftTokens.name,
-                cacheKey,
-                error,
-            );
-            this.logger.error(logMessage);
-            throw error;
+            try {
+                userNFTs = await this.cachingService.getOrSet(
+                    cacheKey,
+                    getUserNfts,
+                    oneSecond(),
+                );
+            } catch (error) {
+                const logMessage = generateGetLogMessage(
+                    PairService.name,
+                    this.getAllNftTokens.name,
+                    cacheKey,
+                    error,
+                );
+                this.logger.error(logMessage);
+                throw error;
+            }
         }
 
         const promises: Promise<typeof UserNftTokens>[] = [];
