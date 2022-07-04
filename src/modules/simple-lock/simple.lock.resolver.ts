@@ -90,6 +90,22 @@ export class SimpleLockResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
+    async lockTokens(
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('lockEpochs') lockEpochs: number,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.simpleLockTransactions.lockTokens(
+                inputTokens,
+                lockEpochs,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
     async unlockTokens(
         @Args('inputTokens') inputTokens: InputTokenModel,
         @User() user: any,
