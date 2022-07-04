@@ -31,6 +31,7 @@ import { PriceDiscoveryService } from '../price-discovery/services/price.discove
 import { SimpleLockGetterService } from '../simple-lock/services/simple.lock.getter.service';
 import { EsdtTokenType } from '../tokens/models/esdtToken.model';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
+import { IEsdtToken } from '../tokens/models/esdtToken.interface';
 
 enum NftTokenType {
     FarmToken,
@@ -69,12 +70,18 @@ export class UserService {
     async getAllEsdtTokens(
         userAddress: string,
         pagination: PaginationArgs,
+        inputTokens?: IEsdtToken[],
     ): Promise<UserToken[]> {
-        const userTokens = await this.apiService.getTokensForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-        );
+        let userTokens: IEsdtToken[];
+        if (inputTokens) {
+            userTokens = inputTokens;
+        } else {
+            userTokens = await this.apiService.getTokensForUser(
+                userAddress,
+                pagination.offset,
+                pagination.limit,
+            );
+        }
         const userPairEsdtTokens = [];
         for (const userToken of userTokens) {
             const isPairEsdtToken = await this.pairService.isPairEsdtToken(

@@ -6,6 +6,9 @@ import { UserService } from './user.service';
 import { PaginationArgs } from '../dex.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { EsdtTokenInput } from '../tokens/models/esdtTokenInput.model';
+import { ApolloError } from 'apollo-server-express';
+import { Address } from '@elrondnetwork/erdjs/out';
 
 @Resolver()
 export class UserResolver {
@@ -14,9 +17,12 @@ export class UserResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => [UserToken])
     async userTokens(
-        @Args() pagination: PaginationArgs,
         @User() user: any,
+        @Args() pagination: PaginationArgs,
+        @Args('tokens', { type: () => [EsdtTokenInput], nullable: true })
+        tokens?: EsdtTokenInput[],
     ): Promise<UserToken[]> {
+        console.log(tokens);
         return await this.userService.getAllEsdtTokens(
             user.publicKey,
             pagination,
@@ -39,5 +45,22 @@ export class UserResolver {
     @Query(() => Number)
     async getUserWorth(@User() user: any): Promise<number> {
         return this.userService.computeUserWorth(user.publicKey);
+    }
+
+    @Query(() => [UserToken])
+    async userCustomTokens(
+        @Args() pagination: PaginationArgs,
+        @Args('tokens', { type: () => [EsdtTokenInput] })
+        tokens: EsdtTokenInput[],
+    ): Promise<UserToken[]> {
+        try {
+            return await this.userService.getAllEsdtTokens(
+                Address.Zero().bech32(),
+                pagination,
+                tokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }
