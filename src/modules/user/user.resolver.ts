@@ -20,10 +20,7 @@ export class UserResolver {
     async userTokens(
         @User() user: any,
         @Args() pagination: PaginationArgs,
-        @Args('tokens', { type: () => [EsdtTokenInput], nullable: true })
-        tokens?: EsdtTokenInput[],
     ): Promise<UserToken[]> {
-        console.log(tokens);
         return await this.userService.getAllEsdtTokens(
             user.publicKey,
             pagination,
