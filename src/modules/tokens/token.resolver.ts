@@ -22,14 +22,14 @@ export class TokensResolver {
         }
     }
 
-    @ResolveField()
+    @ResolveField(() => String)
     async price(parent: EsdtToken): Promise<string> {
         return await this.genericFieldResover(() =>
             this.pairGetter.getTokenPriceUSD(parent.identifier),
         );
     }
 
-    @ResolveField()
+    @ResolveField(() => String)
     async type(parent: EsdtToken): Promise<string> {
         return await this.genericFieldResover(() =>
             this.tokenGetter.getEsdtTokenType(parent.identifier),

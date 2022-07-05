@@ -268,6 +268,7 @@ describe('UserService', () => {
         ).toEqual([
             new UserFarmToken({
                 collection: 'FMT-1234',
+                ticker: 'FMT',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
                 decimals: 18,
