@@ -283,6 +283,7 @@
             "withdraw": 10000000
         },
         "simpleLock": {
+            "lockTokens": 10000000,
             "unlockTokens": 5000000,
             "addLiquidityLockedToken": 20000000,
             "removeLiquidityLockedToken": 15000000,

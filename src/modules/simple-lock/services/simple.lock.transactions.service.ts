@@ -5,6 +5,7 @@ import {
     Interaction,
     TokenPayment,
     TypedValue,
+    U64Value,
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
@@ -34,6 +35,26 @@ export class SimpleLockTransactionService {
         private readonly wrapTransaction: TransactionsWrapService,
         private readonly elrondProxy: ElrondProxyService,
     ) {}
+
+    async lockTokens(
+        inputTokens: InputTokenModel,
+        lockEpochs: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+
+        return contract.methodsExplicit
+            .lockTokens([new U64Value(new BigNumber(lockEpochs))])
+            .withSingleESDTTransfer(
+                TokenPayment.fungibleFromBigInteger(
+                    inputTokens.tokenID,
+                    new BigNumber(inputTokens.amount),
+                ),
+            )
+            .withGasLimit(gasConfig.simpleLock.lockTokens)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
 
     async unlockTokens(
         sender: string,
@@ -425,13 +446,6 @@ export class SimpleLockTransactionService {
                 decodedAttributes.farmingTokenLockedNonce ===
                 lpProxyToken.nonce;
             const sameFarmType = decodedAttributes.farmType === farmType;
-            console.log({
-                sameFarmingToken,
-                sameFarmingTokenNonce,
-                sameFarmType,
-                farmingToken: decodedAttributes.farmingTokenID,
-                lpTokenID: lpProxyTokenAttributes.lpTokenID,
-            });
             if (!(sameFarmingToken && sameFarmingTokenNonce && sameFarmType)) {
                 throw new Error('Invalid farm proxy token');
             }
