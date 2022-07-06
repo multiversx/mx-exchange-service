@@ -418,8 +418,9 @@ describe('RouterService', () => {
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: 200000000,
-            data:
-                'c2V0UGFpclRlbXBsYXRlQWRkcmVzc0AwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAw',
+            data: encodeTransactionData(
+                'setPairTemplateAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            ),
             chainID: elrondConfig.chainID,
             version: 1,
             options: undefined,
