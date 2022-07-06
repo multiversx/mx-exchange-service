@@ -7,8 +7,9 @@ export abstract class IAssets {
     @Field({ nullable: true }) status?: string;
     @Field({ nullable: true }) pngUrl?: string;
     @Field({ nullable: true }) svgUrl?: string;
-    @Field(() => [String], { nullable: true }) lockedAccounts?: string[];
-    @Field(() => [String], { nullable: true }) extraTokens?: string[];
+    @Field(() => [String], { nullable: 'itemsAndList' })
+    lockedAccounts?: string[];
+    @Field(() => [String], { nullable: 'itemsAndList' }) extraTokens?: string[];
 }
 
 @InterfaceType()
@@ -16,7 +17,7 @@ export abstract class IRoles {
     @Field({ nullable: true }) address?: string;
     @Field({ nullable: true }) canMint?: boolean;
     @Field({ nullable: true }) canBurn?: boolean;
-    @Field(() => [String], { nullable: true }) roles?: string[];
+    @Field(() => [String], { nullable: 'itemsAndList' }) roles?: string[];
 }
 
 @InterfaceType()
