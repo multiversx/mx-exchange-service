@@ -52,7 +52,7 @@ export class EsdtToken implements IEsdtToken {
     price?: string;
     supply?: string;
     circulatingSupply?: string;
-    assets?: IAssets;
+    assets?: AssetsModel;
     transactions: number;
     accounts: number;
     isPaused: boolean;
@@ -63,11 +63,13 @@ export class EsdtToken implements IEsdtToken {
     canPause: boolean;
     canFreeze: boolean;
     canWipe: boolean;
-    roles?: IRoles;
+    roles?: RolesModel;
     type?: string;
     balance?: string;
 
     constructor(init?: Partial<EsdtToken>) {
         Object.assign(this, init);
+        this.assets = new AssetsModel(init.assets);
+        this.roles = new RolesModel(init.roles);
     }
 }

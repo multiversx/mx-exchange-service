@@ -29,7 +29,7 @@ export class FarmServiceMock {
     }
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
-        return {
+        return new EsdtToken({
             identifier: 'LPT-1111',
             name: 'LiquidityPoolToken',
             ticker: 'LPT',
@@ -62,7 +62,7 @@ export class FarmServiceMock {
             initialMinted: '1',
             price: '1',
             roles: new RolesModel(),
-        };
+        });
     }
 
     async isFarmToken(tokenID: string): Promise<boolean> {
