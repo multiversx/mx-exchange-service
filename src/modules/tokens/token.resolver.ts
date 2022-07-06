@@ -1,7 +1,7 @@
-import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { PairGetterService } from '../pair/services/pair.getter.service';
-import { EsdtToken } from './models/esdtToken.model';
+import { AssetsModel, EsdtToken, RolesModel } from './models/esdtToken.model';
 import { TokensFiltersArgs } from './models/tokens.filter.args';
 import { TokenGetterService } from './services/token.getter.service';
 import { TokenService } from './services/token.service';
@@ -23,17 +23,27 @@ export class TokensResolver {
     }
 
     @ResolveField(() => String)
-    async price(parent: EsdtToken): Promise<string> {
+    async price(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResover(() =>
             this.pairGetter.getTokenPriceUSD(parent.identifier),
         );
     }
 
     @ResolveField(() => String)
-    async type(parent: EsdtToken): Promise<string> {
+    async type(@Parent() parent: EsdtToken): Promise<string> {
         return await this.genericFieldResover(() =>
             this.tokenGetter.getEsdtTokenType(parent.identifier),
         );
+    }
+
+    @ResolveField(() => AssetsModel)
+    async assets(@Parent() parent: EsdtToken): Promise<AssetsModel> {
+        return new AssetsModel(parent.assets);
+    }
+
+    @ResolveField(() => RolesModel)
+    async roles(@Parent() parent: EsdtToken): Promise<RolesModel> {
+        return new RolesModel(parent.roles);
     }
 
     @Query(() => [EsdtToken])
