@@ -1,21 +1,28 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { INFTCollection } from './nft.interface';
 
-@ObjectType()
-export class NftCollection {
-    @Field() collection: string;
-    @Field() name: string;
-    @Field() ticker: string;
-    @Field(() => Int) decimals: number;
-    @Field() issuer: string;
-    @Field() timestamp: number;
-    @Field() canUpgrade: boolean;
-    @Field() canMint: boolean;
-    @Field() canBurn: boolean;
-    @Field() canChangeOwner: boolean;
-    @Field() canPause: boolean;
-    @Field() canFreeze: boolean;
-    @Field() canWipe: boolean;
-    @Field() canAddSpecialRoles: boolean;
-    @Field() canTransferNFTCreateRole: boolean;
-    @Field() NFTCreateStopped: boolean;
+@ObjectType({
+    implements: () => [INFTCollection],
+})
+export class NftCollection implements INFTCollection {
+    collection: string;
+    name: string;
+    ticker: string;
+    decimals: number;
+    issuer: string;
+    timestamp: number;
+    canUpgrade: boolean;
+    canMint: boolean;
+    canBurn: boolean;
+    canChangeOwner: boolean;
+    canPause: boolean;
+    canFreeze: boolean;
+    canWipe: boolean;
+    canAddSpecialRoles: boolean;
+    canTransferNFTCreateRole: boolean;
+    NFTCreateStopped: boolean;
+
+    constructor(init?: Partial<NftCollection>) {
+        Object.assign(this, init);
+    }
 }

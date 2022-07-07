@@ -11,6 +11,7 @@ import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@elrondnetwork/erdjs-network-providers/out';
+import { isEsdtToken } from 'src/utils/token.type.compare';
 
 @Injectable()
 export class ElrondApiService {
@@ -80,7 +81,15 @@ export class ElrondApiService {
     }
 
     async getToken(tokenID: string): Promise<EsdtToken> {
-        return this.doGetGeneric(this.getToken.name, `tokens/${tokenID}`);
+        const rawToken = await this.doGetGeneric(
+            this.getToken.name,
+            `tokens/${tokenID}`,
+        );
+        const esdtToken = new EsdtToken(rawToken);
+        if (!isEsdtToken(esdtToken)) {
+            return undefined;
+        }
+        return esdtToken;
     }
 
     async getNftCollection(tokenID: string): Promise<NftCollection> {

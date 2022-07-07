@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneHour, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -27,7 +27,7 @@ export class ContextGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getToken(tokenID),
-            oneMinute() * 2,
+            oneHour(),
         );
     }
 
@@ -36,7 +36,7 @@ export class ContextGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getNftCollection(collection),
-            oneMinute() * 2,
+            oneHour(),
         );
     }
 

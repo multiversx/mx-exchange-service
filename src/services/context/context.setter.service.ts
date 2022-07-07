@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -19,7 +19,7 @@ export class ContextSetterService extends GenericSetterService {
 
     async setTokenMetadata(tokenID: string, value: EsdtToken): Promise<string> {
         const cacheKey = this.getContextCacheKey(tokenID);
-        return await this.setData(cacheKey, value, oneMinute() * 2);
+        return await this.setData(cacheKey, value, oneHour());
     }
 
     async setNftCollectionMetadata(
@@ -27,7 +27,7 @@ export class ContextSetterService extends GenericSetterService {
         value: NftCollection,
     ): Promise<string> {
         const cacheKey = this.getContextCacheKey(collection);
-        return await this.setData(cacheKey, value, oneMinute() * 2);
+        return await this.setData(cacheKey, value, oneHour());
     }
 
     private getContextCacheKey(...args: any) {
