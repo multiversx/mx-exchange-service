@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { Logger } from 'winston';
 import { EsdtToken } from '../models/esdtToken.model';
 import { TokensFiltersArgs } from '../models/tokens.filter.args';
@@ -12,7 +12,7 @@ export class TokenService {
     constructor(
         private readonly tokenGetter: TokenGetterService,
         private readonly routerGetter: RouterGetterService,
-        private readonly apiService: ElrondApiService,
+        private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -25,7 +25,7 @@ export class TokenService {
         }
 
         const promises = tokenIDs.map(tokenID =>
-            this.apiService.getToken(tokenID),
+            this.contextGetter.getTokenMetadata(tokenID),
         );
         let tokens = await Promise.all(promises);
 
