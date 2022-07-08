@@ -14,6 +14,7 @@ import {
 } from 'src/models/esdtTokenPayment.model';
 import {
     Address,
+    AddressValue,
     BigUIntValue,
     BytesValue,
     EnumValue,
@@ -412,7 +413,7 @@ export class PairAbiService extends GenericAbiService {
         return new Address(response.firstValue.valueOf().toString()).bech32();
     }
 
-    async getExternSwapGasLimit(pairAddress: string): Promise<string> {
+    async getExternSwapGasLimit(pairAddress: string): Promise<number> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
@@ -423,10 +424,11 @@ export class PairAbiService extends GenericAbiService {
             PairAbiService.name,
             interaction,
         );
-        return response.firstValue.valueOf().toString();
+        const res = response.firstValue.valueOf();
+        return res !== undefined ? res.toFixed() : undefined;
     }
 
-    async getTransferExecGasLimit(pairAddress: string): Promise<string> {
+    async getTransferExecGasLimit(pairAddress: string): Promise<number> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
@@ -437,7 +439,8 @@ export class PairAbiService extends GenericAbiService {
             PairAbiService.name,
             interaction,
         );
-        return response.firstValue.valueOf().toString();
+        const res = response.firstValue.valueOf();
+        return res !== undefined ? res.toFixed() : undefined;
     }
 
     async updateAndGetSafePrice(
@@ -494,25 +497,25 @@ export class PairAbiService extends GenericAbiService {
             ).toNumber(),
             amount: new BigNumber(
                 response.firstValue.valueOf().amount,
-            ).toString(),
+            ).toFixed(),
         });
     }
 
     async getNumSwapsByAddress(
         pairAddress: string,
         address: string,
-    ): Promise<string> {
+    ): Promise<number> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
         const interaction: Interaction = contract.methods.getNumSwapsByAddress([
-            BytesValue.fromHex(new Address(address).hex()),
+            new AddressValue(Address.fromString(address)),
         ]);
         const response = await this.getGenericData(
             PairAbiService.name,
             interaction,
         );
-        return response.firstValue.valueOf().toString();
+        return response.firstValue.valueOf();
     }
 
     async getNumAddsByAddress(
@@ -522,8 +525,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getNumSwapsByAddress([
-            BytesValue.fromHex(new Address(address).hex()),
+        const interaction: Interaction = contract.methods.getNumAddsByAddress([
+            new AddressValue(Address.fromString(address)),
         ]);
         const response = await this.getGenericData(
             PairAbiService.name,

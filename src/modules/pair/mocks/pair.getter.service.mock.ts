@@ -7,11 +7,11 @@ import { PairsData } from './pair.constants';
 @Injectable()
 export class PairGetterServiceMock {
     async getFirstTokenID(pairAddress: string): Promise<string> {
-        return PairsData(pairAddress)?.firstToken.identifier;
+        return PairsData(pairAddress).firstToken.identifier;
     }
 
     async getSecondTokenID(pairAddress: string): Promise<string> {
-        return PairsData(pairAddress)?.secondToken.identifier;
+        return PairsData(pairAddress).secondToken.identifier;
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {

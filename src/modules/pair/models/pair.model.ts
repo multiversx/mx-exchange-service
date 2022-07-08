@@ -133,6 +133,9 @@ export class PairModel {
     @Field()
     initialLiquidityAdder: string;
 
+    @Field(() => [FeeDestination])
+    feeDestinations: FeeDestination[];
+
     constructor(init?: Partial<PairModel>) {
         Object.assign(this, init);
     }

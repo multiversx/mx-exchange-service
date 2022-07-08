@@ -359,28 +359,8 @@ export const pairs = [
         state: 'Active',
     },
     {
-        address: 'erd1e6w95arcwe3mph66cvvarr9hgdzzg7ljujw95rrefhunl0d4rr6qzd0g2g',
-        firstToken: Tokens('FDT-1234'),
-        secondToken: Tokens('FMT-1234'),
-        liquidityPoolToken: Tokens('LPT-1111'),
-        info: {
-            reserves0: '1000000000000000000',
-            reserves1: '200000000000000000000',
-            totalSupply: '1000000000000000000',
-        },
-        firstTokenPrice: '200',
-        firstTokenPriceUSD: '200',
-        secondTokenPrice: '0.005',
-        secondTokenPriceUSD: '1',
-        liquidityPoolTokenPriceUSD: '400',
-        firstTokenLockedValueUSD: '200',
-        secondTokenLockedValueUSD: '200',
-        lockedValueUSD: '400',
-        totalFeePercent: 0.003,
-        state: 'Active',
-    },
-    {
-        address: 'erd1ak7v7n3qxg0uduuvmqx63308k3ksf50cw85jl3w6rad5jj7cmu9sn7c40x',
+        address:
+            'erd1e6w95arcwe3mph66cvvarr9hgdzzg7ljujw95rrefhunl0d4rr6qzd0g2g',
         firstToken: Tokens('FDT-1234'),
         secondToken: Tokens('FMT-1234'),
         liquidityPoolToken: Tokens('LPT-1111'),
@@ -402,7 +382,7 @@ export const pairs = [
     },
     {
         address:
-            'erd1h26nrm7flz24mfruqajr4e6esfesup6hjpl6r4zav9cn0wec0fcs842lcw',
+            'erd1ak7v7n3qxg0uduuvmqx63308k3ksf50cw85jl3w6rad5jj7cmu9sn7c40x',
         firstToken: Tokens('FDT-1234'),
         secondToken: Tokens('FMT-1234'),
         liquidityPoolToken: Tokens('LPT-1111'),
@@ -418,7 +398,7 @@ export const pairs = [
         liquidityPoolTokenPriceUSD: '400',
         firstTokenLockedValueUSD: '200',
         secondTokenLockedValueUSD: '200',
-        lockedValueUSD: '400000',
+        lockedValueUSD: '400',
         totalFeePercent: 0.003,
         state: 'Active',
     },

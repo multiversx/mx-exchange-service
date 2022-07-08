@@ -369,7 +369,7 @@ describe('FarmService', () => {
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.setPerBlockRewardAmount,
-            data: encodeTransactionData('setPerBlockRewardAmount'),
+            data: encodeTransactionData('setPerBlockRewardAmount@1000'),
             chainID: elrondConfig.chainID,
             version: 1,
             options: undefined,
@@ -380,7 +380,7 @@ describe('FarmService', () => {
     it('should get set penalty percent transaction', async () => {
         let error = null;
         try {
-            await service.set_penalty_percent(
+            await service.setPenaltyPercent(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 5,
             );
@@ -389,7 +389,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.set_penalty_percent(
+        const transaction = await service.setPenaltyPercent(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             5,
         );
@@ -413,7 +413,7 @@ describe('FarmService', () => {
     it('should get set minimum farming epochs transaction', async () => {
         let error = null;
         try {
-            await service.set_minimum_farming_epochs(
+            await service.setMinimumFarmingEpochs(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 10,
             );
@@ -422,7 +422,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.set_minimum_farming_epochs(
+        const transaction = await service.setMinimumFarmingEpochs(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             10,
         );
@@ -446,7 +446,7 @@ describe('FarmService', () => {
     it('should get set transfer exec gas limit transaction', async () => {
         let error = null;
         try {
-            await service.set_transfer_exec_gas_limit(
+            await service.setTransferExecGasLimit(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 100000000,
             );
@@ -455,7 +455,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.set_transfer_exec_gas_limit(
+        const transaction = await service.setTransferExecGasLimit(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             100000000,
         );
@@ -481,7 +481,7 @@ describe('FarmService', () => {
     it('should get set burn gas limit transaction', async () => {
         let error = null;
         try {
-            await service.set_burn_gas_limit(
+            await service.setBurnGasLimit(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 100000000,
             );
@@ -490,7 +490,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.set_burn_gas_limit(
+        const transaction = await service.setBurnGasLimit(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             100000000,
         );

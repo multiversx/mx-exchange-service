@@ -11,9 +11,9 @@ export const farms = [
     },
     {
         address: 'farm_address_2',
-        farmedTokenID: 'FDT-1234',
-        farmTokenID: 'FMT-1234',
-        farmingTokenID: 'LPT-1111',
+        farmedTokenID: 'TOK1-1111',
+        farmTokenID: 'TOK2-2222',
+        farmingTokenID: 'LPT-1234',
         farmTotalSupply: '10000000',
         farmingTokenReserve: '6000000',
         rewardsPerBlock: '1000000000000000000',

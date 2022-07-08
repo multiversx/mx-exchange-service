@@ -114,7 +114,9 @@ describe('PairService', () => {
 
     it('should get pair address by LP token ID', async () => {
         const address = await service.getPairAddressByLpTokenID('LPT-1234');
-        expect(address).toEqual(address);
+        expect(address).toEqual(
+            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+        );
     });
 
     it('should check if token is part of any pair', async () => {

@@ -95,7 +95,7 @@ describe('TransactionPairService', () => {
         const secondTokenAmount = '9';
 
         const initialLiquidityBatchTransactions = await service.addInitialLiquidityBatch(
-            'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            Address.Zero().bech32(),
             {
                 pairAddress:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
@@ -165,12 +165,12 @@ describe('TransactionPairService', () => {
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 tokens: [
                     {
-                        tokenID: 'TOK2-2222',
+                        tokenID: 'TOK1-1111',
                         nonce: 0,
                         amount: firstTokenAmount,
                     },
                     {
-                        tokenID: 'EGLD',
+                        tokenID: 'TOK2-2222',
                         nonce: 0,
                         amount: secondTokenAmount,
                     },
@@ -178,7 +178,6 @@ describe('TransactionPairService', () => {
                 tolerance: 0.01,
             },
         );
-
         expect(addLiquidityTransaction).toEqual({
             nonce: 0,
             value: '0',
@@ -189,7 +188,7 @@ describe('TransactionPairService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@2@TOK1-1111@@9@TOK2-2222@@10@addInitialLiquidity',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@02@TOK1-1111@@10@TOK2-2222@@09@addInitialLiquidity',
             ),
             chainID: elrondConfig.chainID,
             version: 1,
@@ -777,8 +776,8 @@ describe('TransactionPairService', () => {
     it('should get set fee percents transaction', async () => {
         const transaction = await service.setFeePercents(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            '3',
-            '5',
+            3,
+            5,
         );
 
         expect(transaction).toEqual({
@@ -801,7 +800,7 @@ describe('TransactionPairService', () => {
     it('should get set max observations per period transaction', async () => {
         const transaction = await service.setMaxObservationsPerRecord(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            '1000',
+            1000,
         );
 
         expect(transaction).toEqual({
@@ -911,7 +910,7 @@ describe('TransactionPairService', () => {
     it('should get set locking deadline epoch transaction', async () => {
         const transaction = await service.setLockingDeadlineEpoch(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            '1000',
+            1000,
         );
 
         expect(transaction).toEqual({
@@ -934,7 +933,7 @@ describe('TransactionPairService', () => {
     it('should get set unlocking epoch transaction', async () => {
         const transaction = await service.setUnlockEpoch(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            '1005',
+            1005,
         );
 
         expect(transaction).toEqual({

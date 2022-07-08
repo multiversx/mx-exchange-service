@@ -731,8 +731,8 @@ export class PairTransactionService {
 
     async setFeePercents(
         pairAddress: string,
-        totalFeePercent: string,
-        specialFeePercent: string,
+        totalFeePercent: number,
+        specialFeePercent: number,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
@@ -751,7 +751,7 @@ export class PairTransactionService {
 
     async setMaxObservationsPerRecord(
         pairAddress: string,
-        maxObservationsPerRecord: string,
+        maxObservationsPerRecord: number,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
@@ -829,7 +829,7 @@ export class PairTransactionService {
 
     async setLockingDeadlineEpoch(
         pairAddress: string,
-        newDeadline: string,
+        newDeadline: number,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
@@ -847,7 +847,7 @@ export class PairTransactionService {
 
     async setUnlockEpoch(
         pairAddress: string,
-        newEpoch: string,
+        newEpoch: number,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,

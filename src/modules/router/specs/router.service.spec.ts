@@ -87,10 +87,6 @@ describe('RouterService', () => {
                 address:
                     'erd1ak7v7n3qxg0uduuvmqx63308k3ksf50cw85jl3w6rad5jj7cmu9sn7c40x',
             }),
-            new PairModel({
-                address:
-                    'erd1h26nrm7flz24mfruqajr4e6esfesup6hjpl6r4zav9cn0wec0fcs842lcw',
-            }),
         ]);
     });
 
