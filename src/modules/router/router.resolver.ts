@@ -3,7 +3,7 @@ import { Resolver, Query, ResolveField, Args, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
-import { FactoryModel } from './models/factory.model';
+import { EnableSwapByUserConfig, FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './services/transactions.router.service';
 import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
@@ -25,6 +25,24 @@ export class RouterResolver {
     @Query(() => FactoryModel)
     async factory() {
         return this.routerService.getFactory();
+    }
+
+    @ResolveField()
+    async commonTokensForUserPairs(): Promise<string[]> {
+        try {
+            return await this.routerGetterService.getCommonTokensForUserPairs();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
+        try {
+            return await this.routerGetterService.getEnableSwapByUserConfig();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField(() => Int)
