@@ -154,7 +154,7 @@ export class TransactionRouterService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(args.tokenID),
-            BytesValue.fromHex(new Address(args.address).hex()),
+            new AddressValue(Address.fromString(args.address)),
         ];
         for (const role of args.roles) {
             endpointArgs.push(...[new BigUIntValue(new BigNumber(role))]);

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+    AddressValue,
     BigUIntValue,
     TypedValue,
     U64Value,
@@ -588,7 +589,7 @@ export class PairTransactionService {
             args.pairAddress,
         );
         const transactionArgs: TypedValue[] = [
-            BytesValue.fromHex(new Address(args.address).hex()),
+            new AddressValue(Address.fromString(args.address)),
         ];
         return contract.methodsExplicit
             .whitelist(transactionArgs)
@@ -603,7 +604,7 @@ export class PairTransactionService {
             args.pairAddress,
         );
         const transactionArgs: TypedValue[] = [
-            BytesValue.fromHex(new Address(args.address).hex()),
+            new AddressValue(Address.fromString(args.address)),
         ];
         return contract.methodsExplicit
             .removeWhitelist(transactionArgs)
