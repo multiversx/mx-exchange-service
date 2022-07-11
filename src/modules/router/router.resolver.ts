@@ -12,6 +12,7 @@ import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -183,5 +184,21 @@ export class RouterResolver {
             feeTokenID,
             enable,
         );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async setSwapEnabledByUser(
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.transactionService.setSwapEnabledByUser(
+                user.publicKey,
+                inputTokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }

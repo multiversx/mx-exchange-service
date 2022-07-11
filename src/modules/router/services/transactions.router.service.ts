@@ -1,15 +1,23 @@
+import { LockedTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import {
     Address,
+    AddressValue,
     BigUIntValue,
     BytesValue,
     TokenPayment,
     TypedValue,
 } from '@elrondnetwork/erdjs/out';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { InputTokenModel } from 'src/models/inputToken.model';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { generateGetLogMessage } from 'src/utils/generate-log-message';
+import { Logger } from 'winston';
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
@@ -21,7 +29,10 @@ export class TransactionRouterService {
         private readonly elrondProxy: ElrondProxyService,
         private readonly routerGetterService: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
+        private readonly pairService: PairService,
+        private readonly contextGetter: ContextGetterService,
         private readonly transactionsWrapService: TransactionsWrapService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
     async createPair(
@@ -128,6 +139,56 @@ export class TransactionRouterService {
             .toPlainObject();
     }
 
+    async setSwapEnabledByUser(
+        sender: string,
+        inputTokens: InputTokenModel,
+    ): Promise<TransactionModel> {
+        let pairAddress: string;
+        try {
+            pairAddress = await this.validateSwapEnableInputTokens(inputTokens);
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                this.constructor.name,
+                this.setSwapEnabledByUser.name,
+                '',
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+
+        const initialLiquidityAdder = await this.pairGetterService.getInitialLiquidtyAdder(
+            pairAddress,
+        );
+        console.log({
+            initialLiquidityAdder,
+            sender,
+            pairAddress,
+            gas: gasConfig.router.swapEnableByUser,
+        });
+        if (sender !== initialLiquidityAdder) {
+            throw new Error('Invalid sender address');
+        }
+
+        const contract = await this.elrondProxy.getRouterSmartContract();
+        return contract.methodsExplicit
+            .setSwapEnabledByUser([
+                new AddressValue(Address.fromString(pairAddress)),
+            ])
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.router.swapEnableByUser)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
     private async checkPairExists(
         firstTokenID: string,
         secondTokenID: string,
@@ -217,5 +278,84 @@ export class TransactionRouterService {
                 amount,
             );
         }
+    }
+
+    private async validateSwapEnableInputTokens(
+        inputTokens: InputTokenModel,
+    ): Promise<string> {
+        const [
+            swapEnableConfig,
+            commonTokensUserPair,
+            currentEpoch,
+        ] = await Promise.all([
+            this.routerGetterService.getEnableSwapByUserConfig(),
+            this.routerGetterService.getCommonTokensForUserPairs(),
+            this.contextGetter.getCurrentEpoch(),
+        ]);
+
+        if (inputTokens.tokenID !== swapEnableConfig.lockedTokenID) {
+            throw new Error('Invalid input token');
+        }
+
+        const lockedTokensAttributes = LockedTokenAttributes.fromAttributes(
+            inputTokens.attributes,
+        );
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            lockedTokensAttributes.originalTokenID,
+        );
+        if (!pairAddress) {
+            throw new Error('Invalid locked LP token');
+        }
+
+        console.log({
+            unlockEpoch: lockedTokensAttributes.unlockEpoch,
+            currentEpoch,
+            minLockEpch: swapEnableConfig.minLockPeriodEpochs,
+        });
+        const lpTokenLockedEpochs =
+            currentEpoch < lockedTokensAttributes.unlockEpoch
+                ? lockedTokensAttributes.unlockEpoch - currentEpoch
+                : 0;
+        console.log({
+            lpTokenLockedEpochs,
+        });
+        if (!(lpTokenLockedEpochs >= swapEnableConfig.minLockPeriodEpochs)) {
+            throw new Error('Token not locked for long enough');
+        }
+
+        const [
+            firstTokenID,
+            secondTokenID,
+            liquidityTokens,
+        ] = await Promise.all([
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairGetterService.getSecondTokenID(pairAddress),
+            this.pairService.getLiquidityPosition(
+                pairAddress,
+                inputTokens.amount,
+            ),
+        ]);
+        console.log({
+            firstTokenID,
+            secondTokenID,
+            liquidityTokens,
+        });
+        let commonTokenValue: string;
+        if (commonTokensUserPair.includes(firstTokenID)) {
+            commonTokenValue = liquidityTokens.firstTokenAmount;
+        } else if (commonTokensUserPair.includes(secondTokenID)) {
+            commonTokenValue = liquidityTokens.secondTokenAmount;
+        } else {
+            throw new Error('Not a valid user defined pair');
+        }
+        if (
+            new BigNumber(commonTokenValue).isLessThan(
+                swapEnableConfig.minLockedTokenValue,
+            )
+        ) {
+            throw new Error('Not enough value locked');
+        }
+
+        return pairAddress;
     }
 }

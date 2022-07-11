@@ -59,7 +59,7 @@ export class AbiRouterService extends GenericAbiService {
         return new EnableSwapByUserConfig({
             lockedTokenID: rawConfig.locked_token_id,
             minLockedTokenValue: rawConfig.min_locked_token_value.toFixed(),
-            minLockPeriodEpochs: rawConfig.min_lock_period_epochs.toFixed(),
+            minLockPeriodEpochs: rawConfig.min_lock_period_epochs.toNumber(),
         });
     }
 
