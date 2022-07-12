@@ -388,13 +388,22 @@ export class UserComputeService {
             },
         );
 
-        const userEsdtToken = await this.esdtTokenUSD(
-            new EsdtToken({
-                identifier: decodedAttributes.originalTokenID,
-                balance: nftToken.balance,
-                decimals: nftToken.decimals,
-            }),
+        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
+            decodedAttributes.originalTokenID,
         );
+
+        let userEsdtToken: UserToken;
+        const esdtToken = new EsdtToken({
+            identifier: decodedAttributes.originalTokenID,
+            balance: nftToken.balance,
+            decimals: nftToken.decimals,
+        });
+        if (pairAddress) {
+            userEsdtToken = await this.lpTokenUSD(esdtToken, pairAddress);
+        } else {
+            userEsdtToken = await this.esdtTokenUSD(esdtToken);
+        }
+
         return new UserLockedEsdtToken({
             ...nftToken,
             decodedAttributes,
