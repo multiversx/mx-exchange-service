@@ -160,12 +160,6 @@ export class TransactionRouterService {
         const initialLiquidityAdder = await this.pairGetterService.getInitialLiquidtyAdder(
             pairAddress,
         );
-        console.log({
-            initialLiquidityAdder,
-            sender,
-            pairAddress,
-            gas: gasConfig.router.swapEnableByUser,
-        });
         if (sender !== initialLiquidityAdder) {
             throw new Error('Invalid sender address');
         }
@@ -307,18 +301,10 @@ export class TransactionRouterService {
             throw new Error('Invalid locked LP token');
         }
 
-        console.log({
-            unlockEpoch: lockedTokensAttributes.unlockEpoch,
-            currentEpoch,
-            minLockEpch: swapEnableConfig.minLockPeriodEpochs,
-        });
         const lpTokenLockedEpochs =
             currentEpoch < lockedTokensAttributes.unlockEpoch
                 ? lockedTokensAttributes.unlockEpoch - currentEpoch
                 : 0;
-        console.log({
-            lpTokenLockedEpochs,
-        });
         if (!(lpTokenLockedEpochs >= swapEnableConfig.minLockPeriodEpochs)) {
             throw new Error('Token not locked for long enough');
         }
@@ -335,11 +321,7 @@ export class TransactionRouterService {
                 inputTokens.amount,
             ),
         ]);
-        console.log({
-            firstTokenID,
-            secondTokenID,
-            liquidityTokens,
-        });
+
         let commonTokenValue: string;
         if (commonTokensUserPair.includes(firstTokenID)) {
             commonTokenValue = liquidityTokens.firstTokenAmount;
