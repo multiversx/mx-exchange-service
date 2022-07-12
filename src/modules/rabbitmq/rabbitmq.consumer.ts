@@ -40,6 +40,7 @@ import {
     SwapFixedOutputEvent,
     WithdrawEvent,
     RawEvent,
+    PairSwapEnabledEvent,
 } from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
@@ -181,6 +182,11 @@ export class RabbitMqConsumer {
                         new CreatePairEvent(rawEvent),
                     );
                     await this.getFilterAddresses();
+                    break;
+                case ROUTER_EVENTS.PAIR_SWAP_ENABLED:
+                    await this.wsRouterHandler.handlePairSwapEnabled(
+                        new PairSwapEnabledEvent(rawEvent),
+                    );
                     break;
                 case METABONDING_EVENTS.STAKE_LOCKED_ASSET:
                     await this.wsMetabondingHandler.handleMetabondingEvent(

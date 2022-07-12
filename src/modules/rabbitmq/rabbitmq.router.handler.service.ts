@@ -1,4 +1,8 @@
-import { CreatePairEvent, ROUTER_EVENTS } from '@elrondnetwork/erdjs-dex';
+import {
+    CreatePairEvent,
+    PairSwapEnabledEvent,
+    ROUTER_EVENTS,
+} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -6,6 +10,9 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import { AbiRouterService } from '../router/services/abi.router.service';
 import { RouterSetterService } from '../router/services/router.setter.service';
+import { CreateTokenDto } from '../tokens/dto/create.token.dto';
+import { TokenGetterService } from '../tokens/services/token.getter.service';
+import { TokenRepositoryService } from '../tokens/services/token.repository.service';
 
 @Injectable()
 export class RabbitMQRouterHandlerService {
@@ -13,6 +20,8 @@ export class RabbitMQRouterHandlerService {
     constructor(
         private readonly routerAbiService: AbiRouterService,
         private readonly routerSetterService: RouterSetterService,
+        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenRepository: TokenRepositoryService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -32,6 +41,29 @@ export class RabbitMQRouterHandlerService {
         await this.pubSub.publish(ROUTER_EVENTS.CREATE_PAIR, {
             createPairEvent: event,
         });
+    }
+
+    async handlePairSwapEnabled(event: PairSwapEnabledEvent): Promise<void> {
+        const [firstTokenType, secondTokenType] = await Promise.all([
+            this.tokenGetter.getEsdtTokenType(event.getFirstTokenID()),
+            this.tokenGetter.getEsdtTokenType(event.getSecondTokenID()),
+        ]);
+
+        if (firstTokenType === 'Unlisted') {
+            const createTokenDto: CreateTokenDto = {
+                tokenID: event.getFirstTokenID(),
+                type: 'Jungle',
+            };
+            this.tokenRepository.create(createTokenDto);
+        }
+
+        if (secondTokenType === 'Unlisted') {
+            const createTokenDto: CreateTokenDto = {
+                tokenID: event.getFirstTokenID(),
+                type: 'Jungle',
+            };
+            this.tokenRepository.create(createTokenDto);
+        }
     }
 
     private async deleteCacheKeys() {
