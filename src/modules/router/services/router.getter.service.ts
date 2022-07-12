@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute } from 'src/helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -8,6 +8,7 @@ import { AbiRouterService } from './abi.router.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { RouterComputeService } from './router.compute.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
+import { EnableSwapByUserConfig } from '../models/factory.model';
 
 @Injectable()
 export class RouterGetterService extends GenericGetterService {
@@ -33,6 +34,22 @@ export class RouterGetterService extends GenericGetterService {
         return this.getData(
             this.getRouterCacheKey('pairsMetadata'),
             () => this.abiService.getPairsMetadata(),
+            oneMinute(),
+        );
+    }
+
+    async getEnableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
+        return await this.getData(
+            this.getRouterCacheKey('enableSwapByUserConfig'),
+            () => this.abiService.getEnableSwapByUserConfig(),
+            oneHour(),
+        );
+    }
+
+    async getCommonTokensForUserPairs(): Promise<string[]> {
+        return await this.getData(
+            this.getRouterCacheKey('commonTokensForUserPairs'),
+            () => this.abiService.getCommonTokensForUserPairs(),
             oneMinute(),
         );
     }
