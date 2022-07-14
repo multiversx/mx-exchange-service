@@ -425,13 +425,6 @@ export class SimpleLockTransactionService {
                 decodedAttributes.farmingTokenLockedNonce ===
                 lpProxyToken.nonce;
             const sameFarmType = decodedAttributes.farmType === farmType;
-            console.log({
-                sameFarmingToken,
-                sameFarmingTokenNonce,
-                sameFarmType,
-                farmingToken: decodedAttributes.farmingTokenID,
-                lpTokenID: lpProxyTokenAttributes.lpTokenID,
-            });
             if (!(sameFarmingToken && sameFarmingTokenNonce && sameFarmType)) {
                 throw new Error('Invalid farm proxy token');
             }

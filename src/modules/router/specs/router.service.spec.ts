@@ -79,25 +79,26 @@ describe('RouterService', () => {
                 address:
                     'erd1a42xw92g8n78v6y4p3qj9ed2gjmr20kd9h2pkhuuuxf5tgn44q3sxy8unx',
             }),
-            new PairModel({
-                address:
-                    'erd1e6w95arcwe3mph66cvvarr9hgdzzg7ljujw95rrefhunl0d4rr6qzd0g2g',
-            }),
-            new PairModel({
-                address:
-                    'erd1ak7v7n3qxg0uduuvmqx63308k3ksf50cw85jl3w6rad5jj7cmu9sn7c40x',
-            }),
         ]);
     });
 
     it('should get filtered pairs', async () => {
         const filteredPairs = await service.getAllPairs(0, Number.MAX_VALUE, {
-            firstTokenID: 'TOK2-2222',
+            firstTokenID: 'TOK1-1111',
             issuedLpToken: true,
             address: null,
             secondTokenID: null,
             state: null,
         });
-        expect(filteredPairs).toEqual([]);
+        expect(filteredPairs).toEqual([
+            new PairModel({
+                address:
+                    'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+            }),
+            new PairModel({
+                address:
+                    'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+            }),
+        ]);
     });
 });

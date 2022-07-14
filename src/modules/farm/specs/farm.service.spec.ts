@@ -157,16 +157,16 @@ describe('FarmService', () => {
     });
 
     it('should check if farm token', async () => {
-        const isFarmToken_0 = await service.isFarmToken('FMT-4321');
+        const isFarmToken_0 = await service.isFarmToken('TOK1TOK9LPStaked');
         expect(isFarmToken_0).toEqual(false);
 
-        const isFarmToken_1 = await service.isFarmToken('FMT-1234');
+        const isFarmToken_1 = await service.isFarmToken('TOK1TOK4LPStaked');
         expect(isFarmToken_1).toEqual(true);
     });
 
     it('should get farm address by farm token ID', async () => {
         const farmAddress = await service.getFarmAddressByFarmTokenID(
-            'FMT-1234',
+            'TOK1TOK4LPStaked',
         );
         expect(farmAddress).toEqual(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',

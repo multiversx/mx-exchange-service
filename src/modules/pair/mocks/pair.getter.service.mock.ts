@@ -19,19 +19,11 @@ export class PairGetterServiceMock {
     }
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
-        try {
-            return PairsData(pairAddress).firstToken;
-        } catch {
-            console.log('getFirstToken pairAddress', pairAddress);
-        }
+        return PairsData(pairAddress).firstToken;
     }
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
-        try {
-            return PairsData(pairAddress).secondToken;
-        } catch {
-            console.log('getSecondToken pairAddress', pairAddress);
-        }
+        return PairsData(pairAddress).secondToken;
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
@@ -68,11 +60,15 @@ export class PairGetterServiceMock {
                 return '100';
             case 'USDC-1111':
                 return '1';
-            case 'FDT-1234':
+            case 'TOK4-4444':
                 return '10';
-            case 'FMT-1234':
+            case 'TOK1TOK4LPStaked':
                 return '15';
-            case 'LPT-1111':
+            case 'TOK1TOK4LP':
+                return '50';
+            case 'TOK1TOK2LPStaked':
+                return '100;';
+            case 'TOK1TOK2LP':
                 return '50';
         }
     }

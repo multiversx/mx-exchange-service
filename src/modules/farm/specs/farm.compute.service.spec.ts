@@ -96,104 +96,104 @@ describe('FarmService', () => {
         const farmAPR = await service.computeUnlockedRewardsAPR(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(farmAPR).toEqual('10');
+        expect(farmAPR).toEqual('10.00043799890500273749');
     });
 
     it('should compute farmed token price USD', async () => {
         const farmedTokenPriceUSD = await service.computeFarmedTokenPriceUSD(
             'farm_address_2',
         );
-        expect(farmedTokenPriceUSD).toEqual('200');
+        expect(farmedTokenPriceUSD).toEqual('2000');
     });
 
     it('should compute farming token price USD', async () => {
         const farmingTokenPriceUSD = await service.computeFarmingTokenPriceUSD(
             'farm_address_2',
         );
-        expect(farmingTokenPriceUSD).toEqual('400');
+        expect(farmingTokenPriceUSD).toEqual('1600040000');
     });
 
     it('should compute farm locked value USD', async () => {
         const farmLockedValueUSD = await service.computeFarmLockedValueUSD(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(farmLockedValueUSD).toEqual('0.00000000024');
+        expect(farmLockedValueUSD).toEqual('32000080000000');
     });
 
     it('should compute farm rewards for position', async () => {
         const farmRewardsForPosition = await service.computeFarmRewardsForPosition(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-            '100',
+            '100000000000000000000000000000',
             new FarmTokenAttributesModel({
                 identifier: undefined,
                 attributes: undefined,
-                rewardPerShare: '1',
+                rewardPerShare: '100',
                 originalEnteringEpoch: 0,
                 enteringEpoch: 0,
-                aprMultiplier: 1,
-                initialFarmingAmount: '10',
-                compoundedReward: '5',
-                currentFarmAmount: '100',
+                aprMultiplier: 25,
+                initialFarmingAmount: '10000000000000000000',
+                compoundedReward: '500000000000000',
+                currentFarmAmount: '100000000000000',
                 lockedRewards: true,
             }),
         );
-        expect(farmRewardsForPosition.toFixed()).toEqual('0.0199');
+        expect(farmRewardsForPosition.toFixed()).toEqual('16666000');
     });
 
     it('should compute locked farming token reserve', async () => {
         const lockedFarmingTokenReserve = await service.computeLockedFarmingTokenReserve(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(lockedFarmingTokenReserve).toEqual('400000');
+        expect(lockedFarmingTokenReserve).toEqual('200000000000000000000000');
     });
 
     it('should compute unlocked farming token reserve', async () => {
         const unlockedFarmingTokenReserve = await service.computeUnlockedFarmingTokenReserve(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(unlockedFarmingTokenReserve).toEqual('200000');
+        expect(unlockedFarmingTokenReserve).toEqual('200000000000000000000000');
     });
 
     it('should compute locked farming token reserve USD', async () => {
         const lockedFarmingTokenReserveUSD = await service.computeLockedFarmingTokenReserveUSD(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(lockedFarmingTokenReserveUSD).toEqual('0.00000000016');
+        expect(lockedFarmingTokenReserveUSD).toEqual('16000040000000');
     });
 
     it('should compute unlocked farming token reserve USD', async () => {
         const unlockedFarmingTokenReserveUSD = await service.computeUnlockedFarmingTokenReserveUSD(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(unlockedFarmingTokenReserveUSD).toEqual('0.00000000008');
+        expect(unlockedFarmingTokenReserveUSD).toEqual('16000040000000');
     });
 
     it('should compute virtual value locked USD', async () => {
         const virtualValueLockedUSD = await service.computeVirtualValueLockedUSD(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(virtualValueLockedUSD).toEqual('0.0000000004');
+        expect(virtualValueLockedUSD).toEqual('48000120000000');
     });
 
     it('should compute anual rewards USD', async () => {
         const anualRewardsUSD = await service.computeAnualRewardsUSD(
-            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(anualRewardsUSD).toEqual('0');
+        expect(anualRewardsUSD).toEqual('21024000000');
     });
 
     it('should compute unlocked rewards APR', async () => {
         const unlockedRewardsAPR = await service.computeUnlockedRewardsAPR(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(unlockedRewardsAPR).toEqual('10');
+        expect(unlockedRewardsAPR).toEqual('10.00043799890500273749');
     });
 
     it('should compute locked rewards APR', async () => {
         const lockedRewardsAPR = await service.computeLockedRewardsAPR(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
-        expect(lockedRewardsAPR).toEqual('10');
+        expect(lockedRewardsAPR).toEqual('10.00087599781000547498');
     });
 
     it('should compute farm APR', async () => {
@@ -203,6 +203,6 @@ describe('FarmService', () => {
         expect(farmAPR_0).toEqual(null);
 
         const farmAPR_1 = await service.computeFarmAPR('farm_address_2');
-        expect(farmAPR_1).toEqual('262800000000000010');
+        expect(farmAPR_1).toEqual('10.00005255986860032849');
     });
 });

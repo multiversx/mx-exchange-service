@@ -59,7 +59,7 @@ describe('PairService', () => {
             'TOK1-1111',
             '10000000000000000',
         );
-        expect(amountIn).toEqual('20262808627903914');
+        expect(amountIn).toEqual('8105123451161565504595');
     });
 
     it('should get amount out', async () => {
@@ -68,7 +68,7 @@ describe('PairService', () => {
             'TOK1-1111',
             '10000000000000000',
         );
-        expect(amountOut).toEqual('19743160687941225');
+        expect(amountOut).toEqual('7897264275176490390803');
     });
 
     it('should get equivalent for liquidity', async () => {
@@ -77,7 +77,7 @@ describe('PairService', () => {
             'TOK1-1111',
             '10000000000000000',
         );
-        expect(equivalent).toEqual('20000000000000000');
+        expect(equivalent).toEqual('8000000000000000000000');
     });
 
     it('should get liquidity position from pair', async () => {
@@ -87,7 +87,7 @@ describe('PairService', () => {
         );
         expect(liquidityPosition).toEqual({
             firstTokenAmount: '1',
-            secondTokenAmount: '2',
+            secondTokenAmount: '800000',
         });
     });
 
@@ -96,12 +96,12 @@ describe('PairService', () => {
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             '1',
         );
-        expect(liquidityPositionUSD).toEqual('0.0000000000000004');
+        expect(liquidityPositionUSD).toEqual('0.0000000000800002');
     });
 
     it('should get USD price by path', async () => {
         const priceByPathUSD = await service.getPriceUSDByPath('TOK2-2222');
-        expect(priceByPathUSD.toFixed()).toEqual('100');
+        expect(priceByPathUSD.toFixed()).toEqual('2000');
     });
 
     it('should get USD price by token', async () => {
@@ -109,18 +109,18 @@ describe('PairService', () => {
             'TOK2-2222',
             'TOK1-1111',
         );
-        expect(priceByTokenUSD.toFixed()).toEqual('100');
+        expect(priceByTokenUSD.toFixed()).toEqual('2000');
     });
 
     it('should get pair address by LP token ID', async () => {
-        const address = await service.getPairAddressByLpTokenID('LPT-1234');
+        const address = await service.getPairAddressByLpTokenID('TOK1TOK2LP');
         expect(address).toEqual(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
     });
 
     it('should check if token is part of any pair', async () => {
-        const isPair0 = await service.isPairEsdtToken('LPT-1234');
+        const isPair0 = await service.isPairEsdtToken('TOK1TOK2LP');
         expect(isPair0).toEqual(true);
 
         const isPair1 = await service.isPairEsdtToken('LPT-4321');
