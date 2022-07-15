@@ -1,5 +1,6 @@
 import {
     Address,
+    AddressValue,
     BigUIntValue,
     BytesValue,
     TokenPayment,
@@ -100,7 +101,7 @@ export class AutoRouterTransactionService {
 
             swaps.push(
                 ...[
-                    BytesValue.fromHex(Address.fromString(address).hex()),
+                    new AddressValue(Address.fromString(address)),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(amountOutMin),
@@ -135,7 +136,7 @@ export class AutoRouterTransactionService {
 
             swaps.push(
                 ...[
-                    BytesValue.fromHex(Address.fromString(address).hex()),
+                    new AddressValue(Address.fromString(address)),
                     BytesValue.fromUTF8('swapTokensFixedOutput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(new BigNumber(amountOut)),
@@ -165,7 +166,7 @@ export class AutoRouterTransactionService {
 
                 swaps.push(
                     ...[
-                        BytesValue.fromHex(Address.fromString(address).hex()),
+                        new AddressValue(Address.fromString(address)),
                         BytesValue.fromUTF8('swapTokensFixedInput'),
                         BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                         new BigUIntValue(
@@ -177,7 +178,7 @@ export class AutoRouterTransactionService {
                 console.log('swapTokensFixedOutput');
                 swaps.push(
                     ...[
-                        BytesValue.fromHex(Address.fromString(address).hex()),
+                        new AddressValue(Address.fromString(address)),
                         BytesValue.fromUTF8('swapTokensFixedOutput'),
                         BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                         new BigUIntValue(

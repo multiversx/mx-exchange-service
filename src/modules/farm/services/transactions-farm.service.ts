@@ -233,9 +233,7 @@ export class TransactionsFarmService {
         );
         const gasLimit = gasConfig.farms[version].migrateToNewFarm;
         return contract.methodsExplicit
-            .migrateToNewFarm([
-                BytesValue.fromHex(Address.fromString(sender).hex()),
-            ])
+            .migrateToNewFarm([new AddressValue(Address.fromString(sender))])
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     args.farmTokenID,
@@ -259,7 +257,7 @@ export class TransactionsFarmService {
         const transactionArgs = [
             new AddressValue(Address.fromString(args.oldFarmAddress)),
             BytesValue.fromUTF8(args.oldFarmTokenID),
-            BytesValue.fromHex(Address.fromString(args.newFarmAddress).hex()),
+            new AddressValue(Address.fromString(args.newFarmAddress)),
             BytesValue.fromHex(
                 Address.fromString(args.newLockedFarmAddress).hex(),
             ),
