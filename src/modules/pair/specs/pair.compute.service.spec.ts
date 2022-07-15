@@ -66,13 +66,13 @@ describe('PairService', () => {
 
     it('should get token price in USD from multiple path', async () => {
         const tokenPriceUSD = await service.computeTokenPriceUSD('TOK2-2222');
-        expect(tokenPriceUSD.toFixed()).toEqual('2000');
+        expect(tokenPriceUSD.toFixed()).toEqual('100');
     });
 
     it('should get lpToken Price in USD from pair', async () => {
         const lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
-        expect(lpTokenPriceUSD).toEqual('1600040000');
+        expect(lpTokenPriceUSD).toEqual('400');
     });
 });

@@ -226,7 +226,7 @@ describe('UserService', () => {
                 canFreeze: true,
                 canWipe: true,
                 balance: '1000000000000000000',
-                valueUSD: '2000',
+                valueUSD: '100',
                 accounts: 1,
                 initialMinted: '1',
                 burnt: '1',
@@ -264,7 +264,8 @@ describe('UserService', () => {
                 balance: '1000000000000000000',
                 identifier: 'TOK1TOK4LPStaked-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
-                creator: 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                creator:
+                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 nonce: 1,
                 royalties: 0,
                 valueUSD: '80000200',

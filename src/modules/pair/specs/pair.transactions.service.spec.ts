@@ -373,7 +373,7 @@ describe('TransactionPairService', () => {
                 tolerance: 0.01,
             },
         );
-
+        
         expect(transactions).toEqual([
             {
                 nonce: 0,
@@ -385,7 +385,7 @@ describe('TransactionPairService', () => {
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.removeLiquidity,
                 data: encodeTransactionData(
-                    'ESDTTransfer@1162300484@09@removeLiquidity@08@07128000',
+                    'ESDTTransfer@1162300484@09@removeLiquidity@08@17',
                 ),
                 chainID: elrondConfig.chainID,
                 version: 1,

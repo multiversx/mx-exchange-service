@@ -69,7 +69,7 @@ export class PairGetterServiceMock {
             case 'TOK1TOK2LPStaked':
                 return '100;';
             case 'TOK1TOK2LP':
-                return '50';
+                return '2';
         }
     }
 

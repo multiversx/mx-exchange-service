@@ -103,14 +103,14 @@ describe('FarmService', () => {
         const farmedTokenPriceUSD = await service.computeFarmedTokenPriceUSD(
             'farm_address_2',
         );
-        expect(farmedTokenPriceUSD).toEqual('2000');
+        expect(farmedTokenPriceUSD).toEqual('100');
     });
 
     it('should compute farming token price USD', async () => {
         const farmingTokenPriceUSD = await service.computeFarmingTokenPriceUSD(
             'farm_address_2',
         );
-        expect(farmingTokenPriceUSD).toEqual('1600040000');
+        expect(farmingTokenPriceUSD).toEqual('400');
     });
 
     it('should compute farm locked value USD', async () => {
@@ -203,6 +203,6 @@ describe('FarmService', () => {
         expect(farmAPR_0).toEqual(null);
 
         const farmAPR_1 = await service.computeFarmAPR('farm_address_2');
-        expect(farmAPR_1).toEqual('10.00005255986860032849');
+        expect(farmAPR_1).toEqual('10.5256');
     });
 });
