@@ -16,7 +16,8 @@
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
         "priceDiscovery": [
-            "erd1qqqqqqqqqqqqqpgq5daxqzyl8hxug8zyplweugxsh62vyqaw0n4sc69ndf"
+            "erd1qqqqqqqqqqqqqpgq5daxqzyl8hxug8zyplweugxsh62vyqaw0n4sc69ndf",
+            "erd1qqqqqqqqqqqqqpgqcm500rcrugs93gtnfukenws38meav3lg0n4s26d7cz"
         ],
         "staking": [
             "erd1qqqqqqqqqqqqqpgq8w0s682m88xae2ne3qkq7w2h26u5a5c00n4stt02d7",
