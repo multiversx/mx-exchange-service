@@ -25,7 +25,7 @@ export function leastType(typeA: string, typeB: string): string {
                 return typeA;
             }
             return typeB;
-        case 'Jungle':
+        case 'Jungle-Experimental':
             if (
                 typeB === 'Core' ||
                 typeB === 'Ecosystem' ||
@@ -34,6 +34,18 @@ export function leastType(typeA: string, typeB: string): string {
             ) {
                 return typeA;
             }
+            return typeB;
+        case 'Jungle':
+            if (
+                typeB === 'Core' ||
+                typeB === 'Ecosystem' ||
+                typeB === 'Community' ||
+                typeB === 'Experimental' ||
+                typeB === 'Jungle-Experimental'
+            ) {
+                return typeA;
+            }
+            return typeB;
         case 'Unlisted':
             return typeA;
     }
