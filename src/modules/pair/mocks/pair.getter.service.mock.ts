@@ -15,10 +15,7 @@ export class PairGetterServiceMock {
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {
-        const pair = PairsData(pairAddress);
-        if (pair && pair.liquidityPoolToken)
-            return pair.liquidityPoolToken.identifier;
-        return undefined;
+        return PairsData(pairAddress)?.liquidityPoolToken.identifier;
     }
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
@@ -63,6 +60,16 @@ export class PairGetterServiceMock {
                 return '100';
             case 'USDC-1111':
                 return '1';
+            case 'TOK4-4444':
+                return '10';
+            case 'TOK1TOK4LPStaked':
+                return '15';
+            case 'TOK1TOK4LP':
+                return '50';
+            case 'TOK1TOK2LPStaked':
+                return '100;';
+            case 'TOK1TOK2LP':
+                return '2';
         }
     }
 
@@ -133,6 +140,10 @@ export class PairGetterServiceMock {
     }
 
     async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
-        return [Address.Zero().bech32()];
+        return [];
+    }
+
+    async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
+        return Address.Zero().bech32();
     }
 }

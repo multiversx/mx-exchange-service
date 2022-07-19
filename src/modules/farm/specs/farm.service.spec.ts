@@ -26,7 +26,6 @@ import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 
 describe('FarmService', () => {
     let service: FarmService;
-    let computeService: FarmComputeService;
 
     const AbiFarmServiceProvider = {
         provide: AbiFarmService,
@@ -88,7 +87,6 @@ describe('FarmService', () => {
         }).compile();
 
         service = module.get<FarmService>(FarmService);
-        computeService = module.get<FarmComputeService>(FarmComputeService);
     });
 
     it('should be defined', () => {
@@ -101,7 +99,8 @@ describe('FarmService', () => {
         const identifier = 'MEXFARM-abcd-01';
         const liquidity = '2000000000000000000';
         const rewards = await service.getRewardsForPosition({
-            farmAddress: 'farm_address_1',
+            farmAddress:
+                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             identifier: identifier,
             attributes: attributes,
             liquidity: liquidity,
@@ -129,10 +128,120 @@ describe('FarmService', () => {
         );
     });
 
-    it('should get unlocked rewards APR', async () => {
-        const farmAPR = await computeService.computeUnlockedRewardsAPR(
-            'farm_address_1',
+    it('should get farms', async () => {
+        const farms = await service.getFarms();
+        expect(farms).toEqual([
+            {
+                address:
+                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                rewardType: undefined,
+                version: 'v1.2',
+            },
+            {
+                address: 'farm_address_2',
+                rewardType: 'unlockedRewards',
+                version: 'v1.3',
+            },
+            {
+                address: 'farm_address_3',
+                rewardType: 'lockedRewards',
+                version: 'v1.3',
+            },
+            {
+                address:
+                    'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+                rewardType: 'customRewards',
+                version: 'v1.3',
+            },
+        ]);
+    });
+
+    it('should check if farm token', async () => {
+        const isFarmToken_0 = await service.isFarmToken('TOK1TOK9LPStaked');
+        expect(isFarmToken_0).toEqual(false);
+
+        const isFarmToken_1 = await service.isFarmToken('TOK1TOK4LPStaked');
+        expect(isFarmToken_1).toEqual(true);
+    });
+
+    it('should get farm address by farm token ID', async () => {
+        const farmAddress = await service.getFarmAddressByFarmTokenID(
+            'TOK1TOK4LPStaked',
         );
-        expect(farmAPR).toEqual('1314010');
+        expect(farmAddress).toEqual(
+            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+        );
+    });
+
+    it('should get batch rewards for position', async () => {
+        const batchRewardsForPosition = await service.getBatchRewardsForPosition(
+            [
+                {
+                    farmAddress:
+                        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+                    liquidity: '1000000000000000',
+                    identifier: 'EGLDMEXFL-a329b6-0b',
+                    attributes:
+                        'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+                    vmQuery: false,
+                },
+            ],
+        );
+        expect(batchRewardsForPosition).toEqual([
+            {
+                decodedAttributes: {
+                    aprMultiplier: null,
+                    attributes:
+                        'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+                    compoundedReward: '0',
+                    currentFarmAmount: '1256235401928812748',
+                    enteringEpoch: 1045,
+                    identifier: 'EGLDMEXFL-a329b6-0b',
+                    initialFarmingAmount: '1256235401928812748',
+                    lockedRewards: null,
+                    originalEnteringEpoch: 1045,
+                    rewardPerShare: '0',
+                },
+                remainingFarmingEpochs: 1047,
+                rewards: '150000000000',
+            },
+        ]);
+    });
+
+    it('should get tokens for exit farm', async () => {
+        const tokensForExitFarm = await service.getTokensForExitFarm({
+            farmAddress:
+                'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+            liquidity: '1000000000000000',
+            identifier: 'EGLDMEXFL-a329b6-0b',
+            attributes:
+                'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+            vmQuery: false,
+        });
+        expect(tokensForExitFarm).toEqual({
+            farmingTokens: '999000000000000',
+            rewards: '150000000000',
+        });
+    });
+
+    it('should get tokens for exit farm', async () => {
+        const tokensForExitFarm = await service.decodeFarmTokenAttributes(
+            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+            'EGLDMEXFL-a329b6-0b',
+            'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+        );
+        expect(tokensForExitFarm).toEqual({
+            aprMultiplier: null,
+            attributes:
+                'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
+            compoundedReward: '0',
+            currentFarmAmount: '1256235401928812748',
+            enteringEpoch: 1045,
+            identifier: 'EGLDMEXFL-a329b6-0b',
+            initialFarmingAmount: '1256235401928812748',
+            lockedRewards: null,
+            originalEnteringEpoch: 1045,
+            rewardPerShare: '0',
+        });
     });
 });

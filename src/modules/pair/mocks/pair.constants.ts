@@ -111,12 +111,12 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 price: '1',
                 roles: new RolesModel(),
             };
-        case 'LPT-1234':
+        case 'TOK1USDCLP':
             return {
-                identifier: 'LPT-1234',
-                name: 'LiquidityPoolToken1',
+                identifier: 'TOK1USDCLP',
+                name: 'LiquidityPoolTokenT1USDC',
                 owner: 'router_address',
-                ticker: 'LPT',
+                ticker: 'T1USDCLP',
                 supply: '1000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -146,12 +146,12 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 price: '1',
                 roles: new RolesModel(),
             };
-        case 'LPT-abcd':
+        case 'TOK4-4444':
             return {
-                identifier: 'LPT-abcd',
-                name: 'LiquidityPoolToken2',
+                identifier: 'TOK4-4444',
+                name: 'Token4',
                 owner: 'router_address',
-                ticker: 'LPT',
+                ticker: 'TOK4',
                 supply: '1000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -163,6 +163,146 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 canFreeze: true,
                 canWipe: true,
                 type: '',
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
+            };
+        case 'TOK1TOK4LPStaked':
+            return {
+                identifier: 'TOK1TOK4LPStaked',
+                name: 'LPStakedT1T4',
+                ticker: 'T1T4S-1234',
+                type: 'FungibleESDT',
+                owner: 'user_address_1',
+                supply: '0',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
+            };
+        case 'TOK1TOK4LP':
+            return {
+                identifier: 'TOK1TOK4LP',
+                name: 'LiquidityPoolTokenT1T4',
+                ticker: 'T1T4-1234',
+                type: 'FungibleESDT',
+                owner: 'user_address_1',
+                supply: '1000000000000000000000000',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+                minted: '900000000000000000000000',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '10',
+                roles: new RolesModel(),
+            };
+        case 'TOK1TOK2LPStaked':
+            return {
+                identifier: 'TOK1TOK2LPStaked',
+                name: 'LiquidityPoolTokenT1T2',
+                ticker: 'T1T2S-1234',
+                type: 'FungibleESDT',
+                owner: 'user_address_1',
+                supply: '10000000000000000000000000000',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
+                minted: '1',
+                burnt: '1',
+                circulatingSupply: '1',
+                accounts: 1,
+                transactions: 1,
+                assets: new AssetsModel({
+                    description: '',
+                    extraTokens: [],
+                    lockedAccounts: [],
+                    pngUrl: '',
+                    status: '',
+                    svgUrl: '',
+                    website: '',
+                }),
+                initialMinted: '1',
+                price: '1',
+                roles: new RolesModel(),
+            };
+        case 'TOK1TOK2LP':
+            return {
+                identifier: 'TOK1TOK2LP',
+                name: 'FarmingToken12',
+                ticker: 'T1T2-1234',
+                type: 'FungibleESDT',
+                owner: 'user_address_1',
+                supply: '0',
+                decimals: 18,
+                isPaused: false,
+                canUpgrade: true,
+                canMint: true,
+                canBurn: true,
+                canChangeOwner: true,
+                canPause: true,
+                canFreeze: true,
+                canWipe: true,
                 minted: '1',
                 burnt: '1',
                 circulatingSupply: '1',
@@ -186,17 +326,13 @@ export const Tokens = (tokenID: string): EsdtToken => {
     }
 };
 
-export const PairsData = (pairAddress: string) => {
-    return pairs.filter(p => p.address == pairAddress)[0];
-};
-
 export const pairs = [
     {
         address:
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         firstToken: Tokens('TOK1-1111'),
         secondToken: Tokens('TOK2-2222'),
-        liquidityPoolToken: Tokens('LPT-1234'),
+        liquidityPoolToken: Tokens('TOK1TOK2LP'),
         info: {
             reserves0: '1000000000000000000',
             reserves1: '2000000000000000000',
@@ -218,21 +354,56 @@ export const pairs = [
             'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
         firstToken: Tokens('TOK1-1111'),
         secondToken: Tokens('USDC-1111'),
-        liquidityPoolToken: Tokens('LPT-abcd'),
+        liquidityPoolToken: Tokens('TOK1USDCLP'),
         info: {
             reserves0: '1000000000000000000',
-            reserves1: '200000000000000000000',
+            reserves1: '800000000000000000000000',
             totalSupply: '1000000000000000000',
         },
-        firstTokenPrice: '200',
+        firstTokenPrice: '20',
         firstTokenPriceUSD: '200',
-        secondTokenPrice: '0.005',
-        secondTokenPriceUSD: '1',
-        liquidityPoolTokenPriceUSD: '400',
-        firstTokenLockedValueUSD: '200',
-        secondTokenLockedValueUSD: '200',
-        lockedValueUSD: '400',
+        secondTokenPrice: '10',
+        secondTokenPriceUSD: '100',
+        liquidityPoolTokenPriceUSD: '80020000',
+        firstTokenLockedValueUSD: '200000000000000000000',
+        secondTokenLockedValueUSD: '80000000000000000000000000',
+        lockedValueUSD: '40010000000000000000000000',
+        totalFeePercent: 0.003,
+        state: 'Active',
+    },
+    {
+        address:
+            'erd1a42xw92g8n78v6y4p3qj9ed2gjmr20kd9h2pkhuuuxf5tgn44q3sxy8unx',
+        firstToken: Tokens('TOK4-4444'),
+        secondToken: Tokens('TOK1-1111'),
+        liquidityPoolToken: Tokens('TOK1TOK4LP'),
+        info: {
+            reserves0: '1000000000000000000',
+            reserves1: '800000000000000000000000',
+            totalSupply: '1000000000000000000',
+        },
+        firstTokenPrice: '20',
+        firstTokenPriceUSD: '200',
+        secondTokenPrice: '10',
+        secondTokenPriceUSD: '100',
+        liquidityPoolTokenPriceUSD: '80020000',
+        firstTokenLockedValueUSD: '200000000000000000000',
+        secondTokenLockedValueUSD: '80000000000000000000000000',
+        lockedValueUSD: '40010000000000000000000000',
         totalFeePercent: 0.003,
         state: 'Active',
     },
 ];
+
+export async function PairsMap(): Promise<Map<string, string[]>> {
+    const pairsMap: Map<string, string[]> = new Map();
+    pairsMap.set('TOK1-1111', ['TOK2-2222', 'USDC-1111', 'TOK4-4444']);
+    pairsMap.set('TOK2-2222', ['TOK1-1111']);
+    pairsMap.set('USDC-1111', ['TOK1-1111']);
+    pairsMap.set('TOK4-4444', ['TOK1-1111']);
+    return pairsMap;
+}
+
+export const PairsData = (pairAddress: string) => {
+    return pairs.find(p => p.address === pairAddress);
+};

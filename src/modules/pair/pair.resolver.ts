@@ -1,19 +1,31 @@
 import { PairService } from './services/pair.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { LiquidityPosition, PairModel } from './models/pair.model';
+import {
+    BPConfig,
+    FeeDestination,
+    LiquidityPosition,
+    LockedTokensInfo,
+    PairModel,
+} from './models/pair.model';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
+    RemoveLiquidityAndBuyBackAndBurnArgs,
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
+    WhitelistArgs,
 } from './models/pair.args';
 import { PairTransactionService } from './services/pair.transactions.service';
 import { ApolloError } from 'apollo-server-express';
 import { PairGetterService } from './services/pair.getter.service';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { PairInfoModel } from './models/pair-info.model';
+import { GqlAdminGuard } from '../auth/gql.admin.guard';
+import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { EsdtToken } from '../tokens/models/esdtToken.model';
 
 @Resolver(() => PairModel)
 export class PairResolver {
@@ -24,7 +36,7 @@ export class PairResolver {
     ) {}
 
     @ResolveField()
-    async firstToken(@Parent() parent: PairModel) {
+    async firstToken(@Parent() parent: PairModel): Promise<EsdtToken> {
         try {
             return await this.pairGetterService.getFirstToken(parent.address);
         } catch (error) {
@@ -33,7 +45,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async secondToken(@Parent() parent: PairModel) {
+    async secondToken(@Parent() parent: PairModel): Promise<EsdtToken> {
         try {
             return await this.pairGetterService.getSecondToken(parent.address);
         } catch (error) {
@@ -42,16 +54,16 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async liquidityPoolToken(@Parent() parent: PairModel) {
+    async liquidityPoolToken(@Parent() parent: PairModel): Promise<EsdtToken> {
         try {
-            return this.pairGetterService.getLpToken(parent.address);
+            return await this.pairGetterService.getLpToken(parent.address);
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
     @ResolveField()
-    async firstTokenPrice(@Parent() parent: PairModel) {
+    async firstTokenPrice(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFirstTokenPrice(
                 parent.address,
@@ -62,7 +74,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async firstTokenPriceUSD(@Parent() parent: PairModel) {
+    async firstTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFirstTokenPriceUSD(
                 parent.address,
@@ -73,7 +85,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async secondTokenPriceUSD(@Parent() parent: PairModel) {
+    async secondTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getSecondTokenPriceUSD(
                 parent.address,
@@ -84,7 +96,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async secondTokenPrice(@Parent() parent: PairModel) {
+    async secondTokenPrice(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getSecondTokenPrice(
                 parent.address,
@@ -95,7 +107,9 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async liquidityPoolTokenPriceUSD(@Parent() parent: PairModel) {
+    async liquidityPoolTokenPriceUSD(
+        @Parent() parent: PairModel,
+    ): Promise<string> {
         try {
             return await this.pairGetterService.getLpTokenPriceUSD(
                 parent.address,
@@ -106,7 +120,9 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async firstTokenLockedValueUSD(@Parent() parent: PairModel) {
+    async firstTokenLockedValueUSD(
+        @Parent() parent: PairModel,
+    ): Promise<string> {
         try {
             return await this.pairGetterService.getFirstTokenLockedValueUSD(
                 parent.address,
@@ -117,7 +133,9 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async secondTokenLockedValueUSD(@Parent() parent: PairModel) {
+    async secondTokenLockedValueUSD(
+        @Parent() parent: PairModel,
+    ): Promise<string> {
         try {
             return await this.pairGetterService.getSecondTokenLockedValueUSD(
                 parent.address,
@@ -128,7 +146,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async lockedValueUSD(@Parent() parent: PairModel) {
+    async lockedValueUSD(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getLockedValueUSD(
                 parent.address,
@@ -139,7 +157,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async firstTokenVolume24h(@Parent() parent: PairModel) {
+    async firstTokenVolume24h(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFirstTokenVolume(
                 parent.address,
@@ -151,7 +169,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async secondTokenVolume24h(@Parent() parent: PairModel) {
+    async secondTokenVolume24h(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getSecondTokenVolume(
                 parent.address,
@@ -163,7 +181,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async volumeUSD24h(@Parent() parent: PairModel) {
+    async volumeUSD24h(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getVolumeUSD(
                 parent.address,
@@ -175,7 +193,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async feesUSD24h(@Parent() parent: PairModel) {
+    async feesUSD24h(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFeesUSD(
                 parent.address,
@@ -187,7 +205,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async feesAPR(@Parent() parent: PairModel) {
+    async feesAPR(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFeesAPR(parent.address);
         } catch (error) {
@@ -196,7 +214,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async info(@Parent() parent: PairModel) {
+    async info(@Parent() parent: PairModel): Promise<PairInfoModel> {
         try {
             return await this.pairGetterService.getPairInfoMetadata(
                 parent.address,
@@ -207,7 +225,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async totalFeePercent(@Parent() parent: PairModel) {
+    async totalFeePercent(@Parent() parent: PairModel): Promise<number> {
         try {
             return await this.pairGetterService.getTotalFeePercent(
                 parent.address,
@@ -218,7 +236,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async specialFeePercent(@Parent() parent: PairModel) {
+    async specialFeePercent(@Parent() parent: PairModel): Promise<number> {
         try {
             return await this.pairGetterService.getSpecialFeePercent(
                 parent.address,
@@ -229,7 +247,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async type(@Parent() parent: PairModel) {
+    async type(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getType(parent.address);
         } catch (error) {
@@ -237,7 +255,7 @@ export class PairResolver {
         }
     }
 
-    async trustedSwapPairs(@Parent() parent: PairModel) {
+    async trustedSwapPairs(@Parent() parent: PairModel): Promise<String[]> {
         try {
             return await this.pairGetterService.getTrustedSwapPairs(
                 parent.address,
@@ -248,7 +266,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async state(@Parent() parent: PairModel) {
+    async state(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getState(parent.address);
         } catch (error) {
@@ -257,9 +275,70 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async lockedTokensInfo(@Parent() parent: PairModel) {
+    async lockedTokensInfo(
+        @Parent() parent: PairModel,
+    ): Promise<LockedTokensInfo> {
         try {
             return await this.pairGetterService.getLockedTokensInfo(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async whitelistedManagedAddresses(
+        @Parent() parent: PairModel,
+    ): Promise<String[]> {
+        try {
+            return await this.pairGetterService.getWhitelistedManagedAddresses(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async externSwapGasLimit(@Parent() parent: PairModel): Promise<number> {
+        try {
+            return await this.pairGetterService.getExternSwapGasLimit(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async initialLiquidityAdder(@Parent() parent: PairModel): Promise<string> {
+        try {
+            return await this.pairGetterService.getInitialLiquidityAdder(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async transferExecGasLimit(@Parent() parent: PairModel): Promise<number> {
+        try {
+            return await this.pairGetterService.getTransferExecGasLimit(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async feeDestinations(
+        @Parent() parent: PairModel,
+    ): Promise<FeeDestination[]> {
+        try {
+            return await this.pairGetterService.getFeeDestinations(
                 parent.address,
             );
         } catch (error) {
@@ -272,7 +351,7 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('tokenInID') tokenInID: string,
         @Args('amount') amount: string,
-    ) {
+    ): Promise<string> {
         try {
             return await this.pairService.getAmountOut(
                 pairAddress,
@@ -289,7 +368,7 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('tokenOutID') tokenOutID: string,
         @Args('amount') amount: string,
-    ) {
+    ): Promise<string> {
         try {
             return await this.pairService.getAmountIn(
                 pairAddress,
@@ -306,7 +385,7 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('tokenInID') tokenInID: string,
         @Args('amount') amount: string,
-    ) {
+    ): Promise<string> {
         try {
             return await this.pairService.getEquivalentForLiquidity(
                 pairAddress,
@@ -322,7 +401,7 @@ export class PairResolver {
     async getLiquidityPosition(
         @Args('pairAddress') pairAddress: string,
         @Args('liquidityAmount') liquidityAmount: string,
-    ) {
+    ): Promise<LiquidityPosition> {
         try {
             return await this.pairService.getLiquidityPosition(
                 pairAddress,
@@ -331,6 +410,33 @@ export class PairResolver {
         } catch (error) {
             throw new ApolloError(error);
         }
+    }
+
+    @Query(() => Boolean)
+    async getFeeState(
+        @Args('pairAddress') pairAddress: string,
+    ): Promise<Boolean> {
+        try {
+            return await this.pairGetterService.getFeeState(pairAddress);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @Query(() => String)
+    async getRouterManagedAddress(
+        @Args('address') address: string,
+    ): Promise<string> {
+        return await this.pairGetterService.getRouterManagedAddress(address);
+    }
+
+    @Query(() => String)
+    async getRouterOwnerManagedAddress(
+        @Args('address') address: string,
+    ): Promise<string> {
+        return await this.pairGetterService.getRouterOwnerManagedAddress(
+            address,
+        );
     }
 
     @UseGuards(GqlAuthGuard)
@@ -363,6 +469,17 @@ export class PairResolver {
         } catch (error) {
             throw new ApolloError(error);
         }
+    }
+
+    @Query(() => EsdtTokenPayment)
+    async updateAndGetSafePrice(
+        @Args('pairAddress') pairAddress: string,
+        @Args('esdtTokenPayment') esdtTokenPayment: EsdtTokenPayment,
+    ): Promise<EsdtTokenPayment> {
+        return await this.pairGetterService.updateAndGetSafePrice(
+            pairAddress,
+            esdtTokenPayment,
+        );
     }
 
     @UseGuards(GqlAuthGuard)
@@ -399,7 +516,7 @@ export class PairResolver {
         @Args() args: SwapTokensFixedInputArgs,
         @User() user: any,
     ): Promise<TransactionModel[]> {
-        return this.transactionService.swapTokensFixedInput(
+        return await this.transactionService.swapTokensFixedInput(
             user.publicKey,
             args,
         );
@@ -411,9 +528,343 @@ export class PairResolver {
         @Args() args: SwapTokensFixedOutputArgs,
         @User() user: any,
     ): Promise<TransactionModel[]> {
-        return this.transactionService.swapTokensFixedOutput(
+        return await this.transactionService.swapTokensFixedOutput(
             user.publicKey,
             args,
         );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => String)
+    async getNumSwapsByAddress(
+        @Args('pairAddress') pairAddress: string,
+        @User() user: any,
+    ): Promise<number> {
+        try {
+            return await this.pairGetterService.getNumSwapsByAddress(
+                pairAddress,
+                user.publicKey,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => String)
+    async getNumAddsByAddress(
+        @Args('pairAddress') pairAddress: string,
+        @User() user: any,
+    ): Promise<string> {
+        try {
+            return await this.pairGetterService.getNumAddsByAddress(
+                pairAddress,
+                user.publicKey,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async whitelist(
+        @Args() args: WhitelistArgs,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(
+                args.pairAddress,
+                user.publicKey,
+            );
+            return await this.transactionService.whitelist(args);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async removeWhitelist(
+        @Args() args: WhitelistArgs,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(
+                args.pairAddress,
+                user.publicKey,
+            );
+            return await this.transactionService.removeWhitelist(args);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async addTrustedSwapPair(
+        @Args('pairAddress') pairAddress: string,
+        @Args('swapPairAddress') swapPairAddress: string,
+        @Args('firstTokenID') firstTokenID: string,
+        @Args('secondTokenID') secondTokenID: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.addTrustedSwapPair(
+                pairAddress,
+                swapPairAddress,
+                firstTokenID,
+                secondTokenID,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async removeTrustedSwapPair(
+        @Args('pairAddress') pairAddress: string,
+        @Args('firstTokenID') firstTokenID: string,
+        @Args('secondTokenID') secondTokenID: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.removeTrustedSwapPair(
+                pairAddress,
+                firstTokenID,
+                secondTokenID,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setTransferExecGasLimit(
+        @Args('pairAddress') pairAddress: string,
+        @Args('gasLimit') gasLimit: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setTransferExecGasLimit(
+                pairAddress,
+                gasLimit,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setExternSwapGasLimit(
+        @Args('pairAddress') pairAddress: string,
+        @Args('gasLimit') gasLimit: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setExternSwapGasLimit(
+                pairAddress,
+                gasLimit,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async pause(
+        @Args('pairAddress') pairAddress: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.pause(pairAddress);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async resume(
+        @Args('pairAddress') pairAddress: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.resume(pairAddress);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setStateActiveNoSwaps(
+        @Args('pairAddress') pairAddress: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setStateActiveNoSwaps(
+                pairAddress,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setFeePercents(
+        @Args('pairAddress') pairAddress: string,
+        @Args('totalFeePercent') totalFeePercent: number,
+        @Args('specialFeePercent') specialFeePercent: number,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setFeePercents(
+                pairAddress,
+                totalFeePercent,
+                specialFeePercent,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setMaxObservationsPerRecord(
+        @Args('pairAddress') pairAddress: string,
+        @Args('maxObservationsPerRecord') maxObservationsPerRecord: number,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setMaxObservationsPerRecord(
+                pairAddress,
+                maxObservationsPerRecord,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setBPSwapConfig(
+        @Args('pairAddress') pairAddress: string,
+        @Args('config') config: BPConfig,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setBPSwapConfig(
+                pairAddress,
+                config,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setBPRemoveConfig(
+        @Args('pairAddress') pairAddress: string,
+        @Args('config') config: BPConfig,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setBPRemoveConfig(
+                pairAddress,
+                config,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setBPAddConfig(
+        @Args('pairAddress') pairAddress: string,
+        @Args('config') config: BPConfig,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setBPAddConfig(
+                pairAddress,
+                config,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setLockingDeadlineEpoch(
+        @Args('pairAddress') pairAddress: string,
+        @Args('newDeadline') newDeadline: number,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setLockingDeadlineEpoch(
+                pairAddress,
+                newDeadline,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setLockingScAddress(
+        @Args('pairAddress') pairAddress: string,
+        @Args('newAddress') newAddress: string,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setLockingScAddress(
+                pairAddress,
+                newAddress,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAdminGuard)
+    @Query(() => TransactionModel)
+    async setUnlockEpoch(
+        @Args('pairAddress') pairAddress: string,
+        @Args('newEpoch') newEpoch: number,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            await this.pairService.requireOwner(pairAddress, user.publicKey);
+            return await this.transactionService.setUnlockEpoch(
+                pairAddress,
+                newEpoch,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }

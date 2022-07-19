@@ -1,23 +1,9 @@
+import { pairs, PairsMap } from 'src/modules/pair/mocks/pair.constants';
 import { PairMetadata } from '../../../modules/router/models/pair.metadata.model';
-
-export const pairsMetadata: PairMetadata[] = [
-    {
-        firstTokenID: 'TOK1-1111',
-        secondTokenID: 'TOK2-2222',
-        address:
-            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-    },
-    {
-        firstTokenID: 'TOK1-1111',
-        secondTokenID: 'USDC-1111',
-        address:
-            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-    },
-];
-
 export class ContextServiceMock {
     async getAllPairsAddress(): Promise<string[]> {
         const pairsAddress = [];
+        const pairsMetadata = await this.getPairsMetadata();
         for (const pair of pairsMetadata) {
             pairsAddress.push(pair.address);
         }
@@ -25,7 +11,13 @@ export class ContextServiceMock {
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
-        return pairsMetadata;
+        return pairs.map(p => {
+            return new PairMetadata({
+                address: p.address,
+                firstTokenID: p.firstToken.identifier,
+                secondTokenID: p.secondToken.identifier,
+            });
+        });
     }
 
     async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
@@ -37,6 +29,7 @@ export class ContextServiceMock {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<PairMetadata> {
+        const pairsMetadata = await this.getPairsMetadata();
         for (const pair of pairsMetadata) {
             if (
                 (pair.firstTokenID === firstTokenID &&
@@ -51,12 +44,7 @@ export class ContextServiceMock {
     }
 
     async getPairsMap(): Promise<Map<string, string[]>> {
-        const pairsMap: Map<string, string[]> = new Map();
-        pairsMap.set('TOK1-1111', ['TOK2-2222', 'USDC-1111']);
-        pairsMap.set('TOK2-2222', ['TOK1-1111']);
-        pairsMap.set('USDC-1111', ['TOK1-1111']);
-
-        return pairsMap;
+        return await PairsMap();
     }
 
     isConnected(
@@ -66,6 +54,7 @@ export class ContextServiceMock {
         discovered: Map<string, boolean>,
         path: string[] = [],
     ): boolean {
+
         discovered.set(input, true);
         path.push(input);
         if (input === output) {

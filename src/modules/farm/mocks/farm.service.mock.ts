@@ -1,68 +1,24 @@
-import {
-    AssetsModel,
-    EsdtToken,
-    RolesModel,
-} from 'src/modules/tokens/models/esdtToken.model';
+import { Tokens } from 'src/modules/pair/mocks/pair.constants';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
-
-const farmMetadata = {
-    address: 'farm_address_1',
-    farmedTokenID: 'MEX-ec32fa',
-    farmTokenID: 'FMT-1234',
-    farmingTokenID: 'LPT-1111',
-    farmTotalSupply: '1000000',
-    farmingTokenReserve: '600000',
-    rewardsPerBlock: '1',
-};
+import { farms } from './farm.constants';
 
 export class FarmServiceMock {
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        return farmMetadata.farmingTokenID;
+        return farms.find(f => f.address === farmAddress).farmingTokenID;
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        return farmMetadata.farmedTokenID;
+        return farms.find(f => f.address === farmAddress).farmedTokenID;
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
-        return farmMetadata.farmTokenID;
+        return farms.find(f => f.address === farmAddress).farmTokenID;
     }
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
-        return {
-            identifier: 'LPT-1111',
-            name: 'LiquidityPoolToken',
-            ticker: 'LPT',
-            type: 'FungibleESDT',
-            owner: 'user_address_1',
-            supply: '0',
-            decimals: 18,
-            isPaused: false,
-            canUpgrade: true,
-            canMint: true,
-            canBurn: true,
-            canChangeOwner: true,
-            canPause: true,
-            canFreeze: true,
-            canWipe: true,
-            minted: '1',
-            burnt: '1',
-            circulatingSupply: '1',
-            accounts: 1,
-            transactions: 1,
-            assets: new AssetsModel({
-                description: '',
-                extraTokens: [],
-                lockedAccounts: [],
-                pngUrl: '',
-                status: '',
-                svgUrl: '',
-                website: '',
-            }),
-            initialMinted: '1',
-            price: '1',
-            roles: new RolesModel(),
-        };
+        const farmingToken = await this.getFarmingToken(farmAddress);
+        return Tokens(farmingToken.identifier);
     }
 
     async isFarmToken(tokenID: string): Promise<boolean> {
@@ -70,7 +26,7 @@ export class FarmServiceMock {
     }
 
     async getFarmAddressByFarmTokenID(farmTokenID: string): Promise<string> {
-        return farmMetadata.address;
+        return farms.find(f => f.farmTokenID === farmTokenID).address;
     }
 
     decodeFarmTokenAttributes(

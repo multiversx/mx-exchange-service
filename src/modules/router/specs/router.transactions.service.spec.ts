@@ -150,8 +150,8 @@ describe('RouterService', () => {
         try {
             await service.issueLpToken(
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                'LiquidityPoolToken1',
-                'LPT-1234',
+                'LiquidityPoolTokenT1T4',
+                'TOK1TOK4LP',
             );
         } catch (error) {
             expect(error).toEqual(new Error('LP Token already issued'));
