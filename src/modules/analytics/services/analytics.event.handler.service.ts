@@ -83,11 +83,7 @@ export class AnalyticsEventHandlerService {
     }
 
     async handleSwapEvents(event: SwapEventType): Promise<void> {
-        await this.updatePairPrices(
-            event.address,
-            event.tokenIn.tokenID,
-            event.tokenOut.tokenID,
-        );
+        await this.updatePairPrices(event.address);
         await this.updatePairLockedValueUSD(event.address);
 
         const [
@@ -282,27 +278,19 @@ export class AnalyticsEventHandlerService {
         await this.deleteCacheKeys();
     }
 
-    private async updatePairPrices(
-        pairAddress: string,
-        firstTokenID: string,
-        secondTokenID: string,
-    ): Promise<void> {
+    private async updatePairPrices(pairAddress: string): Promise<void> {
         const [
             firstTokenPrice,
             secondTokenPrice,
             firstTokenPriceUSD,
             secondTokenPriceUSD,
             lpTokenPriceUSD,
-            genericFirstTokenPriceUSD,
-            genericSecondTokenPriceUSD,
         ] = await Promise.all([
             this.pairComputeService.computeFirstTokenPrice(pairAddress),
             this.pairComputeService.computeSecondTokenPrice(pairAddress),
             this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
             this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
             this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
-            this.pairComputeService.computeTokenPriceUSD(firstTokenID),
-            this.pairComputeService.computeTokenPriceUSD(secondTokenID),
         ]);
         const cacheKeys = await Promise.all([
             this.pairSetterService.setFirstTokenPrice(
@@ -324,14 +312,6 @@ export class AnalyticsEventHandlerService {
             this.pairSetterService.setLpTokenPriceUSD(
                 pairAddress,
                 lpTokenPriceUSD,
-            ),
-            this.pairSetterService.setTokenPriceUSD(
-                firstTokenID,
-                genericFirstTokenPriceUSD.toFixed(),
-            ),
-            this.pairSetterService.setTokenPriceUSD(
-                secondTokenID,
-                genericSecondTokenPriceUSD.toFixed(),
             ),
         ]);
         this.invalidatedKeys.push(cacheKeys);

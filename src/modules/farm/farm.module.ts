@@ -11,6 +11,7 @@ import { FarmGetterService } from './services/farm.getter.service';
 import { FarmComputeService } from './services/farm.compute.service';
 import { FarmSetterService } from './services/farm.setter.service';
 import { CommonAppModule } from 'src/common.app.module';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import { CommonAppModule } from 'src/common.app.module';
         CachingModule,
         ContextModule,
         PairModule,
+        TokenModule,
     ],
     providers: [
         FarmService,

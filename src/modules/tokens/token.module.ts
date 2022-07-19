@@ -30,6 +30,11 @@ import { TokenComputeService } from './services/token.compute.service';
         TokenRepositoryService,
         TokensResolver,
     ],
-    exports: [TokenRepositoryService, TokenService, TokenGetterService],
+    exports: [
+        TokenRepositoryService,
+        TokenService,
+        TokenGetterService,
+        TokenComputeService,
+    ],
 })
 export class TokenModule {}
