@@ -31,7 +31,7 @@ export class TokenGetterService extends GenericGetterService {
     async getDerivedEGLD(tokenID: string): Promise<string> {
         return await this.getData(
             this.getTokenCacheKey(tokenID, 'derivedEGLD'),
-            () => this.tokenCompute.getTokenPriceDerivedEGLD(tokenID),
+            () => this.tokenCompute.computeTokenPriceDerivedEGLD(tokenID),
             oneSecond() * 12,
         );
     }

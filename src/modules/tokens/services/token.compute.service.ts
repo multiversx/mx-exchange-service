@@ -16,7 +16,7 @@ export class TokenComputeService {
         return await this.pairGetter.getFirstTokenPrice(scAddress.WEGLD_USDC);
     }
 
-    async getTokenPriceDerivedEGLD(tokenID: string): Promise<string> {
+    async computeTokenPriceDerivedEGLD(tokenID: string): Promise<string> {
         if (tokenID === tokenProviderUSD) {
             return new BigNumber('1').toFixed();
         }
@@ -51,7 +51,9 @@ export class TokenComputeService {
                             secondTokenReserves,
                             firstTokenPrice,
                         ] = await Promise.all([
-                            this.getTokenPriceDerivedEGLD(pair.secondTokenID),
+                            this.computeTokenPriceDerivedEGLD(
+                                pair.secondTokenID,
+                            ),
                             this.pairGetter.getSecondTokenReserve(pair.address),
                             this.pairGetter.getFirstTokenPrice(pair.address),
                         ]);
@@ -71,7 +73,9 @@ export class TokenComputeService {
                             firstTokenReserves,
                             secondTokenPrice,
                         ] = await Promise.all([
-                            this.getTokenPriceDerivedEGLD(pair.firstTokenID),
+                            this.computeTokenPriceDerivedEGLD(
+                                pair.firstTokenID,
+                            ),
                             this.pairGetter.getFirstTokenReserve(pair.address),
                             this.pairGetter.getSecondTokenPrice(pair.address),
                         ]);
