@@ -37,16 +37,9 @@ export class TokenGetterService extends GenericGetterService {
     }
 
     async getDerivedUSD(tokenID: string): Promise<string> {
-        const egldPriceUSD = await this.tokenCompute.getEgldPriceInUSD();
-        const derivedEGLD = await this.getDerivedEGLD(tokenID);
-
-        const derivedUSD = new BigNumber(derivedEGLD)
-            .times(egldPriceUSD)
-            .toFixed();
-
         return await this.getData(
             this.getTokenCacheKey(tokenID, 'derivedUSD'),
-            () => derivedUSD,
+            () => this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
             oneSecond() * 12,
         );
     }

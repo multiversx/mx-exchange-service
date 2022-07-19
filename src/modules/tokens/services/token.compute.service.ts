@@ -94,4 +94,13 @@ export class TokenComputeService {
         }
         return priceSoFar;
     }
+
+    async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
+        const [egldPriceUSD, derivedEGLD] = await Promise.all([
+            this.getEgldPriceInUSD(),
+            this.computeTokenPriceDerivedEGLD(tokenID),
+        ]);
+
+        return new BigNumber(derivedEGLD).times(egldPriceUSD).toFixed();
+    }
 }
