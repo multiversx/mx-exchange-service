@@ -56,6 +56,7 @@ import { AssetsModel, RolesModel } from '../tokens/models/esdtToken.model';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from '../remote-config/mocks/remote-config.getter.mock';
 import { TokenGetterServiceProvider } from '../tokens/mocks/token.getter.service.mock';
+import { TokenComputeService } from '../tokens/services/token.compute.service';
 
 describe('UserService', () => {
     let service: UserService;
@@ -193,6 +194,7 @@ describe('UserService', () => {
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
                 TokenGetterServiceProvider,
+                TokenComputeService,
                 UserService,
                 UserComputeService,
                 RemoteConfigGetterServiceProvider,

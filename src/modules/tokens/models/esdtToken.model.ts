@@ -49,6 +49,7 @@ export class EsdtToken implements IEsdtToken {
     burnt?: string;
     initialMinted?: string;
     decimals: number;
+    derivedEGLD: string;
     price?: string;
     supply?: string;
     circulatingSupply?: string;

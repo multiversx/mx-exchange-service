@@ -37,8 +37,8 @@ import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
 import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { PairComputeService } from '../pair/services/pair.compute.service';
 import { ruleOfThree } from 'src/helpers/helpers';
+import { TokenComputeService } from '../tokens/services/token.compute.service';
 
 @Injectable()
 export class UserComputeService {
@@ -48,7 +48,6 @@ export class UserComputeService {
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly pairComputeService: PairComputeService,
         private readonly lockedAssetService: LockedAssetService,
         private readonly proxyService: ProxyService,
         private readonly proxyGetter: ProxyGetterService,
@@ -58,10 +57,11 @@ export class UserComputeService {
         private readonly stakingProxyService: StakingProxyService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly simpleLockService: SimpleLockService,
+        private readonly tokenCompute: TokenComputeService,
     ) {}
 
     async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
-        const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
+        const tokenPriceUSD = await this.tokenCompute.computeTokenPriceDerivedUSD(
             esdtToken.identifier,
         );
         return new UserToken({
@@ -69,7 +69,7 @@ export class UserComputeService {
             valueUSD: computeValueUSD(
                 esdtToken.balance,
                 esdtToken.decimals,
-                tokenPriceUSD.toFixed(),
+                tokenPriceUSD,
             ).toFixed(),
         });
     }
