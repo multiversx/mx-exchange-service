@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { constantsConfig, scAddress, tokenProviderUSD } from 'src/config';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -8,7 +8,9 @@ import { ContextService } from 'src/services/context/context.service';
 @Injectable()
 export class TokenComputeService {
     constructor(
+        @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetter: PairGetterService,
+        @Inject(forwardRef(() => ContextService))
         private readonly context: ContextService,
     ) {}
 
