@@ -183,11 +183,6 @@ export class RabbitMqConsumer {
                     );
                     await this.getFilterAddresses();
                     break;
-                case ROUTER_EVENTS.PAIR_SWAP_ENABLED:
-                    await this.wsRouterHandler.handlePairSwapEnabled(
-                        new PairSwapEnabledEvent(rawEvent),
-                    );
-                    break;
                 case METABONDING_EVENTS.STAKE_LOCKED_ASSET:
                     await this.wsMetabondingHandler.handleMetabondingEvent(
                         new MetabondingEvent(rawEvent),
