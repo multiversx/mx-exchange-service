@@ -11,6 +11,6 @@ export class ContextGetterServiceMock {
     }
 
     async getShardCurrentBlockNonce(shardID: number): Promise<number> {
-        return 110;
+        return 111;
     }
 }

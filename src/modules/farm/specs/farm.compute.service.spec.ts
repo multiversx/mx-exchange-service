@@ -137,7 +137,7 @@ describe('FarmService', () => {
                 lockedRewards: true,
             }),
         );
-        expect(farmRewardsForPosition.toFixed()).toEqual('18166666666666666683333000');
+        expect(farmRewardsForPosition.toFixed()).toEqual('18333333333333333350000000');
     });
 
     it('should compute locked farming token reserve', async () => {
