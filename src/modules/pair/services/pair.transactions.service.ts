@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+    AddressValue,
     BigUIntValue,
     TypedValue,
     U64Value,
@@ -588,7 +589,7 @@ export class PairTransactionService {
             args.pairAddress,
         );
         const transactionArgs: TypedValue[] = [
-            BytesValue.fromHex(new Address(args.address).hex()),
+            new AddressValue(Address.fromString(args.address)),
         ];
         return contract.methodsExplicit
             .whitelist(transactionArgs)
@@ -603,7 +604,7 @@ export class PairTransactionService {
             args.pairAddress,
         );
         const transactionArgs: TypedValue[] = [
-            BytesValue.fromHex(new Address(args.address).hex()),
+            new AddressValue(Address.fromString(args.address)),
         ];
         return contract.methodsExplicit
             .removeWhitelist(transactionArgs)
@@ -731,8 +732,8 @@ export class PairTransactionService {
 
     async setFeePercents(
         pairAddress: string,
-        totalFeePercent: string,
-        specialFeePercent: string,
+        totalFeePercent: number,
+        specialFeePercent: number,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
@@ -751,7 +752,7 @@ export class PairTransactionService {
 
     async setMaxObservationsPerRecord(
         pairAddress: string,
-        maxObservationsPerRecord: string,
+        maxObservationsPerRecord: number,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
@@ -829,7 +830,7 @@ export class PairTransactionService {
 
     async setLockingDeadlineEpoch(
         pairAddress: string,
-        newDeadline: string,
+        newDeadline: number,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
@@ -847,7 +848,7 @@ export class PairTransactionService {
 
     async setUnlockEpoch(
         pairAddress: string,
-        newEpoch: string,
+        newEpoch: number,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,

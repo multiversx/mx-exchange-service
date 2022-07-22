@@ -1,9 +1,5 @@
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
-import {
-    AssetsModel,
-    EsdtToken,
-    RolesModel,
-} from 'src/modules/tokens/models/esdtToken.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { farms } from './farm.constants';
 

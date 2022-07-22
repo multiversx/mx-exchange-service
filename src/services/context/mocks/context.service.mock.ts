@@ -1,4 +1,4 @@
-import { pairs } from 'src/modules/pair/mocks/pair.constants';
+import { pairs, PairsMap } from 'src/modules/pair/mocks/pair.constants';
 import { PairMetadata } from '../../../modules/router/models/pair.metadata.model';
 export class ContextServiceMock {
     async getAllPairsAddress(): Promise<string[]> {
@@ -44,12 +44,7 @@ export class ContextServiceMock {
     }
 
     async getPairsMap(): Promise<Map<string, string[]>> {
-        const pairsMap: Map<string, string[]> = new Map();
-        pairsMap.set('TOK1-1111', ['TOK2-2222', 'USDC-1111']);
-        pairsMap.set('TOK2-2222', ['TOK1-1111']);
-        pairsMap.set('USDC-1111', ['TOK1-1111']);
-
-        return pairsMap;
+        return await PairsMap();
     }
 
     isConnected(
@@ -59,6 +54,7 @@ export class ContextServiceMock {
         discovered: Map<string, boolean>,
         path: string[] = [],
     ): boolean {
+
         discovered.set(input, true);
         path.push(input);
         if (input === output) {

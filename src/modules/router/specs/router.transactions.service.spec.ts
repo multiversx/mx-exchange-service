@@ -23,10 +23,9 @@ import * as Transport from 'winston-transport';
 import { RouterService } from '../services/router.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { Address } from '@elrondnetwork/erdjs/out';
-import {
-    encodeTransactionData,
-} from 'src/helpers/helpers';
+import { encodeTransactionData } from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
+import { elrondConfig, gasConfig } from 'src/config';
 
 describe('RouterService', () => {
     let service: TransactionRouterService;
@@ -103,11 +102,23 @@ describe('RouterService', () => {
             'TOK3-3333',
             'TOK4-4444',
         );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.createPair,
+            data: encodeTransactionData(
                 'createPair@TOK3-3333@TOK4-4444@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
-        );
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get issue LP token transaction', async () => {
@@ -116,19 +127,31 @@ describe('RouterService', () => {
             'LiquidityPoolToken3',
             'LPT-3333',
         );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0.05',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.issueToken,
+            data: encodeTransactionData(
                 'issueLpToken@erd1sea63y47u569ns3x5mqjf4vnygn9whkk7p6ry4rfpqyd6rd5addqyd9lf2@LiquidityPoolToken3@LPT-3333',
             ),
-        );
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get issue LP token duplication error', async () => {
         try {
             await service.issueLpToken(
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                'LiquidityPoolToken1',
-                'LPT-1234',
+                'LiquidityPoolTokenT1T4',
+                'TOK1TOK4LP',
             );
         } catch (error) {
             expect(error).toEqual(new Error('LP Token already issued'));
@@ -139,11 +162,23 @@ describe('RouterService', () => {
         const transaction = await service.setLocalRoles(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.setLocalRoles,
+            data: encodeTransactionData(
                 'setLocalRoles@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             ),
-        );
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set pause state transaction', async () => {
@@ -151,11 +186,23 @@ describe('RouterService', () => {
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             false,
         );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.admin.setState,
+            data: encodeTransactionData(
                 'pause@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             ),
-        );
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set resume state transaction', async () => {
@@ -163,11 +210,23 @@ describe('RouterService', () => {
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             true,
         );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.admin.setState,
+            data: encodeTransactionData(
                 'resume@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
             ),
-        );
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set fee OFF transaction', async () => {
@@ -177,11 +236,23 @@ describe('RouterService', () => {
             'TOK1-1111',
             false,
         );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.admin.setFee,
+            data: encodeTransactionData(
                 'setFeeOff@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
             ),
-        );
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set fee ON transaction', async () => {
@@ -191,11 +262,23 @@ describe('RouterService', () => {
             'TOK1-1111',
             true,
         );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.admin.setFee,
+            data: encodeTransactionData(
                 'setFeeOn@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@TOK1-1111',
             ),
-        );
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set local roles owner', async () => {
@@ -204,56 +287,144 @@ describe('RouterService', () => {
             address: Address.Zero().bech32(),
             roles: [EsdtLocalRole.Mint],
         });
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.admin.setLocalRolesOwner,
+            data: encodeTransactionData(
                 'setLocalRolesOwner@TOK1-1111@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@01',
             ),
-        );
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get remove pair transaction', async () => {
         const transaction = await service.removePair('TOK1-1111', 'USDC-1111');
-        expect(transaction.data).toMatch(
-            encodeTransactionData('removePair@TOK1-1111@USDC-1111'),
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.admin.removePair,
+            data: encodeTransactionData('removePair@TOK1-1111@USDC-1111'),
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set pair creation enabled ON transaction', async () => {
         const transaction = await service.setPairCreationEnabled(true);
-        expect(transaction.data).toMatch(
-            encodeTransactionData('setPairCreationEnabled@01'),
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.admin.setPairCreationEnabled,
+            data: encodeTransactionData('setPairCreationEnabled@01'),
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set pair creation enabled OFF transaction', async () => {
         const transaction = await service.setPairCreationEnabled(false);
-        expect(transaction.data).toMatch(
-            encodeTransactionData('setPairCreationEnabled@'),
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: gasConfig.router.admin.setPairCreationEnabled,
+            data: encodeTransactionData('setPairCreationEnabled@'),
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get clear pair temporary owner storage transaction', async () => {
         const transaction = await service.clearPairTemporaryOwnerStorage();
-        expect(transaction.data).toMatch(
-            encodeTransactionData('clearPairTemporaryOwnerStorage'),
-        );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: 200000000,
+            data: 'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set temporary owner period transaction', async () => {
-        const transaction = await service.setTemporaryOwnerPeriod('1000000000000000000000000000000000');
-        expect(transaction.data).toMatch(
-            encodeTransactionData('setTemporaryOwnerPeriod@1000000000000000000000000000000000'),
+        const transaction = await service.setTemporaryOwnerPeriod(
+            '1000000000000000000000000000000000',
         );
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: 200000000,
+            data: encodeTransactionData(
+                'setTemporaryOwnerPeriod@1000000000000000000000000000000000',
+            ),
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 
     it('should get set pair template address transaction', async () => {
         const transaction = await service.setPairTemplateAddress(
             Address.Zero().bech32(),
         );
-        expect(transaction.data).toMatch(
-            encodeTransactionData(
+        expect(transaction).toEqual({
+            nonce: 0,
+            value: '0',
+            receiver:
+                'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
+            sender:
+                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            gasPrice: 1000000000,
+            gasLimit: 200000000,
+            data: encodeTransactionData(
                 'setPairTemplateAddress@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
-        );
+            chainID: elrondConfig.chainID,
+            version: 1,
+            options: undefined,
+            signature: undefined,
+        });
     });
 });

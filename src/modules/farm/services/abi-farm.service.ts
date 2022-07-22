@@ -321,7 +321,7 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getBurnGasLimit([]);
+        const interaction: Interaction = contract.methodsExplicit.getBurnGasLimit();
         const response = await this.getGenericData(
             AbiFarmService.name,
             interaction,
@@ -333,9 +333,7 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getTransferExecGasLimit(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getTransferExecGasLimit();
         const response = await this.getGenericData(
             AbiFarmService.name,
             interaction,
@@ -348,9 +346,7 @@ export class AbiFarmService extends GenericAbiService {
             const [contract] = await this.elrondProxy.getFarmSmartContract(
                 farmAddress,
             );
-            const interaction: Interaction = contract.methods.getPairContractManagedAddress(
-                [],
-            );
+            const interaction: Interaction = contract.methodsExplicit.getPairContractManagedAddress();
             const response = await this.getGenericData(
                 AbiFarmService.name,
                 interaction,
@@ -368,9 +364,7 @@ export class AbiFarmService extends GenericAbiService {
             const [contract] = await this.elrondProxy.getFarmSmartContract(
                 farmAddress,
             );
-            const interaction: Interaction = contract.methods.getLockedAssetFactoryManagedAddress(
-                [],
-            );
+            const interaction: Interaction = contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
             const response = await this.getGenericData(
                 AbiFarmService.name,
                 interaction,
@@ -385,9 +379,7 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methods.getLastErrorMessage(
-            [],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLastErrorMessage();
         const response = await this.getGenericData(
             AbiFarmService.name,
             interaction,

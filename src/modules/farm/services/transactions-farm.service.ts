@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import {
     Address,
+    AddressValue,
     BigUIntValue,
     TokenPayment,
     TypedValue,
@@ -232,9 +233,7 @@ export class TransactionsFarmService {
         );
         const gasLimit = gasConfig.farms[version].migrateToNewFarm;
         return contract.methodsExplicit
-            .migrateToNewFarm([
-                BytesValue.fromHex(Address.fromString(sender).hex()),
-            ])
+            .migrateToNewFarm([new AddressValue(Address.fromString(sender))])
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     args.farmTokenID,
@@ -256,9 +255,9 @@ export class TransactionsFarmService {
             args.oldFarmAddress,
         );
         const transactionArgs = [
-            BytesValue.fromHex(Address.fromString(args.oldFarmAddress).hex()),
+            new AddressValue(Address.fromString(args.oldFarmAddress)),
             BytesValue.fromUTF8(args.oldFarmTokenID),
-            BytesValue.fromHex(Address.fromString(args.newFarmAddress).hex()),
+            new AddressValue(Address.fromString(args.newFarmAddress)),
             BytesValue.fromHex(
                 Address.fromString(args.newLockedFarmAddress).hex(),
             ),
@@ -385,14 +384,14 @@ export class TransactionsFarmService {
             farmAddress,
         );
         return contract.methodsExplicit
-            .setPerBlockRewardAmount()
+            .setPerBlockRewardAmount([new BigUIntValue(new BigNumber(amount))])
             .withGasLimit(gasConfig.farms.admin.setPerBlockRewardAmount)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
     }
 
-    async set_penalty_percent(
+    async setPenaltyPercent(
         farmAddress: string,
         percent: number,
     ): Promise<TransactionModel> {
@@ -407,7 +406,7 @@ export class TransactionsFarmService {
             .toPlainObject();
     }
 
-    async set_minimum_farming_epochs(
+    async setMinimumFarmingEpochs(
         farmAddress: string,
         epochs: number,
     ): Promise<TransactionModel> {
@@ -424,7 +423,7 @@ export class TransactionsFarmService {
             .toPlainObject();
     }
 
-    async set_transfer_exec_gas_limit(
+    async setTransferExecGasLimit(
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
@@ -441,7 +440,7 @@ export class TransactionsFarmService {
             .toPlainObject();
     }
 
-    async set_burn_gas_limit(
+    async setBurnGasLimit(
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {

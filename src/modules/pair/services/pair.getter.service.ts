@@ -537,7 +537,7 @@ export class PairGetterService {
         );
     }
 
-    async getExternSwapGasLimit(pairAddress: string): Promise<string> {
+    async getExternSwapGasLimit(pairAddress: string): Promise<number> {
         return await this.getData(
             pairAddress,
             'externSwapGasLimit',
@@ -546,7 +546,7 @@ export class PairGetterService {
         );
     }
 
-    async getTransferExecGasLimit(pairAddress: string): Promise<string> {
+    async getTransferExecGasLimit(pairAddress: string): Promise<number> {
         return await this.getData(
             pairAddress,
             'transferExecGasLimit',
@@ -574,7 +574,7 @@ export class PairGetterService {
     async getNumSwapsByAddress(
         pairAddress: string,
         address: string,
-    ): Promise<string> {
+    ): Promise<number> {
         return await this.getData(
             pairAddress,
             'numSwapsByAddress',

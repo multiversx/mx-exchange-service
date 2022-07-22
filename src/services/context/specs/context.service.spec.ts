@@ -5,6 +5,7 @@ import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../caching/cache.module';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
+import { PairsMap } from 'src/modules/pair/mocks/pair.constants';
 
 describe('ContextService', () => {
     let service: ContextService;
@@ -34,22 +35,7 @@ describe('ContextService', () => {
     it('should get pairs graph', async () => {
         const pairsMap = await service.getPairsMap();
 
-        const expectedMap = new Map();
-        expectedMap.set('TOK1-1111', ['TOK2-2222', 'USDC-1111']);
-        expectedMap.set('TOK2-2222', ['TOK1-1111']);
-        expectedMap.set('USDC-1111', ['TOK1-1111']);
-        expectedMap.set('FDT-1234', [
-            'FMT-1234',
-            'FMT-1234',
-            'FMT-1234',
-            'FMT-1234',
-        ]);
-        expectedMap.set('FMT-1234', [
-            'FDT-1234',
-            'FDT-1234',
-            'FDT-1234',
-            'FDT-1234',
-        ]);
+        const expectedMap = await PairsMap();
 
         expect(pairsMap).toEqual(expectedMap);
     });

@@ -48,7 +48,7 @@ export class TransactionRouterService {
             .createPair([
                 BytesValue.fromUTF8(firstTokenID),
                 BytesValue.fromUTF8(secondTokenID),
-                BytesValue.fromHex(Address.fromString(sender).hex()),
+                new AddressValue(Address.fromString(sender)),
             ])
             .withGasLimit(gasConfig.router.createPair)
             .withChainID(elrondConfig.chainID)
@@ -154,7 +154,7 @@ export class TransactionRouterService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(args.tokenID),
-            BytesValue.fromHex(new Address(args.address).hex()),
+            new AddressValue(Address.fromString(args.address)),
         ];
         for (const role of args.roles) {
             endpointArgs.push(...[new BigUIntValue(new BigNumber(role))]);
@@ -277,7 +277,7 @@ export class TransactionRouterService {
                 .integerValue();
             endpointArgs.push(
                 ...[
-                    BytesValue.fromHex(Address.fromString(address).hex()),
+                    new AddressValue(Address.fromString(address)),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(amountOutMin),

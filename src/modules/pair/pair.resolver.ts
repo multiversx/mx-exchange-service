@@ -63,7 +63,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async firstTokenPrice(@Parent() parent: PairModel): Promise<String> {
+    async firstTokenPrice(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFirstTokenPrice(
                 parent.address,
@@ -74,7 +74,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async firstTokenPriceUSD(@Parent() parent: PairModel): Promise<String> {
+    async firstTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFirstTokenPriceUSD(
                 parent.address,
@@ -85,7 +85,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async secondTokenPriceUSD(@Parent() parent: PairModel): Promise<String> {
+    async secondTokenPriceUSD(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getSecondTokenPriceUSD(
                 parent.address,
@@ -96,7 +96,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async secondTokenPrice(@Parent() parent: PairModel): Promise<String> {
+    async secondTokenPrice(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getSecondTokenPrice(
                 parent.address,
@@ -109,7 +109,7 @@ export class PairResolver {
     @ResolveField()
     async liquidityPoolTokenPriceUSD(
         @Parent() parent: PairModel,
-    ): Promise<String> {
+    ): Promise<string> {
         try {
             return await this.pairGetterService.getLpTokenPriceUSD(
                 parent.address,
@@ -122,7 +122,7 @@ export class PairResolver {
     @ResolveField()
     async firstTokenLockedValueUSD(
         @Parent() parent: PairModel,
-    ): Promise<String> {
+    ): Promise<string> {
         try {
             return await this.pairGetterService.getFirstTokenLockedValueUSD(
                 parent.address,
@@ -135,7 +135,7 @@ export class PairResolver {
     @ResolveField()
     async secondTokenLockedValueUSD(
         @Parent() parent: PairModel,
-    ): Promise<String> {
+    ): Promise<string> {
         try {
             return await this.pairGetterService.getSecondTokenLockedValueUSD(
                 parent.address,
@@ -146,7 +146,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async lockedValueUSD(@Parent() parent: PairModel): Promise<String> {
+    async lockedValueUSD(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getLockedValueUSD(
                 parent.address,
@@ -157,7 +157,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async firstTokenVolume24h(@Parent() parent: PairModel): Promise<String> {
+    async firstTokenVolume24h(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFirstTokenVolume(
                 parent.address,
@@ -169,7 +169,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async secondTokenVolume24h(@Parent() parent: PairModel): Promise<String> {
+    async secondTokenVolume24h(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getSecondTokenVolume(
                 parent.address,
@@ -181,7 +181,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async volumeUSD24h(@Parent() parent: PairModel): Promise<String> {
+    async volumeUSD24h(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getVolumeUSD(
                 parent.address,
@@ -193,7 +193,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async feesUSD24h(@Parent() parent: PairModel): Promise<String> {
+    async feesUSD24h(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFeesUSD(
                 parent.address,
@@ -205,7 +205,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async feesAPR(@Parent() parent: PairModel): Promise<String> {
+    async feesAPR(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getFeesAPR(parent.address);
         } catch (error) {
@@ -225,7 +225,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async totalFeePercent(@Parent() parent: PairModel): Promise<Number> {
+    async totalFeePercent(@Parent() parent: PairModel): Promise<number> {
         try {
             return await this.pairGetterService.getTotalFeePercent(
                 parent.address,
@@ -236,7 +236,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async specialFeePercent(@Parent() parent: PairModel): Promise<Number> {
+    async specialFeePercent(@Parent() parent: PairModel): Promise<number> {
         try {
             return await this.pairGetterService.getSpecialFeePercent(
                 parent.address,
@@ -247,7 +247,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async type(@Parent() parent: PairModel): Promise<String> {
+    async type(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getType(parent.address);
         } catch (error) {
@@ -266,7 +266,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async state(@Parent() parent: PairModel): Promise<String> {
+    async state(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getState(parent.address);
         } catch (error) {
@@ -301,7 +301,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async externSwapGasLimit(@Parent() parent: PairModel): Promise<String> {
+    async externSwapGasLimit(@Parent() parent: PairModel): Promise<number> {
         try {
             return await this.pairGetterService.getExternSwapGasLimit(
                 parent.address,
@@ -312,7 +312,7 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async initialLiquidityAdder(@Parent() parent: PairModel): Promise<String> {
+    async initialLiquidityAdder(@Parent() parent: PairModel): Promise<string> {
         try {
             return await this.pairGetterService.getInitialLiquidityAdder(
                 parent.address,
@@ -323,9 +323,22 @@ export class PairResolver {
     }
 
     @ResolveField()
-    async transferExecGasLimit(@Parent() parent: PairModel): Promise<String> {
+    async transferExecGasLimit(@Parent() parent: PairModel): Promise<number> {
         try {
             return await this.pairGetterService.getTransferExecGasLimit(
+                parent.address,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async feeDestinations(
+        @Parent() parent: PairModel,
+    ): Promise<FeeDestination[]> {
+        try {
+            return await this.pairGetterService.getFeeDestinations(
                 parent.address,
             );
         } catch (error) {
@@ -338,7 +351,7 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('tokenInID') tokenInID: string,
         @Args('amount') amount: string,
-    ): Promise<String> {
+    ): Promise<string> {
         try {
             return await this.pairService.getAmountOut(
                 pairAddress,
@@ -355,7 +368,7 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('tokenOutID') tokenOutID: string,
         @Args('amount') amount: string,
-    ): Promise<String> {
+    ): Promise<string> {
         try {
             return await this.pairService.getAmountIn(
                 pairAddress,
@@ -372,7 +385,7 @@ export class PairResolver {
         @Args('pairAddress') pairAddress: string,
         @Args('tokenInID') tokenInID: string,
         @Args('amount') amount: string,
-    ): Promise<String> {
+    ): Promise<string> {
         try {
             return await this.pairService.getEquivalentForLiquidity(
                 pairAddress,
@@ -424,13 +437,6 @@ export class PairResolver {
         return await this.pairGetterService.getRouterOwnerManagedAddress(
             address,
         );
-    }
-
-    @Query(() => [FeeDestination])
-    async getFeeDestinations(
-        @Args('pairAddress') pairAddress: string,
-    ): Promise<FeeDestination[]> {
-        return await this.pairGetterService.getFeeDestinations(pairAddress);
     }
 
     @UseGuards(GqlAuthGuard)
@@ -532,12 +538,12 @@ export class PairResolver {
     @Query(() => String)
     async getNumSwapsByAddress(
         @Args('pairAddress') pairAddress: string,
-        @Args('address') address: string,
-    ): Promise<string> {
+        @User() user: any,
+    ): Promise<number> {
         try {
             return await this.pairGetterService.getNumSwapsByAddress(
                 pairAddress,
-                address,
+                user.publicKey,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -548,12 +554,12 @@ export class PairResolver {
     @Query(() => String)
     async getNumAddsByAddress(
         @Args('pairAddress') pairAddress: string,
-        @Args('address') address: string,
+        @User() user: any,
     ): Promise<string> {
         try {
             return await this.pairGetterService.getNumAddsByAddress(
                 pairAddress,
-                address,
+                user.publicKey,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -720,8 +726,8 @@ export class PairResolver {
     @Query(() => TransactionModel)
     async setFeePercents(
         @Args('pairAddress') pairAddress: string,
-        @Args('totalFeePercent') totalFeePercent: string,
-        @Args('specialFeePercent') specialFeePercent: string,
+        @Args('totalFeePercent') totalFeePercent: number,
+        @Args('specialFeePercent') specialFeePercent: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -740,7 +746,7 @@ export class PairResolver {
     @Query(() => TransactionModel)
     async setMaxObservationsPerRecord(
         @Args('pairAddress') pairAddress: string,
-        @Args('maxObservationsPerRecord') maxObservationsPerRecord: string,
+        @Args('maxObservationsPerRecord') maxObservationsPerRecord: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -812,7 +818,7 @@ export class PairResolver {
     @Query(() => TransactionModel)
     async setLockingDeadlineEpoch(
         @Args('pairAddress') pairAddress: string,
-        @Args('newDeadline') newDeadline: string,
+        @Args('newDeadline') newDeadline: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -848,7 +854,7 @@ export class PairResolver {
     @Query(() => TransactionModel)
     async setUnlockEpoch(
         @Args('pairAddress') pairAddress: string,
-        @Args('newEpoch') newEpoch: string,
+        @Args('newEpoch') newEpoch: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
