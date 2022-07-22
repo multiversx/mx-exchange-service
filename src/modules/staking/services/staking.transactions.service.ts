@@ -1,5 +1,6 @@
 import {
     Address,
+    AddressValue,
     BigUIntValue,
     BytesValue,
     TokenPayment,
@@ -321,7 +322,7 @@ export class StakingTransactionService {
         );
         return contract.methodsExplicit
             .addAddressToWhitelist([
-                BytesValue.fromHex(Address.fromString(address).hex()),
+                new AddressValue(Address.fromString(address)),
             ])
             .withGasLimit(gasConfig.stake.admin.addAddressToWhitelist)
             .withChainID(elrondConfig.chainID)
@@ -338,7 +339,7 @@ export class StakingTransactionService {
         );
         return contract.methodsExplicit
             .removeAddressFromWhitelist([
-                BytesValue.fromHex(Address.fromString(address).hex()),
+                new AddressValue(Address.fromString(address)),
             ])
             .withGasLimit(gasConfig.stake.admin.removeAddressFromWhitelist)
             .withChainID(elrondConfig.chainID)
