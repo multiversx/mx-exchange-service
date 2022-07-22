@@ -99,6 +99,7 @@ export class AnalyticsEventHandlerService {
             tokenOutPriceUSD,
             firstTokenLockedValueUSD,
             secondTokenLockedValueUSD,
+            liquidityPoolSupply,
             totalFeePercent,
             newTotalLockedValueUSD,
         ] = await Promise.all([
@@ -110,6 +111,7 @@ export class AnalyticsEventHandlerService {
             this.pairGetterService.getTokenPriceUSD(event.tokenOut.tokenID),
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
             this.pairGetterService.getSecondTokenLockedValueUSD(event.address),
+            this.pairGetterService.getTotalSupply(event.address),
             this.pairGetterService.getTotalFeePercent(event.address),
             this.routerComputeService.computeTotalLockedValueUSD(),
         ]);
@@ -129,6 +131,9 @@ export class AnalyticsEventHandlerService {
             tokenOutAmountDenom.times(tokenOutPriceUSD),
         ];
 
+        const pairLockedValueUSD = new BigNumber(firstTokenLockedValueUSD)
+            .plus(secondTokenLockedValueUSD)
+            .toFixed();
         const volumeUSD = tokenInAmountUSD.plus(tokenOutAmountUSD).dividedBy(2);
         const feesUSD = tokenInAmountUSD.times(totalFeePercent);
 
@@ -154,6 +159,8 @@ export class AnalyticsEventHandlerService {
                 secondTokenID === tokenOut.identifier
                     ? event.tokenOut.amount
                     : event.tokenIn.amount,
+            lockedValueUSD: pairLockedValueUSD,
+            liquidity: liquidityPoolSupply,
             volumeUSD: volumeUSD,
             feesUSD: feesUSD,
         };
