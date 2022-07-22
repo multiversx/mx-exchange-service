@@ -72,7 +72,7 @@ describe('StakingComputeService', () => {
             }),
         );
         expect(stakeRewardsForPosition.toFixed()).toEqual(
-            '149795999999999005000',
+            '149999999999999000005',
         );
     });
 
@@ -81,7 +81,7 @@ describe('StakingComputeService', () => {
             Address.Zero().bech32(),
         );
         expect(futureRewardsPerShare.toFixed()).toEqual(
-            '149796000000000005000',
+            '150000000000000000005',
         );
     });
 
@@ -90,7 +90,7 @@ describe('StakingComputeService', () => {
             Address.Zero().bech32(),
         );
         expect(extraRewardsSinceLastAllocation).toEqual(
-            new BigNumber(500000000000),
+            new BigNumber(500000000),
         );
     });
 

@@ -33,7 +33,7 @@ export class StakingGetterServiceMock {
     }
 
     async getRewardPerShare(stakeAddress: string): Promise<string> {
-        return '149796000000000000000';
+        return '150000000000000000000';
     }
 
     async getFarmTokenSupply(stakeAddress: string): Promise<string> {
@@ -49,7 +49,7 @@ export class StakingGetterServiceMock {
     }
 
     async getPerBlockRewardAmount(stakeAddress: string): Promise<string> {
-        return new BigNumber(50000000000).toFixed();
+        return new BigNumber(50000000).toFixed();
     }
 
     async getProduceRewardsEnabled(stakeAddress: string): Promise<boolean> {
