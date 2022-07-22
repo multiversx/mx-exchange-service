@@ -636,7 +636,7 @@ describe('StakingTransactionService', () => {
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: 200000000,
+            gasLimit: gasConfig.stake.admin.end_produce_rewards,
             data: encodeTransactionData('end_produce_rewards'),
             chainID: 'T',
             version: 1,
