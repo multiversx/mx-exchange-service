@@ -40,6 +40,7 @@ import {
     SwapFixedOutputEvent,
     WithdrawEvent,
     RawEvent,
+    PairSwapEnabledEvent,
 } from '@elrondnetwork/erdjs-dex';
 
 @Injectable()

@@ -17,6 +17,7 @@ import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handle
 import { MetabondingModule } from '../metabonding/metabonding.module';
 import { RabbitMqPriceDiscoveryHandlerService } from './rabbitmq.price.discovery.handler.service';
 import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
@@ -29,6 +30,7 @@ import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module'
         RouterModule,
         MetabondingModule,
         PriceDiscoveryModule,
+        TokenModule,
     ],
     providers: [
         RabbitMqConsumer,

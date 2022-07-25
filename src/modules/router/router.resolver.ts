@@ -3,7 +3,7 @@ import { Resolver, Query, ResolveField, Args, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
-import { FactoryModel } from './models/factory.model';
+import { EnableSwapByUserConfig, FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './services/transactions.router.service';
 import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 import { ApolloError } from 'apollo-server-express';
@@ -12,6 +12,7 @@ import { PairFilterArgs } from './models/filter.args';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
+import { InputTokenModel } from 'src/models/inputToken.model';
 
 @Resolver(() => FactoryModel)
 export class RouterResolver {
@@ -25,6 +26,24 @@ export class RouterResolver {
     @Query(() => FactoryModel)
     async factory() {
         return this.routerService.getFactory();
+    }
+
+    @ResolveField()
+    async commonTokensForUserPairs(): Promise<string[]> {
+        try {
+            return await this.routerGetterService.getCommonTokensForUserPairs();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
+        try {
+            return await this.routerGetterService.getEnableSwapByUserConfig();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @ResolveField(() => Int)
@@ -165,5 +184,21 @@ export class RouterResolver {
             feeTokenID,
             enable,
         );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async setSwapEnabledByUser(
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.transactionService.setSwapEnabledByUser(
+                user.publicKey,
+                inputTokens,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }
