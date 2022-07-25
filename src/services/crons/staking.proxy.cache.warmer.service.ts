@@ -88,13 +88,6 @@ export class StakingProxyCacheWarmerService {
         }
     }
 
-    @Cron(CronExpression.EVERY_MINUTE)
-    async cacheFarmsStakingAddresses(): Promise<void> {
-        await this.remoteConfigSetter.setSCAddressesFromDB(
-            SCAddressType.STAKING_PROXY,
-        );
-    }
-
     private async deleteCacheKeys(invalidatedKeys: string[]) {
         await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
