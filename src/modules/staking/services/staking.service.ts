@@ -156,9 +156,9 @@ export class StakingService {
         return await this.abiService.isWhitelisted(stakeAddress, address);
     }
 
-    async requireWhitelist(stakeAddress, sender) {
-        if (!(await this.abiService.isWhitelisted(stakeAddress, sender)))
-            throw new Error('You are not whitelisted.');
+    async requireWhitelist(stakeAddress, scAddress) {
+        if (!(await this.abiService.isWhitelisted(stakeAddress, scAddress)))
+            throw new Error('SC not whitelisted.');
     }
 
     async requireOwner(stakeAddress, sender) {

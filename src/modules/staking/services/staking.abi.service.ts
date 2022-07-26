@@ -295,13 +295,13 @@ export class AbiStakingService extends GenericAbiService {
 
     async isWhitelisted(
         stakeAddress: string,
-        address: string,
+        scAddress: string,
     ): Promise<boolean> {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
         const transactionArgs: TypedValue[] = [
-            new AddressValue(Address.fromString(address)),
+            new AddressValue(Address.fromString(scAddress)),
         ];
         const interaction: Interaction = contract.methodsExplicit.isWhitelisted(
             transactionArgs,
