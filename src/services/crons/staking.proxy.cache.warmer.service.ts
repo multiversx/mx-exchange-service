@@ -1,13 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { SCAddressType } from 'src/modules/remote-config/models/sc-address.model';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
-import { RemoteConfigSetterService } from 'src/modules/remote-config/remote-config.setter.service';
 import { AbiStakingProxyService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingProxySetterService } from 'src/modules/staking-proxy/services/staking.proxy.setter.service';
 import { ContextSetterService } from '../context/context.setter.service';
-import { SCAddressRepositoryService } from '../database/repositories/scAddress.repository';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
@@ -19,7 +16,6 @@ export class StakingProxyCacheWarmerService {
         private readonly apiService: ElrondApiService,
         private readonly contextSetter: ContextSetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
-        private readonly remoteConfigSetter: RemoteConfigSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
