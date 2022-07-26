@@ -455,8 +455,9 @@ export class StakingResolver {
                 farmStakeAddress,
                 user.publicKey,
             );
-            return await this.stakingTransactionService.startProduceRewards(
+            return await this.stakingTransactionService.setRewardsState(
                 farmStakeAddress,
+                true,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -474,8 +475,9 @@ export class StakingResolver {
                 farmStakeAddress,
                 user.publicKey,
             );
-            return await this.stakingTransactionService.endProduceRewards(
+            return await this.stakingTransactionService.setRewardsState(
                 farmStakeAddress,
+                false,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -536,9 +538,10 @@ export class StakingResolver {
                 farmStakeAddress,
                 user.publicKey,
             );
-            return await this.stakingTransactionService.addAddressToWhitelist(
+            return await this.stakingTransactionService.setAddressWhitelist(
                 farmStakeAddress,
                 address,
+                true,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -557,9 +560,10 @@ export class StakingResolver {
                 farmStakeAddress,
                 user.publicKey,
             );
-            return await this.stakingTransactionService.removeAddressFromWhitelist(
+            return await this.stakingTransactionService.setAddressWhitelist(
                 farmStakeAddress,
                 address,
+                false,
             );
         } catch (error) {
             throw new ApolloError(error);
@@ -602,7 +606,10 @@ export class StakingResolver {
                 farmStakeAddress,
                 user.publicKey,
             );
-            return await this.stakingTransactionService.pause(farmStakeAddress);
+            return await this.stakingTransactionService.setState(
+                farmStakeAddress,
+                false,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -619,8 +626,9 @@ export class StakingResolver {
                 farmStakeAddress,
                 user.publicKey,
             );
-            return await this.stakingTransactionService.resume(
+            return await this.stakingTransactionService.setState(
                 farmStakeAddress,
+                true,
             );
         } catch (error) {
             throw new ApolloError(error);

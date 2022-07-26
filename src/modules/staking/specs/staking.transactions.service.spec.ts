@@ -193,36 +193,6 @@ describe('StakingTransactionService', () => {
         });
     });
 
-    it('should get claim rewards with new value transaction', async () => {
-        const transaction = await service.claimRewardsWithNewValue(
-            Address.Zero().bech32(),
-            Address.Zero().bech32(),
-            new InputTokenModel({
-                tokenID: 'TOK1-1111',
-                nonce: 0,
-                amount: '1000000',
-            }),
-            '2000000',
-        );
-        expect(transaction).toEqual({
-            nonce: 0,
-            value: '0',
-            receiver:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.claimRewardsWithNewValue,
-            data: encodeTransactionData(
-                'ESDTNFTTransfer@TOK1-1111@@01000000@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@claimRewardsWithNewValue@02000000',
-            ),
-            chainID: 'T',
-            version: 1,
-            options: undefined,
-            signature: undefined,
-        });
-    });
-
     it('should get compound rewards transaction', async () => {
         const transaction = await service.compoundRewards(
             Address.Zero().bech32(),
@@ -286,12 +256,12 @@ describe('StakingTransactionService', () => {
             Address.Zero().bech32(),
             [
                 new InputTokenModel({
-                    tokenID: 'TOK1-1111',
+                    tokenID: 'TOK1TOK2LPStaked',
                     nonce: 0,
                     amount: '1000000',
                 }),
                 new InputTokenModel({
-                    tokenID: 'USDC-1111',
+                    tokenID: 'TOK1TOK2LPStaked',
                     nonce: 0,
                     amount: '1000000',
                 }),
@@ -307,7 +277,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.mergeTokens,
             data: encodeTransactionData(
-                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@02@TOK1-1111@@01000000@USDC-1111@@01000000@mergeFarmTokens',
+                'MultiESDTNFTTransfer@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu@02@TOK1TOK2LPStaked@@01000000@TOK1TOK2LPStaked@@01000000@mergeFarmTokens',
             ),
             chainID: 'T',
             version: 1,
@@ -405,9 +375,10 @@ describe('StakingTransactionService', () => {
     });
 
     it('should get add address to whitelist transaction', async () => {
-        const transaction = await service.addAddressToWhitelist(
+        const transaction = await service.setAddressWhitelist(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
+            true,
         );
         expect(transaction).toEqual({
             nonce: 0,
@@ -417,7 +388,7 @@ describe('StakingTransactionService', () => {
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.addAddressToWhitelist,
+            gasLimit: gasConfig.stake.admin.whitelist,
             data: encodeTransactionData(
                 'addAddressToWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
@@ -429,9 +400,10 @@ describe('StakingTransactionService', () => {
     });
 
     it('should get remove address from whitelist transaction', async () => {
-        const transaction = await service.removeAddressFromWhitelist(
+        const transaction = await service.setAddressWhitelist(
             Address.Zero().bech32(),
             Address.Zero().bech32(),
+            false,
         );
         expect(transaction).toEqual({
             nonce: 0,
@@ -441,7 +413,7 @@ describe('StakingTransactionService', () => {
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.removeAddressFromWhitelist,
+            gasLimit: gasConfig.stake.admin.whitelist,
             data: encodeTransactionData(
                 'removeAddressFromWhitelist@erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             ),
@@ -453,7 +425,10 @@ describe('StakingTransactionService', () => {
     });
 
     it('should get pause transaction', async () => {
-        const transaction = await service.pause(Address.Zero().bech32());
+        const transaction = await service.setState(
+            Address.Zero().bech32(),
+            false,
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
@@ -462,7 +437,7 @@ describe('StakingTransactionService', () => {
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.pause,
+            gasLimit: gasConfig.stake.admin.setState,
             data: encodeTransactionData('pause'),
             chainID: 'T',
             version: 1,
@@ -472,7 +447,10 @@ describe('StakingTransactionService', () => {
     });
 
     it('should get resume transaction', async () => {
-        const transaction = await service.resume(Address.Zero().bech32());
+        const transaction = await service.setState(
+            Address.Zero().bech32(),
+            true,
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
@@ -481,7 +459,7 @@ describe('StakingTransactionService', () => {
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.resume,
+            gasLimit: gasConfig.stake.admin.setState,
             data: encodeTransactionData('resume'),
             chainID: 'T',
             version: 1,
@@ -604,8 +582,9 @@ describe('StakingTransactionService', () => {
     });
 
     it('should get start produce rewards transaction', async () => {
-        const transaction = await service.startProduceRewards(
+        const transaction = await service.setRewardsState(
             Address.Zero().bech32(),
+            true,
         );
         expect(transaction).toEqual({
             nonce: 0,
@@ -615,7 +594,7 @@ describe('StakingTransactionService', () => {
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.start_produce_rewards,
+            gasLimit: gasConfig.stake.admin.setRewardsState,
             data: encodeTransactionData('startProduceRewards'),
             chainID: 'T',
             version: 1,
@@ -625,8 +604,9 @@ describe('StakingTransactionService', () => {
     });
 
     it('should get end produce rewards transaction', async () => {
-        const transaction = await service.endProduceRewards(
+        const transaction = await service.setRewardsState(
             Address.Zero().bech32(),
+            false,
         );
         expect(transaction).toEqual({
             nonce: 0,
@@ -636,7 +616,7 @@ describe('StakingTransactionService', () => {
             sender:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
-            gasLimit: gasConfig.stake.admin.end_produce_rewards,
+            gasLimit: gasConfig.stake.admin.setRewardsState,
             data: encodeTransactionData('end_produce_rewards'),
             chainID: 'T',
             version: 1,

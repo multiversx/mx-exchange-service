@@ -306,8 +306,7 @@
             "compoundRewards": 8500000,
             "mergeTokens": 20000000,
             "admin": {
-                "pause": 20000000,
-                "resume": 20000000,
+                "setState": 20000000,
                 "topUpRewards": 20000000,
                 "registerFarmToken": 20000000,
                 "set_penalty_percent": 20000000,
@@ -317,11 +316,9 @@
                 "setPerBlockRewardAmount": 200000000,
                 "setMaxApr": 200000000,
                 "setMinUnbondEpochs": 200000000,
-                "start_produce_rewards": 200000000,
-                "end_produce_rewards": 200000000,
+                "setRewardsState": 200000000,
                 "setLocalRolesFarmToken": 20000000,
-                "addAddressToWhitelist": 20000000,
-                "removeAddressFromWhitelist": 20000000
+                "whitelist": 20000000
             }
         },
         "stakeProxy": {

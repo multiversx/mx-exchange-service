@@ -106,7 +106,7 @@ describe('StakingService', () => {
                 rewardPerShare: '0',
                 type: 'stakingFarmToken',
             },
-            rewards: '2853881278538812786434550',
+            rewards: '150000000000000001046423',
         });
     });
 
@@ -134,7 +134,7 @@ describe('StakingService', () => {
                     rewardPerShare: '0',
                     type: 'stakingFarmToken',
                 },
-                rewards: '2853881278538812786434550',
+                rewards: '150000000000000001046423',
             },
         ]);
     });

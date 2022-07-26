@@ -63,16 +63,16 @@ describe('StakingComputeService', () => {
     it('should compute stake rewards for position', async () => {
         const stakeRewardsForPosition = await service.computeStakeRewardsForPosition(
             Address.Zero().bech32(),
-            '52560000000',
+            '10000000000',
             new StakingTokenAttributesModel({
                 type: StakingFarmTokenType.STAKING_FARM_TOKEN,
-                rewardPerShare: '1000000',
+                rewardPerShare: '1000',
                 compoundedReward: '1000000',
-                currentFarmAmount: '1000000',
+                currentFarmAmount: '1000000000',
             }),
         );
         expect(stakeRewardsForPosition.toFixed()).toEqual(
-            '149999999999999000055',
+            '1500000000000000000.46423135464231354642',
         );
     });
 
@@ -81,7 +81,7 @@ describe('StakingComputeService', () => {
             Address.Zero().bech32(),
         );
         expect(futureRewardsPerShare.toFixed()).toEqual(
-            '150000000000000000055',
+            '150000000000000001046.42313546423135464231',
         );
     });
 

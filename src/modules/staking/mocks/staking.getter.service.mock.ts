@@ -41,7 +41,7 @@ export class StakingGetterServiceMock {
     }
 
     async getDivisionSafetyConstant(stakeAddress: string): Promise<BigNumber> {
-        return new BigNumber(52560000000);
+        return new BigNumber(1000000000000);
     }
 
     async getLastRewardBlockNonce(stakeAddress: string): Promise<BigNumber> {
