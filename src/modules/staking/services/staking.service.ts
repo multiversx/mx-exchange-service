@@ -9,6 +9,7 @@ import { scAddress } from 'src/config';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { Logger } from 'winston';
 import { StakingModel, StakingRewardsModel } from '../models/staking.model';
 import {
@@ -26,6 +27,7 @@ export class StakingService {
         private readonly stakingGetterService: StakingGetterService,
         private readonly stakingComputeService: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -65,7 +67,7 @@ export class StakingService {
             const unboundFarmTokenAttributes = UnbondFarmTokenAttributes.fromAttributes(
                 arg.attributes,
             );
-            const remainingEpochs = await this.getUnbondigRemaingEpochs(
+            const remainingEpochs = await this.getUnboundingRemainingEpochs(
                 unboundFarmTokenAttributes.unlockEpoch,
             );
             decodedAttributesBatch.push(
@@ -122,7 +124,7 @@ export class StakingService {
         });
     }
 
-    private async getUnbondigRemaingEpochs(
+    private async getUnboundingRemainingEpochs(
         unlockEpoch: number,
     ): Promise<number> {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
@@ -145,5 +147,24 @@ export class StakingService {
         }
 
         return undefined;
+    }
+
+    async isWhitelisted(
+        stakeAddress: string,
+        address: string,
+    ): Promise<boolean> {
+        return await this.abiService.isWhitelisted(stakeAddress, address);
+    }
+
+    async requireWhitelist(stakeAddress, scAddress) {
+        if (!(await this.abiService.isWhitelisted(stakeAddress, scAddress)))
+            throw new Error('SC not whitelisted.');
+    }
+
+    async requireOwner(stakeAddress, sender) {
+        return (
+            (await this.apiService.getAccountStats(stakeAddress))
+                .ownerAddress === sender
+        );
     }
 }

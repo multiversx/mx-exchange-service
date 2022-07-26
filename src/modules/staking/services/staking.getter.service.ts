@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { cacheConfig } from 'src/config';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -206,6 +206,24 @@ export class StakingGetterService {
         );
     }
 
+    async getBurnGasLimit(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            stakeAddress,
+            'burnGasLimit',
+            () => this.abiService.getBurnGasLimit(stakeAddress),
+            oneHour(),
+        );
+    }
+
+    async getTransferExecGasLimit(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            stakeAddress,
+            'transferExecGasLimit',
+            () => this.abiService.getTransferExecGasLimit(stakeAddress),
+            oneHour(),
+        );
+    }
+
     async getState(stakeAddress: string): Promise<string> {
         return await this.getData(
             stakeAddress,
@@ -217,5 +235,28 @@ export class StakingGetterService {
 
     private getStakeCacheKey(stakeAddress: string, ...args: any) {
         return generateCacheKeyFromParams('stake', stakeAddress, ...args);
+    }
+
+    async getLockedAssetFactoryManagedAddress(
+        stakeAddress: string,
+    ): Promise<string> {
+        return await this.getData(
+            stakeAddress,
+            'lockedAssetFactoryManagedAddress',
+            () =>
+                this.abiService.getLockedAssetFactoryManagedAddress(
+                    stakeAddress,
+                ),
+            oneHour(),
+        );
+    }
+
+    async getLastErrorMessage(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            stakeAddress,
+            'lastErrorMessage',
+            () => this.abiService.getLastErrorMessage(stakeAddress),
+            oneMinute(),
+        );
     }
 }
