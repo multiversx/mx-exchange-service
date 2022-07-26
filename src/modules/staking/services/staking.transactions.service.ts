@@ -204,12 +204,8 @@ export class StakingTransactionService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const transactionArgs = [
-            new TokenIdentifierValue(payment.tokenID),
-            new BigUIntValue(new BigNumber(payment.amount)),
-        ];
         return contract.methodsExplicit
-            .topUpRewards(transactionArgs)
+            .topUpRewards([])
             .withSingleESDTTransfer(
                 TokenPayment.fungibleFromBigInteger(
                     payment.tokenID,

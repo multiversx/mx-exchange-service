@@ -241,7 +241,7 @@ describe('StakingTransactionService', () => {
             gasPrice: 1000000000,
             gasLimit: gasConfig.stake.admin.topUpRewards,
             data: encodeTransactionData(
-                'ESDTTransfer@TOK1-1111@01000000@topUpRewards@TOK1-1111@01000000',
+                'ESDTTransfer@TOK1-1111@01000000@topUpRewards',
             ),
             chainID: 'T',
             version: 1,
