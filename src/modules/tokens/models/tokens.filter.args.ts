@@ -6,4 +6,6 @@ export class TokensFiltersArgs {
     identifiers: string;
     @Field({ nullable: true })
     type: string;
+    @Field({ defaultValue: false })
+    enabledSwaps: boolean;
 }
