@@ -11,6 +11,7 @@ import { TokensResolver } from './token.resolver';
 import { DatabaseModule } from 'src/services/database/database.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { TokenComputeService } from './services/token.compute.service';
+import { TokenSetterService } from './services/token.setter.service';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { TokenComputeService } from './services/token.compute.service';
     providers: [
         TokenService,
         TokenGetterService,
+        TokenSetterService,
         TokenComputeService,
         TokenRepositoryService,
         TokensResolver,
@@ -34,6 +36,7 @@ import { TokenComputeService } from './services/token.compute.service';
         TokenRepositoryService,
         TokenService,
         TokenGetterService,
+        TokenSetterService,
         TokenComputeService,
     ],
 })
