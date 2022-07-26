@@ -18,6 +18,7 @@ import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairDayDataResolver } from './analytics.pair.resolver';
 import { AnalyticsPriceDiscoveryEventHandlerService } from './services/analytics.price.discovery.event.handler.service';
 import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module'
         ProxyModule,
         LockedAssetModule,
         PriceDiscoveryModule,
+        TokenModule,
     ],
     providers: [
         AnalyticsResolver,
