@@ -57,7 +57,6 @@ export class AbiRouterService extends GenericAbiService {
         );
 
         const rawConfig = response.firstValue.valueOf();
-        console.log(rawConfig.min_locked_token_value.toFixed());
         const minLockedTokenValue = new BigNumber(
             rawConfig.min_locked_token_value,
         ).plus('5e6');
