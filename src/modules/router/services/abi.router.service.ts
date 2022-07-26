@@ -1,5 +1,6 @@
 import { Interaction } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
@@ -56,9 +57,13 @@ export class AbiRouterService extends GenericAbiService {
         );
 
         const rawConfig = response.firstValue.valueOf();
+        console.log(rawConfig.min_locked_token_value.toFixed());
+        const minLockedTokenValue = new BigNumber(
+            rawConfig.min_locked_token_value,
+        ).plus('5e6');
         return new EnableSwapByUserConfig({
             lockedTokenID: rawConfig.locked_token_id,
-            minLockedTokenValue: rawConfig.min_locked_token_value.toFixed(),
+            minLockedTokenValue: minLockedTokenValue.toFixed(),
             minLockPeriodEpochs: rawConfig.min_lock_period_epochs.toNumber(),
         });
     }
