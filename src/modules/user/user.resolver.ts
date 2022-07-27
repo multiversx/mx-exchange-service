@@ -1,8 +1,8 @@
 import { Inject, UseGuards } from '@nestjs/common';
 import { Query, Args, Resolver } from '@nestjs/graphql';
 import { UserNftToken, UserToken } from './models/user.model';
-import { UserNftTokens } from './nfttokens.union';
-import { UserService } from './user.service';
+import { UserNftTokens } from './models/nfttokens.union';
+import { UserService } from './services/user.service';
 import { PaginationArgs } from '../dex.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';

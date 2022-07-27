@@ -14,7 +14,7 @@ import {
     UserLockedEsdtToken,
     UserLockedSimpleLpToken,
     UserLockedSimpleFarmToken,
-} from './models/user.model';
+} from './user.model';
 
 export const UserNftTokens = createUnionType({
     name: 'UserNftTokens',

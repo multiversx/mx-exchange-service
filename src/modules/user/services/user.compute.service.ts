@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { scAddress } from '../../config';
+import { scAddress } from '../../../config';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
 import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
 import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
-import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
-import { FarmGetterService } from '../farm/services/farm.getter.service';
-import { FarmService } from '../farm/services/farm.service';
-import { LockedAssetService } from '../locked-asset-factory/services/locked-asset.service';
+import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { FarmGetterService } from '../../farm/services/farm.getter.service';
+import { FarmService } from '../../farm/services/farm.service';
+import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyService } from '../proxy/services/proxy.service';
+import { ProxyService } from '../../proxy/services/proxy.service';
 import {
     UserDualYiledToken,
     UserFarmToken,
@@ -24,20 +24,23 @@ import {
     UserStakeFarmToken,
     UserToken,
     UserUnbondFarmToken,
-} from './models/user.model';
-import { PairGetterService } from '../pair/services/pair.getter.service';
-import { computeValueUSD, tokenIdentifier } from '../../utils/token.converters';
-import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
+} from '../models/user.model';
+import { PairGetterService } from '../../pair/services/pair.getter.service';
+import {
+    computeValueUSD,
+    tokenIdentifier,
+} from '../../../utils/token.converters';
+import { ProxyGetterService } from '../../proxy/services/proxy.getter.service';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
-import { StakingGetterService } from '../staking/services/staking.getter.service';
-import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
-import { StakingService } from '../staking/services/staking.service';
-import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
+import { StakingGetterService } from '../../staking/services/staking.getter.service';
+import { StakingProxyGetterService } from '../../staking-proxy/services/staking.proxy.getter.service';
+import { StakingService } from '../../staking/services/staking.service';
+import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
-import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
-import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
+import { PriceDiscoveryGetterService } from '../../price-discovery/services/price.discovery.getter.service';
+import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { PairComputeService } from '../pair/services/pair.compute.service';
+import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ruleOfThree } from 'src/helpers/helpers';
 
 @Injectable()
