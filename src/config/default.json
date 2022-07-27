@@ -85,7 +85,7 @@
             "setState": 200000000,
             "setFee": 200000000,
             "multiPairSwapMultiplier": 25000000,
-            "swapEnableByUser": 35000000
+            "swapEnableByUser": 50000000
         },
         "pairs": {
             "addLiquidity": 9500000,
