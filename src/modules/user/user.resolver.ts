@@ -2,7 +2,7 @@ import { Inject, UseGuards } from '@nestjs/common';
 import { Query, Args, Resolver } from '@nestjs/graphql';
 import { UserNftToken, UserToken } from './models/user.model';
 import { UserNftTokens } from './models/nfttokens.union';
-import { UserService } from './services/user.service';
+import { UserService } from './services/user.metaEsdt.service';
 import { PaginationArgs } from '../dex.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
@@ -10,10 +10,14 @@ import { EsdtTokenInput } from '../tokens/models/esdtTokenInput.model';
 import { ApolloError } from 'apollo-server-express';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
+import { UserEsdtService } from './services/user.esdt.service';
 
 @Resolver()
 export class UserResolver {
-    constructor(@Inject(UserService) private userService: UserService) {}
+    constructor(
+        private readonly userEsdt: UserEsdtService,
+        private readonly userMetaEsdt: UserService,
+    ) {}
 
     @UseGuards(GqlAuthGuard)
     @Query(() => [UserToken])
@@ -21,10 +25,7 @@ export class UserResolver {
         @User() user: any,
         @Args() pagination: PaginationArgs,
     ): Promise<UserToken[]> {
-        return await this.userService.getAllEsdtTokens(
-            user.publicKey,
-            pagination,
-        );
+        return await this.userEsdt.getAllEsdtTokens(user.publicKey, pagination);
     }
 
     @UseGuards(GqlAuthGuard)
@@ -33,7 +34,7 @@ export class UserResolver {
         @Args() pagination: PaginationArgs,
         @User() user: any,
     ): Promise<Array<typeof UserNftTokens>> {
-        return await this.userService.getAllNftTokens(
+        return await this.userMetaEsdt.getAllNftTokens(
             user.publicKey,
             pagination,
         );
@@ -42,7 +43,7 @@ export class UserResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => Number)
     async getUserWorth(@User() user: any): Promise<number> {
-        return this.userService.computeUserWorth(user.publicKey);
+        return this.userMetaEsdt.computeUserWorth(user.publicKey);
     }
 
     @Query(() => [UserToken])
@@ -52,7 +53,7 @@ export class UserResolver {
         tokens: EsdtTokenInput[],
     ): Promise<UserToken[]> {
         try {
-            return await this.userService.getAllEsdtTokens(
+            return await this.userEsdt.getAllEsdtTokens(
                 Address.Zero().bech32(),
                 pagination,
                 tokens,
@@ -68,7 +69,7 @@ export class UserResolver {
         @Args('nfts', { type: () => [NftTokenInput] }) nfts: NftTokenInput[],
     ): Promise<UserNftToken[]> {
         try {
-            return await this.userService.getAllNftTokens(
+            return await this.userMetaEsdt.getAllNftTokens(
                 Address.Zero().bech32(),
                 pagination,
                 nfts,

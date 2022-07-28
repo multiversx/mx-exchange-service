@@ -40,8 +40,8 @@ import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryGetterService } from '../../price-discovery/services/price.discovery.getter.service';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ruleOfThree } from 'src/helpers/helpers';
+import { UserEsdtComputeService } from './esdt.compute.service';
 
 @Injectable()
 export class UserComputeService {
@@ -51,7 +51,6 @@ export class UserComputeService {
         private readonly farmGetterService: FarmGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
-        private readonly pairComputeService: PairComputeService,
         private readonly lockedAssetService: LockedAssetService,
         private readonly proxyService: ProxyService,
         private readonly proxyGetter: ProxyGetterService,
@@ -61,35 +60,8 @@ export class UserComputeService {
         private readonly stakingProxyService: StakingProxyService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly simpleLockService: SimpleLockService,
+        private readonly userEsdtCompute: UserEsdtComputeService,
     ) {}
-
-    async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
-        const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
-            esdtToken.identifier,
-        );
-        return new UserToken({
-            ...esdtToken,
-            valueUSD: computeValueUSD(
-                esdtToken.balance,
-                esdtToken.decimals,
-                tokenPriceUSD.toFixed(),
-            ).toFixed(),
-        });
-    }
-
-    async lpTokenUSD(
-        esdtToken: EsdtToken,
-        pairAddress: string,
-    ): Promise<UserToken> {
-        const valueUSD = await this.pairService.getLiquidityPositionUSD(
-            pairAddress,
-            esdtToken.balance,
-        );
-        return new UserToken({
-            ...esdtToken,
-            valueUSD: valueUSD,
-        });
-    }
 
     async farmTokenUSD(
         nftToken: NftToken,
@@ -402,9 +374,12 @@ export class UserComputeService {
             decimals: nftToken.decimals,
         });
         if (pairAddress) {
-            userEsdtToken = await this.lpTokenUSD(esdtToken, pairAddress);
+            userEsdtToken = await this.userEsdtCompute.lpTokenUSD(
+                esdtToken,
+                pairAddress,
+            );
         } else {
-            userEsdtToken = await this.esdtTokenUSD(esdtToken);
+            userEsdtToken = await this.userEsdtCompute.esdtTokenUSD(esdtToken);
         }
 
         return new UserLockedEsdtToken({
@@ -426,7 +401,7 @@ export class UserComputeService {
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             decodedAttributes.lpTokenID,
         );
-        const userEsdtToken = await this.lpTokenUSD(
+        const userEsdtToken = await this.userEsdtCompute.lpTokenUSD(
             new EsdtToken({
                 identifier: decodedAttributes.lpTokenID,
                 balance: nftToken.balance,
