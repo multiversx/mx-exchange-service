@@ -420,7 +420,7 @@ export class UserComputeService {
     async lockedSimpleFarmTokenUSD(
         nftToken: NftToken,
     ): Promise<UserLockedSimpleFarmToken> {
-        const decodedAttributes = await this.simpleLockService.decodeFarmProxyTokenAttributes(
+        const decodedAttributes = this.simpleLockService.decodeFarmProxyTokenAttributes(
             {
                 identifier: nftToken.identifier,
                 attributes: nftToken.attributes,
