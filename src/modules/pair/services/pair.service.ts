@@ -14,6 +14,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PairGetterService } from './pair.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { CachingService } from 'src/services/caching/cache.service';
+import { oneHour } from 'src/helpers/helpers';
 
 @Injectable()
 export class PairService {
@@ -23,6 +25,7 @@ export class PairService {
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -289,6 +292,12 @@ export class PairService {
     }
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
+        const cachedValue: string = await this.cachingService.getCache(
+            `lpToken.${tokenID}.pairAddress`,
+        );
+        if (cachedValue !== undefined) {
+            return cachedValue;
+        }
         const pairsAddress = await this.context.getAllPairsAddress();
         const promises = pairsAddress.map(async pairAddress => {
             const lpTokenID = await this.pairGetterService.getLpTokenID(
@@ -298,6 +307,13 @@ export class PairService {
         });
         const pairs = await Promise.all(promises);
         const pair = pairs.find(pair => pair.lpTokenID === tokenID);
+        if (pair) {
+            await this.cachingService.setCache(
+                `lpToken.${tokenID}.pairAddress`,
+                pair.pairAddress,
+                oneHour(),
+            );
+        }
         return pair?.pairAddress;
     }
 
