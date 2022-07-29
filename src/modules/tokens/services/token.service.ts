@@ -43,7 +43,7 @@ export class TokenService {
         return tokens;
     }
 
-    private async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {
+    async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
         const tokenIDs: string[] = [];
         for (const iterator of pairsMetadata) {

@@ -10,13 +10,14 @@ import { CalculateRewardsArgs } from '../models/farm.args';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import BigNumber from 'bignumber.js';
-import { ruleOfThree } from '../../../helpers/helpers';
+import { oneHour, ruleOfThree } from '../../../helpers/helpers';
 import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
+import { CachingService } from 'src/services/caching/cache.service';
 
 @Injectable()
 export class FarmService {
@@ -26,6 +27,7 @@ export class FarmService {
         private readonly farmGetterService: FarmGetterService,
         private readonly farmComputeService: FarmComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -59,11 +61,22 @@ export class FarmService {
     async getFarmAddressByFarmTokenID(
         tokenID: string,
     ): Promise<string | undefined> {
+        const cachedValue: string = await this.cachingService.getCache(
+            `${tokenID}.farmAddress`,
+        );
+        if (cachedValue) {
+            return cachedValue;
+        }
         for (const farmAddress of farmsAddresses()) {
             const farmTokenID = await this.farmGetterService.getFarmTokenID(
                 farmAddress,
             );
             if (farmTokenID === tokenID) {
+                await this.cachingService.setCache(
+                    `${tokenID}.farmAddress`,
+                    farmAddress,
+                    oneHour(),
+                );
                 return farmAddress;
             }
         }
