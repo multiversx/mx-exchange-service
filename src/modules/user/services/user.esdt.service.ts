@@ -60,12 +60,7 @@ export class UserEsdtService {
         promises = userPairEsdtTokens.map(token => {
             return this.getEsdtTokenDetails(token);
         });
-        const tokens = await Promise.all(promises);
-        console.log({
-            count: tokens.length,
-            tokens,
-        });
-        return tokens;
+        return await Promise.all(promises);
     }
 
     private async getEsdtTokenDetails(token: EsdtToken): Promise<UserToken> {

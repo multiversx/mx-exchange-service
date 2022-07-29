@@ -56,9 +56,15 @@ import { AssetsModel, RolesModel } from '../../tokens/models/esdtToken.model';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from '../../remote-config/mocks/remote-config.getter.mock';
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
+import { UserEsdtService } from '../services/user.esdt.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
+import { UserEsdtComputeService } from '../services/esdt.compute.service';
 
 describe('UserService', () => {
-    let service: UserService;
+    let userMetaEsdts: UserService;
+    let userEsdts: UserEsdtService;
 
     const ElrondApiServiceProvider = {
         provide: ElrondApiService,
@@ -83,6 +89,11 @@ describe('UserService', () => {
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
+    };
+
+    const RouterGetterServiceProvider = {
+        provide: RouterGetterService,
+        useClass: RouterGetterServiceMock,
     };
 
     const PairGetterServiceProvider = {
@@ -170,6 +181,7 @@ describe('UserService', () => {
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
                 ContextGetterServiceProvider,
+                RouterGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
@@ -193,8 +205,11 @@ describe('UserService', () => {
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
                 TokenGetterServiceProvider,
+                TokenService,
+                UserEsdtService,
                 UserService,
                 UserComputeService,
+                UserEsdtComputeService,
                 RemoteConfigGetterServiceProvider,
             ],
             imports: [
@@ -205,16 +220,18 @@ describe('UserService', () => {
             ],
         }).compile();
 
-        service = module.get<UserService>(UserService);
+        userEsdts = module.get<UserEsdtService>(UserEsdtService);
+        userMetaEsdts = module.get<UserService>(UserService);
     });
 
     it('should be defined', () => {
-        expect(service).toBeDefined();
+        expect(userEsdts).toBeDefined();
+        expect(userMetaEsdts).toBeDefined();
     });
 
     it('should get user esdt tokens', async () => {
         expect(
-            await service.getAllEsdtTokens('user_address_1', {
+            await userEsdts.getAllEsdtTokens('user_address_1', {
                 offset: 0,
                 limit: 10,
             }),
@@ -261,7 +278,7 @@ describe('UserService', () => {
 
     it('should get user nfts tokens', async () => {
         expect(
-            await service.getAllNftTokens('user_address_1', {
+            await userMetaEsdts.getAllNftTokens('user_address_1', {
                 offset: 0,
                 limit: 10,
             }),

@@ -293,9 +293,9 @@ export class PairService {
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
         const cachedValue: string = await this.cachingService.getCache(
-            `lpToken.${tokenID}.pairAddress`,
+            `${tokenID}.pairAddress`,
         );
-        if (cachedValue !== undefined) {
+        if (cachedValue) {
             return cachedValue;
         }
         const pairsAddress = await this.context.getAllPairsAddress();
@@ -307,9 +307,10 @@ export class PairService {
         });
         const pairs = await Promise.all(promises);
         const pair = pairs.find(pair => pair.lpTokenID === tokenID);
+
         if (pair) {
             await this.cachingService.setCache(
-                `lpToken.${tokenID}.pairAddress`,
+                `${tokenID}.pairAddress`,
                 pair.pairAddress,
                 oneHour(),
             );
