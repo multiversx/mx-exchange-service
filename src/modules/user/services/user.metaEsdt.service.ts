@@ -14,7 +14,7 @@ import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
 import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { CachingService } from '../../../services/caching/cache.service';
-import { oneSecond } from '../../../helpers/helpers';
+import { oneHour, oneSecond } from '../../../helpers/helpers';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -94,7 +94,7 @@ export class UserService {
                 userNFTs = await this.cachingService.getOrSet(
                     cacheKey,
                     getUserNfts,
-                    oneSecond(),
+                    oneSecond() * 6,
                 );
             } catch (error) {
                 const logMessage = generateGetLogMessage(
@@ -111,9 +111,24 @@ export class UserService {
         const promises: Promise<typeof UserNftTokens>[] = [];
 
         for (const userNft of userNFTs) {
-            const userNftTokenType = await this.getNftTokenType(
-                userNft.collection,
-            );
+            let userNftTokenType: NftTokenType;
+            try {
+                userNftTokenType = await this.cachingService.getOrSet(
+                    `${userNft.collection}.metaEsdtType`,
+                    () => this.getNftTokenType(userNft.collection),
+                    oneHour(),
+                );
+            } catch (error) {
+                const logMessage = generateGetLogMessage(
+                    PairService.name,
+                    this.getAllNftTokens.name,
+                    `${userNft.collection}.metaEsdtType`,
+                    error,
+                );
+                this.logger.error(logMessage);
+                throw error;
+            }
+
             switch (userNftTokenType) {
                 case NftTokenType.FarmToken:
                     const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
