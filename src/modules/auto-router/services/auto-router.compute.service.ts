@@ -14,6 +14,7 @@ export const PRIORITY_MODES = {
 };
 interface IRouteNode {
     intermediaryAmount: string;
+    outputAmount: string;
     tokenID: string;
     address: string;
 }
@@ -65,6 +66,7 @@ export class AutoRouterComputeService {
         priorityQueue.enqueue({
             tokenID: s,
             intermediaryAmount: amount,
+            outputAmount: '0',
             address: '',
         });
 
@@ -85,15 +87,15 @@ export class AutoRouterComputeService {
             if (u == d) {
                 if (
                     (priorityMode == PRIORITY_MODES.maxOutput &&
-                        new BigNumber(closest.intermediaryAmount).isGreaterThan(
+                        new BigNumber(closest.outputAmount).isGreaterThan(
                             bestResult,
                         )) ||
                     (priorityMode == PRIORITY_MODES.minInput &&
-                        new BigNumber(closest.intermediaryAmount).isLessThan(
+                        new BigNumber(closest.outputAmount).isLessThan(
                             bestResult,
                         ))
                 ) {
-                    bestResult = closest.intermediaryAmount;
+                    bestResult = closest.outputAmount;
                 }
             }
 
@@ -105,10 +107,9 @@ export class AutoRouterComputeService {
             // necessary. v is the node across the current edge from u.
             for (v in adjacent_nodes) {
                 if (adjacent_nodes.hasOwnProperty(v)) {
-                    // get current pair
-                    const currentPair = pairs.filter(
-                        p => p.address == adjacent_nodes[v].address,
-                    )[0];
+                    const currentPair = pairs.find(
+                        p => p.address === adjacent_nodes[v].address,
+                    );
 
                     output_from_s_to_u = closest.intermediaryAmount;
 
@@ -166,6 +167,7 @@ export class AutoRouterComputeService {
                         {
                             tokenID: v,
                             intermediaryAmount: output_of_e,
+                            outputAmount: v === d ? output_of_e : '0',
                             address: currentPair.address,
                         },
                         costs[v],
@@ -217,15 +219,8 @@ export class AutoRouterComputeService {
 
         // parse queue, remove less good costs & add the current cost if it's the best one yet
         for (let i = queue.length - 1; i >= 0; --i) {
-            if (queue[i].tokenID == newItem.tokenID) {
-                if (
-                    (priorityMode === PRIORITY_MODES.maxOutput &&
-                        queue[i].intermediaryAmount <
-                            newItem.intermediaryAmount) ||
-                    (priorityMode === PRIORITY_MODES.minInput &&
-                        queue[i].intermediaryAmount <
-                            newItem.intermediaryAmount)
-                ) {
+            if (queue[i].tokenID === newItem.tokenID) {
+                if (queue[i].outputAmount < newItem.outputAmount) {
                     // delete old cost because is less good
                     queue.splice(i, 1);
                     foundLessGoodValue = true;
@@ -256,8 +251,8 @@ export class AutoRouterComputeService {
             const token1ID = pair.firstToken.identifier;
             const token2ID = pair.secondToken.identifier;
             const initialValue = {
-                finalAmount: 0,
                 intermediaryAmount: 0,
+                outputAmount: 0,
                 address: pair.address,
             };
             acc[token1ID] = acc.hasOwnProperty(token1ID)
@@ -349,7 +344,7 @@ export class AutoRouterComputeService {
         array: IRouteNode[] = [],
     ): PriorityQueue<IRouteNode> {
         const routeNodeCompareValue: IGetCompareValue<IRouteNode> = node =>
-            node.intermediaryAmount;
+            node.outputAmount;
 
         return priorityMode === PRIORITY_MODES.maxOutput
             ? MaxPriorityQueue.fromArray(array, routeNodeCompareValue)
