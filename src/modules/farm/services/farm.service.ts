@@ -64,7 +64,7 @@ export class FarmService {
         const cachedValue: string = await this.cachingService.getCache(
             `${tokenID}.farmAddress`,
         );
-        if (cachedValue) {
+        if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
         for (const farmAddress of farmsAddresses()) {
