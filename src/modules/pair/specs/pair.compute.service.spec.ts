@@ -11,6 +11,7 @@ import { PairService } from '../services/pair.service';
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('PairService', () => {
     let service: PairComputeService;
@@ -37,7 +38,7 @@ describe('PairService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 PairComputeService,
                 PairService,

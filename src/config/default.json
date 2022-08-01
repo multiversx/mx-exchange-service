@@ -84,7 +84,7 @@
             "setLocalRoles": 100000000,
             "setState": 200000000,
             "setFee": 200000000,
-            "multiPairSwapMultiplier": 25000000,
+            "multiPairSwapMultiplier": 30000000,
             "swapEnableByUser": 50000000
         },
         "pairs": {
