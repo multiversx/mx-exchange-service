@@ -317,7 +317,7 @@ describe('AutoRouterService', () => {
                 sender:
                     'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
-                gasLimit: 50000000,
+                gasLimit: 60000000,
                 data:
                     'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMxMzEzMUAwNTg0M2FhZTU2Mjg4ZjFjZjRANmQ3NTZjNzQ2OTUwNjE2OTcyNTM3NzYxNzBAMDAwMDAwMDAwMDAwMDAwMDA1MDAwNmJkYzYxZWJiZWM3MTliMDdiNGE3ZWJmZDFmYjIxNWMwNzA2ZTNjN2NlYkA3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzRANTQ0ZjRiMzEyZDMxMzEzMTMxQDA0YTliZDg0ODQ4MTYwNGFAMDAwMDAwMDAwMDAwMDAwMDA1MDBjOWY2NTc3YjBjNTY2Y2RjMjhlMGE3NmY2ZTE0ZDFiZTA3OTQwMDMzN2NlYkA3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzRANTQ0ZjRiMzIyZDMyMzIzMjMyQDA2ZjA1YjU5ZDNiMjAwMDA=',
                 chainID: 'T',
