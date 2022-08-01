@@ -19,6 +19,7 @@ import { RouterGetterService } from '../../router/services/router.getter.service
 import { AutoRouteModel, SWAP_TYPE } from '../models/auto-route.model';
 import { AutoRouterTransactionService } from './auto-router.transactions.service';
 import { RouterService } from 'src/modules/router/services/router.service';
+import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 import { denominateAmount } from 'src/utils/token.converters';
 @Injectable()
@@ -33,6 +34,7 @@ export class AutoRouterService {
         private readonly pairTransactionService: PairTransactionService,
         private readonly wrapService: WrapService,
         private readonly routerService: RouterService,
+        private readonly pairService: PairService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -45,10 +47,13 @@ export class AutoRouterService {
             args.tokenOutID,
         ]);
 
-        if (tokenInID === tokenOutID)
-            throw new Error('Can\t swap identical tokens.');
-
-        const [pairs, tokenInMetadata, tokenOutMetadata] = await Promise.all([
+        const [
+            directPair,
+            pairs,
+            tokenInMetadata,
+            tokenOutMetadata,
+        ] = await Promise.all([
+            this.getActiveDirectPair(tokenInID, tokenOutID),
             this.getAllActivePairs(),
             this.contextGetterService.getTokenMetadata(tokenInID),
             this.contextGetterService.getTokenMetadata(tokenOutID),
@@ -57,6 +62,130 @@ export class AutoRouterService {
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
+        if (directPair) {
+            return await this.singleSwap(
+                args,
+                tokenInID,
+                tokenOutID,
+                directPair,
+                tokenInMetadata,
+                tokenOutMetadata,
+                swapType,
+            );
+        }
+
+        return await this.multiSwap(
+            args,
+            tokenInID,
+            tokenOutID,
+            pairs,
+            tokenInMetadata,
+            tokenOutMetadata,
+            swapType,
+        );
+    }
+
+    async singleSwap(
+        args: AutoRouterArgs,
+        tokenInID: string,
+        tokenOutID: string,
+        pair: PairModel,
+        tokenInMetadata: EsdtToken,
+        tokenOutMetadata: EsdtToken,
+        swapType: SWAP_TYPE,
+    ): Promise<AutoRouteModel> {
+        const [
+            result,
+            tokenInPriceUSD,
+            tokenOutPriceUSD,
+            pairTotalFeePercent,
+            pairInfo,
+            firstToken,
+        ] = await Promise.all([
+            this.isFixedInput(swapType)
+                ? this.pairService.getAmountOut(
+                      pair.address,
+                      tokenInID,
+                      args.amountIn,
+                  )
+                : this.pairService.getAmountIn(
+                      pair.address,
+                      tokenOutID,
+                      args.amountOut,
+                  ),
+            this.pairGetterService.getTokenPriceUSD(tokenInID),
+            this.pairGetterService.getTokenPriceUSD(tokenOutID),
+            this.pairGetterService.getTotalFeePercent(pair.address),
+            this.pairGetterService.getPairInfoMetadata(pair.address),
+            this.pairGetterService.getFirstToken(pair.address),
+        ]);
+
+        let [amountIn, amountOut] = this.isFixedInput(swapType)
+            ? [args.amountIn, result]
+            : [result, args.amountOut];
+
+        const [
+            tokenInExchangeRate,
+            tokenOutExchangeRate,
+        ] = this.calculateExchangeRate(
+            tokenInMetadata.decimals,
+            tokenOutMetadata.decimals,
+            amountIn,
+            amountOut,
+        );
+
+        const fee = this.calculateFeeDenom(
+            pairTotalFeePercent,
+            amountIn,
+            tokenInMetadata.decimals,
+        );
+
+        const priceImpact = this.calculatePriceImpactPercent(
+            firstToken.identifier === tokenInID
+                ? pairInfo.reserves1
+                : pairInfo.reserves0,
+            amountOut,
+        );
+
+        if (!this.isFixedInput(swapType))
+            amountIn = this.addTolerance(amountIn, args.tolerance);
+
+        return new AutoRouteModel({
+            swapType: swapType,
+            tokenInID: args.tokenInID,
+            tokenOutID: args.tokenOutID,
+            tokenInExchangeRate: tokenInExchangeRate,
+            tokenOutExchangeRate: tokenOutExchangeRate,
+            tokenInExchangeRateDenom: denominateAmount(
+                tokenInExchangeRate,
+                tokenOutMetadata.decimals,
+            ).toString(),
+            tokenOutExchangeRateDenom: denominateAmount(
+                tokenOutExchangeRate,
+                tokenInMetadata.decimals,
+            ).toString(),
+            tokenInPriceUSD: tokenInPriceUSD,
+            tokenOutPriceUSD: tokenOutPriceUSD,
+            amountIn: amountIn,
+            amountOut: amountOut,
+            intermediaryAmounts: [amountIn, amountOut],
+            tokenRoute: [tokenInID, tokenOutID],
+            fees: [fee],
+            pricesImpact: [priceImpact],
+            pairs: [pair],
+            tolerance: args.tolerance,
+        });
+    }
+
+    async multiSwap(
+        args: AutoRouterArgs,
+        tokenInID: string,
+        tokenOutID: string,
+        pairs: PairModel[],
+        tokenInMetadata: EsdtToken,
+        tokenOutMetadata: EsdtToken,
+        swapType: SWAP_TYPE,
+    ): Promise<AutoRouteModel> {
         let swapRoute: BestSwapRoute,
             tokenInPriceUSD: string,
             tokenOutPriceUSD: string;
@@ -89,94 +218,6 @@ export class AutoRouterService {
             throw error;
         }
 
-        if (swapRoute.addressRoute.length === 1) {
-            return await this.singleSwap(
-                args,
-                pairs,
-                tokenInMetadata,
-                tokenOutMetadata,
-                swapType,
-                swapRoute,
-                tokenInPriceUSD,
-                tokenOutPriceUSD,
-            );
-        }
-
-        return await this.multiSwap(
-            args,
-            pairs,
-            tokenInMetadata,
-            tokenOutMetadata,
-            swapType,
-            swapRoute,
-            tokenInPriceUSD,
-            tokenOutPriceUSD,
-        );
-    }
-
-    async singleSwap(
-        args: AutoRouterArgs,
-        pairs: PairModel[],
-        tokenInMetadata: EsdtToken,
-        tokenOutMetadata: EsdtToken,
-        swapType: SWAP_TYPE,
-        swapRoute: BestSwapRoute,
-        tokenInPriceUSD: string,
-        tokenOutPriceUSD: string,
-    ): Promise<AutoRouteModel> {
-        const [
-            tokenInExchangeRate,
-            tokenOutExchangeRate,
-        ] = this.calculateExchangeRate(
-            tokenInMetadata.decimals,
-            tokenOutMetadata.decimals,
-            this.isFixedInput(swapType) ? args.amountIn : swapRoute.bestResult,
-            this.isFixedInput(swapType) ? swapRoute.bestResult : args.amountOut,
-        );
-
-        const fees = this.calculateFeesDenom(swapRoute, pairs);
-
-        const priceImpact = this.calculatePriceImpactPercents(pairs, swapRoute);
-
-        return new AutoRouteModel({
-            swapType: swapType,
-            tokenInID: args.tokenInID,
-            tokenOutID: args.tokenOutID,
-            tokenInExchangeRate: tokenInExchangeRate,
-            tokenOutExchangeRate: tokenOutExchangeRate,
-            tokenInExchangeRateDenom: denominateAmount(
-                tokenInExchangeRate,
-                tokenOutMetadata.decimals,
-            ).toString(),
-            tokenOutExchangeRateDenom: denominateAmount(
-                tokenOutExchangeRate,
-                tokenInMetadata.decimals,
-            ).toString(),
-            tokenInPriceUSD: tokenInPriceUSD,
-            tokenOutPriceUSD: tokenOutPriceUSD,
-            amountIn:
-                args.amountIn ||
-                this.addTolerance(swapRoute.bestResult, args.tolerance),
-            amountOut: args.amountOut || swapRoute.bestResult,
-            intermediaryAmounts: swapRoute.intermediaryAmounts,
-            tokenRoute: swapRoute.tokenRoute,
-            fees: fees,
-            pricesImpact: priceImpact,
-            pairs: this.addressesToPairs(swapRoute.addressRoute),
-            tolerance: args.tolerance,
-        });
-    }
-
-    async multiSwap(
-        args: AutoRouterArgs,
-        pairs: PairModel[],
-        tokenInMetadata: EsdtToken,
-        tokenOutMetadata: EsdtToken,
-        swapType: SWAP_TYPE,
-        swapRoute: BestSwapRoute,
-        tokenInPriceUSD: string,
-        tokenOutPriceUSD: string,
-    ): Promise<AutoRouteModel> {
         const [
             tokenInExchangeRate,
             tokenOutExchangeRate,
