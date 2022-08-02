@@ -69,14 +69,14 @@ export class AutoRouterService {
                           tokenOutID,
                           pairs,
                           args.amountIn,
-                          PRIORITY_MODES.maxOutput,
+                          PRIORITY_MODES.fixedInputMaxOutput,
                       )
                     : this.autoRouterComputeService.computeBestSwapRoute(
                           tokenOutID,
                           tokenInID,
                           pairs,
                           args.amountOut,
-                          PRIORITY_MODES.minInput,
+                          PRIORITY_MODES.fixedOutputMinInput,
                       ),
                 this.pairGetterService.getTokenPriceUSD(tokenInID),
                 this.pairGetterService.getTokenPriceUSD(tokenOutID),
@@ -130,8 +130,8 @@ export class AutoRouterService {
         ] = this.calculateExchangeRate(
             tokenInMetadata.decimals,
             tokenOutMetadata.decimals,
-            this.isFixedInput(swapType) ? args.amountIn : swapRoute.bestResult,
-            this.isFixedInput(swapType) ? swapRoute.bestResult : args.amountOut,
+            this.isFixedInput(swapType) ? args.amountIn : swapRoute.bestCost,
+            this.isFixedInput(swapType) ? swapRoute.bestCost : args.amountOut,
         );
 
         const fees = this.calculateFeesDenom(swapRoute, pairs);
@@ -156,8 +156,8 @@ export class AutoRouterService {
             tokenOutPriceUSD: tokenOutPriceUSD,
             amountIn:
                 args.amountIn ||
-                this.addTolerance(swapRoute.bestResult, args.tolerance),
-            amountOut: args.amountOut || swapRoute.bestResult,
+                this.addTolerance(swapRoute.bestCost, args.tolerance),
+            amountOut: args.amountOut || swapRoute.bestCost,
             intermediaryAmounts: swapRoute.intermediaryAmounts,
             tokenRoute: swapRoute.tokenRoute,
             fees: fees,
@@ -183,8 +183,8 @@ export class AutoRouterService {
         ] = this.calculateExchangeRate(
             tokenInMetadata.decimals,
             tokenOutMetadata.decimals,
-            this.isFixedInput(swapType) ? args.amountIn : swapRoute.bestResult,
-            this.isFixedInput(swapType) ? swapRoute.bestResult : args.amountOut,
+            this.isFixedInput(swapType) ? args.amountIn : swapRoute.bestCost,
+            this.isFixedInput(swapType) ? swapRoute.bestCost : args.amountOut,
         );
 
         const fees = this.calculateFeesDenom(swapRoute, pairs);
@@ -212,8 +212,8 @@ export class AutoRouterService {
             tokenOutPriceUSD: tokenOutPriceUSD,
             amountIn:
                 args.amountIn ||
-                this.addTolerance(swapRoute.bestResult, args.tolerance),
-            amountOut: args.amountOut || swapRoute.bestResult,
+                this.addTolerance(swapRoute.bestCost, args.tolerance),
+            amountOut: args.amountOut || swapRoute.bestCost,
             intermediaryAmounts: swapRoute.intermediaryAmounts,
             tokenRoute: swapRoute.tokenRoute,
             fees: fees,
@@ -280,7 +280,7 @@ export class AutoRouterService {
                 this.pairGetterService.getSecondToken(pairAddress),
             ]);
 
-            if (pairState === 'Active')
+            if (pairState === 'Active') {
                 pairs.push(
                     new PairModel({
                         address: pairMetadata.address,
@@ -296,6 +296,7 @@ export class AutoRouterService {
                         totalFeePercent: pairTotalFeePercent,
                     }),
                 );
+            }
         }
 
         return pairs;

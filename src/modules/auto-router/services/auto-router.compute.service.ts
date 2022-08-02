@@ -9,15 +9,17 @@ import {
 } from '@datastructures-js/priority-queue';
 
 export const PRIORITY_MODES = {
-    minInput: 0,
-    maxOutput: 1,
+    fixedOutputMinInput: 0,
+    fixedInputMaxOutput: 1,
 };
+
 interface IRouteNode {
     intermediaryAmount: string;
     outputAmount: string;
     tokenID: string;
     address: string;
 }
+
 type Graph = Record<string, GraphItem>;
 type GraphItem = Record<
     string,
@@ -30,7 +32,7 @@ export type BestSwapRoute = {
     tokenRoute: string[];
     intermediaryAmounts: string[];
     addressRoute: string[];
-    bestResult: string;
+    bestCost: string;
 };
 
 /// Modified eager Dijkstra's algorithm inspired from https://github.com/tcort/dijkstrajs
@@ -54,28 +56,26 @@ export class AutoRouterComputeService {
         costs[s] = '0';
 
         // Initial best output
-        let bestResult =
-            priorityMode == PRIORITY_MODES.maxOutput
-                ? '0'
-                : new BigNumber(Number.POSITIVE_INFINITY).toString();
+        let bestCost = this.getDefaultCost(priorityMode);
 
         // Costs of shortest paths from s to all nodes encountered; differs from
         // `costs` in that it provides easy access to the node that currently has
         // the known shortest path from s.
-        let priorityQueue = this.getNewPriorityQueue(priorityMode);
-        priorityQueue.enqueue({
-            tokenID: s,
-            intermediaryAmount: amount,
-            outputAmount: '0',
-            address: '',
-        });
+        let priorityQueue = this.getNewPriorityQueue(priorityMode, [
+            {
+                tokenID: s,
+                intermediaryAmount: amount,
+                outputAmount: '0',
+                address: '',
+            },
+        ]);
 
         let closest: IRouteNode;
         let u: string;
         let v: string;
-        let output_from_s_to_u: string;
+        let cost_from_s_to_u: string;
         let adjacent_nodes: GraphItem;
-        let output_of_e: string;
+        let cost_of_e: string;
 
         while (!priorityQueue.isEmpty()) {
             // In the nodes remaining in graph that have a known cost from s,
@@ -84,110 +84,87 @@ export class AutoRouterComputeService {
             u = closest.tokenID;
 
             // Save the best output, if a better one was found
-            if (u == d) {
+            if (u === d) {
                 if (
-                    (priorityMode == PRIORITY_MODES.maxOutput &&
-                        new BigNumber(closest.outputAmount).isGreaterThan(
-                            bestResult,
-                        )) ||
-                    (priorityMode == PRIORITY_MODES.minInput &&
-                        new BigNumber(closest.outputAmount).isLessThan(
-                            bestResult,
-                        ))
-                ) {
-                    bestResult = closest.outputAmount;
-                }
-            }
-
-            // Get nodes adjacent to u...
-            adjacent_nodes = graph[u] || {};
-
-            // ...and explore the edges that connect u to those nodes, updating
-            // the cost of the shortest paths to any or all of those nodes as
-            // necessary. v is the node across the current edge from u.
-            for (v in adjacent_nodes) {
-                if (adjacent_nodes.hasOwnProperty(v)) {
-                    const currentPair = pairs.find(
-                        p => p.address === adjacent_nodes[v].address,
-                    );
-
-                    output_from_s_to_u = closest.intermediaryAmount;
-
-                    switch (u) {
-                        case currentPair.firstToken.identifier: {
-                            if (priorityMode === PRIORITY_MODES.maxOutput)
-                                output_of_e = await getAmountOut(
-                                    output_from_s_to_u,
-                                    currentPair.info.reserves0,
-                                    currentPair.info.reserves1,
-                                    currentPair.totalFeePercent,
-                                ).toFixed();
-                            else
-                                output_of_e = await getAmountIn(
-                                    output_from_s_to_u,
-                                    currentPair.info.reserves1,
-                                    currentPair.info.reserves0,
-                                    currentPair.totalFeePercent,
-                                ).toFixed();
-                            break;
-                        }
-                        case currentPair.secondToken.identifier: {
-                            if (priorityMode === PRIORITY_MODES.maxOutput)
-                                output_of_e = await getAmountOut(
-                                    output_from_s_to_u,
-                                    currentPair.info.reserves1,
-                                    currentPair.info.reserves0,
-                                    currentPair.totalFeePercent,
-                                ).toFixed();
-                            else
-                                output_of_e = await getAmountIn(
-                                    output_from_s_to_u,
-                                    currentPair.info.reserves0,
-                                    currentPair.info.reserves1,
-                                    currentPair.totalFeePercent,
-                                ).toFixed();
-                            break;
-                        }
-                        default: {
-                            output_of_e =
-                                priorityMode == PRIORITY_MODES.maxOutput
-                                    ? '0'
-                                    : new BigNumber(
-                                          Number.POSITIVE_INFINITY,
-                                      ).toString();
-                            break;
-                        }
-                    }
-
-                    // if best cost yet => push cost to priority queue, then save cost & predecessors
-                    let pushed = false;
-                    [priorityQueue, pushed] = this.eagerPush(
-                        priorityQueue,
+                    this.isBetterCost(
+                        bestCost,
+                        closest.outputAmount,
                         priorityMode,
-                        {
-                            tokenID: v,
-                            intermediaryAmount: output_of_e,
-                            outputAmount: v === d ? output_of_e : '0',
-                            address: currentPair.address,
-                        },
-                        costs[v],
-                    );
+                    )
+                ) {
+                    bestCost = closest.outputAmount;
+                }
+            } else {
+                // Get nodes adjacent to u...
+                adjacent_nodes = graph[u] || {};
 
-                    if (pushed) {
-                        costs[v] = output_of_e;
-                        predecessors[v] = u;
+                // ...and explore the edges that connect u to those nodes, updating
+                // the cost of the shortest paths to any or all of those nodes as
+                // necessary. v is the node across the current edge from u.
+                for (v in adjacent_nodes) {
+                    if (adjacent_nodes.hasOwnProperty(v)) {
+                        const currentPair = pairs.find(
+                            p => p.address === adjacent_nodes[v].address,
+                        );
+
+                        cost_from_s_to_u = closest.intermediaryAmount;
+
+                        cost_of_e = this.computeSwapOutput(
+                            currentPair,
+                            u,
+                            cost_from_s_to_u,
+                            priorityMode,
+                        );
+
+                        if (
+                            priorityMode === PRIORITY_MODES.fixedOutputMinInput
+                        ) {
+                            const isEnoughLiquidity: boolean = this.isEnoughLiquidityForFixedOutput(
+                                u,
+                                cost_from_s_to_u,
+                                currentPair,
+                            );
+
+                            if (!isEnoughLiquidity) {
+                                priorityQueue = this.removeFromPriorityQueueByAddress(
+                                    priorityQueue,
+                                    currentPair.address,
+                                    priorityMode,
+                                );
+                                continue;
+                            }
+                        }
+
+                        const newNode: IRouteNode = {
+                            tokenID: v,
+                            intermediaryAmount: cost_of_e,
+                            outputAmount:
+                                v === d
+                                    ? cost_of_e
+                                    : this.getDefaultCost(priorityMode),
+                            address: currentPair.address,
+                        };
+
+                        const pushed: boolean = this.tryEagerPush(
+                            priorityQueue,
+                            priorityMode,
+                            newNode,
+                            costs[v],
+                        );
+
+                        // If better node cost, push cost to priority queue, save cost & save predecessors
+                        if (pushed) {
+                            priorityQueue.enqueue(newNode);
+                            costs[v] = cost_of_e;
+                            predecessors[v] = u;
+                        }
                     }
                 }
             }
         }
 
         if (typeof costs[d] === 'undefined') {
-            const msg = [
-                'Could not find a path from ' + s,
-                ' to ' + d,
-                '.',
-            ].join('');
-            throw new Error(msg);
+            throw new Error(`Could not find a path from ${s} to ${d}`);
         }
 
         const tokenRoute = this.computeNodeRoute(predecessors, d, priorityMode);
@@ -198,55 +175,87 @@ export class AutoRouterComputeService {
                 tokenRoute,
                 costs,
                 amount,
-                bestResult,
+                bestCost,
                 priorityMode,
             ),
             addressRoute: this.computeSCRouteFromNodeRoute(pairs, tokenRoute),
-            bestResult,
+            bestCost,
         };
     }
 
-    private eagerPush(
+    private tryEagerPush(
         priorityQueue: PriorityQueue<IRouteNode>,
         priorityMode: number,
-        newItem: IRouteNode,
+        newNode: IRouteNode,
         currentCost: string,
-    ): [PriorityQueue<IRouteNode>, boolean] {
+    ): boolean {
+        const [
+            queue,
+            isNewNodeBetterThanOldValues,
+        ] = this.removeLessGoodQueueCosts(
+            priorityQueue.toArray(),
+            newNode,
+            priorityMode,
+        );
+
+        priorityQueue = this.getNewPriorityQueue(priorityMode, queue);
+
+        const isNewNodeANewSolution: boolean =
+            typeof currentCost === 'undefined' ||
+            (priorityMode === PRIORITY_MODES.fixedInputMaxOutput &&
+                new BigNumber(currentCost).isLessThan(newNode.outputAmount)) ||
+            (priorityMode === PRIORITY_MODES.fixedOutputMinInput &&
+                new BigNumber(currentCost).isGreaterThan(newNode.outputAmount));
+
+        return isNewNodeBetterThanOldValues || isNewNodeANewSolution;
+    }
+
+    /// Parses queue & removes less good costs while a better cost is not found in the queue
+    private removeLessGoodQueueCosts(
+        queue: IRouteNode[],
+        newNode: IRouteNode,
+        priorityMode: number,
+    ): [IRouteNode[], boolean] {
         let foundLessGoodValue = false;
         let foundBetterValue = false;
 
-        let queue = priorityQueue.toArray();
-
-        // parse queue, remove less good costs & add the current cost if it's the best one yet
         for (let i = queue.length - 1; i >= 0; --i) {
-            if (queue[i].tokenID === newItem.tokenID) {
-                if (queue[i].outputAmount < newItem.outputAmount) {
-                    // delete old cost because is less good
+            if (queue[i].tokenID === newNode.tokenID) {
+                if (
+                    (priorityMode === PRIORITY_MODES.fixedInputMaxOutput &&
+                        new BigNumber(queue[i].outputAmount).isLessThan(
+                            newNode.outputAmount,
+                        )) ||
+                    (priorityMode === PRIORITY_MODES.fixedOutputMinInput &&
+                        new BigNumber(queue[i].outputAmount).isGreaterThan(
+                            newNode.outputAmount,
+                        ))
+                ) {
                     queue.splice(i, 1);
                     foundLessGoodValue = true;
-                } else {
-                    // better cost found => break
+                } else if (
+                    (priorityMode === PRIORITY_MODES.fixedInputMaxOutput &&
+                        new BigNumber(
+                            queue[i].outputAmount,
+                        ).isGreaterThanOrEqualTo(newNode.outputAmount)) ||
+                    (priorityMode === PRIORITY_MODES.fixedOutputMinInput &&
+                        new BigNumber(
+                            queue[i].outputAmount,
+                        ).isLessThanOrEqualTo(newNode.outputAmount))
+                ) {
                     foundBetterValue = true;
                     break;
                 }
             }
         }
 
-        priorityQueue = this.getNewPriorityQueue(priorityMode, queue);
+        const isNewNodeBetterThanOldValues: boolean =
+            foundLessGoodValue && !foundBetterValue;
 
-        // if better cost || first push
-        if (
-            (foundLessGoodValue && !foundBetterValue) ||
-            typeof currentCost === 'undefined'
-        ) {
-            priorityQueue.enqueue(newItem);
-            return [priorityQueue, true];
-        }
-
-        return [priorityQueue, false];
+        return [queue, isNewNodeBetterThanOldValues];
     }
 
-    private buildDijkstraGraph(pairs: PairModel[]) {
+    private buildDijkstraGraph(pairs: PairModel[]): Graph {
         return pairs.reduce((acc, pair) => {
             const token1ID = pair.firstToken.identifier;
             const token2ID = pair.secondToken.identifier;
@@ -283,7 +292,8 @@ export class AutoRouterComputeService {
             u = predecessors[u];
         }
 
-        if (priorityMode === PRIORITY_MODES.maxOutput) nodes.reverse();
+        if (priorityMode === PRIORITY_MODES.fixedInputMaxOutput)
+            nodes.reverse();
 
         return nodes;
     }
@@ -318,13 +328,15 @@ export class AutoRouterComputeService {
         tokenRoute: string[],
         costs: Record<string, string>,
         amount: string,
-        bestResult: string,
+        bestCost: string,
         priorityMode: number,
     ): string[] {
         let intermediaryAmounts: string[] = [];
 
         intermediaryAmounts.push(
-            priorityMode === PRIORITY_MODES.maxOutput ? amount : bestResult,
+            priorityMode === PRIORITY_MODES.fixedInputMaxOutput
+                ? amount
+                : bestCost,
         );
 
         const midRangeEnd = tokenRoute.length - 1;
@@ -333,7 +345,9 @@ export class AutoRouterComputeService {
         }
 
         intermediaryAmounts.push(
-            priorityMode === PRIORITY_MODES.maxOutput ? bestResult : amount,
+            priorityMode === PRIORITY_MODES.fixedInputMaxOutput
+                ? bestCost
+                : amount,
         );
 
         return intermediaryAmounts;
@@ -346,8 +360,100 @@ export class AutoRouterComputeService {
         const routeNodeCompareValue: IGetCompareValue<IRouteNode> = node =>
             node.outputAmount;
 
-        return priorityMode === PRIORITY_MODES.maxOutput
+        return priorityMode === PRIORITY_MODES.fixedInputMaxOutput
             ? MaxPriorityQueue.fromArray(array, routeNodeCompareValue)
             : MinPriorityQueue.fromArray(array, routeNodeCompareValue);
+    }
+
+    private removeFromPriorityQueueByAddress(
+        priorityQueue: PriorityQueue<IRouteNode>,
+        address: string,
+        priorityMode: number,
+    ): PriorityQueue<IRouteNode> {
+        const filteredQueue = priorityQueue
+            .toArray()
+            .filter(e => e.address !== address);
+        return this.getNewPriorityQueue(priorityMode, filteredQueue);
+    }
+
+    private computeSwapOutput(
+        pair: PairModel,
+        sourceTokenId: string,
+        amount: string,
+        priorityMode: number,
+    ): string {
+        switch (sourceTokenId) {
+            case pair.firstToken.identifier: {
+                if (priorityMode === PRIORITY_MODES.fixedInputMaxOutput)
+                    return getAmountOut(
+                        amount,
+                        pair.info.reserves0,
+                        pair.info.reserves1,
+                        pair.totalFeePercent,
+                    ).toFixed();
+                else
+                    return getAmountIn(
+                        amount,
+                        pair.info.reserves1,
+                        pair.info.reserves0,
+                        pair.totalFeePercent,
+                    ).toFixed();
+            }
+            case pair.secondToken.identifier: {
+                if (priorityMode === PRIORITY_MODES.fixedInputMaxOutput)
+                    return getAmountOut(
+                        amount,
+                        pair.info.reserves1,
+                        pair.info.reserves0,
+                        pair.totalFeePercent,
+                    ).toFixed();
+                else
+                    return getAmountIn(
+                        amount,
+                        pair.info.reserves0,
+                        pair.info.reserves1,
+                        pair.totalFeePercent,
+                    ).toFixed();
+            }
+            default: {
+                return this.getDefaultCost(priorityMode);
+            }
+        }
+    }
+
+    private isEnoughLiquidityForFixedOutput(
+        inputTokenID: string,
+        amount: string,
+        pair: PairModel,
+    ): boolean {
+        return (
+            (pair.firstToken.identifier === inputTokenID &&
+                new BigNumber(pair.info.reserves0).isGreaterThanOrEqualTo(
+                    amount,
+                )) ||
+            (pair.secondToken.identifier === inputTokenID &&
+                new BigNumber(pair.info.reserves1).isGreaterThanOrEqualTo(
+                    amount,
+                ))
+        );
+    }
+
+    private getDefaultCost(priorityMode: number): string {
+        return priorityMode === PRIORITY_MODES.fixedInputMaxOutput
+            ? '0'
+            : new BigNumber(Number.POSITIVE_INFINITY).toString();
+    }
+
+    private isBetterCost(
+        bestCost: string,
+        newCost: string,
+        priorityMode: number,
+    ): boolean {
+        return (
+            (priorityMode === PRIORITY_MODES.fixedInputMaxOutput &&
+                new BigNumber(newCost).isGreaterThan(bestCost)) ||
+            (priorityMode === PRIORITY_MODES.fixedOutputMinInput &&
+                new BigNumber(newCost).isLessThan(bestCost))
+        );
     }
 }
