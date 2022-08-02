@@ -325,6 +325,7 @@
         "transactionCollectorMaxLookBehind": 100
     },
     "constants": {
+        "MAX_SWAP_SPREAD": 0.05,
         "MAX_PENALTY_PERCENT": 10000,
         "MAX_PERCENT": 10000,
         "MAX_PERCENTAGE_PRICE_DISCOVERY": 10000000000000,

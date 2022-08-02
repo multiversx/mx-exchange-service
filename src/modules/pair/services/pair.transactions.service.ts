@@ -5,7 +5,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import { Address, TokenPayment } from '@elrondnetwork/erdjs';
-import { elrondConfig, gasConfig } from 'src/config';
+import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
     AddLiquidityArgs,
@@ -23,6 +23,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { computeValueUSD } from 'src/utils/token.converters';
 
 @Injectable()
 export class PairTransactionService {
@@ -288,7 +289,19 @@ export class PairTransactionService {
     ): Promise<TransactionModel[]> {
         const transactions = [];
         let endpointArgs: TypedValue[];
-        const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
+        const [
+            firstToken,
+            secondToken,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+            wrappedTokenID,
+            contract,
+            trustedSwapPairs,
+        ] = await Promise.all([
+            this.pairGetterService.getFirstToken(args.pairAddress),
+            this.pairGetterService.getSecondToken(args.pairAddress),
+            this.pairGetterService.getFirstTokenPriceUSD(args.pairAddress),
+            this.pairGetterService.getSecondTokenPriceUSD(args.pairAddress),
             this.wrapService.getWrappedEgldTokenID(),
             this.elrondProxy.getPairSmartContract(args.pairAddress),
             this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
@@ -300,6 +313,43 @@ export class PairTransactionService {
             .dividedBy(new BigNumber(1).plus(args.tolerance))
             .multipliedBy(amountOut)
             .integerValue();
+
+        let amountInUSD: BigNumber, amountOutMinUSD: BigNumber;
+
+        switch (args.tokenInID) {
+            case firstToken.identifier:
+                amountInUSD = computeValueUSD(
+                    amountIn.toFixed(),
+                    firstToken.decimals,
+                    firstTokenPriceUSD,
+                );
+                amountOutMinUSD = computeValueUSD(
+                    amountOutMin.toFixed(),
+                    secondToken.decimals,
+                    secondTokenPriceUSD,
+                );
+                break;
+            case secondToken.identifier:
+                amountInUSD = computeValueUSD(
+                    amountIn.toFixed(),
+                    secondToken.decimals,
+                    secondTokenPriceUSD,
+                );
+                amountOutMinUSD = computeValueUSD(
+                    amountOutMin.toFixed(),
+                    firstToken.decimals,
+                    firstTokenPriceUSD,
+                );
+                break;
+        }
+
+        if (
+            amountOutMinUSD.isLessThan(
+                amountInUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
+            )
+        ) {
+            throw new Error('Spread too big!');
+        }
 
         const gasLimit =
             trustedSwapPairs.length === 0
@@ -388,7 +438,19 @@ export class PairTransactionService {
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
         let endpointArgs: TypedValue[];
-        const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
+        const [
+            firstToken,
+            secondToken,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+            wrappedTokenID,
+            contract,
+            trustedSwapPairs,
+        ] = await Promise.all([
+            this.pairGetterService.getFirstToken(args.pairAddress),
+            this.pairGetterService.getSecondToken(args.pairAddress),
+            this.pairGetterService.getFirstTokenPriceUSD(args.pairAddress),
+            this.pairGetterService.getSecondTokenPriceUSD(args.pairAddress),
             this.wrapService.getWrappedEgldTokenID(),
             this.elrondProxy.getPairSmartContract(args.pairAddress),
             this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
@@ -396,6 +458,43 @@ export class PairTransactionService {
 
         const amountIn = new BigNumber(args.amountIn);
         const amountOut = new BigNumber(args.amountOut);
+
+        let amountInUSD: BigNumber, amountOutUSD: BigNumber;
+
+        switch (args.tokenInID) {
+            case firstToken.identifier:
+                amountInUSD = computeValueUSD(
+                    amountIn.toFixed(),
+                    firstToken.decimals,
+                    firstTokenPriceUSD,
+                );
+                amountOutUSD = computeValueUSD(
+                    amountOut.toFixed(),
+                    secondToken.decimals,
+                    secondTokenPriceUSD,
+                );
+                break;
+            case secondToken.identifier:
+                amountInUSD = computeValueUSD(
+                    amountIn.toFixed(),
+                    secondToken.decimals,
+                    secondTokenPriceUSD,
+                );
+                amountOutUSD = computeValueUSD(
+                    amountOut.toFixed(),
+                    firstToken.decimals,
+                    firstTokenPriceUSD,
+                );
+                break;
+        }
+
+        if (
+            amountOutUSD.isLessThan(
+                amountInUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
+            )
+        ) {
+            throw new Error('Spread too big!');
+        }
 
         const gasLimit =
             trustedSwapPairs.length === 0
