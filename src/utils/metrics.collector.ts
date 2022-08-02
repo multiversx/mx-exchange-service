@@ -90,9 +90,14 @@ export class MetricsCollector {
         MetricsCollector.queryDurationHistogram.labels(query).observe(duration);
     }
 
-    static setRedisDuration(query: string, duration: number) {
+    static setRedisDuration(action: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
-        MetricsCollector.redisDurationHistogram.labels(query).observe(duration);
+        MetricsCollector.externalCallsHistogram
+            .labels('redis', action)
+            .observe(duration);
+        MetricsCollector.redisDurationHistogram
+            .labels(action)
+            .observe(duration);
     }
 
     static setExternalCall(system: string, func: string, duration: number) {
