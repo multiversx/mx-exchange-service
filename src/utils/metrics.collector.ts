@@ -24,7 +24,7 @@ export class MetricsCollector {
             MetricsCollector.queryDurationHistogram = new Histogram({
                 name: 'query_duration',
                 help: 'The time it takes to resolve a query',
-                labelNames: ['query'],
+                labelNames: ['query', 'origin'],
                 buckets: [],
             });
         }
@@ -85,9 +85,11 @@ export class MetricsCollector {
             .observe(duration);
     }
 
-    static setQueryDuration(query: string, duration: number) {
+    static setQueryDuration(query: string, origin: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
-        MetricsCollector.queryDurationHistogram.labels(query).observe(duration);
+        MetricsCollector.queryDurationHistogram
+            .labels(query, origin)
+            .observe(duration);
     }
 
     static setRedisDuration(action: string, duration: number) {
