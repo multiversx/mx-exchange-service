@@ -73,7 +73,7 @@ export class AutoRouterComputeService {
         let closest: IRouteNode;
         let u: string;
         let v: string;
-        let cost_from_s_to_u: string;
+        let output_from_s_to_u: string;
         let adjacent_nodes: GraphItem;
         let cost_of_edge: string;
 
@@ -107,12 +107,12 @@ export class AutoRouterComputeService {
                             p => p.address === adjacent_nodes[v].address,
                         );
 
-                        cost_from_s_to_u = closest.intermediaryAmount;
+                        output_from_s_to_u = closest.intermediaryAmount;
 
                         cost_of_edge = this.computeSwapOutput(
                             currentPair,
                             u,
-                            cost_from_s_to_u,
+                            output_from_s_to_u,
                             priorityMode,
                         );
 
@@ -121,7 +121,7 @@ export class AutoRouterComputeService {
                         ) {
                             const isEnoughLiquidity: boolean = this.isEnoughLiquidityForFixedOutput(
                                 u,
-                                cost_from_s_to_u,
+                                output_from_s_to_u,
                                 currentPair,
                             );
 
