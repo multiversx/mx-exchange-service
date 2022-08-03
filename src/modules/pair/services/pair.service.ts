@@ -295,7 +295,7 @@ export class PairService {
         const cachedValue: string = await this.cachingService.getCache(
             `${tokenID}.pairAddress`,
         );
-        if (cachedValue) {
+        if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
         const pairsAddress = await this.context.getAllPairsAddress();

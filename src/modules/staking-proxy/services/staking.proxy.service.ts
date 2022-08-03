@@ -185,7 +185,7 @@ export class StakingProxyService {
         const cachedValue: string = await this.cachingService.getCache(
             `${tokenID}.stakingProxyAddress`,
         );
-        if (cachedValue !== undefined) {
+        if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
         const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
