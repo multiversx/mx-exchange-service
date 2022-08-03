@@ -75,11 +75,11 @@ export class AutoRouterComputeService {
         let v: string;
         let cost_from_s_to_u: string;
         let adjacent_nodes: GraphItem;
-        let cost_of_e: string;
+        let cost_of_edge: string;
 
         while (!priorityQueue.isEmpty()) {
             // In the nodes remaining in graph that have a known cost from s,
-            // find the node, u, that currently has the shortest path from s.
+            // find the node, u, that currently has the best cost from s.
             closest = priorityQueue.dequeue();
             u = closest.tokenID;
 
@@ -109,7 +109,7 @@ export class AutoRouterComputeService {
 
                         cost_from_s_to_u = closest.intermediaryAmount;
 
-                        cost_of_e = this.computeSwapOutput(
+                        cost_of_edge = this.computeSwapOutput(
                             currentPair,
                             u,
                             cost_from_s_to_u,
@@ -137,10 +137,10 @@ export class AutoRouterComputeService {
 
                         const newNode: IRouteNode = {
                             tokenID: v,
-                            intermediaryAmount: cost_of_e,
+                            intermediaryAmount: cost_of_edge,
                             outputAmount:
                                 v === d
-                                    ? cost_of_e
+                                    ? cost_of_edge
                                     : this.getDefaultCost(priorityMode),
                             address: currentPair.address,
                         };
@@ -155,7 +155,7 @@ export class AutoRouterComputeService {
                         // If better node cost, push cost to priority queue, save cost & save predecessors
                         if (pushed) {
                             priorityQueue.enqueue(newNode);
-                            costs[v] = cost_of_e;
+                            costs[v] = cost_of_edge;
                             predecessors[v] = u;
                         }
                     }
