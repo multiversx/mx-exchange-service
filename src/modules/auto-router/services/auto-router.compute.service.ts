@@ -56,19 +56,22 @@ export class AutoRouterComputeService {
         costs[s] = '0';
 
         // Initial best output
-        let bestCost = this.getDefaultCost(priorityMode);
+        let bestCost: string = this.getDefaultCost(priorityMode);
 
         // Costs of shortest paths from s to all nodes encountered; differs from
         // `costs` in that it provides easy access to the node that currently has
         // the known shortest path from s.
-        let priorityQueue = this.getNewPriorityQueue(priorityMode, [
-            {
-                tokenID: s,
-                intermediaryAmount: amount,
-                outputAmount: '0',
-                address: '',
-            },
-        ]);
+        let priorityQueue: PriorityQueue<IRouteNode> = this.getNewPriorityQueue(
+            priorityMode,
+            [
+                {
+                    tokenID: s,
+                    intermediaryAmount: amount,
+                    outputAmount: '0',
+                    address: '',
+                },
+            ],
+        );
 
         let closest: IRouteNode;
         let u: string;
@@ -103,7 +106,7 @@ export class AutoRouterComputeService {
                 // necessary. v is the node across the current edge from u.
                 for (v in adjacent_nodes) {
                     if (adjacent_nodes.hasOwnProperty(v)) {
-                        const currentPair = pairs.find(
+                        const currentPair: PairModel = pairs.find(
                             p => p.address === adjacent_nodes[v].address,
                         );
 
@@ -167,7 +170,11 @@ export class AutoRouterComputeService {
             throw new Error(`Could not find a path from ${s} to ${d}`);
         }
 
-        const tokenRoute = this.computeNodeRoute(predecessors, d, priorityMode);
+        const tokenRoute: string[] = this.computeNodeRoute(
+            predecessors,
+            d,
+            priorityMode,
+        );
 
         return {
             tokenRoute,
@@ -217,8 +224,8 @@ export class AutoRouterComputeService {
         newNode: IRouteNode,
         priorityMode: number,
     ): [IRouteNode[], boolean] {
-        let foundLessGoodValue = false;
-        let foundBetterValue = false;
+        let foundLessGoodValue: boolean = false;
+        let foundBetterValue: boolean = false;
 
         for (let i = queue.length - 1; i >= 0; --i) {
             if (queue[i].tokenID === newNode.tokenID) {
@@ -258,8 +265,8 @@ export class AutoRouterComputeService {
 
     private buildDijkstraGraph(pairs: PairModel[]): Graph {
         return pairs.reduce((acc, pair) => {
-            const token1ID = pair.firstToken.identifier;
-            const token2ID = pair.secondToken.identifier;
+            const token1ID: string = pair.firstToken.identifier;
+            const token2ID: string = pair.secondToken.identifier;
             const initialValue = {
                 intermediaryAmount: 0,
                 outputAmount: 0,
@@ -341,7 +348,7 @@ export class AutoRouterComputeService {
                 : bestCost,
         );
 
-        const midRangeEnd = tokenRoute.length - 1;
+        const midRangeEnd: number = tokenRoute.length - 1;
         for (let i = 1; i < midRangeEnd; i++) {
             intermediaryAmounts.push(costs[tokenRoute[i]]);
         }
