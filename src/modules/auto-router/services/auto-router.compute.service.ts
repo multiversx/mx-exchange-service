@@ -187,7 +187,7 @@ export class AutoRouterComputeService {
         priorityQueue: PriorityQueue<IRouteNode>,
         priorityMode: number,
         newNode: IRouteNode,
-        currentCost: string,
+        currentBestCost: string,
     ): boolean {
         const [
             queue,
@@ -201,11 +201,12 @@ export class AutoRouterComputeService {
         priorityQueue = this.getNewPriorityQueue(priorityMode, queue);
 
         const isNewNodeANewSolution: boolean =
-            typeof currentCost === 'undefined' ||
-            (priorityMode === PRIORITY_MODES.fixedInputMaxOutput &&
-                new BigNumber(currentCost).isLessThan(newNode.outputAmount)) ||
-            (priorityMode === PRIORITY_MODES.fixedOutputMinInput &&
-                new BigNumber(currentCost).isGreaterThan(newNode.outputAmount));
+            typeof currentBestCost === 'undefined' ||
+            this.isBetterCost(
+                currentBestCost,
+                newNode.outputAmount,
+                priorityMode,
+            );
 
         return isNewNodeBetterThanOldValues || isNewNodeANewSolution;
     }
@@ -299,15 +300,15 @@ export class AutoRouterComputeService {
     }
 
     /// Converts a token route to a SC address route (e.g. ["MEX", "USDC", "RIDE"] => ["erd...", "erd..."])
-    private computeSCRouteFromNodeRoute(pairs, tokenRoute) {
-        let addressRoute = [];
+    private computeSCRouteFromNodeRoute(pairs, tokenRoute): string[] {
+        let addressRoute: string[] = [];
 
-        const length = tokenRoute.length;
+        const length: number = tokenRoute.length;
         for (let i = 1; i < length; i++) {
-            const tokenID1 = tokenRoute[i];
-            const tokenID2 = tokenRoute[i - 1];
+            const tokenID1: string = tokenRoute[i];
+            const tokenID2: string = tokenRoute[i - 1];
 
-            const pair = pairs
+            const pair: PairModel = pairs
                 .filter(
                     p =>
                         p.firstToken.identifier == tokenID1 ||
@@ -321,6 +322,7 @@ export class AutoRouterComputeService {
 
             addressRoute.push(pair.address);
         }
+
         return addressRoute;
     }
 
