@@ -74,15 +74,17 @@ export class AutoRouterService {
             );
         }
 
-        return await this.multiSwap(
-            args,
-            tokenInID,
-            tokenOutID,
-            pairs,
-            tokenInMetadata,
-            tokenOutMetadata,
-            swapType,
-        );
+        throw new Error('Multi swap disabled!');
+
+        // return await this.multiSwap(
+        //     args,
+        //     tokenInID,
+        //     tokenOutID,
+        //     pairs,
+        //     tokenInMetadata,
+        //     tokenOutMetadata,
+        //     swapType,
+        // );
     }
 
     async singleSwap(
