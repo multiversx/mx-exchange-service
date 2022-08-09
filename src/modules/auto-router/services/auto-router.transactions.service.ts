@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
+import { isSpreadTooBig } from 'src/modules/pair/pair.utils';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -134,18 +135,7 @@ export class AutoRouterTransactionService {
                 intermediaryTokenOutPriceUSD,
             );
 
-            if (
-                amountOutMinUSD.isLessThan(
-                    amountInUSD.multipliedBy(
-                        1 - constantsConfig.MAX_SWAP_SPREAD,
-                    ),
-                ) ||
-                amountInUSD.isLessThan(
-                    amountOutMinUSD.multipliedBy(
-                        1 - constantsConfig.MAX_SWAP_SPREAD,
-                    ),
-                )
-            ) {
+            if (isSpreadTooBig(amountInUSD, amountOutMinUSD)) {
                 throw new Error('Spread too big!');
             }
 
@@ -212,18 +202,7 @@ export class AutoRouterTransactionService {
                 intermediaryTokenOutPriceUSD,
             );
 
-            if (
-                amountOutUSD.isLessThan(
-                    amountInUSD.multipliedBy(
-                        1 - constantsConfig.MAX_SWAP_SPREAD,
-                    ),
-                ) ||
-                amountInUSD.isLessThan(
-                    amountOutUSD.multipliedBy(
-                        1 - constantsConfig.MAX_SWAP_SPREAD,
-                    ),
-                )
-            ) {
+            if (isSpreadTooBig(amountInUSD, amountOutUSD)) {
                 throw new Error('Spread too big!');
             }
 

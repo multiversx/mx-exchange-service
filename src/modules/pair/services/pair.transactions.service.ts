@@ -24,6 +24,7 @@ import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { computeValueUSD } from 'src/utils/token.converters';
+import { isSpreadTooBig } from '../pair.utils';
 
 @Injectable()
 export class PairTransactionService {
@@ -346,16 +347,7 @@ export class PairTransactionService {
                 break;
         }
 
-        if (
-            amountOutMinUSD.isLessThan(
-                amountInUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
-            ) ||
-            amountInUSD.isLessThan(
-                amountOutMinUSD.multipliedBy(
-                    1 - constantsConfig.MAX_SWAP_SPREAD,
-                ),
-            )
-        ) {
+        if (isSpreadTooBig(amountInUSD, amountOutMinUSD)) {
             throw new Error('Spread too big!');
         }
 
@@ -499,14 +491,7 @@ export class PairTransactionService {
                 break;
         }
 
-        if (
-            amountOutUSD.isLessThan(
-                amountInUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
-            ) ||
-            amountInUSD.isLessThan(
-                amountOutUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
-            )
-        ) {
+        if (isSpreadTooBig(amountInUSD, amountOutUSD)) {
             throw new Error('Spread too big!');
         }
 
