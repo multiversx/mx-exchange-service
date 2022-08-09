@@ -315,8 +315,11 @@ export class PairTransactionService {
             .integerValue();
 
         let amountInUSD: BigNumber, amountOutMinUSD: BigNumber;
-
-        switch (args.tokenInID) {
+        const tokenInID =
+            args.tokenInID === elrondConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : args.tokenInID;
+        switch (tokenInID) {
             case firstToken.identifier:
                 amountInUSD = computeValueUSD(
                     amountIn.toFixed(),
@@ -460,8 +463,11 @@ export class PairTransactionService {
         const amountOut = new BigNumber(args.amountOut);
 
         let amountInUSD: BigNumber, amountOutUSD: BigNumber;
-
-        switch (args.tokenInID) {
+        const tokenInID =
+            args.tokenInID === elrondConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : args.tokenInID;
+        switch (tokenInID) {
             case firstToken.identifier:
                 amountInUSD = computeValueUSD(
                     amountIn.toFixed(),
