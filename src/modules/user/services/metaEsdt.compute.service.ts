@@ -444,7 +444,13 @@ export class UserComputeService {
             scAddress.simpleLockAddress,
             farmTokenIdentifier,
         );
-        const userFarmToken = await this.farmTokenUSD(farmToken, farmAddress);
+        const userFarmToken = await this.farmTokenUSD(
+            new NftToken({
+                ...farmToken,
+                balance: nftToken.balance,
+            }),
+            farmAddress,
+        );
 
         return new UserLockedSimpleFarmToken({
             ...nftToken,
