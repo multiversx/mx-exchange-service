@@ -359,14 +359,5 @@
     },
     "security": {
         "admins": []
-    },
-    "aws": {
-        "region": "us-east-1",
-        "timestream": {
-            "databaseName": "devnet-data-timestream",
-            "tableName": "tradingInfo",
-            "MemoryStoreRetentionPeriodInHours": 768,
-            "MagneticStoreRetentionPeriodInDays": 73000
-        }
     }
 }

@@ -20,7 +20,6 @@ import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
 import { TransactionProcessorService } from './crons/transaction.processor.service';
 import { LogsProcessorService } from './crons/logs.processor.service';
 import { ElasticService } from 'src/helpers/elastic.service';
-import { AWSModule } from './aws/aws.module';
 import { StakingModule } from 'src/modules/staking/staking.module';
 import { StakingCacheWarmerService } from './crons/staking.cache.warmer.service';
 import { StakingProxyCacheWarmerService } from './crons/staking.proxy.cache.warmer.service';
@@ -50,7 +49,6 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         ProxyPairModule,
         AnalyticsModule,
         PriceDiscoveryModule,
-        AWSModule,
         RemoteConfigModule,
     ],
     controllers: [],
