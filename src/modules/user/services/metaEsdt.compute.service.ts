@@ -190,7 +190,13 @@ export class UserComputeService {
                 decodedWFMTAttributes[0].farmTokenIdentifier,
             ),
         ]);
-        const userFarmToken = await this.farmTokenUSD(farmToken, farmAddress);
+        const userFarmToken = await this.farmTokenUSD(
+            new NftToken({
+                ...farmToken,
+                balance: nftToken.balance,
+            }),
+            farmAddress,
+        );
         return new UserLockedFarmToken({
             ...nftToken,
             valueUSD: userFarmToken.valueUSD,
