@@ -1,64 +1,70 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { FarmService } from '../farm/services/farm.service';
-import { PairService } from '../pair/services/pair.service';
-import { ProxyFarmGetterService } from '../proxy/services/proxy-farm/proxy-farm.getter.service';
-import { ProxyPairGetterService } from '../proxy/services/proxy-pair/proxy-pair.getter.service';
-import { ProxyService } from '../proxy/services/proxy.service';
-import { UserService } from './user.service';
-import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
-import { ContextService } from '../../services/context/context.service';
-import { LockedAssetService } from '../locked-asset-factory/services/locked-asset.service';
+import { PriceFeedService } from '../../../services/price-feed/price-feed.service';
+import { FarmService } from '../../farm/services/farm.service';
+import { PairService } from '../../pair/services/pair.service';
+import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
+import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
+import { ProxyService } from '../../proxy/services/proxy.service';
+import { UserService } from '../services/user.metaEsdt.service';
+import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { ContextService } from '../../../services/context/context.service';
+import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import {
     utilities as nestWinstonModuleUtilities,
     WinstonModule,
 } from 'nest-winston';
 import * as winston from 'winston';
 import * as Transport from 'winston-transport';
-import { WrapService } from '../wrapping/wrap.service';
-import { WrapServiceMock } from '../wrapping/wrap.test-mocks';
-import { ElrondApiServiceMock } from '../../services/elrond-communication/elrond.api.service.mock';
-import { UserFarmToken, UserToken } from './models/user.model';
-import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
-import { UserComputeService } from './user.compute.service';
-import { CachingModule } from '../../services/caching/cache.module';
-import { FarmGetterService } from '../farm/services/farm.getter.service';
-import { FarmGetterServiceMock } from '../farm/mocks/farm.getter.service.mock';
-import { FarmServiceMock } from '../farm/mocks/farm.service.mock';
+import { WrapService } from '../../wrapping/wrap.service';
+import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
+import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
+import { UserFarmToken, UserToken } from '../models/user.model';
+import { FarmTokenAttributesModel } from '../../farm/models/farmTokenAttributes.model';
+import { UserComputeService } from '../services/metaEsdt.compute.service';
+import { CachingModule } from '../../../services/caching/cache.module';
+import { FarmGetterService } from '../../farm/services/farm.getter.service';
+import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
+import { FarmServiceMock } from '../../farm/mocks/farm.service.mock';
 import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
-import { PairGetterService } from '../pair/services/pair.getter.service';
-import { PairGetterServiceMock } from '../pair/mocks/pair.getter.service.mock';
-import { PairComputeService } from '../pair/services/pair.compute.service';
-import { ProxyGetterServiceMock } from '../proxy/mocks/proxy.getter.service.mock';
-import { LockedAssetServiceMock } from '../locked-asset-factory/mocks/locked.asset.service.mock';
-import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
-import { AbiLockedAssetService } from '../locked-asset-factory/services/abi-locked-asset.service';
-import { AbiLockedAssetServiceMock } from '../locked-asset-factory/mocks/abi.locked.asset.service.mock';
+import { PairGetterService } from '../../pair/services/pair.getter.service';
+import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
+import { PairComputeService } from '../../pair/services/pair.compute.service';
+import { ProxyGetterServiceMock } from '../../proxy/mocks/proxy.getter.service.mock';
+import { LockedAssetServiceMock } from '../../locked-asset-factory/mocks/locked.asset.service.mock';
+import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
+import { AbiLockedAssetService } from '../../locked-asset-factory/services/abi-locked-asset.service';
+import { AbiLockedAssetServiceMock } from '../../locked-asset-factory/mocks/abi.locked.asset.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ProxyPairGetterServiceMock } from '../proxy/mocks/proxy.pair.getter.service.mock';
-import { ProxyFarmGetterServiceMock } from '../proxy/mocks/proxy.farm.getter.service.mock';
-import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
-import { StakingGetterService } from '../staking/services/staking.getter.service';
-import { StakingGetterServiceMock } from '../staking/mocks/staking.getter.service.mock';
-import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
-import { StakingProxyGetterServiceMock } from '../staking-proxy/mocks/staking.proxy.getter.service.mock';
-import { StakingService } from '../staking/services/staking.service';
-import { StakingServiceMock } from '../staking/mocks/staking.service.mock';
-import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
-import { StakingProxyServiceMock } from '../staking-proxy/mocks/staking.proxy.service.mock';
-import { PriceDiscoveryGetterServiceProvider } from '../price-discovery/mocks/price.discovery.getter.mock';
-import { PriceDiscoveryServiceProvider } from '../price-discovery/mocks/price.discovery.service.mock';
-import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
-import { SimpleLockGetterServiceProvider } from '../simple-lock/mocks/simple.lock.getter.service.mock';
-import { AssetsModel, RolesModel } from '../tokens/models/esdtToken.model';
-import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
-import { RemoteConfigGetterServiceMock } from '../remote-config/mocks/remote-config.getter.mock';
-import { TokenGetterServiceProvider } from '../tokens/mocks/token.getter.service.mock';
+import { ProxyPairGetterServiceMock } from '../../proxy/mocks/proxy.pair.getter.service.mock';
+import { ProxyFarmGetterServiceMock } from '../../proxy/mocks/proxy.farm.getter.service.mock';
+import { ProxyGetterService } from '../../proxy/services/proxy.getter.service';
+import { StakingGetterService } from '../../staking/services/staking.getter.service';
+import { StakingGetterServiceMock } from '../../staking/mocks/staking.getter.service.mock';
+import { StakingProxyGetterService } from '../../staking-proxy/services/staking.proxy.getter.service';
+import { StakingProxyGetterServiceMock } from '../../staking-proxy/mocks/staking.proxy.getter.service.mock';
+import { StakingService } from '../../staking/services/staking.service';
+import { StakingServiceMock } from '../../staking/mocks/staking.service.mock';
+import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
+import { StakingProxyServiceMock } from '../../staking-proxy/mocks/staking.proxy.service.mock';
+import { PriceDiscoveryGetterServiceProvider } from '../../price-discovery/mocks/price.discovery.getter.mock';
+import { PriceDiscoveryServiceProvider } from '../../price-discovery/mocks/price.discovery.service.mock';
+import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
+import { SimpleLockGetterServiceProvider } from '../../simple-lock/mocks/simple.lock.getter.service.mock';
+import { AssetsModel, RolesModel } from '../../tokens/models/esdtToken.model';
+import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
+import { RemoteConfigGetterServiceMock } from '../../remote-config/mocks/remote-config.getter.mock';
+import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
+import { UserEsdtService } from '../services/user.esdt.service';
+import { TokenService } from 'src/modules/tokens/services/token.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
+import { UserEsdtComputeService } from '../services/esdt.compute.service';
 
 describe('UserService', () => {
-    let service: UserService;
+    let userMetaEsdts: UserService;
+    let userEsdts: UserEsdtService;
 
     const ElrondApiServiceProvider = {
         provide: ElrondApiService,
@@ -83,6 +89,11 @@ describe('UserService', () => {
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
+    };
+
+    const RouterGetterServiceProvider = {
+        provide: RouterGetterService,
+        useClass: RouterGetterServiceMock,
     };
 
     const PairGetterServiceProvider = {
@@ -170,6 +181,7 @@ describe('UserService', () => {
                 ElrondApiServiceProvider,
                 ContextServiceProvider,
                 ContextGetterServiceProvider,
+                RouterGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
@@ -193,8 +205,11 @@ describe('UserService', () => {
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
                 TokenGetterServiceProvider,
+                TokenService,
+                UserEsdtService,
                 UserService,
                 UserComputeService,
+                UserEsdtComputeService,
                 RemoteConfigGetterServiceProvider,
             ],
             imports: [
@@ -205,16 +220,18 @@ describe('UserService', () => {
             ],
         }).compile();
 
-        service = module.get<UserService>(UserService);
+        userEsdts = module.get<UserEsdtService>(UserEsdtService);
+        userMetaEsdts = module.get<UserService>(UserService);
     });
 
     it('should be defined', () => {
-        expect(service).toBeDefined();
+        expect(userEsdts).toBeDefined();
+        expect(userMetaEsdts).toBeDefined();
     });
 
     it('should get user esdt tokens', async () => {
         expect(
-            await service.getAllEsdtTokens('user_address_1', {
+            await userEsdts.getAllEsdtTokens('user_address_1', {
                 offset: 0,
                 limit: 10,
             }),
@@ -261,7 +278,7 @@ describe('UserService', () => {
 
     it('should get user nfts tokens', async () => {
         expect(
-            await service.getAllNftTokens('user_address_1', {
+            await userMetaEsdts.getAllNftTokens('user_address_1', {
                 offset: 0,
                 limit: 10,
             }),

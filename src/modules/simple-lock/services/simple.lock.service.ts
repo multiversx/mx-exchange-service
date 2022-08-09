@@ -123,9 +123,9 @@ export class SimpleLockService {
         return decodedBatchAttributes;
     }
 
-    async decodeFarmProxyTokenAttributes(
+    decodeFarmProxyTokenAttributes(
         args: DecodeAttributesModel,
-    ): Promise<FarmProxyTokenAttributesModel> {
+    ): FarmProxyTokenAttributesModel {
         const lockedFarmTokenAttributesModel = new FarmProxyTokenAttributesModel(
             {
                 ...LockedFarmTokenAttributes.fromAttributes(args.attributes),
