@@ -349,6 +349,11 @@ export class PairTransactionService {
         if (
             amountOutMinUSD.isLessThan(
                 amountInUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
+            ) ||
+            amountInUSD.isLessThan(
+                amountOutMinUSD.multipliedBy(
+                    1 - constantsConfig.MAX_SWAP_SPREAD,
+                ),
             )
         ) {
             throw new Error('Spread too big!');
@@ -497,6 +502,9 @@ export class PairTransactionService {
         if (
             amountOutUSD.isLessThan(
                 amountInUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
+            ) ||
+            amountInUSD.isLessThan(
+                amountOutUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
             )
         ) {
             throw new Error('Spread too big!');
