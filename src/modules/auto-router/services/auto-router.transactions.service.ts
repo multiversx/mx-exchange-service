@@ -6,9 +6,12 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { elrondConfig, gasConfig } from 'src/config';
+import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { computeValueUSD } from 'src/utils/token.converters';
 import { TransactionModel } from '../../../models/transaction.model';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
@@ -18,6 +21,8 @@ export class AutoRouterTransactionService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly transactionsWrapService: TransactionsWrapService,
+        private readonly pairGetter: PairGetterService,
+        private readonly contextGetter: ContextGetterService,
     ) {}
 
     async multiPairSwap(
@@ -53,13 +58,17 @@ export class AutoRouterTransactionService {
         const gasLimit =
             args.addressRoute.length * gasConfig.router.multiPairSwapMultiplier;
 
+        const transactionArgs =
+            args.swapType == SWAP_TYPE.fixedInput
+                ? await this.multiPairFixedInputSwaps(args, amountIn.toFixed())
+                : await this.multiPairFixedOutputSwaps(
+                      args,
+                      amountIn.toFixed(),
+                  );
+
         transactions.push(
             contract.methodsExplicit
-                .multiPairSwap(
-                    args.swapType == SWAP_TYPE.fixedInput
-                        ? this.multiPairFixedInputSwaps(args)
-                        : this.multiPairFixedOutputSwaps(args),
-                )
+                .multiPairSwap(transactionArgs)
                 .withSingleESDTTransfer(
                     TokenPayment.fungibleFromBigInteger(
                         args.tokenRoute[0],
@@ -77,10 +86,22 @@ export class AutoRouterTransactionService {
         return transactions;
     }
 
-    private multiPairFixedInputSwaps(args: MultiSwapTokensArgs): any[] {
+    private async multiPairFixedInputSwaps(
+        args: MultiSwapTokensArgs,
+        amountIn: string,
+    ): Promise<any[]> {
         const swaps = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;
+        const [tokenIn, tokenInPriceUSD] = await Promise.all([
+            this.contextGetter.getTokenMetadata(args.tokenRoute[0]),
+            this.pairGetter.getTokenPriceUSD(args.tokenRoute[0]),
+        ]);
+        const amountInUSD = computeValueUSD(
+            amountIn,
+            tokenIn.decimals,
+            tokenInPriceUSD,
+        );
 
         for (const [index, address] of args.addressRoute.entries()) {
             const intermediaryToleranceMultiplier =
@@ -98,11 +119,41 @@ export class AutoRouterTransactionService {
                 .minus(toleranceAmount)
                 .integerValue();
 
+            const intermediaryTokenOutID = args.tokenRoute[index + 1];
+            const [
+                intermediaryTokenOut,
+                intermediaryTokenOutPriceUSD,
+            ] = await Promise.all([
+                this.contextGetter.getTokenMetadata(intermediaryTokenOutID),
+                this.pairGetter.getTokenPriceUSD(intermediaryTokenOutID),
+            ]);
+
+            const amountOutMinUSD = computeValueUSD(
+                amountOutMin.toFixed(),
+                intermediaryTokenOut.decimals,
+                intermediaryTokenOutPriceUSD,
+            );
+
+            if (
+                amountOutMinUSD.isLessThan(
+                    amountInUSD.multipliedBy(
+                        1 - constantsConfig.MAX_SWAP_SPREAD,
+                    ),
+                ) ||
+                amountInUSD.isLessThan(
+                    amountOutMinUSD.multipliedBy(
+                        1 - constantsConfig.MAX_SWAP_SPREAD,
+                    ),
+                )
+            ) {
+                throw new Error('Spread too big!');
+            }
+
             swaps.push(
                 ...[
                     BytesValue.fromHex(Address.fromString(address).hex()),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
-                    BytesValue.fromUTF8(args.tokenRoute[index + 1]),
+                    BytesValue.fromUTF8(intermediaryTokenOutID),
                     new BigUIntValue(amountOutMin),
                 ],
             );
@@ -110,10 +161,24 @@ export class AutoRouterTransactionService {
         return swaps;
     }
 
-    private multiPairFixedOutputSwaps(args: MultiSwapTokensArgs): any[] {
+    private async multiPairFixedOutputSwaps(
+        args: MultiSwapTokensArgs,
+        amountIn: string,
+    ): Promise<any[]> {
         const swaps = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;
+
+        const [tokenIn, tokenInPriceUSD] = await Promise.all([
+            this.contextGetter.getTokenMetadata(args.tokenRoute[0]),
+            this.pairGetter.getTokenPriceUSD(args.tokenRoute[0]),
+        ]);
+
+        const amountInUSD = computeValueUSD(
+            amountIn,
+            tokenIn.decimals,
+            tokenInPriceUSD,
+        );
 
         for (const [index, address] of args.addressRoute.entries()) {
             // method #1
@@ -133,11 +198,40 @@ export class AutoRouterTransactionService {
                 .integerValue()
                 .toFixed();
 
+            const intermediaryTokenOutID = args.tokenRoute[index + 1];
+            const [
+                intermediaryTokenOut,
+                intermediaryTokenOutPriceUSD,
+            ] = await Promise.all([
+                this.contextGetter.getTokenMetadata(intermediaryTokenOutID),
+                this.pairGetter.getTokenPriceUSD(intermediaryTokenOutID),
+            ]);
+            const amountOutUSD = computeValueUSD(
+                amountOut,
+                intermediaryTokenOut.decimals,
+                intermediaryTokenOutPriceUSD,
+            );
+
+            if (
+                amountOutUSD.isLessThan(
+                    amountInUSD.multipliedBy(
+                        1 - constantsConfig.MAX_SWAP_SPREAD,
+                    ),
+                ) ||
+                amountInUSD.isLessThan(
+                    amountOutUSD.multipliedBy(
+                        1 - constantsConfig.MAX_SWAP_SPREAD,
+                    ),
+                )
+            ) {
+                throw new Error('Spread too big!');
+            }
+
             swaps.push(
                 ...[
                     BytesValue.fromHex(Address.fromString(address).hex()),
                     BytesValue.fromUTF8('swapTokensFixedOutput'),
-                    BytesValue.fromUTF8(args.tokenRoute[index + 1]),
+                    BytesValue.fromUTF8(intermediaryTokenOutID),
                     new BigUIntValue(new BigNumber(amountOut)),
                 ],
             );
