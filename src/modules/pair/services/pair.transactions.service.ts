@@ -23,6 +23,8 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { computeValueUSD } from 'src/utils/token.converters';
+import { isSpreadTooBig } from '../pair.utils';
 
 @Injectable()
 export class PairTransactionService {
@@ -286,6 +288,8 @@ export class PairTransactionService {
         sender: string,
         args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel[]> {
+        await this.validateSwapTokens(args);
+
         const transactions = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
@@ -386,6 +390,8 @@ export class PairTransactionService {
         sender: string,
         args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel[]> {
+        await this.validateSwapTokens(args);
+
         const transactions: TransactionModel[] = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
@@ -521,6 +527,73 @@ export class PairTransactionService {
         }
 
         throw new Error('invalid tokens received');
+    }
+
+    private async validateSwapTokens(
+        args: SwapTokensFixedInputArgs | SwapTokensFixedOutputArgs,
+    ): Promise<void> {
+        await this.validateTokens(args.pairAddress, [
+            new InputTokenModel({
+                tokenID: args.tokenInID,
+                nonce: 0,
+            }),
+            new InputTokenModel({
+                tokenID: args.tokenOutID,
+                nonce: 0,
+            }),
+        ]);
+
+        const [
+            firstToken,
+            secondToken,
+            firstTokenPriceUSD,
+            secondTokenPriceUSD,
+            wrappedTokenID,
+        ] = await Promise.all([
+            this.pairGetterService.getFirstToken(args.pairAddress),
+            this.pairGetterService.getSecondToken(args.pairAddress),
+            this.pairGetterService.getFirstTokenPriceUSD(args.pairAddress),
+            this.pairGetterService.getSecondTokenPriceUSD(args.pairAddress),
+            this.wrapService.getWrappedEgldTokenID(),
+        ]);
+
+        let amountInUSD: BigNumber, amountOutUSD: BigNumber;
+        const tokenInID =
+            args.tokenInID === elrondConfig.EGLDIdentifier
+                ? wrappedTokenID
+                : args.tokenInID;
+        switch (tokenInID) {
+            case firstToken.identifier:
+                amountInUSD = computeValueUSD(
+                    args.amountIn,
+                    firstToken.decimals,
+                    firstTokenPriceUSD,
+                );
+                amountOutUSD = computeValueUSD(
+                    args.amountOut,
+                    secondToken.decimals,
+                    secondTokenPriceUSD,
+                );
+                break;
+            case secondToken.identifier:
+                amountInUSD = computeValueUSD(
+                    args.amountIn,
+                    secondToken.decimals,
+                    secondTokenPriceUSD,
+                );
+                amountOutUSD = computeValueUSD(
+                    args.amountOut,
+                    firstToken.decimals,
+                    firstTokenPriceUSD,
+                );
+                break;
+        }
+
+        if (isSpreadTooBig(amountInUSD, amountOutUSD)) {
+            throw new Error(`Spread too big validating swap transaction ${args.tokenInID} => ${args.tokenOutID}.
+            amount in = ${args.amountIn}, usd value = ${amountInUSD};
+            amount out = ${args.amountOut}, usd value = ${amountOutUSD}`);
+        }
     }
 
     private async getTokensWithEGLD(

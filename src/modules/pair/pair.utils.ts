@@ -88,3 +88,17 @@ export function getTokenForGivenPosition(
         .dividedBy(totalSupplyBig)
         .integerValue();
 }
+
+export function isSpreadTooBig(
+    amountInUSD: BigNumber,
+    amountOutUSD: BigNumber,
+): boolean {
+    return (
+        amountOutUSD.isLessThan(
+            amountInUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
+        ) ||
+        amountInUSD.isLessThan(
+            amountOutUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
+        )
+    );
+}
