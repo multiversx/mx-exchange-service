@@ -6,7 +6,7 @@ import {
 import { Interaction } from '@elrondnetwork/erdjs';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../models/farm.args';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/services/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import {
@@ -14,7 +14,7 @@ import {
     FarmRewardType,
     FarmVersion,
 } from '../models/farm.model';
-import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
+import { ElrondGatewayService } from 'src/services/elrond-communication/services/elrond-gateway.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
 @Injectable()

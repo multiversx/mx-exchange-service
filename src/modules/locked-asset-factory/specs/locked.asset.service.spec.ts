@@ -5,7 +5,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { ContextService } from 'src/services/context/context.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { ElrondCommunicationModule } from 'src/services/elrond-communication/services/elrond-communication.module';
 import { AbiLockedAssetService } from '../services/abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from '../mocks/abi.locked.asset.service.mock';
 import { LockedAssetService } from '../services/locked-asset.service';

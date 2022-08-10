@@ -5,14 +5,15 @@ import {
     SmartContractAbi,
 } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
-import { abiConfig, elrondConfig, scAddress } from '../../config';
+import { elrondConfig, scAddress, abiConfig } from 'src/config';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ProxyNetworkProviderProfiler } from '../../helpers/proxy.network.provider.profiler';
+import { ProxyNetworkProviderProfiler } from '../../../helpers/proxy.network.provider.profiler';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { promises } from 'fs';
+
 
 @Injectable()
 export class ElrondProxyService {

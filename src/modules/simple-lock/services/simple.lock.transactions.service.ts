@@ -19,7 +19,7 @@ import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
 import { farmType } from 'src/utils/farm.utils';
 import { FarmTypeEnumType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';

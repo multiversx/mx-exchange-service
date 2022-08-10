@@ -6,7 +6,7 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import BigNumber from 'bignumber.js';
-import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../../../services/elrond-communication/services/elrond-api.service';
 import { UserNftTokens } from '../models/nfttokens.union';
 import { UserComputeService } from './metaEsdt.compute.service';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';

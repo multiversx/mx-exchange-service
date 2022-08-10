@@ -6,7 +6,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { elrondConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';

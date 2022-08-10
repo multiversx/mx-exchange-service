@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { AbiFarmService } from 'src/modules/farm/services/abi-farm.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';

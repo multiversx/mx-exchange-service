@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/services/elrond-proxy.service';
 import { EnableSwapByUserConfig } from '../models/factory.model';
 import { PairMetadata } from '../models/pair.metadata.model';
 

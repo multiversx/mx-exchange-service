@@ -11,7 +11,7 @@ import {
     ExitFarmArgs,
     FarmMigrationConfigArgs,
 } from '../models/farm.args';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/services/elrond-proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { FarmGetterService } from './farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

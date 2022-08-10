@@ -7,7 +7,7 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/services/elrond-proxy.service';
 import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-transactions.service';
 import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';

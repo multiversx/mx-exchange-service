@@ -21,8 +21,8 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
+import { ElrondProxyServiceMock } from 'src/services/elrond-communication/mocks/elrond.proxy.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TransactionRouterService } from 'src/modules/router/services/transactions.router.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';

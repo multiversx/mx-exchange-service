@@ -6,7 +6,7 @@ import { AbiProxyFarmService } from 'src/modules/proxy/services/proxy-farm/proxy
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
 import { cacheConfig } from 'src/config';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour } from '../../helpers/helpers';

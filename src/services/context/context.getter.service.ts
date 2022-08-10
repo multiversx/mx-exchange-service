@@ -6,7 +6,7 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
 import { GenericGetterService } from '../generics/generic.getter.service';
 
 @Injectable()

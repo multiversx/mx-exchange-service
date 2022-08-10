@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CachingService } from 'src/services/caching/cache.service';
 import { Address } from '@elrondnetwork/erdjs/out';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
 import { constantsConfig } from 'src/config';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 

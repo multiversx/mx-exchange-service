@@ -4,7 +4,7 @@ import { TransactionModel } from '../../models/transaction.model';
 import { elrondConfig, gasConfig } from '../../config';
 import { WrapService } from './wrap.service';
 import BigNumber from 'bignumber.js';
-import { ElrondProxyService } from '../../services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../../services/elrond-communication/services/elrond-proxy.service';
 
 @Injectable()
 export class TransactionsWrapService {

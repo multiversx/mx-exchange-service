@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { PairInfoModel } from '../models/pair-info.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';

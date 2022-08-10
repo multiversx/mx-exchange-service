@@ -6,7 +6,7 @@ import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-fa
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
 import { UserService } from '../services/user.metaEsdt.service';
-import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../../../services/elrond-communication/services/elrond-api.service';
 import { ContextService } from '../../../services/context/context.service';
 import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import {
@@ -17,7 +17,7 @@ import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { WrapService } from '../../wrapping/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
-import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
+import { ElrondApiServiceMock } from '../../../services/elrond-communication/mocks/elrond.api.service.mock';
 import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModel } from '../../farm/models/farmTokenAttributes.model';
 import { UserComputeService } from '../services/metaEsdt.compute.service';

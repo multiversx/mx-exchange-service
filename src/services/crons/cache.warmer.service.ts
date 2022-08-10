@@ -5,7 +5,7 @@ import { tokensPriceData } from '../../config';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneMinute } from '../../helpers/helpers';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 

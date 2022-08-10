@@ -20,7 +20,7 @@ import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/services/elrond-proxy.service';
 import { RouterGetterService } from './router.getter.service';
 
 @Injectable()

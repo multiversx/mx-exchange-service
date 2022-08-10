@@ -12,7 +12,7 @@ import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
 } from 'src/modules/proxy/models/proxy.args';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { ElrondApiService } from 'src/services/elrond-communication/services/elrond-api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import {

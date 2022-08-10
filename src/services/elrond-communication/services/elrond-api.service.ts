@@ -1,4 +1,4 @@
-import { elrondConfig } from '../../config';
+import { elrondConfig } from '../../../config';
 import { Inject, Injectable } from '@nestjs/common';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -6,9 +6,9 @@ import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { PerformanceProfiler } from '../../utils/performance.profiler';
-import { MetricsCollector } from '../../utils/metrics.collector';
-import { Stats } from '../../models/stats.model';
+import { PerformanceProfiler } from '../../../utils/performance.profiler';
+import { MetricsCollector } from '../../../utils/metrics.collector';
+import { Stats } from '../../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@elrondnetwork/erdjs-network-providers/out';
 import { isEsdtToken } from 'src/utils/token.type.compare';

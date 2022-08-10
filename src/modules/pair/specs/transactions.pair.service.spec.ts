@@ -5,7 +5,7 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
@@ -15,7 +15,7 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { ElrondProxyServiceMock } from 'src/services/elrond-communication/mocks/elrond.proxy.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { ApiConfigService } from 'src/helpers/api.config.service';

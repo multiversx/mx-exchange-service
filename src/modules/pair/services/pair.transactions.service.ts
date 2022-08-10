@@ -14,7 +14,7 @@ import {
     SwapTokensFixedOutputArgs,
 } from '../models/pair.args';
 import BigNumber from 'bignumber.js';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { PairGetterService } from './pair.getter.service';

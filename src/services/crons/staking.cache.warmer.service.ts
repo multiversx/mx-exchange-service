@@ -5,7 +5,7 @@ import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-conf
 import { AbiStakingService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
 import { ContextSetterService } from '../context/context.setter.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()

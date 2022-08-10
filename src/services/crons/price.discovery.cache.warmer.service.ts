@@ -6,7 +6,7 @@ import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/p
 import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
 import { PriceDiscoverySetterService } from 'src/modules/price-discovery/services/price.discovery.setter.service';
 import { ContextSetterService } from '../context/context.setter.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()

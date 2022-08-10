@@ -10,7 +10,7 @@ import { elrondConfig, gasConfig } from 'src/config';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { TransactionModel } from '../../../models/transaction.model';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/services/elrond-proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
 
 @Injectable()

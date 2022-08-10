@@ -10,7 +10,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { Logger } from 'winston';
-import { ElrondProxyService } from '../elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../elrond-communication/services/elrond-proxy.service';
 
 @Injectable()
 export class GenericAbiService {

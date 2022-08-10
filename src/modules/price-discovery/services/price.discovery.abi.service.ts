@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Interaction } from '@elrondnetwork/erdjs/out/smartcontracts/interaction';
 import { U64Value } from '@elrondnetwork/erdjs';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';

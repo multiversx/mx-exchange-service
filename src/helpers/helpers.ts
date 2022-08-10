@@ -42,4 +42,3 @@ export function oneWeek(): number {
 export function oneMonth(): number {
     return oneDay() * 30;
 }
-}

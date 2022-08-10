@@ -4,7 +4,7 @@ import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { BigNumber } from 'bignumber.js';
 import { UnlockAssetsArs } from '../models/locked-asset.args';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';

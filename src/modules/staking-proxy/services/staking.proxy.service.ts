@@ -10,7 +10,7 @@ import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { ElrondApiService } from 'src/services/elrond-communication/services/elrond-api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { DualYieldTokenAttributesModel } from '../models/dualYieldTokenAttributes.model';
