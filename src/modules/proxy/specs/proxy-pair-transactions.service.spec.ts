@@ -22,6 +22,7 @@ import { ProxyPairGetterServiceMock } from '../mocks/proxy.pair.getter.service.m
 import { ProxyGetterService } from '../services/proxy.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
+import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
@@ -65,6 +66,7 @@ describe('TransactionProxyPairService', () => {
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [
+                CachingModule,
                 WinstonModule.forRoot({
                     transports: logTransports,
                 }),

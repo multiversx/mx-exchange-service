@@ -3,6 +3,7 @@ import {
     Controller,
     Delete,
     Get,
+    Inject,
     Param,
     Post,
     Put,
@@ -18,6 +19,10 @@ import { SCAddressModel, SCAddressType } from './models/sc-address.model';
 import { Response } from 'express';
 import { RemoteConfigSetterService } from './remote-config.setter.service';
 import mongoose from 'mongoose';
+import { PUB_SUB } from 'src/services/redis.pubSub.module';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { CacheKeysArgs } from './args/cacheKeys.args';
+import { CachingService } from 'src/services/caching/cache.service';
 
 @Controller('remote-config')
 export class RemoteConfigController {
@@ -25,6 +30,8 @@ export class RemoteConfigController {
         private readonly flagRepositoryService: FlagRepositoryService,
         private readonly scAddressRepositoryService: SCAddressRepositoryService,
         private readonly remoteConfigSetterService: RemoteConfigSetterService,
+        private readonly cacheService: CachingService,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @UseGuards(JwtAdminGuard)
@@ -206,5 +213,18 @@ export class RemoteConfigController {
         }
 
         return false;
+    }
+
+    @UseGuards(JwtAdminGuard)
+    @Post('/cache/delete-keys')
+    async deleteCacheKeys(
+        @Body() cacheKeys: CacheKeysArgs,
+        @Res() res: Response,
+    ): Promise<Response> {
+        for (const key of cacheKeys.keys) {
+            await this.cacheService.deleteInCache(key);
+        }
+        await this.pubSub.publish('deleteCacheKeys', cacheKeys.keys);
+        return res.status(200).send();
     }
 }

@@ -1,11 +1,8 @@
-import {
-    CreatePairEvent,
-    PairSwapEnabledEvent,
-    ROUTER_EVENTS,
-} from '@elrondnetwork/erdjs-dex';
+import { CreatePairEvent, ROUTER_EVENTS } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { constantsConfig } from 'src/config';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import { AbiRouterService } from '../router/services/abi.router.service';
@@ -27,10 +24,43 @@ export class RabbitMQRouterHandlerService {
     ) {}
 
     async handleCreatePairEvent(event: CreatePairEvent): Promise<void> {
-        const [pairsMetadata, pairsAddresses] = await Promise.all([
+        const [firstTokenID, secondTokenID] = [
+            event.toJSON().firstTokenID,
+            event.toJSON().secondTokenID,
+        ];
+        const [
+            pairsMetadata,
+            pairsAddresses,
+            firstTokenType,
+            secondTokenType,
+        ] = await Promise.all([
             this.routerAbiService.getPairsMetadata(),
             this.routerAbiService.getAllPairsAddress(),
+            this.tokenGetter.getEsdtTokenType(firstTokenID),
+            this.tokenGetter.getEsdtTokenType(secondTokenID),
         ]);
+
+        if (
+            firstTokenID === constantsConfig.USDC_TOKEN_ID ||
+            secondTokenID === constantsConfig.USDC_TOKEN_ID
+        ) {
+            if (firstTokenType === 'Unlisted') {
+                const createTokenDto: CreateTokenDto = {
+                    tokenID: firstTokenID,
+                    type: 'Jungle',
+                };
+                this.tokenRepository.create(createTokenDto);
+            }
+
+            if (secondTokenType === 'Unlisted') {
+                const createTokenDto: CreateTokenDto = {
+                    tokenID: secondTokenID,
+                    type: 'Jungle',
+                };
+                this.tokenRepository.create(createTokenDto);
+            }
+        }
+
         const keys = await Promise.all([
             this.routerSetterService.setPairsMetadata(pairsMetadata),
             this.routerSetterService.setAllPairsAddress(pairsAddresses),
@@ -41,29 +71,6 @@ export class RabbitMQRouterHandlerService {
         await this.pubSub.publish(ROUTER_EVENTS.CREATE_PAIR, {
             createPairEvent: event,
         });
-    }
-
-    async handlePairSwapEnabled(event: PairSwapEnabledEvent): Promise<void> {
-        const [firstTokenType, secondTokenType] = await Promise.all([
-            this.tokenGetter.getEsdtTokenType(event.getFirstTokenID()),
-            this.tokenGetter.getEsdtTokenType(event.getSecondTokenID()),
-        ]);
-
-        if (firstTokenType === 'Unlisted') {
-            const createTokenDto: CreateTokenDto = {
-                tokenID: event.getFirstTokenID(),
-                type: 'Jungle',
-            };
-            this.tokenRepository.create(createTokenDto);
-        }
-
-        if (secondTokenType === 'Unlisted') {
-            const createTokenDto: CreateTokenDto = {
-                tokenID: event.getFirstTokenID(),
-                type: 'Jungle',
-            };
-            this.tokenRepository.create(createTokenDto);
-        }
     }
 
     private async deleteCacheKeys() {

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { Logger } from 'winston';
@@ -13,11 +14,12 @@ export class TokenService {
         private readonly tokenGetter: TokenGetterService,
         private readonly routerGetter: RouterGetterService,
         private readonly contextGetter: ContextGetterService,
+        private readonly pairGetter: PairGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
-        let tokenIDs = await this.getUniqueTokenIDs();
+        let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
         if (filters.identifiers && filters.identifiers.length > 0) {
             tokenIDs = tokenIDs.filter(tokenID =>
                 filters.identifiers.includes(tokenID),
@@ -41,11 +43,22 @@ export class TokenService {
         return tokens;
     }
 
-    private async getUniqueTokenIDs(): Promise<string[]> {
+    async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
         const tokenIDs: string[] = [];
         for (const iterator of pairsMetadata) {
-            tokenIDs.push(...[iterator.firstTokenID, iterator.secondTokenID]);
+            if (activePool) {
+                const state = await this.pairGetter.getState(iterator.address);
+                if (state === 'Active') {
+                    tokenIDs.push(
+                        ...[iterator.firstTokenID, iterator.secondTokenID],
+                    );
+                }
+            } else {
+                tokenIDs.push(
+                    ...[iterator.firstTokenID, iterator.secondTokenID],
+                );
+            }
         }
 
         return [...new Set(tokenIDs)];

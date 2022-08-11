@@ -1,39 +1,36 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PriceFeedService } from '../../services/price-feed/price-feed.service';
-import { FarmService } from '../farm/services/farm.service';
+import { PriceFeedService } from '../../../services/price-feed/price-feed.service';
+import { FarmService } from '../../farm/services/farm.service';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyFarmGetterService } from '../proxy/services/proxy-farm/proxy-farm.getter.service';
-import { ProxyPairGetterService } from '../proxy/services/proxy-pair/proxy-pair.getter.service';
-import { UserToken } from './models/user.model';
+import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
+import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import BigNumber from 'bignumber.js';
-import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
-import { UserNftTokens } from './nfttokens.union';
-import { UserComputeService } from './user.compute.service';
+import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { UserNftTokens } from '../models/nfttokens.union';
+import { UserComputeService } from './metaEsdt.compute.service';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
 import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
 import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
-import { CachingService } from '../../services/caching/cache.service';
-import { oneSecond } from '../../helpers/helpers';
-import { generateGetLogMessage } from '../../utils/generate-log-message';
+import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
+import { CachingService } from '../../../services/caching/cache.service';
+import { oneHour, oneSecond } from '../../../helpers/helpers';
+import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { FarmGetterService } from '../farm/services/farm.getter.service';
-import { PaginationArgs } from '../dex.model';
-import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
+import { FarmGetterService } from '../../farm/services/farm.getter.service';
+import { PaginationArgs } from '../../dex.model';
+import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
-import { StakingGetterService } from '../staking/services/staking.getter.service';
-import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
+import { StakingGetterService } from '../../staking/services/staking.getter.service';
+import { StakingProxyGetterService } from '../../staking-proxy/services/staking.proxy.getter.service';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
-import { PriceDiscoveryService } from '../price-discovery/services/price.discovery.service';
-import { SimpleLockGetterService } from '../simple-lock/services/simple.lock.getter.service';
-import { EsdtTokenType } from '../tokens/models/esdtToken.model';
-import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
-import { IEsdtToken } from '../tokens/models/esdtToken.interface';
-import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
-import { INFTToken } from '../tokens/models/nft.interface';
+import { PriceDiscoveryService } from '../../price-discovery/services/price.discovery.service';
+import { SimpleLockGetterService } from '../../simple-lock/services/simple.lock.getter.service';
+import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
+import { INFTToken } from '../../tokens/models/nft.interface';
+import { UserEsdtService } from './user.esdt.service';
 
 enum NftTokenType {
     FarmToken,
@@ -51,10 +48,10 @@ enum NftTokenType {
 @Injectable()
 export class UserService {
     constructor(
+        private userEsdt: UserEsdtService,
         private userComputeService: UserComputeService,
         private apiService: ElrondApiService,
         private cachingService: CachingService,
-        private pairService: PairService,
         private priceFeed: PriceFeedService,
         private proxyPairGetter: ProxyPairGetterService,
         private proxyFarmGetter: ProxyFarmGetterService,
@@ -68,38 +65,6 @@ export class UserService {
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
-
-    async getAllEsdtTokens(
-        userAddress: string,
-        pagination: PaginationArgs,
-        inputTokens?: IEsdtToken[],
-    ): Promise<UserToken[]> {
-        let userTokens: IEsdtToken[];
-        if (inputTokens) {
-            userTokens = inputTokens;
-        } else {
-            userTokens = await this.apiService.getTokensForUser(
-                userAddress,
-                pagination.offset,
-                pagination.limit,
-            );
-        }
-        const userPairEsdtTokens = [];
-        for (const userToken of userTokens) {
-            const isPairEsdtToken = await this.pairService.isPairEsdtToken(
-                userToken.identifier,
-            );
-            if (isPairEsdtToken) {
-                userPairEsdtTokens.push(userToken);
-            }
-        }
-
-        const promises = userPairEsdtTokens.map(async token => {
-            return await this.getEsdtTokenDetails(token);
-        });
-        const tokens = await Promise.all(promises);
-        return tokens;
-    }
 
     async getAllNftTokens(
         userAddress: string,
@@ -129,7 +94,7 @@ export class UserService {
                 userNFTs = await this.cachingService.getOrSet(
                     cacheKey,
                     getUserNfts,
-                    oneSecond(),
+                    oneSecond() * 6,
                 );
             } catch (error) {
                 const logMessage = generateGetLogMessage(
@@ -146,9 +111,24 @@ export class UserService {
         const promises: Promise<typeof UserNftTokens>[] = [];
 
         for (const userNft of userNFTs) {
-            const userNftTokenType = await this.getNftTokenType(
-                userNft.collection,
-            );
+            let userNftTokenType: NftTokenType;
+            try {
+                userNftTokenType = await this.cachingService.getOrSet(
+                    `${userNft.collection}.metaEsdtType`,
+                    () => this.getNftTokenType(userNft.collection),
+                    oneHour(),
+                );
+            } catch (error) {
+                const logMessage = generateGetLogMessage(
+                    PairService.name,
+                    this.getAllNftTokens.name,
+                    `${userNft.collection}.metaEsdtType`,
+                    error,
+                );
+                this.logger.error(logMessage);
+                throw error;
+            }
+
             switch (userNftTokenType) {
                 case NftTokenType.FarmToken:
                     const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
@@ -230,22 +210,6 @@ export class UserService {
         }
 
         return await Promise.all(promises);
-    }
-
-    private async getEsdtTokenDetails(token: UserToken): Promise<UserToken> {
-        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            token.identifier,
-        );
-        if (pairAddress) {
-            const userToken = await this.userComputeService.lpTokenUSD(
-                token,
-                pairAddress,
-            );
-            userToken.type = EsdtTokenType.FungibleLpToken;
-            return userToken;
-        }
-        const userToken = await this.userComputeService.esdtTokenUSD(token);
-        return userToken;
     }
 
     private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
@@ -343,7 +307,7 @@ export class UserService {
         ] = await Promise.all([
             this.priceFeed.getTokenPrice('egld'),
             this.apiService.getAccountStats(address),
-            this.getAllEsdtTokens(address, {
+            this.userEsdt.getAllEsdtTokens(address, {
                 offset: 0,
                 limit: userEsdtTokensCount,
             }),

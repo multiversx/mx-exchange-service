@@ -47,9 +47,6 @@ export class AutoRouterService {
             args.tokenOutID,
         ]);
 
-        if (tokenInID === tokenOutID)
-            throw new Error('Can\t swap identical tokens.');
-
         const [
             directPair,
             pairs,

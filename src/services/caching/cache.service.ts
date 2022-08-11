@@ -15,6 +15,7 @@ import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import * as Redis from 'ioredis';
 import { oneMinute } from 'src/helpers/helpers';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class CachingService {
@@ -69,7 +70,7 @@ export class CachingService {
 
     private async getCacheRemote<T>(key: string): Promise<T | undefined> {
         let response;
-
+        const profiler = new PerformanceProfiler();
         let pendingGetRemote = this.pendingGetRemotes[key];
         if (pendingGetRemote) {
             response = await pendingGetRemote;
@@ -82,6 +83,9 @@ export class CachingService {
 
             delete this.pendingGetRemotes[key];
         }
+
+        profiler.stop();
+        MetricsCollector.setRedisDuration('GET', profiler.duration);
 
         if (response === undefined) {
             return undefined;
