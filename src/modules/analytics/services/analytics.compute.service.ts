@@ -57,10 +57,10 @@ export class AnalyticsComputeService {
                 ),
             );
         }
-        if (farmsAddresses()[11] !== undefined) {
+        if (farmsAddresses()[12] !== undefined) {
             promises.push(
                 this.farmComputeService.computeFarmLockedValueUSD(
-                    farmsAddresses()[11],
+                    farmsAddresses()[12],
                 ),
             );
         }

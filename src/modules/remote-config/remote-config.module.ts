@@ -8,9 +8,8 @@ import { Flag, FlagSchema } from './schemas/flag.schema';
 import { RemoteConfigController } from './remote-config.controller';
 import { RemoteConfigGetterService } from './remote-config.getter.service';
 import { RemoteConfigSetterService } from './remote-config.setter.service';
-import { CachingModule } from 'src/services/caching/cache.module';
-import { ConfigModule } from '@nestjs/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { CachingModule } from 'src/services/caching/cache.module';
 
 @Module({
     imports: [
@@ -35,5 +34,6 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
         FlagRepositoryService,
         SCAddressRepositoryService,
     ],
+    controllers: [RemoteConfigController],
 })
 export class RemoteConfigModule {}

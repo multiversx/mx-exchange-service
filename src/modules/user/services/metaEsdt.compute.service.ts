@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { scAddress } from '../../config';
+import { scAddress } from '../../../config';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
 import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
 import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
-import { ElrondApiService } from '../../services/elrond-communication/elrond-api.service';
-import { FarmGetterService } from '../farm/services/farm.getter.service';
-import { FarmService } from '../farm/services/farm.service';
-import { LockedAssetService } from '../locked-asset-factory/services/locked-asset.service';
+import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { FarmGetterService } from '../../farm/services/farm.getter.service';
+import { FarmService } from '../../farm/services/farm.service';
+import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
-import { ProxyService } from '../proxy/services/proxy.service';
+import { ProxyService } from '../../proxy/services/proxy.service';
 import {
     UserDualYiledToken,
     UserFarmToken,
@@ -24,21 +24,25 @@ import {
     UserStakeFarmToken,
     UserToken,
     UserUnbondFarmToken,
-} from './models/user.model';
-import { PairGetterService } from '../pair/services/pair.getter.service';
-import { computeValueUSD, tokenIdentifier } from '../../utils/token.converters';
-import { ProxyGetterService } from '../proxy/services/proxy.getter.service';
+} from '../models/user.model';
+import { PairGetterService } from '../../pair/services/pair.getter.service';
+import {
+    computeValueUSD,
+    tokenIdentifier,
+} from '../../../utils/token.converters';
+import { ProxyGetterService } from '../../proxy/services/proxy.getter.service';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
-import { StakingGetterService } from '../staking/services/staking.getter.service';
-import { StakingProxyGetterService } from '../staking-proxy/services/staking.proxy.getter.service';
-import { StakingService } from '../staking/services/staking.service';
-import { StakingProxyService } from '../staking-proxy/services/staking.proxy.service';
+import { StakingGetterService } from '../../staking/services/staking.getter.service';
+import { StakingProxyGetterService } from '../../staking-proxy/services/staking.proxy.getter.service';
+import { StakingService } from '../../staking/services/staking.service';
+import { StakingProxyService } from '../../staking-proxy/services/staking.proxy.service';
 import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
-import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
-import { SimpleLockService } from '../simple-lock/services/simple.lock.service';
+import { PriceDiscoveryGetterService } from '../../price-discovery/services/price.discovery.getter.service';
+import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ruleOfThree } from 'src/helpers/helpers';
-import { TokenComputeService } from '../tokens/services/token.compute.service';
+import { UserEsdtComputeService } from './esdt.compute.service';
+import { TokenComputeService } from '../../tokens/services/token.compute.service';
 
 @Injectable()
 export class UserComputeService {
@@ -57,6 +61,7 @@ export class UserComputeService {
         private readonly stakingProxyService: StakingProxyService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly simpleLockService: SimpleLockService,
+        private readonly userEsdtCompute: UserEsdtComputeService,
         private readonly tokenCompute: TokenComputeService,
     ) {}
 
@@ -215,7 +220,13 @@ export class UserComputeService {
                 decodedWFMTAttributes[0].farmTokenIdentifier,
             ),
         ]);
-        const userFarmToken = await this.farmTokenUSD(farmToken, farmAddress);
+        const userFarmToken = await this.farmTokenUSD(
+            new NftToken({
+                ...farmToken,
+                balance: nftToken.balance,
+            }),
+            farmAddress,
+        );
         return new UserLockedFarmToken({
             ...nftToken,
             valueUSD: userFarmToken.valueUSD,
@@ -399,9 +410,12 @@ export class UserComputeService {
             decimals: nftToken.decimals,
         });
         if (pairAddress) {
-            userEsdtToken = await this.lpTokenUSD(esdtToken, pairAddress);
+            userEsdtToken = await this.userEsdtCompute.lpTokenUSD(
+                esdtToken,
+                pairAddress,
+            );
         } else {
-            userEsdtToken = await this.esdtTokenUSD(esdtToken);
+            userEsdtToken = await this.userEsdtCompute.esdtTokenUSD(esdtToken);
         }
 
         return new UserLockedEsdtToken({
@@ -423,7 +437,7 @@ export class UserComputeService {
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             decodedAttributes.lpTokenID,
         );
-        const userEsdtToken = await this.lpTokenUSD(
+        const userEsdtToken = await this.userEsdtCompute.lpTokenUSD(
             new EsdtToken({
                 identifier: decodedAttributes.lpTokenID,
                 balance: nftToken.balance,
@@ -442,7 +456,7 @@ export class UserComputeService {
     async lockedSimpleFarmTokenUSD(
         nftToken: NftToken,
     ): Promise<UserLockedSimpleFarmToken> {
-        const decodedAttributes = await this.simpleLockService.decodeFarmProxyTokenAttributes(
+        const decodedAttributes = this.simpleLockService.decodeFarmProxyTokenAttributes(
             {
                 identifier: nftToken.identifier,
                 attributes: nftToken.attributes,
@@ -460,7 +474,13 @@ export class UserComputeService {
             scAddress.simpleLockAddress,
             farmTokenIdentifier,
         );
-        const userFarmToken = await this.farmTokenUSD(farmToken, farmAddress);
+        const userFarmToken = await this.farmTokenUSD(
+            new NftToken({
+                ...farmToken,
+                balance: nftToken.balance,
+            }),
+            farmAddress,
+        );
 
         return new UserLockedSimpleFarmToken({
             ...nftToken,
