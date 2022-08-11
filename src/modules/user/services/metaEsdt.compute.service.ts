@@ -42,7 +42,7 @@ import { SimpleLockService } from '../../simple-lock/services/simple.lock.servic
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { UserEsdtComputeService } from './esdt.compute.service';
-import { TokenComputeService } from '../tokens/services/token.compute.service';
+import { TokenComputeService } from '../../tokens/services/token.compute.service';
 
 @Injectable()
 export class UserComputeService {
