@@ -65,7 +65,10 @@ export class AnalyticsGetterService extends GenericGetterService {
         );
     }
 
-    async getFeeTokenBurned(tokenID: string, time: string): Promise<string> {
+    async getFeeTokenBurned(
+        tokenID: string,
+        time: string /*number*/,
+    ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             tokenID,
             time,
@@ -85,7 +88,7 @@ export class AnalyticsGetterService extends GenericGetterService {
 
     async getPenaltyTokenBurned(
         tokenID: string,
-        time: string,
+        time: string /*number*/,
     ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             tokenID,

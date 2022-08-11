@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Maiar Exchange
+
+Parameters:
+    Network:
+        Type: String
+        Default: devnet
+        AllowedValues:
+            - mainnet
+            - testnet
+            - devnet
+
+Conditions:
+    IsMainnet: !Equals [!Ref Network, 'mainnet']
+
+Resources:
+    Timestream:
+        Type: AWS::Timestream::Database
+        Properties:
+            DatabaseName:
+                !If [
+                    IsMainnet,
+                    'maiar-exchange-timestream',
+                    !Sub '${Network}-maiar-exchange-timestream',
+                ]

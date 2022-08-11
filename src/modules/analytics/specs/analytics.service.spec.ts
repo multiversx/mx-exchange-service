@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/services/elrond-proxy.service';
 import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
 import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
@@ -10,11 +10,12 @@ import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { ElrondProxyServiceMock } from 'src/services/elrond-communication/mocks/elrond.proxy.service.mock';
 import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
-import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
+import { ElrondApiService } from 'src/services/elrond-communication/services/elrond-api.service';
+import { ElrondApiServiceMock } from 'src/services/elrond-communication/mocks/elrond.api.service.mock';
+import { AWSModule } from 'src/services/aws/aws.module';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
@@ -90,7 +91,7 @@ describe('AnalyticsService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule],
+            imports: [CommonAppModule, CachingModule, AWSModule],
             providers: [
                 ContextServiceProvider,
                 ContextGetterServiceProvider,

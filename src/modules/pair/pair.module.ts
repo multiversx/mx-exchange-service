@@ -12,6 +12,7 @@ import { PairGetterService } from './services/pair.getter.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { PairSetterService } from './services/pair.setter.service';
 import { DatabaseModule } from 'src/services/database/database.module';
+import { AWSModule } from 'src/services/aws/aws.module';
 import { TokenModule } from '../tokens/token.module';
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { TokenModule } from '../tokens/token.module';
         PriceFeedModule,
         WrappingModule,
         CachingModule,
+        AWSModule,
         DatabaseModule,
         TokenModule,
     ],

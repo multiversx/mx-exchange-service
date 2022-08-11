@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { awsConfig } from '../../../config';
+import { awsConfig } from 'src/config';
+//import { awsConfig, elrondData } from 'src/config';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
-import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../../services/caching/cache.service';
@@ -9,13 +9,14 @@ import { oneMinute } from '../../../helpers/helpers';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { HistoricDataModel } from '../models/analytics.model';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
+//import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
 
 @Injectable()
 export class AnalyticsAWSGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService, //private readonly elrondDataService: ElrondDataService,
     ) {
         super(cachingService, logger);
     }
@@ -40,6 +41,12 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     metric,
                     time,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            //     time,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -64,6 +71,12 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     metric,
                     time,
                 }),
+            // this.elrondDataService.getClosingValue({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            //     time,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -85,6 +98,11 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     series,
                     metric,
                 }),
+            // this.elrondDataService.getCompleteValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -106,6 +124,11 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     series,
                     metric,
                 }),
+            // this.elrondDataService.getLatestCompleteValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -127,6 +150,11 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     series,
                     metric,
                 }),
+            // this.elrondDataService.getSumCompleteValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -148,6 +176,11 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     series,
                     metric,
                 }),
+            // this.elrondDataService.getLatestValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -169,6 +202,11 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     series,
                     metric,
                 }),
+            // this.elrondDataService.getMarketValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -190,6 +228,11 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     series,
                     metric,
                 }),
+            // this.elrondDataService.getMarketCompleteValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -211,6 +254,11 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     series,
                     metric,
                 }),
+            // this.elrondDataService.getValues24hSum({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -228,6 +276,11 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     series,
                     metric,
                 }),
+            // this.elrondDataService.getValues24h({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     metric,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -255,6 +308,13 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     metric,
                     start,
                 }),
+            // this.elrondDataService.getLatestHistoricData({
+            //     table: elrondData.timestream.tableName,
+            //     time,
+            //     series,
+            //     metric,
+            //     start,
+            // }),
             oneMinute(),
         );
     }
@@ -285,6 +345,14 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     bin,
                     start,
                 }),
+            // this.elrondDataService.getLatestBinnedHistoricData({
+            //     table: elrondData.timestream.tableName,
+            //     time,
+            //     series,
+            //     metric,
+            //     bin,
+            //     start,
+            // }),
             oneMinute(),
         );
     }

@@ -1,20 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
-import { constantsConfig } from 'src/config';
+import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
+import { constantsConfig, elrondData } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { oneMinute } from 'src/helpers/helpers';
-import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
-import { TimestreamWrite } from 'aws-sdk';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { EsdtLocalBurnEvent, ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
+import { ElrondDataService } from '../elrond-communication/services/elrond-data.service';
+import { IngestRecord } from '../elrond-communication/models/ingest-records.model';
+import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
+import TimestreamWrite from 'aws-sdk/clients/timestreamwrite';
 
 @Injectable()
 export class LogsProcessorService {
@@ -25,8 +27,9 @@ export class LogsProcessorService {
     constructor(
         private readonly cachingService: CachingService,
         private readonly apiService: ElrondApiService,
-        private readonly elasticService: ElasticService,
         private readonly awsWrite: AWSTimestreamWriteService,
+        private readonly elrondDataService: ElrondDataService,
+        private readonly elasticService: ElasticService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -183,13 +186,18 @@ export class LogsProcessorService {
         recordsMap: Map<number, string>,
         MeasureName: string,
     ): Promise<number> {
+        const tableName = elrondData.timescale.table;
+
         const Dimensions = [
             { Name: 'series', Value: constantsConfig.MEX_TOKEN_ID },
         ];
         const MeasureValueType = 'DOUBLE';
         let Records: TimestreamWrite.Records = [];
 
-        let totalWriteRecords = 0;
+        let ingestRecords: IngestRecord[] = [];
+
+        let totalAwsWriteRecords = 0;
+        let totalElrondDataWrites = 0;
 
         for (const key of recordsMap.keys()) {
             const record = recordsMap.get(key);
@@ -207,17 +215,68 @@ export class LogsProcessorService {
                 Version: Date.now(),
             });
 
+            ingestRecords.push({
+                series: constantsConfig.MEX_TOKEN_ID,
+                key: MeasureName,
+                value: record,
+                timestamp: key,
+            });
+
             if (Records.length === 100) {
-                totalWriteRecords += await this.pushAWSRecords(Records);
-                Records = [];
+                const [
+                    timestreamIngestedCount,
+                    timescaleIngested,
+                ] = await Promise.all([
+                    this.pushAWSRecords(Records),
+                    await this.elrondDataService.ingest(
+                        tableName,
+                        ingestRecords,
+                    ),
+                ]);
+
+                totalAwsWriteRecords += timestreamIngestedCount;
+                totalElrondDataWrites += timescaleIngested
+                    ? ingestRecords.length
+                    : 0;
+
+                if (totalAwsWriteRecords !== totalElrondDataWrites) {
+                    this.logger.warn(
+                        'Timestream/Timescale write different result',
+                        {
+                            timestreamWrites: totalAwsWriteRecords,
+                            timescaleWrites: totalElrondDataWrites,
+                        },
+                    );
+                }
             }
         }
 
         if (Records.length > 0) {
-            totalWriteRecords += await this.pushAWSRecords(Records);
+            const [
+                timestreamIngestedCount,
+                timescaleIngested,
+            ] = await Promise.all([
+                this.pushAWSRecords(Records),
+                await this.elrondDataService.ingest(tableName, ingestRecords),
+            ]);
+
+            totalAwsWriteRecords += timestreamIngestedCount;
+            totalElrondDataWrites += timescaleIngested
+                ? ingestRecords.length
+                : 0;
+
+            if (totalAwsWriteRecords !== totalElrondDataWrites) {
+                this.logger.warn(
+                    'Timestream/Timescale write different result',
+                    {
+                        timestreamWrites: totalAwsWriteRecords,
+                        timescaleWrites: totalElrondDataWrites,
+                    },
+                );
+            }
         }
 
-        return totalWriteRecords;
+        return totalAwsWriteRecords;
     }
 
     private async pushAWSRecords(

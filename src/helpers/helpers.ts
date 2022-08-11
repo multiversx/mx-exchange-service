@@ -42,3 +42,31 @@ export function oneWeek(): number {
 export function oneMonth(): number {
     return oneDay() * 30;
 }
+
+export function oneYear(): number {
+    return oneMonth() * 12;
+}
+
+export function awsOneMinute(): string {
+    return '1m';
+}
+
+export function awsOneHour(): string {
+    return '1h';
+}
+
+export function awsOneDay(): string {
+    return '1d';
+}
+
+export function awsOneWeek(): string {
+    return '7d';
+}
+
+export function awsOneMonth(): string {
+    return '30d';
+}
+
+export function awsOneYear(): string {
+    return '365d';
+}

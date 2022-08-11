@@ -22,6 +22,7 @@ import { RouterService } from 'src/modules/router/services/router.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 import { denominateAmount } from 'src/utils/token.converters';
+
 @Injectable()
 export class AutoRouterService {
     constructor(

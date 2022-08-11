@@ -34,3 +34,7 @@ export const cronConfig = config.get('cron');
 export const constantsConfig = config.get('constants');
 
 export const securityConfig = config.get('security');
+
+export const awsConfig = config.get('aws');
+
+export const elrondData = config.get('elrondData');

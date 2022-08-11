@@ -1,7 +1,8 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { awsConfig } from 'src/config';
+import { awsConfig, elrondData } from 'src/config';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
+import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { RouterGetterService } from './router.getter.service';
 
@@ -12,6 +13,7 @@ export class RouterComputeService {
         private readonly routerGetterService: RouterGetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly elrondDataService: ElrondDataService,
     ) {}
 
     async computeTotalLockedValueUSD(): Promise<BigNumber> {
@@ -37,13 +39,20 @@ export class RouterComputeService {
         const pairsAddress = await this.routerGetterService.getAllPairsAddress();
         let totalVolumeUSD = new BigNumber(0);
 
-        const promises = pairsAddress.map(pairAddress =>
-            this.awsTimestreamQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
-                series: pairAddress,
-                metric: 'volumeUSD',
-                time,
-            }),
+        const promises = pairsAddress.map(
+            pairAddress =>
+                this.awsTimestreamQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'volumeUSD',
+                    time,
+                }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     metric: 'volumeUSD',
+            //     time,
+            // }),
         );
 
         const volumesUSD = await Promise.all(promises);
@@ -61,13 +70,20 @@ export class RouterComputeService {
         const pairsAddress = await this.routerGetterService.getAllPairsAddress();
         let totalFeesUSD = new BigNumber(0);
 
-        const promises = pairsAddress.map(pairAddress =>
-            this.awsTimestreamQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
-                series: pairAddress,
-                metric: 'feesUSD',
-                time,
-            }),
+        const promises = pairsAddress.map(
+            pairAddress =>
+                this.awsTimestreamQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'feesUSD',
+                    time,
+                }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     metric: 'feesUSD',
+            //     time,
+            // }),
         );
 
         const feesUSD = await Promise.all(promises);

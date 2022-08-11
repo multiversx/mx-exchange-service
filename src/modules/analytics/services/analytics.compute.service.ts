@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { awsConfig } from 'src/config';
+//import { awsConfig, elrondData } from 'src/config';
 import {
     FarmRewardType,
     FarmVersion,
@@ -10,6 +11,7 @@ import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { ContextService } from 'src/services/context/context.service';
+//import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
@@ -20,7 +22,8 @@ export class AnalyticsComputeService {
         private readonly farmComputeService: FarmComputeService,
         private readonly pairGetterService: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-    ) {}
+    ) //private readonly elrondDataService: ElrondDataService,
+    {}
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
@@ -105,7 +108,7 @@ export class AnalyticsComputeService {
 
     async computeTokenBurned(
         tokenID: string,
-        time: string,
+        time: string, //number,
         metric: string,
     ): Promise<string> {
         return await this.awsTimestreamQuery.getAggregatedValue({
@@ -114,6 +117,12 @@ export class AnalyticsComputeService {
             metric,
             time,
         });
+        // return await this.elrondDataService.getAggregatedValue({
+        //     table: elrondData.timestream.tableName,
+        //     series: tokenID,
+        //     metric,
+        //     timestamp: time,
+        // });
     }
 
     private async fiterPairsByIssuedLpToken(

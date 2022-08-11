@@ -9,6 +9,7 @@ import { RouterGetterService } from './services/router.getter.service';
 import { RouterComputeService } from './services/router.compute.service';
 import { PairModule } from '../pair/pair.module';
 import { RouterSetterService } from './services/router.setter.service';
+import { AWSModule } from 'src/services/aws/aws.module';
 import { CommonAppModule } from 'src/common.app.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { WrappingModule } from '../wrapping/wrap.module';
@@ -20,6 +21,7 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
         ElrondCommunicationModule,
         CachingModule,
         PairModule,
+        AWSModule,
         ContextModule,
         WrappingModule,
         RemoteConfigModule,

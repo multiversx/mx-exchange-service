@@ -5,7 +5,7 @@ import { CachingService } from '../caching/cache.service';
 import { cacheConfig, constantsConfig, tokensSupplyConfig } from 'src/config';
 import { AnalyticsComputeService } from 'src/modules/analytics/services/analytics.compute.service';
 import { AnalyticsGetterService } from 'src/modules/analytics/services/analytics.getter.service';
-import { awsOneYear, oneMinute } from '../../helpers/helpers';
+import { awsOneYear, oneMinute, oneYear } from '../../helpers/helpers';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 
@@ -60,28 +60,24 @@ export class AnalyticsCacheWarmerService {
         const [feeBurned, penaltyBurned] = await Promise.all([
             this.analyticsCompute.computeTokenBurned(
                 constantsConfig.MEX_TOKEN_ID,
-                awsOneYear(),
+                awsOneYear(),// oneYear(),
                 'feeBurned',
             ),
             this.analyticsCompute.computeTokenBurned(
                 constantsConfig.MEX_TOKEN_ID,
-                awsOneYear(),
+                awsOneYear(),// oneYear(),
                 'penaltyBurned',
             ),
         ]);
 
         await Promise.all([
             this.setAnalyticsCache(
-                [constantsConfig.MEX_TOKEN_ID, awsOneYear(), 'feeTokenBurned'],
+                [constantsConfig.MEX_TOKEN_ID, oneYear(), 'feeTokenBurned'],
                 feeBurned,
                 oneMinute() * 10,
             ),
             this.setAnalyticsCache(
-                [
-                    constantsConfig.MEX_TOKEN_ID,
-                    awsOneYear(),
-                    'penaltyTokenBurned',
-                ],
+                [constantsConfig.MEX_TOKEN_ID, oneYear(), 'penaltyTokenBurned'],
                 penaltyBurned,
                 oneMinute() * 10,
             ),

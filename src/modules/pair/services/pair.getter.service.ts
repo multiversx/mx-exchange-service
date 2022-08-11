@@ -1,12 +1,13 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { awsConfig, constantsConfig } from 'src/config';
+import { awsConfig, constantsConfig, elrondData } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -25,6 +26,7 @@ export class PairGetterService extends GenericGetterService {
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly elrondDataService: ElrondDataService,
     ) {
         super(cachingService, logger);
     }
@@ -204,6 +206,12 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'firstTokenVolume',
                     time,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     metric: 'firstTokenVolume',
+            //     time,
+            // }),
             oneMinute(),
         );
     }
@@ -221,6 +229,12 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'secondTokenVolume',
                     time,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     metric: 'secondTokenVolume',
+            //     time,
+            // }),
             oneMinute(),
         );
     }
@@ -235,6 +249,12 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'volumeUSD',
                     time,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     metric: 'volumeUSD',
+            //     time,
+            // }),
             oneMinute(),
         );
     }
@@ -249,6 +269,12 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'feesUSD',
                     time,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     metric: 'feesUSD',
+            //     time,
+            // }),
             oneMinute(),
         );
     }
