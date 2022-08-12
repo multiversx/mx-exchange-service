@@ -9,7 +9,10 @@ export class NativeAuthClientService {
     private signableToken: string;
 
     constructor() {
-        this.client = new NativeAuthClient({ host: process.env.APP_NAME });
+        this.client = new NativeAuthClient({
+            host: process.env.APP_NAME,
+            apiUrl: process.env.ELRONDAPI_URL,
+        });
         this.client
             .initialize({
                 env: process.env.NODE_ENV,
