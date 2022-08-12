@@ -38,4 +38,16 @@ export class PairDayDataResolver {
         }
         return await this.analyticsPairService.getPairsDayDatas();
     }
+
+    @Query(() => String)
+    async pairTotalVolume(
+        @Args('pairAddress', { nullable: false }) pairAddress: string,
+    ): Promise<String> {
+        return await this.analyticsPairService.getTotalVolumeUSD(pairAddress);
+    }
+
+    @Query(() => String)
+    async pairsTotalVolume(): Promise<String> {
+        return await this.analyticsPairService.getTotalVolumeForAllPairsUSD();
+    }
 }

@@ -31,6 +31,36 @@ export class AnalyticsPairService {
         );
     }
 
+    async getTotalVolumeUSD(pairAddress: string): Promise<string> {
+        const dailyVolumes: HistoricDataModel[] = await this.getDailyVolumesUSD(
+            pairAddress,
+        );
+        console.log(dailyVolumes);
+        let totalVolume: BigNumber = new BigNumber(0);
+        for (const dailyVolume of dailyVolumes) {
+            totalVolume = totalVolume.plus(dailyVolume.value);
+        }
+        return totalVolume.toString();
+    }
+
+    async getTotalVolumeForAllPairsUSD(): Promise<string> {
+        const pairAddresses: string[] = await this.context.getAllPairsAddress();
+
+        console.log(pairAddresses.length);
+
+        let promises: Promise<string>[] = [];
+        for (const pair of pairAddresses) {
+            promises.push(this.getTotalVolumeUSD(pair));
+        }
+
+        let totalVolume: BigNumber = new BigNumber(0);
+        for (const promise of promises) {
+            totalVolume = totalVolume.plus(await promise);
+        }
+
+        return totalVolume.toString();
+    }
+
     async getDailyFeesUSD(pairAddress: string): Promise<HistoricDataModel[]> {
         return await this.analyticsService.getSumCompleteValues(
             pairAddress,
