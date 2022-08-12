@@ -16,8 +16,7 @@ export function quote(
 
     return tokenInAmountBig
         .multipliedBy(tokenOutReservesBig)
-        .dividedBy(tokenInReservesBig)
-        .integerValue();
+        .dividedBy(tokenInReservesBig);
 }
 
 export function getAmountOut(
