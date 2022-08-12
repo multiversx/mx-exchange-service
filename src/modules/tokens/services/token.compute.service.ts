@@ -39,7 +39,6 @@ export class TokenComputeService {
 
         if (tokenID === constantsConfig.USDC_TOKEN_ID) {
             const eglpPriceUSD = await this.getEgldPriceInUSD();
-            console.log;
             priceSoFar = new BigNumber(1).dividedBy(eglpPriceUSD).toFixed();
         } else {
             for (const pair of tokenPairs) {
