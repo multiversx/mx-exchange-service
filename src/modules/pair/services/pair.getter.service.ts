@@ -4,6 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig, constantsConfig } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -24,6 +25,8 @@ export class PairGetterService extends GenericGetterService {
         private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
+        @Inject(forwardRef(() => TokenComputeService))
+        private readonly tokenCompute: TokenComputeService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
     ) {
         super(cachingService, logger);
@@ -104,7 +107,7 @@ export class PairGetterService extends GenericGetterService {
     async getTokenPriceUSD(tokenID: string): Promise<string> {
         return await this.getData(
             this.getPairCacheKey('priceUSD', tokenID),
-            () => this.pairComputeService.computeTokenPriceUSD(tokenID),
+            () => this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
             oneSecond() * 12,
         );
     }

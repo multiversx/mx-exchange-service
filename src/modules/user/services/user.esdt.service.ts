@@ -58,7 +58,7 @@ export class UserEsdtService {
         );
 
         promises = userPairEsdtTokens.map(token => {
-            return this.getEsdtTokenDetails(token);
+            return this.getEsdtTokenDetails(new EsdtToken(token));
         });
         return await Promise.all(promises);
     }

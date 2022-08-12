@@ -16,17 +16,19 @@ import { RouterSetterService } from '../../router/services/router.setter.service
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextService } from 'src/services/context/context.service';
 import { AddLiquidityEventType, SwapEventType } from '@elrondnetwork/erdjs-dex';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 @Injectable()
 export class AnalyticsEventHandlerService {
-    private invalidatedKeys = [];
-
     constructor(
         private readonly context: ContextService,
         private readonly contextGetter: ContextGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
+        private readonly tokenSetterService: TokenSetterService,
+        private readonly tokenComputeService: TokenComputeService,
         private readonly routerSetterService: RouterSetterService,
         private readonly routerComputeService: RouterComputeService,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
@@ -74,22 +76,19 @@ export class AnalyticsEventHandlerService {
             Time: event.timestamp,
         });
 
-        this.invalidatedKeys.push(
-            this.routerSetterService.setTotalLockedValueUSD(
-                newTotalLockedValueUSD.toFixed(),
-            ),
+        const cacheKey = await this.routerSetterService.setTotalLockedValueUSD(
+            newTotalLockedValueUSD.toFixed(),
         );
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys([cacheKey]);
     }
 
     async handleSwapEvents(event: SwapEventType): Promise<void> {
-        await this.updatePairPrices(
-            event.address,
-            event.tokenIn.tokenID,
-            event.tokenOut.tokenID,
-        );
+        await this.updatePairPrices(event.address);
         await this.updatePairLockedValueUSD(event.address);
-
+        await Promise.all([
+            this.updateTokenPrices(event.tokenIn.tokenID),
+            this.updateTokenPrices(event.tokenOut.tokenID),
+        ]);
         const [
             firstTokenID,
             secondTokenID,
@@ -246,8 +245,7 @@ export class AnalyticsEventHandlerService {
                 '24h',
             ),
         ]);
-        this.invalidatedKeys.push(cacheKeys);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(cacheKeys);
     }
 
     private async updatePairLockedValueUSD(pairAddress: string): Promise<void> {
@@ -278,31 +276,22 @@ export class AnalyticsEventHandlerService {
                 pairLockedValueUSD.toFixed(),
             ),
         ]);
-        this.invalidatedKeys.push(cacheKeys);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(cacheKeys);
     }
 
-    private async updatePairPrices(
-        pairAddress: string,
-        firstTokenID: string,
-        secondTokenID: string,
-    ): Promise<void> {
+    private async updatePairPrices(pairAddress: string): Promise<void> {
         const [
             firstTokenPrice,
             secondTokenPrice,
             firstTokenPriceUSD,
             secondTokenPriceUSD,
             lpTokenPriceUSD,
-            genericFirstTokenPriceUSD,
-            genericSecondTokenPriceUSD,
         ] = await Promise.all([
             this.pairComputeService.computeFirstTokenPrice(pairAddress),
             this.pairComputeService.computeSecondTokenPrice(pairAddress),
             this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
             this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
             this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
-            this.pairComputeService.computeTokenPriceUSD(firstTokenID),
-            this.pairComputeService.computeTokenPriceUSD(secondTokenID),
         ]);
         const cacheKeys = await Promise.all([
             this.pairSetterService.setFirstTokenPrice(
@@ -325,17 +314,20 @@ export class AnalyticsEventHandlerService {
                 pairAddress,
                 lpTokenPriceUSD,
             ),
-            this.pairSetterService.setTokenPriceUSD(
-                firstTokenID,
-                genericFirstTokenPriceUSD.toFixed(),
-            ),
-            this.pairSetterService.setTokenPriceUSD(
-                secondTokenID,
-                genericSecondTokenPriceUSD.toFixed(),
-            ),
         ]);
-        this.invalidatedKeys.push(cacheKeys);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(cacheKeys);
+    }
+
+    private async updateTokenPrices(tokenID: string): Promise<void> {
+        const [derivedEGLD, derivedUSD] = await Promise.all([
+            this.tokenComputeService.computeTokenPriceDerivedEGLD(tokenID),
+            this.tokenComputeService.computeTokenPriceDerivedUSD(tokenID),
+        ]);
+        const cacheKeys = await Promise.all([
+            this.tokenSetterService.setDerivedEGLD(tokenID, derivedEGLD),
+            this.tokenSetterService.setDerivedUSD(tokenID, derivedUSD),
+        ]);
+        await this.deleteCacheKeys(cacheKeys);
     }
 
     private async getTokenLiquidityData(tokenID: string): Promise<any> {
@@ -393,8 +385,7 @@ export class AnalyticsEventHandlerService {
         };
     }
 
-    private async deleteCacheKeys() {
-        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
-        this.invalidatedKeys = [];
+    private async deleteCacheKeys(invalidatedKeys: string[]) {
+        await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }

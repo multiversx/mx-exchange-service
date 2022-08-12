@@ -42,6 +42,7 @@ import { SimpleLockService } from '../../simple-lock/services/simple.lock.servic
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { UserEsdtComputeService } from './esdt.compute.service';
+import { TokenComputeService } from '../../tokens/services/token.compute.service';
 
 @Injectable()
 export class UserComputeService {
@@ -61,7 +62,36 @@ export class UserComputeService {
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly simpleLockService: SimpleLockService,
         private readonly userEsdtCompute: UserEsdtComputeService,
+        private readonly tokenCompute: TokenComputeService,
     ) {}
+
+    async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
+        const tokenPriceUSD = await this.tokenCompute.computeTokenPriceDerivedUSD(
+            esdtToken.identifier,
+        );
+        return new UserToken({
+            ...esdtToken,
+            valueUSD: computeValueUSD(
+                esdtToken.balance,
+                esdtToken.decimals,
+                tokenPriceUSD,
+            ).toFixed(),
+        });
+    }
+
+    async lpTokenUSD(
+        esdtToken: EsdtToken,
+        pairAddress: string,
+    ): Promise<UserToken> {
+        const valueUSD = await this.pairService.getLiquidityPositionUSD(
+            pairAddress,
+            esdtToken.balance,
+        );
+        return new UserToken({
+            ...esdtToken,
+            valueUSD: valueUSD,
+        });
+    }
 
     async farmTokenUSD(
         nftToken: NftToken,

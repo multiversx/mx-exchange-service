@@ -30,6 +30,8 @@ import { FarmComputeService } from 'src/modules/farm/services/farm.compute.servi
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -109,6 +111,7 @@ describe('AnalyticsService', () => {
                 PriceFeedServiceProvider,
                 WrapServiceProvider,
                 TokenGetterServiceProvider,
+                TokenComputeService,
                 AnalyticsComputeService,
             ],
         }).compile();
