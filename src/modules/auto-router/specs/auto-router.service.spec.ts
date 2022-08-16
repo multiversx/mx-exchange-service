@@ -114,30 +114,36 @@ describe('AutoRouterService', () => {
             tokenOutID: 'TOK1-1111',
             tolerance: 0.01,
         });
-        expect(swap).toEqual({
-            swapType: 0,
-            tokenInID: 'USDC-1111',
-            tokenOutID: 'TOK1-1111',
-            tokenInExchangeRate: '4960273038901078',
-            tokenOutExchangeRate: '201601805416248751341',
-            tokenInExchangeRateDenom: '0.004960273038901078',
-            tokenOutExchangeRateDenom: '201.601805416248751341',
-            tokenInPriceUSD: '1',
-            tokenOutPriceUSD: '200',
-            amountIn: '1000000000000000000',
-            amountOut: '4960273038901078',
-            intermediaryAmounts: ['1000000000000000000', '4960273038901078'],
-            tokenRoute: ['USDC-1111', 'TOK1-1111'],
-            fees: ['0.003'],
-            pricesImpact: ['0.4960273038901078'],
-            pairs: [
-                {
-                    address:
-                        'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                },
-            ],
-            tolerance: 0.01,
-        });
+        expect(swap).toEqual(
+            new AutoRouteModel({
+                swapType: 0,
+                tokenInID: 'USDC-1111',
+                tokenOutID: 'TOK1-1111',
+                tokenInExchangeRate: '4960273038901078',
+                tokenOutExchangeRate: '201601805416248751341',
+                tokenInExchangeRateDenom: '0.004960273038901078',
+                tokenOutExchangeRateDenom: '201.601805416248751341',
+                tokenInPriceUSD: '1',
+                tokenOutPriceUSD: '200',
+                amountIn: '1000000000000000000',
+                amountOut: '4960273038901078',
+                intermediaryAmounts: [
+                    '1000000000000000000',
+                    '4960273038901078',
+                ],
+                tokenRoute: ['USDC-1111', 'TOK1-1111'],
+                fees: ['0.003'],
+                pricesImpact: ['0.4960273038901078'],
+                pairs: [
+                    new PairModel({
+                        address:
+                            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                    }),
+                ],
+                tolerance: 0.01,
+                maxPriceDeviationPercent: 1,
+            }),
+        );
     });
 
     it('should get swap data for simple swap with amountIn', async () => {
@@ -147,30 +153,36 @@ describe('AutoRouterService', () => {
             tokenOutID: 'TOK1-1111',
             tolerance: 0.01,
         });
-        expect(swap).toEqual({
-            swapType: 0,
-            tokenInID: 'USDC-1111',
-            tokenOutID: 'TOK1-1111',
-            tokenInExchangeRate: '4935790171985306',
-            tokenOutExchangeRate: '202601805416248766526',
-            tokenInExchangeRateDenom: '0.004935790171985306',
-            tokenOutExchangeRateDenom: '202.601805416248766526',
-            tokenInPriceUSD: '1',
-            tokenOutPriceUSD: '200',
-            amountIn: '2000000000000000000',
-            amountOut: '9871580343970612',
-            intermediaryAmounts: ['2000000000000000000', '9871580343970612'],
-            tokenRoute: ['USDC-1111', 'TOK1-1111'],
-            fees: ['0.006'],
-            pricesImpact: ['0.9871580343970612'],
-            pairs: [
-                {
-                    address:
-                        'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                },
-            ],
-            tolerance: 0.01,
-        });
+        expect(swap).toEqual(
+            new AutoRouteModel({
+                swapType: 0,
+                tokenInID: 'USDC-1111',
+                tokenOutID: 'TOK1-1111',
+                tokenInExchangeRate: '4935790171985306',
+                tokenOutExchangeRate: '202601805416248766526',
+                tokenInExchangeRateDenom: '0.004935790171985306',
+                tokenOutExchangeRateDenom: '202.601805416248766526',
+                tokenInPriceUSD: '1',
+                tokenOutPriceUSD: '200',
+                amountIn: '2000000000000000000',
+                amountOut: '9871580343970612',
+                intermediaryAmounts: [
+                    '2000000000000000000',
+                    '9871580343970612',
+                ],
+                tokenRoute: ['USDC-1111', 'TOK1-1111'],
+                fees: ['0.006'],
+                pricesImpact: ['0.9871580343970612'],
+                pairs: [
+                    new PairModel({
+                        address:
+                            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                    }),
+                ],
+                tolerance: 0.01,
+                maxPriceDeviationPercent: 1,
+            }),
+        );
     });
 
     it('should get swap data for multi swap with amountOut', async () => {
@@ -211,6 +223,7 @@ describe('AutoRouterService', () => {
                 },
             ],
             tolerance: 0.01,
+            maxPriceDeviationPercent: 1,
         });
     });
 
