@@ -36,8 +36,14 @@ export class PairCacheWarmerService {
                 totalFeePercent,
                 specialFeePercent,
             ] = await Promise.all([
-                this.apiService.getToken(pairMetadata.firstTokenID),
-                this.apiService.getToken(pairMetadata.secondTokenID),
+                this.apiService.getToken(
+                    this.cachePairs.name,
+                    pairMetadata.firstTokenID,
+                ),
+                this.apiService.getToken(
+                    this.cachePairs.name,
+                    pairMetadata.secondTokenID,
+                ),
                 this.abiPairService.getTotalFeePercent(pairMetadata.address),
                 this.abiPairService.getSpecialFeePercent(pairMetadata.address),
             ]);
@@ -61,7 +67,10 @@ export class PairCacheWarmerService {
                 ),
             ]);
             if (lpTokenID !== undefined) {
-                const lpToken = await this.apiService.getToken(lpTokenID);
+                const lpToken = await this.apiService.getToken(
+                    this.cachePairs.name,
+                    lpTokenID,
+                );
                 cacheKeys.push(
                     await this.pairSetterService.setLpTokenID(
                         pairMetadata.address,

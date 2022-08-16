@@ -80,16 +80,25 @@ export class ElrondApiService {
         );
     }
 
-    async getToken(tokenID: string): Promise<EsdtToken> {
-        const rawToken = await this.doGetGeneric(
-            this.getToken.name,
-            `tokens/${tokenID}`,
-        );
-        const esdtToken = new EsdtToken(rawToken);
-        if (!isEsdtToken(esdtToken)) {
+    async getToken(caller: string, tokenID: string): Promise<EsdtToken> {
+        try {
+            const rawToken = await this.doGetGeneric(
+                this.getToken.name,
+                `tokens/${tokenID}`,
+            );
+            const esdtToken = new EsdtToken(rawToken);
+            if (!isEsdtToken(esdtToken)) {
+                return undefined;
+            }
+            return esdtToken;
+        } catch (error) {
+            this.logger.error(`An error occurred while get token: ${tokenID}`, {
+                path: 'ElrondApiService.getStats',
+                caller,
+                error,
+            });
             return undefined;
         }
-        return esdtToken;
     }
 
     async getNftCollection(tokenID: string): Promise<NftCollection> {

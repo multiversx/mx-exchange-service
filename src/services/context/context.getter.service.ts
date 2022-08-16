@@ -26,7 +26,7 @@ export class ContextGetterService extends GenericGetterService {
         const cacheKey = this.getContextCacheKey(tokenID);
         return await this.getData(
             cacheKey,
-            () => this.apiService.getToken(tokenID),
+            () => this.apiService.getToken(this.getTokenMetadata.name, tokenID),
             oneHour(),
         );
     }

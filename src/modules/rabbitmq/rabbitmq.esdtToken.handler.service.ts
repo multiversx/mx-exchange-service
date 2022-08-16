@@ -30,7 +30,10 @@ export class RabbitMQEsdtTokenHandlerService {
             'context',
             event.getTopics().tokenID,
         );
-        const token = await this.apiService.getToken(event.getTopics().tokenID);
+        const token = await this.apiService.getToken(
+            this.handleEsdtTokenEvent.name,
+            event.getTopics().tokenID,
+        );
         await this.cachingService.setCache(cacheKey, token, oneHour());
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
