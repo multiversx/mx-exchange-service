@@ -92,4 +92,4 @@ async function bootstrap() {
         analyticsApp.listen();
     }
 }
-bootstrap();
+// bootstrap();
