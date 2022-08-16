@@ -57,13 +57,14 @@ async function bootstrap() {
             apiConfigService.getPrivateAppListenAddress(),
         );
     }
-    if (apiConfigService.isCacheWarmerCronActive()) {
-        const processorApp = await NestFactory.create(CacheWarmerModule);
-        await processorApp.listen(
-            apiConfigService.getCacheWarmerPort(),
-            apiConfigService.getPublicAppListenAddress(),
-        );
-    }
+
+    // if (apiConfigService.isCacheWarmerCronActive()) {
+    //     const processorApp = await NestFactory.create(CacheWarmerModule);
+    //     await processorApp.listen(
+    //         apiConfigService.getCacheWarmerPort(),
+    //         apiConfigService.getPublicAppListenAddress(),
+    //     );
+    // }
 
     if (apiConfigService.isEventsNotifierAppActive()) {
         const eventsNotifierApp = await NestFactory.create(
@@ -92,4 +93,4 @@ async function bootstrap() {
         analyticsApp.listen();
     }
 }
-// bootstrap();
+bootstrap();
