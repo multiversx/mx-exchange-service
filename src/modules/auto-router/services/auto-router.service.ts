@@ -151,6 +151,11 @@ export class AutoRouterService {
         if (!this.isFixedInput(swapType))
             amountIn = this.addTolerance(amountIn, args.tolerance);
 
+        const priceDeviationPercent = await this.getTokenPriceDeviationPercent(
+            [args.tokenInID, args.tokenOutID],
+            [amountIn, amountOut],
+        );
+
         return new AutoRouteModel({
             swapType: swapType,
             tokenInID: args.tokenInID,
@@ -176,6 +181,7 @@ export class AutoRouterService {
             pairs: [pair],
             tolerance: args.tolerance,
             maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
+            tokensPriceDeviationPercent: priceDeviationPercent,
         });
     }
 
