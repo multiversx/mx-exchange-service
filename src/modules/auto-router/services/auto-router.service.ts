@@ -12,7 +12,7 @@ import {
     PRIORITY_MODES,
 } from './auto-router.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { elrondConfig } from 'src/config';
+import { constantsConfig, elrondConfig } from 'src/config';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { AutoRouterArgs } from '../models/auto-router.args';
 import { RouterGetterService } from '../../router/services/router.getter.service';
@@ -159,6 +159,11 @@ export class AutoRouterService {
         if (!this.isFixedInput(swapType))
             amountIn = this.addTolerance(amountIn, args.tolerance);
 
+        const priceDeviationPercent = await this.getTokenPriceDeviationPercent(
+            [tokenInID, tokenOutID],
+            [amountIn, amountOut],
+        );
+
         return new AutoRouteModel({
             swapType: swapType,
             tokenInID: args.tokenInID,
@@ -183,6 +188,8 @@ export class AutoRouterService {
             pricesImpact: [priceImpact],
             pairs: [pair],
             tolerance: args.tolerance,
+            maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
+            tokensPriceDeviationPercent: priceDeviationPercent,
         });
     }
 
@@ -244,6 +251,11 @@ export class AutoRouterService {
             swapRoute,
         );
 
+        const priceDeviationPercent = await this.getTokenPriceDeviationPercent(
+            swapRoute.tokenRoute,
+            swapRoute.intermediaryAmounts,
+        );
+
         return new AutoRouteModel({
             swapType: swapType,
             tokenInID: args.tokenInID,
@@ -270,6 +282,8 @@ export class AutoRouterService {
             pricesImpact: pricesImpact,
             pairs: this.addressesToPairs(swapRoute.addressRoute),
             tolerance: args.tolerance,
+            maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
+            tokensPriceDeviationPercent: priceDeviationPercent,
         });
     }
 
@@ -481,6 +495,12 @@ export class AutoRouterService {
             );
         }
 
+        if (
+            parent.tokensPriceDeviationPercent > parent.maxPriceDeviationPercent
+        ) {
+            throw new Error('Spread too big!');
+        }
+
         return await this.autoRouterTransactionService.multiPairSwap(sender, {
             swapType: parent.swapType,
             tokenInID: parent.tokenInID,
@@ -492,5 +512,58 @@ export class AutoRouterService {
             tokenRoute: parent.tokenRoute,
             tolerance: parent.tolerance,
         });
+    }
+
+    async getTokenPriceDeviationPercent(
+        tokenRoute: string[],
+        intermediaryAmounts: string[],
+    ): Promise<number> {
+        for (let index = 0; index < tokenRoute.length - 1; index++) {
+            const [tokenInID, amountIn, tokenOutID, amountOut] = [
+                tokenRoute[index],
+                intermediaryAmounts[index],
+                tokenRoute[index + 1],
+                intermediaryAmounts[index + 1],
+            ];
+
+            const [
+                tokenIn,
+                tokenInPriceUSD,
+                intermediaryTokenOut,
+                intermediaryTokenOutPriceUSD,
+            ] = await Promise.all([
+                this.contextGetterService.getTokenMetadata(tokenInID),
+                this.pairGetterService.getTokenPriceUSD(tokenInID),
+                this.contextGetterService.getTokenMetadata(tokenOutID),
+                this.pairGetterService.getTokenPriceUSD(tokenOutID),
+            ]);
+
+            const amountInUSD = computeValueUSD(
+                amountIn,
+                tokenIn.decimals,
+                tokenInPriceUSD,
+            );
+            const amountOutUSD = computeValueUSD(
+                amountOut,
+                intermediaryTokenOut.decimals,
+                intermediaryTokenOutPriceUSD,
+            );
+
+            const priceDeviationPercent = amountInUSD.isLessThan(amountOutUSD)
+                ? new BigNumber(1).minus(amountInUSD.dividedBy(amountOutUSD))
+                : new BigNumber(1).minus(amountOutUSD.dividedBy(amountInUSD));
+
+            if (
+                priceDeviationPercent.toNumber() >
+                constantsConfig.MAX_SWAP_SPREAD
+            ) {
+                this.logger
+                    .error(`Spread too big validating auto route swap transaction ${tokenInID} => ${tokenOutID}.
+                amount in = ${amountIn}, usd value = ${amountInUSD};
+                amount out = ${amountOut}, usd value = ${amountOutUSD}`);
+
+                return priceDeviationPercent.toNumber();
+            }
+        }
     }
 }

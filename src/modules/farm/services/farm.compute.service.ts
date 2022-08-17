@@ -5,6 +5,7 @@ import { scAddress } from 'src/config';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { farmVersion } from 'src/utils/farm.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
@@ -22,6 +23,7 @@ export class FarmComputeService {
         private readonly pairGetterService: PairGetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly tokenCompute: TokenComputeService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -30,10 +32,10 @@ export class FarmComputeService {
             farmAddress,
         );
         if (scAddress.has(farmedTokenID)) {
-            const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
+            const tokenPriceUSD = await this.tokenCompute.computeTokenPriceDerivedUSD(
                 farmedTokenID,
             );
-            return tokenPriceUSD.toFixed();
+            return tokenPriceUSD;
         }
 
         const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
@@ -47,10 +49,9 @@ export class FarmComputeService {
             farmAddress,
         );
         if (scAddress.has(farmingTokenID)) {
-            const tokenPriceUSD = await this.pairComputeService.computeTokenPriceUSD(
+            return await this.tokenCompute.computeTokenPriceDerivedUSD(
                 farmingTokenID,
             );
-            return tokenPriceUSD.toFixed();
         }
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
@@ -303,7 +304,7 @@ export class FarmComputeService {
         );
 
         const [farmedTokenPriceUSD, rewardsPerBlock] = await Promise.all([
-            this.pairComputeService.computeTokenPriceUSD(
+            this.tokenCompute.computeTokenPriceDerivedUSD(
                 farmedToken.identifier,
             ),
             this.farmGetterService.getRewardsPerBlock(farmAddress),
@@ -320,7 +321,7 @@ export class FarmComputeService {
         return computeValueUSD(
             totalRewardsPerYear.toFixed(),
             farmedToken.decimals,
-            farmedTokenPriceUSD.toFixed(),
+            farmedTokenPriceUSD,
         ).toFixed();
     }
 

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PairService } from './services/pair.service';
 import { PairResolver } from './pair.resolver';
 import { PairAbiService } from './services/pair.abi.service';
@@ -23,7 +23,7 @@ import { TokenModule } from '../tokens/token.module';
         CachingModule,
         AWSModule,
         DatabaseModule,
-        TokenModule,
+        forwardRef(() => TokenModule),
     ],
     providers: [
         PairService,

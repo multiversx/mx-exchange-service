@@ -48,6 +48,12 @@ export class AutoRouteModel {
     @Field(() => [String])
     pricesImpact: string[];
 
+    @Field()
+    maxPriceDeviationPercent: number;
+
+    @Field({ nullable: true })
+    tokensPriceDeviationPercent: number;
+
     @Field(() => [PairModel])
     pairs: PairModel[];
 
@@ -56,6 +62,7 @@ export class AutoRouteModel {
 
     @Field(() => [TransactionModel], { nullable: true })
     transactions: TransactionModel[];
+
     constructor(init?: Partial<AutoRouteModel>) {
         Object.assign(this, init);
     }
