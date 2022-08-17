@@ -22,6 +22,7 @@ import { RouterService } from 'src/modules/router/services/router.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
 export class AutoRouterService {
@@ -36,6 +37,7 @@ export class AutoRouterService {
         private readonly wrapService: WrapService,
         private readonly routerService: RouterService,
         private readonly pairService: PairService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -49,11 +51,13 @@ export class AutoRouterService {
         ]);
 
         const [
+            multiSwapStatus,
             directPair,
             pairs,
             tokenInMetadata,
             tokenOutMetadata,
         ] = await Promise.all([
+            this.remoteConfigGetterService.getMultiSwapStatus(),
             this.getActiveDirectPair(tokenInID, tokenOutID),
             this.getAllActivePairs(),
             this.contextGetterService.getTokenMetadata(tokenInID),
@@ -75,17 +79,19 @@ export class AutoRouterService {
             );
         }
 
-        throw new Error('Multi swap disabled!');
+        if (!multiSwapStatus) {
+            throw new Error('Multi swap disabled!');
+        }
 
-        // return await this.multiSwap(
-        //     args,
-        //     tokenInID,
-        //     tokenOutID,
-        //     pairs,
-        //     tokenInMetadata,
-        //     tokenOutMetadata,
-        //     swapType,
-        // );
+        return await this.multiSwap(
+            args,
+            tokenInID,
+            tokenOutID,
+            pairs,
+            tokenInMetadata,
+            tokenOutMetadata,
+            swapType,
+        );
     }
 
     async singleSwap(

@@ -30,6 +30,8 @@ import { RouterService } from 'src/modules/router/services/router.service';
 import { AutoRouteModel } from '../models/auto-route.model';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { Address } from '@elrondnetwork/erdjs/out';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
+import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -64,6 +66,11 @@ describe('AutoRouterService', () => {
         useClass: ElrondProxyServiceMock,
     };
 
+    const RemoteConfigGetterServiceProvider = {
+        provide: RemoteConfigGetterService,
+        useClass: RemoteConfigGetterServiceMock,
+    };
+
     const logTransports: Transport[] = [
         new winston.transports.Console({
             format: winston.format.combine(
@@ -94,6 +101,7 @@ describe('AutoRouterService', () => {
                 WrapServiceProvider,
                 TransactionsWrapService,
                 TransactionRouterService,
+                RemoteConfigGetterServiceProvider,
                 AutoRouterService,
                 AutoRouterComputeService,
                 AutoRouterTransactionService,
