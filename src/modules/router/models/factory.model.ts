@@ -27,6 +27,8 @@ export class FactoryModel {
     totalFeesUSD24h: string;
     @Field()
     maintenance: boolean;
+    @Field()
+    multiSwapStatus: boolean;
     @Field(() => [String])
     commonTokensForUserPairs: string[];
     @Field(() => EnableSwapByUserConfig)

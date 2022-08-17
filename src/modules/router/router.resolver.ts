@@ -100,6 +100,15 @@ export class RouterResolver {
         }
     }
 
+    @ResolveField()
+    async multiSwapStatus(): Promise<boolean> {
+        try {
+            return await this.remoteConfigGetterService.getMultiSwapStatus();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @Query(() => [String])
     async pairAddresses(): Promise<string[]> {
         try {
