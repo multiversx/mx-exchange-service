@@ -21,7 +21,7 @@ import { AutoRouterTransactionService } from './auto-router.transactions.service
 import { RouterService } from 'src/modules/router/services/router.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
-import { denominateAmount } from 'src/utils/token.converters';
+import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
