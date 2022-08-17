@@ -16,8 +16,7 @@ export function quote(
 
     return tokenInAmountBig
         .multipliedBy(tokenOutReservesBig)
-        .dividedBy(tokenInReservesBig)
-        .integerValue();
+        .dividedBy(tokenInReservesBig);
 }
 
 export function getAmountOut(
@@ -87,4 +86,18 @@ export function getTokenForGivenPosition(
         .multipliedBy(tokenReservesBig)
         .dividedBy(totalSupplyBig)
         .integerValue();
+}
+
+export function isSpreadTooBig(
+    amountInUSD: BigNumber,
+    amountOutUSD: BigNumber,
+): boolean {
+    return (
+        amountOutUSD.isLessThan(
+            amountInUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
+        ) ||
+        amountInUSD.isLessThan(
+            amountOutUSD.multipliedBy(1 - constantsConfig.MAX_SWAP_SPREAD),
+        )
+    );
 }

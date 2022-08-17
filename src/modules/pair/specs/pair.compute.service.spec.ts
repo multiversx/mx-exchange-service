@@ -12,6 +12,7 @@ import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
 import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { CachingModule } from 'src/services/caching/cache.module';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 describe('PairService', () => {
     let service: PairComputeService;
@@ -47,6 +48,7 @@ describe('PairService', () => {
                 WrapServiceProvider,
                 PriceFeedProvider,
                 TokenGetterServiceProvider,
+                TokenComputeService,
             ],
         }).compile();
 
@@ -55,21 +57,6 @@ describe('PairService', () => {
 
     it('should be defined', () => {
         expect(service).toBeDefined();
-    });
-
-    it('should get simple token price in USD', async () => {
-        const tokenPriceUSD = await service.computeTokenPriceUSD('TOK1-1111');
-        expect(tokenPriceUSD.toFixed()).toEqual('200');
-    });
-
-    it('should get token price in USD from simple path', async () => {
-        const tokenPriceUSD = await service.computeTokenPriceUSD('USDC-1111');
-        expect(tokenPriceUSD.toFixed()).toEqual('1');
-    });
-
-    it('should get token price in USD from multiple path', async () => {
-        const tokenPriceUSD = await service.computeTokenPriceUSD('TOK2-2222');
-        expect(tokenPriceUSD.toFixed()).toEqual('100');
     });
 
     it('should get lpToken Price in USD from pair', async () => {
