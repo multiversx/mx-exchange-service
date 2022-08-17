@@ -152,7 +152,7 @@ export class AutoRouterService {
             amountIn = this.addTolerance(amountIn, args.tolerance);
 
         const priceDeviationPercent = await this.getTokenPriceDeviationPercent(
-            [args.tokenInID, args.tokenOutID],
+            [tokenInID, tokenOutID],
             [amountIn, amountOut],
         );
 
