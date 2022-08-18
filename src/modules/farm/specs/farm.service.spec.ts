@@ -24,6 +24,7 @@ import { ContextGetterServiceMock } from 'src/services/context/mocks/context.get
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -85,6 +86,7 @@ describe('FarmService', () => {
                 PriceFeedServiceProvider,
                 WrapServiceProvider,
                 TokenGetterServiceProvider,
+                TokenComputeService,
                 FarmService,
             ],
         }).compile();

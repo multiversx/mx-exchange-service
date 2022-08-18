@@ -61,6 +61,7 @@ import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 describe('UserService', () => {
     let userMetaEsdts: UserService;
@@ -205,6 +206,7 @@ describe('UserService', () => {
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
                 TokenGetterServiceProvider,
+                TokenComputeService,
                 TokenService,
                 UserEsdtService,
                 UserService,

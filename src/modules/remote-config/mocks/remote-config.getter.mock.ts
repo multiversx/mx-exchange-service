@@ -5,6 +5,10 @@ export class RemoteConfigGetterServiceMock {
         return false;
     }
 
+    async getMultiSwapStatus(): Promise<boolean> {
+        return true;
+    }
+
     async getStakingAddresses(): Promise<string[]> {
         return [Address.Zero().bech32()];
     }

@@ -36,6 +36,22 @@ export class RemoteConfigGetterService extends GenericGetterService {
         );
     }
 
+    async getMultiSwapStatus(): Promise<boolean> {
+        const cacheKey = this.getFlagCacheKey('MULTISWAP');
+        return await this.getData(
+            cacheKey,
+            () =>
+                this.flagRepositoryService
+                    .findOne({
+                        name: 'MULTISWAP',
+                    })
+                    .then(res => {
+                        return res ? res.value : false;
+                    }),
+            oneHour(),
+        );
+    }
+
     async getSCAddresses(
         cacheKey: string,
         category: SCAddressType,
