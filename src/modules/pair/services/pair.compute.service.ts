@@ -29,7 +29,7 @@ export class PairComputeService {
             firstToken.identifier,
             new BigNumber(`1e${firstToken.decimals}`).toFixed(),
         );
-        return new BigNumber(firstTokenPrice)
+        return firstTokenPrice
             .multipliedBy(`1e-${secondToken.decimals}`)
             .toFixed();
     }
@@ -45,7 +45,7 @@ export class PairComputeService {
             secondToken.identifier,
             new BigNumber(`1e${secondToken.decimals}`).toFixed(),
         );
-        return new BigNumber(secondTokenPrice)
+        return secondTokenPrice
             .multipliedBy(`1e-${firstToken.decimals}`)
             .toFixed();
     }

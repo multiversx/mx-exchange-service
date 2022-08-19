@@ -121,7 +121,7 @@ export class PairService {
         pairAddress: string,
         tokenInID: string,
         amount: string,
-    ): Promise<string> {
+    ): Promise<BigNumber> {
         const [
             wrappedTokenID,
             firstTokenID,
@@ -141,19 +141,11 @@ export class PairService {
 
         switch (tokenIn) {
             case firstTokenID:
-                return quote(
-                    amount,
-                    pairInfo.reserves0,
-                    pairInfo.reserves1,
-                ).toFixed();
+                return quote(amount, pairInfo.reserves0, pairInfo.reserves1);
             case secondTokenID:
-                return quote(
-                    amount,
-                    pairInfo.reserves1,
-                    pairInfo.reserves0,
-                ).toFixed();
+                return quote(amount, pairInfo.reserves1, pairInfo.reserves0);
             default:
-                return new BigNumber(0).toFixed();
+                return new BigNumber(0);
         }
     }
 

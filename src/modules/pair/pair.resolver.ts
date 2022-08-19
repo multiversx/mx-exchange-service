@@ -317,11 +317,15 @@ export class PairResolver {
         @Args('amount') amount: string,
     ) {
         try {
-            return await this.pairService.getEquivalentForLiquidity(
-                pairAddress,
-                tokenInID,
-                amount,
-            );
+            return (
+                await this.pairService.getEquivalentForLiquidity(
+                    pairAddress,
+                    tokenInID,
+                    amount,
+                )
+            )
+                .integerValue()
+                .toFixed();
         } catch (error) {
             throw new ApolloError(error);
         }
