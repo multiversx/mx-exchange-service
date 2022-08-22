@@ -9,7 +9,6 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import {
     AutoRouterComputeService,
     BestSwapRoute,
-    PRIORITY_MODES,
 } from './auto-router.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { constantsConfig, elrondConfig } from 'src/config';
@@ -23,10 +22,12 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
+import { GraphService } from './graph.service';
 
 @Injectable()
 export class AutoRouterService {
     constructor(
+        private graph: GraphService,
         private readonly routerGetterService: RouterGetterService,
         private readonly contextService: ContextService,
         private readonly contextGetterService: ContextGetterService,
@@ -52,13 +53,11 @@ export class AutoRouterService {
 
         const [
             multiSwapStatus,
-            directPair,
             pairs,
             tokenInMetadata,
             tokenOutMetadata,
         ] = await Promise.all([
             this.remoteConfigGetterService.getMultiSwapStatus(),
-            this.getActiveDirectPair(tokenInID, tokenOutID),
             this.getAllActivePairs(),
             this.contextGetterService.getTokenMetadata(tokenInID),
             this.contextGetterService.getTokenMetadata(tokenOutID),
@@ -67,20 +66,25 @@ export class AutoRouterService {
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
-        if (directPair) {
-            return await this.singleSwap(
-                args,
+        if (!multiSwapStatus) {
+            const directPair = await this.getActiveDirectPair(
                 tokenInID,
                 tokenOutID,
-                directPair,
-                tokenInMetadata,
-                tokenOutMetadata,
-                swapType,
             );
-        }
 
-        if (!multiSwapStatus) {
-            throw new Error('Multi swap disabled!');
+            if (directPair !== undefined) {
+                return await this.singleSwap(
+                    args,
+                    tokenInID,
+                    tokenOutID,
+                    directPair,
+                    tokenInMetadata,
+                    tokenOutMetadata,
+                    swapType,
+                );
+            } else {
+                throw new Error('Multi swap disabled!');
+            }
         }
 
         return await this.multiSwap(
@@ -206,22 +210,34 @@ export class AutoRouterService {
             tokenInPriceUSD: string,
             tokenOutPriceUSD: string;
 
+        this.graph = new GraphService();
+        for (const pair of pairs) {
+            this.graph.addEdge(
+                pair.firstToken.identifier,
+                pair.secondToken.identifier,
+            );
+            this.graph.addEdge(
+                pair.secondToken.identifier,
+                pair.firstToken.identifier,
+            );
+        }
+
+        const paths = this.graph.getAllPaths(tokenInID, tokenOutID);
+
         try {
             [swapRoute, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
                 this.isFixedInput(swapType)
                     ? this.autoRouterComputeService.computeBestSwapRoute(
-                          tokenInID,
-                          tokenOutID,
+                          paths,
                           pairs,
                           args.amountIn,
-                          PRIORITY_MODES.maxOutput,
+                          swapType,
                       )
                     : this.autoRouterComputeService.computeBestSwapRoute(
-                          tokenOutID,
-                          tokenInID,
+                          paths,
                           pairs,
                           args.amountOut,
-                          PRIORITY_MODES.minInput,
+                          swapType,
                       ),
                 this.pairGetterService.getTokenPriceUSD(tokenInID),
                 this.pairGetterService.getTokenPriceUSD(tokenOutID),
