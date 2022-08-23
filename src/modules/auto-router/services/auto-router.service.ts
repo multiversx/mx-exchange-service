@@ -107,14 +107,7 @@ export class AutoRouterService {
         tokenOutMetadata: EsdtToken,
         swapType: SWAP_TYPE,
     ): Promise<AutoRouteModel> {
-        const [
-            result,
-            tokenInPriceUSD,
-            tokenOutPriceUSD,
-            pairTotalFeePercent,
-            pairInfo,
-            firstToken,
-        ] = await Promise.all([
+        const [result, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([
             this.isFixedInput(swapType)
                 ? this.pairService.getAmountOut(
                       pair.address,
@@ -128,9 +121,6 @@ export class AutoRouterService {
                   ),
             this.pairGetterService.getTokenPriceUSD(tokenInID),
             this.pairGetterService.getTokenPriceUSD(tokenOutID),
-            this.pairGetterService.getTotalFeePercent(pair.address),
-            this.pairGetterService.getPairInfoMetadata(pair.address),
-            this.pairGetterService.getFirstToken(pair.address),
         ]);
 
         let [amountIn, amountOut] = this.isFixedInput(swapType)
@@ -144,19 +134,6 @@ export class AutoRouterService {
             tokenInMetadata.decimals,
             tokenOutMetadata.decimals,
             amountIn,
-            amountOut,
-        );
-
-        const fee = this.calculateFeeDenom(
-            pairTotalFeePercent,
-            amountIn,
-            tokenInMetadata.decimals,
-        );
-
-        const priceImpact = this.calculatePriceImpactPercent(
-            firstToken.identifier === tokenInID
-                ? pairInfo.reserves1
-                : pairInfo.reserves0,
             amountOut,
         );
 
@@ -188,8 +165,6 @@ export class AutoRouterService {
             amountOut: amountOut,
             intermediaryAmounts: [amountIn, amountOut],
             tokenRoute: [tokenInID, tokenOutID],
-            fees: [fee],
-            pricesImpact: [priceImpact],
             pairs: [pair],
             tolerance: args.tolerance,
             maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
@@ -260,13 +235,6 @@ export class AutoRouterService {
             this.isFixedInput(swapType) ? swapRoute.bestResult : args.amountOut,
         );
 
-        const fees = this.calculateFeesDenom(swapRoute, pairs);
-
-        const pricesImpact = this.calculatePriceImpactPercents(
-            pairs,
-            swapRoute,
-        );
-
         const priceDeviationPercent = await this.getTokenPriceDeviationPercent(
             swapRoute.tokenRoute,
             swapRoute.intermediaryAmounts,
@@ -294,9 +262,7 @@ export class AutoRouterService {
             amountOut: args.amountOut || swapRoute.bestResult,
             intermediaryAmounts: swapRoute.intermediaryAmounts,
             tokenRoute: swapRoute.tokenRoute,
-            fees: fees,
-            pricesImpact: pricesImpact,
-            pairs: this.addressesToPairs(swapRoute.addressRoute),
+            pairs: this.getPairsRoute(swapRoute.addressRoute, pairs),
             tolerance: args.tolerance,
             maxPriceDeviationPercent: constantsConfig.MAX_SWAP_SPREAD,
             tokensPriceDeviationPercent: priceDeviationPercent,
@@ -435,16 +401,16 @@ export class AutoRouterService {
         ).toFixed();
     }
 
-    private calculateFeesDenom(
-        swapRoute: BestSwapRoute,
+    calculateFeesDenom(
+        intermediaryAmounts: string[],
+        tokenRoute: string[],
         pairs: PairModel[],
     ): string[] {
-        return swapRoute.addressRoute.map((pairAddress, index) => {
-            const pair = pairs.find(p => p.address === pairAddress);
+        return pairs.map((pair: PairModel, index: number) => {
             return this.calculateFeeDenom(
                 pair.totalFeePercent,
-                swapRoute.intermediaryAmounts[index],
-                pair.firstToken.identifier === swapRoute.tokenRoute[index]
+                intermediaryAmounts[index],
+                pair.firstToken.identifier === tokenRoute[index]
                     ? pair.firstToken.decimals
                     : pair.secondToken.decimals,
             );
@@ -461,27 +427,35 @@ export class AutoRouterService {
             .toFixed();
     }
 
-    private calculatePriceImpactPercents(
+    calculatePriceImpactPercents(
+        intermediaryAmounts: string[],
+        tokenRoute: string[],
         pairs: PairModel[],
-        swapRoute: BestSwapRoute,
     ): string[] {
-        return swapRoute.addressRoute.map((pairAddress, index) => {
-            const pair = pairs.find(p => p.address === pairAddress);
+        return pairs.map((pair, index) => {
             return this.calculatePriceImpactPercent(
-                pair.firstToken.identifier === swapRoute.tokenRoute[index + 1]
+                pair.firstToken.identifier === tokenRoute[index + 1]
                     ? pair.info.reserves0
                     : pair.info.reserves1,
-                swapRoute.intermediaryAmounts[index + 1],
+                intermediaryAmounts[index + 1],
             );
         });
     }
 
-    private addressesToPairs(addresses: string[]): PairModel[] {
-        const pairs: PairModel[] = [];
-        for (const address of addresses) {
-            pairs.push(new PairModel({ address: address }));
+    private getPairsRoute(
+        addresses: string[],
+        pairs: PairModel[],
+    ): PairModel[] {
+        const routePairs: PairModel[] = [];
+        for (const pair of pairs) {
+            if (
+                addresses.find(address => address === pair.address) !==
+                undefined
+            ) {
+                routePairs.push(pair);
+            }
         }
-        return pairs;
+        return routePairs;
     }
 
     async getTransactions(sender: string, parent: AutoRouteModel) {

@@ -21,6 +21,24 @@ export class AutoRouterResolver {
         }
     }
 
+    @ResolveField(() => [String])
+    fees(@Parent() parent: AutoRouteModel): string[] {
+        return this.autoRouterService.calculateFeesDenom(
+            parent.intermediaryAmounts,
+            parent.tokenRoute,
+            parent.pairs,
+        );
+    }
+
+    @ResolveField(() => [String])
+    pricesImpact(@Parent() parent: AutoRouteModel): string[] {
+        return this.autoRouterService.calculatePriceImpactPercents(
+            parent.intermediaryAmounts,
+            parent.tokenRoute,
+            parent.pairs,
+        );
+    }
+
     @UseGuards(GqlAuthGuard)
     @ResolveField(() => [TransactionModel])
     async transactions(@Parent() parent: AutoRouteModel, @User() user: any) {
