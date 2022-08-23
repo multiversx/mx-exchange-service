@@ -390,24 +390,13 @@ export class AutoRouterService {
         ];
     }
 
-    private calculateFeeDenom(
-        feePercent: number,
-        amount: string,
-        decimals: number,
-    ): string {
-        return denominateAmount(
-            new BigNumber(amount).multipliedBy(feePercent).toFixed(),
-            decimals,
-        ).toFixed();
-    }
-
-    calculateFeesDenom(
+    getFeesDenom(
         intermediaryAmounts: string[],
         tokenRoute: string[],
         pairs: PairModel[],
     ): string[] {
         return pairs.map((pair: PairModel, index: number) => {
-            return this.calculateFeeDenom(
+            return this.autoRouterComputeService.computeFeeDenom(
                 pair.totalFeePercent,
                 intermediaryAmounts[index],
                 pair.firstToken.identifier === tokenRoute[index]
@@ -417,23 +406,13 @@ export class AutoRouterService {
         });
     }
 
-    private calculatePriceImpactPercent(
-        reserves: string,
-        amount: string,
-    ): string {
-        return new BigNumber(amount)
-            .dividedBy(reserves)
-            .times(100)
-            .toFixed();
-    }
-
-    calculatePriceImpactPercents(
+    getPriceImpactPercents(
         intermediaryAmounts: string[],
         tokenRoute: string[],
         pairs: PairModel[],
     ): string[] {
         return pairs.map((pair, index) => {
-            return this.calculatePriceImpactPercent(
+            return this.autoRouterComputeService.computePriceImpactPercent(
                 pair.firstToken.identifier === tokenRoute[index + 1]
                     ? pair.info.reserves0
                     : pair.info.reserves1,

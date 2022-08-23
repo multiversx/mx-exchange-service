@@ -23,7 +23,7 @@ export class AutoRouterResolver {
 
     @ResolveField(() => [String])
     fees(@Parent() parent: AutoRouteModel): string[] {
-        return this.autoRouterService.calculateFeesDenom(
+        return this.autoRouterService.getFeesDenom(
             parent.intermediaryAmounts,
             parent.tokenRoute,
             parent.pairs,
@@ -32,7 +32,7 @@ export class AutoRouterResolver {
 
     @ResolveField(() => [String])
     pricesImpact(@Parent() parent: AutoRouteModel): string[] {
-        return this.autoRouterService.calculatePriceImpactPercents(
+        return this.autoRouterService.getPriceImpactPercents(
             parent.intermediaryAmounts,
             parent.tokenRoute,
             parent.pairs,

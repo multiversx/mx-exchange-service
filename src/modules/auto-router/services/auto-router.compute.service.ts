@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { getAmountIn, getAmountOut } from 'src/modules/pair/pair.utils';
+import { denominateAmount } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { SWAP_TYPE } from '../models/auto-route.model';
 
@@ -216,5 +217,23 @@ export class AutoRouterComputeService {
         }
 
         return addressRoute;
+    }
+
+    computeFeeDenom(
+        feePercent: number,
+        amount: string,
+        decimals: number,
+    ): string {
+        return denominateAmount(
+            new BigNumber(amount).multipliedBy(feePercent).toFixed(),
+            decimals,
+        ).toFixed();
+    }
+
+    computePriceImpactPercent(reserves: string, amount: string): string {
+        return new BigNumber(amount)
+            .dividedBy(reserves)
+            .times(100)
+            .toFixed();
     }
 }
