@@ -156,10 +156,6 @@ export class AutoRouterComputeService {
                               tokenOutReserves,
                               pair.totalFeePercent,
                           );
-                console.log({
-                    tokenInID,
-                    amountIn: amountIn.toFixed(),
-                });
                 pathAmounts.unshift(
                     amountIn.isEqualTo(0) ? 'Infinity' : amountIn.toFixed(),
                 );

@@ -426,14 +426,13 @@ export class AutoRouterService {
         pairs: PairModel[],
     ): PairModel[] {
         const routePairs: PairModel[] = [];
-        for (const pair of pairs) {
-            if (
-                addresses.find(address => address === pair.address) !==
-                undefined
-            ) {
+        for (const address of addresses) {
+            const pair = pairs.find(pair => pair.address === address);
+            if (pair !== undefined) {
                 routePairs.push(pair);
             }
         }
+
         return routePairs;
     }
 
