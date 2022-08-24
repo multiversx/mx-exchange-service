@@ -19,6 +19,8 @@ import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class CachingService {
+    private readonly UNDEFINED_CACHE_VALUE = 'undefined';
+
     private options: Redis.RedisOptions = {
         host: this.configService.getRedisUrl(),
         port: this.configService.getRedisPort(),
@@ -58,7 +60,12 @@ export class CachingService {
         ttl: number = cacheConfig.default,
     ): Promise<T> {
         if (value === undefined) {
-            await this.asyncSet(key, 'undefined', 'EX', oneMinute() * 2);
+            await this.asyncSet(
+                key,
+                this.UNDEFINED_CACHE_VALUE,
+                'EX',
+                oneMinute() * 2,
+            );
             return value;
         }
         await this.asyncSet(
@@ -91,7 +98,7 @@ export class CachingService {
         profiler.stop();
         MetricsCollector.setRedisDuration('GET', profiler.duration);
 
-        if (response === undefined || response === 'undefined') {
+        if (response === undefined || response === this.UNDEFINED_CACHE_VALUE) {
             return undefined;
         }
 
@@ -106,7 +113,7 @@ export class CachingService {
         if (value === undefined) {
             await CachingService.cache.set<string>(
                 key,
-                'undefined',
+                this.UNDEFINED_CACHE_VALUE,
                 oneMinute(),
             );
             return value;
@@ -212,7 +219,9 @@ export class CachingService {
         let cachedValue = await this.getCacheLocal<T>(key);
         if (cachedValue !== undefined) {
             profiler.stop(`Local Cache hit for key ${key}`);
-            return cachedValue === 'undefined' ? undefined : cachedValue;
+            return cachedValue === this.UNDEFINED_CACHE_VALUE
+                ? undefined
+                : cachedValue;
         }
 
         cachedValue = await this.getCacheRemote<T>(key);
