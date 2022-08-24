@@ -13,6 +13,7 @@ import { AutoRouterTransactionService } from './services/auto-router.transaction
 import { AutoRouterResolver } from './auto-router.resolver';
 import { PairTransactionService } from '../pair/services/pair.transactions.service';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
+import { GraphService } from './services/graph.service';
 
 @Module({
     imports: [
@@ -32,6 +33,7 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
         AutoRouterComputeService,
         AutoRouterTransactionService,
         PairTransactionService,
+        GraphService,
     ],
     exports: [],
 })
