@@ -67,9 +67,12 @@ export class AutoRouterService {
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
         if (!multiSwapStatus) {
-            const directPair = await this.getActiveDirectPair(
-                tokenInID,
-                tokenOutID,
+            const directPair = pairs.find(
+                pair =>
+                    (pair.firstToken.identifier === tokenInID &&
+                        pair.secondToken.identifier === tokenOutID) ||
+                    (pair.firstToken.identifier === tokenOutID &&
+                        pair.secondToken.identifier === tokenInID),
             );
 
             if (directPair !== undefined) {
@@ -303,21 +306,6 @@ export class AutoRouterService {
             .plus(new BigNumber(amountIn).multipliedBy(tolerance))
             .integerValue()
             .toFixed();
-    }
-
-    private async getActiveDirectPair(
-        tokenInID: string,
-        tokenOutID: string,
-    ): Promise<PairModel> {
-        return (
-            await this.routerService.getAllPairs(0, 1, {
-                address: null,
-                firstTokenID: tokenInID,
-                secondTokenID: tokenOutID,
-                issuedLpToken: true,
-                state: 'Active',
-            })
-        )[0];
     }
 
     private async getAllActivePairs() {
