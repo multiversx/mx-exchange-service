@@ -29,7 +29,6 @@ export class GraphService {
             GraphService.pairsLength !== pairs.length
         ) {
             GraphService.instance = new GraphService(pairs);
-            return GraphService.instance;
         }
         return GraphService.instance;
     }
