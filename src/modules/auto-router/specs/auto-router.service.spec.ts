@@ -32,7 +32,6 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
-import { GraphService } from '../services/graph.service';
 import {
     AssetsModel,
     EsdtToken,
@@ -97,7 +96,6 @@ describe('AutoRouterService', () => {
                 CachingModule,
             ],
             providers: [
-                GraphService,
                 RouterService,
                 RouterGetterServiceProvider,
                 ContextServiceProvider,

@@ -17,17 +17,18 @@ import { AutoRouterArgs } from '../models/auto-router.args';
 import { RouterGetterService } from '../../router/services/router.getter.service';
 import { AutoRouteModel, SWAP_TYPE } from '../models/auto-route.model';
 import { AutoRouterTransactionService } from './auto-router.transactions.service';
-import { RouterService } from 'src/modules/router/services/router.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { GraphService } from './graph.service';
+import { CachingService } from 'src/services/caching/cache.service';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { oneMinute } from 'src/helpers/helpers';
 
 @Injectable()
 export class AutoRouterService {
     constructor(
-        private graph: GraphService,
         private readonly routerGetterService: RouterGetterService,
         private readonly contextService: ContextService,
         private readonly contextGetterService: ContextGetterService,
@@ -36,11 +37,34 @@ export class AutoRouterService {
         private readonly autoRouterTransactionService: AutoRouterTransactionService,
         private readonly pairTransactionService: PairTransactionService,
         private readonly wrapService: WrapService,
-        private readonly routerService: RouterService,
         private readonly pairService: PairService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly cacheService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
+
+    private async getAllPaths(
+        pairs: PairModel[],
+        source: string,
+        destination: string,
+    ): Promise<string[][]> {
+        const cacheKey = generateCacheKeyFromParams(
+            'auto.route.paths',
+            source,
+            destination,
+        );
+        try {
+            return await this.cacheService.getOrSet(
+                cacheKey,
+                async () =>
+                    GraphService.getInstance(pairs).getAllPaths(
+                        source,
+                        destination,
+                    ),
+                oneMinute() * 10,
+            );
+        } catch (error) {}
+    }
 
     async swap(args: AutoRouterArgs): Promise<AutoRouteModel> {
         if (args.amountIn && args.amountOut)
@@ -188,19 +212,7 @@ export class AutoRouterService {
             tokenInPriceUSD: string,
             tokenOutPriceUSD: string;
 
-        this.graph = new GraphService();
-        for (const pair of pairs) {
-            this.graph.addEdge(
-                pair.firstToken.identifier,
-                pair.secondToken.identifier,
-            );
-            this.graph.addEdge(
-                pair.secondToken.identifier,
-                pair.firstToken.identifier,
-            );
-        }
-
-        const paths = this.graph.getAllPaths(tokenInID, tokenOutID);
+        const paths = await this.getAllPaths(pairs, tokenInID, tokenOutID);
 
         try {
             [swapRoute, tokenInPriceUSD, tokenOutPriceUSD] = await Promise.all([

@@ -1,11 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 
-@Injectable()
 export class GraphService {
-    adjList: Map<string, string[]>;
+    private static pairsLength = 0;
+    private static instance: GraphService;
 
-    constructor() {
+    private adjList: Map<string, string[]>;
+
+    private constructor(pairs: PairModel[]) {
+        GraphService.pairsLength = pairs.length;
+
         this.adjList = new Map<string, string[]>();
+
+        for (const pair of pairs) {
+            this.addEdge(
+                pair.firstToken.identifier,
+                pair.secondToken.identifier,
+            );
+            this.addEdge(
+                pair.secondToken.identifier,
+                pair.firstToken.identifier,
+            );
+        }
+    }
+
+    static getInstance(pairs: PairModel[]): GraphService {
+        if (
+            !GraphService.instance ||
+            GraphService.pairsLength !== pairs.length
+        ) {
+            GraphService.instance = new GraphService(pairs);
+        }
+        return GraphService.instance;
     }
 
     addEdge(u: string, v: string) {
