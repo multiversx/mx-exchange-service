@@ -243,6 +243,13 @@ export class AutoRouterService {
             swapRoute.intermediaryAmounts,
         );
 
+        if (
+            pairs.length > 1 &&
+            priceDeviationPercent > constantsConfig.MAX_SWAP_SPREAD
+        ) {
+            throw new Error('Spread too big!');
+        }
+
         return new AutoRouteModel({
             swapType: swapType,
             tokenInID: args.tokenInID,
