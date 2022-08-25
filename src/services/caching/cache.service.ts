@@ -19,6 +19,8 @@ import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class CachingService {
+    private readonly UNDEFINED_CACHE_VALUE = 'undefined';
+
     private options: Redis.RedisOptions = {
         host: this.configService.getRedisUrl(),
         port: this.configService.getRedisPort(),
@@ -57,6 +59,15 @@ export class CachingService {
         value: T,
         ttl: number = cacheConfig.default,
     ): Promise<T> {
+        if (value === undefined) {
+            await this.asyncSet(
+                key,
+                this.UNDEFINED_CACHE_VALUE,
+                'EX',
+                oneMinute() * 2,
+            );
+            return value;
+        }
         await this.asyncSet(
             key,
             JSON.stringify(value),
@@ -87,7 +98,7 @@ export class CachingService {
         profiler.stop();
         MetricsCollector.setRedisDuration('GET', profiler.duration);
 
-        if (response === undefined) {
+        if (response === undefined || response === this.UNDEFINED_CACHE_VALUE) {
             return undefined;
         }
 
@@ -99,7 +110,16 @@ export class CachingService {
         value: T,
         ttl: number = cacheConfig.default,
     ): Promise<T> {
-        return await CachingService.cache.set<T>(key, value, { ttl });
+        if (value === undefined) {
+            await CachingService.cache.set<string>(
+                key,
+                this.UNDEFINED_CACHE_VALUE,
+                oneMinute(),
+            );
+            return value;
+        }
+        await CachingService.cache.set<T>(key, value, { ttl });
+        return value;
     }
 
     async getCacheLocal<T>(key: string): Promise<T | undefined> {
@@ -196,41 +216,26 @@ export class CachingService {
 
         const profiler = new PerformanceProfiler(`vmQuery:${key}`);
 
-        const cachedValue = await this.getCacheLocal<T>(key);
+        let cachedValue = await this.getCacheLocal<T>(key);
         if (cachedValue !== undefined) {
             profiler.stop(`Local Cache hit for key ${key}`);
-            return cachedValue;
+            return cachedValue === this.UNDEFINED_CACHE_VALUE
+                ? undefined
+                : cachedValue;
         }
 
-        const cached = await this.getCacheRemote<T>(key);
-        if (cached !== undefined && cached !== null) {
+        cachedValue = await this.getCacheRemote<T>(key);
+        if (cachedValue !== null) {
             profiler.stop(`Remote Cache hit for key ${key}`);
 
             // we only set ttl to half because we don't know what the real ttl of the item is and we want it to work good in most scenarios
-            await this.setCacheLocal<T>(key, cached, localTtl);
-            return cached;
+            await this.setCacheLocal<T>(key, cachedValue, localTtl);
+            return cachedValue;
         }
 
         try {
             const value = await promise();
-            if (value === undefined) {
-                if (localTtl > 0) {
-                    await this.setCacheLocal<string>(
-                        key,
-                        'undefined',
-                        oneMinute(),
-                    );
-                }
 
-                if (remoteTtl > 0) {
-                    await this.setCacheRemote<string>(
-                        key,
-                        'undefined',
-                        oneMinute() * 2,
-                    );
-                }
-                return undefined;
-            }
             profiler.stop(`Cache miss for key ${key}`);
 
             if (localTtl > 0) {
