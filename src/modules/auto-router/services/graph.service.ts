@@ -28,11 +28,9 @@ export class GraphService {
             !GraphService.instance ||
             GraphService.pairsLength !== pairs.length
         ) {
-            console.log('Create new graph instance');
             GraphService.instance = new GraphService(pairs);
             return GraphService.instance;
         }
-        console.log('Return singleton');
         return GraphService.instance;
     }
 
