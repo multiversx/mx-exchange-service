@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { constantsConfig, elrondConfig, tokenProviderUSD } from 'src/config';
+import { elrondConfig } from 'src/config';
 import { BigNumber } from 'bignumber.js';
 import { LiquidityPosition } from '../models/pair.model';
 import {
@@ -8,7 +8,6 @@ import {
     getAmountIn,
     getTokenForGivenPosition,
 } from '../pair.utils';
-import { ContextService } from 'src/services/context/context.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -21,8 +20,6 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 @Injectable()
 export class PairService {
     constructor(
-        @Inject(forwardRef(() => ContextService))
-        private readonly context: ContextService,
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetterService: PairGetterService,
         @Inject(forwardRef(() => RouterGetterService))
@@ -208,82 +205,6 @@ export class PairService {
                 ),
             )
             .toFixed();
-    }
-
-    async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
-        const pair = await this.context.getPairByTokens(
-            tokenID,
-            constantsConfig.USDC_TOKEN_ID,
-        );
-        if (pair) {
-            const state = await this.pairGetterService.getState(pair.address);
-            if (state === 'Active') {
-                let tokenPriceUSD: string;
-                switch (tokenID) {
-                    case pair.firstTokenID:
-                        tokenPriceUSD = await this.pairGetterService.getFirstTokenPrice(
-                            pair.address,
-                        );
-                        break;
-                    case pair.secondTokenID:
-                        tokenPriceUSD = await this.pairGetterService.getSecondTokenPrice(
-                            pair.address,
-                        );
-                        break;
-                }
-                return new BigNumber(tokenPriceUSD);
-            }
-        }
-
-        const path: string[] = [];
-        const discovered = new Map<string, boolean>();
-        const graph = await this.context.getPairsMap();
-        if (!graph.has(tokenID)) {
-            return new BigNumber(0);
-        }
-
-        const pathTokenProviderUSD = graph
-            .get(tokenID)
-            .find(entry => entry === tokenProviderUSD);
-
-        if (pathTokenProviderUSD !== undefined) {
-            return await this.getPriceUSDByToken(tokenID, tokenProviderUSD);
-        }
-
-        for (const edge of graph.keys()) {
-            discovered.set(edge, false);
-        }
-        this.context.isConnected(
-            graph,
-            tokenID,
-            tokenProviderUSD,
-            discovered,
-            path,
-        );
-
-        if (path.length === 0) {
-            return new BigNumber(0);
-        }
-        return await this.getPriceUSDByToken(tokenID, path[1]);
-    }
-
-    async getPriceUSDByToken(
-        tokenID: string,
-        priceProviderToken: string,
-    ): Promise<BigNumber> {
-        const pair = await this.context.getPairByTokens(
-            tokenID,
-            priceProviderToken,
-        );
-        const firstTokenPrice = await this.pairGetterService.getTokenPrice(
-            pair.address,
-            tokenID,
-        );
-        const priceProviderUSD = await this.pairGetterService.getTokenPriceUSD(
-            priceProviderToken,
-        );
-
-        return new BigNumber(priceProviderUSD).multipliedBy(firstTokenPrice);
     }
 
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {

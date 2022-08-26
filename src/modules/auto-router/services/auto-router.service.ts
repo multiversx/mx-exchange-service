@@ -3,7 +3,6 @@ import { BigNumber } from 'bignumber.js';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ContextService } from 'src/services/context/context.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import {
@@ -28,7 +27,6 @@ import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-conf
 export class AutoRouterService {
     constructor(
         private readonly routerGetter: RouterGetterService,
-        private readonly contextService: ContextService,
         private readonly contextGetterService: ContextGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
