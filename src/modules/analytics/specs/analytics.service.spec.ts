@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
-import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/services/farm.getter.service';
@@ -58,11 +56,6 @@ describe('AnalyticsService', () => {
         useClass: AbiLockedAssetServiceMock,
     };
 
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
-
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
@@ -87,7 +80,6 @@ describe('AnalyticsService', () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule, AWSModule],
             providers: [
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,
                 ElrondApiServiceProvider,

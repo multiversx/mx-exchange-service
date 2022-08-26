@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContextService } from '../../../services/context/context.service';
 import { WrapService } from '../../wrapping/wrap.service';
 import winston from 'winston';
 import {
@@ -9,7 +8,6 @@ import {
 import * as Transport from 'winston-transport';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-transactions.service';
-import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -28,11 +26,6 @@ describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
     let elrondProxy: ElrondProxyService;
     let pairGetterService: PairGetterService;
-
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
 
     const ProxyGetterServiceProvider = {
         provide: ProxyGetterService,
@@ -75,7 +68,6 @@ describe('TransactionProxyPairService', () => {
                 ApiConfigService,
                 ConfigService,
                 ElrondProxyService,
-                ContextServiceProvider,
                 ProxyGetterServiceProvider,
                 ProxyPairGetterServiceProvider,
                 PairService,

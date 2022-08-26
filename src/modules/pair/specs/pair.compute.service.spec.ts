@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContextService } from 'src/services/context/context.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { CommonAppModule } from 'src/common.app.module';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
@@ -20,11 +18,6 @@ describe('PairService', () => {
         useClass: PairGetterServiceMock,
     };
 
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
-
     const WrapServiceProvider = {
         provide: WrapService,
         useClass: WrapServiceMock,
@@ -37,7 +30,6 @@ describe('PairService', () => {
                 PairComputeService,
                 PairService,
                 PairGetterServiceProvider,
-                ContextServiceProvider,
                 WrapServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,

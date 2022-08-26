@@ -8,8 +8,6 @@ import * as Transport from 'winston-transport';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
-import { ContextService } from 'src/services/context/context.service';
 import { PairService } from '../services/pair.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
@@ -30,11 +28,6 @@ describe('TransactionPairService', () => {
     const ElrondProxyServiceProvider = {
         provide: ElrondProxyService,
         useClass: ElrondProxyServiceMock,
-    };
-
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -73,7 +66,6 @@ describe('TransactionPairService', () => {
                 ConfigService,
                 ApiConfigService,
                 ElrondProxyServiceProvider,
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,

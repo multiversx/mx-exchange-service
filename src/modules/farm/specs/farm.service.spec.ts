@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
 import { FarmService } from '../services/farm.service';
 import { AbiFarmService } from '../services/abi-farm.service';
@@ -8,7 +7,6 @@ import { ElrondApiService } from '../../../services/elrond-communication/elrond-
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { RewardsModel } from '../models/farm.model';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
-import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';
@@ -43,11 +41,6 @@ describe('FarmService', () => {
         useClass: ElrondApiServiceMock,
     };
 
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
-
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
@@ -71,7 +64,6 @@ describe('FarmService', () => {
                 FarmGetterServiceProvider,
                 FarmComputeService,
                 ElrondApiServiceProvider,
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
