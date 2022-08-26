@@ -37,9 +37,6 @@
         ]
     },
     "tokenProviderUSD": "WEGLD-71e90a",
-    "priceFeeds": {
-        "USDC-a63f36": "usdc"
-    },
     "tokensSupply": ["MEX-27f4cd"],
     "cachedTokensPrice": ["MEX-27f4cd"],
     "farms": {
@@ -73,7 +70,6 @@
         "pairCount": 10,
         "token": 300,
         "tokenPrice": 60,
-        "priceFeed": 60,
         "reserves": 60,
         "apr": 60,
         "default": 120

@@ -11,8 +11,6 @@ import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
-import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
-import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
 import { AWSModule } from 'src/services/aws/aws.module';
@@ -31,7 +29,6 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -81,11 +78,6 @@ describe('AnalyticsService', () => {
         useClass: ElrondProxyServiceMock,
     };
 
-    const PriceFeedServiceProvider = {
-        provide: PriceFeedService,
-        useClass: PriceFeedServiceMock,
-    };
-
     const WrapServiceProvider = {
         provide: WrapService,
         useClass: WrapServiceMock,
@@ -108,7 +100,6 @@ describe('AnalyticsService', () => {
                 ProxyGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
-                PriceFeedServiceProvider,
                 WrapServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,

@@ -3,7 +3,6 @@ import { PairService } from './services/pair.service';
 import { PairResolver } from './pair.resolver';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairTransactionService } from './services/pair.transactions.service';
-import { PriceFeedModule } from '../../services/price-feed/price-feed.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
@@ -18,7 +17,6 @@ import { TokenModule } from '../tokens/token.module';
     imports: [
         ElrondCommunicationModule,
         ContextModule,
-        PriceFeedModule,
         WrappingModule,
         CachingModule,
         AWSModule,
