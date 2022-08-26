@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PriceFeedService } from '../../../services/price-feed/price-feed.service';
 import { FarmService } from '../../farm/services/farm.service';
 import { PairService } from '../../pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
@@ -26,7 +25,6 @@ import { FarmGetterService } from '../../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
 import { FarmServiceMock } from '../../farm/mocks/farm.service.mock';
 import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
-import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
@@ -100,11 +98,6 @@ describe('UserService', () => {
     const PairGetterServiceProvider = {
         provide: PairGetterService,
         useClass: PairGetterServiceMock,
-    };
-
-    const PriceFeedServiceProvider = {
-        provide: PriceFeedService,
-        useClass: PriceFeedServiceMock,
     };
 
     const ProxyServiceProvider = {
@@ -186,7 +179,6 @@ describe('UserService', () => {
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
-                PriceFeedServiceProvider,
                 ProxyServiceProvider,
                 ProxyGetterServiceProvider,
                 ProxyPairGetterServiceProvider,

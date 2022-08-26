@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PriceFeedService } from '../../../services/price-feed/price-feed.service';
 import { FarmService } from '../../farm/services/farm.service';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -31,6 +30,8 @@ import { SimpleLockGetterService } from '../../simple-lock/services/simple.lock.
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { INFTToken } from '../../tokens/models/nft.interface';
 import { UserEsdtService } from './user.esdt.service';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { scAddress } from 'src/config';
 
 enum NftTokenType {
     FarmToken,
@@ -52,7 +53,7 @@ export class UserService {
         private userComputeService: UserComputeService,
         private apiService: ElrondApiService,
         private cachingService: CachingService,
-        private priceFeed: PriceFeedService,
+        private pairGetter: PairGetterService,
         private proxyPairGetter: ProxyPairGetterService,
         private proxyFarmGetter: ProxyFarmGetterService,
         private farmService: FarmService,
@@ -305,7 +306,7 @@ export class UserService {
             userEsdtTokens,
             userNftTokens,
         ] = await Promise.all([
-            this.priceFeed.getTokenPrice('egld'),
+            this.pairGetter.getFirstTokenPrice(scAddress.WEGLD_USDC),
             this.apiService.getAccountStats(address),
             this.userEsdt.getAllEsdtTokens(address, {
                 offset: 0,
