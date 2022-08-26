@@ -6,7 +6,6 @@ import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { scAddress } from 'src/config';
-import { ContextService } from 'src/services/context/context.service';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
@@ -40,15 +39,15 @@ import {
     SwapFixedOutputEvent,
     WithdrawEvent,
     RawEvent,
-    PairSwapEnabledEvent,
 } from '@elrondnetwork/erdjs-dex';
+import { RouterGetterService } from '../router/services/router.getter.service';
 
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
 
     constructor(
-        private readonly context: ContextService,
+        private readonly routerGetter: RouterGetterService,
         private readonly wsPairHandler: RabbitMQPairHandlerService,
         private readonly wsFarmHandler: RabbitMQFarmHandlerService,
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
@@ -214,7 +213,7 @@ export class RabbitMqConsumer {
 
     async getFilterAddresses(): Promise<void> {
         this.filterAddresses = [];
-        this.filterAddresses = await this.context.getAllPairsAddress();
+        this.filterAddresses = await this.routerGetter.getAllPairsAddress();
         this.filterAddresses.push(...farmsAddresses());
         this.filterAddresses.push(scAddress.proxyDexAddress);
         this.filterAddresses.push(scAddress.routerAddress);

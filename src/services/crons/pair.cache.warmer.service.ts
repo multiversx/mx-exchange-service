@@ -8,6 +8,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import { ContextSetterService } from '../context/context.setter.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -16,6 +17,7 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: PairAbiService,
+        private readonly routerGetter: RouterGetterService,
         private readonly apiService: ElrondApiService,
         private readonly context: ContextService,
         private readonly contextSetter: ContextSetterService,
@@ -95,7 +97,7 @@ export class PairCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cachePairsInfo(): Promise<void> {
-        const pairsAddresses = await this.context.getAllPairsAddress();
+        const pairsAddresses = await this.routerGetter.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
             const [

@@ -27,7 +27,7 @@ import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-conf
 @Injectable()
 export class AutoRouterService {
     constructor(
-        private readonly routerGetterService: RouterGetterService,
+        private readonly routerGetter: RouterGetterService,
         private readonly contextService: ContextService,
         private readonly contextGetterService: ContextGetterService,
         private readonly pairGetterService: PairGetterService,
@@ -341,7 +341,7 @@ export class AutoRouterService {
     private async getAllActivePairs() {
         const pairs: PairModel[] = [];
 
-        const pairAddresses = await this.routerGetterService.getAllPairsAddress();
+        const pairAddresses = await this.routerGetter.getAllPairsAddress();
         for (const pairAddress of pairAddresses) {
             const [
                 pairMetadata,

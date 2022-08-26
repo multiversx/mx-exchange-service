@@ -16,6 +16,7 @@ import { PairGetterService } from './pair.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneHour } from 'src/helpers/helpers';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 
 @Injectable()
 export class PairService {
@@ -24,6 +25,8 @@ export class PairService {
         private readonly context: ContextService,
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetterService: PairGetterService,
+        @Inject(forwardRef(() => RouterGetterService))
+        private readonly routerGetter: RouterGetterService,
         private readonly wrapService: WrapService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -290,7 +293,7 @@ export class PairService {
         if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
-        const pairsAddress = await this.context.getAllPairsAddress();
+        const pairsAddress = await this.routerGetter.getAllPairsAddress();
         const promises = pairsAddress.map(async pairAddress => {
             const lpTokenID = await this.pairGetterService.getLpTokenID(
                 pairAddress,
@@ -311,7 +314,7 @@ export class PairService {
     }
 
     async isPairEsdtToken(tokenID: string): Promise<boolean> {
-        const pairsAddress = await this.context.getAllPairsAddress();
+        const pairsAddress = await this.routerGetter.getAllPairsAddress();
         for (const pairAddress of pairsAddress) {
             const [firstTokenID, secondTokenID, lpTokenID] = await Promise.all([
                 this.pairGetterService.getFirstTokenID(pairAddress),
