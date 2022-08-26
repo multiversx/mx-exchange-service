@@ -87,6 +87,14 @@ export class ApiConfigService {
         return eventsNotifierAppActive === 'true';
     }
 
+    isTracerActive(): boolean {
+        const tracerFlag = this.configService.get<string>('ENABLE_TRACER');
+        if (!tracerFlag) {
+            throw new Error('No tracer flag present');
+        }
+        return tracerFlag === 'true';
+    }
+
     getRedisUrl(): string {
         const redisUrl = this.configService.get<string>('REDIS_URL');
         if (!redisUrl) {
