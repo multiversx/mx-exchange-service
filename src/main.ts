@@ -11,7 +11,6 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { RabbitMqConsumer } from './modules/rabbitmq/rabbitmq.consumer';
 import cookieParser from 'cookie-parser';
-import tracer from 'dd-trace';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -25,7 +24,7 @@ async function bootstrap() {
     const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
 
     if (apiConfigService.isTracerActive()) {
-        tracer.init();
+        require('dd-trace').init();
     }
 
     httpServer.keepAliveTimeout = apiConfigService.getKeepAliveTimeoutUpstream();
