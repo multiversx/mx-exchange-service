@@ -24,7 +24,7 @@ async function bootstrap() {
     const apiConfigService = app.get<ApiConfigService>(ApiConfigService);
     const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
 
-    if (apiConfigService.isTracerActive) {
+    if (apiConfigService.isTracerActive()) {
         tracer.init();
     }
 
