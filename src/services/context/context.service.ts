@@ -8,24 +8,15 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 export class ContextService {
     constructor(
         @Inject(forwardRef(() => RouterGetterService))
-        private readonly routerGetterService: RouterGetterService,
+        private readonly routerGetter: RouterGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
-
-    async getPairsMetadata(): Promise<PairMetadata[]> {
-        return this.routerGetterService.getPairsMetadata();
-    }
-
-    async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
-        const pairs = await this.routerGetterService.getPairsMetadata();
-        return pairs.find(pair => pair.address === pairAddress);
-    }
 
     async getPairByTokens(
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<PairMetadata> {
-        const pairsMetadata = await this.routerGetterService.getPairsMetadata();
+        const pairsMetadata = await this.routerGetter.getPairsMetadata();
         for (const pair of pairsMetadata) {
             if (
                 (pair.firstTokenID === firstTokenID &&
@@ -40,7 +31,7 @@ export class ContextService {
     }
 
     async getPairsMap(): Promise<Map<string, string[]>> {
-        const pairsMetadata = await this.routerGetterService.getPairsMetadata();
+        const pairsMetadata = await this.routerGetter.getPairsMetadata();
         const pairsMap = new Map<string, string[]>();
         for (const pairMetadata of pairsMetadata) {
             pairsMap.set(pairMetadata.firstTokenID, []);

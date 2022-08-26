@@ -351,7 +351,7 @@ export class AutoRouterService {
                 firstToken,
                 secondToken,
             ] = await Promise.all([
-                this.contextService.getPairMetadata(pairAddress),
+                this.routerGetter.getPairMetadata(pairAddress),
                 this.pairGetterService.getPairInfoMetadata(pairAddress),
                 this.pairGetterService.getTotalFeePercent(pairAddress),
                 this.pairGetterService.getState(pairAddress),

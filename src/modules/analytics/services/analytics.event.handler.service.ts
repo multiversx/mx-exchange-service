@@ -14,16 +14,16 @@ import { PairSetterService } from '../../pair/services/pair.setter.service';
 import { RouterComputeService } from '../../router/services/router.compute.service';
 import { RouterSetterService } from '../../router/services/router.setter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextService } from 'src/services/context/context.service';
 import { AddLiquidityEventType, SwapEventType } from '@elrondnetwork/erdjs-dex';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 
 @Injectable()
 export class AnalyticsEventHandlerService {
     constructor(
-        private readonly context: ContextService,
         private readonly contextGetter: ContextGetterService,
+        private readonly routerGetter: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
@@ -334,7 +334,7 @@ export class AnalyticsEventHandlerService {
         const [token, priceUSD, pairs] = await Promise.all([
             this.contextGetter.getTokenMetadata(tokenID),
             this.pairGetterService.getTokenPriceUSD(tokenID),
-            this.context.getPairsMetadata(),
+            this.routerGetter.getPairsMetadata(),
         ]);
 
         let newLockedValue = new BigNumber(0);

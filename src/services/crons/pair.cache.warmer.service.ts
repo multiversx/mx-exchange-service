@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ContextService } from '../context/context.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
@@ -19,14 +18,13 @@ export class PairCacheWarmerService {
         private readonly abiPairService: PairAbiService,
         private readonly routerGetter: RouterGetterService,
         private readonly apiService: ElrondApiService,
-        private readonly context: ContextService,
         private readonly contextSetter: ContextSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_30_MINUTES)
     async cachePairs(): Promise<void> {
-        const pairsMetadata = await this.context.getPairsMetadata();
+        const pairsMetadata = await this.routerGetter.getPairsMetadata();
         for (const pairMetadata of pairsMetadata) {
             const lpTokenID = await this.abiPairService.getLpTokenID(
                 pairMetadata.address,
@@ -130,7 +128,7 @@ export class PairCacheWarmerService {
 
     @Cron('*/6 * * * * *') // Update prices and reserves every 6 seconds
     async cacheTokenPrices(): Promise<void> {
-        const pairsMetadata = await this.context.getPairsMetadata();
+        const pairsMetadata = await this.routerGetter.getPairsMetadata();
 
         for (const pairAddress of pairsMetadata) {
             const pairInfo = await this.abiPairService.getPairInfoMetadata(

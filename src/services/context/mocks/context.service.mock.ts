@@ -16,15 +16,6 @@ export const pairsMetadata: PairMetadata[] = [
 ];
 
 export class ContextServiceMock {
-    async getPairsMetadata(): Promise<PairMetadata[]> {
-        return pairsMetadata;
-    }
-
-    async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
-        const pairs = await this.getPairsMetadata();
-        return pairs.find(pair => pair.address === pairAddress);
-    }
-
     async getPairByTokens(
         firstTokenID: string,
         secondTokenID: string,
