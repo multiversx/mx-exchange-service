@@ -17,8 +17,6 @@ import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
-import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
-import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
@@ -60,11 +58,6 @@ describe('FarmService', () => {
         useClass: PairGetterServiceMock,
     };
 
-    const PriceFeedServiceProvider = {
-        provide: PriceFeedService,
-        useClass: PriceFeedServiceMock,
-    };
-
     const WrapServiceProvider = {
         provide: WrapService,
         useClass: WrapServiceMock,
@@ -83,7 +76,6 @@ describe('FarmService', () => {
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
-                PriceFeedServiceProvider,
                 WrapServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,

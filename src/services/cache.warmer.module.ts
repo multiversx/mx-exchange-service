@@ -3,7 +3,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PairModule } from '../modules/pair/pair.module';
 import { ContextModule } from './context/context.module';
 import { CacheWarmerService } from './crons/cache.warmer.service';
-import { PriceFeedModule } from './price-feed/price-feed.module';
 import { ServicesModule } from './services.module';
 import { CachingService } from './caching/cache.service';
 import { FarmModule } from 'src/modules/farm/farm.module';
@@ -36,7 +35,6 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         ScheduleModule.forRoot(),
         CommonAppModule,
         CacheModule.register(),
-        PriceFeedModule,
         PairModule,
         ServicesModule,
         ElrondCommunicationModule,

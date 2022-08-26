@@ -64,9 +64,6 @@
         }
     },
     "tokenProviderUSD": "WEGLD-bd4d79",
-    "priceFeeds": {
-        "USDC-c76f1f": "usdc"
-    },
     "tokensSupply": ["MEX-455c57"],
     "cachedTokensPrice": ["MEX-455c57", "WEGLD-bd4d79"],
     "constants": {
