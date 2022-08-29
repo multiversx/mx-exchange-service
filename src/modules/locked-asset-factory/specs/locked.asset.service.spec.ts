@@ -12,6 +12,7 @@ import {
     UnlockMileStoneModel,
 } from '../models/locked-asset.model';
 import { LockedAssetGetterService } from '../services/locked.asset.getter.service';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('LockedAssetService', () => {
     let service: LockedAssetService;
@@ -36,6 +37,7 @@ describe('LockedAssetService', () => {
             ],
             providers: [
                 ContextGetterServiceProvider,
+                TokenGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetService,
                 LockedAssetGetterService,

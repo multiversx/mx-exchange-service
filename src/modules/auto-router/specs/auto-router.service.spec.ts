@@ -30,6 +30,7 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -87,6 +88,7 @@ describe('AutoRouterService', () => {
                 RouterGetterServiceProvider,
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,
+                TokenGetterServiceProvider,
                 PairGetterServiceProvider,
                 PairService,
                 PairTransactionService,

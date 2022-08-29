@@ -9,6 +9,7 @@ import { PairAbiServiceMock } from '../mocks/pair.abi.service.mock';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 
 describe('PairService', () => {
     let service: PairService;
@@ -37,6 +38,7 @@ describe('PairService', () => {
                 PairService,
                 WrapServiceProvider,
                 TokenGetterServiceProvider,
+                RouterGetterServiceProvider,
             ],
         }).compile();
 

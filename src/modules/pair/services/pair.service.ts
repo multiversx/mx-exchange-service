@@ -24,6 +24,7 @@ export class PairService {
         private readonly pairGetterService: PairGetterService,
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetter: RouterGetterService,
+        @Inject(forwardRef(() => WrapService))
         private readonly wrapService: WrapService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,

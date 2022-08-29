@@ -21,6 +21,7 @@ import { ProxyGetterService } from '../services/proxy.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
 import { CachingModule } from 'src/services/caching/cache.module';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
@@ -73,6 +74,7 @@ describe('TransactionProxyPairService', () => {
                 PairService,
                 PairGetterServiceProvider,
                 WrapServiceProvider,
+                RouterGetterServiceProvider,
                 TransactionsWrapService,
                 TransactionsProxyPairService,
             ],

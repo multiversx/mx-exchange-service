@@ -14,7 +14,9 @@ export class PairComputeService {
         private readonly pairGetterService: PairGetterService,
         @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
+        @Inject(forwardRef(() => TokenGetterService))
         private readonly tokenGetter: TokenGetterService,
+        @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
     ) {}
 
