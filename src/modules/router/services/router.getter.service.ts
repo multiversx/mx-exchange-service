@@ -66,7 +66,7 @@ export class RouterGetterService extends GenericGetterService {
         return this.getData(
             this.getRouterCacheKey(`totalVolumeUSD.${time}`),
             () => this.routerComputeService.computeTotalVolumeUSD(time),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -74,7 +74,7 @@ export class RouterGetterService extends GenericGetterService {
         return this.getData(
             this.getRouterCacheKey(`totalFeesUSD.${time}`),
             () => this.routerComputeService.computeTotalFeesUSD(time),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 

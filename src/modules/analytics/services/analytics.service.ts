@@ -255,7 +255,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     metric,
                     start,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -285,7 +285,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     bin,
                     start,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
