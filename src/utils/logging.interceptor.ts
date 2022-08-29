@@ -23,11 +23,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
             let origin = 'Unknown';
             if (req !== undefined) {
-                origin = req.headers['origin'];
-
-                if (!origin) {
-                    origin = 'Unknown';
-                }
+                origin = req?.headers?.['origin'] ?? 'Unknown';
             }
 
             const profiler = new PerformanceProfiler();
