@@ -20,10 +20,14 @@ export class LoggingInterceptor implements NestInterceptor {
             const fieldName = info.fieldName;
 
             const { req } = gqlContext.getContext();
-            let origin = req.headers['origin'];
 
-            if (!origin) {
-                origin = 'Unknown';
+            let origin = 'Unknown';
+            if (req !== undefined) {
+                origin = req.headers['origin'];
+
+                if (!origin) {
+                    origin = 'Unknown';
+                }
             }
 
             const profiler = new PerformanceProfiler();
