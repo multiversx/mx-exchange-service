@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneSecond } from 'src/helpers/helpers';
+import { oneMinute } from 'src/helpers/helpers';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
@@ -22,7 +22,7 @@ export class ContextGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             async () => (await this.apiService.getStats()).epoch,
-            oneSecond() * 6,
+            oneMinute(),
         );
     }
 
@@ -31,7 +31,7 @@ export class ContextGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getCurrentBlockNonce(shardID),
-            oneSecond() * 6,
+            oneMinute(),
         );
     }
 
