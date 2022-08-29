@@ -6,8 +6,8 @@ import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
-import { ContextSetterService } from '../context/context.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -18,7 +18,7 @@ export class PairCacheWarmerService {
         private readonly abiPairService: PairAbiService,
         private readonly routerGetter: RouterGetterService,
         private readonly apiService: ElrondApiService,
-        private readonly contextSetter: ContextSetterService,
+        private readonly tokenSetter: TokenSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -69,21 +69,18 @@ export class PairCacheWarmerService {
                     ),
                 );
                 cacheKeys.push(
-                    await this.contextSetter.setTokenMetadata(
-                        lpTokenID,
-                        lpToken,
-                    ),
+                    await this.tokenSetter.setTokenMetadata(lpTokenID, lpToken),
                 );
             }
             this.invalidatedKeys.push(cacheKeys);
             cacheKeys.push(
-                await this.contextSetter.setTokenMetadata(
+                await this.tokenSetter.setTokenMetadata(
                     pairMetadata.firstTokenID,
                     firstToken,
                 ),
             );
             cacheKeys.push(
-                await this.contextSetter.setTokenMetadata(
+                await this.tokenSetter.setTokenMetadata(
                     pairMetadata.secondTokenID,
                     secondToken,
                 ),

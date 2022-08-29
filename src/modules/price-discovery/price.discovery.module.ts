@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { PairModule } from '../pair/pair.module';
+import { TokenModule } from '../tokens/token.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { PriceDiscoveryResolver } from './price.discovery.resolver';
 import { PriceDiscoveryAbiService } from './services/price.discovery.abi.service';
@@ -15,10 +15,10 @@ import { PriceDiscoveryTransactionService } from './services/price.discovery.tra
 @Module({
     imports: [
         ElrondCommunicationModule,
-        ContextModule,
         CachingModule,
         PairModule,
         WrappingModule,
+        TokenModule,
     ],
     providers: [
         PriceDiscoveryService,

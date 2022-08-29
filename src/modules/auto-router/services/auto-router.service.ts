@@ -10,7 +10,6 @@ import {
     BestSwapRoute,
     PRIORITY_MODES,
 } from './auto-router.compute.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { constantsConfig, elrondConfig } from 'src/config';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { AutoRouterArgs } from '../models/auto-router.args';
@@ -22,12 +21,13 @@ import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 import { computeValueUSD, denominateAmount } from 'src/utils/token.converters';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class AutoRouterService {
     constructor(
         private readonly routerGetter: RouterGetterService,
-        private readonly contextGetterService: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
         private readonly autoRouterTransactionService: AutoRouterTransactionService,
@@ -58,8 +58,8 @@ export class AutoRouterService {
             this.remoteConfigGetterService.getMultiSwapStatus(),
             this.getActiveDirectPair(tokenInID, tokenOutID),
             this.getAllActivePairs(),
-            this.contextGetterService.getTokenMetadata(tokenInID),
-            this.contextGetterService.getTokenMetadata(tokenOutID),
+            this.tokenGetter.getTokenMetadata(tokenInID),
+            this.tokenGetter.getTokenMetadata(tokenOutID),
         ]);
 
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
@@ -530,9 +530,9 @@ export class AutoRouterService {
                 intermediaryTokenOut,
                 intermediaryTokenOutPriceUSD,
             ] = await Promise.all([
-                this.contextGetterService.getTokenMetadata(tokenInID),
+                this.tokenGetter.getTokenMetadata(tokenInID),
                 this.pairGetterService.getTokenPriceUSD(tokenInID),
-                this.contextGetterService.getTokenMetadata(tokenOutID),
+                this.tokenGetter.getTokenMetadata(tokenOutID),
                 this.pairGetterService.getTokenPriceUSD(tokenOutID),
             ]);
 
