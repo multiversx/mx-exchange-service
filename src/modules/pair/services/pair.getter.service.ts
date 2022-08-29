@@ -207,7 +207,7 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'firstTokenVolume',
                     time,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -224,7 +224,7 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'secondTokenVolume',
                     time,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -238,7 +238,7 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'volumeUSD',
                     time,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -252,7 +252,7 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'feesUSD',
                     time,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -260,7 +260,7 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, 'feesAPR'),
             () => this.pairComputeService.computeFeesAPR(pairAddress),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
