@@ -15,7 +15,8 @@ import Redis, { RedisOptions } from 'ioredis';
 export class CachingService {
     private readonly UNDEFINED_CACHE_VALUE = 'undefined';
 
-    private asyncGetExecutor: PendingExecutor<string, any>;
+    private remoteGetExecutor: PendingExecutor<string, any>;
+    private localGetExecutor: PendingExecutor<string, any>;
     private static cache: Cache;
     private client: Redis;
 
@@ -38,8 +39,11 @@ export class CachingService {
         CachingService.cache = this.cache;
         this.client = new Redis(this.options);
 
-        this.asyncGetExecutor = new PendingExecutor(
+        this.remoteGetExecutor = new PendingExecutor(
             async (key: string) => await this.client.get(key),
+        );
+        this.localGetExecutor = new PendingExecutor(
+            async (key: string) => await CachingService.cache.get<any>(key),
         );
     }
 
@@ -69,7 +73,7 @@ export class CachingService {
     private async getCacheRemote<T>(key: string): Promise<T | undefined> {
         const profiler = new PerformanceProfiler();
 
-        const response = await this.asyncGetExecutor.execute(key);
+        const response = await this.remoteGetExecutor.execute(key);
 
         profiler.stop();
         MetricsCollector.setRedisDuration('GET', profiler.duration);
@@ -99,7 +103,7 @@ export class CachingService {
     }
 
     async getCacheLocal<T>(key: string): Promise<T | undefined> {
-        return await CachingService.cache.get<T>(key);
+        return await this.localGetExecutor.execute(key);
     }
 
     public async getCache<T>(key: string): Promise<T | undefined> {
