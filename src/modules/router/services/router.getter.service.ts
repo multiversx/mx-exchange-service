@@ -38,6 +38,11 @@ export class RouterGetterService extends GenericGetterService {
         );
     }
 
+    async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
+        const pairs = await this.getPairsMetadata();
+        return pairs.find(pair => pair.address === pairAddress);
+    }
+
     async getEnableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
         return await this.getData(
             this.getRouterCacheKey('enableSwapByUserConfig'),

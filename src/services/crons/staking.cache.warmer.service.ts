@@ -4,7 +4,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { AbiStakingService } from 'src/modules/staking/services/staking.abi.service';
 import { StakingSetterService } from 'src/modules/staking/services/staking.setter.service';
-import { ContextSetterService } from '../context/context.setter.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
@@ -14,7 +14,7 @@ export class StakingCacheWarmerService {
         private readonly abiStakeService: AbiStakingService,
         private readonly stakeSetterService: StakingSetterService,
         private readonly apiService: ElrondApiService,
-        private readonly contextSetter: ContextSetterService,
+        private readonly tokenSetter: TokenSetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -49,15 +49,12 @@ export class StakingCacheWarmerService {
                     address,
                     rewardTokenID,
                 ),
-                this.contextSetter.setNftCollectionMetadata(
+                this.tokenSetter.setNftCollectionMetadata(
                     farmTokenID,
                     farmToken,
                 ),
-                this.contextSetter.setTokenMetadata(
-                    farmingTokenID,
-                    farmingToken,
-                ),
-                this.contextSetter.setTokenMetadata(rewardTokenID, rewardToken),
+                this.tokenSetter.setTokenMetadata(farmingTokenID, farmingToken),
+                this.tokenSetter.setTokenMetadata(rewardTokenID, rewardToken),
             ]);
 
             await this.deleteCacheKeys(cacheKeys);

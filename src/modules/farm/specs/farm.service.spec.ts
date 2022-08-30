@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
 import { FarmService } from '../services/farm.service';
 import { AbiFarmService } from '../services/abi-farm.service';
@@ -8,7 +7,6 @@ import { ElrondApiService } from '../../../services/elrond-communication/elrond-
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { RewardsModel } from '../models/farm.model';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
-import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';
@@ -23,6 +21,7 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -41,11 +40,6 @@ describe('FarmService', () => {
     const ElrondApiServiceProvider = {
         provide: ElrondApiService,
         useClass: ElrondApiServiceMock,
-    };
-
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -71,8 +65,9 @@ describe('FarmService', () => {
                 FarmGetterServiceProvider,
                 FarmComputeService,
                 ElrondApiServiceProvider,
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
+                RouterGetterServiceProvider,
+                TokenGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,

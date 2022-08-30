@@ -1,10 +1,8 @@
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
-import { ContextService } from 'src/services/context/context.service';
 
 export class FarmGetterServiceMock {
-    constructor(private readonly context: ContextService) {}
     async getFarmedTokenID(farmAddress: string): Promise<string> {
         return 'TOK2-2222';
     }

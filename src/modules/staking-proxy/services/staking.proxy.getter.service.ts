@@ -4,11 +4,11 @@ import { oneHour } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { AbiStakingProxyService } from './staking.proxy.abi.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class StakingProxyGetterService extends GenericGetterService {
@@ -16,7 +16,7 @@ export class StakingProxyGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: AbiStakingProxyService,
-        private readonly contextGetterService: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
     }
@@ -84,14 +84,12 @@ export class StakingProxyGetterService extends GenericGetterService {
         const stakingTokenID = await this.getStakingTokenID(
             stakingProxyAddress,
         );
-        return await this.contextGetterService.getTokenMetadata(stakingTokenID);
+        return await this.tokenGetter.getTokenMetadata(stakingTokenID);
     }
 
     async getFarmToken(stakingProxyAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.getFarmTokenID(stakingProxyAddress);
-        return await this.contextGetterService.getNftCollectionMetadata(
-            farmTokenID,
-        );
+        return await this.tokenGetter.getNftCollectionMetadata(farmTokenID);
     }
 
     async getDualYieldToken(
@@ -100,16 +98,14 @@ export class StakingProxyGetterService extends GenericGetterService {
         const dualYieldTokenID = await this.getDualYieldTokenID(
             stakingProxyAddress,
         );
-        return await this.contextGetterService.getNftCollectionMetadata(
+        return await this.tokenGetter.getNftCollectionMetadata(
             dualYieldTokenID,
         );
     }
 
     async getLpFarmToken(stakingProxyAddress: string): Promise<NftCollection> {
         const lpFarmTokenID = await this.getLpFarmTokenID(stakingProxyAddress);
-        return await this.contextGetterService.getNftCollectionMetadata(
-            lpFarmTokenID,
-        );
+        return await this.tokenGetter.getNftCollectionMetadata(lpFarmTokenID);
     }
 
     private getStakeProxyCacheKey(stakingProxyAddress: string, ...args: any) {

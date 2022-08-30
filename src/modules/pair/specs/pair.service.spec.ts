@@ -1,16 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairAbiService } from '../services/pair.abi.service';
 import { PairService } from '../services/pair.service';
-import { ContextService } from 'src/services/context/context.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairAbiServiceMock } from '../mocks/pair.abi.service.mock';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 
 describe('PairService', () => {
     let service: PairService;
@@ -25,11 +24,6 @@ describe('PairService', () => {
         useClass: PairGetterServiceMock,
     };
 
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
-
     const WrapServiceProvider = {
         provide: WrapService,
         useClass: WrapServiceMock,
@@ -41,10 +35,10 @@ describe('PairService', () => {
             providers: [
                 PairAbiServiceProvider,
                 PairGetterServiceProvider,
-                ContextServiceProvider,
                 PairService,
                 WrapServiceProvider,
                 TokenGetterServiceProvider,
+                RouterGetterServiceProvider,
             ],
         }).compile();
 

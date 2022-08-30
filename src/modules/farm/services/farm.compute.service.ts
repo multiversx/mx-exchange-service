@@ -38,10 +38,9 @@ export class FarmComputeService {
             return tokenPriceUSD;
         }
 
-        const tokenPriceUSD = await this.pairService.getPriceUSDByPath(
+        return await this.tokenCompute.computeTokenPriceDerivedUSD(
             farmedTokenID,
         );
-        return tokenPriceUSD.toFixed();
     }
 
     async computeFarmingTokenPriceUSD(farmAddress: string): Promise<string> {

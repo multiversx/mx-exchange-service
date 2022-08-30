@@ -14,21 +14,23 @@ import { PairSetterService } from '../../pair/services/pair.setter.service';
 import { RouterComputeService } from '../../router/services/router.compute.service';
 import { RouterSetterService } from '../../router/services/router.setter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextService } from 'src/services/context/context.service';
 import { AddLiquidityEventType, SwapEventType } from '@elrondnetwork/erdjs-dex';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class AnalyticsEventHandlerService {
     constructor(
-        private readonly context: ContextService,
         private readonly contextGetter: ContextGetterService,
+        private readonly routerGetter: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
-        private readonly tokenSetterService: TokenSetterService,
-        private readonly tokenComputeService: TokenComputeService,
+        private readonly tokenGetter: TokenGetterService,
+        private readonly tokenSetter: TokenSetterService,
+        private readonly tokenCompute: TokenComputeService,
         private readonly routerSetterService: RouterSetterService,
         private readonly routerComputeService: RouterComputeService,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
@@ -104,8 +106,8 @@ export class AnalyticsEventHandlerService {
         ] = await Promise.all([
             this.pairGetterService.getFirstTokenID(event.address),
             this.pairGetterService.getSecondTokenID(event.address),
-            this.contextGetter.getTokenMetadata(event.tokenIn.tokenID),
-            this.contextGetter.getTokenMetadata(event.tokenOut.tokenID),
+            this.tokenGetter.getTokenMetadata(event.tokenIn.tokenID),
+            this.tokenGetter.getTokenMetadata(event.tokenOut.tokenID),
             this.pairGetterService.getTokenPriceUSD(event.tokenIn.tokenID),
             this.pairGetterService.getTokenPriceUSD(event.tokenOut.tokenID),
             this.pairGetterService.getFirstTokenLockedValueUSD(event.address),
@@ -320,21 +322,21 @@ export class AnalyticsEventHandlerService {
 
     private async updateTokenPrices(tokenID: string): Promise<void> {
         const [derivedEGLD, derivedUSD] = await Promise.all([
-            this.tokenComputeService.computeTokenPriceDerivedEGLD(tokenID),
-            this.tokenComputeService.computeTokenPriceDerivedUSD(tokenID),
+            this.tokenCompute.computeTokenPriceDerivedEGLD(tokenID),
+            this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
         ]);
         const cacheKeys = await Promise.all([
-            this.tokenSetterService.setDerivedEGLD(tokenID, derivedEGLD),
-            this.tokenSetterService.setDerivedUSD(tokenID, derivedUSD),
+            this.tokenSetter.setDerivedEGLD(tokenID, derivedEGLD),
+            this.tokenSetter.setDerivedUSD(tokenID, derivedUSD),
         ]);
         await this.deleteCacheKeys(cacheKeys);
     }
 
     private async getTokenLiquidityData(tokenID: string): Promise<any> {
         const [token, priceUSD, pairs] = await Promise.all([
-            this.contextGetter.getTokenMetadata(tokenID),
+            this.tokenGetter.getTokenMetadata(tokenID),
             this.pairGetterService.getTokenPriceUSD(tokenID),
-            this.context.getPairsMetadata(),
+            this.routerGetter.getPairsMetadata(),
         ]);
 
         let newLockedValue = new BigNumber(0);
@@ -370,7 +372,7 @@ export class AnalyticsEventHandlerService {
         amount: string,
     ): Promise<any> {
         const [token, priceUSD, lockedData] = await Promise.all([
-            this.contextGetter.getTokenMetadata(tokenID),
+            this.tokenGetter.getTokenMetadata(tokenID),
             this.pairGetterService.getTokenPriceUSD(tokenID),
             this.getTokenLiquidityData(tokenID),
         ]);
