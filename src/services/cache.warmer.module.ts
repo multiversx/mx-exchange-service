@@ -30,6 +30,7 @@ import { PriceDiscoveryCacheWarmerService } from './crons/price.discovery.cache.
 import { PriceDiscoveryModule } from 'src/modules/price-discovery/price.discovery.module';
 import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
 import { RouterModule } from 'src/modules/router/router.module';
+import { TokenModule } from 'src/modules/tokens/token.module';
 
 @Module({
     imports: [
@@ -50,6 +51,7 @@ import { RouterModule } from 'src/modules/router/router.module';
         ProxyPairModule,
         AnalyticsModule,
         PriceDiscoveryModule,
+        TokenModule,
         AWSModule,
         RemoteConfigModule,
     ],
