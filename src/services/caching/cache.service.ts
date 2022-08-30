@@ -3,22 +3,23 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateSetLogMessage } from '../../utils/generate-log-message';
 import { Cache } from 'cache-manager';
-import { promisify } from 'util';
 import { cacheConfig } from '../../config';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { ApiConfigService } from '../../helpers/api.config.service';
-import * as Redis from 'ioredis';
 import { oneMinute } from 'src/helpers/helpers';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PendingExecutor } from 'src/utils/pending.executor';
+import Redis, { RedisOptions } from 'ioredis';
 
 @Injectable()
 export class CachingService {
     private readonly UNDEFINED_CACHE_VALUE = 'undefined';
 
     private asyncGetExecutor: PendingExecutor<string, any>;
+    private static cache: Cache;
+    private client: Redis;
 
-    private options: Redis.RedisOptions = {
+    private options: RedisOptions = {
         host: this.configService.getRedisUrl(),
         port: this.configService.getRedisPort(),
         password: this.configService.getRedisPassword(),
@@ -29,31 +30,17 @@ export class CachingService {
         enableAutoPipelining: true,
     };
 
-    private client = new Redis.default(this.options);
-    private static cache: Cache;
-    private asyncSet = promisify(this.getClient().set).bind(this.getClient());
-    private asyncGet = promisify(this.getClient().get).bind(this.getClient());
-    private asyncMGet = promisify(this.getClient().mget).bind(this.getClient());
-    private asyncMulti = promisify(this.getClient().multi).bind(
-        this.getClient(),
-    );
-    private asyncDel = promisify(this.getClient().del).bind(this.getClient());
-    private asyncKeys = promisify(this.getClient().keys).bind(this.getClient());
-
     constructor(
         private readonly configService: ApiConfigService,
         @Inject(CACHE_MANAGER) private readonly cache: Cache,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         CachingService.cache = this.cache;
+        this.client = new Redis(this.options);
 
         this.asyncGetExecutor = new PendingExecutor(
-            async (key: string) => await this.asyncGet(key),
+            async (key: string) => await this.client.get(key),
         );
-    }
-
-    getClient(): Redis.Redis {
-        return this.client;
     }
 
     private async setCacheRemote<T>(
@@ -62,7 +49,7 @@ export class CachingService {
         ttl: number = cacheConfig.default,
     ): Promise<T> {
         if (value === undefined) {
-            await this.asyncSet(
+            await this.client.set(
                 key,
                 this.UNDEFINED_CACHE_VALUE,
                 'EX',
@@ -70,7 +57,7 @@ export class CachingService {
             );
             return value;
         }
-        await this.asyncSet(
+        await this.client.set(
             key,
             JSON.stringify(value),
             'EX',
@@ -196,18 +183,18 @@ export class CachingService {
         const invalidatedKeys = [];
 
         if (key.includes('*')) {
-            const allKeys = await this.asyncKeys(key);
+            const allKeys = await this.client.keys(key);
             for (const key of allKeys) {
                 await Promise.all([
                     CachingService.cache.del(key),
-                    this.asyncDel(key),
+                    this.client.del(key),
                 ]);
                 invalidatedKeys.push(key);
             }
         } else {
             await Promise.all([
                 CachingService.cache.del(key),
-                this.asyncDel(key),
+                this.client.del(key),
             ]);
             invalidatedKeys.push(key);
         }
