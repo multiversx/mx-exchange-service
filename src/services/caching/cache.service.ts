@@ -1,13 +1,7 @@
 import { Injectable, Inject, CACHE_MANAGER } from '@nestjs/common';
-import { isNil } from '@nestjs/common/utils/shared.utils';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { generateCacheKey } from '../../utils/generate-cache-key';
 import { Logger } from 'winston';
-import {
-    generateDeleteLogMessage,
-    generateGetLogMessage,
-    generateSetLogMessage,
-} from '../../utils/generate-log-message';
+import { generateSetLogMessage } from '../../utils/generate-log-message';
 import { Cache } from 'cache-manager';
 import { promisify } from 'util';
 import { cacheConfig } from '../../config';
@@ -25,7 +19,7 @@ export class CachingService {
         host: this.configService.getRedisUrl(),
         port: this.configService.getRedisPort(),
         password: this.configService.getRedisPassword(),
-        retryStrategy(times) {
+        retryStrategy(times: number) {
             const delay = Math.min(times * 50, 5000);
             return delay;
         },
@@ -80,7 +74,7 @@ export class CachingService {
     pendingGetRemotes: { [key: string]: Promise<any> } = {};
 
     private async getCacheRemote<T>(key: string): Promise<T | undefined> {
-        let response;
+        let response: any;
         const profiler = new PerformanceProfiler();
         let pendingGetRemote = this.pendingGetRemotes[key];
         if (pendingGetRemote) {
@@ -143,65 +137,6 @@ export class CachingService {
         await this.setCacheLocal<T>(key, value, ttl);
         await this.setCacheRemote<T>(key, value, ttl);
         return value;
-    }
-
-    async get(key: string, region: string = null): Promise<any> {
-        const cacheKey = generateCacheKey(key, region);
-        try {
-            return JSON.parse(await this.asyncGet(key));
-        } catch (err) {
-            const logMessage = generateGetLogMessage(
-                CachingService.name,
-                this.get.name,
-                cacheKey,
-                err,
-            );
-            this.logger.error(logMessage);
-            return null;
-        }
-    }
-    async set(
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-        region: string = null,
-    ): Promise<boolean> {
-        if (isNil(value)) {
-            return;
-        }
-        const cacheKey = generateCacheKey(key, region);
-        try {
-            return await this.asyncSet(
-                cacheKey,
-                JSON.stringify(value),
-                'EX',
-                ttl,
-            );
-        } catch (err) {
-            const logMessage = generateSetLogMessage(
-                CachingService.name,
-                this.set.name,
-                cacheKey,
-                err,
-            );
-            this.logger.error(logMessage);
-            return;
-        }
-    }
-
-    async delete(key: string, region: string = null): Promise<void> {
-        const cacheKey = generateCacheKey(key, region);
-        try {
-            await this.asyncDel(cacheKey);
-        } catch (err) {
-            const logMessage = generateDeleteLogMessage(
-                CachingService.name,
-                this.delete.name,
-                cacheKey,
-                err,
-            );
-            this.logger.error(logMessage);
-        }
     }
 
     async getOrSet<T>(
