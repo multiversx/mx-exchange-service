@@ -3,7 +3,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PairModule } from '../modules/pair/pair.module';
 import { ContextModule } from './context/context.module';
 import { CacheWarmerService } from './crons/cache.warmer.service';
-import { ServicesModule } from './services.module';
 import { CachingService } from './caching/cache.service';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { ProxyModule } from 'src/modules/proxy/proxy.module';
@@ -39,7 +38,6 @@ import { TokenModule } from 'src/modules/tokens/token.module';
         CacheModule.register(),
         PairModule,
         RouterModule,
-        ServicesModule,
         ElrondCommunicationModule,
         ContextModule,
         FarmModule,
