@@ -10,10 +10,13 @@ import { ApiConfigService } from '../../helpers/api.config.service';
 import * as Redis from 'ioredis';
 import { oneMinute } from 'src/helpers/helpers';
 import { MetricsCollector } from 'src/utils/metrics.collector';
+import { PendingExecutor } from 'src/utils/pending.executor';
 
 @Injectable()
 export class CachingService {
     private readonly UNDEFINED_CACHE_VALUE = 'undefined';
+
+    private asyncGetExecutor: PendingExecutor<string, any>;
 
     private options: Redis.RedisOptions = {
         host: this.configService.getRedisUrl(),
@@ -25,6 +28,7 @@ export class CachingService {
         },
         enableAutoPipelining: true,
     };
+
     private client = new Redis.default(this.options);
     private static cache: Cache;
     private asyncSet = promisify(this.getClient().set).bind(this.getClient());
@@ -42,6 +46,10 @@ export class CachingService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         CachingService.cache = this.cache;
+
+        this.asyncGetExecutor = new PendingExecutor(
+            async (key: string) => await this.asyncGet(key),
+        );
     }
 
     getClient(): Redis.Redis {
@@ -71,23 +79,10 @@ export class CachingService {
         return value;
     }
 
-    pendingGetRemotes: { [key: string]: Promise<any> } = {};
-
     private async getCacheRemote<T>(key: string): Promise<T | undefined> {
-        let response: any;
         const profiler = new PerformanceProfiler();
-        let pendingGetRemote = this.pendingGetRemotes[key];
-        if (pendingGetRemote) {
-            response = await pendingGetRemote;
-        } else {
-            pendingGetRemote = this.asyncGet(key);
 
-            this.pendingGetRemotes[key] = pendingGetRemote;
-
-            response = await pendingGetRemote;
-
-            delete this.pendingGetRemotes[key];
-        }
+        const response = await this.asyncGetExecutor.execute(key);
 
         profiler.stop();
         MetricsCollector.setRedisDuration('GET', profiler.duration);
@@ -203,15 +198,17 @@ export class CachingService {
         if (key.includes('*')) {
             const allKeys = await this.asyncKeys(key);
             for (const key of allKeys) {
-                // this.logger.log(`Invalidating key ${key}`);
-                await CachingService.cache.del(key);
-                await this.asyncDel(key);
+                await Promise.all([
+                    CachingService.cache.del(key),
+                    this.asyncDel(key),
+                ]);
                 invalidatedKeys.push(key);
             }
         } else {
-            // this.logger.log(`Invalidating key ${key}`);
-            await CachingService.cache.del(key);
-            await this.asyncDel(key);
+            await Promise.all([
+                CachingService.cache.del(key),
+                this.asyncDel(key),
+            ]);
             invalidatedKeys.push(key);
         }
 
