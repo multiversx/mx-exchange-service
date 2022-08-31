@@ -43,7 +43,6 @@ export class RouterService {
         pairFilter: PairFilterArgs,
     ): Promise<PairModel[]> {
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
-        const pairs: PairModel[] = [];
         pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
         pairsMetadata = this.filterPairsByTokens(pairFilter, pairsMetadata);
         pairsMetadata = await this.filterPairsByIssuedLpToken(
@@ -55,15 +54,14 @@ export class RouterService {
             pairsMetadata,
         );
 
-        for (const pair of pairsMetadata) {
-            pairs.push(
-                new PairModel({
-                    address: pair.address,
-                }),
-            );
-        }
-
-        return pairs.slice(offset, limit);
+        return pairsMetadata
+            .map(
+                pairMetadata =>
+                    new PairModel({
+                        address: pairMetadata.address,
+                    }),
+            )
+            .slice(offset, limit);
     }
 
     async getPairCount(): Promise<number> {
@@ -198,17 +196,22 @@ export class RouterService {
             return pairsMetadata;
         }
 
-        const filteredPairsMetadata = [];
-        for (const pair of pairsMetadata) {
-            const lpTokenID = await this.pairGetterService.getLpTokenID(
-                pair.address,
-            );
+        const promises = pairsMetadata.map(pairMetadata =>
+            this.pairGetterService.getLpTokenID(pairMetadata.address),
+        );
+        const lpTokensIDs = await Promise.all(promises);
 
-            if (lpTokenID === undefined || lpTokenID === 'undefined') {
+        const filteredPairsMetadata = [];
+        for (let index = 0; index < lpTokensIDs.length; index++) {
+            if (
+                lpTokensIDs[index] === undefined ||
+                lpTokensIDs[index] === 'undefined'
+            ) {
                 continue;
             }
-            filteredPairsMetadata.push(pair);
+            filteredPairsMetadata.push(pairsMetadata[index]);
         }
+
         return filteredPairsMetadata;
     }
 
@@ -220,13 +223,18 @@ export class RouterService {
             return pairsMetadata;
         }
 
+        const promises = pairsMetadata.map(pairMetadata =>
+            this.pairGetterService.getState(pairMetadata.address),
+        );
+        const pairsStates = await Promise.all(promises);
+
         const filteredPairsMetadata = [];
-        for (const pair of pairsMetadata) {
-            const state = await this.pairGetterService.getState(pair.address);
-            if (state === pairFilter.state) {
-                filteredPairsMetadata.push(pair);
+        for (let index = 0; index < pairsStates.length; index++) {
+            if (pairsStates[index] === pairFilter.state) {
+                filteredPairsMetadata.push(pairsMetadata[index]);
             }
         }
+
         return filteredPairsMetadata;
     }
 
