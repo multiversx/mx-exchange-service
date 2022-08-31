@@ -10,6 +10,7 @@ import { RouterSetterService } from '../router/services/router.setter.service';
 import { CreateTokenDto } from '../tokens/dto/create.token.dto';
 import { TokenGetterService } from '../tokens/services/token.getter.service';
 import { TokenRepositoryService } from '../tokens/services/token.repository.service';
+import { TokenSetterService } from '../tokens/services/token.setter.service';
 
 @Injectable()
 export class RabbitMQRouterHandlerService {
@@ -18,6 +19,7 @@ export class RabbitMQRouterHandlerService {
         private readonly routerAbiService: AbiRouterService,
         private readonly routerSetterService: RouterSetterService,
         private readonly tokenGetter: TokenGetterService,
+        private readonly tokenSetter: TokenSetterService,
         private readonly tokenRepository: TokenRepositoryService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -49,7 +51,11 @@ export class RabbitMQRouterHandlerService {
                     tokenID: firstTokenID,
                     type: 'Jungle',
                 };
-                this.tokenRepository.create(createTokenDto);
+                await this.tokenRepository.create(createTokenDto);
+                await this.tokenSetter.setEsdtTokenType(
+                    createTokenDto.tokenID,
+                    createTokenDto.type,
+                );
             }
 
             if (secondTokenType === 'Unlisted') {
@@ -57,7 +63,11 @@ export class RabbitMQRouterHandlerService {
                     tokenID: secondTokenID,
                     type: 'Jungle',
                 };
-                this.tokenRepository.create(createTokenDto);
+                await this.tokenRepository.create(createTokenDto);
+                await this.tokenSetter.setEsdtTokenType(
+                    createTokenDto.tokenID,
+                    createTokenDto.type,
+                );
             }
         }
 
