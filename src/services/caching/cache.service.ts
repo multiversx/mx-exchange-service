@@ -15,7 +15,7 @@ import Redis, { RedisOptions } from 'ioredis';
 export class CachingService {
     private readonly UNDEFINED_CACHE_VALUE = 'undefined';
 
-    private remoteGetExecutor: PendingExecutor<string, any>;
+    private remoteGetExecutor: PendingExecutor<string, string>;
     private localGetExecutor: PendingExecutor<string, any>;
     private static cache: Cache;
     private client: Redis;
@@ -118,10 +118,14 @@ export class CachingService {
     public async setCache<T>(
         key: string,
         value: T,
-        ttl: number = cacheConfig.default,
+        remoteTtl: number = cacheConfig.default,
+        localTtl: number | undefined = undefined,
     ): Promise<T> {
-        await this.setCacheLocal<T>(key, value, ttl);
-        await this.setCacheRemote<T>(key, value, ttl);
+        if (!localTtl) {
+            localTtl = remoteTtl / 2;
+        }
+        await this.setCacheLocal<T>(key, value, localTtl);
+        await this.setCacheRemote<T>(key, value, remoteTtl);
         return value;
     }
 
