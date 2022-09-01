@@ -63,15 +63,6 @@
         }
     },
     "caching": {
-        "pairsMetadata": 300,
-        "pairs": 300,
-        "state": 300,
-        "txTotalCount": 10,
-        "pairCount": 10,
-        "token": 300,
-        "tokenPrice": 60,
-        "reserves": 60,
-        "apr": 60,
         "default": 120
     },
     "gasLimits": {
