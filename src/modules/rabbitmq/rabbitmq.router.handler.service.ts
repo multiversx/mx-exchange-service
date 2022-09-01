@@ -74,6 +74,7 @@ export class RabbitMQRouterHandlerService {
         const keys = await Promise.all([
             this.routerSetterService.setPairsMetadata(pairsMetadata),
             this.routerSetterService.setAllPairsAddress(pairsAddresses),
+            this.routerSetterService.setPairCount(pairsAddresses.length),
         ]);
         this.invalidatedKeys.push(...keys);
         await this.deleteCacheKeys();
