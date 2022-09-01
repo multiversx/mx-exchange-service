@@ -6,8 +6,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../../../utils/generate-cache-key';
 import { oneHour } from '../../../../helpers/helpers';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class ProxyFarmGetterService extends GenericGetterService {
@@ -15,7 +15,7 @@ export class ProxyFarmGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private abiService: AbiProxyFarmService,
-        private contextGetter: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
     }
@@ -30,7 +30,7 @@ export class ProxyFarmGetterService extends GenericGetterService {
 
     async getwrappedFarmToken(): Promise<NftCollection> {
         const wrappedFarmTokenID = await this.getwrappedFarmTokenID();
-        return this.contextGetter.getNftCollectionMetadata(wrappedFarmTokenID);
+        return this.tokenGetter.getNftCollectionMetadata(wrappedFarmTokenID);
     }
 
     async getIntermediatedFarms(): Promise<string[]> {

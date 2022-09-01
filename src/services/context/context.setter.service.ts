@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
+import { oneHour, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -17,17 +17,17 @@ export class ContextSetterService extends GenericSetterService {
         super(cachingService, logger);
     }
 
-    async setTokenMetadata(tokenID: string, value: EsdtToken): Promise<string> {
-        const cacheKey = this.getContextCacheKey(tokenID);
-        return await this.setData(cacheKey, value, oneHour());
+    async setCurrentEpoch(value: number): Promise<string> {
+        const cacheKey = this.getContextCacheKey('currentEpoch');
+        return await this.setData(cacheKey, value, oneSecond() * 12);
     }
 
-    async setNftCollectionMetadata(
-        collection: string,
-        value: NftCollection,
+    async setShardCurrentBlockNonce(
+        shardID: number,
+        value: number,
     ): Promise<string> {
-        const cacheKey = this.getContextCacheKey(collection);
-        return await this.setData(cacheKey, value, oneHour());
+        const cacheKey = this.getContextCacheKey('shardBlockNonce', shardID);
+        return await this.setData(cacheKey, value, oneSecond() * 12);
     }
 
     private getContextCacheKey(...args: any) {

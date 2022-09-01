@@ -9,6 +9,7 @@ import { ProxyPairModule } from '../proxy-pair/proxy-pair.module';
 import { ProxyModule } from '../../proxy.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { PairModule } from 'src/modules/pair/pair.module';
+import { TokenModule } from 'src/modules/tokens/token.module';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import { PairModule } from 'src/modules/pair/pair.module';
         forwardRef(() => ProxyModule),
         FarmModule,
         PairModule,
+        TokenModule,
     ],
     providers: [
         AbiProxyFarmService,

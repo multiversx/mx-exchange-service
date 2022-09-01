@@ -13,6 +13,7 @@ import { PairSetterService } from './services/pair.setter.service';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenModule } from '../tokens/token.module';
+import { RouterModule } from '../router/router.module';
 @Module({
     imports: [
         ElrondCommunicationModule,
@@ -21,6 +22,7 @@ import { TokenModule } from '../tokens/token.module';
         CachingModule,
         AWSModule,
         DatabaseModule,
+        forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
     ],
     providers: [

@@ -29,6 +29,8 @@ import { MetabondingModule } from 'src/modules/metabonding/metabonding.module';
 import { PriceDiscoveryCacheWarmerService } from './crons/price.discovery.cache.warmer.service';
 import { PriceDiscoveryModule } from 'src/modules/price-discovery/price.discovery.module';
 import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
+import { RouterModule } from 'src/modules/router/router.module';
+import { TokenModule } from 'src/modules/tokens/token.module';
 
 @Module({
     imports: [
@@ -36,6 +38,7 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         CommonAppModule,
         CacheModule.register(),
         PairModule,
+        RouterModule,
         ServicesModule,
         ElrondCommunicationModule,
         ContextModule,
@@ -48,6 +51,7 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         ProxyPairModule,
         AnalyticsModule,
         PriceDiscoveryModule,
+        TokenModule,
         AWSModule,
         RemoteConfigModule,
     ],

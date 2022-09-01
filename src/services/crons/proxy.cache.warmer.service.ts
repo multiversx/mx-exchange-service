@@ -10,7 +10,7 @@ import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour } from '../../helpers/helpers';
-import { ContextSetterService } from '../context/context.setter.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 
 @Injectable()
 export class ProxyCacheWarmerService {
@@ -22,7 +22,7 @@ export class ProxyCacheWarmerService {
         private readonly abiProxyFarmService: AbiProxyFarmService,
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
-        private readonly contextSetter: ContextSetterService,
+        private readonly tokenSetter: TokenSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -93,16 +93,16 @@ export class ProxyCacheWarmerService {
                 intermediatedFarms,
                 oneHour(),
             ),
-            this.contextSetter.setTokenMetadata(assetTokenID, assetToken),
-            this.contextSetter.setNftCollectionMetadata(
+            this.tokenSetter.setTokenMetadata(assetTokenID, assetToken),
+            this.tokenSetter.setNftCollectionMetadata(
                 lockedAssetTokenID,
                 lockedAssetToken,
             ),
-            this.contextSetter.setNftCollectionMetadata(
+            this.tokenSetter.setNftCollectionMetadata(
                 wrappedLpTokenID,
                 wrappedLpToken,
             ),
-            this.contextSetter.setNftCollectionMetadata(
+            this.tokenSetter.setNftCollectionMetadata(
                 wrappedFarmTokenID,
                 wrappedFarmToken,
             ),

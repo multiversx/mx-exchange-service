@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ContextService } from '../context/context.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairAbiService } from 'src/modules/pair/services/pair.abi.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
-import { ContextSetterService } from '../context/context.setter.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -16,15 +16,15 @@ export class PairCacheWarmerService {
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly abiPairService: PairAbiService,
+        private readonly routerGetter: RouterGetterService,
         private readonly apiService: ElrondApiService,
-        private readonly context: ContextService,
-        private readonly contextSetter: ContextSetterService,
+        private readonly tokenSetter: TokenSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_30_MINUTES)
     async cachePairs(): Promise<void> {
-        const pairsMetadata = await this.context.getPairsMetadata();
+        const pairsMetadata = await this.routerGetter.getPairsMetadata();
         for (const pairMetadata of pairsMetadata) {
             const lpTokenID = await this.abiPairService.getLpTokenID(
                 pairMetadata.address,
@@ -69,21 +69,18 @@ export class PairCacheWarmerService {
                     ),
                 );
                 cacheKeys.push(
-                    await this.contextSetter.setTokenMetadata(
-                        lpTokenID,
-                        lpToken,
-                    ),
+                    await this.tokenSetter.setTokenMetadata(lpTokenID, lpToken),
                 );
             }
             this.invalidatedKeys.push(cacheKeys);
             cacheKeys.push(
-                await this.contextSetter.setTokenMetadata(
+                await this.tokenSetter.setTokenMetadata(
                     pairMetadata.firstTokenID,
                     firstToken,
                 ),
             );
             cacheKeys.push(
-                await this.contextSetter.setTokenMetadata(
+                await this.tokenSetter.setTokenMetadata(
                     pairMetadata.secondTokenID,
                     secondToken,
                 ),
@@ -95,7 +92,7 @@ export class PairCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cachePairsInfo(): Promise<void> {
-        const pairsAddresses = await this.context.getAllPairsAddress();
+        const pairsAddresses = await this.routerGetter.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
             const [
@@ -128,7 +125,7 @@ export class PairCacheWarmerService {
 
     @Cron('*/6 * * * * *') // Update prices and reserves every 6 seconds
     async cacheTokenPrices(): Promise<void> {
-        const pairsMetadata = await this.context.getPairsMetadata();
+        const pairsMetadata = await this.routerGetter.getPairsMetadata();
 
         for (const pairAddress of pairsMetadata) {
             const pairInfo = await this.abiPairService.getPairInfoMetadata(

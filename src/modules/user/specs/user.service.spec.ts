@@ -6,7 +6,6 @@ import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pa
 import { ProxyService } from '../../proxy/services/proxy.service';
 import { UserService } from '../services/user.metaEsdt.service';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
-import { ContextService } from '../../../services/context/context.service';
 import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -24,7 +23,6 @@ import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
 import { FarmServiceMock } from '../../farm/mocks/farm.service.mock';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
@@ -78,11 +76,6 @@ describe('UserService', () => {
     const FarmGetterServiceProvider = {
         provide: FarmGetterService,
         useClass: FarmGetterServiceMock,
-    };
-
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -173,7 +166,6 @@ describe('UserService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 ElrondApiServiceProvider,
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 RouterGetterServiceProvider,
                 PairService,

@@ -38,6 +38,11 @@ export class RouterGetterService extends GenericGetterService {
         );
     }
 
+    async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
+        const pairs = await this.getPairsMetadata();
+        return pairs.find(pair => pair.address === pairAddress);
+    }
+
     async getEnableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
         return await this.getData(
             this.getRouterCacheKey('enableSwapByUserConfig'),
@@ -66,7 +71,7 @@ export class RouterGetterService extends GenericGetterService {
         return this.getData(
             this.getRouterCacheKey(`totalVolumeUSD.${time}`),
             () => this.routerComputeService.computeTotalVolumeUSD(time),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -74,7 +79,7 @@ export class RouterGetterService extends GenericGetterService {
         return this.getData(
             this.getRouterCacheKey(`totalFeesUSD.${time}`),
             () => this.routerComputeService.computeTotalFeesUSD(time),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 

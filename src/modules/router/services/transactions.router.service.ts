@@ -69,7 +69,7 @@ export class TransactionRouterService {
         lpTokenTicker: string,
     ): Promise<TransactionModel> {
         const lpTokeID = await this.pairGetterService.getLpTokenID(pairAddress);
-        if (lpTokeID !== 'undefined') {
+        if (lpTokeID !== undefined) {
             throw new Error('LP Token already issued');
         }
 
