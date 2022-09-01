@@ -5,6 +5,7 @@ import { awsConfig, constantsConfig } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -25,6 +26,7 @@ export class PairGetterService extends GenericGetterService {
         private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
+        private readonly tokenGetter: TokenGetterService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
@@ -58,20 +60,19 @@ export class PairGetterService extends GenericGetterService {
 
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
-        return this.contextGetter.getTokenMetadata(firstTokenID);
+        return this.tokenGetter.getTokenMetadata(firstTokenID);
     }
 
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
-        return this.contextGetter.getTokenMetadata(secondTokenID);
+        return this.tokenGetter.getTokenMetadata(secondTokenID);
     }
 
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.getLpTokenID(pairAddress);
-        if (lpTokenID === 'undefined') {
-            return undefined;
-        }
-        return this.contextGetter.getTokenMetadata(lpTokenID);
+        return lpTokenID === undefined
+            ? undefined
+            : await this.tokenGetter.getTokenMetadata(lpTokenID);
     }
 
     async getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
@@ -207,7 +208,7 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'firstTokenVolume',
                     time,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -224,7 +225,7 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'secondTokenVolume',
                     time,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -238,7 +239,7 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'volumeUSD',
                     time,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -252,7 +253,7 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'feesUSD',
                     time,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -260,7 +261,7 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, 'feesAPR'),
             () => this.pairComputeService.computeFeesAPR(pairAddress),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 

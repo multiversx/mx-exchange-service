@@ -23,6 +23,10 @@ async function bootstrap() {
     const apiConfigService = app.get<ApiConfigService>(ApiConfigService);
     const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
 
+    if (apiConfigService.isTracerActive()) {
+        require('dd-trace').init();
+    }
+
     httpServer.keepAliveTimeout = apiConfigService.getKeepAliveTimeoutUpstream();
     httpServer.headersTimeout = apiConfigService.getKeepAliveTimeoutUpstream(); //`keepAliveTimeout + server's expected response time`
 

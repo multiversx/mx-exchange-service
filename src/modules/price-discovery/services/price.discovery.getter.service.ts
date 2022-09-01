@@ -5,20 +5,19 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from './price.discovery.compute.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 @Injectable()
 export class PriceDiscoveryGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly contextGetter: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
         private readonly abiService: PriceDiscoveryAbiService,
         @Inject(forwardRef(() => PriceDiscoveryComputeService))
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
@@ -64,14 +63,14 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         const launchedTokenID = await this.getLaunchedTokenID(
             priceDiscoveryAddress,
         );
-        return this.contextGetter.getTokenMetadata(launchedTokenID);
+        return this.tokenGetter.getTokenMetadata(launchedTokenID);
     }
 
     async getAcceptedToken(priceDiscoveryAddress: string): Promise<EsdtToken> {
         const acceptedTokenID = await this.getAcceptedTokenID(
             priceDiscoveryAddress,
         );
-        return this.contextGetter.getTokenMetadata(acceptedTokenID);
+        return this.tokenGetter.getTokenMetadata(acceptedTokenID);
     }
 
     async getRedeemToken(
@@ -80,7 +79,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         const redeemTokenID = await this.getRedeemTokenID(
             priceDiscoveryAddress,
         );
-        return this.contextGetter.getNftCollectionMetadata(redeemTokenID);
+        return this.tokenGetter.getNftCollectionMetadata(redeemTokenID);
     }
 
     async getLaunchedTokenAmount(

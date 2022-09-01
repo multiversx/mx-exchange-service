@@ -1,8 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneSecond } from 'src/helpers/helpers';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { oneMinute } from 'src/helpers/helpers';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
@@ -19,33 +17,12 @@ export class ContextGetterService extends GenericGetterService {
         super(cachingService, logger);
     }
 
-    async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
-        if (tokenID === undefined) {
-            return undefined;
-        }
-        const cacheKey = this.getContextCacheKey(tokenID);
-        return await this.getData(
-            cacheKey,
-            () => this.apiService.getToken(tokenID),
-            oneHour(),
-        );
-    }
-
-    async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
-        const cacheKey = this.getContextCacheKey(collection);
-        return await this.getData(
-            cacheKey,
-            () => this.apiService.getNftCollection(collection),
-            oneHour(),
-        );
-    }
-
     async getCurrentEpoch(): Promise<number> {
         const cacheKey = this.getContextCacheKey('currentEpoch');
         return await this.getData(
             cacheKey,
             async () => (await this.apiService.getStats()).epoch,
-            oneSecond() * 6,
+            oneMinute(),
         );
     }
 
@@ -54,7 +31,7 @@ export class ContextGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getCurrentBlockNonce(shardID),
-            oneSecond() * 6,
+            oneMinute(),
         );
     }
 

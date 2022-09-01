@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
-import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/services/farm.getter.service';
@@ -29,6 +27,7 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -58,11 +57,6 @@ describe('AnalyticsService', () => {
         useClass: AbiLockedAssetServiceMock,
     };
 
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
-
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
@@ -87,7 +81,6 @@ describe('AnalyticsService', () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule, AWSModule],
             providers: [
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,
                 ElrondApiServiceProvider,
@@ -101,6 +94,7 @@ describe('AnalyticsService', () => {
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
                 WrapServiceProvider,
+                RouterGetterServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 AnalyticsComputeService,

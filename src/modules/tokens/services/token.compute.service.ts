@@ -3,15 +3,15 @@ import BigNumber from 'bignumber.js';
 import { constantsConfig, scAddress, tokenProviderUSD } from 'src/config';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
-import { ContextService } from 'src/services/context/context.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 
 @Injectable()
 export class TokenComputeService {
     constructor(
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetter: PairGetterService,
-        @Inject(forwardRef(() => ContextService))
-        private readonly context: ContextService,
+        @Inject(forwardRef(() => RouterGetterService))
+        private readonly routerGetter: RouterGetterService,
     ) {}
 
     async getEgldPriceInUSD(): Promise<string> {
@@ -23,7 +23,7 @@ export class TokenComputeService {
             return new BigNumber('1').toFixed();
         }
 
-        const pairsMetadata = await this.context.getPairsMetadata();
+        const pairsMetadata = await this.routerGetter.getPairsMetadata();
         const tokenPairs: PairMetadata[] = [];
         for (const pair of pairsMetadata) {
             if (

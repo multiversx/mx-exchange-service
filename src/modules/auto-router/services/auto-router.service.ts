@@ -3,14 +3,12 @@ import { BigNumber } from 'bignumber.js';
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ContextService } from 'src/services/context/context.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import {
     AutoRouterComputeService,
     BestSwapRoute,
 } from './auto-router.compute.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { constantsConfig, elrondConfig } from 'src/config';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { AutoRouterArgs } from '../models/auto-router.args';
@@ -25,13 +23,13 @@ import { GraphService } from './graph.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneMinute } from 'src/helpers/helpers';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class AutoRouterService {
     constructor(
-        private readonly routerGetterService: RouterGetterService,
-        private readonly contextService: ContextService,
-        private readonly contextGetterService: ContextGetterService,
+        private readonly routerGetter: RouterGetterService,
+        private readonly tokenGetter: TokenGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly autoRouterComputeService: AutoRouterComputeService,
         private readonly autoRouterTransactionService: AutoRouterTransactionService,
@@ -83,8 +81,8 @@ export class AutoRouterService {
         ] = await Promise.all([
             this.remoteConfigGetterService.getMultiSwapStatus(),
             this.getAllActivePairs(),
-            this.contextGetterService.getTokenMetadata(tokenInID),
-            this.contextGetterService.getTokenMetadata(tokenOutID),
+            this.tokenGetter.getTokenMetadata(tokenInID),
+            this.tokenGetter.getTokenMetadata(tokenOutID),
         ]);
 
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
@@ -323,7 +321,7 @@ export class AutoRouterService {
     private async getAllActivePairs() {
         const pairs: PairModel[] = [];
 
-        const pairAddresses = await this.routerGetterService.getAllPairsAddress();
+        const pairAddresses = await this.routerGetter.getAllPairsAddress();
         for (const pairAddress of pairAddresses) {
             const [
                 pairMetadata,
@@ -333,7 +331,7 @@ export class AutoRouterService {
                 firstToken,
                 secondToken,
             ] = await Promise.all([
-                this.contextService.getPairMetadata(pairAddress),
+                this.routerGetter.getPairMetadata(pairAddress),
                 this.pairGetterService.getPairInfoMetadata(pairAddress),
                 this.pairGetterService.getTotalFeePercent(pairAddress),
                 this.pairGetterService.getState(pairAddress),
@@ -500,9 +498,9 @@ export class AutoRouterService {
                 intermediaryTokenOut,
                 intermediaryTokenOutPriceUSD,
             ] = await Promise.all([
-                this.contextGetterService.getTokenMetadata(tokenInID),
+                this.tokenGetter.getTokenMetadata(tokenInID),
                 this.pairGetterService.getTokenPriceUSD(tokenInID),
-                this.contextGetterService.getTokenMetadata(tokenOutID),
+                this.tokenGetter.getTokenMetadata(tokenOutID),
                 this.pairGetterService.getTokenPriceUSD(tokenOutID),
             ]);
 

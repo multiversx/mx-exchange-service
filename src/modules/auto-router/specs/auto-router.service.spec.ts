@@ -3,9 +3,7 @@ import { AutoRouterService } from '../services/auto-router.service';
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextService } from 'src/services/context/context.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import winston from 'winston';
@@ -41,11 +39,6 @@ import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
-
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
 
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
@@ -98,9 +91,9 @@ describe('AutoRouterService', () => {
             providers: [
                 RouterService,
                 RouterGetterServiceProvider,
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,
+                TokenGetterServiceProvider,
                 PairGetterServiceProvider,
                 PairService,
                 PairTransactionService,
