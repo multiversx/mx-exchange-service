@@ -36,6 +36,7 @@ import {
     RolesModel,
 } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
