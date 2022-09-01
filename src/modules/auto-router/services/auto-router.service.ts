@@ -319,45 +319,41 @@ export class AutoRouterService {
     }
 
     private async getAllActivePairs() {
-        const pairs: PairModel[] = [];
-
         const pairAddresses = await this.routerGetter.getAllPairsAddress();
-        for (const pairAddress of pairAddresses) {
-            const [
-                pairMetadata,
-                pairInfo,
-                pairTotalFeePercent,
-                pairState,
-                firstToken,
-                secondToken,
-            ] = await Promise.all([
-                this.routerGetter.getPairMetadata(pairAddress),
-                this.pairGetterService.getPairInfoMetadata(pairAddress),
-                this.pairGetterService.getTotalFeePercent(pairAddress),
-                this.pairGetterService.getState(pairAddress),
-                this.pairGetterService.getFirstToken(pairAddress),
-                this.pairGetterService.getSecondToken(pairAddress),
-            ]);
+        const statesPromises = pairAddresses.map(address =>
+            this.pairGetterService.getState(address),
+        );
+        const states = await Promise.all(statesPromises);
+        const activePairs: string[] = [];
+        states.forEach((value, index) => {
+            if (value === 'Active') activePairs.push(pairAddresses[index]);
+        });
 
-            if (pairState === 'Active')
-                pairs.push(
-                    new PairModel({
-                        address: pairMetadata.address,
-                        firstToken: new EsdtToken({
-                            identifier: firstToken.identifier,
-                            decimals: firstToken.decimals,
-                        }),
-                        secondToken: new EsdtToken({
-                            identifier: secondToken.identifier,
-                            decimals: secondToken.decimals,
-                        }),
-                        info: pairInfo,
-                        totalFeePercent: pairTotalFeePercent,
-                    }),
-                );
-        }
+        const pairsPromises = activePairs.map(address => this.getPair(address));
 
-        return pairs;
+        return await Promise.all(pairsPromises);
+    }
+
+    private async getPair(pairAddress: string): Promise<PairModel> {
+        const [
+            info,
+            totalFeePercent,
+            firstToken,
+            secondToken,
+        ] = await Promise.all([
+            this.pairGetterService.getPairInfoMetadata(pairAddress),
+            this.pairGetterService.getTotalFeePercent(pairAddress),
+            this.pairGetterService.getFirstToken(pairAddress),
+            this.pairGetterService.getSecondToken(pairAddress),
+        ]);
+
+        return new PairModel({
+            address: pairAddress,
+            firstToken,
+            secondToken,
+            info,
+            totalFeePercent,
+        });
     }
 
     private async toWrappedIfEGLD(tokensIDs: string[]) {
