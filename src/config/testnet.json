@@ -1,11 +1,5 @@
 {
     "caching": {
-        "pairsMetadata": 100,
-        "pairs": 100,
-        "txTotalCount": 10,
-        "pairCount": 10,
-        "token": 300,
-        "userTokens": 3,
         "default": 20
     }
 }

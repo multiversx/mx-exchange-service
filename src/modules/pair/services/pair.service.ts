@@ -216,23 +216,22 @@ export class PairService {
             return cachedValue;
         }
         const pairsAddress = await this.routerGetter.getAllPairsAddress();
-        const promises = pairsAddress.map(async pairAddress => {
-            const lpTokenID = await this.pairGetterService.getLpTokenID(
-                pairAddress,
-            );
-            return { lpTokenID: lpTokenID, pairAddress: pairAddress };
-        });
-        const pairs = await Promise.all(promises);
-        const pair = pairs.find(pair => pair.lpTokenID === tokenID);
-
-        if (pair) {
-            await this.cachingService.setCache(
-                `${tokenID}.pairAddress`,
-                pair.pairAddress,
-                oneHour(),
-            );
+        const promises = pairsAddress.map(async pairAddress =>
+            this.pairGetterService.getLpTokenID(pairAddress),
+        );
+        const lpTokenIDs = await Promise.all(promises);
+        for (let index = 0; index < lpTokenIDs.length; index++) {
+            if (lpTokenIDs[index] === tokenID) {
+                await this.cachingService.setCache(
+                    `${tokenID}.pairAddress`,
+                    pairsAddress[index],
+                    oneHour(),
+                );
+                return pairsAddress[index];
+            }
         }
-        return pair?.pairAddress;
+
+        return null;
     }
 
     async isPairEsdtToken(tokenID: string): Promise<boolean> {

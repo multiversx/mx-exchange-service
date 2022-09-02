@@ -49,7 +49,7 @@ export class RouterResolver {
     @ResolveField(() => Int)
     async pairCount() {
         try {
-            return await this.routerService.getPairCount();
+            return await this.routerGetterService.getPairCount();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -58,7 +58,7 @@ export class RouterResolver {
     @ResolveField(() => Int)
     async totalTxCount() {
         try {
-            return await this.routerService.getTotalTxCount();
+            return await this.routerGetterService.getTotalTxCount();
         } catch (error) {
             throw new ApolloError(error);
         }
