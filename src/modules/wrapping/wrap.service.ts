@@ -9,6 +9,7 @@ import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { TokenGetterService } from '../tokens/services/token.getter.service';
+import { oneHour } from 'src/helpers/helpers';
 
 @Injectable()
 export class WrapService {
@@ -45,7 +46,7 @@ export class WrapService {
             return await this.cachingService.getOrSet(
                 cacheKey,
                 createValueFunc,
-                cacheConfig.token,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(

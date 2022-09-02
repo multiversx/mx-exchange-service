@@ -1,46 +1,38 @@
 import { Injectable, Inject, CACHE_MANAGER } from '@nestjs/common';
-import { isNil } from '@nestjs/common/utils/shared.utils';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { generateCacheKey } from '../../utils/generate-cache-key';
 import { Logger } from 'winston';
-import {
-    generateDeleteLogMessage,
-    generateGetLogMessage,
-    generateSetLogMessage,
-} from '../../utils/generate-log-message';
+import { generateSetLogMessage } from '../../utils/generate-log-message';
 import { Cache } from 'cache-manager';
-import { promisify } from 'util';
 import { cacheConfig } from '../../config';
 import { PerformanceProfiler } from '../../utils/performance.profiler';
 import { ApiConfigService } from '../../helpers/api.config.service';
-import * as Redis from 'ioredis';
 import { oneMinute } from 'src/helpers/helpers';
 import { MetricsCollector } from 'src/utils/metrics.collector';
+import { PendingExecutor } from 'src/utils/pending.executor';
+import Redis, { RedisOptions } from 'ioredis';
 
 @Injectable()
 export class CachingService {
     private readonly UNDEFINED_CACHE_VALUE = 'undefined';
 
-    private options: Redis.RedisOptions = {
+    private remoteGetExecutor: PendingExecutor<string, string>;
+    private localGetExecutor: PendingExecutor<string, any>;
+    private remoteDelExecutor: PendingExecutor<string, number>;
+    private localDelExecutor: PendingExecutor<string, void>;
+
+    private static cache: Cache;
+    private client: Redis;
+
+    private options: RedisOptions = {
         host: this.configService.getRedisUrl(),
         port: this.configService.getRedisPort(),
         password: this.configService.getRedisPassword(),
-        retryStrategy(times) {
+        retryStrategy(times: number) {
             const delay = Math.min(times * 50, 5000);
             return delay;
         },
         enableAutoPipelining: true,
     };
-    private client = new Redis.default(this.options);
-    private static cache: Cache;
-    private asyncSet = promisify(this.getClient().set).bind(this.getClient());
-    private asyncGet = promisify(this.getClient().get).bind(this.getClient());
-    private asyncMGet = promisify(this.getClient().mget).bind(this.getClient());
-    private asyncMulti = promisify(this.getClient().multi).bind(
-        this.getClient(),
-    );
-    private asyncDel = promisify(this.getClient().del).bind(this.getClient());
-    private asyncKeys = promisify(this.getClient().keys).bind(this.getClient());
 
     constructor(
         private readonly configService: ApiConfigService,
@@ -48,10 +40,20 @@ export class CachingService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         CachingService.cache = this.cache;
-    }
+        this.client = new Redis(this.options);
 
-    getClient(): Redis.Redis {
-        return this.client;
+        this.remoteGetExecutor = new PendingExecutor(
+            async (key: string) => await this.client.get(key),
+        );
+        this.localGetExecutor = new PendingExecutor(
+            async (key: string) => await CachingService.cache.get<any>(key),
+        );
+        this.remoteDelExecutor = new PendingExecutor(
+            async (key: string) => await this.client.del(key),
+        );
+        this.localDelExecutor = new PendingExecutor(
+            async (key: string) => await CachingService.cache.del(key),
+        );
     }
 
     private async setCacheRemote<T>(
@@ -60,7 +62,7 @@ export class CachingService {
         ttl: number = cacheConfig.default,
     ): Promise<T> {
         if (value === undefined) {
-            await this.asyncSet(
+            await this.client.set(
                 key,
                 this.UNDEFINED_CACHE_VALUE,
                 'EX',
@@ -68,7 +70,7 @@ export class CachingService {
             );
             return value;
         }
-        await this.asyncSet(
+        await this.client.set(
             key,
             JSON.stringify(value),
             'EX',
@@ -77,23 +79,10 @@ export class CachingService {
         return value;
     }
 
-    pendingGetRemotes: { [key: string]: Promise<any> } = {};
-
     private async getCacheRemote<T>(key: string): Promise<T | undefined> {
-        let response;
         const profiler = new PerformanceProfiler();
-        let pendingGetRemote = this.pendingGetRemotes[key];
-        if (pendingGetRemote) {
-            response = await pendingGetRemote;
-        } else {
-            pendingGetRemote = this.asyncGet(key);
 
-            this.pendingGetRemotes[key] = pendingGetRemote;
-
-            response = await pendingGetRemote;
-
-            delete this.pendingGetRemotes[key];
-        }
+        const response = await this.remoteGetExecutor.execute(key);
 
         profiler.stop();
         MetricsCollector.setRedisDuration('GET', profiler.duration);
@@ -123,7 +112,7 @@ export class CachingService {
     }
 
     async getCacheLocal<T>(key: string): Promise<T | undefined> {
-        return await CachingService.cache.get<T>(key);
+        return await this.localGetExecutor.execute(key);
     }
 
     public async getCache<T>(key: string): Promise<T | undefined> {
@@ -138,70 +127,15 @@ export class CachingService {
     public async setCache<T>(
         key: string,
         value: T,
-        ttl: number = cacheConfig.default,
+        remoteTtl: number = cacheConfig.default,
+        localTtl: number | undefined = undefined,
     ): Promise<T> {
-        await this.setCacheLocal<T>(key, value, ttl);
-        await this.setCacheRemote<T>(key, value, ttl);
+        if (!localTtl) {
+            localTtl = remoteTtl / 2;
+        }
+        await this.setCacheLocal<T>(key, value, localTtl);
+        await this.setCacheRemote<T>(key, value, remoteTtl);
         return value;
-    }
-
-    async get(key: string, region: string = null): Promise<any> {
-        const cacheKey = generateCacheKey(key, region);
-        try {
-            return JSON.parse(await this.asyncGet(key));
-        } catch (err) {
-            const logMessage = generateGetLogMessage(
-                CachingService.name,
-                this.get.name,
-                cacheKey,
-                err,
-            );
-            this.logger.error(logMessage);
-            return null;
-        }
-    }
-    async set(
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-        region: string = null,
-    ): Promise<boolean> {
-        if (isNil(value)) {
-            return;
-        }
-        const cacheKey = generateCacheKey(key, region);
-        try {
-            return await this.asyncSet(
-                cacheKey,
-                JSON.stringify(value),
-                'EX',
-                ttl,
-            );
-        } catch (err) {
-            const logMessage = generateSetLogMessage(
-                CachingService.name,
-                this.set.name,
-                cacheKey,
-                err,
-            );
-            this.logger.error(logMessage);
-            return;
-        }
-    }
-
-    async delete(key: string, region: string = null): Promise<void> {
-        const cacheKey = generateCacheKey(key, region);
-        try {
-            await this.asyncDel(cacheKey);
-        } catch (err) {
-            const logMessage = generateDeleteLogMessage(
-                CachingService.name,
-                this.delete.name,
-                cacheKey,
-                err,
-            );
-            this.logger.error(logMessage);
-        }
     }
 
     async getOrSet<T>(
@@ -259,27 +193,29 @@ export class CachingService {
     }
 
     async deleteInCacheLocal(key: string) {
-        await CachingService.cache.del(key);
+        await this.localDelExecutor.execute(key);
+    }
+
+    async deleteInCacheRemote(key: string) {
+        await this.remoteDelExecutor.execute(key);
     }
 
     async deleteInCache(key: string): Promise<string[]> {
-        const invalidatedKeys = [];
-
         if (key.includes('*')) {
-            const allKeys = await this.asyncKeys(key);
+            const allKeys = await this.client.keys(key);
+            const promises = [];
             for (const key of allKeys) {
-                // this.logger.log(`Invalidating key ${key}`);
-                await CachingService.cache.del(key);
-                await this.asyncDel(key);
-                invalidatedKeys.push(key);
+                promises.push(this.deleteInCacheLocal(key));
+                promises.push(this.deleteInCacheRemote(key));
             }
+            await Promise.all(promises);
+            return allKeys;
         } else {
-            // this.logger.log(`Invalidating key ${key}`);
-            await CachingService.cache.del(key);
-            await this.asyncDel(key);
-            invalidatedKeys.push(key);
+            await Promise.all([
+                CachingService.cache.del(key),
+                this.client.del(key),
+            ]);
+            return [key];
         }
-
-        return invalidatedKeys;
     }
 }

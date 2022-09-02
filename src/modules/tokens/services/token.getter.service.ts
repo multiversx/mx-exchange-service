@@ -49,7 +49,7 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             this.getTokenCacheKey(tokenID, 'type'),
             () => this.tokenRepositoryService.getTokenType(tokenID),
-            oneSecond(),
+            oneHour(),
         );
     }
 

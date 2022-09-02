@@ -83,6 +83,22 @@ export class RouterGetterService extends GenericGetterService {
         );
     }
 
+    async getPairCount(): Promise<number> {
+        return this.getData(
+            this.getRouterCacheKey('pairCount'),
+            async () => (await this.getAllPairsAddress()).length,
+            oneHour(),
+        );
+    }
+
+    async getTotalTxCount(): Promise<number> {
+        return this.getData(
+            this.getRouterCacheKey('totalTxCount'),
+            () => this.routerComputeService.computeTotalTxCount(),
+            oneMinute() * 30,
+        );
+    }
+
     private getRouterCacheKey(...args: any) {
         return generateCacheKeyFromParams('router', ...args);
     }

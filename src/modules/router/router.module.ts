@@ -13,6 +13,8 @@ import { CommonAppModule } from 'src/common.app.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
+import { MetricsService } from 'src/endpoints/metrics/metrics.service';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 @Module({
     imports: [
@@ -31,6 +33,8 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
         RouterSetterService,
         RouterComputeService,
         TransactionRouterService,
+        MetricsService,
+        ElasticService,
         RouterResolver,
     ],
     exports: [
