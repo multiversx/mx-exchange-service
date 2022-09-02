@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
+import { MetricsService } from 'src/endpoints/metrics/metrics.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { RouterGetterService } from './router.getter.service';
@@ -11,6 +12,7 @@ export class RouterComputeService {
         private readonly routerGetterService: RouterGetterService,
         private readonly pairComputeService: PairComputeService,
         private readonly pairGetter: PairGetterService,
+        private readonly metrics: MetricsService,
     ) {}
 
     async computeTotalLockedValueUSD(): Promise<BigNumber> {
@@ -65,5 +67,18 @@ export class RouterComputeService {
         }
 
         return totalFeesUSD;
+    }
+
+    async computeTotalTxCount(): Promise<number> {
+        let totalTxCount = 0;
+        const addresses = await this.routerGetterService.getAllPairsAddress();
+
+        const promises = addresses.map(address =>
+            this.metrics.computeTxCount(address),
+        );
+        const txCounts = await Promise.all(promises);
+
+        txCounts.forEach(txCount => (totalTxCount += txCount));
+        return totalTxCount;
     }
 }

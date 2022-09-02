@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute } from 'src/helpers/helpers';
+import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -53,6 +53,14 @@ export class RouterSetterService extends GenericSetterService {
             this.getRouterCacheKey(`totalFeesUSD.${time}`),
             value,
             oneMinute(),
+        );
+    }
+
+    async setPairCount(value: number): Promise<string> {
+        return await this.setData(
+            this.getRouterCacheKey('pairCount'),
+            value,
+            oneHour(),
         );
     }
 
