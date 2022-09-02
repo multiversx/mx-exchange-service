@@ -37,6 +37,7 @@ import {
 } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -145,18 +146,8 @@ describe('AutoRouterService', () => {
                     new PairModel({
                         address:
                             'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                        firstToken: new EsdtToken({
-                            identifier: 'TOK1-1111',
-                            decimals: 18,
-                            assets: new AssetsModel(),
-                            roles: new RolesModel(),
-                        }),
-                        secondToken: new EsdtToken({
-                            identifier: 'USDC-1111',
-                            decimals: 18,
-                            assets: new AssetsModel(),
-                            roles: new RolesModel(),
-                        }),
+                        firstToken: Tokens('TOK1-1111'),
+                        secondToken: Tokens('USDC-1111'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000',
                             reserves1: '200000000000000000000',
@@ -201,18 +192,8 @@ describe('AutoRouterService', () => {
                     new PairModel({
                         address:
                             'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                        firstToken: new EsdtToken({
-                            identifier: 'TOK1-1111',
-                            decimals: 18,
-                            assets: new AssetsModel(),
-                            roles: new RolesModel(),
-                        }),
-                        secondToken: new EsdtToken({
-                            identifier: 'USDC-1111',
-                            decimals: 18,
-                            assets: new AssetsModel(),
-                            roles: new RolesModel(),
-                        }),
+                        firstToken: Tokens('TOK1-1111'),
+                        secondToken: Tokens('USDC-1111'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000',
                             reserves1: '200000000000000000000',
@@ -259,18 +240,8 @@ describe('AutoRouterService', () => {
                     new PairModel({
                         address:
                             'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                        firstToken: new EsdtToken({
-                            identifier: 'TOK1-1111',
-                            decimals: 18,
-                            assets: new AssetsModel(),
-                            roles: new RolesModel(),
-                        }),
-                        secondToken: new EsdtToken({
-                            identifier: 'USDC-1111',
-                            decimals: 18,
-                            assets: new AssetsModel(),
-                            roles: new RolesModel(),
-                        }),
+                        firstToken: Tokens('TOK1-1111'),
+                        secondToken: Tokens('USDC-1111'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000',
                             reserves1: '200000000000000000000',
@@ -281,18 +252,8 @@ describe('AutoRouterService', () => {
                     new PairModel({
                         address:
                             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                        firstToken: new EsdtToken({
-                            identifier: 'TOK1-1111',
-                            decimals: 18,
-                            assets: new AssetsModel(),
-                            roles: new RolesModel(),
-                        }),
-                        secondToken: new EsdtToken({
-                            identifier: 'TOK2-2222',
-                            decimals: 18,
-                            assets: new AssetsModel(),
-                            roles: new RolesModel(),
-                        }),
+                        firstToken: Tokens('TOK1-1111'),
+                        secondToken: Tokens('TOK2-2222'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000',
                             reserves1: '2000000000000000000',
