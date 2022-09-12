@@ -21,12 +21,6 @@ export class PairHandler {
         secondTokenReserves: string,
         totalSupply?: string,
     ): Promise<void> {
-        console.log({
-            service: PairHandler.name,
-            method: this.updatePairReserves.name,
-            firstTokenReserves,
-            secondTokenReserves,
-        });
         const promises = [
             this.pairSetter.setFirstTokenReserve(
                 pairAddress,
