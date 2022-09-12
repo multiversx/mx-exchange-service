@@ -34,6 +34,5 @@ import { CachingModule } from 'src/services/caching/cache.module';
         FlagRepositoryService,
         SCAddressRepositoryService,
     ],
-    controllers: [RemoteConfigController],
 })
 export class RemoteConfigModule {}
