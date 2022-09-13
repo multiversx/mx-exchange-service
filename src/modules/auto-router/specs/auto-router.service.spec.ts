@@ -30,7 +30,14 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
+import {
+    AssetsModel,
+    EsdtToken,
+    RolesModel,
+} from 'src/modules/tokens/models/esdtToken.model';
+import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -116,6 +123,7 @@ describe('AutoRouterService', () => {
             tokenOutID: 'TOK1-1111',
             tolerance: 0.01,
         });
+
         expect(swap).toEqual(
             new AutoRouteModel({
                 swapType: 0,
@@ -134,16 +142,23 @@ describe('AutoRouterService', () => {
                     '4960273038901078',
                 ],
                 tokenRoute: ['USDC-1111', 'TOK1-1111'],
-                fees: ['0.003'],
-                pricesImpact: ['0.4960273038901078'],
                 pairs: [
                     new PairModel({
                         address:
                             'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                        firstToken: Tokens('TOK1-1111'),
+                        secondToken: Tokens('USDC-1111'),
+                        info: new PairInfoModel({
+                            reserves0: '1000000000000000000',
+                            reserves1: '200000000000000000000',
+                            totalSupply: '1000000000000000000',
+                        }),
+                        totalFeePercent: 0.003,
                     }),
                 ],
                 tolerance: 0.01,
                 maxPriceDeviationPercent: 1,
+                tokensPriceDeviationPercent: undefined,
             }),
         );
     });
@@ -173,16 +188,23 @@ describe('AutoRouterService', () => {
                     '9871580343970612',
                 ],
                 tokenRoute: ['USDC-1111', 'TOK1-1111'],
-                fees: ['0.006'],
-                pricesImpact: ['0.9871580343970612'],
                 pairs: [
                     new PairModel({
                         address:
                             'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                        firstToken: Tokens('TOK1-1111'),
+                        secondToken: Tokens('USDC-1111'),
+                        info: new PairInfoModel({
+                            reserves0: '1000000000000000000',
+                            reserves1: '200000000000000000000',
+                            totalSupply: '1000000000000000000',
+                        }),
+                        totalFeePercent: 0.003,
                     }),
                 ],
                 tolerance: 0.01,
                 maxPriceDeviationPercent: 1,
+                tokensPriceDeviationPercent: undefined,
             }),
         );
     });
@@ -194,39 +216,57 @@ describe('AutoRouterService', () => {
             tokenOutID: 'TOK2-2222',
             tolerance: 0.01,
         });
-        expect(swap).toEqual({
-            swapType: 1,
-            tokenInID: 'USDC-1111',
-            tokenOutID: 'TOK2-2222',
-            tokenInExchangeRate: '4962567499999999',
-            tokenOutExchangeRate: '201508594089652181902',
-            tokenInExchangeRateDenom: '0.004962567499999999',
-            tokenOutExchangeRateDenom: '201.508594089652181902',
-            tokenInPriceUSD: '1',
-            tokenOutPriceUSD: '100',
-            amountIn: '101761840015274351860',
-            amountOut: '500000000000000000',
-            intermediaryAmounts: [
-                '100754297044826090951',
-                '334336342360414578',
-                '500000000000000000',
-            ],
-            tokenRoute: ['USDC-1111', 'TOK1-1111', 'TOK2-2222'],
-            fees: ['0.302262891134478272853', '0.001003009027081243734'],
-            pricesImpact: ['33.4336342360414578', '25'],
-            pairs: [
-                {
-                    address:
-                        'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                },
-                {
-                    address:
-                        'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                },
-            ],
-            tolerance: 0.01,
-            maxPriceDeviationPercent: 1,
-        });
+
+        expect(swap).toEqual(
+            new AutoRouteModel({
+                swapType: 1,
+                tokenInID: 'USDC-1111',
+                tokenOutID: 'TOK2-2222',
+                tokenInExchangeRate: '4962567499999999',
+                tokenOutExchangeRate: '201508594089652181902',
+                tokenInExchangeRateDenom: '0.004962567499999999',
+                tokenOutExchangeRateDenom: '201.508594089652181902',
+                tokenInPriceUSD: '1',
+                tokenOutPriceUSD: '100',
+                amountIn: '101761840015274351860',
+                amountOut: '500000000000000000',
+                intermediaryAmounts: [
+                    '100754297044826090951',
+                    '334336342360414578',
+                    '500000000000000000',
+                ],
+                tokenRoute: ['USDC-1111', 'TOK1-1111', 'TOK2-2222'],
+                pairs: [
+                    new PairModel({
+                        address:
+                            'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
+                        firstToken: Tokens('TOK1-1111'),
+                        secondToken: Tokens('USDC-1111'),
+                        info: new PairInfoModel({
+                            reserves0: '1000000000000000000',
+                            reserves1: '200000000000000000000',
+                            totalSupply: '1000000000000000000',
+                        }),
+                        totalFeePercent: 0.003,
+                    }),
+                    new PairModel({
+                        address:
+                            'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
+                        firstToken: Tokens('TOK1-1111'),
+                        secondToken: Tokens('TOK2-2222'),
+                        info: new PairInfoModel({
+                            reserves0: '1000000000000000000',
+                            reserves1: '2000000000000000000',
+                            totalSupply: '1000000000000000000',
+                        }),
+                        totalFeePercent: 0.003,
+                    }),
+                ],
+                tolerance: 0.01,
+                maxPriceDeviationPercent: 1,
+                tokensPriceDeviationPercent: undefined,
+            }),
+        );
     });
 
     it('should get a wrap tx + a fixed input simple swap tx', async () => {

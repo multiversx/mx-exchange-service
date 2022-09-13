@@ -17,6 +17,9 @@ export class CachingService {
 
     private remoteGetExecutor: PendingExecutor<string, string>;
     private localGetExecutor: PendingExecutor<string, any>;
+    private remoteDelExecutor: PendingExecutor<string, number>;
+    private localDelExecutor: PendingExecutor<string, void>;
+
     private static cache: Cache;
     private client: Redis;
 
@@ -44,6 +47,12 @@ export class CachingService {
         );
         this.localGetExecutor = new PendingExecutor(
             async (key: string) => await CachingService.cache.get<any>(key),
+        );
+        this.remoteDelExecutor = new PendingExecutor(
+            async (key: string) => await this.client.del(key),
+        );
+        this.localDelExecutor = new PendingExecutor(
+            async (key: string) => await CachingService.cache.del(key),
         );
     }
 
@@ -184,29 +193,29 @@ export class CachingService {
     }
 
     async deleteInCacheLocal(key: string) {
-        await CachingService.cache.del(key);
+        await this.localDelExecutor.execute(key);
+    }
+
+    async deleteInCacheRemote(key: string) {
+        await this.remoteDelExecutor.execute(key);
     }
 
     async deleteInCache(key: string): Promise<string[]> {
-        const invalidatedKeys = [];
-
         if (key.includes('*')) {
             const allKeys = await this.client.keys(key);
+            const promises = [];
             for (const key of allKeys) {
-                await Promise.all([
-                    CachingService.cache.del(key),
-                    this.client.del(key),
-                ]);
-                invalidatedKeys.push(key);
+                promises.push(this.deleteInCacheLocal(key));
+                promises.push(this.deleteInCacheRemote(key));
             }
+            await Promise.all(promises);
+            return allKeys;
         } else {
             await Promise.all([
                 CachingService.cache.del(key),
                 this.client.del(key),
             ]);
-            invalidatedKeys.push(key);
+            return [key];
         }
-
-        return invalidatedKeys;
     }
 }
