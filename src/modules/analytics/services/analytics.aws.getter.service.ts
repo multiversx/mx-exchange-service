@@ -1,22 +1,35 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { awsConfig } from '../../../config';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../../services/caching/cache.service';
-import { oneMinute } from '../../../helpers/helpers';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { HistoricDataModel } from '../models/analytics.model';
-import { GenericGetterService } from 'src/services/generics/generic.getter.service';
+import { generateGetLogMessage } from 'src/utils/generate-log-message';
 
 @Injectable()
-export class AnalyticsAWSGetterService extends GenericGetterService {
+export class AnalyticsAWSGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-    ) {
-        super(cachingService, logger);
+    ) {}
+
+    private async getData<T>(cacheKey: string, methodName: string): Promise<T> {
+        try {
+            const data = await this.cachingService.getCache<T>(cacheKey);
+            if (!data || data === undefined) {
+                throw new Error(`Unavailable cached key ${cacheKey}`);
+            }
+            return data;
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                this.constructor.name,
+                methodName,
+                cacheKey,
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
     }
 
     async getHistoricData(
@@ -30,17 +43,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             metric,
             time,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getValues({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                    time,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getHistoricData.name);
     }
 
     async getClosingValue(
@@ -54,17 +57,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             metric,
             time,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getClosingValue({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                    time,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getClosingValue.name);
     }
 
     async getCompleteValues(
@@ -76,16 +69,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getCompleteValues({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getCompleteValues.name);
     }
 
     async getLatestCompleteValues(
@@ -97,16 +81,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getLatestCompleteValues({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getLatestCompleteValues.name);
     }
 
     async getSumCompleteValues(
@@ -118,16 +93,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getSumCompleteValues({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getSumCompleteValues.name);
     }
 
     async getLatestValues(
@@ -139,16 +105,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getLatestValues({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getLatestValues.name);
     }
 
     async getMarketValues(
@@ -160,16 +117,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getMarketValues({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getMarketValues.name);
     }
 
     async getMarketCompleteValues(
@@ -181,16 +129,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getMarketCompleteValues({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getMarketCompleteValues.name);
     }
 
     async getValues24hSum(
@@ -202,16 +141,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             metric,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getValues24hSum({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getValues24hSum.name);
     }
 
     async getValues24h(
@@ -219,16 +149,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         metric: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey('values24h', series, metric);
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getValues24h({
-                    table: awsConfig.timestream.tableName,
-                    series,
-                    metric,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getValues24h.name);
     }
 
     async getLatestHistoricData(
@@ -244,18 +165,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             metric,
             start,
         );
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.awsTimestreamQuery.getLatestHistoricData({
-                    table: awsConfig.timestream.tableName,
-                    time,
-                    series,
-                    metric,
-                    start,
-                }),
-            oneMinute() * 5,
-        );
+        return await this.getData(cacheKey, this.getLatestHistoricData.name);
     }
 
     async getLatestBinnedHistoricData(
@@ -275,16 +185,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         );
         return await this.getData(
             cacheKey,
-            () =>
-                this.awsTimestreamQuery.getLatestBinnedHistoricData({
-                    table: awsConfig.timestream.tableName,
-                    time,
-                    series,
-                    metric,
-                    bin,
-                    start,
-                }),
-            oneMinute() * 5,
+            this.getLatestBinnedHistoricData.name,
         );
     }
 
