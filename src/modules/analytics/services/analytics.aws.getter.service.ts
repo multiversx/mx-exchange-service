@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { awsConfig } from '../../../config';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
-import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../../services/caching/cache.service';
