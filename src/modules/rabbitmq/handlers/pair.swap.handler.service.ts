@@ -15,6 +15,7 @@ import {
     SwapNoFeeEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { PairHandler } from './pair.handler.service';
+import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
 
 @Injectable()
 export class SwapEventHandler {
@@ -22,6 +23,7 @@ export class SwapEventHandler {
         private readonly pairGetter: PairGetterService,
         private readonly pairSetter: PairSetterService,
         private readonly pairCompute: PairComputeService,
+        private readonly routerCompute: RouterComputeService,
         private readonly pairHandler: PairHandler,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -68,7 +70,7 @@ export class SwapEventHandler {
             secondTokenPriceUSD,
             liquidity,
             totalFeePercent,
-            // newTotalLockedValueUSD,
+            newTotalLockedValueUSD,
         ] = await Promise.all([
             this.pairCompute.computeFirstTokenPrice(event.address),
             this.pairCompute.computeSecondTokenPrice(event.address),
@@ -76,7 +78,7 @@ export class SwapEventHandler {
             this.pairCompute.computeSecondTokenPriceUSD(event.address),
             this.pairGetter.getTotalSupply(event.address),
             this.pairGetter.getTotalFeePercent(event.address),
-            // this.routerComputeService.computeTotalLockedValueUSD(),
+            this.routerCompute.computeTotalLockedValueUSD(),
         ]);
 
         const firstTokenValues = {
@@ -175,9 +177,9 @@ export class SwapEventHandler {
             volumeUSD: secondTokenVolumeUSD.toFixed(),
         };
 
-        // data['factory'] = {
-        //     totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
-        // };
+        data['factory'] = {
+            totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
+        };
 
         await this.updatePairPrices(
             event.address,
