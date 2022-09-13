@@ -64,6 +64,7 @@
     "tokensSupply": ["MEX-dc289c"],
     "cachedTokensPrice": ["MEX-dc289c"],
     "constants": {
+        "MAX_SWAP_SPREAD": 0.9,
         "MEX_TOKEN_ID": "MEX-dc289c",
         "USDC_TOKEN_ID": "USDC-8d4068",
         "MAINTENANCE": false
