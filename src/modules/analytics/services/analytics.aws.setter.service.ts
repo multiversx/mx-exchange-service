@@ -18,8 +18,8 @@ export class AnalyticsAWSSetterService {
         cacheKey: string,
         value: T,
         methodName: string,
-        remoteTTl = oneMinute() * 10,
-        localTtl = oneMinute() * 8,
+        remoteTTl = oneMinute() * 30,
+        localTtl = oneMinute() * 10,
     ): Promise<string> {
         try {
             await this.cachingService.setCache<T>(
