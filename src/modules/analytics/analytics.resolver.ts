@@ -5,6 +5,7 @@ import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model'
 import { AWSQueryArgs } from './models/query.args';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
 import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
+import { ApolloError } from 'apollo-server-express';
 
 @Resolver()
 export class AnalyticsResolver {
@@ -13,31 +14,49 @@ export class AnalyticsResolver {
         private readonly analyticsGetter: AnalyticsGetterService,
     ) {}
 
+    private async genericQuery<T>(queryResolver: () => Promise<T>): Promise<T> {
+        try {
+            return await queryResolver();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @Query(() => String)
     async getTokenPriceUSD(@Args('tokenID') tokenID: string): Promise<string> {
-        return this.analyticsGetter.getTokenPriceUSD(tokenID);
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getTokenPriceUSD(tokenID),
+        );
     }
 
     @Query(() => String)
     async totalValueLockedUSD(): Promise<string> {
-        return this.analyticsGetter.getTotalValueLockedUSD();
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getTotalValueLockedUSD(),
+        );
     }
 
     @Query(() => String)
     async totalLockedValueUSDFarms(): Promise<string> {
-        return this.analyticsGetter.getLockedValueUSDFarms();
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getLockedValueUSDFarms(),
+        );
     }
 
     @Query(() => String)
     async totalTokenSupply(@Args('tokenID') tokenID: string): Promise<string> {
-        return this.analyticsGetter.getTotalTokenSupply(tokenID);
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getTotalTokenSupply(tokenID),
+        );
     }
 
     @Query(() => String)
     async totalAggregatedRewards(
         @Args('days', { type: () => Int }) days: number,
     ) {
-        return this.analyticsGetter.getTotalAggregatedRewards(days);
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getTotalAggregatedRewards(days),
+        );
     }
 
     @Query(() => String)
@@ -45,7 +64,9 @@ export class AnalyticsResolver {
         @Args('tokenID') tokenID: string,
         @Args('time') time: string,
     ) {
-        return await this.analyticsGetter.getFeeTokenBurned(tokenID, time);
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getFeeTokenBurned(tokenID, time),
+        );
     }
 
     @Query(() => String)
@@ -53,7 +74,9 @@ export class AnalyticsResolver {
         @Args('tokenID') tokenID: string,
         @Args('time') time: string,
     ) {
-        return await this.analyticsGetter.getPenaltyTokenBurned(tokenID, time);
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getPenaltyTokenBurned(tokenID, time),
+        );
     }
 
     @Query(() => [HistoricDataModel])
@@ -67,10 +90,12 @@ export class AnalyticsResolver {
     async historicData(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getHistoricData(
-            args.series,
-            args.metric,
-            args.time,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getHistoricData(
+                args.series,
+                args.metric,
+                args.time,
+            ),
         );
     }
 
@@ -83,10 +108,12 @@ export class AnalyticsResolver {
         }),
     )
     async closingValue(@Args() args: AWSQueryArgs): Promise<string> {
-        return await this.analyticsAWSGetter.getClosingValue(
-            args.series,
-            args.metric,
-            args.time,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getClosingValue(
+                args.series,
+                args.metric,
+                args.time,
+            ),
         );
     }
 
@@ -101,9 +128,8 @@ export class AnalyticsResolver {
     async completeValues(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getCompleteValues(
-            args.series,
-            args.metric,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getCompleteValues(args.series, args.metric),
         );
     }
 
@@ -118,9 +144,11 @@ export class AnalyticsResolver {
     async latestCompleteValues(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestCompleteValues(
-            args.series,
-            args.metric,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getLatestCompleteValues(
+                args.series,
+                args.metric,
+            ),
         );
     }
 
@@ -135,9 +163,11 @@ export class AnalyticsResolver {
     async sumCompleteValues(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getSumCompleteValues(
-            args.series,
-            args.metric,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getSumCompleteValues(
+                args.series,
+                args.metric,
+            ),
         );
     }
 
@@ -152,9 +182,8 @@ export class AnalyticsResolver {
     async latestValues(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestValues(
-            args.series,
-            args.metric,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getLatestValues(args.series, args.metric),
         );
     }
 
@@ -169,9 +198,8 @@ export class AnalyticsResolver {
     async marketValues(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getMarketValues(
-            args.series,
-            args.metric,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getMarketValues(args.series, args.metric),
         );
     }
 
@@ -186,9 +214,11 @@ export class AnalyticsResolver {
     async marketCompleteValues(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getMarketCompleteValues(
-            args.series,
-            args.metric,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getMarketCompleteValues(
+                args.series,
+                args.metric,
+            ),
         );
     }
 
@@ -201,9 +231,8 @@ export class AnalyticsResolver {
         }),
     )
     async values24h(@Args() args: AWSQueryArgs): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getValues24h(
-            args.series,
-            args.metric,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getValues24h(args.series, args.metric),
         );
     }
 
@@ -218,9 +247,8 @@ export class AnalyticsResolver {
     async values24hSum(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getValues24hSum(
-            args.series,
-            args.metric,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getValues24hSum(args.series, args.metric),
         );
     }
 
@@ -235,11 +263,13 @@ export class AnalyticsResolver {
     async latestHistoricData(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestHistoricData(
-            args.time,
-            args.series,
-            args.metric,
-            args.start,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getLatestHistoricData(
+                args.time,
+                args.series,
+                args.metric,
+                args.start,
+            ),
         );
     }
 
@@ -254,12 +284,14 @@ export class AnalyticsResolver {
     async latestBinnedHistoricData(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestBinnedHistoricData(
-            args.time,
-            args.series,
-            args.metric,
-            args.bin,
-            args.start,
+        return await this.genericQuery(() =>
+            this.analyticsAWSGetter.getLatestBinnedHistoricData(
+                args.time,
+                args.series,
+                args.metric,
+                args.bin,
+                args.start,
+            ),
         );
     }
 }
