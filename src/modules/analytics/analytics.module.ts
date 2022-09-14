@@ -15,6 +15,7 @@ import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairDayDataResolver } from './analytics.pair.resolver';
 import { TokenModule } from '../tokens/token.module';
+import { AnalyticsAWSSetterService } from './services/analytics.aws.setter.service';
 
 @Module({
     imports: [
@@ -32,6 +33,7 @@ import { TokenModule } from '../tokens/token.module';
     providers: [
         AnalyticsResolver,
         AnalyticsAWSGetterService,
+        AnalyticsAWSSetterService,
         AnalyticsGetterService,
         AnalyticsComputeService,
         AnalyticsPairService,
@@ -39,6 +41,7 @@ import { TokenModule } from '../tokens/token.module';
     ],
     exports: [
         AnalyticsAWSGetterService,
+        AnalyticsAWSSetterService,
         AnalyticsGetterService,
         AnalyticsComputeService,
     ],
