@@ -296,8 +296,7 @@ export class FarmGetterService extends GenericGetterService {
 
     async getBurnGasLimit(farmAddresses: string): Promise<string> {
         return await this.getData(
-            farmAddresses,
-            'burnGasLimit',
+            this.getFarmCacheKey(farmAddresses, 'burnGasLimit'),
             () => this.abiService.getBurnGasLimit(farmAddresses),
             oneHour(),
         );
@@ -305,8 +304,7 @@ export class FarmGetterService extends GenericGetterService {
 
     async getTransferExecGasLimit(farmAddresses: string): Promise<string> {
         return await this.getData(
-            farmAddresses,
-            'transferExecGasLimit',
+            this.getFarmCacheKey(farmAddresses, 'transferExecGasLimit'),
             () => this.abiService.getTransferExecGasLimit(farmAddresses),
             oneHour(),
         );
@@ -316,8 +314,7 @@ export class FarmGetterService extends GenericGetterService {
         farmAddresses: string,
     ): Promise<string> {
         return await this.getData(
-            farmAddresses,
-            'pairContractManagedAddress',
+            this.getFarmCacheKey(farmAddresses, 'pairContractManagedAddress'),
             () => this.abiService.getPairContractManagedAddress(farmAddresses),
             oneHour(),
         );
@@ -327,8 +324,10 @@ export class FarmGetterService extends GenericGetterService {
         farmAddresses: string,
     ): Promise<string> {
         return await this.getData(
-            farmAddresses,
-            'lockedAssetFactoryManagedAddress',
+            this.getFarmCacheKey(
+                farmAddresses,
+                'lockedAssetFactoryManagedAddress',
+            ),
             () =>
                 this.abiService.getLockedAssetFactoryManagedAddress(
                     farmAddresses,
@@ -339,8 +338,7 @@ export class FarmGetterService extends GenericGetterService {
 
     async getLastErrorMessage(farmAddresses: string): Promise<string> {
         return await this.getData(
-            farmAddresses,
-            'lastErrorMessage',
+            this.getFarmCacheKey(farmAddresses, 'lastErrorMessage'),
             () => this.abiService.getLastErrorMessage(farmAddresses),
             oneMinute(),
         );

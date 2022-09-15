@@ -493,7 +493,7 @@ export class FarmResolver {
     ): Promise<TransactionModel> {
         try {
             await this.farmService.requireOwner(farmAddress, user.publicKey);
-            return await this.transactionsService.set_penalty_percent(
+            return await this.transactionsService.setPenaltyPercent(
                 farmAddress,
                 percent,
             );
@@ -511,7 +511,7 @@ export class FarmResolver {
     ): Promise<TransactionModel> {
         try {
             await this.farmService.requireOwner(farmAddress, user.publicKey);
-            return await this.transactionsService.set_minimum_farming_epochs(
+            return await this.transactionsService.setMinimumFarmingEpochs(
                 farmAddress,
                 epochs,
             );
@@ -529,7 +529,7 @@ export class FarmResolver {
     ): Promise<TransactionModel> {
         try {
             await this.farmService.requireOwner(farmAddress, user.publicKey);
-            return await this.transactionsService.set_transfer_exec_gas_limit(
+            return await this.transactionsService.setTransferExecGasLimit(
                 farmAddress,
                 gasLimit,
             );
@@ -547,7 +547,7 @@ export class FarmResolver {
     ): Promise<TransactionModel> {
         try {
             await this.farmService.requireOwner(farmAddress, user.publicKey);
-            return await this.transactionsService.set_burn_gas_limit(
+            return await this.transactionsService.setBurnGasLimit(
                 farmAddress,
                 gasLimit,
             );
