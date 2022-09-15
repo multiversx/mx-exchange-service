@@ -95,19 +95,14 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [
-                feesAPR,
-                state,
-                type,
-                feeState,
-                totalFeePercent,
-            ] = await Promise.all([
-                this.pairComputeService.computeFeesAPR(pairAddress),
-                this.abiPairService.getState(pairAddress),
-                this.pairComputeService.computeTypeFromTokens(pairAddress),
-                this.abiPairService.getFeeState(pairAddress),
-                this.abiPairService.getTotalFeePercent(pairAddress),
-            ]);
+            const [feesAPR, state, type, feeState, totalFeePercent] =
+                await Promise.all([
+                    this.pairComputeService.computeFeesAPR(pairAddress),
+                    this.abiPairService.getState(pairAddress),
+                    this.pairComputeService.computeTypeFromTokens(pairAddress),
+                    this.abiPairService.getFeeState(pairAddress),
+                    this.abiPairService.getTotalFeePercent(pairAddress),
+                ]);
 
             this.invalidatedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
@@ -128,28 +123,9 @@ export class PairCacheWarmerService {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
 
         for (const pairAddress of pairsMetadata) {
-            const [
-                pairInfo,
-                externSwapGasLimit,
-                routerManagedAddress,
-                whitelistedManagedAddresses,
-                feeDestinations,
-                transferExecGasLimit,
-            ] = await Promise.all([
-                this.abiPairService.getPairInfoMetadata(pairAddress.address),
-                this.abiPairService.getExternSwapGasLimit(pairAddress.address),
-                this.abiPairService.getRouterManagedAddress(
-                    pairAddress.address,
-                ),
-                this.abiPairService.getWhitelistedManagedAddresses(
-                    pairAddress.address,
-                ),
-                this.abiPairService.getFeeDestinations(pairAddress.address),
-                this.abiPairService.getTransferExecGasLimit(
-                    pairAddress.address,
-                ),
-            ]);
-
+            const pairInfo = await this.abiPairService.getPairInfoMetadata(
+                pairAddress.address,
+            );
             const cacheKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenReserve(
                     pairAddress.address,
@@ -162,26 +138,6 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setTotalSupply(
                     pairAddress.address,
                     pairInfo.totalSupply,
-                ),
-                this.pairSetterService.setExternSwapGasLimit(
-                    pairAddress.address,
-                    externSwapGasLimit,
-                ),
-                this.pairSetterService.setRouterManagedAddress(
-                    pairAddress.address,
-                    routerManagedAddress,
-                ),
-                this.pairSetterService.setWhitelistedManagedAddresses(
-                    pairAddress.address,
-                    whitelistedManagedAddresses,
-                ),
-                this.pairSetterService.setFeeDestinations(
-                    pairAddress.address,
-                    feeDestinations,
-                ),
-                this.pairSetterService.setTransferExecGasLimit(
-                    pairAddress.address,
-                    transferExecGasLimit,
                 ),
             ]);
             this.invalidatedKeys.push(...cacheKeys);
