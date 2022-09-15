@@ -16,7 +16,6 @@ import {
     Address,
     AddressValue,
     BigUIntValue,
-    BytesValue,
     EnumValue,
     Field,
     ResultsParser,
@@ -41,7 +40,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getFirstTokenId();
+        const interaction: Interaction =
+            contract.methodsExplicit.getFirstTokenId();
 
         const response = await this.getGenericData(
             PairAbiService.name,
@@ -54,7 +54,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getSecondTokenId();
+        const interaction: Interaction =
+            contract.methodsExplicit.getSecondTokenId();
 
         const response = await this.getGenericData(
             PairAbiService.name,
@@ -67,7 +68,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLpTokenIdentifier();
+        const interaction: Interaction =
+            contract.methodsExplicit.getLpTokenIdentifier();
 
         const response = await this.getGenericData(
             PairAbiService.name,
@@ -100,7 +102,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getTotalSupply();
+        const interaction: Interaction =
+            contract.methodsExplicit.getTotalSupply();
 
         const response = await this.getGenericData(
             PairAbiService.name,
@@ -113,7 +116,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getReservesAndTotalSupply();
+        const interaction: Interaction =
+            contract.methodsExplicit.getReservesAndTotalSupply();
 
         const response = await this.getGenericData(
             PairAbiService.name,
@@ -130,7 +134,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getTotalFeePercent();
+        const interaction: Interaction =
+            contract.methodsExplicit.getTotalFeePercent();
 
         const response = await this.getGenericData(
             PairAbiService.name,
@@ -143,7 +148,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getSpecialFee();
+        const interaction: Interaction =
+            contract.methodsExplicit.getSpecialFee();
 
         const response = await this.getGenericData(
             PairAbiService.name,
@@ -156,7 +162,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getTrustedSwapPairs();
+        const interaction: Interaction =
+            contract.methodsExplicit.getTrustedSwapPairs();
 
         const response = await this.getGenericData(
             PairAbiService.name,
@@ -164,7 +171,7 @@ export class PairAbiService extends GenericAbiService {
         );
         return response.firstValue
             .valueOf()
-            .map(swapPair => swapPair.field1.bech32());
+            .map((swapPair) => swapPair.field1.bech32());
     }
 
     async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
@@ -172,7 +179,8 @@ export class PairAbiService extends GenericAbiService {
             pairAddress,
         );
         try {
-            const interaction: Interaction = contract.methodsExplicit.getInitialLiquidtyAdder();
+            const interaction: Interaction =
+                contract.methodsExplicit.getInitialLiquidtyAdder();
             const query = interaction.check().buildQuery();
             const queryResponse = await this.elrondProxy
                 .getService()
@@ -243,7 +251,8 @@ export class PairAbiService extends GenericAbiService {
             pairAddress,
         );
         try {
-            const interaction: Interaction = contract.methodsExplicit.getLockingScAddress();
+            const interaction: Interaction =
+                contract.methodsExplicit.getLockingScAddress();
             const query = interaction.check().buildQuery();
             const queryResponse = await this.elrondProxy
                 .getService()
@@ -281,7 +290,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getUnlockEpoch();
+        const interaction: Interaction =
+            contract.methodsExplicit.getUnlockEpoch();
         try {
             const query = interaction.check().buildQuery();
             const queryResponse = await this.elrondProxy
@@ -320,7 +330,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLockingDeadlineEpoch();
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockingDeadlineEpoch();
         try {
             const query = interaction.check().buildQuery();
             const queryResponse = await this.elrondProxy
@@ -353,18 +364,6 @@ export class PairAbiService extends GenericAbiService {
         }
     }
 
-    async getFeeState(pairAddress: string): Promise<Boolean> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
-        const interaction: Interaction = contract.methods.getFeeState([]);
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
-        return response.firstValue.valueOf();
-    }
-
     async getFeeDestinations(pairAddress: string): Promise<FeeDestination[]> {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
@@ -376,7 +375,7 @@ export class PairAbiService extends GenericAbiService {
             PairAbiService.name,
             interaction,
         );
-        return response.firstValue.valueOf().map(v => {
+        return response.firstValue.valueOf().map((v) => {
             return new FeeDestination({
                 address: new Address(
                     response.firstValue.valueOf()[0].field0,
@@ -392,23 +391,21 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getWhitelistedManagedAddresses(
-            [],
-        );
+        const interaction: Interaction =
+            contract.methods.getWhitelistedManagedAddresses([]);
         const response = await this.getGenericData(
             PairAbiService.name,
             interaction,
         );
-        return response.firstValue.valueOf().map(v => {
+        return response.firstValue.valueOf().map((v) => {
             return new Address(v).bech32();
         });
     }
 
     async getRouterManagedAddress(address: string): Promise<string> {
         const contract = await this.elrondProxy.getPairSmartContract(address);
-        const interaction: Interaction = contract.methods.getRouterManagedAddress(
-            [],
-        );
+        const interaction: Interaction =
+            contract.methods.getRouterManagedAddress([]);
         const response = await this.getGenericData(
             PairAbiService.name,
             interaction,
@@ -418,9 +415,8 @@ export class PairAbiService extends GenericAbiService {
 
     async getRouterOwnerManagedAddress(address: string): Promise<string> {
         const contract = await this.elrondProxy.getPairSmartContract(address);
-        const interaction: Interaction = contract.methods.getRouterOwnerManagedAddress(
-            [],
-        );
+        const interaction: Interaction =
+            contract.methods.getRouterOwnerManagedAddress([]);
         const response = await this.getGenericData(
             PairAbiService.name,
             interaction,
@@ -447,9 +443,8 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(
             pairAddress,
         );
-        const interaction: Interaction = contract.methods.getTransferExecGasLimit(
-            [],
-        );
+        const interaction: Interaction =
+            contract.methods.getTransferExecGasLimit([]);
         const response = await this.getGenericData(
             PairAbiService.name,
             interaction,

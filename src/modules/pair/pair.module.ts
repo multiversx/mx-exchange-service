@@ -14,8 +14,10 @@ import { AWSModule } from 'src/services/aws/aws.module';
 import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
+import { CommonAppModule } from 'src/common.app.module';
 @Module({
     imports: [
+        CommonAppModule,
         ElrondCommunicationModule,
         ContextModule,
         WrappingModule,

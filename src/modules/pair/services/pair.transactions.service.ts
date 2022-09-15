@@ -6,7 +6,7 @@ import {
     U64Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs';
+import { Address, TokenPayment } from '@elrondnetwork/erdjs';
 import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
@@ -26,8 +26,6 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { computeValueUSD } from 'src/utils/token.converters';
-import { isSpreadTooBig } from '../pair.utils';
 import { BPConfig } from '../models/pair.model';
 
 @Injectable()

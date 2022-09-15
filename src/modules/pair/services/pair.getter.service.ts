@@ -314,7 +314,7 @@ export class PairGetterService extends GenericGetterService {
     async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
         return await this.getData(
             this.getPairCacheKey(pairAddress, 'initialLiquidtyAdder'),
-            () => this.abiService.getInitialLiquidtyAdder(pairAddress),
+            () => this.abiService.getInitialLiquidityAdder(pairAddress),
             oneHour(),
         );
     }
@@ -444,23 +444,9 @@ export class PairGetterService extends GenericGetterService {
         });
     }
 
-    private getPairCacheKey(pairAddress: string, ...args: any) {
-        return generateCacheKeyFromParams('pair', pairAddress, ...args);
-    }
-
-    async getFeeState(pairAddress: string): Promise<Boolean> {
-        return await this.getData(
-            pairAddress,
-            'feeState',
-            () => this.abiService.getFeeState(pairAddress),
-            oneMinute(),
-        );
-    }
-
     async getFeeDestinations(pairAddress: string): Promise<FeeDestination[]> {
         return await this.getData(
-            pairAddress,
-            'feeDestinations',
+            this.getPairCacheKey(pairAddress, 'feeDestinations'),
             () => this.abiService.getFeeDestinations(pairAddress),
             oneHour(),
         );
@@ -470,8 +456,7 @@ export class PairGetterService extends GenericGetterService {
         pairAddress: string,
     ): Promise<string[]> {
         return await this.getData(
-            pairAddress,
-            'whitelistedManagedAddresses',
+            this.getPairCacheKey(pairAddress, 'whitelistedManagedAddresses'),
             () => this.abiService.getWhitelistedManagedAddresses(pairAddress),
             oneHour(),
         );
@@ -479,8 +464,7 @@ export class PairGetterService extends GenericGetterService {
 
     async getRouterManagedAddress(address: string): Promise<string> {
         return await this.getData(
-            address,
-            'routerManagedAddress',
+            this.getPairCacheKey(address, 'routerManagedAddress'),
             () => this.abiService.getRouterManagedAddress(address),
             oneHour(),
         );
@@ -488,8 +472,7 @@ export class PairGetterService extends GenericGetterService {
 
     async getRouterOwnerManagedAddress(address: string): Promise<string> {
         return await this.getData(
-            address,
-            'routerOwnerManagedAddress',
+            this.getPairCacheKey(address, 'routerOwnerManagedAddress'),
             () => this.abiService.getRouterOwnerManagedAddress(address),
             oneHour(),
         );
@@ -497,8 +480,7 @@ export class PairGetterService extends GenericGetterService {
 
     async getExternSwapGasLimit(pairAddress: string): Promise<number> {
         return await this.getData(
-            pairAddress,
-            'externSwapGasLimit',
+            this.getPairCacheKey(pairAddress, 'externSwapGasLimit'),
             () => this.abiService.getExternSwapGasLimit(pairAddress),
             oneHour(),
         );
@@ -506,8 +488,7 @@ export class PairGetterService extends GenericGetterService {
 
     async getTransferExecGasLimit(pairAddress: string): Promise<number> {
         return await this.getData(
-            pairAddress,
-            'transferExecGasLimit',
+            this.getPairCacheKey(pairAddress, 'transferExecGasLimit'),
             () => this.abiService.getTransferExecGasLimit(pairAddress),
             oneHour(),
         );
@@ -518,8 +499,7 @@ export class PairGetterService extends GenericGetterService {
         esdtTokenPayment: EsdtTokenPayment,
     ): Promise<EsdtTokenPayment> {
         return await this.getData(
-            pairAddress,
-            'safePrice',
+            this.getPairCacheKey(pairAddress, 'safePrice'),
             () =>
                 this.abiService.updateAndGetSafePrice(
                     pairAddress,
@@ -534,8 +514,7 @@ export class PairGetterService extends GenericGetterService {
         address: string,
     ): Promise<number> {
         return await this.getData(
-            pairAddress,
-            'numSwapsByAddress',
+            this.getPairCacheKey(pairAddress, 'numSwapsByAddress', address),
             () => this.abiService.getNumSwapsByAddress(pairAddress, address),
             oneMinute(),
         );
@@ -546,10 +525,13 @@ export class PairGetterService extends GenericGetterService {
         address: string,
     ): Promise<string> {
         return await this.getData(
-            pairAddress,
-            'numAddsByAddress',
+            this.getPairCacheKey(pairAddress, 'numAddsByAddress', address),
             () => this.abiService.getNumAddsByAddress(pairAddress, address),
             oneMinute(),
         );
+    }
+
+    private getPairCacheKey(pairAddress: string, ...args: any) {
+        return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }
 }

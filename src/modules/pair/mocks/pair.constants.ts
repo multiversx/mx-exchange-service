@@ -110,9 +110,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
-            };
+            });
         case 'TOK1USDCLP':
-            return {
+            return new EsdtToken({
                 identifier: 'TOK1USDCLP',
                 name: 'LiquidityPoolTokenT1USDC',
                 owner: 'router_address',
@@ -145,9 +145,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
-            };
+            });
         case 'TOK4-4444':
-            return {
+            return new EsdtToken({
                 identifier: 'TOK4-4444',
                 name: 'Token4',
                 owner: 'router_address',
@@ -180,7 +180,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
-            };
+            });
         case 'TOK1TOK4LPStaked':
             return {
                 identifier: 'TOK1TOK4LPStaked',
@@ -188,6 +188,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 ticker: 'T1T4S-1234',
                 type: 'FungibleESDT',
                 owner: 'user_address_1',
+                derivedEGLD: '0',
                 supply: '0',
                 decimals: 18,
                 isPaused: false,
@@ -217,7 +218,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 roles: new RolesModel(),
             };
         case 'TOK1TOK4LP':
-            return {
+            return new EsdtToken({
                 identifier: 'TOK1TOK4LP',
                 name: 'LiquidityPoolTokenT1T4',
                 ticker: 'T1T4-1234',
@@ -250,7 +251,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 initialMinted: '1',
                 price: '10',
                 roles: new RolesModel(),
-            };
+            });
         case 'TOK1TOK2LPStaked':
             return {
                 identifier: 'TOK1TOK2LPStaked',
@@ -258,6 +259,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 ticker: 'T1T2S-1234',
                 type: 'FungibleESDT',
                 owner: 'user_address_1',
+                derivedEGLD: '0',
                 supply: '10000000000000000000000000000',
                 decimals: 18,
                 isPaused: false,
@@ -287,7 +289,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 roles: new RolesModel(),
             };
         case 'TOK1TOK2LP':
-            return {
+            return new EsdtToken({
                 identifier: 'TOK1TOK2LP',
                 name: 'FarmingToken12',
                 ticker: 'T1T2-1234',
@@ -320,7 +322,7 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
-            };
+            });
         default:
             break;
     }
@@ -405,5 +407,5 @@ export async function PairsMap(): Promise<Map<string, string[]>> {
 }
 
 export const PairsData = (pairAddress: string) => {
-    return pairs.find(p => p.address === pairAddress);
+    return pairs.find((p) => p.address === pairAddress);
 };

@@ -294,18 +294,6 @@ export class PairSetterService extends GenericSetterService {
         return cacheKey;
     }
 
-    async setRouterManagedAddress(
-        pairAddress: string,
-        value: string,
-    ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'routerManagedAddress',
-        );
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
-    }
-
     async setWhitelistedManagedAddresses(
         pairAddress: string,
         value: string[],

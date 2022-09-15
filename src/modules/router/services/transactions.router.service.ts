@@ -248,7 +248,7 @@ export class TransactionRouterService {
         }
 
         const initialLiquidityAdder =
-            await this.pairGetterService.getInitialLiquidtyAdder(pairAddress);
+            await this.pairGetterService.getInitialLiquidityAdder(pairAddress);
         if (sender !== initialLiquidityAdder) {
             throw new Error('Invalid sender address');
         }
