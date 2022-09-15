@@ -1,12 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { cacheConfig, scAddress } from 'src/config';
-import { oneHour } from 'src/helpers/helpers';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { AbiStakingProxyService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingProxySetterService } from 'src/modules/staking-proxy/services/staking.proxy.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { CachingService } from '../caching/cache.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
@@ -16,13 +14,14 @@ export class StakingProxyCacheWarmerService {
         private readonly abiService: AbiStakingProxyService,
         private readonly stakingProxySetter: StakingProxySetterService,
         private readonly apiService: ElrondApiService,
-        private readonly cachingService: CachingService,
+        private readonly tokenSetter: TokenSetterService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
     @Cron(CronExpression.EVERY_30_MINUTES)
     async cacheFarmsStaking(): Promise<void> {
-        const stakingProxiesAddress: string[] = scAddress.stakingProxy;
+        const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
         for (const address of stakingProxiesAddress) {
             const [
                 lpFarmAddress,
@@ -48,7 +47,7 @@ export class StakingProxyCacheWarmerService {
                 dualYieldToken,
                 lpFarmToken,
             ] = await Promise.all([
-                this.apiService.getNftCollection(stakingTokenID),
+                this.apiService.getToken(stakingTokenID),
                 this.apiService.getNftCollection(farmTokenID),
                 this.apiService.getNftCollection(dualYieldTokenID),
                 this.apiService.getNftCollection(lpFarmTokenID),
@@ -63,28 +62,23 @@ export class StakingProxyCacheWarmerService {
                 this.stakingProxySetter.setFarmTokenID(farmTokenID),
                 this.stakingProxySetter.setDualYieldTokenID(dualYieldTokenID),
                 this.stakingProxySetter.setLpFarmTokenID(lpFarmTokenID),
-                this.setContextCache(stakingTokenID, stakingToken, oneHour()),
-                this.setContextCache(farmTokenID, farmToken, oneHour()),
-                this.setContextCache(
+                this.tokenSetter.setTokenMetadata(stakingTokenID, stakingToken),
+                this.tokenSetter.setNftCollectionMetadata(
+                    farmTokenID,
+                    farmToken,
+                ),
+                this.tokenSetter.setNftCollectionMetadata(
                     dualYieldTokenID,
                     dualYieldToken,
-                    oneHour(),
                 ),
-                this.setContextCache(lpFarmTokenID, lpFarmToken, oneHour()),
+                this.tokenSetter.setNftCollectionMetadata(
+                    lpFarmTokenID,
+                    lpFarmToken,
+                ),
             ]);
 
             await this.deleteCacheKeys(cacheKeys);
         }
-    }
-
-    private async setContextCache(
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ): Promise<string> {
-        const cacheKey = generateCacheKeyFromParams('context', key);
-        await this.cachingService.setCache(cacheKey, value, ttl);
-        return cacheKey;
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

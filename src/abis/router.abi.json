@@ -2,18 +2,19 @@
     "buildInfo": {
         "rustc": {
             "version": "1.62.0-nightly",
-            "commitHash": "88860d5474a32f507dde8fba8df35fd2064f11b9",
-            "commitDate": "2022-05-09",
+            "commitHash": "a5ad0d29a401007b51715852cc702e441ac2248c",
+            "commitDate": "2022-05-12",
             "channel": "Nightly",
-            "short": "rustc 1.62.0-nightly (88860d547 2022-05-09)"
+            "short": "rustc 1.62.0-nightly (a5ad0d29a 2022-05-12)"
         },
         "contractCrate": {
             "name": "router",
-            "version": "0.0.0"
+            "version": "0.0.0",
+            "git_version": "v1.6.0-101-g7d0cbf11"
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.29.3"
+            "version": "0.33.1"
         }
     },
     "name": "Router",
@@ -219,25 +220,6 @@
             "outputs": []
         },
         {
-            "name": "getPair",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "first_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "second_token_id",
-                    "type": "TokenIdentifier"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
             "name": "setPairCreationEnabled",
             "onlyOwner": true,
             "mutability": "mutable",
@@ -256,16 +238,6 @@
             "outputs": [
                 {
                     "type": "bool"
-                }
-            ]
-        },
-        {
-            "name": "getLastErrorMessage",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "bytes"
                 }
             ]
         },
@@ -319,6 +291,25 @@
                 {
                     "type": "variadic<PairContractMetadata>",
                     "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "getPair",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "Address"
                 }
             ]
         },
@@ -388,28 +379,158 @@
                     "name": "swap_operations",
                     "type": "variadic<multi<Address,bytes,TokenIdentifier,BigUint>>",
                     "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "configEnableByUserParameters",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "locked_token_id",
+                    "type": "TokenIdentifier"
                 },
                 {
-                    "name": "opt_accept_funds_func",
-                    "type": "optional<bytes>",
+                    "name": "min_locked_token_value",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_lock_period_epochs",
+                    "type": "u64"
+                },
+                {
+                    "name": "common_tokens_for_user_pairs",
+                    "type": "variadic<TokenIdentifier>",
                     "multi_arg": true
                 }
             ],
             "outputs": []
         },
         {
-            "name": "getTransferExecGasLimit",
+            "name": "addCommonTokensForUserPairs",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "tokens",
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeCommonTokensForUserPairs",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "tokens",
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setSwapEnabledByUser",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getEnableSwapByUserConfig",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
-                    "type": "u64"
+                    "type": "EnableSwapByUserConfig"
+                }
+            ]
+        },
+        {
+            "name": "getCommonTokensForUserPairs",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<TokenIdentifier>",
+                    "multi_result": true
                 }
             ]
         }
     ],
+    "events": [],
     "hasCallback": true,
     "types": {
+        "CreatePairEvent": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "caller",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "total_fee_percent",
+                    "type": "u64"
+                },
+                {
+                    "name": "special_fee_percent",
+                    "type": "u64"
+                },
+                {
+                    "name": "pair_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "block",
+                    "type": "u64"
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64"
+                }
+            ]
+        },
+        "EnableSwapByUserConfig": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "locked_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "min_locked_token_value",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_lock_period_epochs",
+                    "type": "u64"
+                }
+            ]
+        },
         "EsdtLocalRole": {
             "type": "enum",
             "variants": [
@@ -444,6 +565,10 @@
                 {
                     "name": "NftUpdateAttributes",
                     "discriminant": 7
+                },
+                {
+                    "name": "Transfer",
+                    "discriminant": 8
                 }
             ]
         },
@@ -474,6 +599,27 @@
                 {
                     "name": "second_token_id",
                     "type": "TokenIdentifier"
+                }
+            ]
+        },
+        "UserPairSwapEnabledEvent": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "caller",
+                    "type": "Address"
+                },
+                {
+                    "name": "first_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "second_token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "pair_address",
+                    "type": "Address"
                 }
             ]
         }

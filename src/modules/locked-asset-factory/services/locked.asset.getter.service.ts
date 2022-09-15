@@ -3,60 +3,36 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { UnlockMileStoneModel } from '../models/locked-asset.model';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
 
 @Injectable()
-export class LockedAssetGetterService {
+export class LockedAssetGetterService extends GenericGetterService {
     constructor(
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: AbiLockedAssetService,
-        private readonly cachingService: CachingService,
-        private readonly contextGetter: ContextGetterService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async getData(
-        key: string,
-        createValueFunc: () => any,
-        ttl: number,
-    ): Promise<any> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey(key);
-        try {
-            return await this.cachingService.getOrSet(
-                cacheKey,
-                createValueFunc,
-                ttl,
-            );
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                LockedAssetGetterService.name,
-                this.getData.name,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        private readonly tokenGetter: TokenGetterService,
+    ) {
+        super(cachingService, logger);
     }
 
     async getAssetTokenID(): Promise<string> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey('assetTokenID');
         return await this.getData(
-            cacheKey,
+            this.getLockedAssetFactoryCacheKey('assetTokenID'),
             () => this.abiService.getAssetTokenID(),
             oneHour(),
         );
     }
 
     async getLockedTokenID(): Promise<string> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey('lockedTokenID');
         return await this.getData(
-            cacheKey,
+            this.getLockedAssetFactoryCacheKey('lockedTokenID'),
             () => this.abiService.getLockedTokenID(),
             oneHour(),
         );
@@ -64,40 +40,35 @@ export class LockedAssetGetterService {
 
     async getAssetToken(): Promise<EsdtToken> {
         const assetTokenID = await this.getAssetTokenID();
-        return await this.contextGetter.getTokenMetadata(assetTokenID);
+        return await this.tokenGetter.getTokenMetadata(assetTokenID);
     }
 
     async getLockedToken(): Promise<NftCollection> {
         const lockedTokenID = await this.getLockedTokenID();
-        return await this.contextGetter.getNftCollectionMetadata(lockedTokenID);
+        return await this.tokenGetter.getNftCollectionMetadata(lockedTokenID);
     }
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey(
-            'defaultUnlockPeriod',
-        );
         return await this.getData(
-            cacheKey,
+            this.getLockedAssetFactoryCacheKey('defaultUnlockPeriod'),
             () => this.abiService.getDefaultUnlockPeriod(),
             oneHour(),
         );
     }
 
     async getInitEpoch(): Promise<number> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey('initEpoch');
         return await this.getData(
-            cacheKey,
+            this.getLockedAssetFactoryCacheKey('initEpoch'),
             () => this.abiService.getInitEpoch(),
             oneHour(),
         );
     }
 
     async getExtendedAttributesActivationNonce(): Promise<number> {
-        const cacheKey = this.getLockedAssetFactoryCacheKey(
-            'extendedAttributesActivationNonce',
-        );
         return await this.getData(
-            cacheKey,
+            this.getLockedAssetFactoryCacheKey(
+                'extendedAttributesActivationNonce',
+            ),
             () => this.abiService.getExtendedAttributesActivationNonce(),
             oneHour(),
         );

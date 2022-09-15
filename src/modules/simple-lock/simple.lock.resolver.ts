@@ -9,9 +9,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import {
-    FarmProxyTokenAttributesModel,
     LockedTokenAttributesModel,
-    LpProxyTokenAttributesModel,
     SimpleLockModel,
 } from './models/simple.lock.model';
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
@@ -91,27 +89,15 @@ export class SimpleLockResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => [LpProxyTokenAttributesModel])
-    async lpProxyTokenAttributes(
-        @Args('args') args: DecodeAttributesArgs,
-    ): Promise<LpProxyTokenAttributesModel[]> {
+    @Query(() => TransactionModel)
+    async lockTokens(
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('lockEpochs') lockEpochs: number,
+    ): Promise<TransactionModel> {
         try {
-            return this.simpleLockService.decodeBatchLpTokenProxyAttributes(
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => [FarmProxyTokenAttributesModel])
-    async farmProxyTokenAttributes(
-        @Args('args') args: DecodeAttributesArgs,
-    ): Promise<FarmProxyTokenAttributesModel[]> {
-        try {
-            return this.simpleLockService.decodeBatchFarmProxyTokenAttributes(
-                args,
+            return await this.simpleLockTransactions.lockTokens(
+                inputTokens,
+                lockEpochs,
             );
         } catch (error) {
             throw new ApolloError(error);

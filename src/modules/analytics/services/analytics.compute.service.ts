@@ -8,14 +8,14 @@ import {
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
-import { ContextService } from 'src/services/context/context.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
-        private readonly context: ContextService,
+        private readonly routerGetter: RouterGetterService,
         private readonly farmGetterService: FarmGetterService,
         private readonly farmComputeService: FarmComputeService,
         private readonly pairGetterService: PairGetterService,
@@ -40,7 +40,7 @@ export class AnalyticsComputeService {
     }
 
     async computeTotalValueLockedUSD(): Promise<string> {
-        const pairsAddress = await this.context.getAllPairsAddress();
+        const pairsAddress = await this.routerGetter.getAllPairsAddress();
         const filteredPairs = await this.fiterPairsByIssuedLpToken(
             pairsAddress,
         );
@@ -57,10 +57,10 @@ export class AnalyticsComputeService {
                 ),
             );
         }
-        if (farmsAddresses()[9] !== undefined) {
+        if (farmsAddresses()[12] !== undefined) {
             promises.push(
                 this.farmComputeService.computeFarmLockedValueUSD(
-                    farmsAddresses()[10],
+                    farmsAddresses()[12],
                 ),
             );
         }

@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
-import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/services/farm.getter.service';
@@ -11,8 +9,6 @@ import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
-import { PriceFeedService } from 'src/services/price-feed/price-feed.service';
-import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
 import { AWSModule } from 'src/services/aws/aws.module';
@@ -29,6 +25,9 @@ import { ProxyGetterServiceMock } from 'src/modules/proxy/mocks/proxy.getter.ser
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -58,11 +57,6 @@ describe('AnalyticsService', () => {
         useClass: AbiLockedAssetServiceMock,
     };
 
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
-
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
@@ -78,11 +72,6 @@ describe('AnalyticsService', () => {
         useClass: ElrondProxyServiceMock,
     };
 
-    const PriceFeedServiceProvider = {
-        provide: PriceFeedService,
-        useClass: PriceFeedServiceMock,
-    };
-
     const WrapServiceProvider = {
         provide: WrapService,
         useClass: WrapServiceMock,
@@ -92,7 +81,6 @@ describe('AnalyticsService', () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule, AWSModule],
             providers: [
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,
                 ElrondApiServiceProvider,
@@ -105,8 +93,10 @@ describe('AnalyticsService', () => {
                 ProxyGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
-                PriceFeedServiceProvider,
                 WrapServiceProvider,
+                RouterGetterServiceProvider,
+                TokenGetterServiceProvider,
+                TokenComputeService,
                 AnalyticsComputeService,
             ],
         }).compile();

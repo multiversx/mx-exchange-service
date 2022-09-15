@@ -7,7 +7,7 @@ import {
 export const Tokens = (tokenID: string): EsdtToken => {
     switch (tokenID) {
         case 'TOK1-1111':
-            return {
+            return new EsdtToken({
                 identifier: 'TOK1-1111',
                 ticker: 'TOK1',
                 name: 'FirstToken',
@@ -40,9 +40,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
-            };
+            });
         case 'TOK2-2222':
-            return {
+            return new EsdtToken({
                 identifier: 'TOK2-2222',
                 name: 'SecondToken',
                 ticker: 'TOK2',
@@ -75,9 +75,9 @@ export const Tokens = (tokenID: string): EsdtToken => {
                 initialMinted: '1',
                 price: '1',
                 roles: new RolesModel(),
-            };
+            });
         case 'USDC-1111':
-            return {
+            return new EsdtToken({
                 identifier: 'USDC-1111',
                 name: 'ThirdToken',
                 ticker: 'USDC',

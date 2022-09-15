@@ -9,10 +9,12 @@ import { RouterGetterService } from './services/router.getter.service';
 import { RouterComputeService } from './services/router.compute.service';
 import { PairModule } from '../pair/pair.module';
 import { RouterSetterService } from './services/router.setter.service';
-import { AWSModule } from 'src/services/aws/aws.module';
 import { CommonAppModule } from 'src/common.app.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { WrappingModule } from '../wrapping/wrap.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
+import { MetricsService } from 'src/endpoints/metrics/metrics.service';
+import { ElasticService } from 'src/helpers/elastic.service';
 
 @Module({
     imports: [
@@ -20,9 +22,9 @@ import { WrappingModule } from '../wrapping/wrap.module';
         ElrondCommunicationModule,
         CachingModule,
         PairModule,
-        AWSModule,
         ContextModule,
         WrappingModule,
+        RemoteConfigModule,
     ],
     providers: [
         RouterService,
@@ -31,6 +33,8 @@ import { WrappingModule } from '../wrapping/wrap.module';
         RouterSetterService,
         RouterComputeService,
         TransactionRouterService,
+        MetricsService,
+        ElasticService,
         RouterResolver,
     ],
     exports: [

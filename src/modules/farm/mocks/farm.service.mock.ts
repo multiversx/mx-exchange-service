@@ -5,15 +5,15 @@ import { farms } from './farm.constants';
 
 export class FarmServiceMock {
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        return farms.find(f => f.address === farmAddress).farmingTokenID;
+        return farms.find((f) => f.address === farmAddress).farmingTokenID;
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        return farms.find(f => f.address === farmAddress).farmedTokenID;
+        return farms.find((f) => f.address === farmAddress).farmedTokenID;
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
-        return farms.find(f => f.address === farmAddress).farmTokenID;
+        return farms.find((f) => f.address === farmAddress).farmTokenID;
     }
 
     async getFarmingToken(farmAddress: string): Promise<EsdtToken> {
@@ -26,7 +26,7 @@ export class FarmServiceMock {
     }
 
     async getFarmAddressByFarmTokenID(farmTokenID: string): Promise<string> {
-        return farms.find(f => f.farmTokenID === farmTokenID).address;
+        return farms.find((f) => f.farmTokenID === farmTokenID).address;
     }
 
     decodeFarmTokenAttributes(

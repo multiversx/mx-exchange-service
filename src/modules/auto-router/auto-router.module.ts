@@ -12,6 +12,8 @@ import { RouterModule } from '../router/router.module';
 import { AutoRouterTransactionService } from './services/auto-router.transactions.service';
 import { AutoRouterResolver } from './auto-router.resolver';
 import { PairTransactionService } from '../pair/services/pair.transactions.service';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
@@ -23,6 +25,8 @@ import { PairTransactionService } from '../pair/services/pair.transactions.servi
         AWSModule,
         WrappingModule,
         RouterModule,
+        TokenModule,
+        RemoteConfigModule,
     ],
     providers: [
         AutoRouterResolver,

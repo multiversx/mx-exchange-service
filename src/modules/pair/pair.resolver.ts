@@ -275,6 +275,15 @@ export class PairResolver {
     }
 
     @ResolveField()
+    async feeState(@Parent() parent: PairModel): Promise<boolean> {
+        try {
+            return await this.pairGetterService.getFeeState(parent.address);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
     async lockedTokensInfo(
         @Parent() parent: PairModel,
     ): Promise<LockedTokensInfo> {
@@ -387,11 +396,15 @@ export class PairResolver {
         @Args('amount') amount: string,
     ): Promise<string> {
         try {
-            return await this.pairService.getEquivalentForLiquidity(
-                pairAddress,
-                tokenInID,
-                amount,
-            );
+            return (
+                await this.pairService.getEquivalentForLiquidity(
+                    pairAddress,
+                    tokenInID,
+                    amount,
+                )
+            )
+                .integerValue()
+                .toFixed();
         } catch (error) {
             throw new ApolloError(error);
         }

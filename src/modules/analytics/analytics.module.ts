@@ -9,7 +9,7 @@ import { RouterModule } from '../router/router.module';
 import { AnalyticsController } from './analytics.controller';
 import { AnalyticsEventHandlerService } from './services/analytics.event.handler.service';
 import { AnalyticsResolver } from './analytics.resolver';
-import { AnalyticsService } from './services/analytics.service';
+import { AnalyticsAWSGetterService } from './services/analytics.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
 import { ProxyModule } from '../proxy/proxy.module';
@@ -18,6 +18,7 @@ import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairDayDataResolver } from './analytics.pair.resolver';
 import { AnalyticsPriceDiscoveryEventHandlerService } from './services/analytics.price.discovery.event.handler.service';
 import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
@@ -31,10 +32,11 @@ import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module'
         ProxyModule,
         LockedAssetModule,
         PriceDiscoveryModule,
+        TokenModule,
     ],
     providers: [
         AnalyticsResolver,
-        AnalyticsService,
+        AnalyticsAWSGetterService,
         AnalyticsGetterService,
         AnalyticsComputeService,
         AnalyticsEventHandlerService,
@@ -43,7 +45,7 @@ import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module'
         PairDayDataResolver,
     ],
     exports: [
-        AnalyticsService,
+        AnalyticsAWSGetterService,
         AnalyticsGetterService,
         AnalyticsComputeService,
         AnalyticsEventHandlerService,

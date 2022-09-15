@@ -1,15 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { HttpsAgent } from 'agentkeepalive';
-import AWS, { TimestreamQuery } from 'aws-sdk';
+import AWS, { AWSError, TimestreamQuery } from 'aws-sdk';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig } from 'src/config';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { Logger } from 'winston';
 import moment from 'moment';
+import { PendingExecutor } from 'src/utils/pending.executor';
+import { PromiseResult } from 'aws-sdk/lib/request';
+import { QueryResponse } from 'aws-sdk/clients/timestreamquery';
 
 @Injectable()
 export class AWSTimestreamQueryService {
+    private queryExecutor: PendingExecutor<
+        any,
+        PromiseResult<QueryResponse, AWSError>
+    >;
     private queryClient: TimestreamQuery;
     private readonly DatabaseName: string;
 
@@ -28,6 +35,11 @@ export class AWSTimestreamQueryService {
             },
         });
         this.DatabaseName = awsConfig.timestream.databaseName;
+
+        this.queryExecutor = new PendingExecutor(
+            async (params: any) =>
+                await this.queryClient.query(params).promise(),
+        );
     }
 
     async getLatestValue({ table, series, metric }): Promise<string> {
@@ -37,7 +49,7 @@ export class AWSTimestreamQueryService {
                              LIMIT 1`;
 
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         const value = Rows[0] ? Rows[0]?.Data[0]?.ScalarValue : '0';
         return new BigNumber(value).toFixed();
     }
@@ -53,7 +65,7 @@ export class AWSTimestreamQueryService {
                              ORDER BY time DESC`;
 
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -67,7 +79,7 @@ export class AWSTimestreamQueryService {
         const QueryString = `SELECT sum(measure_value::double) FROM "${this.DatabaseName}"."${table}"
                              WHERE series = '${series}' AND measure_name = '${metric}' AND time between ago(${time}) and now()`;
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         const value = Rows[0] ? Rows[0]?.Data[0]?.ScalarValue : '0';
         return new BigNumber(value).toFixed();
     }
@@ -104,7 +116,7 @@ export class AWSTimestreamQueryService {
             ORDER BY a.time ASC
         `;
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         const value = Rows[0] ? Rows[0]?.Data[0]?.ScalarValue : '0';
         return new BigNumber(value).toFixed();
     }
@@ -135,7 +147,7 @@ export class AWSTimestreamQueryService {
       `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -178,7 +190,7 @@ export class AWSTimestreamQueryService {
         `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -213,7 +225,7 @@ export class AWSTimestreamQueryService {
             CROSS JOIN UNNEST(interpolated_sum)
       `;
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -257,7 +269,7 @@ export class AWSTimestreamQueryService {
             ORDER BY time ASC
         `;
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -289,7 +301,7 @@ export class AWSTimestreamQueryService {
             CROSS JOIN UNNEST(interpolated_avg_value)
       `;
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -342,7 +354,7 @@ export class AWSTimestreamQueryService {
             ORDER BY time ASC
         `;
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -393,7 +405,7 @@ export class AWSTimestreamQueryService {
             ORDER BY time ASC
         `;
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -438,7 +450,7 @@ export class AWSTimestreamQueryService {
         `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -475,7 +487,7 @@ export class AWSTimestreamQueryService {
         `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({
@@ -515,7 +527,7 @@ export class AWSTimestreamQueryService {
         `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute(params);
         return Rows.map(
             Row =>
                 new HistoricDataModel({

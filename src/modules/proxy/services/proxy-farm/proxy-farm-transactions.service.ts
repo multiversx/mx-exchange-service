@@ -149,7 +149,7 @@ export class TransactionsProxyFarmService {
             lockedAssetCreateGas;
 
         return contract.methodsExplicit
-            .claimFarmRewardsProxy(endpointArgs)
+            .claimRewardsProxy(endpointArgs)
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     args.wrappedFarmTokenID,

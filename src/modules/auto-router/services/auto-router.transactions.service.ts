@@ -54,13 +54,14 @@ export class AutoRouterTransactionService {
         const gasLimit =
             args.addressRoute.length * gasConfig.router.multiPairSwapMultiplier;
 
+        const transactionArgs =
+            args.swapType == SWAP_TYPE.fixedInput
+                ? await this.multiPairFixedInputSwaps(args)
+                : await this.multiPairFixedOutputSwaps(args);
+
         transactions.push(
             contract.methodsExplicit
-                .multiPairSwap(
-                    args.swapType == SWAP_TYPE.fixedInput
-                        ? this.multiPairFixedInputSwaps(args)
-                        : this.multiPairFixedOutputSwaps(args),
-                )
+                .multiPairSwap(transactionArgs)
                 .withSingleESDTTransfer(
                     TokenPayment.fungibleFromBigInteger(
                         args.tokenRoute[0],
@@ -78,7 +79,9 @@ export class AutoRouterTransactionService {
         return transactions;
     }
 
-    private multiPairFixedInputSwaps(args: MultiSwapTokensArgs): any[] {
+    private async multiPairFixedInputSwaps(
+        args: MultiSwapTokensArgs,
+    ): Promise<any[]> {
         const swaps = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;
@@ -111,7 +114,9 @@ export class AutoRouterTransactionService {
         return swaps;
     }
 
-    private multiPairFixedOutputSwaps(args: MultiSwapTokensArgs): any[] {
+    private async multiPairFixedOutputSwaps(
+        args: MultiSwapTokensArgs,
+    ): Promise<any[]> {
         const swaps = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;

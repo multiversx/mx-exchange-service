@@ -10,13 +10,15 @@ import {
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import { GetPairsArgs, PairModel } from '../pair/models/pair.model';
-import { FactoryModel } from './models/factory.model';
+import { EnableSwapByUserConfig, FactoryModel } from './models/factory.model';
 import { TransactionRouterService } from './services/transactions.router.service';
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
+import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
+import { InputTokenModel } from 'src/models/inputToken.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { SetLocalRoleOwnerArgs } from './models/router.args';
 import { PairFilterArgs } from './models/filter.args';
@@ -27,6 +29,7 @@ export class RouterResolver {
         private readonly routerService: RouterService,
         private readonly routerGetterService: RouterGetterService,
         private readonly transactionService: TransactionRouterService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
     ) {}
 
     @Query(() => FactoryModel)
@@ -34,10 +37,28 @@ export class RouterResolver {
         return this.routerService.getFactory();
     }
 
+    @ResolveField()
+    async commonTokensForUserPairs(): Promise<string[]> {
+        try {
+            return await this.routerGetterService.getCommonTokensForUserPairs();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async enableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
+        try {
+            return await this.routerGetterService.getEnableSwapByUserConfig();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
     @ResolveField(() => Int)
     async pairCount() {
         try {
-            return await this.routerService.getPairCount();
+            return await this.routerGetterService.getPairCount();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -46,7 +67,7 @@ export class RouterResolver {
     @ResolveField(() => Int)
     async totalTxCount() {
         try {
-            return await this.routerService.getTotalTxCount();
+            return await this.routerGetterService.getTotalTxCount();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -82,7 +103,16 @@ export class RouterResolver {
     @ResolveField()
     async maintenance() {
         try {
-            return constantsConfig.MAINTENANCE;
+            return await this.remoteConfigGetterService.getMaintenanceFlagValue();
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @ResolveField()
+    async multiSwapStatus(): Promise<boolean> {
+        try {
+            return await this.remoteConfigGetterService.getMultiSwapStatus();
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -349,6 +379,22 @@ export class RouterResolver {
             return this.transactionService.removePair(
                 firstTokenID,
                 secondTokenID,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async setSwapEnabledByUser(
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.transactionService.setSwapEnabledByUser(
+                user.publicKey,
+                inputTokens,
             );
         } catch (error) {
             throw new ApolloError(error);

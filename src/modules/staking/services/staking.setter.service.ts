@@ -1,39 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { cacheConfig } from 'src/config';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 
 @Injectable()
-export class StakingSetterService {
+export class StakingSetterService extends GenericSetterService {
     constructor(
-        private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async setData(
-        stakeAddress: string,
-        cacheKeyArg: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ): Promise<string> {
-        const cacheKey = this.getStakeCacheKey(stakeAddress, cacheKeyArg);
-        try {
-            await this.cachingService.setCache(cacheKey, value, ttl);
-            return cacheKey;
-        } catch (error) {
-            const logMessage = generateGetLogMessage(
-                StakingSetterService.name,
-                '',
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    ) {
+        super(cachingService, logger);
     }
 
     async setPairContractManagedAddress(
@@ -41,8 +20,7 @@ export class StakingSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'pairAddress',
+            this.getStakeCacheKey(stakeAddress, 'pairAddress'),
             value,
             oneHour(),
         );
@@ -50,8 +28,7 @@ export class StakingSetterService {
 
     async setFarmTokenID(stakeAddress: string, value: string): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'farmTokenID',
+            this.getStakeCacheKey(stakeAddress, 'farmTokenID'),
             value,
             oneHour(),
         );
@@ -62,8 +39,7 @@ export class StakingSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'farmingTokenID',
+            this.getStakeCacheKey(stakeAddress, 'farmingTokenID'),
             value,
             oneHour(),
         );
@@ -74,8 +50,7 @@ export class StakingSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'rewardTokenID',
+            this.getStakeCacheKey(stakeAddress, 'rewardTokenID'),
             value,
             oneHour(),
         );
@@ -86,8 +61,7 @@ export class StakingSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'farmTokenSupply',
+            this.getStakeCacheKey(stakeAddress, 'farmTokenSupply'),
             value,
             oneMinute(),
         );
@@ -98,8 +72,7 @@ export class StakingSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'rewardPerShare',
+            this.getStakeCacheKey(stakeAddress, 'rewardPerShare'),
             value,
             oneMinute(),
         );
@@ -110,8 +83,7 @@ export class StakingSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'accumulatedRewards',
+            this.getStakeCacheKey(stakeAddress, 'accumulatedRewards'),
             value,
             oneMinute(),
         );
@@ -122,8 +94,7 @@ export class StakingSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'rewardCapacity',
+            this.getStakeCacheKey(stakeAddress, 'rewardCapacity'),
             value,
             oneMinute(),
         );
@@ -134,8 +105,7 @@ export class StakingSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'annualPercentageRewards',
+            this.getStakeCacheKey(stakeAddress, 'annualPercentageRewards'),
             value,
             oneMinute(),
         );
@@ -146,8 +116,7 @@ export class StakingSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'minUnboundEpochs',
+            this.getStakeCacheKey(stakeAddress, 'minUnboundEpochs'),
             value,
             oneMinute(),
         );
@@ -158,8 +127,7 @@ export class StakingSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'penaltyPercent',
+            this.getStakeCacheKey(stakeAddress, 'penaltyPercent'),
             value,
             oneMinute(),
         );
@@ -170,8 +138,7 @@ export class StakingSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'minimumFarmingEpochs',
+            this.getStakeCacheKey(stakeAddress, 'minimumFarmingEpochs'),
             value,
             oneMinute(),
         );
@@ -182,8 +149,7 @@ export class StakingSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'perBlockRewards',
+            this.getStakeCacheKey(stakeAddress, 'perBlockRewards'),
             value,
             oneMinute(),
         );
@@ -194,8 +160,7 @@ export class StakingSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'lastRewardBlockNonce',
+            this.getStakeCacheKey(stakeAddress, 'lastRewardBlockNonce'),
             value,
             oneMinute(),
         );
@@ -206,15 +171,18 @@ export class StakingSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            stakeAddress,
-            'divisionSafetyConstant',
+            this.getStakeCacheKey(stakeAddress, 'divisionSafetyConstant'),
             value,
             oneMinute(),
         );
     }
 
     async setState(stakeAddress: string, value: string): Promise<string> {
-        return await this.setData(stakeAddress, 'state', value, oneMinute());
+        return await this.setData(
+            this.getStakeCacheKey(stakeAddress, 'state'),
+            value,
+            oneMinute(),
+        );
     }
 
     private getStakeCacheKey(stakeAddress: string, ...args: any) {

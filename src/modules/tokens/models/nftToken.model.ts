@@ -1,21 +1,25 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { ObjectType } from '@nestjs/graphql';
+import { INFTToken } from './nft.interface';
 
-@ObjectType()
-export class NftToken {
-    @Field() identifier: string;
-    @Field() collection: string;
-    @Field(() => Int) decimals: number;
-    @Field(() => Int) timestamp: number;
-    @Field() attributes: string;
-    @Field(() => Int) nonce: number;
-    @Field() type: string;
-    @Field() name: string;
-    @Field() creator: string;
-    @Field(() => Int) royalties: number;
-    @Field(() => [String]) uris: string[];
-    @Field() url: string;
-    @Field(() => [String]) tags: string[];
-    @Field() balance: string;
+@ObjectType({
+    implements: () => [INFTToken],
+})
+export class NftToken implements INFTToken {
+    identifier: string;
+    collection: string;
+    ticker: string;
+    decimals: number;
+    timestamp?: number;
+    attributes: string;
+    nonce: number;
+    type: string;
+    name: string;
+    creator: string;
+    royalties?: number;
+    uris?: string[];
+    url?: string;
+    tags?: string[];
+    balance: string;
 
     constructor(init?: Partial<NftToken>) {
         Object.assign(this, init);

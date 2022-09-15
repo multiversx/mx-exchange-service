@@ -20,10 +20,10 @@ export class ElrondApiServiceMock {
 
     async getTokensForUser(address: string): Promise<EsdtToken[]> {
         return [
-            {
+            new EsdtToken({
                 ...Tokens('TOK2-2222'),
                 balance: '1000000000000000000',
-            },
+            }),
         ];
     }
 

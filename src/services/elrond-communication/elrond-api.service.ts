@@ -11,6 +11,7 @@ import { MetricsCollector } from '../../utils/metrics.collector';
 import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@elrondnetwork/erdjs-network-providers/out';
+import { isEsdtToken, isNftCollection } from 'src/utils/token.type.compare';
 
 @Injectable()
 export class ElrondApiService {
@@ -33,6 +34,9 @@ export class ElrondApiService {
             timeout: elrondConfig.proxyTimeout,
             httpAgent: elrondConfig.keepAlive ? httpAgent : null,
             httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+            headers: {
+                origin: 'MaiarExchangeService',
+            },
         });
     }
 
@@ -40,33 +44,46 @@ export class ElrondApiService {
         return this.apiProvider;
     }
 
-    async doGetGeneric(name: string, resourceUrl: string): Promise<any> {
+    private delay(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async doGetGeneric(
+        name: string,
+        resourceUrl: string,
+        retries = 1,
+    ): Promise<any> {
         const profiler = new PerformanceProfiler(`${name} ${resourceUrl}`);
+        try {
+            return await this.getService().doGetGeneric(resourceUrl);
+        } catch (error) {
+            if (
+                error.inner.isAxiosError &&
+                error.inner.code === 'ECONNABORTED' &&
+                retries < 3
+            ) {
+                await this.delay(500 * retries);
+                return await this.doGetGeneric(name, resourceUrl, retries + 1);
+            }
 
-        const response = await this.getService().doGetGeneric(resourceUrl);
+            this.logger.error(`${error.message} after ${retries} retries`, {
+                path: `${ElrondApiService.name}.${name}`,
+            });
+            throw new Error(error);
+        } finally {
+            profiler.stop();
 
-        profiler.stop();
-
-        MetricsCollector.setExternalCall(
-            ElrondApiService.name,
-            name,
-            profiler.duration,
-        );
-
-        return response;
+            MetricsCollector.setExternalCall(
+                ElrondApiService.name,
+                name,
+                profiler.duration,
+            );
+        }
     }
 
     async getStats(): Promise<Stats> {
-        try {
-            const stats = await this.doGetGeneric(this.getStats.name, 'stats');
-            return new Stats(stats);
-        } catch (error) {
-            this.logger.error('An error occurred while get stats', {
-                path: 'ElrondApiService.getStats',
-                error,
-            });
-            throw error;
-        }
+        const stats = await this.doGetGeneric(this.getStats.name, 'stats');
+        return new Stats(stats);
     }
 
     async getAccountStats(address: string): Promise<any | undefined> {
@@ -77,14 +94,35 @@ export class ElrondApiService {
     }
 
     async getToken(tokenID: string): Promise<EsdtToken> {
-        return this.doGetGeneric(this.getToken.name, `tokens/${tokenID}`);
+        try {
+            const rawToken = await this.doGetGeneric(
+                this.getToken.name,
+                `tokens/${tokenID}`,
+            );
+            const esdtToken = new EsdtToken(rawToken);
+            if (!isEsdtToken(esdtToken)) {
+                return undefined;
+            }
+            return esdtToken;
+        } catch (error) {
+            return undefined;
+        }
     }
 
     async getNftCollection(tokenID: string): Promise<NftCollection> {
-        return this.doGetGeneric(
-            this.getNftCollection.name,
-            `collections/${tokenID}`,
-        );
+        try {
+            const rawCollection = await this.doGetGeneric(
+                this.getNftCollection.name,
+                `collections/${tokenID}`,
+            );
+            const collection = new NftCollection(rawCollection);
+            if (!isNftCollection(collection)) {
+                return undefined;
+            }
+            return collection;
+        } catch (error) {
+            return undefined;
+        }
     }
 
     async getTokensCountForUser(address: string): Promise<number> {

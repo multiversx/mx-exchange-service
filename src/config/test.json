@@ -15,10 +15,8 @@
         }
     },
     "tokenProviderUSD": "TOK1-1111",
-    "priceFeeds": {
-        "USDC-1111": "tok3"
-    },
     "constants": {
+        "MAX_SWAP_SPREAD": 1,
         "MEX_TOKEN_ID": "TOK2-2222",
         "USDC_TOKEN_ID": "USDC-1111"
     }

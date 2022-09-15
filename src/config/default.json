@@ -14,6 +14,7 @@
     "scAddress": {
         "routerAddress": "erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp",
         "MEX-27f4cd": "erd1qqqqqqqqqqqqqpgqxv39e72dt57vcjdyfz6cztw86vuq7nx20n4srlnthr",
+        "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgq29s98mhxwyknmxcpdtdx6nm0wkvnkvwe0n4sjpdhyq",
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqup60nzrkww5ukj7rxxud9txq9fakd36l0n4sthknw2",
@@ -36,9 +37,6 @@
         ]
     },
     "tokenProviderUSD": "WEGLD-71e90a",
-    "priceFeeds": {
-        "USDC-a63f36": "usdc"
-    },
     "tokensSupply": ["MEX-27f4cd"],
     "cachedTokensPrice": ["MEX-27f4cd"],
     "farms": {
@@ -65,16 +63,6 @@
         }
     },
     "caching": {
-        "pairsMetadata": 300,
-        "pairs": 300,
-        "state": 300,
-        "txTotalCount": 10,
-        "pairCount": 10,
-        "token": 300,
-        "tokenPrice": 60,
-        "priceFeed": 60,
-        "reserves": 60,
-        "apr": 60,
         "default": 120
     },
     "gasLimits": {
@@ -300,7 +288,7 @@
                 "withTokenMerge": 10000000
             },
             "unstakeFarm": 9500000,
-            "unboundFarm": 7500000,
+            "unbondFarm": 7500000,
             "claimRewards": 8500000,
             "claimRewardsWithNewValue": 7500000,
             "compoundRewards": 8500000,
@@ -348,6 +336,7 @@
             "withdraw": 10000000
         },
         "simpleLock": {
+            "lockTokens": 10000000,
             "unlockTokens": 5000000,
             "addLiquidityLockedToken": 20000000,
             "removeLiquidityLockedToken": 15000000,
@@ -388,6 +377,7 @@
         "transactionCollectorMaxLookBehind": 100
     },
     "constants": {
+        "MAX_SWAP_SPREAD": 0.05,
         "MAX_PENALTY_PERCENT": 10000,
         "MAX_PERCENT": 10000,
         "MAX_PERCENTAGE_PRICE_DISCOVERY": 10000000000000,
@@ -395,7 +385,7 @@
         "SWAP_FEE_PERCENT": 300,
         "SWAP_FEE_PERCENT_BASE_POINTS": 100000,
         "MAX_GAS_LIMIT": 750000000,
-        "ISSUE_LP_TOKEN_COST": 0.05,
+        "ISSUE_LP_TOKEN_COST": 50000000000000000,
         "MEX_TOKEN_ID": "MEX-27f4cd",
         "USDC_TOKEN_ID": "USDC-a63f36",
         "PRECISION_EX_INCREASE": 1000,

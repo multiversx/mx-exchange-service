@@ -1,13 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { cacheConfig, scAddress } from 'src/config';
-import { oneHour } from 'src/helpers/helpers';
+import { scAddress } from 'src/config';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
 import { PriceDiscoverySetterService } from 'src/modules/price-discovery/services/price.discovery.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { CachingService } from '../caching/cache.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
@@ -17,7 +15,7 @@ export class PriceDiscoveryCacheWarmerService {
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly priceDiscoverySetter: PriceDiscoverySetterService,
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
-        private readonly cachingService: CachingService,
+        private readonly tokenSetter: TokenSetterService,
         private readonly apiService: ElrondApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -127,9 +125,18 @@ export class PriceDiscoveryCacheWarmerService {
             ]);
 
             const contextCacheKeys = await Promise.all([
-                this.setContextCache(launchedTokenID, launchedToken, oneHour()),
-                this.setContextCache(acceptedTokenID, acceptedToken, oneHour()),
-                this.setContextCache(redeemTokenID, redeemToken, oneHour()),
+                this.tokenSetter.setTokenMetadata(
+                    launchedTokenID,
+                    launchedToken,
+                ),
+                this.tokenSetter.setTokenMetadata(
+                    acceptedTokenID,
+                    acceptedToken,
+                ),
+                this.tokenSetter.setNftCollectionMetadata(
+                    redeemTokenID,
+                    redeemToken,
+                ),
             ]);
 
             invalidatedKeys.push(...contextCacheKeys);
@@ -211,16 +218,6 @@ export class PriceDiscoveryCacheWarmerService {
 
             await this.deleteCacheKeys(invalidatedKeys);
         }
-    }
-
-    private async setContextCache(
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ): Promise<string> {
-        const cacheKey = generateCacheKeyFromParams('context', key);
-        await this.cachingService.setCache(cacheKey, value, ttl);
-        return cacheKey;
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {

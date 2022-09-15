@@ -221,6 +221,21 @@ export class PairAbiService extends GenericAbiService {
         return response.firstValue.valueOf().name;
     }
 
+    async getFeeState(pairAddress: string): Promise<boolean> {
+        const contract = await this.elrondProxy.getPairSmartContract(
+            pairAddress,
+        );
+        const interaction: Interaction = contract.methodsExplicit.getFeeState(
+            [],
+        );
+
+        const response = await this.getGenericData(
+            PairAbiService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf();
+    }
+
     async getLockingScAddress(
         pairAddress: string,
     ): Promise<string | undefined> {

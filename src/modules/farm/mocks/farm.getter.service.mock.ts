@@ -1,21 +1,19 @@
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
-import { ContextService } from 'src/services/context/context.service';
 import { farms } from './farm.constants';
 
 export class FarmGetterServiceMock {
-    constructor(private readonly context: ContextService) {}
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        return farms.find(f => f.address === farmAddress).farmedTokenID;
+        return farms.find((f) => f.address === farmAddress).farmedTokenID;
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
-        return farms.find(f => f.address === farmAddress).farmTokenID;
+        return farms.find((f) => f.address === farmAddress).farmTokenID;
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        return farms.find(f => f.address === farmAddress).farmingTokenID;
+        return farms.find((f) => f.address === farmAddress).farmingTokenID;
     }
 
     async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
@@ -51,15 +49,15 @@ export class FarmGetterServiceMock {
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
-        return farms.find(f => f.address === farmAddress).farmTotalSupply;
+        return farms.find((f) => f.address === farmAddress).farmTotalSupply;
     }
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
-        return farms.find(f => f.address === farmAddress).farmingTokenReserve;
+        return farms.find((f) => f.address === farmAddress).farmingTokenReserve;
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
-        return farms.find(f => f.address === farmAddress).rewardsPerBlock;
+        return farms.find((f) => f.address === farmAddress).rewardsPerBlock;
     }
 
     async getPenaltyPercent(farmAddress: string): Promise<number> {

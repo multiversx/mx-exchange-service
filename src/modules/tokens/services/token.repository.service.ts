@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { EntityRepository } from 'src/services/database/entity.repository';
+import { EntityRepository } from 'src/services/database/repositories/entity.repository';
 import { CreateTokenDto } from '../dto/create.token.dto';
 import { EsdtTokenDbModel, TokenDocument } from '../schemas/token.schema';
 
@@ -37,6 +37,6 @@ export class TokenRepositoryService extends EntityRepository<TokenDocument> {
             .where('tokenID')
             .equals(tokenID)
             .exec();
-        return esdtToken ? esdtToken.type : 'Jungle';
+        return esdtToken ? esdtToken.type : 'Unlisted';
     }
 }

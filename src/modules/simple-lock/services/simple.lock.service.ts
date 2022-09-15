@@ -21,10 +21,12 @@ import {
     LpProxyTokenAttributesModel,
     SimpleLockModel,
 } from '../models/simple.lock.model';
+import { SimpleLockGetterService } from './simple.lock.getter.service';
 
 @Injectable()
 export class SimpleLockService {
     constructor(
+        private readonly simpleLockGetter: SimpleLockGetterService,
         private readonly farmService: FarmService,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -33,6 +35,24 @@ export class SimpleLockService {
     getSimpleLock() {
         return new SimpleLockModel({
             address: scAddress.simpleLockAddress,
+        });
+    }
+
+    async getLockedTokenAttributes(
+        tokenNonce: number,
+    ): Promise<LockedTokenAttributesModel> {
+        const lockedEsdtCollection = await this.simpleLockGetter.getLockedTokenID();
+        const lockedTokenIdentifier = tokenIdentifier(
+            lockedEsdtCollection,
+            tokenNonce,
+        );
+        const lockedToken = await this.apiService.getNftByTokenIdentifier(
+            scAddress.simpleLockAddress,
+            lockedTokenIdentifier,
+        );
+        return this.decodeLockedTokenAttributes({
+            identifier: lockedTokenIdentifier,
+            attributes: lockedToken.attributes,
         });
     }
 
@@ -51,6 +71,25 @@ export class SimpleLockService {
             ...LockedTokenAttributes.fromAttributes(args.attributes).toJSON(),
             attributes: args.attributes,
             identifier: args.identifier,
+        });
+    }
+
+    async getLpTokenProxyAttributes(
+        tokenNonce: number,
+    ): Promise<LpProxyTokenAttributesModel> {
+        const lockedLpTokenCollection = await this.simpleLockGetter.getLpProxyTokenID();
+        const lockedLpTokenIdentifier = tokenIdentifier(
+            lockedLpTokenCollection,
+            tokenNonce,
+        );
+        const lockedLpToken = await this.apiService.getNftByTokenIdentifier(
+            scAddress.simpleLockAddress,
+            lockedLpTokenIdentifier,
+        );
+
+        return this.decodeLpProxyTokenAttributes({
+            identifier: lockedLpTokenIdentifier,
+            attributes: lockedLpToken.attributes,
         });
     }
 
@@ -84,9 +123,9 @@ export class SimpleLockService {
         return decodedBatchAttributes;
     }
 
-    async decodeFarmProxyTokenAttributes(
+    decodeFarmProxyTokenAttributes(
         args: DecodeAttributesModel,
-    ): Promise<FarmProxyTokenAttributesModel> {
+    ): FarmProxyTokenAttributesModel {
         const lockedFarmTokenAttributesModel = new FarmProxyTokenAttributesModel(
             {
                 ...LockedFarmTokenAttributes.fromAttributes(args.attributes),
@@ -95,26 +134,29 @@ export class SimpleLockService {
             },
         );
 
+        return lockedFarmTokenAttributesModel;
+    }
+
+    async getFarmTokenAttributes(
+        farmTokenID: string,
+        farmTokenNonce: number,
+    ): Promise<FarmTokenAttributesModel> {
         const farmTokenIdentifier = tokenIdentifier(
-            lockedFarmTokenAttributesModel.farmTokenID,
-            lockedFarmTokenAttributesModel.farmTokenNonce,
+            farmTokenID,
+            farmTokenNonce,
         );
         const [farmToken, farmAddress] = await Promise.all([
             this.apiService.getNftByTokenIdentifier(
                 scAddress.simpleLockAddress,
                 farmTokenIdentifier,
             ),
-            this.farmService.getFarmAddressByFarmTokenID(
-                lockedFarmTokenAttributesModel.farmTokenID,
-            ),
+            this.farmService.getFarmAddressByFarmTokenID(farmTokenID),
         ]);
 
-        const farmTokenAttributes: FarmTokenAttributesModel = this.farmService.decodeFarmTokenAttributes(
+        return this.farmService.decodeFarmTokenAttributes(
             farmAddress,
             farmTokenIdentifier,
             farmToken.attributes,
         );
-        lockedFarmTokenAttributesModel.farmTokenAttributes = farmTokenAttributes;
-        return lockedFarmTokenAttributesModel;
     }
 }

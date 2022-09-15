@@ -26,6 +26,8 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { computeValueUSD } from 'src/utils/token.converters';
+import { isSpreadTooBig } from '../pair.utils';
 import { BPConfig } from '../models/pair.model';
 
 @Injectable()
@@ -107,9 +109,10 @@ export class PairTransactionService {
         sender: string,
         args: AddLiquidityArgs,
     ): Promise<TransactionModel> {
-        const initialLiquidityAdder = await this.pairGetterService.getInitialLiquidityAdder(
-            args.pairAddress,
-        );
+        const initialLiquidityAdder =
+            await this.pairGetterService.getInitialLiquidityAdder(
+                args.pairAddress,
+            );
         if (sender != initialLiquidityAdder) {
             throw new Error('Invalid sender address');
         }
@@ -290,6 +293,16 @@ export class PairTransactionService {
         sender: string,
         args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel[]> {
+        await this.validateTokens(args.pairAddress, [
+            new InputTokenModel({
+                tokenID: args.tokenInID,
+                nonce: 0,
+            }),
+            new InputTokenModel({
+                tokenID: args.tokenOutID,
+                nonce: 0,
+            }),
+        ]);
         const transactions = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
@@ -390,6 +403,16 @@ export class PairTransactionService {
         sender: string,
         args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel[]> {
+        await this.validateTokens(args.pairAddress, [
+            new InputTokenModel({
+                tokenID: args.tokenInID,
+                nonce: 0,
+            }),
+            new InputTokenModel({
+                tokenID: args.tokenOutID,
+                nonce: 0,
+            }),
+        ]);
         const transactions: TransactionModel[] = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
@@ -463,9 +486,6 @@ export class PairTransactionService {
                 break;
             default:
                 endpointArgs = [
-                    BytesValue.fromUTF8(args.tokenInID),
-                    new BigUIntValue(amountIn),
-                    BytesValue.fromUTF8('swapTokensFixedOutput'),
                     BytesValue.fromUTF8(args.tokenOutID),
                     new BigUIntValue(amountOut),
                 ];
