@@ -166,8 +166,7 @@ export class StakingGetterService extends GenericGetterService {
 
     async getBurnGasLimit(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'burnGasLimit',
+            this.getStakeCacheKey(stakeAddress, 'burnGasLimit'),
             () => this.abiService.getBurnGasLimit(stakeAddress),
             oneHour(),
         );
@@ -175,8 +174,7 @@ export class StakingGetterService extends GenericGetterService {
 
     async getTransferExecGasLimit(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'transferExecGasLimit',
+            this.getStakeCacheKey(stakeAddress, 'transferExecGasLimit'),
             () => this.abiService.getTransferExecGasLimit(stakeAddress),
             oneHour(),
         );
@@ -198,8 +196,10 @@ export class StakingGetterService extends GenericGetterService {
         stakeAddress: string,
     ): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'lockedAssetFactoryManagedAddress',
+            this.getStakeCacheKey(
+                stakeAddress,
+                'lockedAssetFactoryManagedAddress',
+            ),
             () =>
                 this.abiService.getLockedAssetFactoryManagedAddress(
                     stakeAddress,
@@ -210,8 +210,7 @@ export class StakingGetterService extends GenericGetterService {
 
     async getLastErrorMessage(stakeAddress: string): Promise<string> {
         return await this.getData(
-            stakeAddress,
-            'lastErrorMessage',
+            this.getStakeCacheKey(stakeAddress, 'lastErrorMessage'),
             () => this.abiService.getLastErrorMessage(stakeAddress),
             oneMinute(),
         );

@@ -9,6 +9,7 @@ import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { Logger } from 'winston';
 import { StakingModel, StakingRewardsModel } from '../models/staking.model';
 import {
@@ -26,6 +27,7 @@ export class StakingService {
         private readonly stakingGetterService: StakingGetterService,
         private readonly stakingComputeService: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly apiService: ElrondApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -125,7 +127,7 @@ export class StakingService {
         });
     }
 
-    private async getUnboundingRemainingEpochs(
+    private async getUnbondigRemaingEpochs(
         unlockEpoch: number,
     ): Promise<number> {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
@@ -162,7 +164,7 @@ export class StakingService {
             throw new Error('SC not whitelisted.');
     }
 
-    async requireOwner(stakeAddress, sender) {
+    async requireOwner(stakeAddress: string, sender: string) {
         return (
             (await this.apiService.getAccountStats(stakeAddress))
                 .ownerAddress === sender
