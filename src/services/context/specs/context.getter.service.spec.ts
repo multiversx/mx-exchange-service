@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
+import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { ElrondApiService } from 'src/services/elrond-communication/services/elrond-api.service';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/services/elrond-communication.module';
 import { ContextGetterService } from '../context.getter.service';
 
 describe('ContextService', () => {

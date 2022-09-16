@@ -18,6 +18,7 @@ import { ContextService } from 'src/services/context/context.service';
 import { AddLiquidityEventType, SwapEventType } from '@elrondnetwork/erdjs-dex';
 import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
 import { elrondData } from 'src/config';
+import { oneDayAgoUtc } from 'src/helpers/helpers';
 
 @Injectable()
 export class AnalyticsEventHandlerService {
@@ -32,8 +33,8 @@ export class AnalyticsEventHandlerService {
         private readonly routerSetterService: RouterSetterService,
         private readonly routerComputeService: RouterComputeService,
         private readonly elrondDataService: ElrondDataService,
-        private readonly awsTimestreamWrite: AWSTimestreamWriteService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        //private readonly awsTimestreamWrite: AWSTimestreamWriteService,
+        // private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -72,11 +73,11 @@ export class AnalyticsEventHandlerService {
         );
 
         await Promise.all([
-            this.awsTimestreamWrite.ingest({
-                TableName: awsConfig.timestream.tableName,
-                data,
-                Time: event.timestamp,
-            }),
+            // this.awsTimestreamWrite.ingest({
+            //     TableName: awsConfig.timestream.tableName,
+            //     data,
+            //     Time: event.timestamp,
+            // }),
             this.elrondDataService.ingestObject(
                 elrondData.timescale.table,
                 data,
@@ -93,6 +94,7 @@ export class AnalyticsEventHandlerService {
     }
 
     async handleSwapEvents(event: SwapEventType): Promise<void> {
+        console.log('processing SWAP event', JSON.stringify(event));
         await this.updatePairPrices(
             event.address,
             event.tokenIn.tokenID,
@@ -194,11 +196,11 @@ export class AnalyticsEventHandlerService {
                 data,
                 event.timestamp,
             ),
-            this.awsTimestreamWrite.ingest({
-                TableName: awsConfig.timestream.tableName,
-                data,
-                Time: event.timestamp,
-            }),
+            // this.awsTimestreamWrite.ingest({
+            //     TableName: awsConfig.timestream.tableName,
+            //     data,
+            //     Time: event.timestamp,
+            // }),
         ]);
 
         const [
@@ -209,54 +211,54 @@ export class AnalyticsEventHandlerService {
             totalVolumeUSD24h,
             totalFeesUSD24h,
         ] = await Promise.all([
-            this.awsTimestreamQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
-                series: event.address,
-                metric: 'firstTokenVolume',
-                time: '24h',
-            }),
-            this.awsTimestreamQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
-                series: event.address,
-                metric: 'secondTokenVolume',
-                time: '24h',
-            }),
-            this.awsTimestreamQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
-                series: event.address,
-                metric: 'volumeUSD',
-                time: '24h',
-            }),
-            this.awsTimestreamQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
-                series: event.address,
-                metric: 'feesUSD',
-                time: '24h',
-            }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timestream.tableName,
+            // this.awsTimestreamQuery.getAggregatedValue({
+            //     table: awsConfig.timestream.tableName,
             //     series: event.address,
             //     metric: 'firstTokenVolume',
             //     time: '24h',
             // }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timestream.tableName,
+            // this.awsTimestreamQuery.getAggregatedValue({
+            //     table: awsConfig.timestream.tableName,
             //     series: event.address,
             //     metric: 'secondTokenVolume',
             //     time: '24h',
             // }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timestream.tableName,
+            // this.awsTimestreamQuery.getAggregatedValue({
+            //     table: awsConfig.timestream.tableName,
             //     series: event.address,
             //     metric: 'volumeUSD',
             //     time: '24h',
             // }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timestream.tableName,
+            // this.awsTimestreamQuery.getAggregatedValue({
+            //     table: awsConfig.timestream.tableName,
             //     series: event.address,
             //     metric: 'feesUSD',
             //     time: '24h',
             // }),
+            this.elrondDataService.getAggregatedValue({
+                table: elrondData.timestream.tableName,
+                series: event.address,
+                key: 'firstTokenVolume',
+                startTimeUtc: oneDayAgoUtc(),
+            }),
+            this.elrondDataService.getAggregatedValue({
+                table: elrondData.timestream.tableName,
+                series: event.address,
+                key: 'secondTokenVolume',
+                startTimeUtc: oneDayAgoUtc(),
+            }),
+            this.elrondDataService.getAggregatedValue({
+                table: elrondData.timestream.tableName,
+                series: event.address,
+                key: 'volumeUSD',
+                startTimeUtc: oneDayAgoUtc(),
+            }),
+            this.elrondDataService.getAggregatedValue({
+                table: elrondData.timestream.tableName,
+                series: event.address,
+                key: 'feesUSD',
+                startTimeUtc: oneDayAgoUtc(),
+            }),
             this.routerComputeService.computeTotalVolumeUSD('24h'),
             this.routerComputeService.computeTotalFeesUSD('24h'),
         ]);

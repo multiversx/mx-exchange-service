@@ -372,6 +372,7 @@
     "elrondData": {
         "timescale": {
             "table": "MAIAR_EXCHANGE_ANALYTICS"
-        }
+        },
+        "indexingStartTimeUtc": "2022-04-01T00:00:00Z"
     }
 }

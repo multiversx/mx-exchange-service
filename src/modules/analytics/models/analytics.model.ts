@@ -11,6 +11,17 @@ export class HistoricDataModel {
     constructor(init?: Partial<HistoricDataModel>) {
         Object.assign(this, init);
     }
+
+    static fillDataGaps(records: HistoricDataModel[]): HistoricDataModel[] {
+        let lastValue: string = '0';
+        return records.map(r => {
+            if (r.value !== '0') {
+                lastValue = r.value;
+            }
+            r.value = lastValue;
+            return r;
+        });
+    }
 }
 
 @ObjectType()

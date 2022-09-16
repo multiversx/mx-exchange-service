@@ -205,6 +205,7 @@ export class LogsProcessorService {
                 continue;
             }
 
+            // old
             Records.push({
                 Dimensions,
                 MeasureName,
@@ -215,6 +216,7 @@ export class LogsProcessorService {
                 Version: Date.now(),
             });
 
+            // new
             ingestRecords.push({
                 series: constantsConfig.MEX_TOKEN_ID,
                 key: MeasureName,
@@ -227,7 +229,9 @@ export class LogsProcessorService {
                     timestreamIngestedCount,
                     timescaleIngested,
                 ] = await Promise.all([
+                    // old
                     this.pushAWSRecords(Records),
+                    // new
                     await this.elrondDataService.ingest(
                         tableName,
                         ingestRecords,
@@ -256,7 +260,9 @@ export class LogsProcessorService {
                 timestreamIngestedCount,
                 timescaleIngested,
             ] = await Promise.all([
+                // old
                 this.pushAWSRecords(Records),
+                // new
                 await this.elrondDataService.ingest(tableName, ingestRecords),
             ]);
 

@@ -1,3 +1,4 @@
+import { bool } from 'aws-sdk/clients/signer';
 import { BigNumber } from 'bignumber.js';
 
 export function base64DecodeBinary(str: string): Buffer {
@@ -69,4 +70,75 @@ export function awsOneMonth(): string {
 
 export function awsOneYear(): string {
     return '365d';
+}
+
+export function oneDayAgo(): string {
+    return new Date(new Date().getTime() - oneDay() * 1000).toString();
+}
+
+export function oneDayAgoUtc(): string {
+    return new Date(new Date().getTime() - oneDay() * 1000).toUTCString();
+}
+
+export function daysAgoUtc(days: number): string {
+    return new Date(
+        new Date().getTime() - oneDay() * days * 1000,
+    ).toUTCString();
+}
+
+export function addTimeToDateUtc(date: string, timeInSeconds: number): string {
+    return new Date(
+        new Date(date).getTime() + timeInSeconds * 1000,
+    ).toUTCString();
+}
+
+export function oneMonthAgoUtc(): string {
+    return new Date(new Date().getTime() - oneMonth() * 1000).toUTCString();
+}
+
+export function twentyNineDaysAgoUtc(): string {
+    return new Date(new Date().getTime() - oneDay() * 29 * 1000).toUTCString();
+}
+
+export function nowUtc(): string {
+    return new Date().toUTCString();
+}
+
+export function toUtc(date: string): string {
+    return new Date(date).toUTCString();
+}
+
+export function splitDateRangeIntoIntervalsUtc(
+    startDate: string,
+    endDate: string,
+    intervalInSeconds: number,
+): string[] {
+    let intervals = [startDate];
+
+    if (intervalInSeconds <= 0) {
+        return [startDate, endDate];
+    }
+
+    while (isDateGreaterOrEqual(endDate, intervals[intervals.length - 1])) {
+        const newIntervalEnd = addTimeToDateUtc(
+            intervals[intervals.length - 1],
+            intervalInSeconds,
+        );
+
+        if (isDateGreaterOrEqual(newIntervalEnd, endDate)) {
+            intervals.push(endDate);
+            return intervals;
+        } else {
+            intervals.push(newIntervalEnd);
+        }
+    }
+
+    return intervals;
+}
+
+export function isDateGreaterOrEqual(
+    firstDate: string,
+    secondDate: string,
+): bool {
+    return new Date(firstDate).getTime() - new Date(secondDate).getTime() >= 0;
 }

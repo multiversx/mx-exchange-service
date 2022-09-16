@@ -49,6 +49,10 @@ export class ApiConfigService {
         return this.getGeneric<string>('ENABLE_EVENTS_NOTIFIER') === 'true';
     }
 
+    isEventsReindexingCronjobActive(): boolean {
+        return this.getGeneric<string>('ENABLE_EVENTS_REINDEXING') === 'true';
+    }
+
     getRedisUrl(): string {
         return this.getGeneric<string>('REDIS_URL');
     }
@@ -97,6 +101,6 @@ export class ApiConfigService {
     }
 
     getSecurityAdmins(): string[] {
-        return this.getGeneric<string[]>('SECURITY_ADMINS');
+        return this.getGeneric<string>('SECURITY_ADMINS').split(',');
     }
 }

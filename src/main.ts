@@ -11,6 +11,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { RabbitMqConsumer } from './modules/rabbitmq/rabbitmq.consumer';
 import cookieParser from 'cookie-parser';
+import { AnalyticsReindexModule } from './modules/analytics/analytics.reindex.module';
 
 async function bootstrap() {
     BigNumber.config({ EXPONENTIAL_AT: [-30, 30] });
@@ -90,6 +91,13 @@ async function bootstrap() {
             },
         });
         analyticsApp.listen();
+    }
+
+    if (apiConfigService.isEventsReindexingCronjobActive()) {
+        const analyticsReindexApp = await NestFactory.createMicroservice<
+            MicroserviceOptions
+        >(AnalyticsReindexModule);
+        analyticsReindexApp.listen();
     }
 }
 bootstrap();

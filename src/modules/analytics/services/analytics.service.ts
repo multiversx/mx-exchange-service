@@ -1,286 +1,273 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { awsConfig } from 'src/config';
+import { elrondData } from 'src/config';
 //import { awsConfig, elrondData } from 'src/config';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from '../../../services/caching/cache.service';
-import { oneMinute } from '../../../helpers/helpers';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
+import { nowUtc, oneMinute } from '../../../helpers/helpers';
 import { HistoricDataModel } from '../models/analytics.model';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-//import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
+import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
 
 @Injectable()
 export class AnalyticsAWSGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService, //private readonly elrondDataService: ElrondDataService,
+        private readonly elrondDataService: ElrondDataService,
     ) {
         super(cachingService, logger);
     }
 
     async getHistoricData(
         series: string,
-        metric: string,
-        time: string,
+        key: string,
+        startTimeUtc: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'historicData',
             series,
-            metric,
-            time,
+            key,
+            startTimeUtc,
         );
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getValues({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getValues({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                //     time,
+                // }),
+                this.elrondDataService.getAggregatedValue({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
-                    time,
+                    key,
+                    startTimeUtc,
                 }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            //     time,
-            // }),
             oneMinute() * 5,
         );
     }
 
     async getClosingValue(
         series: string,
-        metric: string,
+        key: string,
         time: string,
     ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             'closingValue',
             series,
-            metric,
+            key,
             time,
         );
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getClosingValue({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getClosingValue({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                //     time,
+                // }),
+                this.elrondDataService.getClosingValue({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
+                    key,
                     time,
                 }),
-            // this.elrondDataService.getClosingValue({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            //     time,
-            // }),
             oneMinute() * 5,
         );
     }
 
     async getCompleteValues(
         series: string,
-        metric: string,
+        key: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'completeValues',
             series,
-            metric,
+            key,
         );
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getCompleteValues({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getCompleteValues({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                // }),
+                this.elrondDataService.getCompleteValues({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
+                    key,
                 }),
-            // this.elrondDataService.getCompleteValues({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            // }),
             oneMinute() * 5,
         );
     }
 
     async getLatestCompleteValues(
         series: string,
-        metric: string,
+        key: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestCompleteValues',
             series,
-            metric,
+            key,
         );
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getLatestCompleteValues({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getLatestCompleteValues({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                // }),
+                this.elrondDataService.getLatestCompleteValues({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
+                    key,
                 }),
-            // this.elrondDataService.getLatestCompleteValues({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            // }),
             oneMinute() * 5,
         );
     }
 
     async getSumCompleteValues(
         series: string,
-        metric: string,
+        key: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'sumCompleteValues',
             series,
-            metric,
+            key,
         );
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getSumCompleteValues({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getSumCompleteValues({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                // }),
+                this.elrondDataService.getSumCompleteValues({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
+                    key,
                 }),
-            // this.elrondDataService.getSumCompleteValues({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            // }),
             oneMinute() * 5,
         );
     }
 
     async getLatestValues(
         series: string,
-        metric: string,
+        key: string,
     ): Promise<HistoricDataModel[]> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'latestValues',
-            series,
-            metric,
-        );
+        const cacheKey = this.getAnalyticsCacheKey('latestValues', series, key);
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getLatestValues({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getLatestValues({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                // }),
+                this.elrondDataService.getLatestValues({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
+                    key,
                 }),
-            // this.elrondDataService.getLatestValues({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            // }),
             oneMinute() * 5,
         );
     }
 
     async getMarketValues(
         series: string,
-        metric: string,
+        key: string,
     ): Promise<HistoricDataModel[]> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'marketValues',
-            series,
-            metric,
-        );
+        const cacheKey = this.getAnalyticsCacheKey('marketValues', series, key);
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getMarketValues({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getMarketValues({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                // }),
+                this.elrondDataService.getMarketValues({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
+                    key,
                 }),
-            // this.elrondDataService.getMarketValues({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            // }),
             oneMinute() * 5,
         );
     }
 
     async getMarketCompleteValues(
         series: string,
-        metric: string,
+        key: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'marketCompleteValues',
             series,
-            metric,
+            key,
         );
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getMarketCompleteValues({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getMarketCompleteValues({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                // }),
+                this.elrondDataService.getMarketCompleteValues({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
+                    key,
                 }),
-            // this.elrondDataService.getMarketCompleteValues({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            // }),
             oneMinute() * 5,
         );
     }
 
     async getValues24hSum(
         series: string,
-        metric: string,
+        key: string,
     ): Promise<HistoricDataModel[]> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'values24hSum',
-            series,
-            metric,
-        );
+        const cacheKey = this.getAnalyticsCacheKey('values24hSum', series, key);
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getValues24hSum({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getValues24hSum({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                // }),
+                this.elrondDataService.getValues24hSum({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
+                    key,
                 }),
-            // this.elrondDataService.getValues24hSum({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            // }),
             oneMinute() * 5,
         );
     }
 
     async getValues24h(
         series: string,
-        metric: string,
+        key: string,
     ): Promise<HistoricDataModel[]> {
-        const cacheKey = this.getAnalyticsCacheKey('values24h', series, metric);
+        const cacheKey = this.getAnalyticsCacheKey('values24h', series, key);
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getValues24h({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getValues24h({
+                //     table: awsConfig.timestream.tableName,
+                //     series,
+                //     metric,
+                // }),
+                this.elrondDataService.getValues24h({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
+                    key,
                 }),
-            // this.elrondDataService.getValues24h({
-            //     table: elrondData.timestream.tableName,
-            //     series,
-            //     metric,
-            // }),
             oneMinute() * 5,
         );
     }
@@ -288,33 +275,33 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
     async getLatestHistoricData(
         time: string,
         series: string,
-        metric: string,
-        start: string,
+        key: string,
+        startDate: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestHistoricData',
             time,
             series,
-            metric,
-            start,
+            key,
+            startDate,
         );
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getLatestHistoricData({
-                    table: awsConfig.timestream.tableName,
-                    time,
+                // this.awsTimestreamQuery.getLatestHistoricData({
+                //     table: awsConfig.timestream.tableName,
+                //     time,
+                //     series,
+                //     metric,
+                //     start,
+                // }),
+                this.elrondDataService.getLatestHistoricData({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
-                    start,
+                    key,
+                    startDate,
+                    endDate: nowUtc(),
                 }),
-            // this.elrondDataService.getLatestHistoricData({
-            //     table: elrondData.timestream.tableName,
-            //     time,
-            //     series,
-            //     metric,
-            //     start,
-            // }),
             oneMinute(),
         );
     }
@@ -322,37 +309,39 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
     async getLatestBinnedHistoricData(
         time: string,
         series: string,
-        metric: string,
-        bin: string,
-        start: string,
+        key: string,
+        startDate: string,
+        endDate: string,
+        resolution: string = 'DAY',
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestBinnedHistoricData',
             time,
             series,
-            metric,
-            bin,
-            start,
+            key,
+            startDate,
+            endDate,
+            resolution,
         );
         return await this.getData(
             cacheKey,
             () =>
-                this.awsTimestreamQuery.getLatestBinnedHistoricData({
-                    table: awsConfig.timestream.tableName,
-                    time,
+                // this.awsTimestreamQuery.getLatestBinnedHistoricData({
+                //     table: awsConfig.timestream.tableName,
+                //     time,
+                //     series,
+                //     metric,
+                //     bin,
+                //     start,
+                // }),
+                this.elrondDataService.getLatestBinnedHistoricData({
+                    table: elrondData.timestream.tableName,
                     series,
-                    metric,
-                    bin,
-                    start,
+                    key,
+                    startDate,
+                    endDate,
+                    resolution,
                 }),
-            // this.elrondDataService.getLatestBinnedHistoricData({
-            //     table: elrondData.timestream.tableName,
-            //     time,
-            //     series,
-            //     metric,
-            //     bin,
-            //     start,
-            // }),
             oneMinute(),
         );
     }
