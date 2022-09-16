@@ -73,7 +73,7 @@ describe('PairService', () => {
             'TOK1-1111',
             '10000000000000000',
         );
-        expect(equivalent).toEqual('20000000000000000');
+        expect(equivalent.toFixed()).toEqual('20000000000000000');
     });
 
     it('should get liquidity position from pair', async () => {
@@ -93,19 +93,6 @@ describe('PairService', () => {
             '10000',
         );
         expect(liquidityPositionUSD).toEqual('0.000000000004');
-    });
-
-    it('should get USD price by path', async () => {
-        const priceByPathUSD = await service.getPriceUSDByPath('TOK2-2222');
-        expect(priceByPathUSD.toFixed()).toEqual('100');
-    });
-
-    it('should get USD price by token', async () => {
-        const priceByTokenUSD = await service.getPriceUSDByToken(
-            'TOK2-2222',
-            'TOK1-1111',
-        );
-        expect(priceByTokenUSD.toFixed()).toEqual('100');
     });
 
     it('should get pair address by LP token ID', async () => {

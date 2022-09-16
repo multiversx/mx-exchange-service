@@ -8,8 +8,6 @@ import * as Transport from 'winston-transport';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
-import { ContextService } from 'src/services/context/context.service';
 import { PairService } from '../services/pair.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
@@ -24,6 +22,8 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { elrondConfig, gasConfig } from 'src/config';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
@@ -31,11 +31,6 @@ describe('TransactionPairService', () => {
     const ElrondProxyServiceProvider = {
         provide: ElrondProxyService,
         useClass: ElrondProxyServiceMock,
-    };
-
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -68,15 +63,16 @@ describe('TransactionPairService', () => {
                 WinstonModule.forRoot({
                     transports: logTransports,
                 }),
+                CachingModule,
             ],
             providers: [
                 ConfigService,
                 ApiConfigService,
                 ElrondProxyServiceProvider,
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
+                RouterGetterServiceProvider,
                 WrapServiceProvider,
                 TransactionsWrapService,
                 PairTransactionService,
@@ -94,9 +90,8 @@ describe('TransactionPairService', () => {
         const firstTokenAmount = '10';
         const secondTokenAmount = '9';
 
-        const initialLiquidityBatchTransactions = await service.addInitialLiquidityBatch(
-            Address.Zero().bech32(),
-            {
+        const initialLiquidityBatchTransactions =
+            await service.addInitialLiquidityBatch(Address.Zero().bech32(), {
                 pairAddress:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
                 tokens: [
@@ -112,21 +107,17 @@ describe('TransactionPairService', () => {
                     },
                 ],
                 tolerance: 0.01,
-            },
-        );
+            });
 
-        const [
-            wrapEgldTransaction,
-            addLiquidityTransaction,
-        ] = initialLiquidityBatchTransactions;
+        const [wrapEgldTransaction, addLiquidityTransaction] =
+            initialLiquidityBatchTransactions;
 
         expect(wrapEgldTransaction).toEqual({
             nonce: 0,
             value: secondTokenAmount,
             receiver:
                 'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.wrapeGLD,
             data: encodeTransactionData('wrapEgld'),
@@ -140,8 +131,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
@@ -183,8 +173,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
@@ -227,8 +216,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
@@ -272,8 +260,7 @@ describe('TransactionPairService', () => {
             value: '10',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.wrapeGLD,
             data: encodeTransactionData('wrapEgld'),
@@ -287,8 +274,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
@@ -333,8 +319,7 @@ describe('TransactionPairService', () => {
             value: secondTokenAmount,
             receiver:
                 'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.wrapeGLD,
             data: encodeTransactionData('wrapEgld'),
@@ -348,8 +333,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.addLiquidity,
             data: encodeTransactionData(
@@ -373,15 +357,14 @@ describe('TransactionPairService', () => {
                 tolerance: 0.01,
             },
         );
-        
+
         expect(transactions).toEqual([
             {
                 nonce: 0,
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.removeLiquidity,
                 data: encodeTransactionData(
@@ -397,8 +380,7 @@ describe('TransactionPairService', () => {
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData(
@@ -432,8 +414,7 @@ describe('TransactionPairService', () => {
                 value: '5',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData('wrapEgld'),
@@ -447,8 +428,7 @@ describe('TransactionPairService', () => {
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
                 data: encodeTransactionData(
@@ -481,8 +461,7 @@ describe('TransactionPairService', () => {
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.pairs.swapTokensFixedOutput.default,
                 data: encodeTransactionData(
@@ -498,8 +477,7 @@ describe('TransactionPairService', () => {
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
                 gasLimit: gasConfig.wrapeGLD,
                 data: encodeTransactionData(
@@ -568,8 +546,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.whitelist,
             data: encodeTransactionData(
@@ -594,8 +571,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.removeWhitelist,
             data: encodeTransactionData(
@@ -621,8 +597,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.addTrustedSwapPair,
             data: encodeTransactionData(
@@ -647,8 +622,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.removeTrustedSwapPair,
             data: encodeTransactionData(
@@ -672,8 +646,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.set_transfer_exec_gas_limit,
             data: encodeTransactionData('set_transfer_exec_gas_limit@50000000'),
@@ -695,8 +668,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.set_extern_swap_gas_limit,
             data: encodeTransactionData('set_extern_swap_gas_limit@50000000'),
@@ -717,8 +689,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.pause,
             data: encodeTransactionData('pause'),
@@ -739,8 +710,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.resume,
             data: encodeTransactionData('resume'),
@@ -761,8 +731,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setStateActiveNoSwaps,
             data: encodeTransactionData('setStateActiveNoSwaps'),
@@ -785,8 +754,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setFeePercents,
             data: encodeTransactionData('setFeePercents@03@05'),
@@ -808,8 +776,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setMaxObservationsPerRecord,
             data: encodeTransactionData('setMaxObservationsPerRecord@1000'),
@@ -835,8 +802,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setBPSwapConfig,
             data: encodeTransactionData(
@@ -864,8 +830,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setBPRemoveConfig,
             data: encodeTransactionData(
@@ -893,8 +858,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setBPAddConfig,
             data: encodeTransactionData(
@@ -918,8 +882,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setLockingDeadlineEpoch,
             data: encodeTransactionData('setLockingDeadlineEpoch@1000'),
@@ -941,8 +904,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.pairs.admin.setUnlockEpoch,
             data: encodeTransactionData('setUnlockEpoch@1005'),
@@ -964,8 +926,7 @@ describe('TransactionPairService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: 200000000,
             data: encodeTransactionData(
