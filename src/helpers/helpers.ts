@@ -26,7 +26,7 @@ export function encodeTransactionData(data: string): string {
         if (address !== undefined) {
             encoded += address;
         } else {
-            let bigNumber = decodeBigNumber(arg);
+            const bigNumber = decodeBigNumber(arg);
             if (bigNumber !== undefined) {
                 const hex = bigNumber.toString(16);
                 encoded += hex.length % 2 === 1 ? '0' + hex : hex;
@@ -61,10 +61,7 @@ export function ruleOfThree(
     total: BigNumber,
     value: BigNumber,
 ): BigNumber {
-    return part
-        .multipliedBy(value)
-        .dividedBy(total)
-        .integerValue();
+    return part.multipliedBy(value).dividedBy(total).integerValue();
 }
 
 export function oneSecond(): number {
