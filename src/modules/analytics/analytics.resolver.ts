@@ -43,7 +43,7 @@ export class AnalyticsResolver {
     @Query(() => String)
     async getFeeTokenBurned(
         @Args('tokenID') tokenID: string,
-        @Args('time') time: string, //number,
+        @Args('time') time: string,
     ) {
         return await this.analyticsGetterService.getFeeTokenBurned(
             tokenID,
@@ -54,7 +54,7 @@ export class AnalyticsResolver {
     @Query(() => String)
     async getPenaltyTokenBurned(
         @Args('tokenID') tokenID: string,
-        @Args('time') time: string, //number,
+        @Args('time') time: string,
     ) {
         return await this.analyticsGetterService.getPenaltyTokenBurned(
             tokenID,
