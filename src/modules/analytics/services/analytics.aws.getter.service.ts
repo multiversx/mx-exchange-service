@@ -32,46 +32,6 @@ export class AnalyticsAWSGetterService {
         }
     }
 
-    async getHistoricData(
-        series: string,
-        metric: string,
-        time: string,
-    ): Promise<HistoricDataModel[]> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'historicData',
-            series,
-            metric,
-            time,
-        );
-        return await this.getData(cacheKey, this.getHistoricData.name);
-    }
-
-    async getClosingValue(
-        series: string,
-        metric: string,
-        time: string,
-    ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'closingValue',
-            series,
-            metric,
-            time,
-        );
-        return await this.getData(cacheKey, this.getClosingValue.name);
-    }
-
-    async getCompleteValues(
-        series: string,
-        metric: string,
-    ): Promise<HistoricDataModel[]> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'completeValues',
-            series,
-            metric,
-        );
-        return await this.getData(cacheKey, this.getCompleteValues.name);
-    }
-
     async getLatestCompleteValues(
         series: string,
         metric: string,
@@ -94,42 +54,6 @@ export class AnalyticsAWSGetterService {
             metric,
         );
         return await this.getData(cacheKey, this.getSumCompleteValues.name);
-    }
-
-    async getLatestValues(
-        series: string,
-        metric: string,
-    ): Promise<HistoricDataModel[]> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'latestValues',
-            series,
-            metric,
-        );
-        return await this.getData(cacheKey, this.getLatestValues.name);
-    }
-
-    async getMarketValues(
-        series: string,
-        metric: string,
-    ): Promise<HistoricDataModel[]> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'marketValues',
-            series,
-            metric,
-        );
-        return await this.getData(cacheKey, this.getMarketValues.name);
-    }
-
-    async getMarketCompleteValues(
-        series: string,
-        metric: string,
-    ): Promise<HistoricDataModel[]> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'marketCompleteValues',
-            series,
-            metric,
-        );
-        return await this.getData(cacheKey, this.getMarketCompleteValues.name);
     }
 
     async getValues24hSum(
