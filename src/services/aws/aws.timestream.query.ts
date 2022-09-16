@@ -10,11 +10,16 @@ import moment from 'moment';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { PromiseResult } from 'aws-sdk/lib/request';
 import { QueryResponse } from 'aws-sdk/clients/timestreamquery';
+import { MetricsCollector } from 'src/utils/metrics.collector';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
 
 @Injectable()
 export class AWSTimestreamQueryService {
     private queryExecutor: PendingExecutor<
-        any,
+        {
+            params: TimestreamQuery.QueryRequest;
+            method: string;
+        },
         PromiseResult<QueryResponse, AWSError>
     >;
     private queryClient: TimestreamQuery;
@@ -37,9 +42,24 @@ export class AWSTimestreamQueryService {
         this.DatabaseName = awsConfig.timestream.databaseName;
 
         this.queryExecutor = new PendingExecutor(
-            async (params: any) =>
-                await this.queryClient.query(params).promise(),
+            async (value: {
+                params: TimestreamQuery.QueryRequest;
+                method: string;
+            }) => await this.profiledQuery(value.params, value.method),
         );
+    }
+
+    private async profiledQuery(
+        params: TimestreamQuery.QueryRequest,
+        method: string,
+    ): Promise<PromiseResult<TimestreamQuery.QueryResponse, AWS.AWSError>> {
+        const profiler = new PerformanceProfiler();
+        profiler.start();
+        const result = await this.queryClient.query(params).promise();
+        profiler.stop();
+        MetricsCollector.setAWSQueryDuration(method, profiler.duration);
+
+        return result;
     }
 
     async getLatestValue({ table, series, metric }): Promise<string> {
@@ -49,7 +69,10 @@ export class AWSTimestreamQueryService {
                              LIMIT 1`;
 
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getLatestValue.name,
+        });
         const value = Rows[0] ? Rows[0]?.Data[0]?.ScalarValue : '0';
         return new BigNumber(value).toFixed();
     }
@@ -65,9 +88,12 @@ export class AWSTimestreamQueryService {
                              ORDER BY time DESC`;
 
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getValues.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -79,7 +105,10 @@ export class AWSTimestreamQueryService {
         const QueryString = `SELECT sum(measure_value::double) FROM "${this.DatabaseName}"."${table}"
                              WHERE series = '${series}' AND measure_name = '${metric}' AND time between ago(${time}) and now()`;
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getAggregatedValue.name,
+        });
         const value = Rows[0] ? Rows[0]?.Data[0]?.ScalarValue : '0';
         return new BigNumber(value).toFixed();
     }
@@ -116,7 +145,10 @@ export class AWSTimestreamQueryService {
             ORDER BY a.time ASC
         `;
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getClosingValue.name,
+        });
         const value = Rows[0] ? Rows[0]?.Data[0]?.ScalarValue : '0';
         return new BigNumber(value).toFixed();
     }
@@ -147,9 +179,12 @@ export class AWSTimestreamQueryService {
       `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getCompleteValues.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -190,9 +225,12 @@ export class AWSTimestreamQueryService {
         `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getLatestCompleteValues.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -225,9 +263,12 @@ export class AWSTimestreamQueryService {
             CROSS JOIN UNNEST(interpolated_sum)
       `;
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getSumCompleteValues.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -269,9 +310,12 @@ export class AWSTimestreamQueryService {
             ORDER BY time ASC
         `;
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getLatestValues.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -301,9 +345,12 @@ export class AWSTimestreamQueryService {
             CROSS JOIN UNNEST(interpolated_avg_value)
       `;
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getSeries.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -354,9 +401,12 @@ export class AWSTimestreamQueryService {
             ORDER BY time ASC
         `;
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getMarketValues.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -405,9 +455,12 @@ export class AWSTimestreamQueryService {
             ORDER BY time ASC
         `;
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getMarketCompleteValues.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -450,9 +503,12 @@ export class AWSTimestreamQueryService {
         `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getValues24h.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -487,9 +543,12 @@ export class AWSTimestreamQueryService {
         `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getValues24hSum.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -527,9 +586,12 @@ export class AWSTimestreamQueryService {
         `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryExecutor.execute(params);
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getLatestHistoricData.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),
@@ -579,9 +641,12 @@ export class AWSTimestreamQueryService {
         `;
 
         const params = { QueryString };
-        const { Rows } = await this.queryClient.query(params).promise();
+        const { Rows } = await this.queryExecutor.execute({
+            params,
+            method: this.getLatestBinnedHistoricData.name,
+        });
         return Rows.map(
-            Row =>
+            (Row) =>
                 new HistoricDataModel({
                     timestamp: Row.Data[0].ScalarValue,
                     value: new BigNumber(Row.Data[1].ScalarValue).toFixed(),

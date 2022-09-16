@@ -208,7 +208,8 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'firstTokenVolume',
                     time,
                 }),
-            oneMinute() * 5,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -225,7 +226,8 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'secondTokenVolume',
                     time,
                 }),
-            oneMinute() * 5,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -239,7 +241,8 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'volumeUSD',
                     time,
                 }),
-            oneMinute() * 5,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -253,7 +256,8 @@ export class PairGetterService extends GenericGetterService {
                     metric: 'feesUSD',
                     time,
                 }),
-            oneMinute() * 5,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -266,15 +270,12 @@ export class PairGetterService extends GenericGetterService {
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        const [
-            firstTokenReserve,
-            secondTokenReserve,
-            totalSupply,
-        ] = await Promise.all([
-            this.getFirstTokenReserve(pairAddress),
-            this.getSecondTokenReserve(pairAddress),
-            this.getTotalSupply(pairAddress),
-        ]);
+        const [firstTokenReserve, secondTokenReserve, totalSupply] =
+            await Promise.all([
+                this.getFirstTokenReserve(pairAddress),
+                this.getSecondTokenReserve(pairAddress),
+                this.getTotalSupply(pairAddress),
+            ]);
 
         return new PairInfoModel({
             reserves0: firstTokenReserve,

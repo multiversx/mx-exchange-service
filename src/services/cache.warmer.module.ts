@@ -30,6 +30,7 @@ import { PriceDiscoveryModule } from 'src/modules/price-discovery/price.discover
 import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
 import { RouterModule } from 'src/modules/router/router.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
+import { AWSQueryCacheWarmerService } from './crons/aws.query.cache.warmer.service';
 
 @Module({
     imports: [
@@ -63,6 +64,7 @@ import { TokenModule } from 'src/modules/tokens/token.module';
         MetabondingCacheWarmerService,
         ProxyCacheWarmerService,
         AnalyticsCacheWarmerService,
+        AWSQueryCacheWarmerService,
         PriceDiscoveryCacheWarmerService,
         CachingService,
         TransactionProcessorService,

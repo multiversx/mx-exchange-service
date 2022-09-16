@@ -8,10 +8,11 @@ import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
+import { awsConfig } from 'src/config';
 
 @Injectable()
 export class PairCacheWarmerService {
-    private invalidatedKeys = [];
     constructor(
         private readonly pairSetterService: PairSetterService,
         private readonly pairComputeService: PairComputeService,
@@ -19,6 +20,7 @@ export class PairCacheWarmerService {
         private readonly routerGetter: RouterGetterService,
         private readonly apiService: ElrondApiService,
         private readonly tokenSetter: TokenSetterService,
+        private readonly awsQuery: AWSTimestreamQueryService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -42,7 +44,7 @@ export class PairCacheWarmerService {
                 this.abiPairService.getSpecialFeePercent(pairMetadata.address),
             ]);
 
-            const cacheKeys = await Promise.all([
+            const cachedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenID(
                     pairMetadata.address,
                     pairMetadata.firstTokenID,
@@ -62,31 +64,93 @@ export class PairCacheWarmerService {
             ]);
             if (lpTokenID !== undefined) {
                 const lpToken = await this.apiService.getToken(lpTokenID);
-                cacheKeys.push(
+                cachedKeys.push(
                     await this.pairSetterService.setLpTokenID(
                         pairMetadata.address,
                         lpTokenID,
                     ),
                 );
-                cacheKeys.push(
+                cachedKeys.push(
                     await this.tokenSetter.setTokenMetadata(lpTokenID, lpToken),
                 );
             }
-            this.invalidatedKeys.push(cacheKeys);
-            cacheKeys.push(
+            cachedKeys.push(
                 await this.tokenSetter.setTokenMetadata(
                     pairMetadata.firstTokenID,
                     firstToken,
                 ),
             );
-            cacheKeys.push(
+            cachedKeys.push(
                 await this.tokenSetter.setTokenMetadata(
                     pairMetadata.secondTokenID,
                     secondToken,
                 ),
             );
 
-            await this.deleteCacheKeys();
+            await this.deleteCacheKeys(cachedKeys);
+        }
+    }
+
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    async cachePairsAnalytics(): Promise<void> {
+        const pairsAddresses = await this.routerGetter.getAllPairsAddress();
+        const time = '24h';
+        for (const pairAddress of pairsAddresses) {
+            const [
+                firstTokenVolume24h,
+                secondTokenVolume24h,
+                volumeUSD24h,
+                feesUSD24h,
+            ] = await Promise.all([
+                this.awsQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'firstTokenVolume',
+                    time,
+                }),
+                this.awsQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'secondTokenVolume',
+                    time,
+                }),
+                this.awsQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'volumeUSD',
+                    time,
+                }),
+                this.awsQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'feesUSD',
+                    time,
+                }),
+            ]);
+
+            const cachedKeys = await Promise.all([
+                this.pairSetterService.setFirstTokenVolume(
+                    pairAddress,
+                    firstTokenVolume24h,
+                    time,
+                ),
+                this.pairSetterService.setSecondTokenVolume(
+                    pairAddress,
+                    secondTokenVolume24h,
+                    time,
+                ),
+                this.pairSetterService.setVolumeUSD(
+                    pairAddress,
+                    volumeUSD24h,
+                    time,
+                ),
+                this.pairSetterService.setFeesUSD(
+                    pairAddress,
+                    feesUSD24h,
+                    time,
+                ),
+            ]);
+            await this.deleteCacheKeys(cachedKeys);
         }
     }
 
@@ -95,21 +159,16 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [
-                feesAPR,
-                state,
-                type,
-                feeState,
-                totalFeePercent,
-            ] = await Promise.all([
-                this.pairComputeService.computeFeesAPR(pairAddress),
-                this.abiPairService.getState(pairAddress),
-                this.pairComputeService.computeTypeFromTokens(pairAddress),
-                this.abiPairService.getFeeState(pairAddress),
-                this.abiPairService.getTotalFeePercent(pairAddress),
-            ]);
+            const [feesAPR, state, type, feeState, totalFeePercent] =
+                await Promise.all([
+                    this.pairComputeService.computeFeesAPR(pairAddress),
+                    this.abiPairService.getState(pairAddress),
+                    this.pairComputeService.computeTypeFromTokens(pairAddress),
+                    this.abiPairService.getFeeState(pairAddress),
+                    this.abiPairService.getTotalFeePercent(pairAddress),
+                ]);
 
-            this.invalidatedKeys = await Promise.all([
+            const cachedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
                 this.pairSetterService.setState(pairAddress, state),
                 this.pairSetterService.setType(pairAddress, type),
@@ -119,20 +178,20 @@ export class PairCacheWarmerService {
                     totalFeePercent,
                 ),
             ]);
-            await this.deleteCacheKeys();
+            await this.deleteCacheKeys(cachedKeys);
         }
     }
 
     @Cron('*/6 * * * * *') // Update prices and reserves every 6 seconds
     async cacheTokenPrices(): Promise<void> {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
-
+        const invalidatedKeys = [];
         for (const pairAddress of pairsMetadata) {
             const pairInfo = await this.abiPairService.getPairInfoMetadata(
                 pairAddress.address,
             );
 
-            const cacheKeys = await Promise.all([
+            const cachedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenReserve(
                     pairAddress.address,
                     pairInfo.reserves0,
@@ -146,7 +205,7 @@ export class PairCacheWarmerService {
                     pairInfo.totalSupply,
                 ),
             ]);
-            this.invalidatedKeys.push(...cacheKeys);
+            invalidatedKeys.push(cachedKeys);
         }
 
         for (const pairMetadata of pairsMetadata) {
@@ -174,7 +233,7 @@ export class PairCacheWarmerService {
                 ),
             ]);
 
-            const cacheKeys = await Promise.all([
+            const cachedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenPrice(
                     pairMetadata.address,
                     firstTokenPrice,
@@ -196,13 +255,12 @@ export class PairCacheWarmerService {
                     lpTokenPriceUSD,
                 ),
             ]);
-            this.invalidatedKeys.push(...cacheKeys);
+            invalidatedKeys.push(cachedKeys);
         }
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(invalidatedKeys);
     }
 
-    private async deleteCacheKeys() {
-        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
-        this.invalidatedKeys = [];
+    private async deleteCacheKeys(invalidatedKeys: string[]) {
+        await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }
