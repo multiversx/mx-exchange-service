@@ -31,6 +31,7 @@ export class ElrondApiServiceMock {
         return [
             {
                 collection: 'TOK1TOK4LPStaked',
+                ticker: 'TOK1TOK4LPStaked',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
                 decimals: 18,
