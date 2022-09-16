@@ -2,9 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextService } from 'src/services/context/context.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { TransactionRouterService } from '../services/transactions.router.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -26,14 +24,10 @@ import { Address } from '@elrondnetwork/erdjs/out';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { EsdtLocalRole } from '../models/router.args';
 import { elrondConfig, gasConfig } from 'src/config';
+import { PairService } from 'src/modules/pair/services/pair.service';
 
 describe('RouterService', () => {
     let service: TransactionRouterService;
-
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
 
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
@@ -74,9 +68,9 @@ describe('RouterService', () => {
                 CachingModule,
             ],
             providers: [
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 PairGetterServiceProvider,
+                PairService,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
                 TransactionsWrapService,
@@ -107,8 +101,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.createPair,
             data: encodeTransactionData(
@@ -129,11 +122,10 @@ describe('RouterService', () => {
         );
         expect(transaction).toEqual({
             nonce: 0,
-            value: '0.05',
+            value: '50000000000000000',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.issueToken,
             data: encodeTransactionData(
@@ -167,8 +159,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.setLocalRoles,
             data: encodeTransactionData(
@@ -191,8 +182,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setState,
             data: encodeTransactionData(
@@ -215,8 +205,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setState,
             data: encodeTransactionData(
@@ -241,8 +230,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
@@ -267,8 +255,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setFee,
             data: encodeTransactionData(
@@ -292,8 +279,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setLocalRolesOwner,
             data: encodeTransactionData(
@@ -313,8 +299,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.removePair,
             data: encodeTransactionData('removePair@TOK1-1111@USDC-1111'),
@@ -332,8 +317,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@01'),
@@ -351,8 +335,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.router.admin.setPairCreationEnabled,
             data: encodeTransactionData('setPairCreationEnabled@'),
@@ -370,8 +353,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: 200000000,
             data: 'Y2xlYXJQYWlyVGVtcG9yYXJ5T3duZXJTdG9yYWdl',
@@ -391,8 +373,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: 200000000,
             data: encodeTransactionData(
@@ -414,8 +395,7 @@ describe('RouterService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: 200000000,
             data: encodeTransactionData(
