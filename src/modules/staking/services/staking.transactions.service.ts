@@ -3,7 +3,6 @@ import {
     AddressValue,
     BigUIntValue,
     BytesValue,
-    TokenIdentifierValue,
     TokenPayment,
     TypedValue,
     U64Value,
@@ -54,7 +53,7 @@ export class StakingTransactionService {
             payments.length > 1
                 ? gasConfig.stake.stakeFarm.withTokenMerge
                 : gasConfig.stake.stakeFarm.default;
-        const mappedPayments = payments.map(payment =>
+        const mappedPayments = payments.map((payment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
@@ -116,7 +115,7 @@ export class StakingTransactionService {
                 ),
                 Address.fromString(sender),
             )
-            .withGasLimit(gasConfig.stake.unboundFarm)
+            .withGasLimit(gasConfig.stake.unbondFarm)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
@@ -226,7 +225,7 @@ export class StakingTransactionService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const mappedPayments = payments.map(payment =>
+        const mappedPayments = payments.map((payment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
