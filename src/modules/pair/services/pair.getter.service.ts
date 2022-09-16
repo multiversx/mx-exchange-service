@@ -4,7 +4,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig, constantsConfig, elrondData } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
+//import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
@@ -25,7 +25,7 @@ export class PairGetterService extends GenericGetterService {
         private readonly abiService: PairAbiService,
         @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        //private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         private readonly elrondDataService: ElrondDataService,
     ) {
         super(cachingService, logger);
@@ -195,86 +195,98 @@ export class PairGetterService extends GenericGetterService {
 
     async getFirstTokenVolume(
         pairAddress: string,
-        time: string,
+        startTimeUtc: string,
     ): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, `firstTokenVolume.${time}`),
+            this.getPairCacheKey(
+                pairAddress,
+                `firstTokenVolume.${startTimeUtc}`,
+            ),
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getAggregatedValue({
+                //     table: awsConfig.timestream.tableName,
+                //     series: pairAddress,
+                //     metric: 'firstTokenVolume',
+                //     time,
+                // }),
+                this.elrondDataService.getAggregatedValue({
+                    table: elrondData.timescale.table,
                     series: pairAddress,
-                    metric: 'firstTokenVolume',
-                    time,
+                    key: 'firstTokenVolume',
+                    startTimeUtc,
                 }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timescale.table,
-            //     series: pairAddress,
-            //     metric: 'firstTokenVolume',
-            //     time,
-            // }),
             oneMinute(),
         );
     }
 
     async getSecondTokenVolume(
         pairAddress: string,
-        time: string,
+        startTimeUtc: string,
     ): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, `secondTokenVolume.${time}`),
+            this.getPairCacheKey(
+                pairAddress,
+                `secondTokenVolume.${startTimeUtc}`,
+            ),
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getAggregatedValue({
+                //     table: awsConfig.timestream.tableName,
+                //     series: pairAddress,
+                //     metric: 'secondTokenVolume',
+                //     time,
+                // }),
+                this.elrondDataService.getAggregatedValue({
+                    table: elrondData.timescale.table,
                     series: pairAddress,
-                    metric: 'secondTokenVolume',
-                    time,
+                    key: 'secondTokenVolume',
+                    startTimeUtc,
                 }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timescale.table,
-            //     series: pairAddress,
-            //     metric: 'secondTokenVolume',
-            //     time,
-            // }),
             oneMinute(),
         );
     }
 
-    async getVolumeUSD(pairAddress: string, time: string): Promise<string> {
+    async getVolumeUSD(
+        pairAddress: string,
+        startTimeUtc: string,
+    ): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, `volumeUSD.${time}`),
+            this.getPairCacheKey(pairAddress, `volumeUSD.${startTimeUtc}`),
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getAggregatedValue({
+                //     table: awsConfig.timestream.tableName,
+                //     series: pairAddress,
+                //     metric: 'volumeUSD',
+                //     time,
+                // }),
+                this.elrondDataService.getAggregatedValue({
+                    table: elrondData.timescale.table,
                     series: pairAddress,
-                    metric: 'volumeUSD',
-                    time,
+                    key: 'volumeUSD',
+                    startTimeUtc,
                 }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timescale.table,
-            //     series: pairAddress,
-            //     metric: 'volumeUSD',
-            //     time,
-            // }),
             oneMinute(),
         );
     }
 
-    async getFeesUSD(pairAddress: string, time: string): Promise<string> {
+    async getFeesUSD(
+        pairAddress: string,
+        startTimeUtc: string,
+    ): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, `feesUSD.${time}`),
+            this.getPairCacheKey(pairAddress, `feesUSD.${startTimeUtc}`),
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
+                // this.awsTimestreamQuery.getAggregatedValue({
+                //     table: awsConfig.timestream.tableName,
+                //     series: pairAddress,
+                //     metric: 'feesUSD',
+                //     time,
+                // }),
+                this.elrondDataService.getAggregatedValue({
+                    table: elrondData.timescale.table,
                     series: pairAddress,
-                    metric: 'feesUSD',
-                    time,
+                    key: 'feesUSD',
+                    startTimeUtc,
                 }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timescale.table,
-            //     series: pairAddress,
-            //     metric: 'feesUSD',
-            //     time,
-            // }),
             oneMinute(),
         );
     }

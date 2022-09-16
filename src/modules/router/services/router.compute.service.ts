@@ -35,24 +35,23 @@ export class RouterComputeService {
         return totalValueLockedUSD;
     }
 
-    async computeTotalVolumeUSD(time: string): Promise<BigNumber> {
+    async computeTotalVolumeUSD(startTimeUtc: string): Promise<BigNumber> {
         const pairsAddress = await this.routerGetterService.getAllPairsAddress();
         let totalVolumeUSD = new BigNumber(0);
 
-        const promises = pairsAddress.map(
-            pairAddress =>
-                this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'volumeUSD',
-                    time,
-                }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timescale.table,
+        const promises = pairsAddress.map(pairAddress =>
+            // this.awsTimestreamQuery.getAggregatedValue({
+            //     table: awsConfig.timestream.tableName,
             //     series: pairAddress,
             //     metric: 'volumeUSD',
             //     time,
             // }),
+            this.elrondDataService.getAggregatedValue({
+                table: elrondData.timescale.table,
+                series: pairAddress,
+                key: 'volumeUSD',
+                startTimeUtc,
+            }),
         );
 
         const volumesUSD = await Promise.all(promises);
@@ -66,24 +65,23 @@ export class RouterComputeService {
         return totalVolumeUSD;
     }
 
-    async computeTotalFeesUSD(time: string): Promise<BigNumber> {
+    async computeTotalFeesUSD(startTimeUtc: string): Promise<BigNumber> {
         const pairsAddress = await this.routerGetterService.getAllPairsAddress();
         let totalFeesUSD = new BigNumber(0);
 
-        const promises = pairsAddress.map(
-            pairAddress =>
-                this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'feesUSD',
-                    time,
-                }),
-            // this.elrondDataService.getAggregatedValue({
-            //     table: elrondData.timescale.table,
+        const promises = pairsAddress.map(pairAddress =>
+            // this.awsTimestreamQuery.getAggregatedValue({
+            //     table: awsConfig.timestream.tableName,
             //     series: pairAddress,
             //     metric: 'feesUSD',
             //     time,
             // }),
+            this.elrondDataService.getAggregatedValue({
+                table: elrondData.timescale.table,
+                series: pairAddress,
+                key: 'feesUSD',
+                startTimeUtc,
+            }),
         );
 
         const feesUSD = await Promise.all(promises);
