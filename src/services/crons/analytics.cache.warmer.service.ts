@@ -60,12 +60,12 @@ export class AnalyticsCacheWarmerService {
         const [feeBurned, penaltyBurned] = await Promise.all([
             this.analyticsCompute.computeTokenBurned(
                 constantsConfig.MEX_TOKEN_ID,
-                awsOneYear(),// oneYear(),
+                awsOneYear(),
                 'feeBurned',
             ),
             this.analyticsCompute.computeTokenBurned(
                 constantsConfig.MEX_TOKEN_ID,
-                awsOneYear(),// oneYear(),
+                awsOneYear(),
                 'penaltyBurned',
             ),
         ]);

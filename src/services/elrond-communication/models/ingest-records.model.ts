@@ -3,8 +3,6 @@ export class IngestRecord {
     key: string;
     value: string;
     timestamp: number;
-    //version: number;
-    //valueType: string
 
     constructor(init?: Partial<IngestRecord>) {
         Object.assign(this, init);
