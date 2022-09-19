@@ -232,11 +232,13 @@ export class RabbitMqConsumer {
             }
         }
 
-        await this.awsTimestreamWrite.ingest({
-            TableName: awsConfig.timestream.tableName,
-            data: this.data,
-            Time: timestamp,
-        });
+        if (this.data.length > 0) {
+            await this.awsTimestreamWrite.ingest({
+                TableName: awsConfig.timestream.tableName,
+                data: this.data,
+                Time: timestamp,
+            });
+        }
     }
 
     async getFilterAddresses(): Promise<void> {
