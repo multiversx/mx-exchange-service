@@ -5,9 +5,9 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { scAddress } from 'src/config';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { Logger } from 'winston';
@@ -28,11 +28,14 @@ export class StakingService {
         private readonly stakingComputeService: StakingComputeService,
         private readonly contextGetter: ContextGetterService,
         private readonly apiService: ElrondApiService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    getFarmsStaking(): StakingModel[] {
-        const farmsStakingAddresses = scAddress.staking;
+    async getFarmsStaking(): Promise<StakingModel[]> {
+        const farmsStakingAddresses =
+            await this.remoteConfigGetterService.getStakingAddresses();
+
         const farmsStaking: StakingModel[] = [];
         for (const address of farmsStakingAddresses) {
             farmsStaking.push(
@@ -48,7 +51,7 @@ export class StakingService {
     decodeStakingTokenAttributes(
         args: DecodeAttributesArgs,
     ): StakingTokenAttributesModel[] {
-        return args.batchAttributes.map(arg => {
+        return args.batchAttributes.map((arg) => {
             return new StakingTokenAttributesModel({
                 ...StakingFarmTokenAttributes.fromAttributes(
                     arg.attributes,
@@ -64,10 +67,9 @@ export class StakingService {
     ): Promise<UnbondTokenAttributesModel[]> {
         const decodedAttributesBatch = [];
         for (const arg of args.batchAttributes) {
-            const unboundFarmTokenAttributes = UnbondFarmTokenAttributes.fromAttributes(
-                arg.attributes,
-            );
-            const remainingEpochs = await this.getUnboundingRemainingEpochs(
+            const unboundFarmTokenAttributes =
+                UnbondFarmTokenAttributes.fromAttributes(arg.attributes);
+            const remainingEpochs = await this.getUnbondigRemaingEpochs(
                 unboundFarmTokenAttributes.unlockEpoch,
             );
             decodedAttributesBatch.push(
@@ -86,7 +88,7 @@ export class StakingService {
     async getBatchRewardsForPosition(
         positions: CalculateRewardsArgs[],
     ): Promise<StakingRewardsModel[]> {
-        const promises = positions.map(async position => {
+        const promises = positions.map(async (position) => {
             return await this.getRewardsForPosition(position);
         });
         return await Promise.all(promises);
@@ -111,11 +113,12 @@ export class StakingService {
                 positon.attributes,
             );
         } else {
-            rewards = await this.stakingComputeService.computeStakeRewardsForPosition(
-                positon.farmAddress,
-                positon.liquidity,
-                stakeTokenAttributes[0],
-            );
+            rewards =
+                await this.stakingComputeService.computeStakeRewardsForPosition(
+                    positon.farmAddress,
+                    positon.liquidity,
+                    stakeTokenAttributes[0],
+                );
         }
 
         return new StakingRewardsModel({
@@ -124,7 +127,7 @@ export class StakingService {
         });
     }
 
-    private async getUnboundingRemainingEpochs(
+    private async getUnbondigRemaingEpochs(
         unlockEpoch: number,
     ): Promise<number> {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
@@ -135,12 +138,12 @@ export class StakingService {
     async getStakeFarmAddressByStakeFarmTokenID(
         tokenID: string,
     ): Promise<string> {
-        const stakeFarmAddresses: string[] = scAddress.staking;
+        const stakeFarmAddresses: string[] =
+            await this.remoteConfigGetterService.getStakingAddresses();
 
         for (const address of stakeFarmAddresses) {
-            const stakeFarmTokenID = await this.stakingGetterService.getFarmTokenID(
-                address,
-            );
+            const stakeFarmTokenID =
+                await this.stakingGetterService.getFarmTokenID(address);
             if (tokenID === stakeFarmTokenID) {
                 return address;
             }
@@ -161,7 +164,7 @@ export class StakingService {
             throw new Error('SC not whitelisted.');
     }
 
-    async requireOwner(stakeAddress, sender) {
+    async requireOwner(stakeAddress: string, sender: string) {
         return (
             (await this.apiService.getAccountStats(stakeAddress))
                 .ownerAddress === sender

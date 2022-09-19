@@ -19,6 +19,13 @@ export class LoggingInterceptor implements NestInterceptor {
             const parentType = info.parentType.name;
             const fieldName = info.fieldName;
 
+            const { req } = gqlContext.getContext();
+
+            let origin = 'Unknown';
+            if (req !== undefined) {
+                origin = req?.headers?.['origin'] ?? 'Unknown';
+            }
+
             const profiler = new PerformanceProfiler();
             return next.handle().pipe(
                 tap(() => {
@@ -26,6 +33,7 @@ export class LoggingInterceptor implements NestInterceptor {
                     if (parentType === 'Query') {
                         MetricsCollector.setQueryDuration(
                             fieldName,
+                            origin,
                             profiler.duration,
                         );
                     }

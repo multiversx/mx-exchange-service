@@ -1,6 +1,9 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { constantsConfig } from 'src/config';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { leastType } from 'src/utils/token.type.compare';
 import { PairGetterService } from './pair.getter.service';
 import { PairService } from './pair.service';
 
@@ -11,6 +14,10 @@ export class PairComputeService {
         private readonly pairGetterService: PairGetterService,
         @Inject(forwardRef(() => PairService))
         private readonly pairService: PairService,
+        @Inject(forwardRef(() => TokenGetterService))
+        private readonly tokenGetter: TokenGetterService,
+        @Inject(forwardRef(() => TokenComputeService))
+        private readonly tokenCompute: TokenComputeService,
     ) {}
 
     async computeFirstTokenPrice(pairAddress: string): Promise<string> {
@@ -24,7 +31,7 @@ export class PairComputeService {
             firstToken.identifier,
             new BigNumber(`1e${firstToken.decimals}`).toFixed(),
         );
-        return new BigNumber(firstTokenPrice)
+        return firstTokenPrice
             .multipliedBy(`1e-${secondToken.decimals}`)
             .toFixed();
     }
@@ -40,7 +47,7 @@ export class PairComputeService {
             secondToken.identifier,
             new BigNumber(`1e${secondToken.decimals}`).toFixed(),
         );
-        return new BigNumber(secondTokenPrice)
+        return secondTokenPrice
             .multipliedBy(`1e-${firstToken.decimals}`)
             .toFixed();
     }
@@ -57,7 +64,9 @@ export class PairComputeService {
         }
 
         const [secondTokenPriceUSD, lpTokenPosition] = await Promise.all([
-            this.computeTokenPriceUSD(secondToken.identifier),
+            this.tokenCompute.computeTokenPriceDerivedUSD(
+                secondToken.identifier,
+            ),
             this.pairService.getLiquidityPosition(
                 pairAddress,
                 new BigNumber(`1e${lpToken.decimals}`).toFixed(),
@@ -90,8 +99,9 @@ export class PairComputeService {
             return await this.computeFirstTokenPrice(pairAddress);
         }
 
-        const tokenPriceUSD = await this.computeTokenPriceUSD(firstTokenID);
-        return tokenPriceUSD.toFixed();
+        return await this.tokenCompute.computeTokenPriceDerivedUSD(
+            firstTokenID,
+        );
     }
 
     async computeSecondTokenPriceUSD(pairAddress: string): Promise<string> {
@@ -108,14 +118,9 @@ export class PairComputeService {
             return await this.computeSecondTokenPrice(pairAddress);
         }
 
-        const tokenPriceUSD = await this.computeTokenPriceUSD(secondTokenID);
-        return tokenPriceUSD.toFixed();
-    }
-
-    async computeTokenPriceUSD(tokenID: string): Promise<BigNumber> {
-        return constantsConfig.USDC_TOKEN_ID === tokenID
-            ? new BigNumber(1)
-            : this.pairService.getPriceUSDByPath(tokenID);
+        return await this.tokenCompute.computeTokenPriceDerivedUSD(
+            secondTokenID,
+        );
     }
 
     async computeFirstTokenLockedValueUSD(
@@ -178,5 +183,19 @@ export class PairComputeService {
             .times(365)
             .div(lockedValueUSD)
             .toFixed();
+    }
+
+    async computeTypeFromTokens(pairAddress: string): Promise<string> {
+        const [firstTokenID, secondTokenID] = await Promise.all([
+            this.pairGetterService.getFirstTokenID(pairAddress),
+            this.pairGetterService.getSecondTokenID(pairAddress),
+        ]);
+
+        const [firstTokenType, secondTokenType] = await Promise.all([
+            this.tokenGetter.getEsdtTokenType(firstTokenID),
+            this.tokenGetter.getEsdtTokenType(secondTokenID),
+        ]);
+
+        return leastType(firstTokenType, secondTokenType);
     }
 }

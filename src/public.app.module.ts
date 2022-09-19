@@ -1,4 +1,4 @@
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, HttpStatus, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
@@ -43,20 +43,19 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
                         code: error.extensions.code,
                     },
                 };
+
+                const loglevel = !!process.env.LOG_LEVEL
+                    ? process.env.LOG_LEVEL
+                    : 'error';
                 const logTransports: Transport[] = [
                     new winston.transports.Console({
                         format: winston.format.combine(
                             winston.format.timestamp(),
                             nestWinstonModuleUtilities.format.nestLike(),
                         ),
-                        level: 'error',
+                        level: loglevel,
                     }),
                 ];
-
-                const loglevel = !!process.env.LOG_LEVEL
-                    ? process.env.LOG_LEVEL
-                    : 'error';
-
                 if (!!process.env.LOG_FILE) {
                     logTransports.push(
                         new winston.transports.File({
@@ -72,15 +71,23 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
                         winston.format.timestamp(),
                         nestWinstonModuleUtilities.format.nestLike(),
                     ),
-                    level: 'error',
+                    level: loglevel,
                     transports: logTransports,
                 });
-                logger.error(error.message, error.extensions);
+                const errorStatus = error.toJSON().extensions['code'];
+                switch (errorStatus) {
+                    case 'FORBIDDEN':
+                        logger.info(error.message, { path: error.path });
+                        break;
+                    default:
+                        logger.error(error.message, error.extensions);
+                        break;
+                }
+
                 return graphQLFormattedError;
             },
             fieldResolverEnhancers: ['guards'],
         }),
-        HttpModule,
         RouterModule,
         AutoRouterModule,
         PairModule,

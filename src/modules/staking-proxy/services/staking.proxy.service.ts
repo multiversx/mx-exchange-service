@@ -2,13 +2,14 @@ import { DualYieldTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { scAddress } from 'src/config';
-import { ruleOfThree } from 'src/helpers/helpers';
+import { oneHour, ruleOfThree } from 'src/helpers/helpers';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
 import { FarmService } from 'src/modules/farm/services/farm.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingService } from 'src/modules/staking/services/staking.service';
+import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
@@ -28,11 +29,14 @@ export class StakingProxyService {
         private readonly farmService: FarmService,
         private readonly pairService: PairService,
         private readonly apiService: ElrondApiService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    getStakingProxies(): StakingProxyModel[] {
-        const stakingProxiesAddress: string[] = scAddress.stakingProxy;
+    async getStakingProxies(): Promise<StakingProxyModel[]> {
+        const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
+
         const stakingProxies: StakingProxyModel[] = [];
         for (const address of stakingProxiesAddress) {
             stakingProxies.push(
@@ -47,8 +51,8 @@ export class StakingProxyService {
     async getBatchRewardsForPosition(
         positions: CalculateRewardsArgs[],
     ): Promise<DualYieldRewardsModel[]> {
-        const promises = positions.map(async position => {
-            return await this.getRewardsForPosition(position);
+        const promises = positions.map(position => {
+            return this.getRewardsForPosition(position);
         });
         return await Promise.all(promises);
     }
@@ -178,13 +182,24 @@ export class StakingProxyService {
     async getStakingProxyAddressByDualYieldTokenID(
         tokenID: string,
     ): Promise<string> {
-        const stakingProxiesAddress: string[] = scAddress.stakingProxy;
+        const cachedValue: string = await this.cachingService.getCache(
+            `${tokenID}.stakingProxyAddress`,
+        );
+        if (cachedValue && cachedValue !== undefined) {
+            return cachedValue;
+        }
+        const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
 
         for (const address of stakingProxiesAddress) {
             const dualYieldTokenID = await this.stakingProxyGetter.getDualYieldTokenID(
                 address,
             );
             if (dualYieldTokenID === tokenID) {
+                await this.cachingService.setCache(
+                    `${tokenID}.stakingProxyAddress`,
+                    address,
+                    oneHour(),
+                );
                 return address;
             }
         }

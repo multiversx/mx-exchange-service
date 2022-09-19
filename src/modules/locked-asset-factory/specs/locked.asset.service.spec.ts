@@ -2,9 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextService } from 'src/services/context/context.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { AbiLockedAssetService } from '../services/abi-locked-asset.service';
 import { AbiLockedAssetServiceMock } from '../mocks/abi.locked.asset.service.mock';
@@ -14,15 +12,11 @@ import {
     UnlockMileStoneModel,
 } from '../models/locked-asset.model';
 import { LockedAssetGetterService } from '../services/locked.asset.getter.service';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('LockedAssetService', () => {
     let service: LockedAssetService;
     let contextGetter: ContextGetterService;
-
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
 
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
@@ -42,8 +36,8 @@ describe('LockedAssetService', () => {
                 ElrondCommunicationModule,
             ],
             providers: [
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
+                TokenGetterServiceProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetService,
                 LockedAssetGetterService,

@@ -48,10 +48,14 @@ export class LpProxyTokenAttributesModel {
     firstTokenID: string;
     @Field(() => Int)
     firstTokenLockedNonce: number;
+    @Field(() => LockedTokenAttributesModel, { nullable: true })
+    firstTokenLockedAttributes: LockedTokenAttributesModel;
     @Field()
     secondTokenID: string;
     @Field(() => Int)
     secondTokenLockedNonce: number;
+    @Field(() => LockedTokenAttributesModel, { nullable: true })
+    secondTokenLockedAttributes: LockedTokenAttributesModel;
 
     constructor(init?: Partial<LpProxyTokenAttributesModel>) {
         Object.assign(this, init);
@@ -74,6 +78,8 @@ export class FarmProxyTokenAttributesModel {
     farmingTokenID: string;
     @Field(() => Int)
     farmingTokenLockedNonce: number;
+    @Field(() => LpProxyTokenAttributesModel)
+    farmingTokenAttributes: LpProxyTokenAttributesModel;
     @Field(() => FarmTokenAttributesModel)
     farmTokenAttributes: FarmTokenAttributesModel;
 

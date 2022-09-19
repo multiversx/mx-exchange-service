@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { awsConfig } from 'src/config';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
+import { MetricsService } from 'src/endpoints/metrics/metrics.service';
+import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { RouterGetterService } from './router.getter.service';
 
@@ -11,7 +11,8 @@ export class RouterComputeService {
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetterService: RouterGetterService,
         private readonly pairComputeService: PairComputeService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly pairGetter: PairGetterService,
+        private readonly metrics: MetricsService,
     ) {}
 
     async computeTotalLockedValueUSD(): Promise<BigNumber> {
@@ -38,12 +39,7 @@ export class RouterComputeService {
         let totalVolumeUSD = new BigNumber(0);
 
         const promises = pairsAddress.map(pairAddress =>
-            this.awsTimestreamQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
-                series: pairAddress,
-                metric: 'volumeUSD',
-                time,
-            }),
+            this.pairGetter.getVolumeUSD(pairAddress, time),
         );
 
         const volumesUSD = await Promise.all(promises);
@@ -62,12 +58,7 @@ export class RouterComputeService {
         let totalFeesUSD = new BigNumber(0);
 
         const promises = pairsAddress.map(pairAddress =>
-            this.awsTimestreamQuery.getAggregatedValue({
-                table: awsConfig.timestream.tableName,
-                series: pairAddress,
-                metric: 'feesUSD',
-                time,
-            }),
+            this.pairGetter.getFeesUSD(pairAddress, time),
         );
 
         const feesUSD = await Promise.all(promises);
@@ -76,5 +67,18 @@ export class RouterComputeService {
         }
 
         return totalFeesUSD;
+    }
+
+    async computeTotalTxCount(): Promise<number> {
+        let totalTxCount = 0;
+        const addresses = await this.routerGetterService.getAllPairsAddress();
+
+        const promises = addresses.map(address =>
+            this.metrics.computeTxCount(address),
+        );
+        const txCounts = await Promise.all(promises);
+
+        txCounts.forEach(txCount => (totalTxCount += txCount));
+        return totalTxCount;
     }
 }

@@ -1,173 +1,210 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { FeeDestination } from '../models/pair.model';
+import { Logger } from 'winston';
 
 @Injectable()
-export class PairSetterService {
-    constructor(private readonly cachingService: CachingService) {}
+export class PairSetterService extends GenericSetterService {
+    constructor(
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+    ) {
+        super(cachingService, logger);
+    }
 
     async setFirstTokenID(pairAddress: string, value: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'firstTokenID');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'firstTokenID'),
+            value,
+            oneHour(),
+        );
     }
 
     async setSecondTokenID(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'secondTokenID');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'secondTokenID'),
+            value,
+            oneHour(),
+        );
     }
 
     async setLpTokenID(pairAddress: string, value: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'lpTokenID');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'lpTokenID'),
+            value,
+            oneHour(),
+        );
     }
 
     async setTotalFeePercent(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'totalFeePercent');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'totalFeePercent'),
+            value,
+            oneHour(),
+        );
     }
 
     async setSpecialFeePercent(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'specialFeePercent');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'specialFeePercent'),
+            value,
+            oneHour(),
+        );
     }
 
     async setState(pairAddress: string, value: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'state');
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'state'),
+            value,
+            oneHour(),
+        );
+    }
+
+    async setFeeState(pairAddress: string, value: boolean): Promise<string> {
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'feeState'),
+            value,
+            oneHour(),
+        );
     }
 
     async setFirstTokenReserve(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'firstTokenReserve');
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'firstTokenReserve'),
+            value,
+            oneSecond() * 12,
+        );
     }
 
     async setSecondTokenReserve(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'secondTokenReserve',
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'secondTokenReserve'),
+            value,
+            oneSecond() * 12,
         );
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
-        return cacheKey;
     }
 
     async setTotalSupply(pairAddress: string, value: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'totalSupply');
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'totalSupply'),
+            value,
+            oneSecond() * 12,
+        );
     }
 
     async setFirstTokenPrice(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'firstTokenPrice');
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'firstTokenPrice'),
+            value,
+            oneSecond() * 12,
+        );
     }
 
     async setSecondTokenPrice(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'secondTokenPrice');
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'secondTokenPrice'),
+            value,
+            oneSecond() * 12,
+        );
     }
 
     async setFirstTokenPriceUSD(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'firstTokenPriceUSD',
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'firstTokenPriceUSD'),
+            value,
+            oneSecond() * 12,
         );
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
-        return cacheKey;
     }
 
     async setSecondTokenPriceUSD(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'secondTokenPriceUSD',
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'secondTokenPriceUSD'),
+            value,
+            oneSecond() * 12,
         );
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
-        return cacheKey;
     }
 
     async setTokenPriceUSD(tokenID: string, value: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey('priceUSD', tokenID);
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey('priceUSD', tokenID),
+            value,
+            oneSecond() * 12,
+        );
     }
 
     async setLpTokenPriceUSD(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'lpTokenPriceUSD');
-        await this.cachingService.setCache(cacheKey, value, oneSecond() * 12);
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'lpTokenPriceUSD'),
+            value,
+            oneSecond() * 12,
+        );
     }
 
     async setFirstTokenLockedValueUSD(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'firstTokenLockedValueUSD',
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'firstTokenLockedValueUSD'),
+            value,
+            oneMinute(),
         );
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
     }
 
     async setSecondTokenLockedValueUSD(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'secondTokenLockedValueUSD',
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'secondTokenLockedValueUSD'),
+            value,
+            oneMinute(),
         );
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
     }
 
     async setLockedValueUSD(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'lockedValueUSD');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'lockedValueUSD'),
+            value,
+            oneMinute(),
+        );
     }
 
     async setFirstTokenVolume(
@@ -175,12 +212,11 @@ export class PairSetterService {
         value: string,
         time: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            `firstTokenVolume.${time}`,
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, `firstTokenVolume.${time}`),
+            value,
+            oneMinute(),
         );
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
     }
 
     async setSecondTokenVolume(
@@ -188,12 +224,11 @@ export class PairSetterService {
         value: string,
         time: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            `secondTokenVolume.${time}`,
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, `secondTokenVolume.${time}`),
+            value,
+            oneMinute(),
         );
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
     }
 
     async setVolumeUSD(
@@ -201,9 +236,11 @@ export class PairSetterService {
         value: string,
         time: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, `volumeUSD.${time}`);
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, `volumeUSD.${time}`),
+            value,
+            oneMinute(),
+        );
     }
 
     async setFeesUSD(
@@ -211,33 +248,38 @@ export class PairSetterService {
         value: string,
         time: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, `feesUSD.${time}`);
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, `feesUSD.${time}`),
+            value,
+            oneMinute(),
+        );
     }
 
     async setFeesAPR(pairAddress: string, value: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'feesAPR');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'feesAPR'),
+            value,
+            oneMinute(),
+        );
     }
 
     async setType(pairAddress: string, value: string): Promise<string> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'type');
-        await this.cachingService.setCache(cacheKey, value, oneMinute());
-        return cacheKey;
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'type'),
+            value,
+            oneMinute(),
+        );
     }
 
-    async setInitialLiquidtyAdder(
+    async setRouterManagedAddress(
         pairAddress: string,
         value: string,
     ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'initialLiquidtyAdder',
+        return await this.setData(
+            this.getPairCacheKey(pairAddress, 'initialLiquidtyAdder'),
+            value,
+            oneHour(),
         );
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
     }
 
     async setExternSwapGasLimit(
@@ -247,18 +289,6 @@ export class PairSetterService {
         const cacheKey = this.getPairCacheKey(
             pairAddress,
             'externSwapGasLimit',
-        );
-        await this.cachingService.setCache(cacheKey, value, oneHour());
-        return cacheKey;
-    }
-
-    async setRouterManagedAddress(
-        pairAddress: string,
-        value: string,
-    ): Promise<string> {
-        const cacheKey = this.getPairCacheKey(
-            pairAddress,
-            'routerManagedAddress',
         );
         await this.cachingService.setCache(cacheKey, value, oneHour());
         return cacheKey;

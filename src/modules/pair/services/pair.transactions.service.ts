@@ -6,7 +6,7 @@ import {
     U64Value,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
-import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs';
+import { Address, TokenPayment } from '@elrondnetwork/erdjs';
 import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import {
@@ -107,9 +107,10 @@ export class PairTransactionService {
         sender: string,
         args: AddLiquidityArgs,
     ): Promise<TransactionModel> {
-        const initialLiquidityAdder = await this.pairGetterService.getInitialLiquidityAdder(
-            args.pairAddress,
-        );
+        const initialLiquidityAdder =
+            await this.pairGetterService.getInitialLiquidityAdder(
+                args.pairAddress,
+            );
         if (sender != initialLiquidityAdder) {
             throw new Error('Invalid sender address');
         }
@@ -290,6 +291,16 @@ export class PairTransactionService {
         sender: string,
         args: SwapTokensFixedInputArgs,
     ): Promise<TransactionModel[]> {
+        await this.validateTokens(args.pairAddress, [
+            new InputTokenModel({
+                tokenID: args.tokenInID,
+                nonce: 0,
+            }),
+            new InputTokenModel({
+                tokenID: args.tokenOutID,
+                nonce: 0,
+            }),
+        ]);
         const transactions = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
@@ -390,6 +401,16 @@ export class PairTransactionService {
         sender: string,
         args: SwapTokensFixedOutputArgs,
     ): Promise<TransactionModel[]> {
+        await this.validateTokens(args.pairAddress, [
+            new InputTokenModel({
+                tokenID: args.tokenInID,
+                nonce: 0,
+            }),
+            new InputTokenModel({
+                tokenID: args.tokenOutID,
+                nonce: 0,
+            }),
+        ]);
         const transactions: TransactionModel[] = [];
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
@@ -463,9 +484,6 @@ export class PairTransactionService {
                 break;
             default:
                 endpointArgs = [
-                    BytesValue.fromUTF8(args.tokenInID),
-                    new BigUIntValue(amountIn),
-                    BytesValue.fromUTF8('swapTokensFixedOutput'),
                     BytesValue.fromUTF8(args.tokenOutID),
                     new BigUIntValue(amountOut),
                 ];

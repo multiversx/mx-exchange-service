@@ -5,7 +5,9 @@ import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingModule } from '../staking/staking.module';
+import { TokenModule } from '../tokens/token.module';
 import { AbiStakingProxyService } from './services/staking.proxy.abi.service';
 import { StakingProxyGetterService } from './services/staking.proxy.getter.service';
 import { StakingProxyService } from './services/staking.proxy.service';
@@ -22,6 +24,8 @@ import { StakingProxyResolver } from './staking.proxy.resolver';
         PairModule,
         FarmModule,
         StakingModule,
+        TokenModule,
+        RemoteConfigModule,
     ],
     providers: [
         AbiStakingProxyService,

@@ -1,10 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ContextService } from '../../../services/context/context.service';
 import { PairService } from '../../pair/services/pair.service';
 import { FarmService } from '../services/farm.service';
 import { AbiFarmService } from '../services/abi-farm.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
-import { ContextServiceMock } from '../../../services/context/mocks/context.service.mock';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';
 import { FarmComputeService } from '../services/farm.compute.service';
@@ -24,6 +22,9 @@ import { ElrondProxyServiceMock } from '../../../services/elrond-communication/e
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { encodeTransactionData } from '../../../helpers/helpers';
 import { elrondConfig, gasConfig } from '../../../config';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('FarmService', () => {
     let service: TransactionsFarmService;
@@ -36,11 +37,6 @@ describe('FarmService', () => {
     const FarmGetterServiceProvider = {
         provide: FarmGetterService,
         useClass: FarmGetterServiceMock,
-    };
-
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -72,11 +68,13 @@ describe('FarmService', () => {
                 ElrondApiService,
                 FarmGetterServiceProvider,
                 FarmComputeService,
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
+                TokenComputeService,
+                TokenGetterServiceProvider,
+                RouterGetterServiceProvider,
                 WrapServiceProvider,
                 ElrondProxyServiceProvider,
                 TransactionsFarmService,
@@ -105,8 +103,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms['v1.2'].enterFarm.default,
             data: encodeTransactionData(
@@ -134,8 +131,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit:
                 gasConfig.farms['v1.2']['lockedRewards'].exitFarm.default +
@@ -167,8 +163,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit:
                 gasConfig.farms['v1.2']['lockedRewards'].claimRewards +
@@ -186,7 +181,6 @@ describe('FarmService', () => {
     it('should get compound rewards transaction error', async () => {
         let error;
         try {
-            ``;
             const transaction = await service.compoundRewards(
                 Address.Zero().bech32(),
                 {
@@ -222,8 +216,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms['v1.2'].migrateToNewFarm,
             data: encodeTransactionData(
@@ -249,8 +242,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.setFarmMigrationConfig,
             data: encodeTransactionData(
@@ -272,8 +264,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms['v1.2'].stopRewards,
             data: encodeTransactionData('stopRewardsAndMigrateRps'),
@@ -303,8 +294,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.end_produce_rewards,
             data: encodeTransactionData('end_produce_rewards'),
@@ -334,8 +324,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.start_produce_rewards,
             data: encodeTransactionData('start_produce_rewards'),
@@ -367,8 +356,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.setPerBlockRewardAmount,
             data: encodeTransactionData(
@@ -402,8 +390,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_penalty_percent,
             data: encodeTransactionData('set_penalty_percent@05'),
@@ -435,8 +422,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_minimum_farming_epochs,
             data: encodeTransactionData('set_minimum_farming_epochs@10'),
@@ -468,8 +454,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_transfer_exec_gas_limit,
             data: encodeTransactionData(
@@ -503,8 +488,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.set_burn_gas_limit,
             data: encodeTransactionData('set_burn_gas_limit@0100000000'),
@@ -534,8 +518,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.pause,
             data: encodeTransactionData('pause'),
@@ -565,8 +548,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.resume,
             data: encodeTransactionData('resume'),
@@ -602,8 +584,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.registerFarmToken,
             data: encodeTransactionData(
@@ -635,8 +616,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.setLocalRolesFarmToken,
             data: encodeTransactionData('setLocalRolesFarmToken'),
@@ -692,8 +672,7 @@ describe('FarmService', () => {
             value: '0',
             receiver:
                 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
-            sender:
-                'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
             gasPrice: 1000000000,
             gasLimit: gasConfig.farms.admin.mergeFarmTokensMultiplier * 2,
             data: encodeTransactionData(

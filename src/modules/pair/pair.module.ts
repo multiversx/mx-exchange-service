@@ -1,9 +1,8 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PairService } from './services/pair.service';
 import { PairResolver } from './pair.resolver';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairTransactionService } from './services/pair.transactions.service';
-import { PriceFeedModule } from '../../services/price-feed/price-feed.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
@@ -12,29 +11,27 @@ import { PairGetterService } from './services/pair.getter.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { PairSetterService } from './services/pair.setter.service';
 import { AWSModule } from 'src/services/aws/aws.module';
-import { PairRepositoryService } from './services/pair.repository.service';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Pair, PairSchema } from './schemas/pair.schema';
 import { DatabaseModule } from 'src/services/database/database.module';
+import { TokenModule } from '../tokens/token.module';
+import { RouterModule } from '../router/router.module';
 import { CommonAppModule } from 'src/common.app.module';
 @Module({
     imports: [
+        CommonAppModule,
         ElrondCommunicationModule,
         ContextModule,
-        CommonAppModule,
-        PriceFeedModule,
         WrappingModule,
         CachingModule,
         AWSModule,
         DatabaseModule,
-        MongooseModule.forFeature([{ name: Pair.name, schema: PairSchema }]),
+        forwardRef(() => RouterModule),
+        forwardRef(() => TokenModule),
     ],
     providers: [
         PairService,
         PairGetterService,
         PairSetterService,
         PairComputeService,
-        PairRepositoryService,
         PairAbiService,
         PairTransactionService,
         PairResolver,
@@ -44,7 +41,6 @@ import { CommonAppModule } from 'src/common.app.module';
         PairGetterService,
         PairSetterService,
         PairComputeService,
-        PairRepositoryService,
         PairAbiService,
     ],
 })

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairAbiService } from '../services/pair.abi.service';
 import { PairService } from '../services/pair.service';
-import { ContextService } from 'src/services/context/context.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairAbiServiceMock } from '../mocks/pair.abi.service.mock';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
+import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 
 describe('PairService', () => {
     let service: PairService;
@@ -24,11 +24,6 @@ describe('PairService', () => {
         useClass: PairGetterServiceMock,
     };
 
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
-
     const WrapServiceProvider = {
         provide: WrapService,
         useClass: WrapServiceMock,
@@ -40,9 +35,10 @@ describe('PairService', () => {
             providers: [
                 PairAbiServiceProvider,
                 PairGetterServiceProvider,
-                ContextServiceProvider,
                 PairService,
                 WrapServiceProvider,
+                TokenGetterServiceProvider,
+                RouterGetterServiceProvider,
             ],
         }).compile();
 
@@ -77,7 +73,7 @@ describe('PairService', () => {
             'TOK1-1111',
             '10000000000000000',
         );
-        expect(equivalent).toEqual('20000000000000000');
+        expect(equivalent.toFixed()).toEqual('20000000000000000');
     });
 
     it('should get liquidity position from pair', async () => {
@@ -97,19 +93,6 @@ describe('PairService', () => {
             '10000',
         );
         expect(liquidityPositionUSD).toEqual('0.000000000004');
-    });
-
-    it('should get USD price by path', async () => {
-        const priceByPathUSD = await service.getPriceUSDByPath('TOK2-2222');
-        expect(priceByPathUSD.toFixed()).toEqual('100');
-    });
-
-    it('should get USD price by token', async () => {
-        const priceByTokenUSD = await service.getPriceUSDByToken(
-            'TOK2-2222',
-            'TOK1-1111',
-        );
-        expect(priceByTokenUSD.toFixed()).toEqual('100');
     });
 
     it('should get pair address by LP token ID', async () => {

@@ -19,6 +19,7 @@ import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
+import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 
 describe('StakingService', () => {
     let service: StakingService;
@@ -66,6 +67,7 @@ describe('StakingService', () => {
                 StakingGetterServiceProvider,
                 StakingComputeService,
                 ContextGetterServiceProvider,
+                RemoteConfigGetterServiceProvider,
                 ElrondProxyServiceProvider,
                 ElrondApiServiceProvider,
                 ElrondGatewayService,

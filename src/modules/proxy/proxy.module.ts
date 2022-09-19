@@ -12,6 +12,7 @@ import { ProxyGetterService } from './services/proxy.getter.service';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { WrappedLpTokenResolver } from './wrappedLpToken.resolver';
 import { WrappedFarmTokenResolver } from './wrappedFarmToken.resolver';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
@@ -19,6 +20,7 @@ import { WrappedFarmTokenResolver } from './wrappedFarmToken.resolver';
         CachingModule,
         ContextModule,
         LockedAssetModule,
+        TokenModule,
         forwardRef(() => ProxyPairModule),
         forwardRef(() => ProxyFarmModule),
         forwardRef(() => FarmModule),

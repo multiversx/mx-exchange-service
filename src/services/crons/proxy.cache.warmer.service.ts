@@ -10,6 +10,7 @@ import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour } from '../../helpers/helpers';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 
 @Injectable()
 export class ProxyCacheWarmerService {
@@ -21,6 +22,7 @@ export class ProxyCacheWarmerService {
         private readonly abiProxyFarmService: AbiProxyFarmService,
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
+        private readonly tokenSetter: TokenSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -91,17 +93,18 @@ export class ProxyCacheWarmerService {
                 intermediatedFarms,
                 oneHour(),
             ),
-            this.setContextCache(assetTokenID, assetToken, oneHour()),
-            this.setContextCache(
+            this.tokenSetter.setTokenMetadata(assetTokenID, assetToken),
+            this.tokenSetter.setNftCollectionMetadata(
                 lockedAssetTokenID,
                 lockedAssetToken,
-                oneHour(),
             ),
-            this.setContextCache(wrappedLpTokenID, wrappedLpToken, oneHour()),
-            this.setContextCache(
+            this.tokenSetter.setNftCollectionMetadata(
+                wrappedLpTokenID,
+                wrappedLpToken,
+            ),
+            this.tokenSetter.setNftCollectionMetadata(
                 wrappedFarmTokenID,
                 wrappedFarmToken,
-                oneHour(),
             ),
         ]);
         await this.deleteCacheKeys();
@@ -114,16 +117,6 @@ export class ProxyCacheWarmerService {
         ttl: number = cacheConfig.default,
     ) {
         const cacheKey = generateCacheKeyFromParams(proxy, key);
-        await this.cachingService.setCache(cacheKey, value, ttl);
-        this.invalidatedKeys.push(cacheKey);
-    }
-
-    private async setContextCache(
-        key: string,
-        value: any,
-        ttl: number = cacheConfig.default,
-    ) {
-        const cacheKey = generateCacheKeyFromParams('context', key);
         await this.cachingService.setCache(cacheKey, value, ttl);
         this.invalidatedKeys.push(cacheKey);
     }

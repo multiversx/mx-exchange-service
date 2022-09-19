@@ -1,4 +1,15 @@
-import { ObjectType, Field } from '@nestjs/graphql';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
+
+@ObjectType()
+export class EnableSwapByUserConfig {
+    @Field() lockedTokenID: string;
+    @Field() minLockedTokenValue: string;
+    @Field(() => Int) minLockPeriodEpochs: number;
+
+    constructor(init?: Partial<EnableSwapByUserConfig>) {
+        Object.assign(this, init);
+    }
+}
 
 @ObjectType()
 export class FactoryModel {
@@ -26,6 +37,12 @@ export class FactoryModel {
     totalFeesUSD24h: string;
     @Field()
     maintenance: boolean;
+    @Field()
+    multiSwapStatus: boolean;
+    @Field(() => [String])
+    commonTokensForUserPairs: string[];
+    @Field(() => EnableSwapByUserConfig)
+    enableSwapByUserConfig: EnableSwapByUserConfig;
     @Field()
     lastErrorMessage: string;
 
