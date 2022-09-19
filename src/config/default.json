@@ -70,14 +70,23 @@
             "createPair": 30000000,
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
-            "setState": 200000000,
-            "setFee": 200000000,
-            "multiPairSwapMultiplier": 30000000,
-            "swapEnableByUser": 50000000
+            "multiPairSwapMultiplier": 25000000,
+            "admin": {
+                "setState": 200000000,
+                "setFee": 200000000,
+                "upgradePair": 30000000,
+                "removePair": 200000000,
+                "setLocalRolesOwner": 100000000,
+                "setPairCreationEnabled": 200000000,
+                "clearPairTemporaryOwnerStorage": 200000000,
+                "setTemporaryOwnerPeriod": 200000000,
+                "setPairTemplateAddress": 200000000
+            }
         },
         "pairs": {
             "addLiquidity": 9500000,
             "removeLiquidity": 8500000,
+            "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
                 "default": 8700000,
                 "withFeeSwap": 25500000
@@ -85,6 +94,29 @@
             "swapTokensFixedOutput": {
                 "default": 9000000,
                 "withFeeSwap": 25500000
+            },
+            "swapNoFeeAndForward": 25500000,
+            "setLpTokenIdentifier": 200000000,
+            "updateAndGetTokensForGivenPositionWithSafePrice": 200000000,
+            "updateAndGetSafePrice": 200000000,
+            "admin": {
+                "whitelist": 200000000,
+                "removeWhitelist": 200000000,
+                "addTrustedSwapPair": 200000000,
+                "removeTrustedSwapPair": 200000000,
+                "set_transfer_exec_gas_limit": 200000000,
+                "set_extern_swap_gas_limit": 200000000,
+                "pause": 200000000,
+                "resume": 200000000,
+                "setFeePercents": 200000000,
+                "setMaxObservationsPerRecord": 200000000,
+                "setBPSwapConfig": 200000000,
+                "setBPRemoveConfig": 200000000,
+                "setBPAddConfig": 200000000,
+                "setStateActiveNoSwaps": 200000000,
+                "setLockingDeadlineEpoch": 200000000,
+                "setLockingScAddress": 200000000,
+                "setUnlockEpoch": 200000000
             }
         },
         "farms": {
@@ -126,6 +158,9 @@
                     "withTokenMerge": 11500000
                 },
                 "compoundRewards": 12500000,
+                "setRpsAndStartRewards": 200000000,
+                "migrateFromV1_2Farm": 200000000,
+                "mergeFarmTokensMultiplier": 200000000,
                 "unlockedRewards": {
                     "exitFarm": {
                         "default": 9000000,
@@ -148,6 +183,20 @@
                     },
                     "claimRewards": 17000000
                 }
+            },
+            "admin": {
+                "end_produce_rewards": 200000000,
+                "start_produce_rewards": 200000000,
+                "setPerBlockRewardAmount": 200000000,
+                "set_penalty_percent": 200000000,
+                "set_minimum_farming_epochs": 200000000,
+                "set_transfer_exec_gas_limit": 200000000,
+                "set_burn_gas_limit": 200000000,
+                "pause": 200000000,
+                "resume": 200000000,
+                "registerFarmToken": 200000000,
+                "setLocalRolesFarmToken": 20000000,
+                "setFarmMigrationConfig": 7300000
             }
         },
         "proxy": {
@@ -243,7 +292,22 @@
             "claimRewards": 8500000,
             "claimRewardsWithNewValue": 7500000,
             "compoundRewards": 8500000,
-            "mergeTokens": 20000000
+            "mergeTokens": 20000000,
+            "admin": {
+                "setState": 20000000,
+                "topUpRewards": 20000000,
+                "registerFarmToken": 20000000,
+                "set_penalty_percent": 20000000,
+                "set_minimum_farming_epochs": 20000000,
+                "set_transfer_exec_gas_limit": 20000000,
+                "set_burn_gas_limit": 20000000,
+                "setPerBlockRewardAmount": 200000000,
+                "setMaxApr": 200000000,
+                "setMinUnbondEpochs": 200000000,
+                "setRewardsState": 200000000,
+                "setLocalRolesFarmToken": 20000000,
+                "whitelist": 20000000
+            }
         },
         "stakeProxy": {
             "stakeFarmTokens": {

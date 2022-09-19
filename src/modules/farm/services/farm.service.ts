@@ -17,6 +17,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { CachingService } from 'src/services/caching/cache.service';
 
 @Injectable()
@@ -27,6 +28,7 @@ export class FarmService {
         private readonly farmGetterService: FarmGetterService,
         private readonly farmComputeService: FarmComputeService,
         private readonly contextGetter: ContextGetterService,
+        private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -86,7 +88,7 @@ export class FarmService {
     async getBatchRewardsForPosition(
         positions: CalculateRewardsArgs[],
     ): Promise<RewardsModel[]> {
-        const promises = positions.map(async position => {
+        const promises = positions.map(async (position) => {
             return await this.getRewardsForPosition(position);
         });
         return await Promise.all(promises);
@@ -95,21 +97,23 @@ export class FarmService {
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
-        const farmTokenAttributes: FarmTokenAttributes = FarmTokenAttributes.fromAttributes(
-            farmVersion(positon.farmAddress),
-            positon.attributes,
-        );
+        const farmTokenAttributes: FarmTokenAttributes =
+            FarmTokenAttributes.fromAttributes(
+                farmVersion(positon.farmAddress),
+                positon.attributes,
+            );
         let rewards: BigNumber;
         if (positon.vmQuery) {
             rewards = await this.abiService.calculateRewardsForGivenPosition(
                 positon,
             );
         } else {
-            rewards = await this.farmComputeService.computeFarmRewardsForPosition(
-                positon.farmAddress,
-                positon.liquidity,
-                farmTokenAttributes,
-            );
+            rewards =
+                await this.farmComputeService.computeFarmRewardsForPosition(
+                    positon.farmAddress,
+                    positon.liquidity,
+                    farmTokenAttributes,
+                );
         }
 
         const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
@@ -157,9 +161,10 @@ export class FarmService {
         );
 
         if (rewardsForPosition.remainingFarmingEpochs > 0) {
-            const penaltyPercent = await this.farmGetterService.getPenaltyPercent(
-                args.farmAddress,
-            );
+            const penaltyPercent =
+                await this.farmGetterService.getPenaltyPercent(
+                    args.farmAddress,
+                );
             initialFarmingAmount = initialFarmingAmount.minus(
                 initialFarmingAmount
                     .multipliedBy(penaltyPercent)
@@ -188,5 +193,12 @@ export class FarmService {
             attributes: attributes,
             identifier: identifier,
         });
+    }
+
+    async requireOwner(farmAddress, sender) {
+        return (
+            (await this.apiService.getAccountStats(farmAddress))
+                .ownerAddress === sender
+        );
     }
 }

@@ -49,6 +49,6 @@ describe('PairService', () => {
         const lpTokenPriceUSD = await service.computeLpTokenPriceUSD(
             'erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u',
         );
-        expect(lpTokenPriceUSD).toEqual('400');
+        expect(lpTokenPriceUSD).toEqual('40');
     });
 });
