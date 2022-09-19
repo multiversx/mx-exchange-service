@@ -41,53 +41,6 @@ export class AnalyticsAWSSetterService {
         }
     }
 
-    async setHistoricData(
-        series: string,
-        metric: string,
-        time: string,
-        values: HistoricDataModel[],
-    ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'historicData',
-            series,
-            metric,
-            time,
-        );
-        return await this.setData(cacheKey, values, this.setHistoricData.name);
-    }
-
-    async setClosingValue(
-        series: string,
-        metric: string,
-        time: string,
-        value: string,
-    ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'closingValue',
-            series,
-            metric,
-            time,
-        );
-        return await this.setData(cacheKey, value, this.setClosingValue.name);
-    }
-
-    async setCompleteValues(
-        series: string,
-        metric: string,
-        values: HistoricDataModel[],
-    ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'completeValues',
-            series,
-            metric,
-        );
-        return await this.setData(
-            cacheKey,
-            values,
-            this.setCompleteValues.name,
-        );
-    }
-
     async setLatestCompleteValues(
         series: string,
         metric: string,
@@ -119,49 +72,6 @@ export class AnalyticsAWSSetterService {
             cacheKey,
             values,
             this.setSumCompleteValues.name,
-        );
-    }
-
-    async setLatestValues(
-        series: string,
-        metric: string,
-        values: HistoricDataModel[],
-    ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'latestValues',
-            series,
-            metric,
-        );
-        return await this.setData(cacheKey, values, this.setLatestValues.name);
-    }
-
-    async setMarketValues(
-        series: string,
-        metric: string,
-        values: HistoricDataModel[],
-    ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'marketValues',
-            series,
-            metric,
-        );
-        return await this.setData(cacheKey, values, this.setMarketValues.name);
-    }
-
-    async setMarketCompleteValues(
-        series: string,
-        metric: string,
-        values: HistoricDataModel[],
-    ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
-            'marketCompleteValues',
-            series,
-            metric,
-        );
-        return await this.setData(
-            cacheKey,
-            values,
-            this.setMarketCompleteValues.name,
         );
     }
 
