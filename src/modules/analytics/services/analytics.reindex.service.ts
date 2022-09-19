@@ -307,7 +307,9 @@ export class AnalyticsReindexService {
         if (this.pairsState[pairAddress] === undefined) {
             await this.updatePairsMap();
         } else if (this.pairsState[pairAddress] === null) {
-            throw new Error('wtf4');
+            throw new Error(
+                `Can't update pairs state for ${pairAddress} - ${pairData}`,
+            );
         }
 
         this.pairsState[pairAddress] = pairData;
@@ -597,7 +599,7 @@ export class AnalyticsReindexService {
             return new BigNumber(firstTokenReserve)
                 .multipliedBy(`1e-${firstToken.decimals}`)
                 .multipliedBy(firstTokenPriceUSD);
-        } catch (error) {
+        } catch {
             if (this.debug)
                 console.log(
                     'error computeFirstTokenLockedValueUSD',
@@ -992,9 +994,9 @@ export class AnalyticsReindexService {
 
             switch (tokenID) {
                 case firstTokenID:
-                    return this.computeFirstTokenPrice(pairAddress);
+                    return await this.computeFirstTokenPrice(pairAddress);
                 case secondTokenID:
-                    return this.computeFirstTokenPrice(pairAddress);
+                    return await this.computeFirstTokenPrice(pairAddress);
             }
         } catch (error) {
             throw error;
