@@ -8,12 +8,12 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
-import { PriceDiscoveryComputeService } from '../price-discovery/services/price.discovery.compute.service';
-import { PriceDiscoveryGetterService } from '../price-discovery/services/price.discovery.getter.service';
-import { PriceDiscoverySetterService } from '../price-discovery/services/price.discovery.setter.service';
+import { PriceDiscoveryComputeService } from '../../price-discovery/services/price.discovery.compute.service';
+import { PriceDiscoveryGetterService } from '../../price-discovery/services/price.discovery.getter.service';
+import { PriceDiscoverySetterService } from '../../price-discovery/services/price.discovery.setter.service';
 
 @Injectable()
-export class RabbitMqPriceDiscoveryHandlerService {
+export class PriceDiscoveryEventHandler {
     constructor(
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly priceDiscoverySetter: PriceDiscoverySetterService,
@@ -22,7 +22,9 @@ export class RabbitMqPriceDiscoveryHandlerService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async handleEvent(event: DepositEvent | WithdrawEvent): Promise<void> {
+    async handleEvent(
+        event: DepositEvent | WithdrawEvent,
+    ): Promise<[any[], number]> {
         const [
             priceDiscoveryAddress,
             launchedTokenAmount,
@@ -91,6 +93,18 @@ export class RabbitMqPriceDiscoveryHandlerService {
             : await this.pubSub.publish(PRICE_DISCOVERY_EVENTS.WITHDARW, {
                   withdrawEvent: event,
               });
+
+        const data = [];
+        const timestamp = event.getTopics().toJSON().timestamp;
+        data[priceDiscoveryAddress] = {
+            launchedTokenAmount,
+            acceptedTokenAmount,
+            launchedTokenPrice,
+            acceptedTokenPrice,
+            launchedTokenPriceUSD,
+        };
+
+        return [data, timestamp];
     }
 
     private async deleteCacheKeys(invalidatedKeys: string[]) {
