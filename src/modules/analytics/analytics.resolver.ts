@@ -87,60 +87,6 @@ export class AnalyticsResolver {
             skipUndefinedProperties: true,
         }),
     )
-    async historicData(
-        @Args() args: AWSQueryArgs,
-    ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getHistoricData(
-                args.series,
-                args.metric,
-                args.time,
-            ),
-        );
-    }
-
-    @Query(() => String)
-    @UsePipes(
-        new ValidationPipe({
-            skipNullProperties: true,
-            skipMissingProperties: true,
-            skipUndefinedProperties: true,
-        }),
-    )
-    async closingValue(@Args() args: AWSQueryArgs): Promise<string> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getClosingValue(
-                args.series,
-                args.metric,
-                args.time,
-            ),
-        );
-    }
-
-    @Query(() => [HistoricDataModel])
-    @UsePipes(
-        new ValidationPipe({
-            skipNullProperties: true,
-            skipMissingProperties: true,
-            skipUndefinedProperties: true,
-        }),
-    )
-    async completeValues(
-        @Args() args: AWSQueryArgs,
-    ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getCompleteValues(args.series, args.metric),
-        );
-    }
-
-    @Query(() => [HistoricDataModel])
-    @UsePipes(
-        new ValidationPipe({
-            skipNullProperties: true,
-            skipMissingProperties: true,
-            skipUndefinedProperties: true,
-        }),
-    )
     async latestCompleteValues(
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
@@ -165,57 +111,6 @@ export class AnalyticsResolver {
     ): Promise<HistoricDataModel[]> {
         return await this.genericQuery(() =>
             this.analyticsAWSGetter.getSumCompleteValues(
-                args.series,
-                args.metric,
-            ),
-        );
-    }
-
-    @Query(() => [HistoricDataModel])
-    @UsePipes(
-        new ValidationPipe({
-            skipNullProperties: true,
-            skipMissingProperties: true,
-            skipUndefinedProperties: true,
-        }),
-    )
-    async latestValues(
-        @Args() args: AWSQueryArgs,
-    ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getLatestValues(args.series, args.metric),
-        );
-    }
-
-    @Query(() => [HistoricDataModel])
-    @UsePipes(
-        new ValidationPipe({
-            skipNullProperties: true,
-            skipMissingProperties: true,
-            skipUndefinedProperties: true,
-        }),
-    )
-    async marketValues(
-        @Args() args: AWSQueryArgs,
-    ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getMarketValues(args.series, args.metric),
-        );
-    }
-
-    @Query(() => [HistoricDataModel])
-    @UsePipes(
-        new ValidationPipe({
-            skipNullProperties: true,
-            skipMissingProperties: true,
-            skipUndefinedProperties: true,
-        }),
-    )
-    async marketCompleteValues(
-        @Args() args: AWSQueryArgs,
-    ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getMarketCompleteValues(
                 args.series,
                 args.metric,
             ),
