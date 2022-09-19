@@ -11,17 +11,22 @@ import { ElasticService } from 'src/helpers/elastic.service';
 import { LogsProcessorService } from 'src/services/crons/logs.processor.service';
 import { AnalyticsReindexService } from './services/analytics.reindex.service';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { ProxyModule } from '../proxy/proxy.module';
+import { AnalyticsComputeService } from './services/analytics.compute.service';
+import { AnalyticsGetterService } from './services/analytics.getter.service';
+import { AnalyticsAWSGetterService } from './services/analytics.service';
+import { AnalyticsEventHandlerService } from './services/analytics.event.handler.service';
+import { AnalyticsPairService } from './services/analytics.pair.service';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
         AWSModule,
+        CachingModule,
         ContextModule,
         RouterModule,
         PairModule,
-        FarmModule,
-        PriceDiscoveryModule,
-        CachingModule,
+        //PriceDiscoveryModule,
     ],
     providers: [
         AnalyticsReindexService,

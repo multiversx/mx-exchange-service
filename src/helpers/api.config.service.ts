@@ -61,9 +61,8 @@ export class ApiConfigService {
         return parseInt(this.getGeneric<string>('REDIS_PORT'));
     }
 
-    getRedisPassword(): string | undefined {
-        const password = this.configService.get<string>('REDIS_PASSWORD');
-        return password !== '' ? password : undefined;
+    getRedisPassword(): string {
+        return this.configService.get<string>('REDIS_PASSWORD');
     }
 
     getApiUrl(): string {
