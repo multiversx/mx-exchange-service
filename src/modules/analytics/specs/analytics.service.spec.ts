@@ -110,6 +110,8 @@ describe('AnalyticsService', () => {
 
     it('should get total value locked in farms', async () => {
         const totalLockedValueUSDFarms = await service.computeLockedValueUSDFarms();
-        expect(totalLockedValueUSDFarms.toString()).toEqual('1600');
+        expect(totalLockedValueUSDFarms.toString()).toEqual(
+            '32000080010000.0001600006',
+        );
     });
 });

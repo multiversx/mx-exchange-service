@@ -24,6 +24,18 @@ export class RemoveLiquidityArgs {
 }
 
 @ArgsType()
+export class RemoveLiquidityAndBuyBackAndBurnArgs {
+    @Field()
+    pairAddress: string;
+    @Field()
+    amount: string;
+    @Field()
+    tokenInID: string;
+    @Field()
+    tokenToBuyBackAndBurnID: string;
+}
+
+@ArgsType()
 export class SwapTokensFixedInputArgs {
     @Field()
     pairAddress: string;
@@ -51,4 +63,30 @@ export class SwapTokensFixedOutputArgs {
     tokenOutID: string;
     @Field()
     amountOut: string;
+}
+
+@ArgsType()
+export class SwapNoFeeAndForwardArgs {
+    @Field()
+    pairAddress: string;
+    @Field()
+    tokenOutID: string;
+    @Field()
+    destination: string;
+}
+
+@ArgsType()
+export class SetLpTokenIdentifierArgs {
+    @Field()
+    pairAddress: string;
+    @Field()
+    tokenID: string;
+}
+
+@ArgsType()
+export class WhitelistArgs {
+    @Field()
+    pairAddress: string;
+    @Field()
+    address: string;
 }

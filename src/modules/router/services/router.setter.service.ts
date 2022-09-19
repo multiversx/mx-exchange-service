@@ -32,6 +32,18 @@ export class RouterSetterService extends GenericSetterService {
         );
     }
 
+    async setAllPairTokens(value: string[]): Promise<string> {
+        const cacheKey = this.getRouterCacheKey('pairsTokens');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
+    async setAllPairsManagedAddresses(value: string[]): Promise<string> {
+        const cacheKey = this.getRouterCacheKey('pairsManagedAddresses');
+        await this.cachingService.setCache(cacheKey, value, oneMinute());
+        return cacheKey;
+    }
+
     async setTotalLockedValueUSD(value: string): Promise<string> {
         return await this.setData(
             this.getRouterCacheKey('totalLockedValueUSD'),

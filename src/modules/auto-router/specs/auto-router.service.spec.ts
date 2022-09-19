@@ -38,6 +38,8 @@ import {
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
+import { encodeTransactionData } from 'src/helpers/helpers';
+import { gasConfig } from 'src/config';
 
 describe('AutoRouterService', () => {
     let service: AutoRouterService;
@@ -129,18 +131,15 @@ describe('AutoRouterService', () => {
                 swapType: 0,
                 tokenInID: 'USDC-1111',
                 tokenOutID: 'TOK1-1111',
-                tokenInExchangeRate: '4960273038901078',
-                tokenOutExchangeRate: '201601805416248751341',
-                tokenInExchangeRateDenom: '0.004960273038901078',
-                tokenOutExchangeRateDenom: '201.601805416248751341',
+                tokenInExchangeRate: '1246248446862',
+                tokenOutExchangeRate: '802408221665557136369171',
+                tokenInExchangeRateDenom: '0.000001246248446862',
+                tokenOutExchangeRateDenom: '802408.221665557136369171',
                 tokenInPriceUSD: '1',
                 tokenOutPriceUSD: '200',
                 amountIn: '1000000000000000000',
-                amountOut: '4960273038901078',
-                intermediaryAmounts: [
-                    '1000000000000000000',
-                    '4960273038901078',
-                ],
+                amountOut: '1246248446862',
+                intermediaryAmounts: ['1000000000000000000', '1246248446862'],
                 tokenRoute: ['USDC-1111', 'TOK1-1111'],
                 pairs: [
                     new PairModel({
@@ -150,7 +149,7 @@ describe('AutoRouterService', () => {
                         secondToken: Tokens('USDC-1111'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000',
-                            reserves1: '200000000000000000000',
+                            reserves1: '800000000000000000000000',
                             totalSupply: '1000000000000000000',
                         }),
                         totalFeePercent: 0.003,
@@ -175,18 +174,15 @@ describe('AutoRouterService', () => {
                 swapType: 0,
                 tokenInID: 'USDC-1111',
                 tokenOutID: 'TOK1-1111',
-                tokenInExchangeRate: '4935790171985306',
-                tokenOutExchangeRate: '202601805416248766526',
-                tokenInExchangeRateDenom: '0.004935790171985306',
-                tokenOutExchangeRateDenom: '202.601805416248766526',
+                tokenInExchangeRate: '1246246893729',
+                tokenOutExchangeRate: '802409221665070560617502',
+                tokenInExchangeRateDenom: '0.000001246246893729',
+                tokenOutExchangeRateDenom: '802409.221665070560617502',
                 tokenInPriceUSD: '1',
                 tokenOutPriceUSD: '200',
                 amountIn: '2000000000000000000',
-                amountOut: '9871580343970612',
-                intermediaryAmounts: [
-                    '2000000000000000000',
-                    '9871580343970612',
-                ],
+                amountOut: '2492493787459',
+                intermediaryAmounts: ['2000000000000000000', '2492493787459'],
                 tokenRoute: ['USDC-1111', 'TOK1-1111'],
                 pairs: [
                     new PairModel({
@@ -196,7 +192,7 @@ describe('AutoRouterService', () => {
                         secondToken: Tokens('USDC-1111'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000',
-                            reserves1: '200000000000000000000',
+                            reserves1: '800000000000000000000000',
                             totalSupply: '1000000000000000000',
                         }),
                         totalFeePercent: 0.003,
@@ -222,16 +218,16 @@ describe('AutoRouterService', () => {
                 swapType: 1,
                 tokenInID: 'USDC-1111',
                 tokenOutID: 'TOK2-2222',
-                tokenInExchangeRate: '4962567499999999',
-                tokenOutExchangeRate: '201508594089652181902',
-                tokenInExchangeRateDenom: '0.004962567499999999',
-                tokenOutExchangeRateDenom: '201.508594089652181902',
+                tokenInExchangeRate: '1240641874999',
+                tokenOutExchangeRate: '806034376358608727601852',
+                tokenInExchangeRateDenom: '0.000001240641874999',
+                tokenOutExchangeRateDenom: '806034.376358608727601852',
                 tokenInPriceUSD: '1',
                 tokenOutPriceUSD: '100',
-                amountIn: '101761840015274351860',
+                amountIn: '407047360061097407438935',
                 amountOut: '500000000000000000',
                 intermediaryAmounts: [
-                    '100754297044826090951',
+                    '403017188179304363800926',
                     '334336342360414578',
                     '500000000000000000',
                 ],
@@ -244,7 +240,7 @@ describe('AutoRouterService', () => {
                         secondToken: Tokens('USDC-1111'),
                         info: new PairInfoModel({
                             reserves0: '1000000000000000000',
-                            reserves1: '200000000000000000000',
+                            reserves1: '800000000000000000000000',
                             totalSupply: '1000000000000000000',
                         }),
                         totalFeePercent: 0.003,
@@ -302,11 +298,10 @@ describe('AutoRouterService', () => {
                 value: '1000000000000000000',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
-                gasLimit: 4200000,
-                data: 'd3JhcEVnbGQ=',
+                gasLimit: gasConfig.wrapeGLD,
+                data: encodeTransactionData('wrapEgld'),
                 chainID: 'T',
                 version: 1,
                 options: undefined,
@@ -317,12 +312,12 @@ describe('AutoRouterService', () => {
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
-                gasLimit: 25500000,
-                data:
-                    'RVNEVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUAwZGUwYjZiM2E3NjQwMDAwQDczNzc2MTcwNTQ2ZjZiNjU2ZTczNDY2OTc4NjU2NDQ5NmU3MDc1NzRANTQ0ZjRiMzEyZDMxMzEzMTMxQDExNzJhY2UwMjZiMGM0',
+                gasLimit: gasConfig.pairs.swapTokensFixedInput.default,
+                data: encodeTransactionData(
+                    'ESDTTransfer@TOK1-1111@01000000000000000000@swapTokensFixedInput@TOK1-1111@4911161424654532',
+                ),
                 chainID: 'T',
                 version: 1,
                 options: undefined,
@@ -345,8 +340,8 @@ describe('AutoRouterService', () => {
                 amountIn: '101761840015274351860',
                 amountOut: '500000000000000000',
                 intermediaryAmounts: [
-                    '100754297044826090951',
-                    '334336342360414578',
+                    '503014183917413680',
+                    '626881033727',
                     '500000000000000000',
                 ],
                 tokenRoute: ['USDC-1111', 'TOK1-1111', 'TOK2-2222'],
@@ -369,12 +364,12 @@ describe('AutoRouterService', () => {
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqpv09kfzry5y4sj05udcngesat07umyj70n4sa2c0rp',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
-                gasLimit: 60000000,
-                data:
-                    'RVNEVFRyYW5zZmVyQDU1NTM0NDQzMmQzMTMxMzEzMUAwNTg0M2FhZTU2Mjg4ZjFjZjRANmQ3NTZjNzQ2OTUwNjE2OTcyNTM3NzYxNzBAMDAwMDAwMDAwMDAwMDAwMDA1MDAwNmJkYzYxZWJiZWM3MTliMDdiNGE3ZWJmZDFmYjIxNWMwNzA2ZTNjN2NlYkA3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzRANTQ0ZjRiMzEyZDMxMzEzMTMxQDA0YTliZDg0ODQ4MTYwNGFAMDAwMDAwMDAwMDAwMDAwMDA1MDBjOWY2NTc3YjBjNTY2Y2RjMjhlMGE3NmY2ZTE0ZDFiZTA3OTQwMDMzN2NlYkA3Mzc3NjE3MDU0NmY2YjY1NmU3MzQ2Njk3ODY1NjQ0Zjc1NzQ3MDc1NzRANTQ0ZjRiMzIyZDMyMzIzMjMyQDA2ZjA1YjU5ZDNiMjAwMDA=',
+                gasLimit: 2 * gasConfig.router.multiPairSwapMultiplier,
+                data: encodeTransactionData(
+                    'ESDTTransfer@USDC-1111@508044325756587816@multiPairSwap@erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx@swapTokensFixedOutput@TOK1-1111@630015438895@erd1qqqqqqqqqqqqqpgqe8m9w7cv2ekdc28q5ahku9x3hcregqpn0n4sum0e3u@swapTokensFixedOutput@TOK2-2222@500000000000000000',
+                ),
                 chainID: 'T',
                 version: 1,
                 options: undefined,
@@ -385,12 +380,12 @@ describe('AutoRouterService', () => {
                 value: '0',
                 receiver:
                     'erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax',
-                sender:
-                    'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+                sender: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
                 gasPrice: 1000000000,
-                gasLimit: 4200000,
-                data:
-                    'RVNEVFRyYW5zZmVyQDU0NGY0YjMxMmQzMTMxMzEzMUAwNmYwNWI1OWQzYjIwMDAwQDc1NmU3NzcyNjE3MDQ1Njc2YzY0',
+                gasLimit: gasConfig.wrapeGLD,
+                data: encodeTransactionData(
+                    'ESDTTransfer@TOK1-1111@500000000000000000@unwrapEgld',
+                ),
                 chainID: 'T',
                 version: 1,
                 options: undefined,
