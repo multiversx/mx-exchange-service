@@ -7,8 +7,9 @@ import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { PairModel } from '../../pair/models/pair.model';
 import { RouterGetterService } from '../services/router.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairFilterArgs } from '../models/filter.args';
 import { PairMetadata } from '../models/pair.metadata.model';
+import { PairFilterArgs } from '../models/filter.args';
+
 
 @Injectable()
 export class RouterService {
@@ -141,5 +142,10 @@ export class RouterService {
 
     private getRouterCacheKey(...args: any) {
         return generateCacheKeyFromParams('router', ...args);
+    }
+
+    async requireOwner(sender: string) {
+        if ((await this.routerGetterService.getOwner()) !== sender)
+            throw new Error('You are not the owner.');
     }
 }

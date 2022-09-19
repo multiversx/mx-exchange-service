@@ -1,18 +1,19 @@
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
+import { farms } from './farm.constants';
 
 export class FarmGetterServiceMock {
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        return 'TOK2-2222';
+        return farms.find((f) => f.address === farmAddress).farmedTokenID;
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
-        return 'FMT-1234';
+        return farms.find((f) => f.address === farmAddress).farmTokenID;
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        return 'LPT-1234';
+        return farms.find((f) => f.address === farmAddress).farmingTokenID;
     }
 
     async getFarmedToken(farmAddress: string): Promise<EsdtToken> {
@@ -48,15 +49,15 @@ export class FarmGetterServiceMock {
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
-        return '1000000000000000000';
+        return farms.find((f) => f.address === farmAddress).farmTotalSupply;
     }
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
-        return '1000000000000000000';
+        return farms.find((f) => f.address === farmAddress).farmingTokenReserve;
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
-        return '1000000000000000000';
+        return farms.find((f) => f.address === farmAddress).rewardsPerBlock;
     }
 
     async getPenaltyPercent(farmAddress: string): Promise<number> {
@@ -94,6 +95,10 @@ export class FarmGetterServiceMock {
         return '1000000';
     }
 
+    async getTokenPriceUSD(farmAddress: string): Promise<string> {
+        return '100';
+    }
+
     async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
         return '100';
     }
@@ -104,5 +109,13 @@ export class FarmGetterServiceMock {
 
     async getFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
         return '200';
+    }
+
+    async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
+        return true;
+    }
+
+    async getWhitelist(farmAddress: string): Promise<string[]> {
+        return [];
     }
 }

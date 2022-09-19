@@ -4,6 +4,7 @@ import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { FeeDestination } from '../models/pair.model';
 import { Logger } from 'winston';
 
 @Injectable()
@@ -274,7 +275,7 @@ export class PairSetterService extends GenericSetterService {
         );
     }
 
-    async setInitialLiquidtyAdder(
+    async setRouterManagedAddress(
         pairAddress: string,
         value: string,
     ): Promise<string> {
@@ -283,6 +284,45 @@ export class PairSetterService extends GenericSetterService {
             value,
             oneHour(),
         );
+    }
+
+    async setExternSwapGasLimit(
+        pairAddress: string,
+        value: string,
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'externSwapGasLimit',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
+    }
+
+    async setWhitelistedManagedAddresses(
+        pairAddress: string,
+        value: string[],
+    ): Promise<string> {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'whitelistedManagedAddresses',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
+    }
+
+    async setFeeDestinations(pairAddress: string, value: FeeDestination[]) {
+        const cacheKey = this.getPairCacheKey(pairAddress, 'feeDestinations');
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
+    }
+
+    async setTransferExecGasLimit(pairAddress: string, value: string) {
+        const cacheKey = this.getPairCacheKey(
+            pairAddress,
+            'transferExecGasLimit',
+        );
+        await this.cachingService.setCache(cacheKey, value, oneHour());
+        return cacheKey;
     }
 
     private getPairCacheKey(pairAddress: string, ...args: any) {

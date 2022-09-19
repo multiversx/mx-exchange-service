@@ -294,6 +294,56 @@ export class FarmGetterService extends GenericGetterService {
         );
     }
 
+    async getBurnGasLimit(farmAddresses: string): Promise<string> {
+        return await this.getData(
+            this.getFarmCacheKey(farmAddresses, 'burnGasLimit'),
+            () => this.abiService.getBurnGasLimit(farmAddresses),
+            oneHour(),
+        );
+    }
+
+    async getTransferExecGasLimit(farmAddresses: string): Promise<string> {
+        return await this.getData(
+            this.getFarmCacheKey(farmAddresses, 'transferExecGasLimit'),
+            () => this.abiService.getTransferExecGasLimit(farmAddresses),
+            oneHour(),
+        );
+    }
+
+    async getPairContractManagedAddress(
+        farmAddresses: string,
+    ): Promise<string> {
+        return await this.getData(
+            this.getFarmCacheKey(farmAddresses, 'pairContractManagedAddress'),
+            () => this.abiService.getPairContractManagedAddress(farmAddresses),
+            oneHour(),
+        );
+    }
+
+    async getLockedAssetFactoryManagedAddress(
+        farmAddresses: string,
+    ): Promise<string> {
+        return await this.getData(
+            this.getFarmCacheKey(
+                farmAddresses,
+                'lockedAssetFactoryManagedAddress',
+            ),
+            () =>
+                this.abiService.getLockedAssetFactoryManagedAddress(
+                    farmAddresses,
+                ),
+            oneHour(),
+        );
+    }
+
+    async getLastErrorMessage(farmAddresses: string): Promise<string> {
+        return await this.getData(
+            this.getFarmCacheKey(farmAddresses, 'lastErrorMessage'),
+            () => this.abiService.getLastErrorMessage(farmAddresses),
+            oneMinute(),
+        );
+    }
+
     private getFarmCacheKey(farmAddress: string, ...args: any) {
         return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }

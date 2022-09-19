@@ -3,6 +3,7 @@ import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig, constantsConfig } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
@@ -13,7 +14,7 @@ import { GenericGetterService } from 'src/services/generics/generic.getter.servi
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
-import { LockedTokensInfo } from '../models/pair.model';
+import { FeeDestination, LockedTokensInfo } from '../models/pair.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
 
@@ -314,10 +315,10 @@ export class PairGetterService extends GenericGetterService {
         );
     }
 
-    async getInitialLiquidtyAdder(pairAddress: string): Promise<string> {
+    async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
         return await this.getData(
             this.getPairCacheKey(pairAddress, 'initialLiquidtyAdder'),
-            () => this.abiService.getInitialLiquidtyAdder(pairAddress),
+            () => this.abiService.getInitialLiquidityAdder(pairAddress),
             oneHour(),
         );
     }
@@ -445,6 +446,93 @@ export class PairGetterService extends GenericGetterService {
             unlockEpoch,
             lockingDeadlineEpoch,
         });
+    }
+
+    async getFeeDestinations(pairAddress: string): Promise<FeeDestination[]> {
+        return await this.getData(
+            this.getPairCacheKey(pairAddress, 'feeDestinations'),
+            () => this.abiService.getFeeDestinations(pairAddress),
+            oneHour(),
+        );
+    }
+
+    async getWhitelistedManagedAddresses(
+        pairAddress: string,
+    ): Promise<string[]> {
+        return await this.getData(
+            this.getPairCacheKey(pairAddress, 'whitelistedManagedAddresses'),
+            () => this.abiService.getWhitelistedManagedAddresses(pairAddress),
+            oneHour(),
+        );
+    }
+
+    async getRouterManagedAddress(address: string): Promise<string> {
+        return await this.getData(
+            this.getPairCacheKey(address, 'routerManagedAddress'),
+            () => this.abiService.getRouterManagedAddress(address),
+            oneHour(),
+        );
+    }
+
+    async getRouterOwnerManagedAddress(address: string): Promise<string> {
+        return await this.getData(
+            this.getPairCacheKey(address, 'routerOwnerManagedAddress'),
+            () => this.abiService.getRouterOwnerManagedAddress(address),
+            oneHour(),
+        );
+    }
+
+    async getExternSwapGasLimit(pairAddress: string): Promise<number> {
+        return await this.getData(
+            this.getPairCacheKey(pairAddress, 'externSwapGasLimit'),
+            () => this.abiService.getExternSwapGasLimit(pairAddress),
+            oneHour(),
+        );
+    }
+
+    async getTransferExecGasLimit(pairAddress: string): Promise<number> {
+        return await this.getData(
+            this.getPairCacheKey(pairAddress, 'transferExecGasLimit'),
+            () => this.abiService.getTransferExecGasLimit(pairAddress),
+            oneHour(),
+        );
+    }
+
+    async updateAndGetSafePrice(
+        pairAddress: string,
+        esdtTokenPayment: EsdtTokenPayment,
+    ): Promise<EsdtTokenPayment> {
+        return await this.getData(
+            this.getPairCacheKey(pairAddress, 'safePrice'),
+            () =>
+                this.abiService.updateAndGetSafePrice(
+                    pairAddress,
+                    esdtTokenPayment,
+                ),
+            oneMinute(),
+        );
+    }
+
+    async getNumSwapsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<number> {
+        return await this.getData(
+            this.getPairCacheKey(pairAddress, 'numSwapsByAddress', address),
+            () => this.abiService.getNumSwapsByAddress(pairAddress, address),
+            oneMinute(),
+        );
+    }
+
+    async getNumAddsByAddress(
+        pairAddress: string,
+        address: string,
+    ): Promise<string> {
+        return await this.getData(
+            this.getPairCacheKey(pairAddress, 'numAddsByAddress', address),
+            () => this.abiService.getNumAddsByAddress(pairAddress, address),
+            oneMinute(),
+        );
     }
 
     private getPairCacheKey(pairAddress: string, ...args: any) {
