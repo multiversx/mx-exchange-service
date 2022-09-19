@@ -69,7 +69,6 @@ export class ElrondApiService {
             this.logger.error(`${error.message} after ${retries} retries`, {
                 path: `${ElrondApiService.name}.${name}`,
             });
-            console.log('wtf0', error);
             throw new Error(error);
         } finally {
             profiler.stop();
@@ -105,8 +104,8 @@ export class ElrondApiService {
                 return undefined;
             }
             return esdtToken;
-        } catch (error) {
-            console.log('error', error);
+        } catch {
+            this.logger.error(`Error when trying to getToken(${tokenID})`);
             return undefined;
         }
     }
@@ -122,7 +121,10 @@ export class ElrondApiService {
                 return undefined;
             }
             return collection;
-        } catch (error) {
+        } catch {
+            this.logger.error(
+                `Error when trying to getNftCollection(${tokenID})`,
+            );
             return undefined;
         }
     }
@@ -169,7 +171,10 @@ export class ElrondApiService {
         try {
             const token = await this.getTokenForUser(address, tokenID);
             return token.balance;
-        } catch (error) {
+        } catch {
+            this.logger.error(
+                `Error when trying to getTokenBalanceForUser(${address},${tokenID}`,
+            );
             return '0';
         }
     }
