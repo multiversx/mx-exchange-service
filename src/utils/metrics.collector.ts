@@ -5,6 +5,7 @@ export class MetricsCollector {
     private static queryDurationHistogram: Histogram<string>;
     private static redisDurationHistogram: Histogram<string>;
     private static externalCallsHistogram: Histogram<string>;
+    private static awsQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
     private static currentNonceGauge: Gauge<string>;
     private static lastProcessedNonceGauge: Gauge<string>;
@@ -43,6 +44,15 @@ export class MetricsCollector {
                 name: 'external_apis',
                 help: 'External Calls',
                 labelNames: ['system', 'func'],
+                buckets: [],
+            });
+        }
+
+        if (!MetricsCollector.awsQueryDurationHistogram) {
+            MetricsCollector.awsQueryDurationHistogram = new Histogram({
+                name: 'aws_query',
+                help: 'AWS Timestream Queries',
+                labelNames: ['query'],
                 buckets: [],
             });
         }
@@ -106,6 +116,13 @@ export class MetricsCollector {
         MetricsCollector.ensureIsInitialized();
         MetricsCollector.externalCallsHistogram
             .labels(system, func)
+            .observe(duration);
+    }
+
+    static setAWSQueryDuration(queryName: string, duration: number) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.awsQueryDurationHistogram
+            .labels(queryName)
             .observe(duration);
     }
 

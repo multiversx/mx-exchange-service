@@ -7,7 +7,6 @@ import { CacheWarmerModule } from './services/cache.warmer.module';
 import { PubSubModule } from './services/pub.sub.module';
 import { LoggingInterceptor } from './utils/logging.interceptor';
 import { ApiConfigService } from './helpers/api.config.service';
-import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { RabbitMqProcessorModule } from './rabbitmq.processor.module';
 import { RabbitMqConsumer } from './modules/rabbitmq/rabbitmq.consumer';
 import cookieParser from 'cookie-parser';
@@ -27,7 +26,8 @@ async function bootstrap() {
         require('dd-trace').init();
     }
 
-    httpServer.keepAliveTimeout = apiConfigService.getKeepAliveTimeoutUpstream();
+    httpServer.keepAliveTimeout =
+        apiConfigService.getKeepAliveTimeoutUpstream();
     httpServer.headersTimeout = apiConfigService.getKeepAliveTimeoutUpstream(); //`keepAliveTimeout + server's expected response time`
 
     const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -38,7 +38,7 @@ async function bootstrap() {
                 url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
                 retryDelay: 1000,
                 retryAttempts: 10,
-                retry_strategy: function() {
+                retry_strategy: function () {
                     return 1000;
                 },
             },
@@ -73,27 +73,10 @@ async function bootstrap() {
         const eventsNotifierApp = await NestFactory.create(
             RabbitMqProcessorModule,
         );
-        const rabbitMqService = eventsNotifierApp.get<RabbitMqConsumer>(
-            RabbitMqConsumer,
-        );
+        const rabbitMqService =
+            eventsNotifierApp.get<RabbitMqConsumer>(RabbitMqConsumer);
         await rabbitMqService.getFilterAddresses();
         await eventsNotifierApp.listen(5673, '0.0.0.0');
-
-        const analyticsApp = await NestFactory.createMicroservice<
-            MicroserviceOptions
-        >(AnalyticsModule, {
-            transport: Transport.REDIS,
-            options: {
-                port: 3001,
-                url: `redis://${apiConfigService.getRedisUrl()}:${apiConfigService.getRedisPort()}`,
-                retryDelay: 1000,
-                retryAttempts: 10,
-                retry_strategy: function() {
-                    return 1000;
-                },
-            },
-        });
-        analyticsApp.listen();
     }
 }
 bootstrap();

@@ -215,7 +215,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, `firstTokenVolume.${time}`),
             value,
-            oneMinute(),
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -227,7 +228,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, `secondTokenVolume.${time}`),
             value,
-            oneMinute(),
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -239,7 +241,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, `volumeUSD.${time}`),
             value,
-            oneMinute(),
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -251,7 +254,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, `feesUSD.${time}`),
             value,
-            oneMinute(),
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 

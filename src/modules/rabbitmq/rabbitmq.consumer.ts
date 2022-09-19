@@ -1,16 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { RabbitMQPairHandlerService } from './rabbitmq.pair.handler.service';
 import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
-import { scAddress } from 'src/config';
+import { awsConfig, scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
-import { RabbitMqPriceDiscoveryHandlerService } from './rabbitmq.price.discovery.handler.service';
+import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.service';
 import {
     AddLiquidityEvent,
     AddLiquidityProxyEvent,
@@ -41,20 +40,27 @@ import {
     RawEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { RouterGetterService } from '../router/services/router.getter.service';
+import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
+import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
+import { SwapEventHandler } from './handlers/pair.swap.handler.service';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
+    private data: any[];
 
     constructor(
         private readonly routerGetter: RouterGetterService,
-        private readonly wsPairHandler: RabbitMQPairHandlerService,
+        private readonly liquidityHandler: LiquidityHandler,
+        private readonly swapHandler: SwapEventHandler,
         private readonly wsFarmHandler: RabbitMQFarmHandlerService,
         private readonly wsProxyHandler: RabbitMQProxyHandlerService,
         private readonly wsRouterHandler: RabbitMQRouterHandlerService,
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
-        private readonly wsPriceDiscoveryHandler: RabbitMqPriceDiscoveryHandlerService,
+        private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
+        private readonly awsTimestreamWrite: AWSTimestreamWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -69,12 +75,15 @@ export class RabbitMqConsumer {
         const events: RawEvent[] = rawEvents?.events?.filter(
             (rawEvent: { address: string; identifier: string }) =>
                 this.filterAddresses.find(
-                    filterAddress =>
+                    (filterAddress) =>
                         rawEvent.address === filterAddress ||
                         rawEvent.identifier === ESDT_EVENTS.ESDT_LOCAL_BURN ||
                         rawEvent.identifier === ESDT_EVENTS.ESDT_LOCAL_MINT,
                 ) !== undefined,
         );
+
+        this.data = [];
+        let timestamp: number;
 
         for (const rawEvent of events) {
             if (
@@ -83,26 +92,35 @@ export class RabbitMqConsumer {
             ) {
                 continue;
             }
+            let eventData: any[];
             switch (rawEvent.identifier) {
                 case PAIR_EVENTS.SWAP_FIXED_INPUT:
-                    await this.wsPairHandler.handleSwapEvent(
-                        new SwapFixedInputEvent(rawEvent),
-                    );
+                    [eventData, timestamp] =
+                        await this.swapHandler.handleSwapEvents(
+                            new SwapFixedInputEvent(rawEvent),
+                        );
+                    this.updateIngestData(eventData);
                     break;
                 case PAIR_EVENTS.SWAP_FIXED_OUTPUT:
-                    await this.wsPairHandler.handleSwapEvent(
-                        new SwapFixedOutputEvent(rawEvent),
-                    );
+                    [eventData, timestamp] =
+                        await this.swapHandler.handleSwapEvents(
+                            new SwapFixedOutputEvent(rawEvent),
+                        );
+                    this.updateIngestData(eventData);
                     break;
                 case PAIR_EVENTS.ADD_LIQUIDITY:
-                    await this.wsPairHandler.handleLiquidityEvent(
-                        new AddLiquidityEvent(rawEvent),
-                    );
+                    [eventData, timestamp] =
+                        await this.liquidityHandler.handleLiquidityEvent(
+                            new AddLiquidityEvent(rawEvent),
+                        );
+                    this.updateIngestData(eventData);
                     break;
                 case PAIR_EVENTS.REMOVE_LIQUIDITY:
-                    await this.wsPairHandler.handleLiquidityEvent(
-                        new RemoveLiquidityEvent(rawEvent),
-                    );
+                    [eventData, timestamp] =
+                        await this.liquidityHandler.handleLiquidityEvent(
+                            new RemoveLiquidityEvent(rawEvent),
+                        );
+                    this.updateIngestData(eventData);
                     break;
                 case FARM_EVENTS.ENTER_FARM:
                     await this.wsFarmHandler.handleFarmEvent(
@@ -198,16 +216,28 @@ export class RabbitMqConsumer {
                     );
                     break;
                 case PRICE_DISCOVERY_EVENTS.DEPOSIT:
-                    await this.wsPriceDiscoveryHandler.handleEvent(
-                        new DepositEvent(rawEvent),
-                    );
+                    [eventData, timestamp] =
+                        await this.priceDiscoveryHandler.handleEvent(
+                            new DepositEvent(rawEvent),
+                        );
+                    this.updateIngestData(eventData);
                     break;
                 case PRICE_DISCOVERY_EVENTS.WITHDARW:
-                    await this.wsPriceDiscoveryHandler.handleEvent(
-                        new WithdrawEvent(rawEvent),
-                    );
+                    [eventData, timestamp] =
+                        await this.priceDiscoveryHandler.handleEvent(
+                            new WithdrawEvent(rawEvent),
+                        );
+                    this.updateIngestData(eventData);
                     break;
             }
+        }
+
+        if (this.data.length > 0) {
+            await this.awsTimestreamWrite.ingest({
+                TableName: awsConfig.timestream.tableName,
+                data: this.data,
+                Time: timestamp,
+            });
         }
     }
 
@@ -219,5 +249,27 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.routerAddress);
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
         this.filterAddresses.push(...scAddress.priceDiscovery);
+    }
+
+    private async updateIngestData(eventData: any[]): Promise<void> {
+        for (const series of Object.keys(eventData)) {
+            if (this.data[series] === undefined) {
+                this.data[series] = {};
+            }
+            for (const measure of Object.keys(eventData[series])) {
+                if (
+                    measure.toLowerCase().includes('volume') ||
+                    measure.toLowerCase().includes('fees')
+                ) {
+                    this.data[series][measure] = this.data[series][measure]
+                        ? new BigNumber(this.data[series][measure])
+                              .plus(eventData[series][measure])
+                              .toFixed()
+                        : eventData[series][measure];
+                } else {
+                    this.data[series][measure] = eventData[series][measure];
+                }
+            }
+        }
     }
 }
