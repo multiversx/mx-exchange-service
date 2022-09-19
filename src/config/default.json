@@ -348,6 +348,18 @@
             "exitFarmLockedToken": 45000000,
             "claimRewardsFarmLockedToken": 30000000
         },
+        "simpleLockEnergy": {
+            "lockTokens": 10000000,
+            "updateTokens": 10000000,
+            "admin": {
+                "issueLockedToken": 60000000,
+                "updateLockOptions": 10000000,
+                "setPenaltyPercentage": 10000000,
+                "setFeesBurnPercentage": 10000000,
+                "setFeesCollectorAddress": 10000000,
+                "setOldLockedAssetFactoryAddress": 10000000
+            }
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
