@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { ContextService } from 'src/services/context/context.service';
+import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
 import { AnalyticsAWSGetterService } from './analytics.service';
 
@@ -9,8 +9,8 @@ import { AnalyticsAWSGetterService } from './analytics.service';
 export class AnalyticsPairService {
     constructor(
         private readonly pairGetterService: PairGetterService,
+        private readonly routerGetter: RouterGetterService,
         private readonly analyticsService: AnalyticsAWSGetterService,
-        private readonly context: ContextService,
     ) {}
 
     async getClosingLockedValueUSD(
@@ -108,7 +108,7 @@ export class AnalyticsPairService {
     }
 
     async getPairsDayDatas(): Promise<PairDayDataModel[]> {
-        const pairAddresses = await this.context.getAllPairsAddress();
+        const pairAddresses = await this.routerGetter.getAllPairsAddress();
         const pairsDayDatas: PairDayDataModel[] = [];
         for (const pairAddress of pairAddresses) {
             const pairDayDatas = await this.getPairDayDatas(pairAddress);

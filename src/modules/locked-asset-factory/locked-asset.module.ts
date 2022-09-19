@@ -7,9 +7,15 @@ import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { CachingModule } from '../../services/caching/cache.module';
 import { LockedAssetGetterService } from './services/locked.asset.getter.service';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
-    imports: [ElrondCommunicationModule, CachingModule, ContextModule],
+    imports: [
+        ElrondCommunicationModule,
+        CachingModule,
+        ContextModule,
+        TokenModule,
+    ],
     providers: [
         AbiLockedAssetService,
         TransactionsLockedAssetService,

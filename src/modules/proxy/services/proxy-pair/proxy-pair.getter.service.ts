@@ -6,8 +6,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneHour } from 'src/helpers/helpers';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class ProxyPairGetterService extends GenericGetterService {
@@ -15,7 +15,7 @@ export class ProxyPairGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private abiService: AbiProxyPairService,
-        private contextGetter: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
     }
@@ -30,7 +30,7 @@ export class ProxyPairGetterService extends GenericGetterService {
 
     async getwrappedLpToken(): Promise<NftCollection> {
         const wrappedLpTokenID = await this.getwrappedLpTokenID();
-        return await this.contextGetter.getNftCollectionMetadata(
+        return await this.tokenGetter.getNftCollectionMetadata(
             wrappedLpTokenID,
         );
     }

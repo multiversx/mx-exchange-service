@@ -26,6 +26,6 @@ export class StakingProxyGetterServiceMock {
     }
 
     async getLpFarmTokenID(stakingProxyAddress: string): Promise<string> {
-        return 'FMT-1234';
+        return 'TOK1TOK4LPStaked';
     }
 }

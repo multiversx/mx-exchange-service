@@ -6,7 +6,7 @@ import { Logger } from 'winston';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 import axios, { AxiosRequestConfig } from 'axios';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { IngestRecord } from '../models/ingest-records.model';
+import { IngestRecord } from './ingest-records.model';
 import { NativeAuthClientService } from 'src/modules/native-auth/native-auth-client.service';
 import {
     daysAgoUtc,

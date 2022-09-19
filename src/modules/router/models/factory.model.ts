@@ -16,7 +16,17 @@ export class FactoryModel {
     @Field()
     address: string;
     @Field()
+    state: boolean;
+    @Field()
+    owner: string;
+    @Field()
+    temporaryOwnerPeriod: string;
+    @Field()
     pairCount: number;
+    @Field()
+    pairCreationEnabled: boolean;
+    @Field()
+    pairTemplateAddress: string;
     @Field()
     totalTxCount: number;
     @Field()
@@ -27,10 +37,14 @@ export class FactoryModel {
     totalFeesUSD24h: string;
     @Field()
     maintenance: boolean;
+    @Field()
+    multiSwapStatus: boolean;
     @Field(() => [String])
     commonTokensForUserPairs: string[];
     @Field(() => EnableSwapByUserConfig)
     enableSwapByUserConfig: EnableSwapByUserConfig;
+    @Field()
+    lastErrorMessage: string;
 
     constructor(init?: Partial<FactoryModel>) {
         Object.assign(this, init);

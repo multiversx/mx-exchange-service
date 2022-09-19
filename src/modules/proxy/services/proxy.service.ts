@@ -10,7 +10,7 @@ import {
 } from '../models/proxy.args';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ElrondApiService } from 'src/services/elrond-communication/services/elrond-api.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import {
     FarmTokenAttributes,
     WrappedFarmTokenAttributes,

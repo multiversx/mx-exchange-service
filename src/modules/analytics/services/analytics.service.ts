@@ -8,7 +8,7 @@ import { CachingService } from '../../../services/caching/cache.service';
 import { nowUtc, oneMinute } from '../../../helpers/helpers';
 import { HistoricDataModel } from '../models/analytics.model';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
+import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 
 @Injectable()
 export class AnalyticsAWSGetterService extends GenericGetterService {
@@ -302,7 +302,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     startDate,
                     endDate: nowUtc(),
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -342,7 +342,7 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
                     endDate,
                     resolution,
                 }),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 

@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PriceFeedService } from '../../../services/price-feed/price-feed.service';
 import { FarmService } from '../../farm/services/farm.service';
 import { PairService } from '../../pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
 import { UserService } from '../services/user.metaEsdt.service';
-import { ElrondApiService } from '../../../services/elrond-communication/services/elrond-api.service';
-import { ContextService } from '../../../services/context/context.service';
+import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -17,7 +15,7 @@ import * as winston from 'winston';
 import * as Transport from 'winston-transport';
 import { WrapService } from '../../wrapping/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
-import { ElrondApiServiceMock } from '../../../services/elrond-communication/mocks/elrond.api.service.mock';
+import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModel } from '../../farm/models/farmTokenAttributes.model';
 import { UserComputeService } from '../services/metaEsdt.compute.service';
@@ -25,8 +23,6 @@ import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
 import { FarmServiceMock } from '../../farm/mocks/farm.service.mock';
-import { ContextServiceMock } from 'src/services/context/mocks/context.service.mock';
-import { PriceFeedServiceMock } from 'src/services/price-feed/price.feed.service.mock';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
@@ -61,6 +57,7 @@ import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
+import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 
 describe('UserService', () => {
     let userMetaEsdts: UserService;
@@ -81,11 +78,6 @@ describe('UserService', () => {
         useClass: FarmGetterServiceMock,
     };
 
-    const ContextServiceProvider = {
-        provide: ContextService,
-        useClass: ContextServiceMock,
-    };
-
     const ContextGetterServiceProvider = {
         provide: ContextGetterService,
         useClass: ContextGetterServiceMock,
@@ -99,11 +91,6 @@ describe('UserService', () => {
     const PairGetterServiceProvider = {
         provide: PairGetterService,
         useClass: PairGetterServiceMock,
-    };
-
-    const PriceFeedServiceProvider = {
-        provide: PriceFeedService,
-        useClass: PriceFeedServiceMock,
     };
 
     const ProxyServiceProvider = {
@@ -179,13 +166,11 @@ describe('UserService', () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 ElrondApiServiceProvider,
-                ContextServiceProvider,
                 ContextGetterServiceProvider,
                 RouterGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
-                PriceFeedServiceProvider,
                 ProxyServiceProvider,
                 ProxyGetterServiceProvider,
                 ProxyPairGetterServiceProvider,
@@ -205,6 +190,7 @@ describe('UserService', () => {
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
                 TokenGetterServiceProvider,
+                TokenComputeService,
                 TokenService,
                 UserEsdtService,
                 UserService,
@@ -284,24 +270,25 @@ describe('UserService', () => {
             }),
         ).toEqual([
             new UserFarmToken({
-                collection: 'FMT-1234',
-                ticker: 'FMT',
+                collection: 'TOK1TOK4LPStaked',
+                ticker: 'TOK1TOK4LPStaked',
                 name: 'FarmToken',
                 type: 'SemiFungibleESDT',
                 decimals: 18,
                 balance: '1000000000000000000',
-                identifier: 'FMT-1234-01',
+                identifier: 'TOK1TOK4LPStaked-01',
                 attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
-                creator: 'farm_address_1',
+                creator:
+                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 nonce: 1,
                 royalties: 0,
-                valueUSD: '400',
+                valueUSD: '80000200',
                 decodedAttributes: new FarmTokenAttributesModel({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                     originalEnteringEpoch: 1,
                     enteringEpoch: 1,
-                    identifier: 'FMT-1234-01',
+                    identifier: 'TOK1TOK4LPStaked-01',
                     lockedRewards: false,
                     rewardPerShare: '3000',
                     initialFarmingAmount: '100',

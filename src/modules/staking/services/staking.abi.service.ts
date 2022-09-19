@@ -1,13 +1,16 @@
 import {
+    Address,
+    AddressValue,
     BigUIntValue,
     BytesValue,
     Interaction,
+    TypedValue,
 } from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { ElrondGatewayService } from 'src/services/elrond-communication/services/elrond-gateway.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
+import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
 
@@ -22,15 +25,19 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getPairContractManagedAddress(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        const interaction: Interaction = contract.methodsExplicit.getPairContractManagedAddress();
-        const response = await this.getGenericData(
-            AbiStakingService.name,
-            interaction,
-        );
-        return response.firstValue.valueOf().hex32();
+        try {
+            const contract = await this.elrondProxy.getStakingSmartContract(
+                stakeAddress,
+            );
+            const interaction: Interaction = contract.methodsExplicit.getPairContractManagedAddress();
+            const response = await this.getGenericData(
+                AbiStakingService.name,
+                interaction,
+            );
+            return response.firstValue.valueOf().hex32();
+        } catch {
+            return undefined;
+        }
     }
 
     async getFarmTokenID(stakeAddress: string): Promise<string> {
@@ -209,6 +216,30 @@ export class AbiStakingService extends GenericAbiService {
         return response === '01';
     }
 
+    async getBurnGasLimit(stakeAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction = contract.methodsExplicit.getBurnGasLimit();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf();
+    }
+
+    async getTransferExecGasLimit(stakeAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction = contract.methodsExplicit.getTransferExecGasLimit();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf();
+    }
+
     async getState(stakeAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
@@ -242,5 +273,56 @@ export class AbiStakingService extends GenericAbiService {
             interaction,
         );
         return response.firstValue.valueOf();
+    }
+
+    async getLockedAssetFactoryManagedAddress(
+        stakeAddress: string,
+    ): Promise<string> {
+        try {
+            const contract = await this.elrondProxy.getStakingSmartContract(
+                stakeAddress,
+            );
+            const interaction: Interaction = contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
+            const response = await this.getGenericData(
+                AbiStakingService.name,
+                interaction,
+            );
+            return response.firstValue.valueOf().hex32();
+        } catch {
+            return undefined;
+        }
+    }
+
+    async isWhitelisted(
+        stakeAddress: string,
+        scAddress: string,
+    ): Promise<boolean> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            new AddressValue(Address.fromString(scAddress)),
+        ];
+        const interaction: Interaction = contract.methodsExplicit.isWhitelisted(
+            transactionArgs,
+        );
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
+        console.log(response);
+        return response.firstValue.valueOf();
+    }
+
+    async getLastErrorMessage(stakeAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const interaction: Interaction = contract.methodsExplicit.getLastErrorMessage();
+        const response = await this.getGenericData(
+            AbiStakingService.name,
+            interaction,
+        );
+        return response.firstValue.valueOf().toString();
     }
 }

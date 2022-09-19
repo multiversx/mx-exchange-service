@@ -1,9 +1,8 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PairService } from './services/pair.service';
 import { PairResolver } from './pair.resolver';
 import { PairAbiService } from './services/pair.abi.service';
 import { PairTransactionService } from './services/pair.transactions.service';
-import { PriceFeedModule } from '../../services/price-feed/price-feed.module';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { WrappingModule } from '../wrapping/wrap.module';
@@ -14,16 +13,19 @@ import { PairSetterService } from './services/pair.setter.service';
 import { DatabaseModule } from 'src/services/database/database.module';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { TokenModule } from '../tokens/token.module';
+import { RouterModule } from '../router/router.module';
+import { CommonAppModule } from 'src/common.app.module';
 @Module({
     imports: [
+        CommonAppModule,
         ElrondCommunicationModule,
         ContextModule,
-        PriceFeedModule,
         WrappingModule,
         CachingModule,
         AWSModule,
         DatabaseModule,
-        TokenModule,
+        forwardRef(() => RouterModule),
+        forwardRef(() => TokenModule),
     ],
     providers: [
         PairService,

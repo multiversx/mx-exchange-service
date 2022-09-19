@@ -2,7 +2,7 @@ import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { scAddress } from 'src/config';
-import { ElrondApiService } from 'src/services/elrond-communication/services/elrond-api.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';

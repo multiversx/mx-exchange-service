@@ -48,13 +48,13 @@ export class RemoteConfigSetterService extends GenericSetterService {
 
     async deleteFlag(name: string): Promise<void> {
         const cacheKey = this.getFlagCacheKey(name);
-        await this.cachingService.delete(cacheKey);
+        await this.cachingService.deleteInCache(cacheKey);
         await this.deleteCacheKeys([cacheKey]);
     }
 
     async deleteSCAddresses(category: SCAddressType): Promise<void> {
         const cacheKey = this.getSCAddressCacheKey(category);
-        await this.cachingService.delete(cacheKey);
+        await this.cachingService.deleteInCache(cacheKey);
         await this.deleteCacheKeys([cacheKey]);
     }
 

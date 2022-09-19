@@ -11,7 +11,7 @@ import {
     EnterFarmProxyArgs,
     ExitFarmProxyArgs,
 } from '../../models/proxy-farm.args';
-import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { ProxyFarmGetterService } from './proxy-farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';

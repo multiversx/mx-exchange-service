@@ -7,14 +7,15 @@ import { CachingService } from '../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateGetLogMessage } from '../../utils/generate-log-message';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
+import { TokenGetterService } from '../tokens/services/token.getter.service';
+import { oneHour } from 'src/helpers/helpers';
 
 @Injectable()
 export class WrapService {
     constructor(
         private abiService: AbiWrapService,
-        private contextGetter: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -45,7 +46,7 @@ export class WrapService {
             return await this.cachingService.getOrSet(
                 cacheKey,
                 createValueFunc,
-                cacheConfig.token,
+                oneHour(),
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(
@@ -68,7 +69,7 @@ export class WrapService {
 
     async getWrappedEgldToken(): Promise<EsdtToken> {
         const wrappedEgldTokenID = await this.getWrappedEgldTokenID();
-        return this.contextGetter.getTokenMetadata(wrappedEgldTokenID);
+        return this.tokenGetter.getTokenMetadata(wrappedEgldTokenID);
     }
 
     private getWrapCacheKey(...args: any) {

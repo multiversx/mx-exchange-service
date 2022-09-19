@@ -4,6 +4,7 @@ import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
+import { TokenModule } from '../tokens/token.module';
 import { WrappingModule } from '../wrapping/wrap.module';
 import { LockedFarmTokenResolver } from './lockedFarmToken.resolver';
 import { LockedLpTokenResolver } from './lockedLpToken.resolver';
@@ -22,6 +23,7 @@ import { SimpleLockResolver } from './simple.lock.resolver';
         PairModule,
         FarmModule,
         WrappingModule,
+        TokenModule,
     ],
     providers: [
         SimpleLockService,

@@ -1,45 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { PriceFeedService } from '../price-feed/price-feed.service';
-import { tokensPriceData } from '../../config';
+import { Cron } from '@nestjs/schedule';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { oneMinute } from '../../helpers/helpers';
-import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { oneMinute } from 'src/helpers/helpers';
 
 @Injectable()
 export class CacheWarmerService {
-    private invalidatedKeys = [];
-
     constructor(
         private readonly apiService: ElrondApiService,
-        private readonly priceFeed: PriceFeedService,
         private readonly cachingService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
-
-    @Cron(CronExpression.EVERY_30_SECONDS)
-    async cachePriceFeeds(): Promise<void> {
-        for (const priceFeed in tokensPriceData) {
-            const tokenPrice = await this.priceFeed.getTokenPriceRaw(
-                tokensPriceData.get(priceFeed),
-            );
-            const cacheKey = generateCacheKeyFromParams(
-                'priceFeed',
-                tokensPriceData.get(priceFeed),
-            );
-            await this.cachingService.setCache(
-                cacheKey,
-                tokenPrice,
-                oneMinute(),
-            );
-
-            this.invalidatedKeys.push(cacheKey);
-            await this.deleteCacheKeys();
-        }
-    }
 
     @Cron('*/6 * * * * *')
     async cacheCurrentEpoch(): Promise<void> {
@@ -47,13 +21,35 @@ export class CacheWarmerService {
         const ttl = (stats.roundsPerEpoch - stats.roundsPassed) * 6;
         const cacheKey = generateCacheKeyFromParams('context', 'currentEpoch');
         await this.cachingService.setCache(cacheKey, stats.epoch, ttl);
-
-        this.invalidatedKeys.push(cacheKey);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys([cacheKey]);
     }
 
-    private async deleteCacheKeys() {
-        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
-        this.invalidatedKeys = [];
+    @Cron('*/6 * * * * *')
+    async cacheShardCurrentBlockNonce(): Promise<void> {
+        const stats = await this.apiService.getStats();
+        const promises: Promise<number>[] = [];
+        for (let index = 0; index < stats.shards; index++) {
+            promises.push(this.apiService.getCurrentBlockNonce(index));
+        }
+        const shardsNonces = await Promise.all(promises);
+        const invalidatedKeys: string[] = [];
+        for (let index = 0; index < stats.shards; index++) {
+            const cacheKey = generateCacheKeyFromParams(
+                'context',
+                'shardBlockNonce',
+                index,
+            );
+            await this.cachingService.setCache(
+                cacheKey,
+                shardsNonces[index],
+                oneMinute(),
+            );
+        }
+
+        await this.deleteCacheKeys(invalidatedKeys);
+    }
+
+    private async deleteCacheKeys(invalidatedKeys: string[]) {
+        await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }

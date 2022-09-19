@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
+import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { constantsConfig, elrondData } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
@@ -13,8 +13,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { EsdtLocalBurnEvent, ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
-import { ElrondDataService } from '../elrond-communication/services/elrond-data.service';
-import { IngestRecord } from '../elrond-communication/models/ingest-records.model';
+import { ElrondDataService } from '../elrond-communication/elrond-data.service';
+import { IngestRecord } from '../elrond-communication/ingest-records.model';
 import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
 import TimestreamWrite from 'aws-sdk/clients/timestreamwrite';
 

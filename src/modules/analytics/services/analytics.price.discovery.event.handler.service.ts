@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { awsConfig, elrondData } from 'src/config';
 import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
-import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
+import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 
 @Injectable()
 export class AnalyticsPriceDiscoveryEventHandlerService {

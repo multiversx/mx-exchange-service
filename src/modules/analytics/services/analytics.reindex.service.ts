@@ -23,7 +23,7 @@ import {
 import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import { Locker } from 'src/utils/locker';
-import { ElrondDataService } from 'src/services/elrond-communication/services/elrond-data.service';
+import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 import BigNumber from 'bignumber.js';
 import {
     constantsConfig,
@@ -35,13 +35,11 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { quote } from 'src/modules/pair/pair.utils';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { denominateAmount } from 'src/utils/token.converters';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ContextService } from 'src/services/context/context.service';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { ElrondApiService } from 'src/services/elrond-communication/services/elrond-api.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import * as fs from 'fs';
-import { generateComputeLogMessage } from 'src/utils/generate-log-message';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class AnalyticsReindexService {
@@ -65,12 +63,9 @@ export class AnalyticsReindexService {
         private readonly elrondApiService: ElrondApiService,
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetterService: PairGetterService,
-        @Inject(forwardRef(() => ContextService))
-        private readonly context: ContextService,
         private schedulerRegistry: SchedulerRegistry,
-        @Inject(forwardRef(() => ContextGetterService))
-        private readonly contextGetter: ContextGetterService,
         private readonly routerGetterService: RouterGetterService,
+        private readonly tokenGetterService: TokenGetterService,
     ) {
         // manually start cronjob; todo: find out why not starting automatically...
         const job = new CronJob(CronExpression.EVERY_SECOND, () => {
@@ -457,8 +452,10 @@ export class AnalyticsReindexService {
             ] = await Promise.all([
                 this.pairGetterService.getFirstTokenID(event.address),
                 this.pairGetterService.getSecondTokenID(event.address),
-                this.contextGetter.getTokenMetadata(event.getTokenIn().tokenID),
-                this.contextGetter.getTokenMetadata(
+                this.tokenGetterService.getTokenMetadata(
+                    event.getTokenIn().tokenID,
+                ),
+                this.tokenGetterService.getTokenMetadata(
                     event.getTokenOut().tokenID,
                 ),
                 this.computeTokenPriceUSD(event.getTokenIn().tokenID),
@@ -860,7 +857,7 @@ export class AnalyticsReindexService {
         const pairaddresses = this.getAllPairAddresses();
 
         const [token, priceUSD] = await Promise.all([
-            this.contextGetter.getTokenMetadata(tokenID),
+            this.tokenGetterService.getTokenMetadata(tokenID),
             this.computeTokenPriceUSD(tokenID),
         ]);
 
@@ -893,7 +890,7 @@ export class AnalyticsReindexService {
         amount: string,
     ): Promise<any> {
         const [token, priceUSD, lockedData] = await Promise.all([
-            this.contextGetter.getTokenMetadata(tokenID),
+            this.tokenGetterService.getTokenMetadata(tokenID),
             this.computeTokenPriceUSD(tokenID),
             this.getTokenLiquidityData(tokenID),
         ]);
@@ -909,7 +906,7 @@ export class AnalyticsReindexService {
     }
 
     private async getPriceUSDByPath(tokenID: string): Promise<BigNumber> {
-        const pair = await this.context.getPairByTokens(
+        const pair = await this.getPairByTokens(
             tokenID,
             constantsConfig.USDC_TOKEN_ID,
         );
@@ -954,13 +951,7 @@ export class AnalyticsReindexService {
         for (const edge of graph.keys()) {
             discovered.set(edge, false);
         }
-        this.context.isConnected(
-            graph,
-            tokenID,
-            this.wegldID,
-            discovered,
-            path,
-        );
+        this.isConnected(graph, tokenID, this.wegldID, discovered, path);
 
         if (path.length === 0) {
             return new BigNumber(0);
@@ -980,10 +971,7 @@ export class AnalyticsReindexService {
         tokenID: string,
         priceProviderToken: string,
     ): Promise<BigNumber> {
-        const pair = await this.context.getPairByTokens(
-            tokenID,
-            priceProviderToken,
-        );
+        const pair = await this.getPairByTokens(tokenID, priceProviderToken);
         const firstTokenPrice = await this.getTokenPrice(pair.address, tokenID);
         const priceProviderUSD = await this.computeTokenPriceUSD(
             priceProviderToken,
@@ -1094,7 +1082,7 @@ export class AnalyticsReindexService {
     ): Promise<string> {
         const [launchedTokenDecimals, acceptedToken] = await Promise.all([
             this.getCollectionDecimals(launchedTokenID),
-            this.contextGetter.getTokenMetadata(acceptedTokenID),
+            this.tokenGetterService.getTokenMetadata(acceptedTokenID),
         ]);
 
         const acceptedTokenPrice = quote(
@@ -1116,7 +1104,7 @@ export class AnalyticsReindexService {
     ): Promise<string> {
         const [launchedTokenDecimals, acceptedToken] = await Promise.all([
             this.getCollectionDecimals(launchedTokenID),
-            this.contextGetter.getTokenMetadata(acceptedTokenID),
+            this.tokenGetterService.getTokenMetadata(acceptedTokenID),
         ]);
 
         const launchedTokenPrice = quote(
@@ -1176,5 +1164,43 @@ export class AnalyticsReindexService {
             throw error;
         }
         return pairsMetadata;
+    }
+
+    private async getPairByTokens(
+        token1ID: string,
+        token2ID: string,
+    ): Promise<PairMetadata> {
+        const pairs = await this.getAllPairsMetadata();
+        return pairs.find(
+            p =>
+                (p.firstTokenID === token1ID && p.secondTokenID === token2ID) ||
+                (p.firstTokenID === token2ID && p.secondTokenID === token1ID),
+        );
+    }
+
+    isConnected(
+        graph: Map<string, string[]>,
+        input: string,
+        output: string,
+        discovered: Map<string, boolean>,
+        path: string[] = [],
+    ): boolean {
+        discovered.set(input, true);
+        path.push(input);
+
+        if (input === output) {
+            return true;
+        }
+
+        for (const vertex of graph.get(input)) {
+            if (!discovered.get(vertex)) {
+                if (this.isConnected(graph, vertex, output, discovered, path)) {
+                    return true;
+                }
+            }
+        }
+
+        path.pop();
+        return false;
     }
 }

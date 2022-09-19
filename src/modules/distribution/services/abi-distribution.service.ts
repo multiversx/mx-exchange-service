@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Address, AddressValue } from '@elrondnetwork/erdjs';
 import { Interaction } from '@elrondnetwork/erdjs';
-import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import BigNumber from 'bignumber.js';
 import { CommunityDistributionModel } from '../models/distribution.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';

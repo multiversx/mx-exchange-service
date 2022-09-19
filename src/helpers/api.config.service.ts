@@ -34,23 +34,27 @@ export class ApiConfigService {
     }
 
     isPublicApiActive(): boolean {
-        return Boolean(this.getGeneric<string>('ENABLE_PUBLIC_API'));
+        return this.getGeneric<string>('ENABLE_PUBLIC_API') === 'true';
     }
 
     isCacheWarmerCronActive(): boolean {
-        return Boolean(this.getGeneric<string>('ENABLE_CACHE_WARMER'));
+        return this.getGeneric<string>('ENABLE_CACHE_WARMER') === 'true';
     }
 
     isPrivateAppActive(): boolean {
-        return Boolean(this.getGeneric<string>('ENABLE_PRIVATE_API'));
+        return this.getGeneric<string>('ENABLE_PRIVATE_API') === 'true';
     }
 
     isEventsNotifierAppActive(): boolean {
-        return Boolean(this.getGeneric<string>('ENABLE_EVENTS_NOTIFIER'));
+        return this.getGeneric<string>('ENABLE_EVENTS_NOTIFIER') === 'true';
     }
 
     isEventsReindexingCronjobActive(): boolean {
-        return Boolean(this.getGeneric<string>('ENABLE_EVENTS_REINDEXING'));
+        return this.getGeneric<string>('ENABLE_EVENTS_REINDEXING') === 'true';
+    }
+
+    isTracerActive(): boolean {
+        return this.getGeneric<string>('ENABLE_TRACER') === 'true';
     }
 
     getRedisUrl(): string {

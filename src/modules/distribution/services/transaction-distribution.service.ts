@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { elrondConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
-import { ElrondProxyService } from '../../../services/elrond-communication/services/elrond-proxy.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 @Injectable()
 export class TransactionsDistributionService {

@@ -5,7 +5,7 @@ import {
     SmartContractAbi,
 } from '@elrondnetwork/erdjs/out';
 import { promises } from 'fs';
-import { ElrondProxyService } from '../services/elrond-proxy.service';
+import { ElrondProxyService } from './elrond-proxy.service';
 
 export class ElrondProxyServiceMock extends ElrondProxyService {
     async getAddressShardID(address: string): Promise<number> {

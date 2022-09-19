@@ -4,8 +4,8 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { AbiStakingProxyService } from 'src/modules/staking-proxy/services/staking.proxy.abi.service';
 import { StakingProxySetterService } from 'src/modules/staking-proxy/services/staking.proxy.setter.service';
-import { ContextSetterService } from '../context/context.setter.service';
-import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class StakingProxyCacheWarmerService {
         private readonly abiService: AbiStakingProxyService,
         private readonly stakingProxySetter: StakingProxySetterService,
         private readonly apiService: ElrondApiService,
-        private readonly contextSetter: ContextSetterService,
+        private readonly tokenSetter: TokenSetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -62,19 +62,16 @@ export class StakingProxyCacheWarmerService {
                 this.stakingProxySetter.setFarmTokenID(farmTokenID),
                 this.stakingProxySetter.setDualYieldTokenID(dualYieldTokenID),
                 this.stakingProxySetter.setLpFarmTokenID(lpFarmTokenID),
-                this.contextSetter.setTokenMetadata(
-                    stakingTokenID,
-                    stakingToken,
-                ),
-                this.contextSetter.setNftCollectionMetadata(
+                this.tokenSetter.setTokenMetadata(stakingTokenID, stakingToken),
+                this.tokenSetter.setNftCollectionMetadata(
                     farmTokenID,
                     farmToken,
                 ),
-                this.contextSetter.setNftCollectionMetadata(
+                this.tokenSetter.setNftCollectionMetadata(
                     dualYieldTokenID,
                     dualYieldToken,
                 ),
-                this.contextSetter.setNftCollectionMetadata(
+                this.tokenSetter.setNftCollectionMetadata(
                     lpFarmTokenID,
                     lpFarmToken,
                 ),

@@ -3,8 +3,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -16,7 +16,7 @@ export class StakingGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: AbiStakingService,
-        private readonly contextGetterService: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
     }
@@ -55,19 +55,17 @@ export class StakingGetterService extends GenericGetterService {
 
     async getFarmToken(stakeAddress: string): Promise<NftCollection> {
         const farmTokenID = await this.getFarmTokenID(stakeAddress);
-        return await this.contextGetterService.getNftCollectionMetadata(
-            farmTokenID,
-        );
+        return await this.tokenGetter.getNftCollectionMetadata(farmTokenID);
     }
 
     async getFarmingToken(stakeAddress: string): Promise<EsdtToken> {
         const farmingTokenID = await this.getFarmingTokenID(stakeAddress);
-        return await this.contextGetterService.getTokenMetadata(farmingTokenID);
+        return await this.tokenGetter.getTokenMetadata(farmingTokenID);
     }
 
     async getRewardToken(stakeAddress: string): Promise<EsdtToken> {
         const rewardTokenID = await this.getRewardTokenID(stakeAddress);
-        return await this.contextGetterService.getTokenMetadata(rewardTokenID);
+        return await this.tokenGetter.getTokenMetadata(rewardTokenID);
     }
 
     async getFarmTokenSupply(stakeAddress: string): Promise<string> {
@@ -166,6 +164,22 @@ export class StakingGetterService extends GenericGetterService {
         );
     }
 
+    async getBurnGasLimit(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            this.getStakeCacheKey(stakeAddress, 'burnGasLimit'),
+            () => this.abiService.getBurnGasLimit(stakeAddress),
+            oneHour(),
+        );
+    }
+
+    async getTransferExecGasLimit(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            this.getStakeCacheKey(stakeAddress, 'transferExecGasLimit'),
+            () => this.abiService.getTransferExecGasLimit(stakeAddress),
+            oneHour(),
+        );
+    }
+
     async getState(stakeAddress: string): Promise<string> {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'state'),
@@ -176,5 +190,29 @@ export class StakingGetterService extends GenericGetterService {
 
     private getStakeCacheKey(stakeAddress: string, ...args: any) {
         return generateCacheKeyFromParams('stake', stakeAddress, ...args);
+    }
+
+    async getLockedAssetFactoryManagedAddress(
+        stakeAddress: string,
+    ): Promise<string> {
+        return await this.getData(
+            this.getStakeCacheKey(
+                stakeAddress,
+                'lockedAssetFactoryManagedAddress',
+            ),
+            () =>
+                this.abiService.getLockedAssetFactoryManagedAddress(
+                    stakeAddress,
+                ),
+            oneHour(),
+        );
+    }
+
+    async getLastErrorMessage(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            this.getStakeCacheKey(stakeAddress, 'lastErrorMessage'),
+            () => this.abiService.getLastErrorMessage(stakeAddress),
+            oneMinute(),
+        );
     }
 }

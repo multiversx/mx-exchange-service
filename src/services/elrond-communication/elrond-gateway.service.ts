@@ -5,6 +5,8 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Logger } from 'winston';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 import axios, { AxiosRequestConfig } from 'axios';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class ElrondGatewayService {
@@ -35,6 +37,7 @@ export class ElrondGatewayService {
 
     async getSCStorageKey(address: string, key: string): Promise<any> {
         return await this.doGetGeneric(
+            this.getSCStorageKey.name,
             `address/${address}/key/${Buffer.from(key).toString('hex')}`,
             response => response.data.value,
         );
@@ -44,20 +47,30 @@ export class ElrondGatewayService {
      * Get method that receives the resource url and on callback the method used to map the response.
      */
     private async doGetGeneric(
+        name: string,
         resourceUrl: string,
         callback: (response: any) => any,
     ): Promise<any> {
-        const response = await this.doGet(resourceUrl);
+        const response = await this.doGet(name, resourceUrl);
         return callback(response);
     }
 
-    private async doGet(resourceUrl: string): Promise<any> {
+    private async doGet(name: string, resourceUrl: string): Promise<any> {
+        const profiler = new PerformanceProfiler(`${name} ${resourceUrl}`);
         try {
             const url = `${this.url}/${resourceUrl}`;
             const response = await axios.get(url, this.config);
             return response.data;
         } catch (error) {
             this.handleApiError(error, resourceUrl);
+        } finally {
+            profiler.stop();
+
+            MetricsCollector.setExternalCall(
+                ElrondGatewayService.name,
+                name,
+                profiler.duration,
+            );
         }
     }
 

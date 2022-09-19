@@ -9,7 +9,7 @@ import {
     EsdtTokenType,
 } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { ElrondApiService } from 'src/services/elrond-communication/services/elrond-api.service';
+import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { UserToken } from '../models/user.model';
 import { UserEsdtComputeService } from './esdt.compute.service';
 
@@ -58,7 +58,7 @@ export class UserEsdtService {
         );
 
         promises = userPairEsdtTokens.map(token => {
-            return this.getEsdtTokenDetails(token);
+            return this.getEsdtTokenDetails(new EsdtToken(token));
         });
         return await Promise.all(promises);
     }

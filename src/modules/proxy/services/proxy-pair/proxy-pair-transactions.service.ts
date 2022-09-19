@@ -13,7 +13,7 @@ import {
     AddLiquidityProxyArgs,
     RemoveLiquidityProxyArgs,
 } from '../../models/proxy-pair.args';
-import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';

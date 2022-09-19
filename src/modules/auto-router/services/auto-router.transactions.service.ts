@@ -1,5 +1,6 @@
 import {
     Address,
+    AddressValue,
     BigUIntValue,
     BytesValue,
     TokenPayment,
@@ -10,7 +11,7 @@ import { elrondConfig, gasConfig } from 'src/config';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { TransactionModel } from '../../../models/transaction.model';
-import { ElrondProxyService } from '../../../services/elrond-communication/services/elrond-proxy.service';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
 
 @Injectable()
@@ -53,13 +54,14 @@ export class AutoRouterTransactionService {
         const gasLimit =
             args.addressRoute.length * gasConfig.router.multiPairSwapMultiplier;
 
+        const transactionArgs =
+            args.swapType == SWAP_TYPE.fixedInput
+                ? await this.multiPairFixedInputSwaps(args)
+                : await this.multiPairFixedOutputSwaps(args);
+
         transactions.push(
             contract.methodsExplicit
-                .multiPairSwap(
-                    args.swapType == SWAP_TYPE.fixedInput
-                        ? this.multiPairFixedInputSwaps(args)
-                        : this.multiPairFixedOutputSwaps(args),
-                )
+                .multiPairSwap(transactionArgs)
                 .withSingleESDTTransfer(
                     TokenPayment.fungibleFromBigInteger(
                         args.tokenRoute[0],
@@ -77,7 +79,9 @@ export class AutoRouterTransactionService {
         return transactions;
     }
 
-    private multiPairFixedInputSwaps(args: MultiSwapTokensArgs): any[] {
+    private async multiPairFixedInputSwaps(
+        args: MultiSwapTokensArgs,
+    ): Promise<any[]> {
         const swaps = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;
@@ -100,7 +104,7 @@ export class AutoRouterTransactionService {
 
             swaps.push(
                 ...[
-                    BytesValue.fromHex(Address.fromString(address).hex()),
+                    new AddressValue(Address.fromString(address)),
                     BytesValue.fromUTF8('swapTokensFixedInput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(amountOutMin),
@@ -110,7 +114,9 @@ export class AutoRouterTransactionService {
         return swaps;
     }
 
-    private multiPairFixedOutputSwaps(args: MultiSwapTokensArgs): any[] {
+    private async multiPairFixedOutputSwaps(
+        args: MultiSwapTokensArgs,
+    ): Promise<any[]> {
         const swaps = [];
 
         const intermediaryTolerance = args.tolerance / args.addressRoute.length;
@@ -135,7 +141,7 @@ export class AutoRouterTransactionService {
 
             swaps.push(
                 ...[
-                    BytesValue.fromHex(Address.fromString(address).hex()),
+                    new AddressValue(Address.fromString(address)),
                     BytesValue.fromUTF8('swapTokensFixedOutput'),
                     BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                     new BigUIntValue(new BigNumber(amountOut)),
@@ -165,7 +171,7 @@ export class AutoRouterTransactionService {
 
                 swaps.push(
                     ...[
-                        BytesValue.fromHex(Address.fromString(address).hex()),
+                        new AddressValue(Address.fromString(address)),
                         BytesValue.fromUTF8('swapTokensFixedInput'),
                         BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                         new BigUIntValue(
@@ -177,7 +183,7 @@ export class AutoRouterTransactionService {
                 console.log('swapTokensFixedOutput');
                 swaps.push(
                     ...[
-                        BytesValue.fromHex(Address.fromString(address).hex()),
+                        new AddressValue(Address.fromString(address)),
                         BytesValue.fromUTF8('swapTokensFixedOutput'),
                         BytesValue.fromUTF8(args.tokenRoute[index + 1]),
                         new BigUIntValue(

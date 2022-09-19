@@ -9,6 +9,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
 import { LogsProcessorService } from 'src/services/crons/logs.processor.service';
 import { AnalyticsReindexService } from './services/analytics.reindex.service';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { TokenModule } from '../tokens/token.module';
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
         ContextModule,
         RouterModule,
         PairModule,
+        TokenModule,
     ],
     providers: [
         AnalyticsReindexService,

@@ -1,4 +1,12 @@
-import { Address, BigUIntValue, TokenPayment } from '@elrondnetwork/erdjs/out';
+import {
+    Address,
+    AddressValue,
+    BigUIntValue,
+    BytesValue,
+    TokenPayment,
+    TypedValue,
+    U64Value,
+} from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -6,7 +14,7 @@ import { elrondConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TransactionsFarmService } from 'src/modules/farm/services/transactions-farm.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { StakingGetterService } from './staking.getter.service';
@@ -45,7 +53,7 @@ export class StakingTransactionService {
             payments.length > 1
                 ? gasConfig.stake.stakeFarm.withTokenMerge
                 : gasConfig.stake.stakeFarm.default;
-        const mappedPayments = payments.map(payment =>
+        const mappedPayments = payments.map((payment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
@@ -188,6 +196,27 @@ export class StakingTransactionService {
             .toPlainObject();
     }
 
+    async topUpRewards(
+        stakeAddress: string,
+        payment: InputTokenModel,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .topUpRewards([])
+            .withSingleESDTTransfer(
+                TokenPayment.fungibleFromBigInteger(
+                    payment.tokenID,
+                    new BigNumber(payment.amount),
+                ),
+            )
+            .withGasLimit(gasConfig.stake.admin.topUpRewards)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
     async mergeFarmTokens(
         sender: string,
         stakeAddress: string,
@@ -196,7 +225,7 @@ export class StakingTransactionService {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,
         );
-        const mappedPayments = payments.map(payment =>
+        const mappedPayments = payments.map((payment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
@@ -204,12 +233,236 @@ export class StakingTransactionService {
             ),
         );
         return contract.methodsExplicit
-            .compoundRewards()
+            .mergeFarmTokens()
             .withMultiESDTNFTTransfer(
                 mappedPayments,
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.stake.mergeTokens)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setPenaltyPercent(
+        stakeAddress: string,
+        percent: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .set_penalty_percent([new BigUIntValue(new BigNumber(percent))])
+            .withGasLimit(gasConfig.stake.admin.set_penalty_percent)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setMinimumFarmingEpochs(
+        stakeAddress: string,
+        epochs: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .set_minimum_farming_epochs([
+                new BigUIntValue(new BigNumber(epochs)),
+            ])
+            .withGasLimit(gasConfig.stake.admin.set_minimum_farming_epochs)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setBurnGasLimit(
+        stakeAddress: string,
+        gasLimit: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .set_burn_gas_limit([new BigUIntValue(new BigNumber(gasLimit))])
+            .withGasLimit(gasConfig.stake.admin.set_burn_gas_limit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setTransferExecGasLimit(
+        stakeAddress: string,
+        gasLimit: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .set_transfer_exec_gas_limit([
+                new BigUIntValue(new BigNumber(gasLimit)),
+            ])
+            .withGasLimit(gasConfig.stake.admin.set_transfer_exec_gas_limit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setAddressWhitelist(
+        stakeAddress: string,
+        address: string,
+        whitelist: boolean,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+
+        if (whitelist)
+            return contract.methodsExplicit
+                .addAddressToWhitelist([
+                    new AddressValue(Address.fromString(address)),
+                ])
+                .withGasLimit(gasConfig.stake.admin.whitelist)
+                .withChainID(elrondConfig.chainID)
+                .buildTransaction()
+                .toPlainObject();
+
+        return contract.methodsExplicit
+            .removeAddressFromWhitelist([
+                new AddressValue(Address.fromString(address)),
+            ])
+            .withGasLimit(gasConfig.stake.admin.whitelist)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setState(
+        stakeAddress: string,
+        state: boolean,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+
+        if (state)
+            return contract.methodsExplicit
+                .resume()
+                .withGasLimit(gasConfig.stake.admin.setState)
+                .withChainID(elrondConfig.chainID)
+                .buildTransaction()
+                .toPlainObject();
+
+        return contract.methodsExplicit
+            .pause()
+            .withGasLimit(gasConfig.stake.admin.setState)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setLocalRolesFarmToken(
+        stakeAddress: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .setLocalRolesFarmToken()
+            .withGasLimit(gasConfig.stake.admin.setLocalRolesFarmToken)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async registerFarmToken(
+        stakeAddress: string,
+        tokenName: string,
+        tokenTicker: string,
+        decimals: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        const transactionArgs: TypedValue[] = [
+            BytesValue.fromUTF8(tokenName),
+            BytesValue.fromUTF8(tokenTicker),
+            new U64Value(new BigNumber(decimals)),
+        ];
+        return contract.methodsExplicit
+            .registerFarmToken(transactionArgs)
+            .withGasLimit(gasConfig.stake.admin.registerFarmToken)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setPerBlockRewardAmount(
+        stakeAddress: string,
+        perBlockAmount: string,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .setPerBlockRewardAmount([
+                new BigUIntValue(new BigNumber(perBlockAmount)),
+            ])
+            .withGasLimit(gasConfig.stake.admin.setPerBlockRewardAmount)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setMaxApr(
+        stakeAddress: string,
+        maxApr: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .setMaxApr([new BigUIntValue(new BigNumber(maxApr))])
+            .withGasLimit(gasConfig.stake.admin.setMaxApr)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setMinUnbondEpochs(
+        stakeAddress: string,
+        minUnboundEpoch: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+        return contract.methodsExplicit
+            .setMinUnbondEpochs([new U64Value(new BigNumber(minUnboundEpoch))])
+            .withGasLimit(gasConfig.stake.admin.setMinUnbondEpochs)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async setRewardsState(
+        stakeAddress: string,
+        rewards: boolean,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getStakingSmartContract(
+            stakeAddress,
+        );
+
+        if (rewards)
+            return contract.methodsExplicit
+                .startProduceRewards()
+                .withGasLimit(gasConfig.stake.admin.setRewardsState)
+                .withChainID(elrondConfig.chainID)
+                .buildTransaction()
+                .toPlainObject();
+
+        return contract.methodsExplicit
+            .end_produce_rewards()
+            .withGasLimit(gasConfig.stake.admin.setRewardsState)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();

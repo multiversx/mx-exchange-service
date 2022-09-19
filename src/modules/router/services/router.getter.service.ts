@@ -7,6 +7,7 @@ import { Logger } from 'winston';
 import { AbiRouterService } from './abi.router.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { RouterComputeService } from './router.compute.service';
+import { PairTokens } from 'src/modules/pair/models/pair.model';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { EnableSwapByUserConfig } from '../models/factory.model';
 
@@ -38,6 +39,11 @@ export class RouterGetterService extends GenericGetterService {
         );
     }
 
+    async getPairMetadata(pairAddress: string): Promise<PairMetadata> {
+        const pairs = await this.getPairsMetadata();
+        return pairs.find((pair) => pair.address === pairAddress);
+    }
+
     async getEnableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
         return await this.getData(
             this.getRouterCacheKey('enableSwapByUserConfig'),
@@ -66,7 +72,7 @@ export class RouterGetterService extends GenericGetterService {
         return this.getData(
             this.getRouterCacheKey(`totalVolumeUSD.${time}`),
             () => this.routerComputeService.computeTotalVolumeUSD(time),
-            oneMinute(),
+            oneMinute() * 5,
         );
     }
 
@@ -74,11 +80,91 @@ export class RouterGetterService extends GenericGetterService {
         return this.getData(
             this.getRouterCacheKey(`totalFeesUSD.${time}`),
             () => this.routerComputeService.computeTotalFeesUSD(time),
-            oneMinute(),
+            oneMinute() * 5,
+        );
+    }
+
+    async getPairCount(): Promise<number> {
+        return this.getData(
+            this.getRouterCacheKey('pairCount'),
+            async () => (await this.getAllPairsAddress()).length,
+            oneHour(),
+        );
+    }
+
+    async getTotalTxCount(): Promise<number> {
+        return this.getData(
+            this.getRouterCacheKey('totalTxCount'),
+            () => this.routerComputeService.computeTotalTxCount(),
+            oneMinute() * 30,
         );
     }
 
     private getRouterCacheKey(...args: any) {
         return generateCacheKeyFromParams('router', ...args);
+    }
+
+    async getPairCreationEnabled(): Promise<boolean> {
+        return this.getData(
+            'pairCreationEnabled',
+            () => this.abiService.getPairCreationEnabled(),
+            oneHour(),
+        );
+    }
+
+    async getLastErrorMessage(): Promise<string> {
+        return this.getData(
+            'lastErrorMessage',
+            () => this.abiService.getLastErrorMessage(),
+            oneSecond(),
+        );
+    }
+
+    async getState(): Promise<boolean> {
+        return this.getData(
+            'state',
+            () => this.abiService.getState(),
+            oneHour(),
+        );
+    }
+
+    async getOwner(): Promise<string> {
+        return this.getData(
+            'owner',
+            () => this.abiService.getOwner(),
+            oneHour(),
+        );
+    }
+
+    async getAllPairsManagedAddresses(): Promise<string[]> {
+        return this.getData(
+            'pairsManagedAddresses',
+            () => this.abiService.getAllPairsManagedAddresses(),
+            oneHour(),
+        );
+    }
+
+    async getAllPairTokens(): Promise<PairTokens[]> {
+        return this.getData(
+            'pairsTokens',
+            () => this.abiService.getAllPairTokens(),
+            oneHour(),
+        );
+    }
+
+    async getPairTemplateAddress(): Promise<string> {
+        return this.getData(
+            'pairTemplateAddress',
+            () => this.abiService.getPairTemplateAddress(),
+            oneHour(),
+        );
+    }
+
+    async getTemporaryOwnerPeriod(): Promise<string> {
+        return this.getData(
+            'temporaryOwnerPeriod',
+            () => this.abiService.getTemporaryOwnerPeriod(),
+            oneMinute() * 10,
+        );
     }
 }

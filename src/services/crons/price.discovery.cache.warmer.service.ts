@@ -5,8 +5,8 @@ import { scAddress } from 'src/config';
 import { PriceDiscoveryAbiService } from 'src/modules/price-discovery/services/price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from 'src/modules/price-discovery/services/price.discovery.compute.service';
 import { PriceDiscoverySetterService } from 'src/modules/price-discovery/services/price.discovery.setter.service';
-import { ContextSetterService } from '../context/context.setter.service';
-import { ElrondApiService } from '../elrond-communication/services/elrond-api.service';
+import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class PriceDiscoveryCacheWarmerService {
         private readonly priceDiscoveryAbi: PriceDiscoveryAbiService,
         private readonly priceDiscoverySetter: PriceDiscoverySetterService,
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
-        private readonly contextSetter: ContextSetterService,
+        private readonly tokenSetter: TokenSetterService,
         private readonly apiService: ElrondApiService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -125,15 +125,15 @@ export class PriceDiscoveryCacheWarmerService {
             ]);
 
             const contextCacheKeys = await Promise.all([
-                this.contextSetter.setTokenMetadata(
+                this.tokenSetter.setTokenMetadata(
                     launchedTokenID,
                     launchedToken,
                 ),
-                this.contextSetter.setTokenMetadata(
+                this.tokenSetter.setTokenMetadata(
                     acceptedTokenID,
                     acceptedToken,
                 ),
-                this.contextSetter.setNftCollectionMetadata(
+                this.tokenSetter.setNftCollectionMetadata(
                     redeemTokenID,
                     redeemToken,
                 ),

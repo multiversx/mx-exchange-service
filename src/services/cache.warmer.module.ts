@@ -3,8 +3,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { PairModule } from '../modules/pair/pair.module';
 import { ContextModule } from './context/context.module';
 import { CacheWarmerService } from './crons/cache.warmer.service';
-import { PriceFeedModule } from './price-feed/price-feed.module';
-import { ServicesModule } from './services.module';
 import { CachingService } from './caching/cache.service';
 import { FarmModule } from 'src/modules/farm/farm.module';
 import { ProxyModule } from 'src/modules/proxy/proxy.module';
@@ -30,15 +28,16 @@ import { MetabondingModule } from 'src/modules/metabonding/metabonding.module';
 import { PriceDiscoveryCacheWarmerService } from './crons/price.discovery.cache.warmer.service';
 import { PriceDiscoveryModule } from 'src/modules/price-discovery/price.discovery.module';
 import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
+import { RouterModule } from 'src/modules/router/router.module';
+import { TokenModule } from 'src/modules/tokens/token.module';
 
 @Module({
     imports: [
         ScheduleModule.forRoot(),
         CommonAppModule,
         CacheModule.register(),
-        PriceFeedModule,
         PairModule,
-        ServicesModule,
+        RouterModule,
         ElrondCommunicationModule,
         ContextModule,
         FarmModule,
@@ -50,6 +49,7 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
         ProxyPairModule,
         AnalyticsModule,
         PriceDiscoveryModule,
+        TokenModule,
         AWSModule,
         RemoteConfigModule,
     ],

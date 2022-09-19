@@ -6,7 +6,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/services/elrond-proxy.service';
+import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
 
 @Injectable()
