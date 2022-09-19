@@ -41,6 +41,14 @@ export class EnergyGetterService extends GenericGetterService {
         );
     }
 
+    async getPauseState(): Promise<boolean> {
+        return await this.getData(
+            this.getEnergyCacheKey('pauseState'),
+            () => this.abiService.isPaused(),
+            oneHour(),
+        );
+    }
+
     private getEnergyCacheKey(...args: any): string {
         return generateCacheKeyFromParams('energy', args);
     }

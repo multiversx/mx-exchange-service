@@ -26,6 +26,8 @@ export class SimpleLockEnergyModel {
     baseAssetTokenID: string;
     @Field(() => [Int])
     lockOptions: number[];
+    @Field()
+    pauseState: boolean;
 }
 
 @ObjectType()

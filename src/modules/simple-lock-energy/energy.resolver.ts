@@ -29,4 +29,11 @@ export class EnergyResolver extends GenericResolver {
             this.energyGetter.getLockOptions(),
         );
     }
+
+    @ResolveField()
+    async pauseState(): Promise<boolean> {
+        return await this.genericFieldResover<boolean>(() =>
+            this.energyGetter.getPauseState(),
+        );
+    }
 }

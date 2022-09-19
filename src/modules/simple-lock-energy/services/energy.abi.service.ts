@@ -117,4 +117,16 @@ export class EnergyAbiService extends GenericAbiService {
 
         return response.firstValue.valueOf().toFixed();
     }
+
+    async isPaused(): Promise<boolean> {
+        const contract =
+            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const interaction = contract.methodsExplicit.isPaused();
+        const response = await this.getGenericData(
+            EnergyAbiService.name,
+            interaction,
+        );
+
+        return response.firstValue.valueOf();
+    }
 }
