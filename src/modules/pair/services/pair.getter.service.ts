@@ -7,6 +7,7 @@ import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 //import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -31,8 +32,7 @@ export class PairGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
-        //private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-        private readonly elrondDataService: ElrondDataService,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService, //private readonly elrondDataService: ElrondDataService,
     ) {
         super(cachingService, logger);
     }
@@ -208,18 +208,18 @@ export class PairGetterService extends GenericGetterService {
                 `firstTokenVolume.${startTimeUtc}`,
             ),
             () =>
-                // this.awsTimestreamQuery.getAggregatedValue({
-                //     table: awsConfig.timestream.tableName,
-                //     series: pairAddress,
-                //     metric: 'firstTokenVolume',
-                //     time,
-                // }),
-                this.elrondDataService.getAggregatedValue({
-                    table: elrondData.timescale.table,
+                this.awsTimestreamQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
                     series: pairAddress,
-                    key: 'firstTokenVolume',
-                    startTimeUtc,
+                    metric: 'firstTokenVolume',
+                    time: startTimeUtc,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     key: 'firstTokenVolume',
+            //     startTimeUtc,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -234,18 +234,18 @@ export class PairGetterService extends GenericGetterService {
                 `secondTokenVolume.${startTimeUtc}`,
             ),
             () =>
-                // this.awsTimestreamQuery.getAggregatedValue({
-                //     table: awsConfig.timestream.tableName,
-                //     series: pairAddress,
-                //     metric: 'secondTokenVolume',
-                //     time,
-                // }),
-                this.elrondDataService.getAggregatedValue({
-                    table: elrondData.timescale.table,
+                this.awsTimestreamQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
                     series: pairAddress,
-                    key: 'secondTokenVolume',
-                    startTimeUtc,
+                    metric: 'secondTokenVolume',
+                    time: startTimeUtc,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     key: 'secondTokenVolume',
+            //     startTimeUtc,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -257,18 +257,18 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, `volumeUSD.${startTimeUtc}`),
             () =>
-                // this.awsTimestreamQuery.getAggregatedValue({
-                //     table: awsConfig.timestream.tableName,
-                //     series: pairAddress,
-                //     metric: 'volumeUSD',
-                //     time,
-                // }),
-                this.elrondDataService.getAggregatedValue({
-                    table: elrondData.timescale.table,
+                this.awsTimestreamQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
                     series: pairAddress,
-                    key: 'volumeUSD',
-                    startTimeUtc,
+                    metric: 'volumeUSD',
+                    time: startTimeUtc,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     key: 'volumeUSD',
+            //     startTimeUtc,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -280,18 +280,18 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, `feesUSD.${startTimeUtc}`),
             () =>
-                // this.awsTimestreamQuery.getAggregatedValue({
-                //     table: awsConfig.timestream.tableName,
-                //     series: pairAddress,
-                //     metric: 'feesUSD',
-                //     time,
-                // }),
-                this.elrondDataService.getAggregatedValue({
-                    table: elrondData.timescale.table,
+                this.awsTimestreamQuery.getAggregatedValue({
+                    table: awsConfig.timestream.tableName,
                     series: pairAddress,
-                    key: 'feesUSD',
-                    startTimeUtc,
+                    metric: 'feesUSD',
+                    time: startTimeUtc,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timescale.table,
+            //     series: pairAddress,
+            //     key: 'feesUSD',
+            //     startTimeUtc,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -305,12 +305,15 @@ export class PairGetterService extends GenericGetterService {
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        const [firstTokenReserve, secondTokenReserve, totalSupply] =
-            await Promise.all([
-                this.getFirstTokenReserve(pairAddress),
-                this.getSecondTokenReserve(pairAddress),
-                this.getTotalSupply(pairAddress),
-            ]);
+        const [
+            firstTokenReserve,
+            secondTokenReserve,
+            totalSupply,
+        ] = await Promise.all([
+            this.getFirstTokenReserve(pairAddress),
+            this.getSecondTokenReserve(pairAddress),
+            this.getTotalSupply(pairAddress),
+        ]);
 
         return new PairInfoModel({
             reserves0: firstTokenReserve,

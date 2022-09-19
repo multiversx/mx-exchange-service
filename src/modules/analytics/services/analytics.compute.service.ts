@@ -9,7 +9,8 @@ import { FarmComputeService } from 'src/modules/farm/services/farm.compute.servi
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
+import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
+//import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
@@ -19,9 +20,9 @@ export class AnalyticsComputeService {
         private readonly farmGetterService: FarmGetterService,
         private readonly farmComputeService: FarmComputeService,
         private readonly pairGetterService: PairGetterService,
-        //private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-        private readonly elrondDataService: ElrondDataService,
-    ) {}
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+    ) //private readonly elrondDataService: ElrondDataService,
+    {}
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
@@ -109,18 +110,18 @@ export class AnalyticsComputeService {
         startTimeUtc: string,
         key: string,
     ): Promise<string> {
-        // return await this.awsTimestreamQuery.getAggregatedValue({
-        //     table: awsConfig.timestream.tableName,
-        //     series: tokenID,
-        //     metric,
-        //     time,
-        // });
-        return await this.elrondDataService.getAggregatedValue({
+        return await this.awsTimestreamQuery.getAggregatedValue({
             table: elrondData.timestream.tableName,
             series: tokenID,
-            key,
-            startTimeUtc,
+            metric: key,
+            time: startTimeUtc,
         });
+        // return await this.elrondDataService.getAggregatedValue({
+        //     table: elrondData.timestream.tableName,
+        //     series: tokenID,
+        //     key,
+        //     startTimeUtc,
+        // });
     }
 
     private async fiterPairsByIssuedLpToken(

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { elrondData } from 'src/config';
+import { awsConfig, elrondData } from 'src/config';
 //import { awsConfig, elrondData } from 'src/config';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -9,12 +9,14 @@ import { nowUtc, oneMinute } from '../../../helpers/helpers';
 import { HistoricDataModel } from '../models/analytics.model';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
+import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 
 @Injectable()
 export class AnalyticsAWSGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
         private readonly elrondDataService: ElrondDataService,
     ) {
         super(cachingService, logger);
@@ -34,18 +36,18 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getValues({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                //     time,
-                // }),
-                this.elrondDataService.getAggregatedValue({
+                this.awsTimestreamQuery.getValues({
                     table: elrondData.timestream.tableName,
                     series,
-                    key,
-                    startTimeUtc,
+                    metric: key,
+                    time: startTimeUtc,
                 }),
+            // this.elrondDataService.getAggregatedValue({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            //     startTimeUtc,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -64,18 +66,18 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getClosingValue({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                //     time,
-                // }),
-                this.elrondDataService.getClosingValue({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getClosingValue({
+                    table: awsConfig.timestream.tableName,
                     series,
-                    key,
+                    metric: key,
                     time,
                 }),
+            // this.elrondDataService.getClosingValue({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            //     time,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -92,16 +94,16 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getCompleteValues({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                // }),
-                this.elrondDataService.getCompleteValues({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getCompleteValues({
+                    table: awsConfig.timestream.tableName,
                     series,
-                    key,
+                    metric: key,
                 }),
+            // this.elrondDataService.getCompleteValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -118,16 +120,16 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getLatestCompleteValues({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                // }),
-                this.elrondDataService.getLatestCompleteValues({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getLatestCompleteValues({
+                    table: awsConfig.timestream.tableName,
                     series,
-                    key,
+                    metric: key,
                 }),
+            // this.elrondDataService.getLatestCompleteValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -144,16 +146,16 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getSumCompleteValues({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                // }),
-                this.elrondDataService.getSumCompleteValues({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getSumCompleteValues({
+                    table: awsConfig.timestream.tableName,
                     series,
-                    key,
+                    metric: key,
                 }),
+            // this.elrondDataService.getSumCompleteValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -166,16 +168,16 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getLatestValues({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                // }),
-                this.elrondDataService.getLatestValues({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getLatestValues({
+                    table: awsConfig.timestream.tableName,
                     series,
-                    key,
+                    metric: key,
                 }),
+            // this.elrondDataService.getLatestValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -188,16 +190,16 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getMarketValues({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                // }),
-                this.elrondDataService.getMarketValues({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getMarketValues({
+                    table: awsConfig.timestream.tableName,
                     series,
-                    key,
+                    metric: key,
                 }),
+            // this.elrondDataService.getMarketValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -214,16 +216,16 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getMarketCompleteValues({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                // }),
-                this.elrondDataService.getMarketCompleteValues({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getMarketCompleteValues({
+                    table: awsConfig.timestream.tableName,
                     series,
-                    key,
+                    metric: key,
                 }),
+            // this.elrondDataService.getMarketCompleteValues({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -236,16 +238,16 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getValues24hSum({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                // }),
-                this.elrondDataService.getValues24hSum({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getValues24hSum({
+                    table: awsConfig.timestream.tableName,
                     series,
-                    key,
+                    metric: key,
                 }),
+            // this.elrondDataService.getValues24hSum({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -258,16 +260,16 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getValues24h({
-                //     table: awsConfig.timestream.tableName,
-                //     series,
-                //     metric,
-                // }),
-                this.elrondDataService.getValues24h({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getValues24h({
+                    table: awsConfig.timestream.tableName,
                     series,
-                    key,
+                    metric: key,
                 }),
+            // this.elrondDataService.getValues24h({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            // }),
             oneMinute() * 5,
         );
     }
@@ -288,20 +290,20 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getLatestHistoricData({
-                //     table: awsConfig.timestream.tableName,
-                //     time,
-                //     series,
-                //     metric,
-                //     start,
-                // }),
-                this.elrondDataService.getLatestHistoricData({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getLatestHistoricData({
+                    table: awsConfig.timestream.tableName,
+                    time,
                     series,
-                    key,
-                    startDate,
-                    endDate: nowUtc(),
+                    metric: key,
+                    start: startDate,
                 }),
+            // this.elrondDataService.getLatestHistoricData({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            //     startDate,
+            //     endDate: nowUtc(),
+            // }),
             oneMinute() * 5,
         );
     }
@@ -311,8 +313,9 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
         series: string,
         key: string,
         startDate: string,
-        endDate: string,
-        resolution: string = 'DAY',
+        bin: string,
+        //endDate: string,
+        //resolution: string = 'DAY',
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestBinnedHistoricData',
@@ -320,28 +323,29 @@ export class AnalyticsAWSGetterService extends GenericGetterService {
             series,
             key,
             startDate,
-            endDate,
-            resolution,
+            bin,
+            //endDate,
+            //resolution,
         );
         return await this.getData(
             cacheKey,
             () =>
-                // this.awsTimestreamQuery.getLatestBinnedHistoricData({
-                //     table: awsConfig.timestream.tableName,
-                //     time,
-                //     series,
-                //     metric,
-                //     bin,
-                //     start,
-                // }),
-                this.elrondDataService.getLatestBinnedHistoricData({
-                    table: elrondData.timestream.tableName,
+                this.awsTimestreamQuery.getLatestBinnedHistoricData({
+                    table: awsConfig.timestream.tableName,
+                    time,
                     series,
-                    key,
-                    startDate,
-                    endDate,
-                    resolution,
+                    metric: key,
+                    bin,
+                    start: startDate,
                 }),
+            // this.elrondDataService.getLatestBinnedHistoricData({
+            //     table: elrondData.timestream.tableName,
+            //     series,
+            //     key,
+            //     startDate,
+            //     endDate,
+            //     resolution,
+            // }),
             oneMinute() * 5,
         );
     }
