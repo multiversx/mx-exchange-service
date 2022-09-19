@@ -13,9 +13,8 @@ import {
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { elrondConfig, gasConfig } from 'src/config';
+import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { UnlockType } from '../models/simple.lock.energy.model';
 
@@ -24,8 +23,7 @@ export class EnergyTransactionService {
     constructor(private readonly elrondProxy: ElrondProxyService) {}
 
     async lockTokens(
-        unlockedTokens: EsdtToken,
-        amount: string,
+        inputTokens: InputTokenModel,
         lockEpochs: number,
     ): Promise<TransactionModel> {
         const contract =
@@ -34,10 +32,9 @@ export class EnergyTransactionService {
         return contract.methodsExplicit
             .lockTokens([new U64Value(new BigNumber(lockEpochs))])
             .withSingleESDTTransfer(
-                TokenPayment.fungibleFromAmount(
-                    unlockedTokens.identifier,
-                    new BigNumber(amount),
-                    unlockedTokens.decimals,
+                TokenPayment.fungibleFromBigInteger(
+                    inputTokens.tokenID,
+                    new BigNumber(inputTokens.amount),
                 ),
             )
             .withGasLimit(gasConfig.simpleLockEnergy.lockTokens)
@@ -47,8 +44,7 @@ export class EnergyTransactionService {
     }
 
     async updateTokens(
-        lockedTokens: NftToken,
-        amount: string,
+        lockedTokens: InputTokenModel,
         unlockType: UnlockType,
         epochsToReduce = 0,
     ): Promise<TransactionModel> {
@@ -71,11 +67,10 @@ export class EnergyTransactionService {
 
         return endpoint
             .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromAmount(
-                    lockedTokens.identifier,
+                TokenPayment.metaEsdtFromBigInteger(
+                    lockedTokens.tokenID,
                     lockedTokens.nonce,
-                    new BigNumber(amount),
-                    lockedTokens.decimals,
+                    new BigNumber(lockedTokens.amount),
                 ),
                 contract.getAddress(),
             )
