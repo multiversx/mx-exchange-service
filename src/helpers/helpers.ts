@@ -141,10 +141,6 @@ export function oneMonthAgoUtc(): string {
     return new Date(new Date().getTime() - oneMonth() * 1000).toUTCString();
 }
 
-export function twentyNineDaysAgoUtc(): string {
-    return new Date(new Date().getTime() - oneDay() * 29 * 1000).toUTCString();
-}
-
 export function nowUtc(): string {
     return new Date().toUTCString();
 }

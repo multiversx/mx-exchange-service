@@ -130,7 +130,7 @@ export class AnalyticsReindexService {
                 console.log(`the end for interval gte ${lte} <-> lte ${gte}`);
 
             this.savePairsState();
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            await new Promise((resolve) => setTimeout(resolve, 3000));
         }
 
         return true;
@@ -154,7 +154,7 @@ export class AnalyticsReindexService {
             eventGroups = eventGroups.concat(group);
         }
 
-        eventGroups.sort(function(a, b) {
+        eventGroups.sort(function (a, b) {
             return (
                 new Date(a._source.timestamp).getTime() -
                 new Date(b._source.timestamp).getTime()
@@ -270,7 +270,8 @@ export class AnalyticsReindexService {
             }
 
             try {
-                let pairsMetadata: PairMetadata[] = await this.routerGetterService.getPairsMetadata();
+                let pairsMetadata: PairMetadata[] =
+                    await this.routerGetterService.getPairsMetadata();
                 for (const pair of pairsMetadata) {
                     if (this.pairsState[pair.address]) {
                         continue;
@@ -410,21 +411,19 @@ export class AnalyticsReindexService {
                 lockedValueUSD: pairLockedValueUSD,
                 liquidity: event.getLiquidityPoolSupply(),
             };
-            data[
-                event.getFirstToken().tokenID
-            ] = await this.getTokenLiquidityData(event.getFirstToken().tokenID);
-            data[
-                event.getSecondToken().tokenID
-            ] = await this.getTokenLiquidityData(
-                event.getSecondToken().tokenID,
-            );
+            data[event.getFirstToken().tokenID] =
+                await this.getTokenLiquidityData(event.getFirstToken().tokenID);
+            data[event.getSecondToken().tokenID] =
+                await this.getTokenLiquidityData(
+                    event.getSecondToken().tokenID,
+                );
 
             await Promise.all([
-                this.elrondDataService.ingestObject(
-                    elrondData.timescale.table,
+                this.elrondDataService.ingestObject({
+                    tableName: elrondData.timescale.table,
                     data,
-                    event.getTimestamp().toNumber(),
-                ),
+                    timestamp: event.getTimestamp().toNumber(),
+                }),
             ]);
         } catch (error) {
             console.error(error);
@@ -540,11 +539,11 @@ export class AnalyticsReindexService {
             };
 
             await Promise.all([
-                this.elrondDataService.ingestObject(
-                    elrondData.timescale.table,
+                this.elrondDataService.ingestObject({
+                    tableName: elrondData.timescale.table,
                     data,
-                    event.getTimestamp().toNumber(),
-                ),
+                    timestamp: event.getTimestamp().toNumber(),
+                }),
             ]);
         } catch (error) {
             console.error(error);
@@ -587,15 +586,12 @@ export class AnalyticsReindexService {
         pairAddress: string,
     ): Promise<BigNumber> {
         try {
-            const [
-                firstToken,
-                firstTokenPriceUSD,
-                firstTokenReserve,
-            ] = await Promise.all([
-                this.pairGetterService.getFirstToken(pairAddress),
-                this.computeFirstTokenPriceUSD(pairAddress),
-                this.getFirstTokenReserve(pairAddress),
-            ]);
+            const [firstToken, firstTokenPriceUSD, firstTokenReserve] =
+                await Promise.all([
+                    this.pairGetterService.getFirstToken(pairAddress),
+                    this.computeFirstTokenPriceUSD(pairAddress),
+                    this.getFirstTokenReserve(pairAddress),
+                ]);
             return new BigNumber(firstTokenReserve)
                 .multipliedBy(`1e-${firstToken.decimals}`)
                 .multipliedBy(firstTokenPriceUSD);
@@ -613,15 +609,12 @@ export class AnalyticsReindexService {
         pairAddress: string,
     ): Promise<BigNumber> {
         try {
-            const [
-                secondToken,
-                secondTokenPriceUSD,
-                secondTokenReserve,
-            ] = await Promise.all([
-                this.pairGetterService.getSecondToken(pairAddress),
-                this.computeSecondTokenPriceUSD(pairAddress),
-                this.getSecondTokenReserve(pairAddress),
-            ]);
+            const [secondToken, secondTokenPriceUSD, secondTokenReserve] =
+                await Promise.all([
+                    this.pairGetterService.getSecondToken(pairAddress),
+                    this.computeSecondTokenPriceUSD(pairAddress),
+                    this.getSecondTokenReserve(pairAddress),
+                ]);
             return new BigNumber(secondTokenReserve)
                 .multipliedBy(`1e-${secondToken.decimals}`)
                 .multipliedBy(secondTokenPriceUSD);
@@ -747,17 +740,13 @@ export class AnalyticsReindexService {
         tokenInID: string,
         amount: string,
     ): Promise<string> {
-        const [
-            wrappedTokenID,
-            firstTokenID,
-            secondTokenID,
-            pairInfo,
-        ] = await Promise.all([
-            this.wegldID,
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
-            this.getPairInfoMetadata(pairAddress),
-        ]);
+        const [wrappedTokenID, firstTokenID, secondTokenID, pairInfo] =
+            await Promise.all([
+                this.wegldID,
+                this.pairGetterService.getFirstTokenID(pairAddress),
+                this.pairGetterService.getSecondTokenID(pairAddress),
+                this.getPairInfoMetadata(pairAddress),
+            ]);
 
         const tokenIn =
             tokenInID === elrondConfig.EGLDIdentifier
@@ -793,9 +782,8 @@ export class AnalyticsReindexService {
             return new PairInfoModel({
                 reserves0: this.pairsState[pairAddress]['firstTokenReserves'],
                 reserves1: this.pairsState[pairAddress]['secondTokenReserves'],
-                totalSupply: this.pairsState[pairAddress][
-                    'liquidityPoolSupply'
-                ],
+                totalSupply:
+                    this.pairsState[pairAddress]['liquidityPoolSupply'],
             });
         }
         if (this.debug)
@@ -809,13 +797,11 @@ export class AnalyticsReindexService {
     private async computeLockedValueUSD(
         pairAddress: string,
     ): Promise<BigNumber> {
-        const [
-            firstTokenLockedValueUSD,
-            secondTokenLockedValueUSD,
-        ] = await Promise.all([
-            this.computeFirstTokenLockedValueUSD(pairAddress),
-            this.computeSecondTokenLockedValueUSD(pairAddress),
-        ]);
+        const [firstTokenLockedValueUSD, secondTokenLockedValueUSD] =
+            await Promise.all([
+                this.computeFirstTokenLockedValueUSD(pairAddress),
+                this.computeSecondTokenLockedValueUSD(pairAddress),
+            ]);
 
         return new BigNumber(firstTokenLockedValueUSD).plus(
             secondTokenLockedValueUSD,
@@ -835,7 +821,7 @@ export class AnalyticsReindexService {
             const pairaddresses = this.getAllPairAddresses();
 
             let totalValueLockedUSD = new BigNumber(0);
-            const promises = pairaddresses.map(pairAddress =>
+            const promises = pairaddresses.map((pairAddress) =>
                 this.computeLockedValueUSD(pairAddress),
             );
 
@@ -944,7 +930,7 @@ export class AnalyticsReindexService {
 
         const pathTokenProviderUSD = graph
             .get(tokenID)
-            .find(entry => entry === this.wegldID);
+            .find((entry) => entry === this.wegldID);
 
         if (pathTokenProviderUSD !== undefined) {
             return await this.getPriceUSDByToken(tokenID, this.wegldID);
@@ -1011,7 +997,8 @@ export class AnalyticsReindexService {
                 return this.pairsMap;
             }
 
-            let pairsMetadata: PairMetadata[] = await this.getAllPairsMetadata();
+            let pairsMetadata: PairMetadata[] =
+                await this.getAllPairsMetadata();
 
             const pairsMap = new Map<string, string[]>();
             for (const pairMetadata of pairsMetadata) {
@@ -1019,7 +1006,7 @@ export class AnalyticsReindexService {
                 pairsMap.set(pairMetadata.secondTokenID, []);
             }
 
-            pairsMetadata.forEach(pair => {
+            pairsMetadata.forEach((pair) => {
                 pairsMap.get(pair.firstTokenID).push(pair.secondTokenID);
                 pairsMap.get(pair.secondTokenID).push(pair.firstTokenID);
             });
@@ -1068,11 +1055,11 @@ export class AnalyticsReindexService {
         };
 
         await Promise.all([
-            this.elrondDataService.ingestObject(
-                elrondData.timescale.table,
+            this.elrondDataService.ingestObject({
+                tableName: elrondData.timescale.table,
                 data,
-                Number(event.getTopics()['timestamp']),
-            ),
+                timestamp: Number(event.getTopics()['timestamp']),
+            }),
         ]);
     }
 
@@ -1142,20 +1129,21 @@ export class AnalyticsReindexService {
     }
 
     private async getAllPairsMetadata(): Promise<PairMetadata[]> {
-        let pairsMetadata: PairMetadata[] = await this.routerGetterService.getPairsMetadata();
+        let pairsMetadata: PairMetadata[] =
+            await this.routerGetterService.getPairsMetadata();
         try {
-            Object.keys(this.pairsState).forEach(pairAddress => {
+            Object.keys(this.pairsState).forEach((pairAddress) => {
                 if (
-                    pairsMetadata.find(p => p.address === pairAddress) ===
+                    pairsMetadata.find((p) => p.address === pairAddress) ===
                     undefined
                 ) {
                     pairsMetadata.push(
                         new PairMetadata({
                             address: pairAddress,
-                            firstTokenID: this.pairsState[pairAddress]
-                                .firstTokenID,
-                            secondTokenID: this.pairsState[pairAddress]
-                                .secondTokenID,
+                            firstTokenID:
+                                this.pairsState[pairAddress].firstTokenID,
+                            secondTokenID:
+                                this.pairsState[pairAddress].secondTokenID,
                         }),
                     );
                 }
@@ -1174,7 +1162,7 @@ export class AnalyticsReindexService {
     ): Promise<PairMetadata> {
         const pairs = await this.getAllPairsMetadata();
         return pairs.find(
-            p =>
+            (p) =>
                 (p.firstTokenID === token1ID && p.secondTokenID === token2ID) ||
                 (p.firstTokenID === token2ID && p.secondTokenID === token1ID),
         );

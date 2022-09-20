@@ -3,46 +3,64 @@ import BigNumber from 'bignumber.js';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
-import { AnalyticsAWSGetterService } from './analytics.service';
+import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
+//import { AnalyticsTimescaleGetterService } from './analytics.timescale.getter.service';
 
 @Injectable()
 export class AnalyticsPairService {
     constructor(
         private readonly pairGetterService: PairGetterService,
         private readonly routerGetter: RouterGetterService,
-        private readonly analyticsService: AnalyticsAWSGetterService,
+        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
+        //private readonly analyticsTimescaleGetter: AnalyticsTimescaleGetterService,
     ) {}
 
     async getClosingLockedValueUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getLatestCompleteValues(
+        return await this.analyticsAWSGetter.getLatestCompleteValues(
             pairAddress,
             'lockedValueUSD',
         );
+        // return await this.analyticsTimescaleGetter.getLatestCompleteValues(
+        //     pairAddress,
+        //     'lockedValueUSD',
+        // );
     }
 
     async getDailyVolumesUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getSumCompleteValues(
+        return await this.analyticsAWSGetter.getSumCompleteValues(
             pairAddress,
             'volumeUSD',
         );
+        // return await this.analyticsTimescaleGetter.getSumCompleteValues(
+        //     pairAddress,
+        //     'volumeUSD',
+        // );
     }
 
     async getDailyFeesUSD(pairAddress: string): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getSumCompleteValues(
+        return await this.analyticsAWSGetter.getSumCompleteValues(
             pairAddress,
             'feesUSD',
         );
+        // return await this.analyticsTimescaleGetter.getSumCompleteValues(
+        //     pairAddress,
+        //     'feesUSD',
+        // );
     }
 
     async getClosingPriceUSD(tokenID: string): Promise<HistoricDataModel[]> {
-        return await this.analyticsService.getLatestCompleteValues(
+        return await this.analyticsAWSGetter.getLatestCompleteValues(
             tokenID,
             'priceUSD',
         );
+        // return await this.analyticsTimescaleGetter.getLatestCompleteValues(
+        //     tokenID,
+        //     'priceUSD',
+        // );
     }
 
     async getPairDayDatas(pairAddress: string): Promise<PairDayDataModel[]> {
@@ -65,17 +83,17 @@ export class AnalyticsPairService {
         ]);
         const pairDayDatas: PairDayDataModel[] = [];
         for (const lockedValueUSD of lockedValuesUSD) {
-            const volumeUSD = volumesUSD.find(v => {
+            const volumeUSD = volumesUSD.find((v) => {
                 return v.timestamp === lockedValueUSD.timestamp;
             });
             const feeUSD = feesUSD.find(
-                fee => fee.timestamp === lockedValueUSD.timestamp,
+                (fee) => fee.timestamp === lockedValueUSD.timestamp,
             );
             const firstTokenPriceUSD = firstTokenPricesUSD.find(
-                price => price.timestamp === lockedValueUSD.timestamp,
+                (price) => price.timestamp === lockedValueUSD.timestamp,
             );
             const secondTokenPriceUSD = secondTokenPricesUSD.find(
-                price => price.timestamp === lockedValueUSD.timestamp,
+                (price) => price.timestamp === lockedValueUSD.timestamp,
             );
 
             pairDayDatas.push(

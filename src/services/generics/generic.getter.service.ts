@@ -14,13 +14,15 @@ export class GenericGetterService {
     protected async getData(
         cacheKey: string,
         createValueFunc: () => any,
-        ttl: number,
+        remoteTtl: number,
+        localTtl?: number,
     ): Promise<any> {
         try {
             return await this.cachingService.getOrSet(
                 cacheKey,
                 createValueFunc,
-                ttl,
+                remoteTtl,
+                localTtl,
             );
         } catch (error) {
             const logMessage = generateGetLogMessage(

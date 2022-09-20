@@ -8,10 +8,9 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
-//import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
+//import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -32,7 +31,8 @@ export class PairGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService, //private readonly elrondDataService: ElrondDataService,
+        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        //private readonly elrondDataService: ElrondDataService,
     ) {
         super(cachingService, logger);
     }
@@ -220,7 +220,8 @@ export class PairGetterService extends GenericGetterService {
             //     key: 'firstTokenVolume',
             //     startTimeUtc,
             // }),
-            oneMinute() * 5,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -246,7 +247,8 @@ export class PairGetterService extends GenericGetterService {
             //     key: 'secondTokenVolume',
             //     startTimeUtc,
             // }),
-            oneMinute() * 5,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -269,7 +271,8 @@ export class PairGetterService extends GenericGetterService {
             //     key: 'volumeUSD',
             //     startTimeUtc,
             // }),
-            oneMinute() * 5,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -292,7 +295,8 @@ export class PairGetterService extends GenericGetterService {
             //     key: 'feesUSD',
             //     startTimeUtc,
             // }),
-            oneMinute() * 5,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 

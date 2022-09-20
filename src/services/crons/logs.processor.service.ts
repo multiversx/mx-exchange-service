@@ -42,10 +42,8 @@ export class LogsProcessorService {
         try {
             this.isProcessing = true;
 
-            const [
-                lastProcessedTimestamp,
-                currentTimestamp,
-            ] = await this.getProcessingInterval(oneMinute());
+            const [lastProcessedTimestamp, currentTimestamp] =
+                await this.getProcessingInterval(oneMinute());
             if (lastProcessedTimestamp === currentTimestamp) {
                 return;
             }
@@ -225,18 +223,11 @@ export class LogsProcessorService {
             });
 
             if (Records.length === 100) {
-                const [
-                    timestreamIngestedCount,
-                    timescaleIngested,
-                ] = await Promise.all([
-                    // old
-                    this.pushAWSRecords(Records),
-                    // new
-                    await this.elrondDataService.ingest(
-                        tableName,
-                        ingestRecords,
-                    ),
-                ]);
+                const [timestreamIngestedCount, timescaleIngested] =
+                    await Promise.all([
+                        this.pushAWSRecords(Records),
+                        this.elrondDataService.ingest(tableName, ingestRecords),
+                    ]);
 
                 totalAwsWriteRecords += timestreamIngestedCount;
                 totalElrondDataWrites += timescaleIngested
@@ -256,15 +247,11 @@ export class LogsProcessorService {
         }
 
         if (Records.length > 0) {
-            const [
-                timestreamIngestedCount,
-                timescaleIngested,
-            ] = await Promise.all([
-                // old
-                this.pushAWSRecords(Records),
-                // new
-                await this.elrondDataService.ingest(tableName, ingestRecords),
-            ]);
+            const [timestreamIngestedCount, timescaleIngested] =
+                await Promise.all([
+                    this.pushAWSRecords(Records),
+                    this.elrondDataService.ingest(tableName, ingestRecords),
+                ]);
 
             totalAwsWriteRecords += timestreamIngestedCount;
             totalElrondDataWrites += timescaleIngested
@@ -400,8 +387,8 @@ export class LogsProcessorService {
         exitFarmEvent: ExitFarmEvent,
         esdtLocalBurnEvents: EsdtLocalBurnEvent[],
     ): string {
-        const lockedRewards = exitFarmEvent.toJSON().farmAttributes
-            .lockedRewards;
+        const lockedRewards =
+            exitFarmEvent.toJSON().farmAttributes.lockedRewards;
 
         let penalty = new BigNumber(0);
 

@@ -15,9 +15,7 @@ import {
     oneMonth,
     splitDateRangeIntoIntervalsUtc,
     toUtc,
-    twentyNineDaysAgoUtc,
 } from 'src/helpers/helpers';
-import moment from 'moment';
 import BigNumber from 'bignumber.js';
 
 @Injectable()
@@ -92,7 +90,7 @@ export class ElrondDataService {
 
     async ingest(tableName: string, records: IngestRecord[]): Promise<boolean> {
         const query = `mutation { ingestData( table: ${tableName}, input: [ ${records.map(
-            r => {
+            (r) => {
                 return `{ timestamp: ${r.timestamp}, series: "${r.series}", key: "${r.key}", value: "${r.value}" }`;
             },
         )} ] ) }`;
@@ -104,15 +102,11 @@ export class ElrondDataService {
         return ingested;
     }
 
-    async ingestObject(
-        tableName: string,
-        data: any,
-        timestamp: number,
-    ): Promise<boolean> {
+    async ingestObject({ tableName, data, timestamp }): Promise<boolean> {
         let ingestRecords: IngestRecord[] = [];
 
-        Object.keys(data).forEach(series => {
-            Object.keys(data[series]).forEach(MeasureName => {
+        Object.keys(data).forEach((series) => {
+            Object.keys(data[series]).forEach((MeasureName) => {
                 const MeasureValue = new BigNumber(
                     data[series][MeasureName],
                 ).toString();
@@ -126,162 +120,6 @@ export class ElrondDataService {
         });
 
         return await this.ingest(tableName, ingestRecords);
-    }
-
-    async getLatestValues({
-        table,
-        series,
-        key,
-    }): Promise<HistoricDataModel[]> {
-        const query = `query generic_query {
-            ${table} {
-              metric(
-                series: "${series}"
-                key: "${key}"
-                query: { range: MONTH, resolution: INTERVAL_DAY }
-              ) {
-                last
-                time
-              }
-            }
-          }
-          `;
-
-        const result = await this.doPostGeneric('data-api/graphql', { query });
-
-        const data = result.data[table]['metric'].map(
-            r =>
-                new HistoricDataModel({
-                    timestamp: r.time,
-                    value: r.last,
-                }),
-        );
-
-        return data;
-    }
-
-    async getValues({
-        table,
-        series,
-        key,
-        startTimeUtc,
-    }): Promise<HistoricDataModel[]> {
-        const query = `query {
-            ${table} {
-                values(series: "${series}", key: "${key}", 
-                  filter: { start_date: "${startTimeUtc}", end_date: "${nowUtc()}", sort: DESC}) {
-                  value
-                  time
-                }
-              }
-        }`;
-
-        const result = await this.doPostGeneric('data-api/graphql', { query });
-
-        const data = result.data[table]['values'].map(
-            r =>
-                new HistoricDataModel({
-                    timestamp: r.time,
-                    value: r.value,
-                }),
-        );
-
-        return data;
-    }
-
-    async getAggregatedValue({
-        table,
-        series,
-        key,
-        startTimeUtc,
-    }): Promise<string> {
-        const query = `query { 
-            ${table} { 
-                metric (series: "${series}" key: "${key}" 
-                    query: { 
-                        start_date: "${startTimeUtc}", 
-                        end_date: "${nowUtc()}" 
-                    } 
-                ) { time sum } 
-                } 
-            }`;
-
-        const result = await this.doPostGeneric('data-api/graphql', { query });
-
-        const sum = result.data[table].metric[0].sum;
-
-        return sum;
-    }
-
-    async getClosingValue({ table, series, key, time }): Promise<string> {
-        const gte = moment
-            .unix(time)
-            .utc()
-            .startOf('day')
-            .format('yyyy-MM-DD HH:mm:ss');
-        const lte = moment
-            .unix(time)
-            .utc()
-            .endOf('day')
-            .format('yyyy-MM-DD HH:mm:ss');
-
-        const query = `query { ${table} { metric (series: "${series}" key: "${key}" query: { start_date: "${gte}", end_date: "${lte}" } ) { last } } }`;
-
-        const result = await this.doPostGeneric('data-api/graphql', { query });
-
-        return result.data[table].metric[0].last;
-    }
-
-    async getCompleteValues({
-        table,
-        series,
-        key,
-    }): Promise<HistoricDataModel[]> {
-        const dateIntervals = splitDateRangeIntoIntervalsUtc(
-            elrondData.timescale.indexingStartTimeUtc,
-            nowUtc(),
-            6 * oneMonth(),
-        );
-
-        let queries: any[] = [];
-
-        for (let i = 0; i < dateIntervals.length - 1; i++) {
-            const startDate = toUtc(dateIntervals[i]);
-            const endDate = toUtc(dateIntervals[i + 1]);
-            const query = `query generic_query {
-                ${table} {
-                  metric(
-                    series: "${series}"
-                    key: "${key}"
-                    query: { start_date: "${startDate}", end_date: "${endDate}", resolution: INTERVAL_DAY }
-                  ) {
-                    avg
-                    time
-                  }
-                }
-              }`;
-            queries.push({ query });
-        }
-
-        const results = await this.doParallelPostBatchesGeneric(
-            'data-api/graphql',
-            queries,
-        );
-
-        let data: HistoricDataModel[] = [];
-        for (const result of results) {
-            data = data.concat(
-                result.data[table]['metric'].map(
-                    r =>
-                        new HistoricDataModel({
-                            timestamp: r.time,
-                            value: r.avg,
-                        }),
-                ),
-            );
-        }
-
-        return data;
     }
 
     async getLatestCompleteValues({
@@ -325,7 +163,7 @@ export class ElrondDataService {
         for (const result of results) {
             data = data.concat(
                 result.data[table]['metric'].map(
-                    r =>
+                    (r) =>
                         new HistoricDataModel({
                             timestamp: r.time,
                             value: r.last,
@@ -377,7 +215,7 @@ export class ElrondDataService {
         for (const result of results) {
             data = data.concat(
                 result.data[table]['metric'].map(
-                    r =>
+                    (r) =>
                         new HistoricDataModel({
                             timestamp: r.time,
                             value: r.sum,
@@ -408,68 +246,6 @@ export class ElrondDataService {
         return result.data[table]['metric'][0].last;
     }
 
-    async getMarketValues({
-        table,
-        series,
-        key,
-    }): Promise<HistoricDataModel[]> {
-        const query = `query generic_query {
-            ${table} {
-              metric(
-                series: "${series}"
-                key: "${key}"
-                query: { start_date: "${twentyNineDaysAgoUtc()}", end_date: "${oneDayAgoUtc()}", resolution: INTERVAL_DAY }
-              ) {
-                max
-                time
-              }
-            }
-          }`;
-
-        const result = await this.doPostGeneric('data-api/graphql', { query });
-
-        const data = result.data[table]['metric'].map(
-            r =>
-                new HistoricDataModel({
-                    timestamp: r.time,
-                    value: r.max,
-                }),
-        );
-
-        return data;
-    }
-
-    async getMarketCompleteValues({
-        table,
-        series,
-        key,
-    }): Promise<HistoricDataModel[]> {
-        const query = `query generic_query {
-            ${table} {
-              metric(
-                series: "${series}"
-                key: "${key}"
-                query: { start_date: "2022-01-01T00:00:00Z", end_date: "${oneDayAgoUtc()}", resolution: INTERVAL_DAY }
-              ) {
-                max
-                time
-              }
-            }
-          }`;
-
-        const result = await this.doPostGeneric('data-api/graphql', { query });
-
-        const data = result.data[table]['metric'].map(
-            r =>
-                new HistoricDataModel({
-                    timestamp: r.time,
-                    value: r.max,
-                }),
-        );
-
-        return data;
-    }
-
     async getValues24h({ table, series, key }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
             ${table} {
@@ -487,7 +263,7 @@ export class ElrondDataService {
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
         const data = result.data[table]['metric'].map(
-            r =>
+            (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
                     value: r.max,
@@ -521,7 +297,7 @@ export class ElrondDataService {
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
         const data = result.data[table]['metric'].map(
-            r =>
+            (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
                     value: r.sum,
@@ -558,7 +334,7 @@ export class ElrondDataService {
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
         const data = result.data[table]['values'].map(
-            r =>
+            (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
                     value: r.value,
@@ -592,7 +368,7 @@ export class ElrondDataService {
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
         const data = result.data[table]['metric'].map(
-            r =>
+            (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
                     value: r.avg,

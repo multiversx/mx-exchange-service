@@ -22,3 +22,26 @@ export class AWSQueryArgs {
     @Matches(new RegExp('[1-60][s,m,h,d]'))
     bin: string;
 }
+
+@ArgsType()
+export class TimescaleQueryArgs {
+    @Field()
+    @IsValidSeries()
+    series: string;
+    @Field()
+    key: string;
+    @Field({ nullable: true })
+    startDate: string;
+    @Field({ nullable: true })
+    endDate: string;
+    @Field(() => TimeResolutionType, { nullable: true })
+    resolution: TimeResolutionType;
+}
+
+export enum TimeResolutionType {
+    INTERVAL_1_MINUTE = 'INTERVAL_1_MINUTE',
+    INTERVAL_10_MINUTES = 'INTERVAL_10_MINUTES',
+    INTERVAL_HOUR = 'INTERVAL_HOUR',
+    INTERVAL_DAY = 'INTERVAL_DAY',
+    INTERVAL_WEEK = 'INTERVAL_WEEK',
+}
