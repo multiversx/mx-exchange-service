@@ -38,19 +38,18 @@ import { denominateAmount } from 'src/utils/token.converters';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
-import * as fs from 'fs';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { AnalyticsReindexRepositoryService } from 'src/services/database/repositories/analytics.reindex.state.repository';
+import { AnalyticsReindexState } from 'src/modules/remote-config/schemas/analytics.reindex.state.schema';
 
 @Injectable()
 export class AnalyticsReindexService {
     private readonly wegldID = tokenProviderUSD;
-    private pairsState: any = undefined;
-    private pairsMap: any = undefined;
-    private launchedTokensDecimals: any = [];
+    private state: AnalyticsReindexState;
+    private pairsMap: Map<string, string[]>;
+    private launchedTokensDecimals: { [key: string]: number } = {};
 
     private debug = true;
-    private stateFileName = 'pairsState.json';
-    private logsFileName = 'logs.txt';
 
     // PS:
     // in events, 'totalFeePercent' was not saved => getTotalFeePercent
@@ -66,6 +65,7 @@ export class AnalyticsReindexService {
         private schedulerRegistry: SchedulerRegistry,
         private readonly routerGetterService: RouterGetterService,
         private readonly tokenGetterService: TokenGetterService,
+        private readonly analyticsReindexRepositoryService: AnalyticsReindexRepositoryService,
     ) {
         // manually start cronjob; todo: find out why not starting automatically...
         const job = new CronJob(CronExpression.EVERY_SECOND, () => {
@@ -89,7 +89,10 @@ export class AnalyticsReindexService {
     }
 
     private async reindexAnalytics(): Promise<boolean> {
-        const startDateUtc = elrondData.indexingStartTimeUtc;
+        await this.initReindexState();
+
+        const startDateUtc =
+            this.state.lastIntervalStartDate ?? elrondData.indexingStartTimeUtc;
         const endDateUtc = nowUtc();
 
         const batchRangeInSeconds = oneDay();
@@ -99,16 +102,15 @@ export class AnalyticsReindexService {
             batchRangeInSeconds,
         );
 
-        if (this.debug) console.log('dateIntervals', dateIntervals);
-
-        await this.initReindexState();
+        this.saveLogData(
+            `reindexAnalytics started from startDateUtc ${startDateUtc}`,
+        );
 
         for (let i = 0; i < dateIntervals.length - 1; i++) {
             const lte = new Date(dateIntervals[i]).getTime() / 1000;
             const gte = new Date(dateIntervals[i + 1]).getTime() / 1000;
 
-            if (this.debug)
-                console.log(`processing interval gte ${lte} <-> lte ${gte}`);
+            this.saveLogData(`Reindexing interval gte ${lte} <-> lte ${gte}`);
 
             const eventNames = [
                 PAIR_EVENTS.ADD_LIQUIDITY,
@@ -125,12 +127,6 @@ export class AnalyticsReindexService {
             );
 
             await this.processEvents(eventGroups);
-
-            if (this.debug)
-                console.log(`the end for interval gte ${lte} <-> lte ${gte}`);
-
-            this.savePairsState();
-            await new Promise((resolve) => setTimeout(resolve, 3000));
         }
 
         return true;
@@ -167,10 +163,12 @@ export class AnalyticsReindexService {
     private async processEvents(eventGroups: any[]): Promise<void> {
         for (const eventGroup of eventGroups) {
             for (const rawEvent of eventGroup._source.events) {
-                switch (rawEvent.identifier) {
+                switch (rawEvent?.identifier) {
                     case PAIR_EVENTS.SWAP_FIXED_INPUT: {
                         let event: SwapFixedInputEvent;
-                        this.logRawEventId(rawEvent);
+                        // this.saveLogData(
+                        //     `rawEvent.identifier ${rawEvent.identifier}`,
+                        // );
                         try {
                             event = new SwapFixedInputEvent(rawEvent);
                         } catch (error) {
@@ -183,7 +181,9 @@ export class AnalyticsReindexService {
                     }
                     case PAIR_EVENTS.SWAP_FIXED_OUTPUT: {
                         let event: SwapFixedOutputEvent;
-                        this.logRawEventId(rawEvent);
+                        // this.saveLogData(
+                        //     `rawEvent.identifier ${rawEvent.identifier}`,
+                        // );
                         try {
                             event = new SwapFixedOutputEvent(rawEvent);
                         } catch (error) {
@@ -196,7 +196,9 @@ export class AnalyticsReindexService {
                     }
                     case PAIR_EVENTS.ADD_LIQUIDITY: {
                         let event: AddLiquidityEvent;
-                        this.logRawEventId(rawEvent);
+                        // this.saveLogData(
+                        //     `rawEvent.identifier ${rawEvent.identifier}`,
+                        // );
                         try {
                             event = new AddLiquidityEvent(rawEvent);
                         } catch (error) {
@@ -209,7 +211,9 @@ export class AnalyticsReindexService {
                     }
                     case PAIR_EVENTS.REMOVE_LIQUIDITY: {
                         let event: RemoveLiquidityEvent;
-                        this.logRawEventId(rawEvent);
+                        // this.saveLogData(
+                        //     `rawEvent.identifier ${rawEvent.identifier}`,
+                        // );
                         try {
                             event = new RemoveLiquidityEvent(rawEvent);
                         } catch (error) {
@@ -222,7 +226,9 @@ export class AnalyticsReindexService {
                     }
                     case PRICE_DISCOVERY_EVENTS.DEPOSIT: {
                         let event: DepositEvent;
-                        this.logRawEventId(rawEvent);
+                        // this.saveLogData(
+                        //     `rawEvent.identifier ${rawEvent.identifier}`,
+                        // );
                         try {
                             event = new DepositEvent(rawEvent);
                         } catch (error) {
@@ -235,7 +241,9 @@ export class AnalyticsReindexService {
                     }
                     case PRICE_DISCOVERY_EVENTS.WITHDARW: {
                         let event: WithdrawEvent;
-                        this.logRawEventId(rawEvent);
+                        // this.saveLogData(
+                        //     `rawEvent.identifier ${rawEvent.identifier}`,
+                        // );
                         try {
                             event = new WithdrawEvent(rawEvent);
                         } catch (error) {
@@ -251,43 +259,40 @@ export class AnalyticsReindexService {
         }
     }
 
-    private logRawEventId(rawEvent: any): void {
-        if (this.debug) console.log('rawEvent.identifier', rawEvent.identifier);
-    }
-
     private async initReindexState(): Promise<void> {
-        await this.initPairsState();
+        await this.initState();
         await this.updatePairsMap();
     }
 
-    private async initPairsState(): Promise<void> {
-        if (this.pairsState === undefined) {
-            try {
-                const pairsStateData = fs.readFileSync(this.stateFileName);
-                this.pairsState = JSON.parse(pairsStateData.toString());
-            } catch (error) {
-                this.pairsState = {};
+    private async initState(): Promise<void> {
+        if (this.state === undefined) {
+            this.state = await this.analyticsReindexRepositoryService.findOne(
+                {},
+            );
+
+            if (!this.state) {
+                this.state = new AnalyticsReindexState();
             }
 
             try {
                 let pairsMetadata: PairMetadata[] =
                     await this.routerGetterService.getPairsMetadata();
                 for (const pair of pairsMetadata) {
-                    if (this.pairsState[pair.address]) {
+                    if (this.state.pairsState[pair.address]) {
                         continue;
                     }
 
-                    this.pairsState[pair.address] = {
+                    this.state.pairsState[pair.address] = {
                         firstTokenID: pair.firstTokenID,
                         secondTokenID: pair.secondTokenID,
-                        firstTokenReserves: 0,
-                        secondTokenReserves: 0,
-                        liquidityPoolSupply: 0,
+                        firstTokenReserves: '0',
+                        secondTokenReserves: '0',
+                        liquidityPoolSupply: '0',
                     };
                 }
             } catch (error) {
-                console.log(
-                    'Error when trying to add all existing pairs to the local pairs',
+                this.saveLogData(
+                    `Error when trying to add all existing pairs to the local pairs ${error}`,
                 );
                 throw error;
             }
@@ -296,32 +301,33 @@ export class AnalyticsReindexService {
 
     private async updatePairsMap(): Promise<void> {
         this.pairsMap = await this.getPairsMap(true);
-        if (this.debug) {
-            console.log('new pair map', this.pairsMap);
-        }
     }
 
     private async updatePairsState(
         pairAddress: string,
         pairData: any,
     ): Promise<void> {
-        if (this.pairsState[pairAddress] === undefined) {
+        if (this.state.pairsState[pairAddress] === undefined) {
             await this.updatePairsMap();
-        } else if (this.pairsState[pairAddress] === null) {
+        } else if (this.state.pairsState[pairAddress] === null) {
             throw new Error(
                 `Can't update pairs state for ${pairAddress} - ${pairData}`,
             );
         }
 
-        this.pairsState[pairAddress] = pairData;
+        this.state.pairsState[pairAddress] = pairData;
     }
 
-    private savePairsState(): void {
-        fs.writeFileSync(
-            this.stateFileName,
-            JSON.stringify(this.pairsState),
-            null,
-        );
+    private async saveState(lastIntervalStartDate: string): Promise<void> {
+        this.state.lastIntervalStartDate = lastIntervalStartDate;
+        const res =
+            await this.analyticsReindexRepositoryService.findOneAndUpdate(
+                {},
+                this.state,
+            );
+        if (!res) {
+            await this.analyticsReindexRepositoryService.create(this.state);
+        }
     }
 
     private async updatePairsStateForLiquidityEvent(
@@ -339,18 +345,21 @@ export class AnalyticsReindexService {
     private async updatePairsStateForSwapEvent(
         event: SwapFixedInputEvent | SwapFixedOutputEvent,
     ): Promise<void> {
-        if (!this.pairsState[event.address]) {
+        if (!this.state.pairsState[event.address]) {
             const firstTokenID = await this.pairGetterService.getFirstTokenID(
                 event.address,
             );
-            this.pairsState[event.address] = {
+            this.state.pairsState[event.address] = {
                 firstTokenID: firstTokenID,
-                liquidityPoolSupply: 0,
+                secondTokenID: '',
+                firstTokenReserves: '0',
+                secondTokenReserves: '0',
+                liquidityPoolSupply: '0',
             };
         }
 
         if (
-            this.pairsState[event.address].firstTokenID ===
+            this.state.pairsState[event.address].firstTokenID ===
             event.getTokenIn().tokenID
         ) {
             await this.updatePairsState(event.address, {
@@ -359,7 +368,8 @@ export class AnalyticsReindexService {
                 firstTokenReserves: event.getTokenInReserves().toString(),
                 secondTokenReserves: event.getTokenOutReserves().toString(),
                 liquidityPoolSupply:
-                    this.pairsState[event.address]?.liquidityPoolSupply ?? '0',
+                    this.state.pairsState[event.address]?.liquidityPoolSupply ??
+                    '0',
             });
         } else {
             await this.updatePairsState(event.address, {
@@ -368,17 +378,15 @@ export class AnalyticsReindexService {
                 firstTokenReserves: event.getTokenOutReserves().toString(),
                 secondTokenReserves: event.getTokenInReserves().toString(),
                 liquidityPoolSupply:
-                    this.pairsState[event.address]?.liquidityPoolSupply ?? '0',
+                    this.state.pairsState[event.address]?.liquidityPoolSupply ??
+                    '0',
             });
         }
     }
 
     private saveLogData(logData: any): void {
-        fs.appendFileSync(
-            this.logsFileName,
-            JSON.stringify(logData) + '\r\n',
-            null,
-        );
+        this.logger.info(`Analytics reindexer: ${logData}`);
+        if (this.debug) console.log(logData);
     }
 
     private async handleOldLiqudityEvent(
@@ -426,8 +434,7 @@ export class AnalyticsReindexService {
                 }),
             ]);
         } catch (error) {
-            console.error(error);
-            this.saveLogData(event);
+            //this.saveLogData(`Bad event ${event} ${error}`);
             throw error;
         }
     }
@@ -463,7 +470,7 @@ export class AnalyticsReindexService {
                 this.computeTokenPriceUSD(event.getTokenOut().tokenID),
                 this.computeFirstTokenLockedValueUSD(event.address),
                 this.computeSecondTokenLockedValueUSD(event.address),
-                this.pairsState[event.address]['liquidityPoolSupply'],
+                this.state.pairsState[event.address]['liquidityPoolSupply'],
                 this.pairGetterService.getTotalFeePercent(event.address),
                 this.computeTotalLockedValueUSD(),
             ]);
@@ -546,8 +553,7 @@ export class AnalyticsReindexService {
                 }),
             ]);
         } catch (error) {
-            console.error(error);
-            this.saveLogData(event);
+            //this.saveLogData(`Bad event ${event} ${error}`);
             throw error;
         }
     }
@@ -592,15 +598,14 @@ export class AnalyticsReindexService {
                     this.computeFirstTokenPriceUSD(pairAddress),
                     this.getFirstTokenReserve(pairAddress),
                 ]);
+
             return new BigNumber(firstTokenReserve)
                 .multipliedBy(`1e-${firstToken.decimals}`)
                 .multipliedBy(firstTokenPriceUSD);
-        } catch {
-            if (this.debug)
-                console.log(
-                    'error computeFirstTokenLockedValueUSD',
-                    pairAddress,
-                );
+        } catch (error) {
+            this.saveLogData(
+                `error computeFirstTokenLockedValueUSD ${pairAddress} ${error}`,
+            );
             return new BigNumber(0);
         }
     }
@@ -619,11 +624,9 @@ export class AnalyticsReindexService {
                 .multipliedBy(`1e-${secondToken.decimals}`)
                 .multipliedBy(secondTokenPriceUSD);
         } catch (error) {
-            if (this.debug)
-                console.log(
-                    'error computeSecondTokenLockedValueUSD',
-                    pairAddress,
-                );
+            this.saveLogData(
+                `error computeSecondTokenLockedValueUSD ${pairAddress} ${error}`,
+            );
             return new BigNumber(0);
         }
     }
@@ -632,7 +635,7 @@ export class AnalyticsReindexService {
         pairAddress: string,
     ): Promise<BigNumber> {
         return new BigNumber(
-            this.pairsState?.[pairAddress]['firstTokenReserves'],
+            this.state.pairsState?.[pairAddress]['firstTokenReserves'],
         );
     }
 
@@ -641,10 +644,10 @@ export class AnalyticsReindexService {
     ): Promise<BigNumber> {
         try {
             return new BigNumber(
-                this.pairsState[pairAddress]['secondTokenReserves'],
+                this.state.pairsState[pairAddress]['secondTokenReserves'],
             );
         } catch (error) {
-            if (this.debug) console.log('error getSecondTokenReserve');
+            this.saveLogData(`error getSecondTokenReserve ${error}`);
             throw error;
         }
     }
@@ -687,8 +690,9 @@ export class AnalyticsReindexService {
             );
             return tokenPriceUSD.toFixed();
         } catch (error) {
-            if (this.debug)
-                console.log('error computeSecondTokenPriceUSD', pairAddress);
+            this.saveLogData(
+                `error computeSecondTokenPriceUSD ${pairAddress} ${error}`,
+            );
             return '0';
         }
     }
@@ -778,19 +782,19 @@ export class AnalyticsReindexService {
     private async getPairInfoMetadata(
         pairAddress: string,
     ): Promise<PairInfoModel> {
-        if (this.pairsState[pairAddress]) {
+        if (this.state.pairsState[pairAddress]) {
             return new PairInfoModel({
-                reserves0: this.pairsState[pairAddress]['firstTokenReserves'],
-                reserves1: this.pairsState[pairAddress]['secondTokenReserves'],
+                reserves0:
+                    this.state.pairsState[pairAddress]['firstTokenReserves'],
+                reserves1:
+                    this.state.pairsState[pairAddress]['secondTokenReserves'],
                 totalSupply:
-                    this.pairsState[pairAddress]['liquidityPoolSupply'],
+                    this.state.pairsState[pairAddress]['liquidityPoolSupply'],
             });
         }
-        if (this.debug)
-            console.log(
-                'no pair info metadata from getPairInfoMetadata yet',
-                pairAddress,
-            );
+        this.saveLogData(
+            `no pair info metadata from getPairInfoMetadata yet ${pairAddress}`,
+        );
         return undefined;
     }
 
@@ -810,7 +814,7 @@ export class AnalyticsReindexService {
 
     private getAllPairAddresses(): string[] {
         let pairAddresses = [];
-        for (var pairAddress in this.pairsState) {
+        for (var pairAddress in this.state.pairsState) {
             pairAddresses.push(pairAddress);
         }
         return pairAddresses;
@@ -836,7 +840,7 @@ export class AnalyticsReindexService {
 
             return totalValueLockedUSD;
         } catch (error) {
-            if (this.debug) console.log('error computeTotalLockedValueUSD');
+            this.saveLogData(`error computeTotalLockedValueUSD ${error}`);
             throw error;
         }
     }
@@ -854,11 +858,13 @@ export class AnalyticsReindexService {
         for (const pair of pairaddresses) {
             let lockedValue = '0';
             switch (tokenID) {
-                case this.pairsState[pair].firstTokenID:
-                    lockedValue = this.pairsState[pair].firstTokenReserves;
+                case this.state.pairsState[pair].firstTokenID:
+                    lockedValue =
+                        this.state.pairsState[pair].firstTokenReserves;
                     break;
-                case this.pairsState[pair].secondTokenID:
-                    lockedValue = this.pairsState[pair].secondTokenReserves;
+                case this.state.pairsState[pair].secondTokenID:
+                    lockedValue =
+                        this.state.pairsState[pair].secondTokenReserves;
                     break;
             }
             newLockedValue = newLockedValue.plus(lockedValue);
@@ -919,12 +925,7 @@ export class AnalyticsReindexService {
         const discovered = new Map<string, boolean>();
         let graph = await this.getPairsMap();
         if (!graph.has(tokenID)) {
-            if (this.debug)
-                console.log(
-                    `graph ${JSON.stringify(
-                        graph,
-                    )} does not contain ${tokenID}`,
-                );
+            this.saveLogData(`graph does not contain ${tokenID}`);
             return new BigNumber(0);
         }
 
@@ -951,7 +952,7 @@ export class AnalyticsReindexService {
                 return price;
             }
         }
-        console.log("Can't getPriceUSDByPath", tokenID);
+        this.saveLogData(`Can't getPriceUSDByPath ${tokenID}`);
         return new BigNumber(0);
     }
 
@@ -974,8 +975,8 @@ export class AnalyticsReindexService {
     ): Promise<string> {
         try {
             const [firstTokenID, secondTokenID] = await Promise.all([
-                this.pairsState[pairAddress].firstTokenID,
-                this.pairsState[pairAddress].secondTokenID,
+                this.state.pairsState[pairAddress].firstTokenID,
+                this.state.pairsState[pairAddress].secondTokenID,
             ]);
 
             switch (tokenID) {
@@ -1132,7 +1133,7 @@ export class AnalyticsReindexService {
         let pairsMetadata: PairMetadata[] =
             await this.routerGetterService.getPairsMetadata();
         try {
-            Object.keys(this.pairsState).forEach((pairAddress) => {
+            Object.keys(this.state.pairsState).forEach((pairAddress) => {
                 if (
                     pairsMetadata.find((p) => p.address === pairAddress) ===
                     undefined
@@ -1141,16 +1142,18 @@ export class AnalyticsReindexService {
                         new PairMetadata({
                             address: pairAddress,
                             firstTokenID:
-                                this.pairsState[pairAddress].firstTokenID,
+                                this.state.pairsState[pairAddress].firstTokenID,
                             secondTokenID:
-                                this.pairsState[pairAddress].secondTokenID,
+                                this.state.pairsState[pairAddress]
+                                    .secondTokenID,
                         }),
                     );
                 }
             });
         } catch (error) {
-            if (this.debug)
-                console.log('Error when trying to getAllPairsMetadata', error);
+            this.saveLogData(
+                `Error when trying to getAllPairsMetadata ${error}`,
+            );
             throw error;
         }
         return pairsMetadata;

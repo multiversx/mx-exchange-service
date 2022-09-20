@@ -10,6 +10,7 @@ import { LogsProcessorService } from 'src/services/crons/logs.processor.service'
 import { AnalyticsReindexService } from './services/analytics.reindex.service';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { TokenModule } from '../tokens/token.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { TokenModule } from '../tokens/token.module';
         RouterModule,
         PairModule,
         TokenModule,
+        RemoteConfigModule,
     ],
     providers: [
         AnalyticsReindexService,

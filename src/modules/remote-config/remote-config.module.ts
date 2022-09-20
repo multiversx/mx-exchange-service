@@ -10,6 +10,11 @@ import { RemoteConfigGetterService } from './remote-config.getter.service';
 import { RemoteConfigSetterService } from './remote-config.setter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingModule } from 'src/services/caching/cache.module';
+import { AnalyticsReindexRepositoryService } from 'src/services/database/repositories/analytics.reindex.state.repository';
+import {
+    AnalyticsReindexState,
+    AnalyticsReindexStateSchema,
+} from './schemas/analytics.reindex.state.schema';
 
 @Module({
     imports: [
@@ -18,12 +23,19 @@ import { CachingModule } from 'src/services/caching/cache.module';
         MongooseModule.forFeature([
             { name: SCAddress.name, schema: SCAddressSchema },
         ]),
+        MongooseModule.forFeature([
+            {
+                name: AnalyticsReindexState.name,
+                schema: AnalyticsReindexStateSchema,
+            },
+        ]),
         CachingModule,
     ],
     providers: [
         RemoteConfigController,
         FlagRepositoryService,
         SCAddressRepositoryService,
+        AnalyticsReindexRepositoryService,
         RemoteConfigGetterService,
         RemoteConfigSetterService,
         ApiConfigService,
@@ -33,6 +45,7 @@ import { CachingModule } from 'src/services/caching/cache.module';
         RemoteConfigSetterService,
         FlagRepositoryService,
         SCAddressRepositoryService,
+        AnalyticsReindexRepositoryService,
     ],
 })
 export class RemoteConfigModule {}
