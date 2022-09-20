@@ -1,6 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
+import { scAddress } from 'src/config';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -49,6 +50,13 @@ export class EnergyResolver extends GenericResolver {
         return await this.genericFieldResover<boolean>(() =>
             this.energyGetter.getPauseState(),
         );
+    }
+
+    @Query(() => SimpleLockEnergyModel)
+    async simpleLockEnergy(): Promise<SimpleLockEnergyModel> {
+        return new SimpleLockEnergyModel({
+            address: scAddress.simpleLockEnergy,
+        });
     }
 
     @UseGuards(GqlAuthGuard)

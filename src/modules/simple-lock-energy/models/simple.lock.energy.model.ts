@@ -28,6 +28,10 @@ export class SimpleLockEnergyModel {
     lockOptions: number[];
     @Field()
     pauseState: boolean;
+
+    constructor(init?: Partial<SimpleLockEnergyModel>) {
+        Object.assign(this, init);
+    }
 }
 
 @ObjectType()
