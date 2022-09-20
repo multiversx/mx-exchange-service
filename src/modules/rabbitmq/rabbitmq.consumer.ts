@@ -232,7 +232,7 @@ export class RabbitMqConsumer {
             }
         }
 
-        if (this.data.length > 0) {
+        if (Object.keys(this.data).length) {
             await this.awsTimestreamWrite.ingest({
                 TableName: awsConfig.timestream.tableName,
                 data: this.data,
