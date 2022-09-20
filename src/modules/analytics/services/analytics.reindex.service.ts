@@ -165,94 +165,51 @@ export class AnalyticsReindexService {
             for (const rawEvent of eventGroup._source.events) {
                 switch (rawEvent?.identifier) {
                     case PAIR_EVENTS.SWAP_FIXED_INPUT: {
-                        let event: SwapFixedInputEvent;
-                        // this.saveLogData(
-                        //     `rawEvent.identifier ${rawEvent.identifier}`,
-                        // );
                         try {
-                            event = new SwapFixedInputEvent(rawEvent);
-                        } catch (error) {
-                            this.saveLogData(rawEvent);
-                        }
-                        if (event) {
+                            const event = new SwapFixedInputEvent(rawEvent);
                             await this.handleOldSwapEvents(event);
+                        } finally {
+                            break;
                         }
-                        break;
                     }
                     case PAIR_EVENTS.SWAP_FIXED_OUTPUT: {
-                        let event: SwapFixedOutputEvent;
-                        // this.saveLogData(
-                        //     `rawEvent.identifier ${rawEvent.identifier}`,
-                        // );
                         try {
-                            event = new SwapFixedOutputEvent(rawEvent);
-                        } catch (error) {
-                            this.saveLogData(rawEvent);
-                        }
-                        if (event) {
+                            const event = new SwapFixedOutputEvent(rawEvent);
                             await this.handleOldSwapEvents(event);
+                        } finally {
+                            break;
                         }
-                        break;
                     }
                     case PAIR_EVENTS.ADD_LIQUIDITY: {
-                        let event: AddLiquidityEvent;
-                        // this.saveLogData(
-                        //     `rawEvent.identifier ${rawEvent.identifier}`,
-                        // );
                         try {
-                            event = new AddLiquidityEvent(rawEvent);
-                        } catch (error) {
-                            this.saveLogData(rawEvent);
-                        }
-                        if (event) {
+                            const event = new AddLiquidityEvent(rawEvent);
                             await this.handleOldLiqudityEvent(event);
+                        } finally {
+                            break;
                         }
-                        break;
                     }
                     case PAIR_EVENTS.REMOVE_LIQUIDITY: {
-                        let event: RemoveLiquidityEvent;
-                        // this.saveLogData(
-                        //     `rawEvent.identifier ${rawEvent.identifier}`,
-                        // );
                         try {
-                            event = new RemoveLiquidityEvent(rawEvent);
-                        } catch (error) {
-                            this.saveLogData(rawEvent);
-                        }
-                        if (event) {
+                            const event = new RemoveLiquidityEvent(rawEvent);
                             await this.handleOldLiqudityEvent(event);
+                        } finally {
+                            break;
                         }
-                        break;
                     }
                     case PRICE_DISCOVERY_EVENTS.DEPOSIT: {
-                        let event: DepositEvent;
-                        // this.saveLogData(
-                        //     `rawEvent.identifier ${rawEvent.identifier}`,
-                        // );
                         try {
-                            event = new DepositEvent(rawEvent);
-                        } catch (error) {
-                            this.saveLogData(rawEvent);
-                        }
-                        if (event) {
+                            const event = new DepositEvent(rawEvent);
                             await this.processPriceDiscoveryEvent(event);
+                        } finally {
                         }
-                        break;
                     }
                     case PRICE_DISCOVERY_EVENTS.WITHDARW: {
-                        let event: WithdrawEvent;
-                        // this.saveLogData(
-                        //     `rawEvent.identifier ${rawEvent.identifier}`,
-                        // );
                         try {
-                            event = new WithdrawEvent(rawEvent);
-                        } catch (error) {
-                            this.saveLogData(rawEvent);
-                        }
-                        if (event) {
+                            const event = new WithdrawEvent(rawEvent);
                             await this.processPriceDiscoveryEvent(event);
+                        } finally {
+                            break;
                         }
-                        break;
                     }
                 }
             }
