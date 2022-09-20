@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
-import { oneDay, oneHour } from 'src/helpers/helpers';
+import { oneDay, oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
+import { Energy } from '../models/simple.lock.energy.model';
 import { EnergyAbiService } from './energy.abi.service';
 
 @Injectable()
@@ -62,6 +63,14 @@ export class EnergyGetterService extends GenericGetterService {
                     )
                 ).owner,
             oneDay(),
+        );
+    }
+
+    async getEnergyEntryForUser(userAddress: string): Promise<Energy> {
+        return await this.getData(
+            this.getEnergyCacheKey('energyEntry', userAddress),
+            () => this.abiService.getEnergyEntryForUser(userAddress),
+            oneMinute(),
         );
     }
 
