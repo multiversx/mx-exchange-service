@@ -9,15 +9,18 @@ import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import {
+    Energy,
     SimpleLockEnergyModel,
     UnlockType,
 } from './models/simple.lock.energy.model';
 import { EnergyGetterService } from './services/energy.getter.service';
+import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
 
 @Resolver(() => SimpleLockEnergyModel)
 export class EnergyResolver extends GenericResolver {
     constructor(
+        private readonly energyService: EnergyService,
         private readonly energyGetter: EnergyGetterService,
         private readonly energyTransaction: EnergyTransactionService,
     ) {
@@ -57,6 +60,14 @@ export class EnergyResolver extends GenericResolver {
         return new SimpleLockEnergyModel({
             address: scAddress.simpleLockEnergy,
         });
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => Energy)
+    async userEnergy(@User() user: any): Promise<Energy> {
+        return await this.genericQuery(() =>
+            this.energyService.getUserEnergy(user.publicKey),
+        );
     }
 
     @UseGuards(GqlAuthGuard)
