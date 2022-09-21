@@ -57,6 +57,10 @@ export class ElasticService {
         while (true) {
             const sourceHits = response.body.hits.hits;
 
+            if (response.body._scroll_id && !scroll_id) {
+                scroll_id = response.body._scroll_id;
+            }
+
             if (sourceHits.length === 0) {
                 break;
             }
@@ -66,8 +70,6 @@ export class ElasticService {
             if (!response.body._scroll_id) {
                 break;
             }
-
-            scroll_id = response.body._scroll_id;
 
             response = await this.elasticClient.scroll({
                 scroll_id: response.body._scroll_id,
