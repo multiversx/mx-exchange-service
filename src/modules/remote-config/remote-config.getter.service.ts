@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -45,36 +45,15 @@ export class RemoteConfigGetterService extends GenericGetterService {
     }
 
     async getTimescaleWriteFlag(): Promise<boolean> {
-        try {
-            return await this.getGenericFlag(
-                FlagType.TIMESCALE_WRITE,
-                oneHour(),
-            );
-        } catch {
-            return true;
-        }
+        return await this.getGenericFlag(FlagType.TIMESCALE_WRITE, oneHour());
     }
 
     async getTimescaleReadFlag(): Promise<boolean> {
-        try {
-            return await this.getGenericFlag(
-                FlagType.TIMESCALE_READ,
-                oneHour(),
-            );
-        } catch {
-            return true;
-        }
+        return await this.getGenericFlag(FlagType.TIMESCALE_READ, oneHour());
     }
 
     async getTimestreamWriteFlagValue(): Promise<boolean> {
-        try {
-            return await this.getGenericFlag(
-                FlagType.TIMESTREAM_WRITE,
-                oneHour(),
-            );
-        } catch {
-            return true;
-        }
+        return await this.getGenericFlag(FlagType.TIMESTREAM_WRITE, oneHour());
     }
 
     async getMultiSwapStatus(): Promise<boolean> {
