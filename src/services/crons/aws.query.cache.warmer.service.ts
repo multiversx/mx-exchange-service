@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { awsConfig } from 'src/config';
+import { delay } from 'src/helpers/helpers';
 import { AnalyticsAWSSetterService } from 'src/modules/analytics/services/analytics.aws.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
@@ -22,45 +23,44 @@ export class AWSQueryCacheWarmerService {
     async updateHistoricTokensData(): Promise<void> {
         const tokens = await this.tokenService.getUniqueTokenIDs(false);
         for (const tokenID of tokens) {
-            const [
-                priceUSD24h,
-                priceUSDCompleteValues,
-                lockedValueUSD24h,
-                lockedValueUSDCompleteValues,
-                volumeUSD24hSum,
-                volumeUSDCompleteValuesSum,
-            ] = await Promise.all([
-                this.awsQuery.getValues24h({
+            const priceUSD24h = await this.awsQuery.getValues24h({
+                table: awsConfig.timestream.tableName,
+                series: tokenID,
+                metric: 'priceUSD',
+            });
+            delay(1000);
+            const priceUSDCompleteValues =
+                await this.awsQuery.getLatestCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: tokenID,
                     metric: 'priceUSD',
-                }),
-                this.awsQuery.getLatestCompleteValues({
-                    table: awsConfig.timestream.tableName,
-                    series: tokenID,
-                    metric: 'priceUSD',
-                }),
-                this.awsQuery.getValues24h({
+                });
+            delay(1000);
+            const lockedValueUSD24h = await this.awsQuery.getValues24h({
+                table: awsConfig.timestream.tableName,
+                series: tokenID,
+                metric: 'lockedValueUSD',
+            });
+            delay(1000);
+            const lockedValueUSDCompleteValues =
+                await this.awsQuery.getLatestCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: tokenID,
                     metric: 'lockedValueUSD',
-                }),
-                this.awsQuery.getLatestCompleteValues({
-                    table: awsConfig.timestream.tableName,
-                    series: tokenID,
-                    metric: 'lockedValueUSD',
-                }),
-                this.awsQuery.getValues24hSum({
+                });
+            delay(1000);
+            const volumeUSD24hSum = await this.awsQuery.getValues24hSum({
+                table: awsConfig.timestream.tableName,
+                series: tokenID,
+                metric: 'volumeUSD',
+            });
+            delay(1000);
+            const volumeUSDCompleteValuesSum =
+                await this.awsQuery.getSumCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: tokenID,
                     metric: 'volumeUSD',
-                }),
-                this.awsQuery.getSumCompleteValues({
-                    table: awsConfig.timestream.tableName,
-                    series: tokenID,
-                    metric: 'volumeUSD',
-                }),
-            ]);
+                });
 
             const cachedKeys = await Promise.all([
                 this.analyticsAWSSetter.setValues24h(
@@ -102,39 +102,37 @@ export class AWSQueryCacheWarmerService {
     async updateHistoricPairsData(): Promise<void> {
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
         for (const pairAddress of pairsAddresses) {
-            const [
-                lockedValueUSD24h,
-                lockedValueUSDCompleteValues,
-                feesUSD,
-                volumeUSD24hSum,
-                volumeUSDCompleteValuesSum,
-            ] = await Promise.all([
-                this.awsQuery.getValues24h({
+            const lockedValueUSD24h = await this.awsQuery.getValues24h({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'lockedValueUSD',
+            });
+            delay(1000);
+            const lockedValueUSDCompleteValues =
+                await this.awsQuery.getLatestCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'lockedValueUSD',
-                }),
-                this.awsQuery.getLatestCompleteValues({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'lockedValueUSD',
-                }),
-                this.awsQuery.getValues24hSum({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'feesUSD',
-                }),
-                this.awsQuery.getValues24hSum({
+                });
+            delay(1000);
+            const feesUSD = await this.awsQuery.getValues24hSum({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'feesUSD',
+            });
+            delay(1000);
+            const volumeUSD24hSum = await this.awsQuery.getValues24hSum({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'volumeUSD',
+            });
+            delay(1000);
+            const volumeUSDCompleteValuesSum =
+                await this.awsQuery.getSumCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'volumeUSD',
-                }),
-                this.awsQuery.getSumCompleteValues({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'volumeUSD',
-                }),
-            ]);
+                });
 
             const cachedKeys = await Promise.all([
                 this.analyticsAWSSetter.setValues24h(
