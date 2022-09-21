@@ -184,8 +184,6 @@ export class LogsProcessorService {
         recordsMap: Map<number, string>,
         MeasureName: string,
     ): Promise<number> {
-        const tableName = elrondData.timescale.table;
-
         const Dimensions = [
             { Name: 'series', Value: constantsConfig.MEX_TOKEN_ID },
         ];
@@ -224,7 +222,7 @@ export class LogsProcessorService {
                 const [timestreamIngestedCount, timescaleIngested] =
                     await Promise.all([
                         this.pushAWSRecords(Records),
-                        this.elrondDataService.ingest(tableName, ingestRecords),
+                        this.elrondDataService.ingest(ingestRecords),
                     ]);
 
                 totalAwsWriteRecords += timestreamIngestedCount;
@@ -248,7 +246,7 @@ export class LogsProcessorService {
             const [timestreamIngestedCount, timescaleIngested] =
                 await Promise.all([
                     this.pushAWSRecords(Records),
-                    this.elrondDataService.ingest(tableName, ingestRecords),
+                    this.elrondDataService.ingest(ingestRecords),
                 ]);
 
             totalAwsWriteRecords += timestreamIngestedCount;

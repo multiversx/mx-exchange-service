@@ -98,16 +98,16 @@ export class ElrondDataService {
         return await this.remoteConfigGetterService.getTimescaleReadFlag();
     }
 
-    async ingest(tableName: string, records: IngestRecord[]): Promise<boolean> {
+    async ingest(records: IngestRecord[]): Promise<boolean> {
         if (await this.isIngestInactive()) {
             return;
         }
 
-        const query = `mutation { ingestData( table: ${tableName}, input: [ ${records.map(
-            (r) => {
-                return `{ timestamp: ${r.timestamp}, series: "${r.series}", key: "${r.key}", value: "${r.value}" }`;
-            },
-        )} ] ) }`;
+        const query = `mutation { ingestData( table: ${
+            elrondData.timescale.table
+        }, input: [ ${records.map((r) => {
+            return `{ timestamp: ${r.timestamp}, series: "${r.series}", key: "${r.key}", value: "${r.value}" }`;
+        })} ] ) }`;
 
         const res = await this.doPostGeneric('data-api/graphql', { query });
 
@@ -116,7 +116,7 @@ export class ElrondDataService {
         return ingested;
     }
 
-    async ingestObject({ tableName, data, timestamp }): Promise<boolean> {
+    async ingestObject({ data, timestamp }): Promise<boolean> {
         if (await this.isIngestInactive()) {
             return;
         }
@@ -137,11 +137,10 @@ export class ElrondDataService {
             });
         });
 
-        return await this.ingest(tableName, ingestRecords);
+        return await this.ingest(ingestRecords);
     }
 
     async getLatestCompleteValues({
-        table,
         series,
         key,
     }): Promise<HistoricDataModel[]> {
@@ -157,7 +156,7 @@ export class ElrondDataService {
             const startDate = toUtc(dateIntervals[i]);
             const endDate = toUtc(dateIntervals[i + 1]);
             const query = `query generic_query {
-                ${table} {
+                ${elrondData.timescale.table} {
                   metric(
                     series: "${series}"
                     key: "${key}"
@@ -180,7 +179,7 @@ export class ElrondDataService {
         let data: HistoricDataModel[] = [];
         for (const result of results) {
             data = data.concat(
-                result.data[table]['metric'].map(
+                result.data[elrondData.timescale.table]['metric'].map(
                     (r) =>
                         new HistoricDataModel({
                             timestamp: r.time,
@@ -193,11 +192,7 @@ export class ElrondDataService {
         return data;
     }
 
-    async getSumCompleteValues({
-        table,
-        series,
-        key,
-    }): Promise<HistoricDataModel[]> {
+    async getSumCompleteValues({ series, key }): Promise<HistoricDataModel[]> {
         const dateIntervals = splitDateRangeIntoIntervalsUtc(
             elrondData.timescale.indexingStartTimeUtc,
             nowUtc(),
@@ -210,7 +205,7 @@ export class ElrondDataService {
             const startDate = toUtc(dateIntervals[i]);
             const endDate = toUtc(dateIntervals[i + 1]);
             const query = `query generic_query {
-                ${table} {
+                ${elrondData.timescale.table} {
                   metric(
                     series: "${series}"
                     key: "${key}"
@@ -232,7 +227,7 @@ export class ElrondDataService {
         let data: HistoricDataModel[] = [];
         for (const result of results) {
             data = data.concat(
-                result.data[table]['metric'].map(
+                result.data[elrondData.timescale.table]['metric'].map(
                     (r) =>
                         new HistoricDataModel({
                             timestamp: r.time,
@@ -245,9 +240,9 @@ export class ElrondDataService {
         return data;
     }
 
-    async getLatestValue({ table, series, key }): Promise<string> {
+    async getLatestValue({ series, key }): Promise<string> {
         const query = `query generic_query {
-            ${table} {
+            ${elrondData.timescale.table} {
                 metric(
                   series: "${series}"
                   key: "${key}"
@@ -261,12 +256,12 @@ export class ElrondDataService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        return result.data[table]['metric'][0].last;
+        return result.data[elrondData.timescale.table]['metric'][0].last;
     }
 
-    async getValues24h({ table, series, key }): Promise<HistoricDataModel[]> {
+    async getValues24h({ series, key }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${table} {
+            ${elrondData.timescale.table} {
              metric(
                series: "${series}"
                key: "${key}"
@@ -280,7 +275,7 @@ export class ElrondDataService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[table]['metric'].map(
+        const data = result.data[elrondData.timescale.table]['metric'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
@@ -291,13 +286,9 @@ export class ElrondDataService {
         return data;
     }
 
-    async getValues24hSum({
-        table,
-        series,
-        key,
-    }): Promise<HistoricDataModel[]> {
+    async getValues24hSum({ series, key }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${table} {
+            ${elrondData.timescale.table} {
               metric(
                 series: "${series}"
                 key: "${key}"
@@ -314,7 +305,7 @@ export class ElrondDataService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[table]['metric'].map(
+        const data = result.data[elrondData.timescale.table]['metric'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
@@ -329,14 +320,9 @@ export class ElrondDataService {
         return last24Entries;
     }
 
-    async getAggregatedValue({
-        table,
-        series,
-        key,
-        startTimeUtc,
-    }): Promise<string> {
+    async getAggregatedValue({ series, key, startTimeUtc }): Promise<string> {
         const query = `query { 
-            ${table} { 
+            ${elrondData.timescale.table} { 
                 metric (series: "${series}" key: "${key}" 
                     query: { 
                         start_date: "${startTimeUtc}", 
@@ -348,20 +334,19 @@ export class ElrondDataService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const sum = result.data[table].metric[0].sum;
+        const sum = result.data[elrondData.timescale.table].metric[0].sum;
 
         return sum;
     }
 
     async getLatestHistoricData({
-        table,
         series,
         key,
         startDate,
         endDate,
     }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${table} {
+            ${elrondData.timescale.table} {
              values(
                series: "${series}"
                key: "${key}"
@@ -375,7 +360,7 @@ export class ElrondDataService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[table]['values'].map(
+        const data = result.data[elrondData.timescale.table]['values'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
@@ -387,7 +372,6 @@ export class ElrondDataService {
     }
 
     async getLatestBinnedHistoricData({
-        table,
         series,
         key,
         startDate,
@@ -395,7 +379,7 @@ export class ElrondDataService {
         resolution,
     }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${table} {
+            ${elrondData.timescale.table} {
              metric(
                series: "${series}"
                key: "${key}"
@@ -409,7 +393,7 @@ export class ElrondDataService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[table]['metric'].map(
+        const data = result.data[elrondData.timescale.table]['metric'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,

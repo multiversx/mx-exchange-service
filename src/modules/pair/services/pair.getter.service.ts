@@ -212,7 +212,6 @@ export class PairGetterService extends GenericGetterService {
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataService.getAggregatedValue({
-                          table: elrondData.timescale.table,
                           series: pairAddress,
                           key: 'firstTokenVolume',
                           startTimeUtc,
@@ -243,7 +242,6 @@ export class PairGetterService extends GenericGetterService {
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataService.getAggregatedValue({
-                          table: elrondData.timescale.table,
                           series: pairAddress,
                           key: 'secondTokenVolume',
                           startTimeUtc,
@@ -271,7 +269,6 @@ export class PairGetterService extends GenericGetterService {
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataService.getAggregatedValue({
-                          table: elrondData.timescale.table,
                           series: pairAddress,
                           key: 'volumeUSD',
                           startTimeUtc,
@@ -299,7 +296,6 @@ export class PairGetterService extends GenericGetterService {
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataService.getAggregatedValue({
-                          table: elrondData.timescale.table,
                           series: pairAddress,
                           key: 'feesUSD',
                           startTimeUtc,

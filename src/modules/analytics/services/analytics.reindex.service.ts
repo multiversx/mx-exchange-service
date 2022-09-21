@@ -375,7 +375,6 @@ export class AnalyticsReindexService {
 
             await Promise.all([
                 this.elrondDataService.ingestObject({
-                    tableName: elrondData.timescale.table,
                     data,
                     timestamp: event.getTimestamp().toNumber(),
                 }),
@@ -494,7 +493,6 @@ export class AnalyticsReindexService {
 
             await Promise.all([
                 this.elrondDataService.ingestObject({
-                    tableName: elrondData.timescale.table,
                     data,
                     timestamp: event.getTimestamp().toNumber(),
                 }),
@@ -1004,7 +1002,6 @@ export class AnalyticsReindexService {
 
         await Promise.all([
             this.elrondDataService.ingestObject({
-                tableName: elrondData.timescale.table,
                 data,
                 timestamp: Number(event.getTopics()['timestamp']),
             }),

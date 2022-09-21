@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { elrondData } from 'src/config';
+import { awsConfig } from 'src/config';
 import {
     FarmRewardType,
     FarmVersion,
@@ -112,13 +112,12 @@ export class AnalyticsComputeService {
     ): Promise<string> {
         return (await this.elrondDataService.isReadActive())
             ? await this.elrondDataService.getAggregatedValue({
-                  table: elrondData.timestream.tableName,
                   series: tokenID,
                   key,
                   startTimeUtc,
               })
             : await this.awsTimestreamQuery.getAggregatedValue({
-                  table: elrondData.timestream.tableName,
+                  table: awsConfig.timestream.tableName,
                   series: tokenID,
                   metric: key,
                   time: startTimeUtc,

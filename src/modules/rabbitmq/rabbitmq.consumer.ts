@@ -242,7 +242,6 @@ export class RabbitMqConsumer {
                     Time: timestamp,
                 }),
                 this.elrondDataService.ingestObject({
-                    tableName: elrondData.timescale.table,
                     data: this.data,
                     timestamp: timestamp,
                 }),
