@@ -90,21 +90,24 @@ export class AnalyticsResolver {
         }),
     )
     async latestCompleteValues(
-        @Args() args: AWSQueryArgs,
-        //@Args() args: TimescaleQueryArgs,
+        @Args({ nullable: true }) args: AWSQueryArgs,
+        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getLatestCompleteValues(
-                args.series,
-                args.metric,
-            ),
-        );
-        // return await this.genericQuery(() =>
-        //     this.analyticsTimescaleGetter.getLatestCompleteValues(
-        //         args.series,
-        //         args.metric,
-        //     ),
-        // );
+        if (args) {
+            return await this.genericQuery(() =>
+                this.analyticsAWSGetter.getLatestCompleteValues(
+                    args.series,
+                    args.metric,
+                ),
+            );
+        } else if (timescaleArgs) {
+            return await this.genericQuery(() =>
+                this.analyticsTimescaleGetter.getLatestCompleteValues(
+                    timescaleArgs.series,
+                    timescaleArgs.key,
+                ),
+            );
+        }
     }
 
     @Query(() => [HistoricDataModel])
@@ -116,21 +119,24 @@ export class AnalyticsResolver {
         }),
     )
     async sumCompleteValues(
-        @Args() args: AWSQueryArgs,
-        //@Args() args: TimescaleQueryArgs,
+        @Args({ nullable: true }) args: AWSQueryArgs,
+        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getSumCompleteValues(
-                args.series,
-                args.metric,
-            ),
-        );
-        // return await this.genericQuery(() =>
-        //     this.analyticsTimescaleGetter.getSumCompleteValues(
-        //         args.series,
-        //         args.metric,
-        //     ),
-        // );
+        if (args) {
+            return await this.genericQuery(() =>
+                this.analyticsAWSGetter.getSumCompleteValues(
+                    args.series,
+                    args.metric,
+                ),
+            );
+        } else if (timescaleArgs) {
+            return await this.genericQuery(() =>
+                this.analyticsTimescaleGetter.getSumCompleteValues(
+                    timescaleArgs.series,
+                    timescaleArgs.key,
+                ),
+            );
+        }
     }
 
     @Query(() => [HistoricDataModel])
@@ -142,18 +148,21 @@ export class AnalyticsResolver {
         }),
     )
     async values24h(
-        @Args() args: AWSQueryArgs,
-        //@Args() args: TimescaleQueryArgs,
+        @Args({ nullable: true }) args: AWSQueryArgs,
+        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getValues24h(args.series, args.metric),
-        );
-        // return await this.genericQuery(() =>
-        //     this.analyticsTimescaleGetter.getValues24h(
-        //         args.series,
-        //         args.metric,
-        //     ),
-        // );
+        if (args) {
+            return await this.genericQuery(() =>
+                this.analyticsAWSGetter.getValues24h(args.series, args.metric),
+            );
+        } else if (timescaleArgs) {
+            return await this.genericQuery(() =>
+                this.analyticsTimescaleGetter.getValues24h(
+                    timescaleArgs.series,
+                    timescaleArgs.key,
+                ),
+            );
+        }
     }
 
     @Query(() => [HistoricDataModel])
@@ -165,18 +174,24 @@ export class AnalyticsResolver {
         }),
     )
     async values24hSum(
-        @Args() args: AWSQueryArgs,
-        //@Args() args: TimescaleQueryArgs,
+        @Args({ nullable: true }) args: AWSQueryArgs,
+        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getValues24hSum(args.series, args.metric),
-        );
-        // return await this.genericQuery(() =>
-        //     this.analyticsTimescaleGetter.getValues24hSum(
-        //         args.series,
-        //         args.metric,
-        //     ),
-        // );
+        if (args) {
+            return await this.genericQuery(() =>
+                this.analyticsAWSGetter.getValues24hSum(
+                    args.series,
+                    args.metric,
+                ),
+            );
+        } else if (timescaleArgs) {
+            return await this.genericQuery(() =>
+                this.analyticsTimescaleGetter.getValues24hSum(
+                    timescaleArgs.series,
+                    timescaleArgs.key,
+                ),
+            );
+        }
     }
 
     @Query(() => [HistoricDataModel])
@@ -188,25 +203,28 @@ export class AnalyticsResolver {
         }),
     )
     async latestHistoricData(
-        @Args() args: AWSQueryArgs,
-        //@Args() args: TimescaleQueryArgs,
+        @Args({ nullable: true }) args: AWSQueryArgs,
+        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getLatestHistoricData(
-                args.time,
-                args.series,
-                args.metric,
-                args.start,
-            ),
-        );
-        // return await this.genericQuery(() =>
-        //     this.analyticsTimescaleGetter.getLatestHistoricData(
-        //         args.series,
-        //         args.key,
-        //         args.startDate,
-        //         args.endDate
-        //     ),
-        // );
+        if (args) {
+            return await this.genericQuery(() =>
+                this.analyticsAWSGetter.getLatestHistoricData(
+                    args.time,
+                    args.series,
+                    args.metric,
+                    args.start,
+                ),
+            );
+        } else if (timescaleArgs) {
+            return await this.genericQuery(() =>
+                this.analyticsTimescaleGetter.getLatestHistoricData(
+                    timescaleArgs.series,
+                    timescaleArgs.key,
+                    timescaleArgs.startDate,
+                    timescaleArgs.endDate,
+                ),
+            );
+        }
     }
 
     @Query(() => [HistoricDataModel])
@@ -218,25 +236,28 @@ export class AnalyticsResolver {
         }),
     )
     async latestBinnedHistoricData(
-        @Args() args: AWSQueryArgs,
-        //@Args() args: TimescaleQueryArgs,
+        @Args({ nullable: true }) args: AWSQueryArgs,
+        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getLatestBinnedHistoricData(
-                args.time,
-                args.series,
-                args.metric,
-                args.bin,
-                args.start,
-            ),
-        );
-        // return await this.genericQuery(() =>
-        //     this.analyticsTimescaleGetter.getLatestBinnedHistoricData(
-        //         args.series,
-        //         args.key,
-        //         args.startDate,
-        //         args.resolution,
-        //     ),
-        // );
+        if (args) {
+            return await this.genericQuery(() =>
+                this.analyticsAWSGetter.getLatestBinnedHistoricData(
+                    args.time,
+                    args.series,
+                    args.metric,
+                    args.bin,
+                    args.start,
+                ),
+            );
+        } else if (timescaleArgs) {
+            return await this.genericQuery(() =>
+                this.analyticsTimescaleGetter.getLatestBinnedHistoricData(
+                    timescaleArgs.series,
+                    timescaleArgs.key,
+                    timescaleArgs.startDate,
+                    timescaleArgs.resolution,
+                ),
+            );
+        }
     }
 }

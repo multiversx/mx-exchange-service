@@ -1,4 +1,4 @@
-import { ArgsType, Field } from '@nestjs/graphql';
+import { ArgsType, Field, registerEnumType } from '@nestjs/graphql';
 import { Matches } from 'class-validator';
 import { IsValidMetric } from 'src/helpers/validators/metric.validator';
 import { IsValidSeries } from 'src/helpers/validators/series.validator';
@@ -45,3 +45,4 @@ export enum TimeResolutionType {
     INTERVAL_DAY = 'INTERVAL_DAY',
     INTERVAL_WEEK = 'INTERVAL_WEEK',
 }
+registerEnumType(TimeResolutionType, { name: 'TimeResolutionType' });
