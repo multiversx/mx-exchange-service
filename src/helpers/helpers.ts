@@ -111,3 +111,7 @@ export function awsOneMonth(): string {
 export function awsOneYear(): string {
     return '365d';
 }
+
+export function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
