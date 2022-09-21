@@ -18,6 +18,11 @@ export const FarmTypeEnumType = new EnumType('FarmType', [
     new EnumVariantDefinition('FarmWithLockedRewards', 1),
 ]);
 
+export enum SimpleLockType {
+    BASE_TYPE,
+    ENERGY_TYPE,
+}
+
 @ObjectType()
 export class LockedTokenAttributesModel {
     @Field()
