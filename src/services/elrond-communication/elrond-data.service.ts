@@ -17,6 +17,7 @@ import {
     toUtc,
 } from 'src/helpers/helpers';
 import BigNumber from 'bignumber.js';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
 export class ElrondDataService {
@@ -26,6 +27,7 @@ export class ElrondDataService {
     constructor(
         private readonly apiConfigService: ApiConfigService,
         private readonly nativeAuthClientService: NativeAuthClientService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         const keepAliveOptions = {
@@ -88,7 +90,19 @@ export class ElrondDataService {
         }
     }
 
+    async isIngestInactive(): Promise<boolean> {
+        return !(await this.remoteConfigGetterService.getTimescaleWriteFlag());
+    }
+
+    async isReadActive(): Promise<boolean> {
+        return await this.remoteConfigGetterService.getTimescaleReadFlag();
+    }
+
     async ingest(tableName: string, records: IngestRecord[]): Promise<boolean> {
+        if (await this.isIngestInactive()) {
+            return;
+        }
+
         const query = `mutation { ingestData( table: ${tableName}, input: [ ${records.map(
             (r) => {
                 return `{ timestamp: ${r.timestamp}, series: "${r.series}", key: "${r.key}", value: "${r.value}" }`;
@@ -103,6 +117,10 @@ export class ElrondDataService {
     }
 
     async ingestObject({ tableName, data, timestamp }): Promise<boolean> {
+        if (await this.isIngestInactive()) {
+            return;
+        }
+
         let ingestRecords: IngestRecord[] = [];
 
         Object.keys(data).forEach((series) => {
@@ -309,6 +327,30 @@ export class ElrondDataService {
         const last24Entries = dataWithoutGaps.slice(-24);
 
         return last24Entries;
+    }
+
+    async getAggregatedValue({
+        table,
+        series,
+        key,
+        startTimeUtc,
+    }): Promise<string> {
+        const query = `query { 
+            ${table} { 
+                metric (series: "${series}" key: "${key}" 
+                    query: { 
+                        start_date: "${startTimeUtc}", 
+                        end_date: "${nowUtc()}" 
+                    } 
+                ) { time sum } 
+                } 
+            }`;
+
+        const result = await this.doPostGeneric('data-api/graphql', { query });
+
+        const sum = result.data[table].metric[0].sum;
+
+        return sum;
     }
 
     async getLatestHistoricData({

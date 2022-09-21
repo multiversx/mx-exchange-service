@@ -235,16 +235,18 @@ export class RabbitMqConsumer {
         }
 
         if (Object.keys(this.data).length > 0) {
-            await this.awsTimestreamWrite.ingest({
-                TableName: awsConfig.timestream.tableName,
-                data: this.data,
-                Time: timestamp,
-            });
-            await this.elrondDataService.ingestObject({
-                tableName: elrondData.timescale.table,
-                data: this.data,
-                timestamp: timestamp,
-            });
+            await Promise.all([
+                this.awsTimestreamWrite.ingest({
+                    TableName: awsConfig.timestream.tableName,
+                    data: this.data,
+                    Time: timestamp,
+                }),
+                this.elrondDataService.ingestObject({
+                    tableName: elrondData.timescale.table,
+                    data: this.data,
+                    timestamp: timestamp,
+                }),
+            ]);
         }
     }
 

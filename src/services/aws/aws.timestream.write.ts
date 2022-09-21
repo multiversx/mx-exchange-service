@@ -4,6 +4,7 @@ import { Logger } from 'winston';
 import AWS, { TimestreamWrite } from 'aws-sdk';
 import { HttpsAgent } from 'agentkeepalive';
 import { awsConfig } from 'src/config';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
 export class AWSTimestreamWriteService {
@@ -12,6 +13,7 @@ export class AWSTimestreamWriteService {
 
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
     ) {
         AWS.config.update({ region: awsConfig.region });
         const httpsAgent = new HttpsAgent({
@@ -66,10 +68,10 @@ export class AWSTimestreamWriteService {
     createRecords({ data, Time }): TimestreamWrite.Records {
         const MeasureValueType = 'DOUBLE';
         const Records: TimestreamWrite.Records = [];
-        Object.keys(data).forEach(series => {
+        Object.keys(data).forEach((series) => {
             const Dimensions = [{ Name: 'series', Value: series }];
 
-            Object.keys(data[series]).forEach(MeasureName => {
+            Object.keys(data[series]).forEach((MeasureName) => {
                 const MeasureValue = data[series][MeasureName].toString();
                 Records.push({
                     Dimensions,
@@ -86,7 +88,15 @@ export class AWSTimestreamWriteService {
         return Records;
     }
 
+    async isIngestInactive(): Promise<boolean> {
+        return !(await this.remoteConfigGetterService.getTimescaleWriteFlag());
+    }
+
     async writeRecords({ TableName, Records }): Promise<void> {
+        if (await this.isIngestInactive()) {
+            return;
+        }
+
         let request: AWS.Request<{}, AWS.AWSError>;
         try {
             const params: TimestreamWrite.WriteRecordsRequest = {
@@ -108,6 +118,10 @@ export class AWSTimestreamWriteService {
     }
 
     async ingest({ TableName, data, Time }) {
+        if (await this.isIngestInactive()) {
+            return;
+        }
+
         if (!(await this.describeTable({ TableName }))) {
             await this.createTable({ TableName });
         }
@@ -120,6 +134,10 @@ export class AWSTimestreamWriteService {
         TableName: string,
         Records: TimestreamWrite.Records,
     ) {
+        if (await this.isIngestInactive()) {
+            return;
+        }
+
         if (!(await this.describeTable({ TableName }))) {
             await this.createTable({ TableName });
         }

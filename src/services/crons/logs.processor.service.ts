@@ -203,7 +203,6 @@ export class LogsProcessorService {
                 continue;
             }
 
-            // old
             Records.push({
                 Dimensions,
                 MeasureName,
@@ -214,7 +213,6 @@ export class LogsProcessorService {
                 Version: Date.now(),
             });
 
-            // new
             ingestRecords.push({
                 series: constantsConfig.MEX_TOKEN_ID,
                 key: MeasureName,

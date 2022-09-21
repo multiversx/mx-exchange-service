@@ -7,6 +7,7 @@ import { SCAddressRepositoryService } from 'src/services/database/repositories/s
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
+import { FlagType } from './models/flag.model';
 import { SCAddressType } from './models/sc-address.model';
 
 @Injectable()
@@ -20,36 +21,64 @@ export class RemoteConfigGetterService extends GenericGetterService {
         super(cachingService, logger);
     }
 
-    async getMaintenanceFlagValue(): Promise<boolean> {
-        const cacheKey = this.getFlagCacheKey('MAINTENANCE');
+    private async getGenericFlag(
+        name: FlagType,
+        ttl: number,
+    ): Promise<boolean> {
+        const cacheKey = this.getFlagCacheKey(name);
         return await this.getData(
             cacheKey,
             () =>
                 this.flagRepositoryService
                     .findOne({
-                        name: 'MAINTENANCE',
+                        name: name,
                     })
-                    .then(res => {
+                    .then((res) => {
                         return res.value;
                     }),
-            oneHour(),
+            ttl,
         );
     }
 
+    async getMaintenanceFlagValue(): Promise<boolean> {
+        return await this.getGenericFlag(FlagType.MAINTENANCE, oneHour());
+    }
+
+    async getTimescaleWriteFlag(): Promise<boolean> {
+        try {
+            return await this.getGenericFlag(
+                FlagType.TIMESCALE_WRITE,
+                oneHour(),
+            );
+        } catch {
+            return true;
+        }
+    }
+
+    async getTimescaleReadFlag(): Promise<boolean> {
+        try {
+            return await this.getGenericFlag(
+                FlagType.TIMESCALE_READ,
+                oneHour(),
+            );
+        } catch {
+            return true;
+        }
+    }
+
+    async getTimestreamWriteFlagValue(): Promise<boolean> {
+        try {
+            return await this.getGenericFlag(
+                FlagType.TIMESTREAM_WRITE,
+                oneHour(),
+            );
+        } catch {
+            return true;
+        }
+    }
+
     async getMultiSwapStatus(): Promise<boolean> {
-        const cacheKey = this.getFlagCacheKey('MULTISWAP');
-        return await this.getData(
-            cacheKey,
-            () =>
-                this.flagRepositoryService
-                    .findOne({
-                        name: 'MULTISWAP',
-                    })
-                    .then(res => {
-                        return res ? res.value : false;
-                    }),
-            oneHour(),
-        );
+        return await this.getGenericFlag(FlagType.MULTISWAP, oneHour());
     }
 
     async getSCAddresses(
@@ -63,8 +92,8 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .find({
                         category: category,
                     })
-                    .then(res => {
-                        return res.map(scAddress => scAddress.address);
+                    .then((res) => {
+                        return res.map((scAddress) => scAddress.address);
                     }),
             oneHour(),
         );
@@ -79,8 +108,8 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .find({
                         category: SCAddressType.STAKING,
                     })
-                    .then(res => {
-                        return res.map(scAddress => scAddress.address);
+                    .then((res) => {
+                        return res.map((scAddress) => scAddress.address);
                     }),
             oneHour(),
         );
@@ -95,8 +124,8 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .find({
                         category: SCAddressType.STAKING_PROXY,
                     })
-                    .then(res => {
-                        return res.map(scAddress => scAddress.address);
+                    .then((res) => {
+                        return res.map((scAddress) => scAddress.address);
                     }),
             oneHour(),
         );

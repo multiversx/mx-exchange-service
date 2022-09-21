@@ -1,4 +1,4 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType, registerEnumType } from '@nestjs/graphql';
 
 @ObjectType()
 export class FlagModel {
@@ -11,3 +11,12 @@ export class FlagModel {
         Object.assign(this, init);
     }
 }
+
+export enum FlagType {
+    MAINTENANCE = 'MAINTENANCE',
+    MULTISWAP = 'MULTISWAP',
+    TIMESCALE_WRITE = 'TIMESCALE_WRITE',
+    TIMESCALE_READ = 'TIMESCALE_READ',
+    TIMESTREAM_WRITE = 'TIMESTREAM_WRITE',
+}
+registerEnumType(FlagType, { name: 'FlagType' });

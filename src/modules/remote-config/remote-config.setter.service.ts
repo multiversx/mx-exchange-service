@@ -8,6 +8,7 @@ import { GenericSetterService } from 'src/services/generics/generic.setter.servi
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
+import { FlagType } from './models/flag.model';
 import { SCAddressType } from './models/sc-address.model';
 @Injectable()
 export class RemoteConfigSetterService extends GenericSetterService {
@@ -20,7 +21,7 @@ export class RemoteConfigSetterService extends GenericSetterService {
         super(cachingService, logger);
     }
 
-    async setFlag(name: string, value: boolean): Promise<string> {
+    async setFlag(name: FlagType, value: boolean): Promise<string> {
         return await this.setData(this.getFlagCacheKey(name), value, oneHour());
     }
 
@@ -42,7 +43,7 @@ export class RemoteConfigSetterService extends GenericSetterService {
         ]);
         return await this.setSCAddresses(
             cacheKey,
-            addresses.map(a => a.address),
+            addresses.map((a) => a.address),
         );
     }
 

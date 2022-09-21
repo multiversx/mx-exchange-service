@@ -10,7 +10,7 @@ import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
-//import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
+import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
@@ -21,14 +21,15 @@ export class AnalyticsComputeService {
         private readonly farmComputeService: FarmComputeService,
         private readonly pairGetterService: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-    ) //private readonly elrondDataService: ElrondDataService,
-    {}
+        private readonly elrondDataService: ElrondDataService,
+    ) {}
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
 
-        const promises: Promise<string>[] = farmsAddresses().map(farmAddress =>
-            this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
+        const promises: Promise<string>[] = farmsAddresses().map(
+            (farmAddress) =>
+                this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
         );
         const farmsLockedValueUSD = await Promise.all(promises);
         for (const farmLockedValueUSD of farmsLockedValueUSD) {
@@ -48,7 +49,7 @@ export class AnalyticsComputeService {
         );
 
         let totalValueLockedUSD = new BigNumber(0);
-        const promises = filteredPairs.map(pairAddress =>
+        const promises = filteredPairs.map((pairAddress) =>
             this.pairGetterService.getLockedValueUSD(pairAddress),
         );
 
@@ -81,7 +82,7 @@ export class AnalyticsComputeService {
 
     async computeTotalAggregatedRewards(days: number): Promise<string> {
         const addresses: string[] = farmsAddresses();
-        const promises = addresses.map(async farmAddress => {
+        const promises = addresses.map(async (farmAddress) => {
             if (
                 farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS ||
                 farmVersion(farmAddress) === FarmVersion.V1_2
@@ -98,9 +99,8 @@ export class AnalyticsComputeService {
             const aggregatedRewards = new BigNumber(
                 rewardsPerBlock,
             ).multipliedBy(blocksNumber);
-            totalAggregatedRewards = totalAggregatedRewards.plus(
-                aggregatedRewards,
-            );
+            totalAggregatedRewards =
+                totalAggregatedRewards.plus(aggregatedRewards);
         }
         return totalAggregatedRewards.toFixed();
     }
@@ -110,18 +110,19 @@ export class AnalyticsComputeService {
         startTimeUtc: string,
         key: string,
     ): Promise<string> {
-        return await this.awsTimestreamQuery.getAggregatedValue({
-            table: elrondData.timestream.tableName,
-            series: tokenID,
-            metric: key,
-            time: startTimeUtc,
-        });
-        // return await this.elrondDataService.getAggregatedValue({
-        //     table: elrondData.timestream.tableName,
-        //     series: tokenID,
-        //     key,
-        //     startTimeUtc,
-        // });
+        return (await this.elrondDataService.isReadActive())
+            ? await this.elrondDataService.getAggregatedValue({
+                  table: elrondData.timestream.tableName,
+                  series: tokenID,
+                  key,
+                  startTimeUtc,
+              })
+            : await this.awsTimestreamQuery.getAggregatedValue({
+                  table: elrondData.timestream.tableName,
+                  series: tokenID,
+                  metric: key,
+                  time: startTimeUtc,
+              });
     }
 
     private async fiterPairsByIssuedLpToken(
