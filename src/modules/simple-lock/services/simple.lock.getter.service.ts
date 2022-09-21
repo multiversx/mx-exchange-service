@@ -7,17 +7,21 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
+import { SimpleLockType } from '../models/simple.lock.model';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
 
 @Injectable()
 export class SimpleLockGetterService extends GenericGetterService {
+    protected lockType: SimpleLockType;
+
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly abiService: SimpleLockAbiService,
-        private readonly tokenGetter: TokenGetterService,
+        protected readonly abiService: SimpleLockAbiService,
+        protected readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.lockType = SimpleLockType.BASE_TYPE;
     }
 
     async getLockedTokenID(): Promise<string> {
@@ -76,6 +80,6 @@ export class SimpleLockGetterService extends GenericGetterService {
     }
 
     private getSimpleLockCacheKey(...args: any) {
-        return generateCacheKeyFromParams('simpleLock', ...args);
+        return generateCacheKeyFromParams('simpleLock', this.lockType, ...args);
     }
 }

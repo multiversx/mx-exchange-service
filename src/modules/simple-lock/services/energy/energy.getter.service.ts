@@ -1,38 +1,33 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
-import { oneDay, oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneDay, oneHour } from 'src/helpers/helpers';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
-import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
-import { Energy } from '../models/simple.lock.energy.model';
+import { SimpleLockType } from '../../models/simple.lock.model';
+import { SimpleLockGetterService } from '../simple.lock.getter.service';
 import { EnergyAbiService } from './energy.abi.service';
 
 @Injectable()
-export class EnergyGetterService extends GenericGetterService {
+export class EnergyGetterService extends SimpleLockGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly abiService: EnergyAbiService,
+        protected readonly tokenGetter: TokenGetterService,
+        private readonly energyAbiService: EnergyAbiService,
         private readonly apiService: ElrondApiService,
     ) {
-        super(cachingService, logger);
-    }
-
-    async getLockedTokenID(): Promise<string> {
-        return await this.getData(
-            this.getEnergyCacheKey('lockedTokenID'),
-            () => this.abiService.getLockedTokenID(),
-            oneHour(),
-        );
+        super(cachingService, logger, energyAbiService, tokenGetter);
+        this.lockType = SimpleLockType.ENERGY_TYPE;
     }
 
     async getBaseAssetTokenID(): Promise<string> {
         return await this.getData(
             this.getEnergyCacheKey('baseAssetTokenID'),
-            () => this.abiService.getLockedTokenID(),
+            () => this.energyAbiService.getLockedTokenID(),
             oneHour(),
         );
     }
@@ -40,7 +35,7 @@ export class EnergyGetterService extends GenericGetterService {
     async getLockOptions(): Promise<number[]> {
         return await this.getData(
             this.getEnergyCacheKey('lockOptions'),
-            () => this.abiService.getLockOptions(),
+            () => this.energyAbiService.getLockOptions(),
             oneHour(),
         );
     }
@@ -48,7 +43,7 @@ export class EnergyGetterService extends GenericGetterService {
     async getPauseState(): Promise<boolean> {
         return await this.getData(
             this.getEnergyCacheKey('pauseState'),
-            () => this.abiService.isPaused(),
+            () => this.energyAbiService.isPaused(),
             oneHour(),
         );
     }

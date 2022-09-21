@@ -25,7 +25,6 @@ import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { EnergyModule } from './modules/simple-lock-energy/energy.module';
 
 @Module({
     imports: [
@@ -106,7 +105,6 @@ import { EnergyModule } from './modules/simple-lock-energy/energy.module';
         UserModule,
         AnalyticsModule,
         SubscriptionsModule,
-        EnergyModule,
     ],
     providers: [CachingService],
 })
