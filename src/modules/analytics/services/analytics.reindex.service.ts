@@ -3,7 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import {
     nowUtc,
-    oneDay,
+    oneMinute,
     splitDateRangeIntoIntervalsUtc,
 } from '../../../helpers/helpers';
 import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
@@ -95,7 +95,7 @@ export class AnalyticsReindexService {
             this.state.lastIntervalStartDate ?? elrondData.indexingStartTimeUtc;
         const endDateUtc = nowUtc();
 
-        const batchRangeInSeconds = oneDay();
+        const batchRangeInSeconds = 10 * oneMinute();
         const dateIntervals = splitDateRangeIntoIntervalsUtc(
             startDateUtc,
             endDateUtc,
@@ -127,6 +127,8 @@ export class AnalyticsReindexService {
             );
 
             await this.processEvents(eventGroups);
+
+            await this.saveState(dateIntervals[i + 1]);
         }
 
         return true;
@@ -137,17 +139,12 @@ export class AnalyticsReindexService {
         lte: number,
         eventNames: string[],
     ): Promise<any> {
-        const eventPromises: Promise<any>[] = [];
+        let eventGroups = [];
 
         for (const eventName of eventNames) {
-            eventPromises.push(this.getTransactionsLogs(eventName, gte, lte));
-        }
-
-        let eventGroupBatches = await Promise.all(eventPromises);
-
-        let eventGroups = [];
-        for (const group of eventGroupBatches) {
-            eventGroups = eventGroups.concat(group);
+            eventGroups = eventGroups.concat(
+                await this.getTransactionsLogs(eventName, gte, lte),
+            );
         }
 
         eventGroups.sort(function (a, b) {
