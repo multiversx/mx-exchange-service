@@ -164,6 +164,22 @@ export class StakingGetterService extends GenericGetterService {
         );
     }
 
+    async getBurnGasLimit(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            this.getStakeCacheKey(stakeAddress, 'burnGasLimit'),
+            () => this.abiService.getBurnGasLimit(stakeAddress),
+            oneHour(),
+        );
+    }
+
+    async getTransferExecGasLimit(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            this.getStakeCacheKey(stakeAddress, 'transferExecGasLimit'),
+            () => this.abiService.getTransferExecGasLimit(stakeAddress),
+            oneHour(),
+        );
+    }
+
     async getState(stakeAddress: string): Promise<string> {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'state'),
@@ -174,5 +190,29 @@ export class StakingGetterService extends GenericGetterService {
 
     private getStakeCacheKey(stakeAddress: string, ...args: any) {
         return generateCacheKeyFromParams('stake', stakeAddress, ...args);
+    }
+
+    async getLockedAssetFactoryManagedAddress(
+        stakeAddress: string,
+    ): Promise<string> {
+        return await this.getData(
+            this.getStakeCacheKey(
+                stakeAddress,
+                'lockedAssetFactoryManagedAddress',
+            ),
+            () =>
+                this.abiService.getLockedAssetFactoryManagedAddress(
+                    stakeAddress,
+                ),
+            oneHour(),
+        );
+    }
+
+    async getLastErrorMessage(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            this.getStakeCacheKey(stakeAddress, 'lastErrorMessage'),
+            () => this.abiService.getLastErrorMessage(stakeAddress),
+            oneMinute(),
+        );
     }
 }

@@ -74,3 +74,11 @@ export class FarmMigrationConfigArgs {
     @Field()
     newLockedFarmAddress: string;
 }
+
+@ArgsType()
+export class MergeFarmTokensArgs {
+    @Field()
+    farmAddress: string;
+    @Field(() => [InputTokenModel])
+    payments: Array<InputTokenModel>;
+}

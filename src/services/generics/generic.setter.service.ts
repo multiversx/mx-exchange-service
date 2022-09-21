@@ -14,10 +14,16 @@ export class GenericSetterService {
     protected async setData(
         cacheKey: string,
         value: any,
-        ttl: number,
+        remoteTtl: number,
+        localTtl?: number,
     ): Promise<string> {
         try {
-            await this.cachingService.setCache(cacheKey, value, ttl);
+            await this.cachingService.setCache(
+                cacheKey,
+                value,
+                remoteTtl,
+                localTtl,
+            );
             return cacheKey;
         } catch (error) {
             const logMessage = generateSetLogMessage(

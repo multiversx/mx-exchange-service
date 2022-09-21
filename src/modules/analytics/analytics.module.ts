@@ -6,19 +6,16 @@ import { ElrondCommunicationModule } from 'src/services/elrond-communication/elr
 import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
-import { AnalyticsController } from './analytics.controller';
-import { AnalyticsEventHandlerService } from './services/analytics.event.handler.service';
 import { AnalyticsResolver } from './analytics.resolver';
-import { AnalyticsAWSGetterService } from './services/analytics.service';
+import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { AnalyticsComputeService } from './services/analytics.compute.service';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
 import { ProxyModule } from '../proxy/proxy.module';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairDayDataResolver } from './analytics.pair.resolver';
-import { AnalyticsPriceDiscoveryEventHandlerService } from './services/analytics.price.discovery.event.handler.service';
-import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module';
 import { TokenModule } from '../tokens/token.module';
+import { AnalyticsAWSSetterService } from './services/analytics.aws.setter.service';
 
 @Module({
     imports: [
@@ -31,25 +28,22 @@ import { TokenModule } from '../tokens/token.module';
         FarmModule,
         ProxyModule,
         LockedAssetModule,
-        PriceDiscoveryModule,
         TokenModule,
     ],
     providers: [
         AnalyticsResolver,
         AnalyticsAWSGetterService,
+        AnalyticsAWSSetterService,
         AnalyticsGetterService,
         AnalyticsComputeService,
-        AnalyticsEventHandlerService,
-        AnalyticsPriceDiscoveryEventHandlerService,
         AnalyticsPairService,
         PairDayDataResolver,
     ],
     exports: [
         AnalyticsAWSGetterService,
+        AnalyticsAWSSetterService,
         AnalyticsGetterService,
         AnalyticsComputeService,
-        AnalyticsEventHandlerService,
     ],
-    controllers: [AnalyticsController],
 })
 export class AnalyticsModule {}

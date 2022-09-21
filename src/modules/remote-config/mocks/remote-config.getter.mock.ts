@@ -1,4 +1,5 @@
 import { Address } from '@elrondnetwork/erdjs/out';
+import { RemoteConfigGetterService } from '../remote-config.getter.service';
 
 export class RemoteConfigGetterServiceMock {
     async getMaintenanceFlagValue(): Promise<boolean> {
@@ -17,3 +18,8 @@ export class RemoteConfigGetterServiceMock {
         return [Address.Zero().bech32(), Address.Zero().bech32()];
     }
 }
+
+export const RemoteConfigGetterServiceProvider = {
+    provide: RemoteConfigGetterService,
+    useClass: RemoteConfigGetterServiceMock,
+};
