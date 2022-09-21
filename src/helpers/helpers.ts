@@ -183,3 +183,7 @@ export function isDateGreaterOrEqual(
 ): bool {
     return new Date(firstDate).getTime() - new Date(secondDate).getTime() >= 0;
 }
+
+export function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}

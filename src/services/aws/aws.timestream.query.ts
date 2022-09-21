@@ -35,7 +35,7 @@ export class AWSTimestreamQueryService {
         this.queryClient = new TimestreamQuery({
             maxRetries: 10,
             httpOptions: {
-                timeout: 20000,
+                timeout: 60000,
                 agent: httpsAgent,
             },
         });
