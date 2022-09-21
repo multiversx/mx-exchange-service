@@ -52,6 +52,8 @@ export class ElasticService {
         let response = await this.elasticClient.search(params);
         const hits = [];
         let scroll = 1;
+        let scroll_id;
+
         while (true) {
             const sourceHits = response.body.hits.hits;
 
@@ -65,12 +67,21 @@ export class ElasticService {
                 break;
             }
 
+            scroll_id = response.body._scroll_id;
+
             response = await this.elasticClient.scroll({
                 scroll_id: response.body._scroll_id,
                 scroll: `${scroll}s`,
             });
             scroll += 1;
         }
+
+        if (scroll_id) {
+            await this.elasticClient.clear_scroll({
+                scroll_id: scroll_id,
+            });
+        }
+
         return hits;
     }
 
