@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
 import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
-//import { AnalyticsTimescaleGetterService } from './analytics.timescale.getter.service';
+import { AnalyticsTimescaleGetterService } from './analytics.timescale.getter.service';
 
 @Injectable()
 export class AnalyticsPairService {
@@ -12,55 +13,68 @@ export class AnalyticsPairService {
         private readonly pairGetterService: PairGetterService,
         private readonly routerGetter: RouterGetterService,
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
-        //private readonly analyticsTimescaleGetter: AnalyticsTimescaleGetterService,
+        private readonly analyticsTimescaleGetter: AnalyticsTimescaleGetterService,
+        private readonly elrondDataService: ElrondDataService,
     ) {}
 
     async getClosingLockedValueUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
+        if (await this.elrondDataService.isReadActive()) {
+            return await this.analyticsTimescaleGetter.getLatestCompleteValues(
+                pairAddress,
+                'lockedValueUSD',
+            );
+        }
+
         return await this.analyticsAWSGetter.getLatestCompleteValues(
             pairAddress,
             'lockedValueUSD',
         );
-        // return await this.analyticsTimescaleGetter.getLatestCompleteValues(
-        //     pairAddress,
-        //     'lockedValueUSD',
-        // );
     }
 
     async getDailyVolumesUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
+        if (await this.elrondDataService.isReadActive()) {
+            return await this.analyticsTimescaleGetter.getSumCompleteValues(
+                pairAddress,
+                'volumeUSD',
+            );
+        }
+
         return await this.analyticsAWSGetter.getSumCompleteValues(
             pairAddress,
             'volumeUSD',
         );
-        // return await this.analyticsTimescaleGetter.getSumCompleteValues(
-        //     pairAddress,
-        //     'volumeUSD',
-        // );
     }
 
     async getDailyFeesUSD(pairAddress: string): Promise<HistoricDataModel[]> {
+        if (await this.elrondDataService.isReadActive()) {
+            return await this.analyticsTimescaleGetter.getSumCompleteValues(
+                pairAddress,
+                'feesUSD',
+            );
+        }
+
         return await this.analyticsAWSGetter.getSumCompleteValues(
             pairAddress,
             'feesUSD',
         );
-        // return await this.analyticsTimescaleGetter.getSumCompleteValues(
-        //     pairAddress,
-        //     'feesUSD',
-        // );
     }
 
     async getClosingPriceUSD(tokenID: string): Promise<HistoricDataModel[]> {
+        if (await this.elrondDataService.isReadActive()) {
+            return await this.analyticsTimescaleGetter.getLatestCompleteValues(
+                tokenID,
+                'priceUSD',
+            );
+        }
+
         return await this.analyticsAWSGetter.getLatestCompleteValues(
             tokenID,
             'priceUSD',
         );
-        // return await this.analyticsTimescaleGetter.getLatestCompleteValues(
-        //     tokenID,
-        //     'priceUSD',
-        // );
     }
 
     async getPairDayDatas(pairAddress: string): Promise<PairDayDataModel[]> {
