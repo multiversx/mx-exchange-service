@@ -49,12 +49,6 @@ export class AnalyticsReindexService {
     private pairsMap: Map<string, string[]>;
     private launchedTokensDecimals: { [key: string]: number } = {};
 
-    private debug = true;
-
-    // PS:
-    // in events, 'totalFeePercent' was not saved => getTotalFeePercent
-    // in events, the state (active or not) of a pair was not saved => can affect getPriceUSDByPath()
-
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly elrondDataService: ElrondDataService,
@@ -339,8 +333,7 @@ export class AnalyticsReindexService {
     }
 
     private saveLogData(logData: any): void {
-        this.logger.info(`Analytics reindexer: ${logData}`);
-        if (this.debug) console.log(logData);
+        this.logger.info(logData);
     }
 
     private async handleOldLiqudityEvent(
