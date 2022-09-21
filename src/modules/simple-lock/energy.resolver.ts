@@ -7,7 +7,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { UnlockType } from '../simple-lock-energy/models/simple.lock.energy.model';
+import { UnlockType } from './models/simple.lock.model';
 import { SimpleLockEnergyModel } from './models/simple.lock.model';
 import { EnergyGetterService } from './services/energy/energy.getter.service';
 import { EnergyTransactionService } from './services/energy/energy.transaction.service';

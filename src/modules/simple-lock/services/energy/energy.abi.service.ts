@@ -8,7 +8,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Energy } from 'src/modules/simple-lock-energy/models/simple.lock.energy.model';
+import { Energy } from '../../models/simple.lock.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { Logger } from 'winston';
 import { SimpleLockType } from '../../models/simple.lock.model';

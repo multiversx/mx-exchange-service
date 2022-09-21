@@ -5,6 +5,12 @@ import {
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
+import {
+    BigUIntType,
+    FieldDefinition,
+    StructType,
+    U64Type,
+} from '@elrondnetwork/erdjs/out';
 
 export enum FarmType {
     SIMPLE_FARM,
@@ -17,6 +23,16 @@ export const FarmTypeEnumType = new EnumType('FarmType', [
     new EnumVariantDefinition('SimpleFarm', 0),
     new EnumVariantDefinition('FarmWithLockedRewards', 1),
 ]);
+
+export enum UnlockType {
+    TERM_UNLOCK,
+    EARLY_UNLOCK,
+    REDUCE_PERIOD,
+}
+
+registerEnumType(UnlockType, {
+    name: 'UnlockType',
+});
 
 export enum SimpleLockType {
     BASE_TYPE,
@@ -125,5 +141,27 @@ export class SimpleLockEnergyModel extends SimpleLockModel {
     constructor(init?: Partial<SimpleLockEnergyModel>) {
         super(init);
         Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class Energy {
+    @Field()
+    amount: string;
+    @Field(() => Int)
+    lastUpdateEpoch: number;
+    @Field()
+    totalLockedTokens: string;
+
+    constructor(init?: Partial<Energy>) {
+        Object.assign(this, init);
+    }
+
+    static getStructure(): StructType {
+        return new StructType('Energy', [
+            new FieldDefinition('amount', '', new BigUIntType()),
+            new FieldDefinition('lastUpdateEpoch', '', new U64Type()),
+            new FieldDefinition('totalLockedTokens', '', new BigUIntType()),
+        ]);
     }
 }
