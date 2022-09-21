@@ -14,7 +14,7 @@ import { FlagRepositoryService } from 'src/services/database/repositories/flag.r
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
 import { JwtAdminGuard } from '../auth/jwt.admin.guard';
 import { FlagArgs } from './args/flag.args';
-import { FlagModel } from './models/flag.model';
+import { FlagModel, FlagType } from './models/flag.model';
 import { SCAddressModel, SCAddressType } from './models/sc-address.model';
 import { Response } from 'express';
 import { RemoteConfigSetterService } from './remote-config.setter.service';
@@ -23,6 +23,7 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { CacheKeysArgs } from './args/cacheKeys.args';
 import { CachingService } from 'src/services/caching/cache.service';
+import { RemoteConfigGetterService } from './remote-config.getter.service';
 
 @Controller('remote-config')
 export class RemoteConfigController {
@@ -30,6 +31,7 @@ export class RemoteConfigController {
         private readonly flagRepositoryService: FlagRepositoryService,
         private readonly scAddressRepositoryService: SCAddressRepositoryService,
         private readonly remoteConfigSetterService: RemoteConfigSetterService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cacheService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
@@ -44,7 +46,7 @@ export class RemoteConfigController {
             if (flag.name && flag.value != null) {
                 const result = await this.flagRepositoryService.create(flag);
                 this.remoteConfigSetterService.setFlag(
-                    result.name,
+                    FlagType[result.name],
                     result.value,
                 );
                 return res.status(201).send(result);
@@ -68,14 +70,15 @@ export class RemoteConfigController {
     ): Promise<FlagModel | Response> {
         try {
             if (flag.name && flag.value != null) {
-                const result = await this.flagRepositoryService.findOneAndUpdate(
-                    { name: flag.name },
-                    flag,
-                );
+                const result =
+                    await this.flagRepositoryService.findOneAndUpdate(
+                        { name: flag.name },
+                        flag,
+                    );
 
                 if (result) {
                     await this.remoteConfigSetterService.setFlag(
-                        result.name,
+                        FlagType[result.name],
                         result.value,
                     );
                     return res.status(201).send(result);
@@ -112,7 +115,7 @@ export class RemoteConfigController {
                     ? { _id: nameOrID }
                     : { name: nameOrID },
             )
-            .then(result => {
+            .then((result) => {
                 if (result) return res.status(200).send(result);
                 return res.status(404).send();
             });
@@ -149,9 +152,8 @@ export class RemoteConfigController {
                 scAddress.category &&
                 scAddress.category in SCAddressType
             ) {
-                const newSCAddress = await this.scAddressRepositoryService.create(
-                    scAddress,
-                );
+                const newSCAddress =
+                    await this.scAddressRepositoryService.create(scAddress);
                 if (newSCAddress) {
                     await this.remoteConfigSetterService.setSCAddressesFromDB(
                         scAddress.category,
@@ -188,7 +190,7 @@ export class RemoteConfigController {
                     ? { _id: addressOrID }
                     : { address: addressOrID },
             )
-            .then(result => {
+            .then((result) => {
                 if (result) return res.status(200).send(result);
                 return res.status(404).send();
             });
