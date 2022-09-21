@@ -112,3 +112,18 @@ export class SimpleLockModel {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class SimpleLockEnergyModel extends SimpleLockModel {
+    @Field()
+    baseAssetTokenID: string;
+    @Field(() => [Int])
+    lockOptions: number[];
+    @Field()
+    pauseState: boolean;
+
+    constructor(init?: Partial<SimpleLockEnergyModel>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
