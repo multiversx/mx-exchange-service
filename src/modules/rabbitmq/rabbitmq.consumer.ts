@@ -38,12 +38,15 @@ import {
     SwapFixedOutputEvent,
     WithdrawEvent,
     RawEvent,
+    SIMPLE_LOCK_ENERGY_EVENTS,
+    EnergyEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { RouterGetterService } from '../router/services/router.getter.service';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
+import { EnergyHandler } from './handlers/energy.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -60,6 +63,7 @@ export class RabbitMqConsumer {
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
+        private readonly energyHandler: EnergyHandler,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -229,6 +233,11 @@ export class RabbitMqConsumer {
                         );
                     this.updateIngestData(eventData);
                     break;
+                case SIMPLE_LOCK_ENERGY_EVENTS.ENERGY_UPDATED:
+                    await this.energyHandler.handleUpdateEnergy(
+                        new EnergyEvent(rawEvent),
+                    );
+                    break;
             }
         }
 
@@ -249,6 +258,7 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.routerAddress);
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
         this.filterAddresses.push(...scAddress.priceDiscovery);
+        this.filterAddresses.push(scAddress.simpleLockEnergy);
     }
 
     private async updateIngestData(eventData: any[]): Promise<void> {
