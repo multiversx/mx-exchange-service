@@ -22,12 +22,10 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLaunchedTokenId();
+        const interaction: Interaction =
+            contract.methodsExplicit.getLaunchedTokenId();
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -35,12 +33,10 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getAcceptedTokenId();
+        const interaction: Interaction =
+            contract.methodsExplicit.getAcceptedTokenId();
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -48,12 +44,10 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getRedeemTokenId();
+        const interaction: Interaction =
+            contract.methodsExplicit.getRedeemTokenId();
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -63,12 +57,10 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLaunchedTokenBalance();
+        const interaction: Interaction =
+            contract.methodsExplicit.getLaunchedTokenBalance();
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -78,12 +70,10 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getAcceptedTokenBalance();
+        const interaction: Interaction =
+            contract.methodsExplicit.getAcceptedTokenBalance();
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -93,14 +83,12 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getRedeemTokenTotalCirculatingSupply(
-            [new U64Value(new BigNumber(1))],
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getRedeemTokenTotalCirculatingSupply([
+                new U64Value(new BigNumber(1)),
+            ]);
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -110,14 +98,12 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getRedeemTokenTotalCirculatingSupply(
-            [new U64Value(new BigNumber(2))],
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getRedeemTokenTotalCirculatingSupply([
+                new U64Value(new BigNumber(2)),
+            ]);
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -125,12 +111,10 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getStartBlock();
+        const interaction: Interaction =
+            contract.methodsExplicit.getStartBlock();
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -140,10 +124,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         );
         const interaction: Interaction = contract.methodsExplicit.getEndBlock();
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -151,12 +132,10 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getCurrentPhase();
+        const interaction: Interaction =
+            contract.methodsExplicit.getCurrentPhase();
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
 
         const phaseName = response.firstValue.valueOf().name;
         const penalty = response.firstValue.valueOf().fields.penalty_percentage;
@@ -178,12 +157,10 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getMinLaunchedTokenPrice();
+        const interaction: Interaction =
+            contract.methodsExplicit.getMinLaunchedTokenPrice();
 
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -193,11 +170,9 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getNoLimitPhaseDurationBlocks();
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getNoLimitPhaseDurationBlocks();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -207,11 +182,9 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLinearPenaltyPhaseDurationBlocks();
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getLinearPenaltyPhaseDurationBlocks();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -221,11 +194,9 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getFixedPenaltyPhaseDurationBlocks();
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getFixedPenaltyPhaseDurationBlocks();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -233,11 +204,9 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLockingScAddress();
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockingScAddress();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -245,11 +214,9 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getUnlockEpoch();
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getUnlockEpoch();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
     }
 
@@ -259,11 +226,9 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getPenaltyMinPercentage();
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getPenaltyMinPercentage();
+        const response = await this.getGenericData(interaction);
         const rawPenalty: BigNumber = response.firstValue.valueOf();
         return rawPenalty
             .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
@@ -276,11 +241,9 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getPenaltyMaxPercentage();
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getPenaltyMaxPercentage();
+        const response = await this.getGenericData(interaction);
         const rawPenalty: BigNumber = response.firstValue.valueOf();
         return rawPenalty
             .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
@@ -293,11 +256,9 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getFixedPenaltyPercentage();
-        const response = await this.getGenericData(
-            PriceDiscoveryAbiService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getFixedPenaltyPercentage();
+        const response = await this.getGenericData(interaction);
         const rawPenalty: BigNumber = response.firstValue.valueOf();
         return rawPenalty
             .dividedBy(constantsConfig.MAX_PERCENTAGE_PRICE_DISCOVERY)
