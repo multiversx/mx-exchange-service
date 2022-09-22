@@ -8,8 +8,10 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
+import { EnergyModel, UnlockType } from './models/simple.lock.model';
 import { SimpleLockEnergyModel } from './models/simple.lock.model';
 import { EnergyGetterService } from './services/energy/energy.getter.service';
+import { EnergyService } from './services/energy/energy.service';
 import { EnergyTransactionService } from './services/energy/energy.transaction.service';
 import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockResolver } from './simple.lock.resolver';
@@ -20,6 +22,7 @@ export class EnergyResolver extends SimpleLockResolver {
         protected readonly simpleLockService: SimpleLockService,
         protected readonly energyGetter: EnergyGetterService,
         protected readonly energyTransaction: EnergyTransactionService,
+        private readonly energyService: EnergyService,
     ) {
         super(simpleLockService, energyGetter);
     }
@@ -53,8 +56,8 @@ export class EnergyResolver extends SimpleLockResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => Energy)
-    async userEnergy(@User() user: any): Promise<Energy> {
+    @Query(() => EnergyModel)
+    async userEnergy(@User() user: any): Promise<EnergyModel> {
         return await this.genericQuery(() =>
             this.energyService.getUserEnergy(user.publicKey),
         );

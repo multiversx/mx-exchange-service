@@ -1,3 +1,4 @@
+import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
 import {
     Address,
     AddressValue,
@@ -8,7 +9,6 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { Energy } from '../../models/simple.lock.model';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { Logger } from 'winston';
 import { SimpleLockType } from '../../models/simple.lock.model';
@@ -52,7 +52,7 @@ export class EnergyAbiService extends SimpleLockAbiService {
             .map((lockOption: BigNumber) => lockOption.toNumber());
     }
 
-    async getEnergyEntryForUser(userAddress: string): Promise<Energy> {
+    async getEnergyEntryForUser(userAddress: string): Promise<EnergyType> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
         const interaction: Interaction =
@@ -65,11 +65,7 @@ export class EnergyAbiService extends SimpleLockAbiService {
             interaction,
         );
         const rawEnergy = response.firstValue.valueOf();
-        return new Energy({
-            amount: rawEnergy.amount.toFixed(),
-            lastUpdateEpoch: rawEnergy.last_update_epoch.toNumber(),
-            totalLockedTokens: rawEnergy.total_locked_tokens.toFixed(),
-        });
+        return Energy.fromDecodedAttributes(rawEnergy).toJSON();
     }
 
     async getEnergyAmountForUser(userAddress: string): Promise<string> {

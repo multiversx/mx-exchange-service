@@ -1,10 +1,13 @@
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { Energy } from '../models/simple.lock.energy.model';
 
 @Injectable()
 export class EnergyComputeService {
-    depleteUserEnergy(energyEntry: Energy, currentEpoch: number): Energy {
+    depleteUserEnergy(
+        energyEntry: EnergyType,
+        currentEpoch: number,
+    ): EnergyType {
         if (energyEntry.lastUpdateEpoch === currentEpoch) {
             energyEntry;
         }

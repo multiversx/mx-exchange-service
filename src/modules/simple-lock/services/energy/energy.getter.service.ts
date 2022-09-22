@@ -1,3 +1,4 @@
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
@@ -67,7 +68,7 @@ export class EnergyGetterService extends SimpleLockGetterService {
         );
     }
 
-    async getEnergyEntryForUser(userAddress: string): Promise<Energy> {
+    async getEnergyEntryForUser(userAddress: string): Promise<EnergyType> {
         return await this.getData(
             this.getEnergyCacheKey('energyEntry', userAddress),
             () => this.abiService.getEnergyEntryForUser(userAddress),
