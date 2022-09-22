@@ -121,6 +121,12 @@ export class ElrondDataService {
             return;
         }
 
+        let ingestRecords = this.objectToIngestRecords({ data, timestamp });
+
+        return await this.ingest(ingestRecords);
+    }
+
+    objectToIngestRecords({ data, timestamp }): IngestRecord[] {
         let ingestRecords: IngestRecord[] = [];
 
         Object.keys(data).forEach((series) => {
@@ -137,7 +143,7 @@ export class ElrondDataService {
             });
         });
 
-        return await this.ingest(ingestRecords);
+        return ingestRecords;
     }
 
     async getLatestCompleteValues({
