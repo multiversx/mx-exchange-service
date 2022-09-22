@@ -21,6 +21,8 @@ import { EnergyTransactionService } from './services/energy/energy.transaction.s
 import { EnergyResolver } from './energy.resolver';
 import { CommonAppModule } from 'src/common.app.module';
 import { TransactionResolver } from './transaction.resolver';
+import { EnergyService } from './services/energy/energy.service';
+import { EnergyComputeService } from './services/energy/energy.compute.service';
 
 @Module({
     imports: [
@@ -42,9 +44,11 @@ import { TransactionResolver } from './transaction.resolver';
         SimpleLockResolver,
         LockedLpTokenResolver,
         LockedFarmTokenResolver,
+        EnergyService,
         EnergyAbiService,
         EnergyGetterService,
         EnergySetterService,
+        EnergyComputeService,
         EnergyTransactionService,
         EnergyResolver,
         TransactionResolver,
