@@ -41,6 +41,8 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { AnalyticsReindexRepositoryService } from 'src/services/database/repositories/analytics.reindex.state.repository';
 import { AnalyticsReindexState } from 'src/modules/remote-config/schemas/analytics.reindex.state.schema';
+import { IngestRecord } from 'src/services/elrond-communication/ingest-records.model';
+import * as fs from 'fs';
 
 @Injectable()
 export class AnalyticsReindexService {
@@ -48,6 +50,19 @@ export class AnalyticsReindexService {
     private state: AnalyticsReindexState;
     private pairsMap: Map<string, string[]>;
     private launchedTokensDecimals: { [key: string]: number } = {};
+
+    private readonly dataApiIngest: boolean = true;
+    private readonly localIngestFolder: string = 'localIngest';
+
+    // speed measuring variables
+    private ingestedCnt: number = 0;
+    private processStartTime: number;
+
+    private ingestRecordsThreshold = 500;
+    private ingestPromisesThreshold = 10;
+
+    private ingestRecordsBuffer: IngestRecord[] = [];
+    private ingestRecordsPromises: Promise<boolean>[] = [];
 
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
@@ -85,6 +100,14 @@ export class AnalyticsReindexService {
     private async reindexAnalytics(): Promise<boolean> {
         await this.initReindexState();
 
+        if (!this.dataApiIngest && !fs.existsSync(this.localIngestFolder)) {
+            fs.mkdirSync(this.localIngestFolder);
+        }
+
+        if (!this.processStartTime) {
+            this.processStartTime = new Date().getTime();
+        }
+
         const startDateUtc =
             this.state.lastIntervalStartDate ?? elrondData.indexingStartTimeUtc;
         const endDateUtc = nowUtc();
@@ -100,29 +123,44 @@ export class AnalyticsReindexService {
             `reindexAnalytics started from startDateUtc ${startDateUtc}`,
         );
 
+        const eventNames = [
+            PAIR_EVENTS.ADD_LIQUIDITY,
+            PAIR_EVENTS.REMOVE_LIQUIDITY,
+            PAIR_EVENTS.SWAP_FIXED_INPUT,
+            PAIR_EVENTS.SWAP_FIXED_OUTPUT,
+            PRICE_DISCOVERY_EVENTS.DEPOSIT,
+            PRICE_DISCOVERY_EVENTS.WITHDARW,
+        ];
+
+        let nextEventGroupPromise: Promise<any>;
+
         for (let i = 0; i < dateIntervals.length - 1; i++) {
             const lte = new Date(dateIntervals[i]).getTime() / 1000;
             const gte = new Date(dateIntervals[i + 1]).getTime() / 1000;
 
-            this.saveLogData(`Reindexing interval gte ${lte} <-> lte ${gte}`);
+            this.saveLogData(`Reindexing interval gte ${lte} -> lte ${gte}`);
 
-            const eventNames = [
-                PAIR_EVENTS.ADD_LIQUIDITY,
-                PAIR_EVENTS.REMOVE_LIQUIDITY,
-                PAIR_EVENTS.SWAP_FIXED_INPUT,
-                PAIR_EVENTS.SWAP_FIXED_OUTPUT,
-                PRICE_DISCOVERY_EVENTS.DEPOSIT,
-                PRICE_DISCOVERY_EVENTS.WITHDARW,
-            ];
-            const eventGroups = await this.getEventsOrderedByTimestamp(
-                gte,
-                lte,
-                eventNames,
-            );
+            const eventGroups =
+                (await nextEventGroupPromise) ??
+                (await this.getEventsOrderedByTimestamp(gte, lte, eventNames));
+
+            if (i > dateIntervals.length - 2) {
+                const nextGte = new Date(dateIntervals[i + 2]).getTime() / 1000;
+                nextEventGroupPromise = this.getEventsOrderedByTimestamp(
+                    nextGte,
+                    gte,
+                    eventNames,
+                );
+            }
 
             await this.processEvents(eventGroups);
 
-            await this.saveState(dateIntervals[i + 1]);
+            await Promise.all([
+                this.ingestLastRecords(),
+                this.saveState(dateIntervals[i + 1]),
+            ]);
+
+            this.logPerformanceAndReset();
         }
 
         return true;
@@ -190,14 +228,15 @@ export class AnalyticsReindexService {
                     case PRICE_DISCOVERY_EVENTS.DEPOSIT: {
                         try {
                             const event = new DepositEvent(rawEvent);
-                            await this.processPriceDiscoveryEvent(event);
+                            await this.handleOldPriceDiscoveryEvent(event);
                         } finally {
+                            break;
                         }
                     }
                     case PRICE_DISCOVERY_EVENTS.WITHDARW: {
                         try {
                             const event = new WithdrawEvent(rawEvent);
-                            await this.processPriceDiscoveryEvent(event);
+                            await this.handleOldPriceDiscoveryEvent(event);
                         } finally {
                             break;
                         }
@@ -209,7 +248,7 @@ export class AnalyticsReindexService {
 
     private async initReindexState(): Promise<void> {
         await this.initState();
-        await this.updatePairsMap();
+        await this.refreshPairsMap();
     }
 
     private async initState(): Promise<void> {
@@ -247,16 +286,36 @@ export class AnalyticsReindexService {
         }
     }
 
-    private async updatePairsMap(): Promise<void> {
-        this.pairsMap = await this.getPairsMap(true);
+    private async refreshPairsMap(): Promise<Map<string, string[]>> {
+        try {
+            let pairsMetadata: PairMetadata[] =
+                await this.getAllPairsMetadata();
+
+            const pairsMap = new Map<string, string[]>();
+            for (const pairMetadata of pairsMetadata) {
+                pairsMap.set(pairMetadata.firstTokenID, []);
+                pairsMap.set(pairMetadata.secondTokenID, []);
+            }
+
+            pairsMetadata.forEach((pair) => {
+                pairsMap.get(pair.firstTokenID).push(pair.secondTokenID);
+                pairsMap.get(pair.secondTokenID).push(pair.firstTokenID);
+            });
+
+            this.pairsMap = pairsMap;
+
+            return this.pairsMap;
+        } catch (error) {
+            throw error;
+        }
     }
 
-    private async updatePairsState(
+    private async updatePairState(
         pairAddress: string,
         pairData: any,
     ): Promise<void> {
         if (this.state.pairsState[pairAddress] === undefined) {
-            await this.updatePairsMap();
+            await this.refreshPairsMap();
         } else if (this.state.pairsState[pairAddress] === null) {
             throw new Error(
                 `Can't update pairs state for ${pairAddress} - ${pairData}`,
@@ -278,10 +337,10 @@ export class AnalyticsReindexService {
         }
     }
 
-    private async updatePairsStateForLiquidityEvent(
+    private async updatePairStateForLiquidityEvent(
         event: AddLiquidityEvent | RemoveLiquidityEvent,
     ): Promise<void> {
-        await this.updatePairsState(event.address, {
+        await this.updatePairState(event.address, {
             firstTokenID: event.getFirstToken().tokenID,
             secondTokenID: event.getSecondToken().tokenID,
             firstTokenReserves: event.getFirstTokenReserves(),
@@ -290,7 +349,7 @@ export class AnalyticsReindexService {
         });
     }
 
-    private async updatePairsStateForSwapEvent(
+    private async updatePairStateForSwapEvent(
         event: SwapFixedInputEvent | SwapFixedOutputEvent,
     ): Promise<void> {
         if (!this.state.pairsState[event.address]) {
@@ -310,7 +369,7 @@ export class AnalyticsReindexService {
             this.state.pairsState[event.address].firstTokenID ===
             event.getTokenIn().tokenID
         ) {
-            await this.updatePairsState(event.address, {
+            await this.updatePairState(event.address, {
                 firstTokenID: event.getTokenIn().tokenID,
                 secondTokenID: event.getTokenOut().tokenID,
                 firstTokenReserves: event.getTokenInReserves().toString(),
@@ -320,7 +379,7 @@ export class AnalyticsReindexService {
                     '0',
             });
         } else {
-            await this.updatePairsState(event.address, {
+            await this.updatePairState(event.address, {
                 firstTokenID: event.getTokenOut().tokenID,
                 secondTokenID: event.getTokenIn().tokenID,
                 firstTokenReserves: event.getTokenOutReserves().toString(),
@@ -334,13 +393,110 @@ export class AnalyticsReindexService {
 
     private saveLogData(logData: any): void {
         this.logger.info(logData);
+        console.log(logData);
+    }
+
+    private getLocalIngestFileName(timestamp: number): string {
+        const date = new Date(timestamp * 1000);
+        return `${date.getFullYear()}-${date.getMonth() + 1}-${
+            date.getDay() + 1
+        }.json`;
+    }
+
+    private logPerformanceAndReset(): void {
+        if (this.ingestedCnt !== 0) {
+            const end = new Date().getTime();
+            const seconds = (end - this.processStartTime) / 1000;
+            this.saveLogData(
+                `ing/s = ${Math.round(this.ingestedCnt / seconds)}`,
+            );
+
+            this.ingestedCnt = 0;
+        }
+
+        this.processStartTime = new Date().getTime();
+    }
+
+    private async ingest({ data, timestamp }): Promise<void> {
+        if (this.dataApiIngest) {
+            await this.dbIngest({
+                data,
+                timestamp,
+            });
+        } else {
+            this.localIngest({
+                data,
+                timestamp,
+            });
+        }
+    }
+
+    private localIngest({ data, timestamp }) {
+        let ingestRecords = this.elrondDataService.objectToIngestRecords({
+            data,
+            timestamp,
+        });
+
+        for (const ingestRecord of ingestRecords) {
+            const filePath = `${
+                this.localIngestFolder
+            }/${this.getLocalIngestFileName(ingestRecord.timestamp)}`;
+
+            if (!fs.existsSync(filePath)) {
+                fs.writeFileSync(filePath, '');
+            }
+
+            fs.appendFileSync(filePath, `${JSON.stringify(ingestRecord)}\r\n`);
+            this.ingestedCnt++;
+        }
+    }
+
+    private async dbIngest({ data, timestamp }): Promise<void> {
+        const newRecordsToIngest = this.elrondDataService.objectToIngestRecords(
+            {
+                data,
+                timestamp,
+            },
+        );
+        this.ingestRecordsBuffer =
+            this.ingestRecordsBuffer.concat(newRecordsToIngest);
+        this.ingestedCnt += newRecordsToIngest.length;
+
+        await this.waitForOldIngestRequestsIfNeeded();
+
+        if (this.ingestRecordsBuffer.length > this.ingestRecordsThreshold) {
+            const promise = this.elrondDataService
+                .ingest(this.ingestRecordsBuffer)
+                .then((res) => {
+                    this.ingestRecordsPromises =
+                        this.ingestRecordsPromises.slice(1);
+                    return res;
+                });
+            this.ingestRecordsPromises.push(promise);
+            this.ingestRecordsBuffer = [];
+        }
+    }
+
+    private async ingestLastRecords(): Promise<void> {
+        if (this.dataApiIngest) {
+            const promise = this.elrondDataService.ingest(
+                this.ingestRecordsBuffer,
+            );
+        }
+    }
+
+    private async waitForOldIngestRequestsIfNeeded(): Promise<void> {
+        if (this.ingestRecordsPromises.length > this.ingestPromisesThreshold) {
+            await Promise.all(this.ingestRecordsPromises);
+            this.ingestRecordsPromises = [];
+        }
     }
 
     private async handleOldLiqudityEvent(
         event: AddLiquidityEvent | RemoveLiquidityEvent,
     ): Promise<void> {
         try {
-            await this.updatePairsStateForLiquidityEvent(event);
+            await this.updatePairStateForLiquidityEvent(event);
 
             const [
                 firstTokenLockedValueUSD,
@@ -373,12 +529,10 @@ export class AnalyticsReindexService {
                     event.getSecondToken().tokenID,
                 );
 
-            await Promise.all([
-                this.elrondDataService.ingestObject({
-                    data,
-                    timestamp: event.getTimestamp().toNumber(),
-                }),
-            ]);
+            await this.ingest({
+                data,
+                timestamp: event.getTimestamp().toNumber(),
+            });
         } catch (error) {
             //this.saveLogData(`Bad event ${event} ${error}`);
             throw error;
@@ -389,7 +543,7 @@ export class AnalyticsReindexService {
         event: SwapFixedInputEvent | SwapFixedOutputEvent,
     ): Promise<void> {
         try {
-            await this.updatePairsStateForSwapEvent(event);
+            await this.updatePairStateForSwapEvent(event);
 
             const [
                 firstTokenID,
@@ -491,12 +645,10 @@ export class AnalyticsReindexService {
                 totalLockedValueUSD: newTotalLockedValueUSD.toFixed(),
             };
 
-            await Promise.all([
-                this.elrondDataService.ingestObject({
-                    data,
-                    timestamp: event.getTimestamp().toNumber(),
-                }),
-            ]);
+            await this.ingest({
+                data,
+                timestamp: event.getTimestamp().toNumber(),
+            });
         } catch (error) {
             //this.saveLogData(`Bad event ${event} ${error}`);
             throw error;
@@ -645,7 +797,8 @@ export class AnalyticsReindexService {
     private async computeTokenPriceUSD(tokenID: string): Promise<BigNumber> {
         return constantsConfig.USDC_TOKEN_ID === tokenID
             ? new BigNumber(1)
-            : await this.getPriceUSDByPath(tokenID);
+            : //await this.getPriceUSDByPath(tokenID);
+              new BigNumber(await this.computeTokenPriceDerivedUSD(tokenID));
     }
 
     private async computeFirstTokenPrice(pairAddress: string): Promise<string> {
@@ -868,9 +1021,11 @@ export class AnalyticsReindexService {
 
         const path: string[] = [];
         const discovered = new Map<string, boolean>();
-        let graph = await this.getPairsMap();
+        let graph = this.pairsMap;
         if (!graph.has(tokenID)) {
             this.saveLogData(`graph does not contain ${tokenID}`);
+            await this.refreshPairsMap();
+            graph = this.pairsMap;
             return new BigNumber(0);
         }
 
@@ -935,35 +1090,7 @@ export class AnalyticsReindexService {
         }
     }
 
-    private async getPairsMap(
-        forceRefresh: boolean = false,
-    ): Promise<Map<string, string[]>> {
-        try {
-            if (this.pairsMap && !forceRefresh) {
-                return this.pairsMap;
-            }
-
-            let pairsMetadata: PairMetadata[] =
-                await this.getAllPairsMetadata();
-
-            const pairsMap = new Map<string, string[]>();
-            for (const pairMetadata of pairsMetadata) {
-                pairsMap.set(pairMetadata.firstTokenID, []);
-                pairsMap.set(pairMetadata.secondTokenID, []);
-            }
-
-            pairsMetadata.forEach((pair) => {
-                pairsMap.get(pair.firstTokenID).push(pair.secondTokenID);
-                pairsMap.get(pair.secondTokenID).push(pair.firstTokenID);
-            });
-
-            return pairsMap;
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    private async processPriceDiscoveryEvent(
+    private async handleOldPriceDiscoveryEvent(
         event: DepositEvent | WithdrawEvent,
     ): Promise<void> {
         const [launchedTokenPrice, acceptedTokenPrice] = await Promise.all([
@@ -1000,12 +1127,10 @@ export class AnalyticsReindexService {
             },
         };
 
-        await Promise.all([
-            this.elrondDataService.ingestObject({
-                data,
-                timestamp: Number(event.getTopics()['timestamp']),
-            }),
-        ]);
+        await this.ingest({
+            data,
+            timestamp: Number(event.getTopics()['timestamp']),
+        });
     }
 
     private async computeAcceptedTokenPrice(
@@ -1139,5 +1264,98 @@ export class AnalyticsReindexService {
 
         path.pop();
         return false;
+    }
+
+    async computeTokenPriceDerivedEGLD(tokenID: string): Promise<string> {
+        if (tokenID === tokenProviderUSD) {
+            return new BigNumber('1').toFixed();
+        }
+
+        const pairsMetadata = await this.getAllPairsMetadata();
+        const tokenPairs: PairMetadata[] = [];
+        for (const pair of pairsMetadata) {
+            if (
+                pair.firstTokenID === tokenID ||
+                pair.secondTokenID === tokenID
+            ) {
+                tokenPairs.push(pair);
+            }
+        }
+
+        let largestLiquidityEGLD = new BigNumber(0);
+        let priceSoFar = '0';
+
+        if (tokenID === constantsConfig.USDC_TOKEN_ID) {
+            const eglpPriceUSD = await this.getEgldPriceInUSD();
+            priceSoFar = new BigNumber(1).dividedBy(eglpPriceUSD).toFixed();
+        } else {
+            for (const pair of tokenPairs) {
+                const liquidity = await this.state.pairsState[pair.address]
+                    .liquidityPoolSupply;
+
+                if (new BigNumber(liquidity).isGreaterThan(0)) {
+                    if (pair.firstTokenID === tokenID) {
+                        const [
+                            secondTokenDerivedEGLD,
+                            secondTokenReserves,
+                            firstTokenPrice,
+                        ] = await Promise.all([
+                            this.computeTokenPriceDerivedEGLD(
+                                pair.secondTokenID,
+                            ),
+                            this.state.pairsState[pair.address]
+                                .secondTokenReserves,
+                            this.computeFirstTokenPrice(pair.address), //usd or not?
+                        ]);
+                        const egldLocked = new BigNumber(
+                            secondTokenReserves,
+                        ).times(secondTokenDerivedEGLD);
+                        if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
+                            largestLiquidityEGLD = egldLocked;
+                            priceSoFar = new BigNumber(firstTokenPrice)
+                                .times(secondTokenDerivedEGLD)
+                                .toFixed();
+                        }
+                    }
+                    if (pair.secondTokenID === tokenID) {
+                        const [
+                            firstTokenDerivedEGLD,
+                            firstTokenReserves,
+                            secondTokenPrice,
+                        ] = await Promise.all([
+                            this.computeTokenPriceDerivedEGLD(
+                                pair.firstTokenID,
+                            ),
+                            this.state.pairsState[pair.address]
+                                .firstTokenReserves,
+                            this.computeSecondTokenPrice(pair.address), //usd or not?
+                        ]);
+                        const egldLocked = new BigNumber(
+                            firstTokenReserves,
+                        ).times(firstTokenDerivedEGLD);
+                        if (egldLocked.isGreaterThan(largestLiquidityEGLD)) {
+                            largestLiquidityEGLD = egldLocked;
+                            priceSoFar = new BigNumber(secondTokenPrice)
+                                .times(firstTokenDerivedEGLD)
+                                .toFixed();
+                        }
+                    }
+                }
+            }
+        }
+        return priceSoFar;
+    }
+
+    async computeTokenPriceDerivedUSD(tokenID: string): Promise<string> {
+        const [egldPriceUSD, derivedEGLD] = await Promise.all([
+            this.getEgldPriceInUSD(),
+            this.computeTokenPriceDerivedEGLD(tokenID),
+        ]);
+
+        return new BigNumber(derivedEGLD).times(egldPriceUSD).toFixed();
+    }
+
+    async getEgldPriceInUSD(): Promise<string> {
+        return (await this.getPriceUSDByPath(this.wegldID)).toString();
     }
 }
