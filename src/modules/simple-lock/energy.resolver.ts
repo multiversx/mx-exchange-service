@@ -7,7 +7,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { UnlockType } from './models/simple.lock.model';
+import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { SimpleLockEnergyModel } from './models/simple.lock.model';
 import { EnergyGetterService } from './services/energy/energy.getter.service';
 import { EnergyTransactionService } from './services/energy/energy.transaction.service';
@@ -25,9 +25,9 @@ export class EnergyResolver extends SimpleLockResolver {
     }
 
     @ResolveField()
-    async baseAssetTokenID(): Promise<string> {
-        return await this.genericFieldResover<string>(() =>
-            this.energyGetter.getBaseAssetTokenID(),
+    async baseAssetToken(): Promise<EsdtToken> {
+        return await this.genericFieldResover<EsdtToken>(() =>
+            this.energyGetter.getBaseAssetToken(),
         );
     }
 
@@ -85,7 +85,7 @@ export class EnergyResolver extends SimpleLockResolver {
         @Args('remove', { nullable: true }) remove: boolean,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwner();
+        const owner = await this.energyGetter.getOwnerAddress();
         if (user.publicKey !== owner) {
             throw new ApolloError('Invalid owner address');
         }
@@ -102,7 +102,7 @@ export class EnergyResolver extends SimpleLockResolver {
         @Args('maxPenaltyPercentage') maxPenaltyPercentage: number,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwner();
+        const owner = await this.energyGetter.getOwnerAddress();
         if (user.publicKey !== owner) {
             throw new ApolloError('Invalid owner address');
         }
@@ -121,7 +121,7 @@ export class EnergyResolver extends SimpleLockResolver {
         @Args('percentage') percentage: number,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwner();
+        const owner = await this.energyGetter.getOwnerAddress();
         if (user.publicKey !== owner) {
             throw new ApolloError('Invalid owner address');
         }
@@ -137,7 +137,7 @@ export class EnergyResolver extends SimpleLockResolver {
         @Args('collectorAddress') collectorAddress: string,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwner();
+        const owner = await this.energyGetter.getOwnerAddress();
         if (user.publicKey !== owner) {
             throw new ApolloError('Invalid owner address');
         }
@@ -154,7 +154,7 @@ export class EnergyResolver extends SimpleLockResolver {
         oldLockedAssetFactoryAddress: string,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const owner = await this.energyGetter.getOwner();
+        const owner = await this.energyGetter.getOwnerAddress();
         if (user.publicKey !== owner) {
             throw new ApolloError('Invalid owner address');
         }

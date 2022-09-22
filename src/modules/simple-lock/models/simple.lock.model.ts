@@ -132,7 +132,7 @@ export class SimpleLockModel {
 @ObjectType()
 export class SimpleLockEnergyModel extends SimpleLockModel {
     @Field()
-    baseAssetTokenID: string;
+    baseAssetToken: EsdtToken;
     @Field(() => [Int])
     lockOptions: number[];
     @Field()
