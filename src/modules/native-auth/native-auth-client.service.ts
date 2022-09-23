@@ -7,10 +7,9 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 @Injectable()
 export class NativeAuthClientService {
     private readonly client: NativeAuthClient;
-    private readonly apiConfig: ApiConfigService;
     private signableToken: string;
 
-    constructor() {
+    constructor(private readonly apiConfig: ApiConfigService) {
         this.client = new NativeAuthClient({
             host: this.apiConfig.getAppName(),
             apiUrl: this.apiConfig.getApiUrl(),
