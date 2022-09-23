@@ -75,10 +75,9 @@ export class ElrondDataReadService {
         payloads: any[],
     ): Promise<any> {
         try {
-            let promises: Promise<any>[] = [];
-            for (const payload of payloads) {
-                promises.push(this.doPostGeneric(resourceUrl, payload));
-            }
+            const promises = payloads.map((payload) =>
+                this.doPostGeneric(resourceUrl, payload),
+            );
             return await Promise.all(promises);
         } catch (error) {
             this.logger.error(error.message, {
