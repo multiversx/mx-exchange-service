@@ -2,19 +2,13 @@ import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { AWSQueryArgs, TimescaleQueryArgs } from './models/query.args';
+import { AnalyticsQueryArgs } from './models/query.args';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
-import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { ApolloError } from 'apollo-server-express';
-import { AnalyticsTimescaleGetterService } from './services/analytics.timescale.getter.service';
 
 @Resolver()
 export class AnalyticsResolver {
-    constructor(
-        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
-        private readonly analyticsTimescaleGetter: AnalyticsTimescaleGetterService,
-        private readonly analyticsGetter: AnalyticsGetterService,
-    ) {}
+    constructor(private readonly analyticsGetter: AnalyticsGetterService) {}
 
     private async genericQuery<T>(queryResolver: () => Promise<T>): Promise<T> {
         try {
@@ -90,24 +84,14 @@ export class AnalyticsResolver {
         }),
     )
     async latestCompleteValues(
-        @Args({ nullable: true }) args: AWSQueryArgs,
-        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
+        @Args({ nullable: true }) args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        if (args) {
-            return await this.genericQuery(() =>
-                this.analyticsAWSGetter.getLatestCompleteValues(
-                    args.series,
-                    args.metric,
-                ),
-            );
-        } else if (timescaleArgs) {
-            return await this.genericQuery(() =>
-                this.analyticsTimescaleGetter.getLatestCompleteValues(
-                    timescaleArgs.series,
-                    timescaleArgs.key,
-                ),
-            );
-        }
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getLatestCompleteValues(
+                args.series,
+                args.metric,
+            ),
+        );
     }
 
     @Query(() => [HistoricDataModel])
@@ -119,24 +103,11 @@ export class AnalyticsResolver {
         }),
     )
     async sumCompleteValues(
-        @Args({ nullable: true }) args: AWSQueryArgs,
-        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        if (args) {
-            return await this.genericQuery(() =>
-                this.analyticsAWSGetter.getSumCompleteValues(
-                    args.series,
-                    args.metric,
-                ),
-            );
-        } else if (timescaleArgs) {
-            return await this.genericQuery(() =>
-                this.analyticsTimescaleGetter.getSumCompleteValues(
-                    timescaleArgs.series,
-                    timescaleArgs.key,
-                ),
-            );
-        }
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getSumCompleteValues(args.series, args.metric),
+        );
     }
 
     @Query(() => [HistoricDataModel])
@@ -148,21 +119,11 @@ export class AnalyticsResolver {
         }),
     )
     async values24h(
-        @Args({ nullable: true }) args: AWSQueryArgs,
-        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        if (args) {
-            return await this.genericQuery(() =>
-                this.analyticsAWSGetter.getValues24h(args.series, args.metric),
-            );
-        } else if (timescaleArgs) {
-            return await this.genericQuery(() =>
-                this.analyticsTimescaleGetter.getValues24h(
-                    timescaleArgs.series,
-                    timescaleArgs.key,
-                ),
-            );
-        }
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getValues24h(args.series, args.metric),
+        );
     }
 
     @Query(() => [HistoricDataModel])
@@ -174,24 +135,11 @@ export class AnalyticsResolver {
         }),
     )
     async values24hSum(
-        @Args({ nullable: true }) args: AWSQueryArgs,
-        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        if (args) {
-            return await this.genericQuery(() =>
-                this.analyticsAWSGetter.getValues24hSum(
-                    args.series,
-                    args.metric,
-                ),
-            );
-        } else if (timescaleArgs) {
-            return await this.genericQuery(() =>
-                this.analyticsTimescaleGetter.getValues24hSum(
-                    timescaleArgs.series,
-                    timescaleArgs.key,
-                ),
-            );
-        }
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getValues24hSum(args.series, args.metric),
+        );
     }
 
     @Query(() => [HistoricDataModel])
@@ -203,28 +151,11 @@ export class AnalyticsResolver {
         }),
     )
     async latestHistoricData(
-        @Args({ nullable: true }) args: AWSQueryArgs,
-        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        if (args) {
-            return await this.genericQuery(() =>
-                this.analyticsAWSGetter.getLatestHistoricData(
-                    args.time,
-                    args.series,
-                    args.metric,
-                    args.start,
-                ),
-            );
-        } else if (timescaleArgs) {
-            return await this.genericQuery(() =>
-                this.analyticsTimescaleGetter.getLatestHistoricData(
-                    timescaleArgs.series,
-                    timescaleArgs.key,
-                    timescaleArgs.startDate,
-                    timescaleArgs.endDate,
-                ),
-            );
-        }
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getLatestHistoricData(args),
+        );
     }
 
     @Query(() => [HistoricDataModel])
@@ -236,28 +167,10 @@ export class AnalyticsResolver {
         }),
     )
     async latestBinnedHistoricData(
-        @Args({ nullable: true }) args: AWSQueryArgs,
-        @Args({ nullable: true }) timescaleArgs: TimescaleQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
-        if (args) {
-            return await this.genericQuery(() =>
-                this.analyticsAWSGetter.getLatestBinnedHistoricData(
-                    args.time,
-                    args.series,
-                    args.metric,
-                    args.bin,
-                    args.start,
-                ),
-            );
-        } else if (timescaleArgs) {
-            return await this.genericQuery(() =>
-                this.analyticsTimescaleGetter.getLatestBinnedHistoricData(
-                    timescaleArgs.series,
-                    timescaleArgs.key,
-                    timescaleArgs.startDate,
-                    timescaleArgs.resolution,
-                ),
-            );
-        }
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getLatestBinnedHistoricData(args),
+        );
     }
 }

@@ -6,6 +6,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateSetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { HistoricDataModel } from '../models/analytics.model';
+import { AnalyticsQueryArgs } from '../models/query.args';
 
 @Injectable()
 export class AnalyticsSetterService {
@@ -98,18 +99,15 @@ export class AnalyticsSetterService {
     }
 
     async setLatestHistoricData(
-        time: string,
-        series: string,
-        metric: string,
-        start: string,
+        args: AnalyticsQueryArgs,
         values: HistoricDataModel[],
     ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestHistoricData',
-            time,
-            series,
-            metric,
-            start,
+            args.series,
+            args.metric,
+            args.start,
+            args.getEndTime(),
         );
         return await this.setData(
             cacheKey,
@@ -119,20 +117,16 @@ export class AnalyticsSetterService {
     }
 
     async setLatestBinnedHistoricData(
-        time: string,
-        series: string,
-        metric: string,
-        bin: string,
-        start: string,
+        args: AnalyticsQueryArgs,
         values: HistoricDataModel[],
     ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestBinnedHistoricData',
-            time,
-            series,
-            metric,
-            bin,
-            start,
+            args.series,
+            args.metric,
+            args.start,
+            args.getEndTime(),
+            args.getResolution(),
         );
         return await this.setData(
             cacheKey,

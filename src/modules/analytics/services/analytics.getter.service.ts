@@ -9,6 +9,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { HistoricDataModel } from '../models/analytics.model';
+import { AnalyticsQueryArgs } from '../models/query.args';
 import { AnalyticsComputeService } from './analytics.compute.service';
 
 @Injectable()
@@ -177,17 +178,18 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     async getLatestHistoricData(
-        series: string,
-        key: string,
-        startDate: string,
-        endDate: string,
+        args: AnalyticsQueryArgs,
+        // series: string,
+        // key: string,
+        // start: string,
+        // end: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestHistoricData',
-            series,
-            key,
-            startDate,
-            endDate,
+            args.series,
+            args.metric,
+            args.start,
+            args.getEndTime(),
         );
         return await this.getCachedData(
             cacheKey,
@@ -196,19 +198,20 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     async getLatestBinnedHistoricData(
-        series: string,
-        key: string,
-        startDate: string,
-        endDate: string,
-        resolution: string = 'DAY',
+        args: AnalyticsQueryArgs,
+        // series: string,
+        // key: string,
+        // start: string,
+        // end: string,
+        // resolution: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestBinnedHistoricData',
-            series,
-            key,
-            startDate,
-            endDate,
-            resolution,
+            args.series,
+            args.metric,
+            args.start,
+            args.getEndTime(),
+            args.getResolution(),
         );
         return await this.getCachedData(
             cacheKey,
