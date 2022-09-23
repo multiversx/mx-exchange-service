@@ -20,7 +20,7 @@ import {
     SwapFixedOutputEvent,
     WithdrawEvent,
 } from '@elrondnetwork/erdjs-dex';
-import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
+import { ElrondDataWriteService } from 'src/services/elrond-communication/elrond-data.write.service';
 import BigNumber from 'bignumber.js';
 import {
     constantsConfig,
@@ -64,7 +64,7 @@ export class AnalyticsReindexService {
 
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly elrondDataService: ElrondDataService,
+        private readonly elrondDataWriteService: ElrondDataWriteService,
         private readonly elasticService: ElasticService,
         private readonly elrondApiService: ElrondApiService,
         @Inject(forwardRef(() => PairGetterService))
@@ -411,7 +411,7 @@ export class AnalyticsReindexService {
     }
 
     private localIngest({ data, timestamp }) {
-        let ingestRecords = this.elrondDataService.objectToIngestRecords({
+        let ingestRecords = this.elrondDataWriteService.objectToIngestRecords({
             data,
             timestamp,
         });
@@ -431,12 +431,11 @@ export class AnalyticsReindexService {
     }
 
     private async dbIngest({ data, timestamp }): Promise<void> {
-        const newRecordsToIngest = this.elrondDataService.objectToIngestRecords(
-            {
+        const newRecordsToIngest =
+            this.elrondDataWriteService.objectToIngestRecords({
                 data,
                 timestamp,
-            },
-        );
+            });
         this.ingestRecordsBuffer =
             this.ingestRecordsBuffer.concat(newRecordsToIngest);
         this.ingestedCnt += newRecordsToIngest.length;
@@ -444,7 +443,7 @@ export class AnalyticsReindexService {
         await this.waitForOldIngestRequestsIfNeeded();
 
         if (this.ingestRecordsBuffer.length > this.ingestRecordsThreshold) {
-            const promise = this.elrondDataService
+            const promise = this.elrondDataWriteService
                 .ingest(this.ingestRecordsBuffer)
                 .then((res) => {
                     this.ingestRecordsPromises =
@@ -458,7 +457,7 @@ export class AnalyticsReindexService {
 
     private async ingestLastRecords(): Promise<void> {
         if (this.dataApiIngest) {
-            const promise = this.elrondDataService.ingest(
+            const promise = this.elrondDataWriteService.ingest(
                 this.ingestRecordsBuffer,
             );
         }

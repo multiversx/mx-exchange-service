@@ -6,7 +6,6 @@ import { Logger } from 'winston';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 import axios, { AxiosRequestConfig } from 'axios';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { IngestRecord } from './ingest-records.model';
 import { NativeAuthClientService } from 'src/modules/native-auth/native-auth-client.service';
 import {
     daysAgoUtc,
@@ -16,11 +15,10 @@ import {
     splitDateRangeIntoIntervalsUtc,
     toUtc,
 } from 'src/helpers/helpers';
-import BigNumber from 'bignumber.js';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
-export class ElrondDataService {
+export class ElrondDataReadService {
     private readonly url: string;
     private readonly config: AxiosRequestConfig;
 
@@ -67,7 +65,7 @@ export class ElrondDataService {
             return response.data;
         } catch (error) {
             this.logger.error(error.message, {
-                path: `${ElrondDataService.name}.${this.doPostGeneric.name}`,
+                path: `${ElrondDataReadService.name}.${this.doPostGeneric.name}`,
             });
         }
     }
@@ -84,65 +82,13 @@ export class ElrondDataService {
             return await Promise.all(promises);
         } catch (error) {
             this.logger.error(error.message, {
-                path: `${ElrondDataService.name}.${this.doPostGeneric.name}`,
+                path: `${ElrondDataReadService.name}.${this.doPostGeneric.name}`,
             });
         }
-    }
-
-    async isIngestInactive(): Promise<boolean> {
-        return !(await this.remoteConfigGetterService.getTimescaleWriteFlag());
     }
 
     async isReadActive(): Promise<boolean> {
         return await this.remoteConfigGetterService.getTimescaleReadFlag();
-    }
-
-    async ingest(records: IngestRecord[]): Promise<boolean> {
-        if (await this.isIngestInactive()) {
-            return;
-        }
-
-        const query = `mutation { ingestData( table: ${
-            elrondData.timescale.table
-        }, input: [ ${records.map((r) => {
-            return `{ timestamp: ${r.timestamp}, series: "${r.series}", key: "${r.key}", value: "${r.value}" }`;
-        })} ] ) }`;
-
-        const res = await this.doPostGeneric('data-api/graphql', { query });
-
-        const ingested: boolean = res?.data?.ingestData;
-
-        return ingested;
-    }
-
-    async ingestObject({ data, timestamp }): Promise<boolean> {
-        if (await this.isIngestInactive()) {
-            return;
-        }
-
-        let ingestRecords = this.objectToIngestRecords({ data, timestamp });
-
-        return await this.ingest(ingestRecords);
-    }
-
-    objectToIngestRecords({ data, timestamp }): IngestRecord[] {
-        let ingestRecords: IngestRecord[] = [];
-
-        Object.keys(data).forEach((series) => {
-            Object.keys(data[series]).forEach((MeasureName) => {
-                const MeasureValue = new BigNumber(
-                    data[series][MeasureName],
-                ).toString();
-                ingestRecords.push({
-                    series,
-                    key: MeasureName,
-                    value: MeasureValue,
-                    timestamp: timestamp,
-                });
-            });
-        });
-
-        return ingestRecords;
     }
 
     async getLatestCompleteValues({

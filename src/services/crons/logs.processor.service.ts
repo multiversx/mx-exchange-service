@@ -13,7 +13,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { EsdtLocalBurnEvent, ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
-import { ElrondDataService } from '../elrond-communication/elrond-data.service';
+import { ElrondDataWriteService } from '../elrond-communication/elrond-data.write.service';
 import { IngestRecord } from '../elrond-communication/ingest-records.model';
 import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
 import TimestreamWrite from 'aws-sdk/clients/timestreamwrite';
@@ -28,7 +28,7 @@ export class LogsProcessorService {
         private readonly cachingService: CachingService,
         private readonly apiService: ElrondApiService,
         private readonly awsWrite: AWSTimestreamWriteService,
-        private readonly elrondDataService: ElrondDataService,
+        private readonly elrondDataWriteService: ElrondDataWriteService,
         private readonly elasticService: ElasticService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -222,7 +222,7 @@ export class LogsProcessorService {
                 const [timestreamIngestedCount, timescaleIngested] =
                     await Promise.all([
                         this.pushAWSRecords(Records),
-                        this.elrondDataService.ingest(ingestRecords),
+                        this.elrondDataWriteService.ingest(ingestRecords),
                     ]);
 
                 totalAwsWriteRecords += timestreamIngestedCount;
@@ -246,7 +246,7 @@ export class LogsProcessorService {
             const [timestreamIngestedCount, timescaleIngested] =
                 await Promise.all([
                     this.pushAWSRecords(Records),
-                    this.elrondDataService.ingest(ingestRecords),
+                    this.elrondDataWriteService.ingest(ingestRecords),
                 ]);
 
             totalAwsWriteRecords += timestreamIngestedCount;
