@@ -31,11 +31,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getRewardTokenId();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getRewardTokenId();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -43,11 +41,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getFarmTokenId();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmTokenId();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -55,43 +51,34 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getFarmingTokenId();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmingTokenId();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
     async getWhitelist(farmAddress: string): Promise<string[]> {
-        const [
-            contract,
-            version,
-            type,
-        ] = await this.elrondProxy.getFarmSmartContract(farmAddress);
+        const [contract, version, type] =
+            await this.elrondProxy.getFarmSmartContract(farmAddress);
 
         if (type !== FarmRewardType.CUSTOM_REWARDS) {
             return null;
         }
 
-        const interaction: Interaction = contract.methodsExplicit.getWhitelist();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getWhitelist();
+        const response = await this.getGenericData(interaction);
 
-        return response.firstValue.valueOf().map(address => address.bech32());
+        return response.firstValue.valueOf().map((address) => address.bech32());
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getFarmTokenSupply();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmTokenSupply();
+        const response = await this.getGenericData(interaction);
 
         return response.firstValue.valueOf().toFixed();
     }
@@ -103,11 +90,9 @@ export class AbiFarmService extends GenericAbiService {
         if (version !== FarmVersion.V1_2) {
             return null;
         }
-        const interaction: Interaction = contract.methodsExplicit.getFarmingTokenReserve();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getFarmingTokenReserve();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -115,11 +100,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getPerBlockRewardAmount();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getPerBlockRewardAmount();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -127,11 +110,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getPenaltyPercent();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getPenaltyPercent();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -139,11 +120,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getMinimumFarmingEpoch();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getMinimumFarmingEpoch();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -151,11 +130,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getRewardPerShare();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getRewardPerShare();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -163,11 +140,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getRewardReserve();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getRewardReserve();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -175,11 +150,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLastRewardBlockNonce();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getLastRewardBlockNonce();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -190,11 +163,9 @@ export class AbiFarmService extends GenericAbiService {
         if (version !== FarmVersion.V1_2) {
             return null;
         }
-        const interaction: Interaction = contract.methodsExplicit.getUndistributedFees();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getUndistributedFees();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -205,11 +176,9 @@ export class AbiFarmService extends GenericAbiService {
         if (version !== FarmVersion.V1_2) {
             return null;
         }
-        const interaction: Interaction = contract.methodsExplicit.getCurrentBlockFee();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getCurrentBlockFee();
+        const response = await this.getGenericData(interaction);
         const currentBlockFee = response.firstValue.valueOf();
         return currentBlockFee ? currentBlockFee[1].toFixed() : '0';
     }
@@ -221,11 +190,9 @@ export class AbiFarmService extends GenericAbiService {
         if (version !== FarmVersion.V1_2) {
             return null;
         }
-        const interaction: Interaction = contract.methodsExplicit.getLockedRewardAprMuliplier();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockedRewardAprMuliplier();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().integerValue();
     }
 
@@ -233,11 +200,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getDivisionSafetyConstant();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getDivisionSafetyConstant();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -247,18 +212,14 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.calculateRewardsForGivenPosition(
-            [
+        const interaction: Interaction =
+            contract.methodsExplicit.calculateRewardsForGivenPosition([
                 new BigUIntValue(new BigNumber(args.liquidity)),
                 BytesValue.fromHex(
                     Buffer.from(args.attributes, 'base64').toString('hex'),
                 ),
-            ],
-        );
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+            ]);
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 
@@ -267,10 +228,7 @@ export class AbiFarmService extends GenericAbiService {
             farmAddress,
         );
         const interaction: Interaction = contract.methodsExplicit.getState([]);
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().name;
     }
 
@@ -290,20 +248,20 @@ export class AbiFarmService extends GenericAbiService {
         );
 
         try {
-            const interaction: Interaction = contract.methodsExplicit.getFarmMigrationConfiguration();
-            const response = await this.getGenericData(
-                AbiFarmService.name,
-                interaction,
-            );
+            const interaction: Interaction =
+                contract.methodsExplicit.getFarmMigrationConfiguration();
+            const response = await this.getGenericData(interaction);
             const decodedResponse = response.firstValue.valueOf();
 
             if (version === FarmVersion.V1_2) {
                 return new FarmMigrationConfig({
                     migrationRole: decodedResponse.migration_role.name,
                     oldFarmAddress: decodedResponse.old_farm_address.bech32(),
-                    oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
+                    oldFarmTokenID:
+                        decodedResponse.old_farm_token_id.toString(),
                     newFarmAddress: decodedResponse.new_farm_address.bech32(),
-                    newLockedFarmAddress: decodedResponse.new_farm_with_lock_address.bech32(),
+                    newLockedFarmAddress:
+                        decodedResponse.new_farm_with_lock_address.bech32(),
                 });
             }
 
@@ -321,11 +279,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getBurnGasLimit();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getBurnGasLimit();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -333,11 +289,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getTransferExecGasLimit();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getTransferExecGasLimit();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -346,11 +300,9 @@ export class AbiFarmService extends GenericAbiService {
             const [contract] = await this.elrondProxy.getFarmSmartContract(
                 farmAddress,
             );
-            const interaction: Interaction = contract.methodsExplicit.getPairContractManagedAddress();
-            const response = await this.getGenericData(
-                AbiFarmService.name,
-                interaction,
-            );
+            const interaction: Interaction =
+                contract.methodsExplicit.getPairContractManagedAddress();
+            const response = await this.getGenericData(interaction);
             return response.firstValue.valueOf().bech32();
         } catch {
             return undefined;
@@ -364,11 +316,9 @@ export class AbiFarmService extends GenericAbiService {
             const [contract] = await this.elrondProxy.getFarmSmartContract(
                 farmAddress,
             );
-            const interaction: Interaction = contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
-            const response = await this.getGenericData(
-                AbiFarmService.name,
-                interaction,
-            );
+            const interaction: Interaction =
+                contract.methodsExplicit.getLockedAssetFactoryManagedAddress();
+            const response = await this.getGenericData(interaction);
             return response.firstValue.valueOf().bech32();
         } catch {
             return undefined;
@@ -379,11 +329,9 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getLastErrorMessage();
-        const response = await this.getGenericData(
-            AbiFarmService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getLastErrorMessage();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 }
