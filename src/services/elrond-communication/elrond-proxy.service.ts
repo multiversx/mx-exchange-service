@@ -14,7 +14,6 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { promises } from 'fs';
 
-
 @Injectable()
 export class ElrondProxyService {
     private readonly proxy: ProxyNetworkProviderProfiler;
