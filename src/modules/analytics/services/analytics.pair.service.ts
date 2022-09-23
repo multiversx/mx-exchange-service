@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
 import { AnalyticsGetterService } from './analytics.getter.service';
 
@@ -11,7 +10,6 @@ export class AnalyticsPairService {
     constructor(
         private readonly pairGetterService: PairGetterService,
         private readonly routerGetter: RouterGetterService,
-        private readonly elrondDataService: ElrondDataService,
         private readonly analyticsGetter: AnalyticsGetterService,
     ) {}
 
