@@ -6,7 +6,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { generateSetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { HistoricDataModel } from '../models/analytics.model';
-import { AnalyticsQueryArgs } from '../models/query.args';
+import { AnalyticsQueryArgs } from '../models/analytics.query.args';
 
 @Injectable()
 export class AnalyticsSetterService {
