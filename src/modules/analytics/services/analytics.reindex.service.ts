@@ -43,6 +43,7 @@ import { AnalyticsReindexRepositoryService } from 'src/services/database/reposit
 import { AnalyticsReindexState } from 'src/modules/remote-config/schemas/analytics.reindex.state.schema';
 import { IngestRecord } from 'src/services/elrond-communication/ingest-records.model';
 import * as fs from 'fs';
+import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @Injectable()
 export class AnalyticsReindexService {
@@ -1190,12 +1191,13 @@ export class AnalyticsReindexService {
         if (this.launchedTokensDecimals[identifier]) {
             return this.launchedTokensDecimals[identifier];
         }
-        const decimals = await this.elrondApiService.getCollection(
-            identifier,
-            'extract=decimals',
-        );
-        this.launchedTokensDecimals[identifier] = decimals;
-        return decimals;
+        const collection: NftCollection =
+            await this.elrondApiService.getNftCollection(
+                identifier,
+                'extract=decimals',
+            );
+        this.launchedTokensDecimals[identifier] = collection.decimals;
+        return collection.decimals;
     }
 
     private async getAllPairsMetadata(): Promise<PairMetadata[]> {

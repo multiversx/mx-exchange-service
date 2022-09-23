@@ -39,7 +39,7 @@ export class ElrondDataService {
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
-        this.url = process.env.ELRONDDATAAPI_URL;
+        this.url = this.apiConfigService.getElrondDataApiUrl();
 
         this.config = {
             timeout: elrondConfig.proxyTimeout,
@@ -48,7 +48,7 @@ export class ElrondDataService {
         };
     }
 
-    private async getGenericAxiosConfig(): Promise<any> {
+    private async getGenericAxiosConfig(): Promise<AxiosRequestConfig> {
         const accessToken = await this.nativeAuthClientService.getToken();
         return {
             ...this.config,
@@ -81,8 +81,7 @@ export class ElrondDataService {
             for (const payload of payloads) {
                 promises.push(this.doPostGeneric(resourceUrl, payload));
             }
-            const res = await Promise.all(promises);
-            return res;
+            return await Promise.all(promises);
         } catch (error) {
             this.logger.error(error.message, {
                 path: `${ElrondDataService.name}.${this.doPostGeneric.name}`,
@@ -326,12 +325,12 @@ export class ElrondDataService {
         return last24Entries;
     }
 
-    async getAggregatedValue({ series, key, startTimeUtc }): Promise<string> {
+    async getAggregatedValue({ series, key, start }): Promise<string> {
         const query = `query { 
             ${elrondData.timescale.table} { 
                 metric (series: "${series}" key: "${key}" 
                     query: { 
-                        start_date: "${startTimeUtc}", 
+                        start_date: "${start}", 
                         end_date: "${nowUtc()}" 
                     } 
                 ) { time sum } 

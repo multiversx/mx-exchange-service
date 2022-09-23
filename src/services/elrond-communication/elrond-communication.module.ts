@@ -5,7 +5,6 @@ import { NativeAuthModule } from 'src/modules/native-auth/native-auth.module';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
 import { CachingModule } from '../caching/cache.module';
-import { CachingService } from '../caching/cache.service';
 import { ElrondApiService } from './elrond-api.service';
 import { ElrondDataService } from './elrond-data.service';
 import { ElrondGatewayService } from './elrond-gateway.service';

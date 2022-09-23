@@ -3,7 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { awsConfig } from 'src/config';
 import { delay } from 'src/helpers/helpers';
-import { AnalyticsAWSSetterService } from 'src/modules/analytics/services/analytics.aws.setter.service';
+import { AnalyticsSetterService } from 'src/modules/analytics/services/analytics.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
@@ -15,7 +15,7 @@ export class AWSQueryCacheWarmerService {
         private readonly awsQuery: AWSTimestreamQueryService,
         private readonly tokenService: TokenService,
         private readonly routerGetter: RouterGetterService,
-        private readonly analyticsAWSSetter: AnalyticsAWSSetterService,
+        private readonly analyticsSetter: AnalyticsSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -63,32 +63,32 @@ export class AWSQueryCacheWarmerService {
                 });
 
             const cachedKeys = await Promise.all([
-                this.analyticsAWSSetter.setValues24h(
+                this.analyticsSetter.setValues24h(
                     tokenID,
                     'priceUSD',
                     priceUSD24h,
                 ),
-                this.analyticsAWSSetter.setLatestCompleteValues(
+                this.analyticsSetter.setLatestCompleteValues(
                     tokenID,
                     'priceUSD',
                     priceUSDCompleteValues,
                 ),
-                this.analyticsAWSSetter.setValues24h(
+                this.analyticsSetter.setValues24h(
                     tokenID,
                     'lockedValueUSD',
                     lockedValueUSD24h,
                 ),
-                this.analyticsAWSSetter.setLatestCompleteValues(
+                this.analyticsSetter.setLatestCompleteValues(
                     tokenID,
                     'lockedValueUSD',
                     lockedValueUSDCompleteValues,
                 ),
-                this.analyticsAWSSetter.setValues24hSum(
+                this.analyticsSetter.setValues24hSum(
                     tokenID,
                     'volumeUSD',
                     volumeUSD24hSum,
                 ),
-                this.analyticsAWSSetter.setSumCompleteValues(
+                this.analyticsSetter.setSumCompleteValues(
                     tokenID,
                     'volumeUSD',
                     volumeUSDCompleteValuesSum,
@@ -135,27 +135,27 @@ export class AWSQueryCacheWarmerService {
                 });
 
             const cachedKeys = await Promise.all([
-                this.analyticsAWSSetter.setValues24h(
+                this.analyticsSetter.setValues24h(
                     pairAddress,
                     'lockedValueUSD',
                     lockedValueUSD24h,
                 ),
-                this.analyticsAWSSetter.setLatestCompleteValues(
+                this.analyticsSetter.setLatestCompleteValues(
                     pairAddress,
                     'lockedValueUSD',
                     lockedValueUSDCompleteValues,
                 ),
-                this.analyticsAWSSetter.setValues24hSum(
+                this.analyticsSetter.setValues24hSum(
                     pairAddress,
                     'feesUSD',
                     feesUSD,
                 ),
-                this.analyticsAWSSetter.setValues24hSum(
+                this.analyticsSetter.setValues24hSum(
                     pairAddress,
                     'volumeUSD',
                     volumeUSD24hSum,
                 ),
-                this.analyticsAWSSetter.setSumCompleteValues(
+                this.analyticsSetter.setSumCompleteValues(
                     pairAddress,
                     'volumeUSD',
                     volumeUSDCompleteValuesSum,

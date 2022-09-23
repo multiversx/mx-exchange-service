@@ -200,27 +200,24 @@ export class PairGetterService extends GenericGetterService {
 
     async getFirstTokenVolume(
         pairAddress: string,
-        startTimeUtc: string,
+        start: string,
     ): Promise<string> {
         const isTimescaleReadActive =
             await this.elrondDataService.isReadActive();
         return this.getData(
-            this.getPairCacheKey(
-                pairAddress,
-                `firstTokenVolume.${startTimeUtc}`,
-            ),
+            this.getPairCacheKey(pairAddress, `firstTokenVolume.${start}`),
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataService.getAggregatedValue({
                           series: pairAddress,
                           key: 'firstTokenVolume',
-                          startTimeUtc,
+                          start,
                       })
                     : this.awsTimestreamQuery.getAggregatedValue({
                           table: awsConfig.timestream.tableName,
                           series: pairAddress,
                           metric: 'firstTokenVolume',
-                          time: startTimeUtc,
+                          time: start,
                       });
             },
             oneMinute() * 30,
@@ -230,27 +227,24 @@ export class PairGetterService extends GenericGetterService {
 
     async getSecondTokenVolume(
         pairAddress: string,
-        startTimeUtc: string,
+        start: string,
     ): Promise<string> {
         const isTimescaleReadActive =
             await this.elrondDataService.isReadActive();
         return this.getData(
-            this.getPairCacheKey(
-                pairAddress,
-                `secondTokenVolume.${startTimeUtc}`,
-            ),
+            this.getPairCacheKey(pairAddress, `secondTokenVolume.${start}`),
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataService.getAggregatedValue({
                           series: pairAddress,
                           key: 'secondTokenVolume',
-                          startTimeUtc,
+                          start,
                       })
                     : this.awsTimestreamQuery.getAggregatedValue({
                           table: awsConfig.timestream.tableName,
                           series: pairAddress,
                           metric: 'secondTokenVolume',
-                          time: startTimeUtc,
+                          time: start,
                       });
             },
             oneMinute() * 30,
@@ -258,26 +252,23 @@ export class PairGetterService extends GenericGetterService {
         );
     }
 
-    async getVolumeUSD(
-        pairAddress: string,
-        startTimeUtc: string,
-    ): Promise<string> {
+    async getVolumeUSD(pairAddress: string, start: string): Promise<string> {
         const isTimescaleReadActive =
             await this.elrondDataService.isReadActive();
         return this.getData(
-            this.getPairCacheKey(pairAddress, `volumeUSD.${startTimeUtc}`),
+            this.getPairCacheKey(pairAddress, `volumeUSD.${start}`),
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataService.getAggregatedValue({
                           series: pairAddress,
                           key: 'volumeUSD',
-                          startTimeUtc,
+                          start,
                       })
                     : this.awsTimestreamQuery.getAggregatedValue({
                           table: awsConfig.timestream.tableName,
                           series: pairAddress,
                           metric: 'volumeUSD',
-                          time: startTimeUtc,
+                          time: start,
                       });
             },
             oneMinute() * 30,
@@ -285,26 +276,23 @@ export class PairGetterService extends GenericGetterService {
         );
     }
 
-    async getFeesUSD(
-        pairAddress: string,
-        startTimeUtc: string,
-    ): Promise<string> {
+    async getFeesUSD(pairAddress: string, start: string): Promise<string> {
         const isTimescaleReadActive =
             await this.elrondDataService.isReadActive();
         return this.getData(
-            this.getPairCacheKey(pairAddress, `feesUSD.${startTimeUtc}`),
+            this.getPairCacheKey(pairAddress, `feesUSD.${start}`),
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataService.getAggregatedValue({
                           series: pairAddress,
                           key: 'feesUSD',
-                          startTimeUtc,
+                          start,
                       })
                     : this.awsTimestreamQuery.getAggregatedValue({
                           table: awsConfig.timestream.tableName,
                           series: pairAddress,
                           metric: 'feesUSD',
-                          time: startTimeUtc,
+                          time: start,
                       });
             },
             oneMinute() * 30,

@@ -52,13 +52,13 @@ export class ElasticService {
         let response = await this.elasticClient.search(params);
         const hits = [];
         let scroll = 1;
-        let scroll_id;
+        let scrollId;
 
         while (true) {
             const sourceHits = response.body.hits.hits;
 
-            if (response.body._scroll_id && !scroll_id) {
-                scroll_id = response.body._scroll_id;
+            if (response.body._scroll_id && !scrollId) {
+                scrollId = response.body._scroll_id;
             }
 
             if (sourceHits.length === 0) {
@@ -78,9 +78,9 @@ export class ElasticService {
             scroll += 1;
         }
 
-        if (scroll_id) {
+        if (scrollId) {
             await this.elasticClient.clear_scroll({
-                scroll_id: scroll_id,
+                scroll_id: scrollId,
             });
         }
 

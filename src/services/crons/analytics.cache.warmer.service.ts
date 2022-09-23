@@ -72,12 +72,16 @@ export class AnalyticsCacheWarmerService {
 
         await Promise.all([
             this.setAnalyticsCache(
-                [constantsConfig.MEX_TOKEN_ID, oneYear(), 'feeTokenBurned'],
+                [constantsConfig.MEX_TOKEN_ID, awsOneYear(), 'feeTokenBurned'],
                 feeBurned,
                 oneMinute() * 10,
             ),
             this.setAnalyticsCache(
-                [constantsConfig.MEX_TOKEN_ID, oneYear(), 'penaltyTokenBurned'],
+                [
+                    constantsConfig.MEX_TOKEN_ID,
+                    awsOneYear(),
+                    'penaltyTokenBurned',
+                ],
                 penaltyBurned,
                 oneMinute() * 10,
             ),

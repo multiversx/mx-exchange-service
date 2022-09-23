@@ -4,30 +4,21 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
-import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
-import { AnalyticsTimescaleGetterService } from './analytics.timescale.getter.service';
+import { AnalyticsGetterService } from './analytics.getter.service';
 
 @Injectable()
 export class AnalyticsPairService {
     constructor(
         private readonly pairGetterService: PairGetterService,
         private readonly routerGetter: RouterGetterService,
-        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
-        private readonly analyticsTimescaleGetter: AnalyticsTimescaleGetterService,
         private readonly elrondDataService: ElrondDataService,
+        private readonly analyticsGetter: AnalyticsGetterService,
     ) {}
 
     async getClosingLockedValueUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        if (await this.elrondDataService.isReadActive()) {
-            return await this.analyticsTimescaleGetter.getLatestCompleteValues(
-                pairAddress,
-                'lockedValueUSD',
-            );
-        }
-
-        return await this.analyticsAWSGetter.getLatestCompleteValues(
+        return await this.analyticsGetter.getLatestCompleteValues(
             pairAddress,
             'lockedValueUSD',
         );
@@ -36,42 +27,21 @@ export class AnalyticsPairService {
     async getDailyVolumesUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        if (await this.elrondDataService.isReadActive()) {
-            return await this.analyticsTimescaleGetter.getSumCompleteValues(
-                pairAddress,
-                'volumeUSD',
-            );
-        }
-
-        return await this.analyticsAWSGetter.getSumCompleteValues(
+        return await this.analyticsGetter.getSumCompleteValues(
             pairAddress,
             'volumeUSD',
         );
     }
 
     async getDailyFeesUSD(pairAddress: string): Promise<HistoricDataModel[]> {
-        if (await this.elrondDataService.isReadActive()) {
-            return await this.analyticsTimescaleGetter.getSumCompleteValues(
-                pairAddress,
-                'feesUSD',
-            );
-        }
-
-        return await this.analyticsAWSGetter.getSumCompleteValues(
+        return await this.analyticsGetter.getSumCompleteValues(
             pairAddress,
             'feesUSD',
         );
     }
 
     async getClosingPriceUSD(tokenID: string): Promise<HistoricDataModel[]> {
-        if (await this.elrondDataService.isReadActive()) {
-            return await this.analyticsTimescaleGetter.getLatestCompleteValues(
-                tokenID,
-                'priceUSD',
-            );
-        }
-
-        return await this.analyticsAWSGetter.getLatestCompleteValues(
+        return await this.analyticsGetter.getLatestCompleteValues(
             tokenID,
             'priceUSD',
         );

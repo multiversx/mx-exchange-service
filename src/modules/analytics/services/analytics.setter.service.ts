@@ -1,27 +1,36 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { oneMinute } from 'src/helpers/helpers';
+import { CachingService } from 'src/services/caching/cache.service';
+import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { generateSetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
-import { CachingService } from '../../../services/caching/cache.service';
 import { HistoricDataModel } from '../models/analytics.model';
-import { generateGetLogMessage } from 'src/utils/generate-log-message';
 
 @Injectable()
-export class AnalyticsAWSGetterService {
+export class AnalyticsSetterService {
     constructor(
-        protected readonly cachingService: CachingService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
-    private async getData<T>(cacheKey: string, methodName: string): Promise<T> {
+    private async setData<T>(
+        cacheKey: string,
+        value: T,
+        methodName: string,
+        remoteTTl = oneMinute() * 30,
+        localTtl = oneMinute() * 10,
+    ): Promise<string> {
         try {
-            const data = await this.cachingService.getCache<T>(cacheKey);
-            if (!data || data === undefined) {
-                throw new Error(`Unavailable cached key ${cacheKey}`);
-            }
-            return data;
+            await this.cachingService.setCache<T>(
+                cacheKey,
+                value,
+                remoteTTl,
+                localTtl,
+            );
+            return cacheKey;
         } catch (error) {
-            const logMessage = generateGetLogMessage(
+            const logMessage = generateSetLogMessage(
                 this.constructor.name,
                 methodName,
                 cacheKey,
@@ -32,56 +41,69 @@ export class AnalyticsAWSGetterService {
         }
     }
 
-    async getLatestCompleteValues(
+    async setLatestCompleteValues(
         series: string,
         metric: string,
-    ): Promise<HistoricDataModel[]> {
+        values: HistoricDataModel[],
+    ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestCompleteValues',
             series,
             metric,
         );
-        return await this.getData(cacheKey, this.getLatestCompleteValues.name);
+        return await this.setData(
+            cacheKey,
+            values,
+            this.setLatestCompleteValues.name,
+        );
     }
 
-    async getSumCompleteValues(
+    async setSumCompleteValues(
         series: string,
         metric: string,
-    ): Promise<HistoricDataModel[]> {
+        values: HistoricDataModel[],
+    ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             'sumCompleteValues',
             series,
             metric,
         );
-        return await this.getData(cacheKey, this.getSumCompleteValues.name);
+        return await this.setData(
+            cacheKey,
+            values,
+            this.setSumCompleteValues.name,
+        );
     }
 
-    async getValues24hSum(
+    async setValues24hSum(
         series: string,
         metric: string,
-    ): Promise<HistoricDataModel[]> {
+        values: HistoricDataModel[],
+    ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             'values24hSum',
             series,
             metric,
         );
-        return await this.getData(cacheKey, this.getValues24hSum.name);
+        return await this.setData(cacheKey, values, this.setValues24hSum.name);
     }
 
-    async getValues24h(
+    async setValues24h(
         series: string,
         metric: string,
-    ): Promise<HistoricDataModel[]> {
+        values: HistoricDataModel[],
+    ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey('values24h', series, metric);
-        return await this.getData(cacheKey, this.getValues24h.name);
+        return await this.setData(cacheKey, values, this.setValues24h.name);
     }
 
-    async getLatestHistoricData(
+    async setLatestHistoricData(
         time: string,
         series: string,
         metric: string,
         start: string,
-    ): Promise<HistoricDataModel[]> {
+        values: HistoricDataModel[],
+    ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestHistoricData',
             time,
@@ -89,16 +111,21 @@ export class AnalyticsAWSGetterService {
             metric,
             start,
         );
-        return await this.getData(cacheKey, this.getLatestHistoricData.name);
+        return await this.setData(
+            cacheKey,
+            values,
+            this.setLatestHistoricData.name,
+        );
     }
 
-    async getLatestBinnedHistoricData(
+    async setLatestBinnedHistoricData(
         time: string,
         series: string,
         metric: string,
         bin: string,
         start: string,
-    ): Promise<HistoricDataModel[]> {
+        values: HistoricDataModel[],
+    ): Promise<string> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestBinnedHistoricData',
             time,
@@ -107,9 +134,10 @@ export class AnalyticsAWSGetterService {
             bin,
             start,
         );
-        return await this.getData(
+        return await this.setData(
             cacheKey,
-            this.getLatestBinnedHistoricData.name,
+            values,
+            this.setLatestBinnedHistoricData.name,
         );
     }
 

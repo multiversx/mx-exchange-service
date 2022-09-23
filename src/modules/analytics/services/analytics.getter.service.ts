@@ -6,7 +6,9 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
+import { HistoricDataModel } from '../models/analytics.model';
 import { AnalyticsComputeService } from './analytics.compute.service';
 
 @Injectable()
@@ -30,7 +32,9 @@ export class AnalyticsGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             async () =>
-                (await this.tokenGetter.getTokenMetadata(tokenID)).supply,
+                (
+                    await this.tokenGetter.getTokenMetadata(tokenID)
+                ).supply,
             oneMinute(),
         );
     }
@@ -101,6 +105,114 @@ export class AnalyticsGetterService extends GenericGetterService {
                     'penaltyBurned',
                 ),
             oneMinute() * 10,
+        );
+    }
+
+    private async getCachedData<T>(
+        cacheKey: string,
+        methodName: string,
+    ): Promise<T> {
+        try {
+            const data = await this.cachingService.getCache<T>(cacheKey);
+            if (!data || data === undefined) {
+                throw new Error(`Unavailable cached key ${cacheKey}`);
+            }
+            return data;
+        } catch (error) {
+            const logMessage = generateGetLogMessage(
+                this.constructor.name,
+                methodName,
+                cacheKey,
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+    }
+
+    async getLatestCompleteValues(
+        series: string,
+        key: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'latestCompleteValues',
+            series,
+            key,
+        );
+        return await this.getCachedData(
+            cacheKey,
+            this.getLatestCompleteValues.name,
+        );
+    }
+
+    async getSumCompleteValues(
+        series: string,
+        key: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'sumCompleteValues',
+            series,
+            key,
+        );
+        return await this.getCachedData(
+            cacheKey,
+            this.getSumCompleteValues.name,
+        );
+    }
+
+    async getValues24hSum(
+        series: string,
+        key: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey('values24hSum', series, key);
+        return await this.getCachedData(cacheKey, this.getValues24hSum.name);
+    }
+
+    async getValues24h(
+        series: string,
+        key: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey('values24h', series, key);
+        return await this.getCachedData(cacheKey, this.getValues24h.name);
+    }
+
+    async getLatestHistoricData(
+        series: string,
+        key: string,
+        startDate: string,
+        endDate: string,
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'latestHistoricData',
+            series,
+            key,
+            startDate,
+            endDate,
+        );
+        return await this.getCachedData(
+            cacheKey,
+            this.getLatestHistoricData.name,
+        );
+    }
+
+    async getLatestBinnedHistoricData(
+        series: string,
+        key: string,
+        startDate: string,
+        endDate: string,
+        resolution: string = 'DAY',
+    ): Promise<HistoricDataModel[]> {
+        const cacheKey = this.getAnalyticsCacheKey(
+            'latestBinnedHistoricData',
+            series,
+            key,
+            startDate,
+            endDate,
+            resolution,
+        );
+        return await this.getCachedData(
+            cacheKey,
+            this.getLatestBinnedHistoricData.name,
         );
     }
 

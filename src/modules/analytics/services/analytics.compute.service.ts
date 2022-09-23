@@ -107,20 +107,20 @@ export class AnalyticsComputeService {
 
     async computeTokenBurned(
         tokenID: string,
-        startTimeUtc: string,
+        start: string,
         key: string,
     ): Promise<string> {
         return (await this.elrondDataService.isReadActive())
             ? await this.elrondDataService.getAggregatedValue({
                   series: tokenID,
                   key,
-                  startTimeUtc,
+                  start,
               })
             : await this.awsTimestreamQuery.getAggregatedValue({
                   table: awsConfig.timestream.tableName,
                   series: tokenID,
                   metric: key,
-                  time: startTimeUtc,
+                  time: start,
               });
     }
 

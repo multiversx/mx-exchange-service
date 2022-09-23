@@ -45,7 +45,7 @@ export class ElrondApiService {
     }
 
     private delay(ms: number) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
     async doGetGeneric(
@@ -110,11 +110,14 @@ export class ElrondApiService {
         }
     }
 
-    async getNftCollection(tokenID: string): Promise<NftCollection> {
+    async getNftCollection(
+        tokenID: string,
+        params: string = '',
+    ): Promise<NftCollection> {
         try {
             const rawCollection = await this.doGetGeneric(
                 this.getNftCollection.name,
-                `collections/${tokenID}`,
+                `collections/${tokenID}?${params}`,
             );
             const collection = new NftCollection(rawCollection);
             if (!isNftCollection(collection)) {

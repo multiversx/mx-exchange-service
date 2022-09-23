@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 export class ApiConfigService {
     constructor(private readonly configService: ConfigService) {}
 
-    private getGeneric<T>(path: string, alias?: string): T {
+    private getGenericConfig<T>(path: string, alias?: string): T {
         const value = this.configService.get<T>(path);
         if (!value) {
             throw new Error(`No '${alias || path}' config present`);
@@ -14,55 +14,59 @@ export class ApiConfigService {
     }
 
     getPublicAppPort(): number {
-        return parseInt(this.getGeneric<string>('PORT'));
+        return parseInt(this.getGenericConfig<string>('PORT'));
     }
 
     getPublicAppListenAddress(): string {
-        return this.getGeneric<string>('LISTEN_ADDRESS');
+        return this.getGenericConfig<string>('LISTEN_ADDRESS');
     }
 
     getPrivateAppPort(): number {
-        return parseInt(this.getGeneric<string>('PRIVATE_PORT'));
+        return parseInt(this.getGenericConfig<string>('PRIVATE_PORT'));
     }
 
     getPrivateAppListenAddress(): string {
-        return this.getGeneric<string>('PRIVATE_LISTEN_ADDRESS');
+        return this.getGenericConfig<string>('PRIVATE_LISTEN_ADDRESS');
     }
 
     getCacheWarmerPort(): number {
-        return parseInt(this.getGeneric<string>('CACHEWARMER_PORT'));
+        return parseInt(this.getGenericConfig<string>('CACHEWARMER_PORT'));
     }
 
     isPublicApiActive(): boolean {
-        return this.getGeneric<string>('ENABLE_PUBLIC_API') === 'true';
+        return this.getGenericConfig<string>('ENABLE_PUBLIC_API') === 'true';
     }
 
     isCacheWarmerCronActive(): boolean {
-        return this.getGeneric<string>('ENABLE_CACHE_WARMER') === 'true';
+        return this.getGenericConfig<string>('ENABLE_CACHE_WARMER') === 'true';
     }
 
     isPrivateAppActive(): boolean {
-        return this.getGeneric<string>('ENABLE_PRIVATE_API') === 'true';
+        return this.getGenericConfig<string>('ENABLE_PRIVATE_API') === 'true';
     }
 
     isEventsNotifierAppActive(): boolean {
-        return this.getGeneric<string>('ENABLE_EVENTS_NOTIFIER') === 'true';
+        return (
+            this.getGenericConfig<string>('ENABLE_EVENTS_NOTIFIER') === 'true'
+        );
     }
 
     isEventsReindexingCronjobActive(): boolean {
-        return this.getGeneric<string>('ENABLE_EVENTS_REINDEXING') === 'true';
+        return (
+            this.getGenericConfig<string>('ENABLE_EVENTS_REINDEXING') === 'true'
+        );
     }
 
     isTracerActive(): boolean {
-        return this.getGeneric<string>('ENABLE_TRACER') === 'true';
+        return this.getGenericConfig<string>('ENABLE_TRACER') === 'true';
     }
 
     getRedisUrl(): string {
-        return this.getGeneric<string>('REDIS_URL');
+        return this.getGenericConfig<string>('REDIS_URL');
     }
 
     getRedisPort(): number {
-        return parseInt(this.getGeneric<string>('REDIS_PORT'));
+        return parseInt(this.getGenericConfig<string>('REDIS_PORT'));
     }
 
     getRedisPassword(): string {
@@ -70,40 +74,46 @@ export class ApiConfigService {
     }
 
     getApiUrl(): string {
-        return this.getGeneric<string>('ELRONDAPI_URL');
+        return this.getGenericConfig<string>('ELRONDAPI_URL');
     }
 
     getNotifierUrl(): string {
-        return this.getGeneric<string>('NOTIFIER_URL');
+        return this.getGenericConfig<string>('NOTIFIER_URL');
     }
 
     getKeepAliveTimeoutDownstream(): number {
         return parseInt(
-            this.getGeneric<string>('KEEPALIVE_TIMEOUT_DOWNSTREAM'),
+            this.getGenericConfig<string>('KEEPALIVE_TIMEOUT_DOWNSTREAM'),
         );
     }
 
     getKeepAliveTimeoutUpstream(): number {
-        return parseInt(this.getGeneric<string>('KEEPALIVE_TIMEOUT_UPSTREAM'));
+        return parseInt(
+            this.getGenericConfig<string>('KEEPALIVE_TIMEOUT_UPSTREAM'),
+        );
     }
 
     getMongoDBURL(): string {
-        return this.getGeneric<string>('MONGODB_URL');
+        return this.getGenericConfig<string>('MONGODB_URL');
     }
 
     getMongoDBDatabase(): string {
-        return this.getGeneric<string>('MONGODB_DATABASE');
+        return this.getGenericConfig<string>('MONGODB_DATABASE');
     }
 
     getMongoDBUsername(): string {
-        return this.getGeneric<string>('MONGODB_USERNAME');
+        return this.getGenericConfig<string>('MONGODB_USERNAME');
     }
 
     getMongoDBPassword(): string {
-        return this.getGeneric<string>('MONGODB_PASSWORD');
+        return this.getGenericConfig<string>('MONGODB_PASSWORD');
     }
 
     getSecurityAdmins(): string[] {
-        return this.getGeneric<string>('SECURITY_ADMINS').split(',');
+        return this.getGenericConfig<string>('SECURITY_ADMINS').split(',');
+    }
+
+    getElrondDataApiUrl(): string {
+        return this.getGenericConfig<string>('ELRONDDATAAPI_URL');
     }
 }
