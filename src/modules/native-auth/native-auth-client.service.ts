@@ -2,29 +2,31 @@ import { Injectable } from '@nestjs/common';
 import { NativeAuthClient } from '@elrondnetwork/native-auth-client';
 import { SignableMessage } from '@elrondnetwork/erdjs/out';
 import { UserSigner } from '@elrondnetwork/erdjs-walletcore/out';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class NativeAuthClientService {
     private readonly client: NativeAuthClient;
+    private readonly apiConfig: ApiConfigService;
     private signableToken: string;
 
     constructor() {
         this.client = new NativeAuthClient({
-            host: process.env.APP_NAME,
-            apiUrl: process.env.ELRONDAPI_URL,
+            host: this.apiConfig.getAppName(),
+            apiUrl: this.apiConfig.getApiUrl(),
         });
         this.client
             .initialize({
                 env: process.env.NODE_ENV,
             })
-            .then(res => {
+            .then((res) => {
                 this.signableToken = res;
             });
     }
 
     async getToken(): Promise<string> {
-        const PEM_KEY = process.env.NATIVE_AUTH_PEM_KEY;
-        const PEM_ADDRESS = process.env.NATIVE_AUTH_PEM_ADDRESS;
+        const PEM_KEY = this.apiConfig.getNativeAuthPemKey();
+        const PEM_ADDRESS = this.apiConfig.getNativeAuthPemAddress();
 
         const messageToSign = `${PEM_ADDRESS}${this.signableToken}{}`;
         const signableMessage = new SignableMessage({

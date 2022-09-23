@@ -116,4 +116,16 @@ export class ApiConfigService {
     getElrondDataApiUrl(): string {
         return this.getGenericConfig<string>('ELRONDDATAAPI_URL');
     }
+
+    getAppName(): string {
+        return this.getGenericConfig<string>('APP_NAME');
+    }
+
+    getNativeAuthPemKey(): string {
+        return this.getGenericConfig<string>('NATIVE_AUTH_PEM_KEY');
+    }
+
+    getNativeAuthPemAddress(): string {
+        return this.getGenericConfig<string>('NATIVE_AUTH_PEM_ADDRESS');
+    }
 }
