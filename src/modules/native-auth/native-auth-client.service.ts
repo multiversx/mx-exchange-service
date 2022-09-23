@@ -16,7 +16,7 @@ export class NativeAuthClientService {
         });
         this.client
             .initialize({
-                env: process.env.NODE_ENV,
+                env: this.apiConfig.getNodeEnv(),
             })
             .then((res) => {
                 this.signableToken = res;

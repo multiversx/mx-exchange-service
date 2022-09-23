@@ -13,6 +13,10 @@ export class ApiConfigService {
         return value;
     }
 
+    getNodeEnv(): string {
+        return this.getGenericConfig<string>('NODE_ENV');
+    }
+
     getPublicAppPort(): number {
         return parseInt(this.getGenericConfig<string>('PORT'));
     }
