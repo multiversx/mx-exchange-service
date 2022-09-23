@@ -179,10 +179,6 @@ export class AnalyticsGetterService extends GenericGetterService {
 
     async getLatestHistoricData(
         args: AnalyticsQueryArgs,
-        // series: string,
-        // key: string,
-        // start: string,
-        // end: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestHistoricData',
@@ -199,11 +195,6 @@ export class AnalyticsGetterService extends GenericGetterService {
 
     async getLatestBinnedHistoricData(
         args: AnalyticsQueryArgs,
-        // series: string,
-        // key: string,
-        // start: string,
-        // end: string,
-        // resolution: string,
     ): Promise<HistoricDataModel[]> {
         const cacheKey = this.getAnalyticsCacheKey(
             'latestBinnedHistoricData',
