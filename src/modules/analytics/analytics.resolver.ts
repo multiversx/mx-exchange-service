@@ -2,7 +2,7 @@ import { UsePipes, ValidationPipe } from '@nestjs/common';
 import { Int, Query } from '@nestjs/graphql';
 import { Args, Resolver } from '@nestjs/graphql';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { AnalyticsQueryArgs } from './models/query.args';
+import { AnalyticsQueryArgs } from './models/analytics.query.args';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
 import { ApolloError } from 'apollo-server-express';
 
