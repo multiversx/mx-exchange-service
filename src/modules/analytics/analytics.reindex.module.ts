@@ -8,7 +8,6 @@ import { RouterModule } from '../router/router.module';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { LogsProcessorService } from 'src/services/crons/logs.processor.service';
 import { AnalyticsReindexService } from './services/analytics.reindex.service';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import { TokenModule } from '../tokens/token.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 
@@ -27,7 +26,6 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
         AnalyticsReindexService,
         ElasticService,
         LogsProcessorService,
-        SchedulerRegistry,
     ],
     exports: [AnalyticsReindexService],
 })

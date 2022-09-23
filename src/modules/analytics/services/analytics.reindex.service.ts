@@ -20,9 +20,6 @@ import {
     SwapFixedOutputEvent,
     WithdrawEvent,
 } from '@elrondnetwork/erdjs-dex';
-import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
-import { Locker } from 'src/utils/locker';
 import { ElrondDataService } from 'src/services/elrond-communication/elrond-data.service';
 import BigNumber from 'bignumber.js';
 import {
@@ -72,30 +69,11 @@ export class AnalyticsReindexService {
         private readonly elrondApiService: ElrondApiService,
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetterService: PairGetterService,
-        private schedulerRegistry: SchedulerRegistry,
         private readonly routerGetterService: RouterGetterService,
         private readonly tokenGetterService: TokenGetterService,
         private readonly analyticsReindexRepositoryService: AnalyticsReindexRepositoryService,
     ) {
-        // manually start cronjob; todo: find out why not starting automatically...
-        const job = new CronJob(CronExpression.EVERY_SECOND, () => {
-            this.reindexEvents();
-        });
-        this.schedulerRegistry.addCronJob(this.reindexEvents.name, job);
-        job.start();
-    }
-
-    @Cron(CronExpression.EVERY_SECOND)
-    private async reindexEvents(): Promise<void> {
-        await Locker.lock(this.reindexEvents.name, async () => {
-            await this.reindexAnalytics();
-        });
-        this.stopReindexingEvents();
-    }
-
-    private stopReindexingEvents(): void {
-        const job = this.schedulerRegistry.getCronJob(this.reindexEvents.name);
-        job.stop();
+        this.reindexAnalytics();
     }
 
     private async reindexAnalytics(): Promise<boolean> {
