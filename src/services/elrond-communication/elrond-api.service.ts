@@ -237,11 +237,4 @@ export class ElrondApiService {
             `transactions?receiverShard=${receiverShard}&after=${after}&before=${before}`,
         );
     }
-
-    async getCollection(identifier: string, params: string = ''): Promise<any> {
-        return await this.doGetGeneric(
-            this.getTransactions.name,
-            `collections/${identifier}?${params}`,
-        );
-    }
 }
