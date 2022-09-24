@@ -1169,10 +1169,7 @@ export class AnalyticsReindexService {
             return this.launchedTokensDecimals[identifier];
         }
         const collection: NftCollection =
-            await this.elrondApiService.getNftCollection(
-                identifier,
-                'extract=decimals',
-            );
+            await this.elrondApiService.getNftCollection(identifier);
         this.launchedTokensDecimals[identifier] = collection.decimals;
         return collection.decimals;
     }
