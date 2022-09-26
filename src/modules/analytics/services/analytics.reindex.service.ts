@@ -41,6 +41,7 @@ import { AnalyticsReindexState } from 'src/modules/remote-config/schemas/analyti
 import { IngestRecord } from 'src/services/elrond-communication/ingest-records.model';
 import * as fs from 'fs';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import { Console } from 'console';
 
 @Injectable()
 export class AnalyticsReindexService {
@@ -56,8 +57,8 @@ export class AnalyticsReindexService {
     private ingestedCnt: number = 0;
     private processStartTime: number;
 
-    private ingestRecordsThreshold = 500;
-    private ingestPromisesThreshold = 10;
+    private ingestRecordsThreshold = 100;
+    private ingestPromisesThreshold = 5;
 
     private ingestRecordsBuffer: IngestRecord[] = [];
     private ingestRecordsPromises: Promise<boolean>[] = [];
@@ -232,35 +233,22 @@ export class AnalyticsReindexService {
 
     private async initState(): Promise<void> {
         if (this.state === undefined) {
-            this.state = await this.analyticsReindexRepositoryService.findOne(
+            const state = await this.analyticsReindexRepositoryService.findOne(
                 {},
             );
 
             if (!this.state) {
                 this.state = new AnalyticsReindexState();
+                this.state.lastIntervalStartDate = state.lastIntervalStartDate;
             }
 
-            try {
-                let pairsMetadata: PairMetadata[] =
-                    await this.routerGetterService.getPairsMetadata();
-                for (const pair of pairsMetadata) {
-                    if (this.state.pairsState[pair.address]) {
-                        continue;
-                    }
-
-                    this.state.pairsState[pair.address] = {
-                        firstTokenID: pair.firstTokenID,
-                        secondTokenID: pair.secondTokenID,
-                        firstTokenReserves: '0',
-                        secondTokenReserves: '0',
-                        liquidityPoolSupply: '0',
-                    };
-                }
-            } catch (error) {
-                this.saveLogData(
-                    `Error when trying to add all existing pairs to the local pairs ${error}`,
-                );
-                throw error;
+            if (state?.pairsState) {
+                Object.keys(state.pairsState).forEach(async (pairAddress) => {
+                    await this.updatePairState(
+                        pairAddress,
+                        state.pairsState[pairAddress],
+                    );
+                });
             }
         }
     }
@@ -268,7 +256,7 @@ export class AnalyticsReindexService {
     private async refreshPairsMap(): Promise<Map<string, string[]>> {
         try {
             let pairsMetadata: PairMetadata[] =
-                await this.getAllPairsMetadata();
+                await this.getAllValidPairsMetadata();
 
             const pairsMap = new Map<string, string[]>();
             for (const pairMetadata of pairsMetadata) {
@@ -293,12 +281,8 @@ export class AnalyticsReindexService {
         pairAddress: string,
         pairData: any,
     ): Promise<void> {
-        if (this.state.pairsState[pairAddress] === undefined) {
-            await this.refreshPairsMap();
-        } else if (this.state.pairsState[pairAddress] === null) {
-            throw new Error(
-                `Can't update pairs state for ${pairAddress} - ${pairData}`,
-            );
+        if (!(await this.isValidPair(pairAddress))) {
+            return;
         }
 
         this.state.pairsState[pairAddress] = pairData;
@@ -474,6 +458,10 @@ export class AnalyticsReindexService {
         event: AddLiquidityEvent | RemoveLiquidityEvent,
     ): Promise<void> {
         try {
+            if (!(await this.isValidPair(event.address))) {
+                return;
+            }
+
             await this.updatePairStateForLiquidityEvent(event);
 
             const [
@@ -521,6 +509,10 @@ export class AnalyticsReindexService {
         event: SwapFixedInputEvent | SwapFixedOutputEvent,
     ): Promise<void> {
         try {
+            if (!(await this.isValidPair(event.address))) {
+                return;
+            }
+
             await this.updatePairStateForSwapEvent(event);
 
             const [
@@ -775,8 +767,7 @@ export class AnalyticsReindexService {
     private async computeTokenPriceUSD(tokenID: string): Promise<BigNumber> {
         return constantsConfig.USDC_TOKEN_ID === tokenID
             ? new BigNumber(1)
-            : //await this.getPriceUSDByPath(tokenID);
-              new BigNumber(await this.computeTokenPriceDerivedUSD(tokenID));
+            : new BigNumber(await this.computeTokenPriceDerivedUSD(tokenID));
     }
 
     private async computeFirstTokenPrice(pairAddress: string): Promise<string> {
@@ -1174,33 +1165,17 @@ export class AnalyticsReindexService {
         return collection.decimals;
     }
 
-    private async getAllPairsMetadata(): Promise<PairMetadata[]> {
+    private async isValidPair(address: string): Promise<boolean> {
+        const validPairs = await this.getAllValidPairsMetadata();
+        const pair: PairMetadata = validPairs.find(
+            (vp) => vp.address === address,
+        );
+        return pair !== undefined;
+    }
+
+    private async getAllValidPairsMetadata(): Promise<PairMetadata[]> {
         let pairsMetadata: PairMetadata[] =
             await this.routerGetterService.getPairsMetadata();
-        try {
-            Object.keys(this.state.pairsState).forEach((pairAddress) => {
-                if (
-                    pairsMetadata.find((p) => p.address === pairAddress) ===
-                    undefined
-                ) {
-                    pairsMetadata.push(
-                        new PairMetadata({
-                            address: pairAddress,
-                            firstTokenID:
-                                this.state.pairsState[pairAddress].firstTokenID,
-                            secondTokenID:
-                                this.state.pairsState[pairAddress]
-                                    .secondTokenID,
-                        }),
-                    );
-                }
-            });
-        } catch (error) {
-            this.saveLogData(
-                `Error when trying to getAllPairsMetadata ${error}`,
-            );
-            throw error;
-        }
         return pairsMetadata;
     }
 
@@ -1208,7 +1183,7 @@ export class AnalyticsReindexService {
         token1ID: string,
         token2ID: string,
     ): Promise<PairMetadata> {
-        const pairs = await this.getAllPairsMetadata();
+        const pairs = await this.getAllValidPairsMetadata();
         return pairs.find(
             (p) =>
                 (p.firstTokenID === token1ID && p.secondTokenID === token2ID) ||
@@ -1247,7 +1222,7 @@ export class AnalyticsReindexService {
             return new BigNumber('1').toFixed();
         }
 
-        const pairsMetadata = await this.getAllPairsMetadata();
+        const pairsMetadata = await this.getAllValidPairsMetadata();
         const tokenPairs: PairMetadata[] = [];
         for (const pair of pairsMetadata) {
             if (
