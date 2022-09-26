@@ -84,7 +84,7 @@ export class AnalyticsResolver {
         }),
     )
     async latestCompleteValues(
-        @Args({ nullable: true }) args: AnalyticsQueryArgs,
+        @Args() args: AnalyticsQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.genericQuery(() =>
             this.analyticsGetter.getLatestCompleteValues(

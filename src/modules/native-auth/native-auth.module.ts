@@ -5,7 +5,7 @@ import { NativeAuthClientService } from './native-auth-client.service';
 
 @Module({
     imports: [CommonAppModule],
-    providers: [NativeAuthClientService, ApiConfigService],
+    providers: [NativeAuthClientService],
     exports: [NativeAuthClientService],
 })
 export class NativeAuthModule {}
