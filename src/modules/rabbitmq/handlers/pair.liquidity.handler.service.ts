@@ -88,7 +88,7 @@ export class LiquidityHandler {
                 firstTokenPriceUSD,
             ),
         };
-        data[firstToken.identifier] = {
+        data[secondToken.identifier] = {
             lockedValue: secondTokenTotalLockedValue,
             lockedValueUSD: computeValueUSD(
                 secondTokenTotalLockedValue,

@@ -43,10 +43,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getFirstTokenId();
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -57,10 +54,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getSecondTokenId();
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -71,10 +65,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getLpTokenIdentifier();
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         const lpTokenID = response.firstValue.valueOf().toString();
         return lpTokenID !== elrondConfig.EGLDIdentifier
             ? lpTokenID
@@ -91,10 +82,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methodsExplicit.getReserve([
             new TokenIdentifierValue(tokenID),
         ]);
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -105,10 +93,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getTotalSupply();
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -119,10 +104,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getReservesAndTotalSupply();
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return new PairInfoModel({
             reserves0: response.values[0].valueOf().toFixed(),
             reserves1: response.values[1].valueOf().toFixed(),
@@ -137,10 +119,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getTotalFeePercent();
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -151,10 +130,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getSpecialFee();
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -165,10 +141,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getTrustedSwapPairs();
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue
             .valueOf()
             .map((swapPair) => swapPair.field1.bech32());
@@ -222,10 +195,7 @@ export class PairAbiService extends GenericAbiService {
         );
         const interaction: Interaction = contract.methodsExplicit.getState([]);
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().name;
     }
 
@@ -237,10 +207,7 @@ export class PairAbiService extends GenericAbiService {
             [],
         );
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 
@@ -371,10 +338,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getFeeDestinations(
             [],
         );
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((v) => {
             return new FeeDestination({
                 address: new Address(
@@ -393,10 +357,7 @@ export class PairAbiService extends GenericAbiService {
         );
         const interaction: Interaction =
             contract.methods.getWhitelistedManagedAddresses([]);
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((v) => {
             return new Address(v).bech32();
         });
@@ -406,10 +367,7 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(address);
         const interaction: Interaction =
             contract.methods.getRouterManagedAddress([]);
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return new Address(response.firstValue.valueOf().toString()).bech32();
     }
 
@@ -417,10 +375,7 @@ export class PairAbiService extends GenericAbiService {
         const contract = await this.elrondProxy.getPairSmartContract(address);
         const interaction: Interaction =
             contract.methods.getRouterOwnerManagedAddress([]);
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return new Address(response.firstValue.valueOf().toString()).bech32();
     }
 
@@ -431,10 +386,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getExternSwapGasLimit(
             [],
         );
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         const res = response.firstValue.valueOf();
         return res !== undefined ? res.toFixed() : undefined;
     }
@@ -445,10 +397,7 @@ export class PairAbiService extends GenericAbiService {
         );
         const interaction: Interaction =
             contract.methods.getTransferExecGasLimit([]);
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         const res = response.firstValue.valueOf();
         return res !== undefined ? res.toFixed() : undefined;
     }
@@ -493,10 +442,7 @@ export class PairAbiService extends GenericAbiService {
             ],
         );
 
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return new EsdtTokenPayment({
             tokenType: EsdtTokenType.getEnum().getVariantByName(
                 response.firstValue.valueOf().token_type.name,
@@ -521,10 +467,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getNumSwapsByAddress([
             new AddressValue(Address.fromString(address)),
         ]);
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 
@@ -538,10 +481,7 @@ export class PairAbiService extends GenericAbiService {
         const interaction: Interaction = contract.methods.getNumAddsByAddress([
             new AddressValue(Address.fromString(address)),
         ]);
-        const response = await this.getGenericData(
-            PairAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 }
