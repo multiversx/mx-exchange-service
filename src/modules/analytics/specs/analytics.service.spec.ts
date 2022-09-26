@@ -28,6 +28,11 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
+import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
+import { ElrondDataReadService } from 'src/services/elrond-communication/elrond-data.read.service';
+import { NativeAuthModule } from 'src/modules/native-auth/native-auth.module';
+import { ElrondDataReadServiceMock } from 'src/services/elrond-communication/elrond-data.read.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -77,9 +82,24 @@ describe('AnalyticsService', () => {
         useClass: WrapServiceMock,
     };
 
+    const RemoteConfigGetterServiceProvider = {
+        provide: RemoteConfigGetterService,
+        useClass: RemoteConfigGetterServiceMock,
+    };
+
+    const ElrondDataReadServiceProvider = {
+        provide: ElrondDataReadService,
+        useClass: ElrondDataReadServiceMock,
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule, AWSModule],
+            imports: [
+                CommonAppModule,
+                CachingModule,
+                AWSModule,
+                NativeAuthModule,
+            ],
             providers: [
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,
@@ -98,6 +118,8 @@ describe('AnalyticsService', () => {
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 AnalyticsComputeService,
+                ElrondDataReadServiceProvider,
+                RemoteConfigGetterServiceProvider,
             ],
         }).compile();
 
@@ -109,7 +131,8 @@ describe('AnalyticsService', () => {
     });
 
     it('should get total value locked in farms', async () => {
-        const totalLockedValueUSDFarms = await service.computeLockedValueUSDFarms();
+        const totalLockedValueUSDFarms =
+            await service.computeLockedValueUSDFarms();
         expect(totalLockedValueUSDFarms.toString()).toEqual(
             '32000080010000.0001600006',
         );

@@ -17,6 +17,18 @@ export class RemoteConfigGetterServiceMock {
     async getStakingProxyAddresses(): Promise<string[]> {
         return [Address.Zero().bech32(), Address.Zero().bech32()];
     }
+
+    async getTimescaleWriteFlag(): Promise<boolean> {
+        return true;
+    }
+
+    async getTimescaleReadFlag(): Promise<boolean> {
+        return true;
+    }
+
+    async getTimestreamWriteFlagValue(): Promise<boolean> {
+        return true;
+    }
 }
 
 export const RemoteConfigGetterServiceProvider = {
