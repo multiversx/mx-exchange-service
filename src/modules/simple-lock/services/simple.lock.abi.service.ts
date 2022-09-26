@@ -23,10 +23,7 @@ export class SimpleLockAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getLockedTokenId();
 
-        const response = await this.getGenericData(
-            SimpleLockAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -35,10 +32,7 @@ export class SimpleLockAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getLpProxyTokenId();
 
-        const response = await this.getGenericData(
-            SimpleLockAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -47,10 +41,7 @@ export class SimpleLockAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getFarmProxyTokenId();
 
-        const response = await this.getGenericData(
-            SimpleLockAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -59,10 +50,7 @@ export class SimpleLockAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getKnownLiquidityPools();
 
-        const response = await this.getGenericData(
-            SimpleLockAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((pairAddress) => {
             return pairAddress.valueOf().toString();
         });
@@ -73,10 +61,7 @@ export class SimpleLockAbiService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getKnownFarms();
 
-        const response = await this.getGenericData(
-            SimpleLockAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((farmAddress) => {
             return farmAddress.valueOf().toString();
         });

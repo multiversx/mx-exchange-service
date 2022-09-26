@@ -71,7 +71,7 @@
             "createPair": 30000000,
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
-            "multiPairSwapMultiplier": 25000000,
+            "multiPairSwapMultiplier": 30000000,
             "admin": {
                 "setState": 200000000,
                 "setFee": 200000000,

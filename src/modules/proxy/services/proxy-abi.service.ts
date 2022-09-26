@@ -16,21 +16,17 @@ export class AbiProxyService extends GenericAbiService {
 
     async getAssetTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getAssetTokenId();
-        const response = await this.getGenericData(
-            AbiProxyService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getAssetTokenId();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
     async getLockedAssetTokenID(): Promise<string> {
         const contract = await this.elrondProxy.getProxyDexSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getLockedAssetTokenId();
-        const response = await this.getGenericData(
-            AbiProxyService.name,
-            interaction,
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockedAssetTokenId();
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 }
