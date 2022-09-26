@@ -16,50 +16,45 @@ export class MetabondingAbiService extends GenericAbiService {
     }
 
     async getLockedAssetTokenID(): Promise<string> {
-        const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getLockedAssetTokenId();
+        const contract =
+            await this.elrondProxy.getMetabondingStakingSmartContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockedAssetTokenId();
 
-        const response = await this.getGenericData(
-            MetabondingAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
     async getTotalLockedAssetSupply(): Promise<string> {
-        const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getTotalLockedAssetSupply();
+        const contract =
+            await this.elrondProxy.getMetabondingStakingSmartContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getTotalLockedAssetSupply();
 
-        const response = await this.getGenericData(
-            MetabondingAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
     async getStakedAmountForUser(userAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
-        const interaction: Interaction = contract.methodsExplicit.getStakedAmountForUser(
-            [new AddressValue(Address.fromString(userAddress))],
-        );
+        const contract =
+            await this.elrondProxy.getMetabondingStakingSmartContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getStakedAmountForUser([
+                new AddressValue(Address.fromString(userAddress)),
+            ]);
 
-        const response = await this.getGenericData(
-            MetabondingAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
     async getUserEntry(userAddress: string): Promise<UserEntryModel> {
-        const contract = await this.elrondProxy.getMetabondingStakingSmartContract();
+        const contract =
+            await this.elrondProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getUserEntry([
             new AddressValue(Address.fromString(userAddress)),
         ]);
 
-        const response = await this.getGenericData(
-            MetabondingAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
 
         const rawUserEntry = response.firstValue.valueOf();
 
