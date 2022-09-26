@@ -30,10 +30,7 @@ export class EnergyAbiService extends SimpleLockAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getBaseAssetTokenId();
 
-        const response = await this.getGenericData(
-            EnergyAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -43,10 +40,7 @@ export class EnergyAbiService extends SimpleLockAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getLockOptions();
 
-        const response = await this.getGenericData(
-            EnergyAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue
             .valueOf()
             .map((lockOption: BigNumber) => lockOption.toNumber());
@@ -60,10 +54,7 @@ export class EnergyAbiService extends SimpleLockAbiService {
                 new AddressValue(Address.fromString(userAddress)),
             ]);
 
-        const response = await this.getGenericData(
-            EnergyAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         const rawEnergy = response.firstValue.valueOf();
         return new Energy({
             amount: rawEnergy.amount.toFixed(),
@@ -80,10 +71,7 @@ export class EnergyAbiService extends SimpleLockAbiService {
                 new AddressValue(Address.fromString(userAddress)),
             ]);
 
-        const response = await this.getGenericData(
-            EnergyAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -99,10 +87,7 @@ export class EnergyAbiService extends SimpleLockAbiService {
                 new U64Value(new BigNumber(epochsToReduce)),
             ]);
 
-        const response = await this.getGenericData(
-            EnergyAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
 
         return response.firstValue.valueOf().toFixed();
     }
@@ -111,10 +96,7 @@ export class EnergyAbiService extends SimpleLockAbiService {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
         const interaction = contract.methodsExplicit.isPaused();
-        const response = await this.getGenericData(
-            EnergyAbiService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
 
         return response.firstValue.valueOf();
     }
