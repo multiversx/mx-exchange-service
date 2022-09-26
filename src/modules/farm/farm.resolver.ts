@@ -24,6 +24,8 @@ import { FarmGetterService } from './services/farm.getter.service';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
+import { PairModel } from '../pair/models/pair.model';
+import { LockedAssetModel } from '../locked-asset-factory/models/locked-asset.model';
 
 @Resolver(() => FarmModel)
 export class FarmResolver {
@@ -364,22 +366,26 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async pairContractManagedAddress(@Parent() parent: FarmModel) {
+    async pair(@Parent() parent: FarmModel) {
         try {
-            return await this.farmGetterService.getPairContractManagedAddress(
-                parent.address,
-            );
+            const address =
+                await this.farmGetterService.getPairContractManagedAddress(
+                    parent.address,
+                );
+            return new PairModel({ address });
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
     @ResolveField()
-    async lockedAssetFactoryManagedAddress(@Parent() parent: FarmModel) {
+    async lockedAssetFactory(@Parent() parent: FarmModel) {
         try {
-            return await this.farmGetterService.getLockedAssetFactoryManagedAddress(
-                parent.address,
-            );
+            const address =
+                await this.farmGetterService.getLockedAssetFactoryManagedAddress(
+                    parent.address,
+                );
+            return new LockedAssetModel({ address });
         } catch (error) {
             throw new ApolloError(error);
         }

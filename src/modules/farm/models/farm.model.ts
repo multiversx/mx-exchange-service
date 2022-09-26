@@ -1,4 +1,6 @@
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
+import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
+import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmTokenAttributesModel } from './farmTokenAttributes.model';
@@ -166,10 +168,10 @@ export class FarmModel {
     transferExecGasLimit: string;
 
     @Field({ nullable: true })
-    pairContractManagedAddress: string;
+    pair: PairModel;
 
     @Field({ nullable: true })
-    lockedAssetFactoryManagedAddress: string;
+    lockedAssetFactory: LockedAssetModel;
 
     @Field()
     lastErrorMessage: string;
