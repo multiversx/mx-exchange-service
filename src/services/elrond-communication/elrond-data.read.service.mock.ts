@@ -1,3 +1,5 @@
+import { ElrondDataReadService } from './elrond-data.read.service';
+
 export class ElrondDataReadServiceMock {
     async isReadActive(): Promise<boolean> {
         return true;
@@ -7,3 +9,8 @@ export class ElrondDataReadServiceMock {
         return '1000000000000000000';
     }
 }
+
+export const ElrondDataReadServiceProvider = {
+    provide: ElrondDataReadService,
+    useClass: ElrondDataReadServiceMock,
+};
