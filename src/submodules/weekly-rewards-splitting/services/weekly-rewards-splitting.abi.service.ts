@@ -5,7 +5,6 @@ import BigNumber from "bignumber.js";
 
 export abstract class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     abstract getContract(address: string): Promise<[SmartContract, string]>
-    abstract getContract(address: string): Promise<[SmartContract, string]>
 
     abstract outdatedVersion(version: string): boolean
 
