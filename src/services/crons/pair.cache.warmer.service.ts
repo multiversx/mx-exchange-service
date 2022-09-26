@@ -10,6 +10,7 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
 import { awsConfig } from 'src/config';
+import { ElrondDataReadService } from '../elrond-communication/elrond-data.read.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -21,6 +22,7 @@ export class PairCacheWarmerService {
         private readonly apiService: ElrondApiService,
         private readonly tokenSetter: TokenSetterService,
         private readonly awsQuery: AWSTimestreamQueryService,
+        private readonly elrondDataReadService: ElrondDataReadService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -93,7 +95,10 @@ export class PairCacheWarmerService {
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async cachePairsAnalytics(): Promise<void> {
-        const pairsAddresses = await this.routerGetter.getAllPairsAddress();
+        const [pairsAddresses, isTimescaleReadActive] = await Promise.all([
+            this.routerGetter.getAllPairsAddress(),
+            this.elrondDataReadService.isReadActive(),
+        ]);
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
             const [
@@ -102,30 +107,54 @@ export class PairCacheWarmerService {
                 volumeUSD24h,
                 feesUSD24h,
             ] = await Promise.all([
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'firstTokenVolume',
-                    time,
-                }),
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'secondTokenVolume',
-                    time,
-                }),
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'volumeUSD',
-                    time,
-                }),
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'feesUSD',
-                    time,
-                }),
+                isTimescaleReadActive
+                    ? this.elrondDataReadService.getAggregatedValue({
+                          series: pairAddress,
+                          key: 'firstTokenVolume',
+                          start: time,
+                      })
+                    : this.awsQuery.getAggregatedValue({
+                          table: awsConfig.timestream.tableName,
+                          series: pairAddress,
+                          metric: 'firstTokenVolume',
+                          time,
+                      }),
+                isTimescaleReadActive
+                    ? this.elrondDataReadService.getAggregatedValue({
+                          series: pairAddress,
+                          key: 'secondTokenVolume',
+                          start: time,
+                      })
+                    : this.awsQuery.getAggregatedValue({
+                          table: awsConfig.timestream.tableName,
+                          series: pairAddress,
+                          metric: 'secondTokenVolume',
+                          time,
+                      }),
+                isTimescaleReadActive
+                    ? this.elrondDataReadService.getAggregatedValue({
+                          series: pairAddress,
+                          key: 'volumeUSD',
+                          start: time,
+                      })
+                    : this.awsQuery.getAggregatedValue({
+                          table: awsConfig.timestream.tableName,
+                          series: pairAddress,
+                          metric: 'volumeUSD',
+                          time,
+                      }),
+                isTimescaleReadActive
+                    ? this.elrondDataReadService.getAggregatedValue({
+                          series: pairAddress,
+                          key: 'feesUSD',
+                          start: time,
+                      })
+                    : this.awsQuery.getAggregatedValue({
+                          table: awsConfig.timestream.tableName,
+                          series: pairAddress,
+                          metric: 'feesUSD',
+                          time,
+                      }),
             ]);
 
             const cachedKeys = await Promise.all([
