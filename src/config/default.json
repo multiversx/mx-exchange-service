@@ -424,7 +424,7 @@
     },
     "elrondData": {
         "timescale": {
-            "table": "MAIAR_EXCHANGE_ANALYTICS"
+            "table": "maiar_exchange_analytics"
         }
     }
 }
