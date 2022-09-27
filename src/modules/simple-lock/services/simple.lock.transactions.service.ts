@@ -3,6 +3,7 @@ import {
     BigUIntValue,
     EnumValue,
     Interaction,
+    SmartContract,
     TokenPayment,
     TypedValue,
     U64Value,
@@ -16,34 +17,39 @@ import { FarmRewardType } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
+import { UnlockType } from '../models/simple.lock.model';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { farmType } from 'src/utils/farm.utils';
-import { FarmTypeEnumType } from '../models/simple.lock.model';
+import { FarmTypeEnumType, SimpleLockType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
 import { SimpleLockService } from './simple.lock.service';
 
 @Injectable()
 export class SimpleLockTransactionService {
+    protected lockType: SimpleLockType;
+
     constructor(
-        private readonly simpleLockService: SimpleLockService,
-        private readonly simpleLockGetter: SimpleLockGetterService,
-        private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
-        private readonly wrapService: WrapService,
-        private readonly wrapTransaction: TransactionsWrapService,
-        private readonly contextGetter: ContextGetterService,
-        private readonly elrondProxy: ElrondProxyService,
-    ) {}
+        protected readonly simpleLockService: SimpleLockService,
+        protected readonly simpleLockGetter: SimpleLockGetterService,
+        protected readonly pairService: PairService,
+        protected readonly pairGetterService: PairGetterService,
+        protected readonly wrapService: WrapService,
+        protected readonly wrapTransaction: TransactionsWrapService,
+        protected readonly contextGetter: ContextGetterService,
+        protected readonly elrondProxy: ElrondProxyService,
+    ) {
+        this.lockType = SimpleLockType.BASE_TYPE;
+    }
 
     async lockTokens(
         inputTokens: InputTokenModel,
         lockEpochs: number,
     ): Promise<TransactionModel> {
         const [contract, currentEpoch] = await Promise.all([
-            this.elrondProxy.getSimpleLockSmartContract(),
+            this.getContract(this.lockType),
             this.contextGetter.getCurrentEpoch(),
         ]);
 
@@ -66,13 +72,28 @@ export class SimpleLockTransactionService {
     async unlockTokens(
         sender: string,
         inputTokens: InputTokenModel,
+        unlockType?: UnlockType,
+        epochsToReduce?: number,
     ): Promise<TransactionModel> {
         await this.validateInputUnlockTokens(inputTokens);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const contract = await this.getContract(this.lockType);
 
-        return contract.methodsExplicit
-            .unlockTokens()
+        let endpoint: Interaction;
+        switch (unlockType) {
+            case UnlockType.EARLY_UNLOCK:
+                endpoint = contract.methodsExplicit.unlockEarly();
+                break;
+            case UnlockType.REDUCE_PERIOD:
+                endpoint = contract.methodsExplicit.reduceLockPeriod([
+                    new U64Value(new BigNumber(epochsToReduce)),
+                ]);
+            default:
+                endpoint = contract.methodsExplicit.unlockTokens();
+                break;
+        }
+
+        return endpoint
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     inputTokens.tokenID,
@@ -145,36 +166,31 @@ export class SimpleLockTransactionService {
 
         let [firstInputToken, secondInputToken] = inputTokens;
 
-        const [
-            pairFirstTokenID,
-            pairSecondTokenID,
-            contract,
-        ] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
-            this.elrondProxy.getSimpleLockSmartContract(),
-        ]);
+        const [pairFirstTokenID, pairSecondTokenID, contract] =
+            await Promise.all([
+                this.pairGetterService.getFirstTokenID(pairAddress),
+                this.pairGetterService.getSecondTokenID(pairAddress),
+                this.getContract(this.lockType),
+            ]);
 
         let [firstTokenID, secondTokenID] = [
             firstInputToken.tokenID,
             secondInputToken.tokenID,
         ];
         if (firstInputToken.attributes) {
-            const decodedAttributes = this.simpleLockService.decodeLockedTokenAttributes(
-                {
+            const decodedAttributes =
+                this.simpleLockService.decodeLockedTokenAttributes({
                     identifier: firstInputToken.tokenID,
                     attributes: firstInputToken.attributes,
-                },
-            );
+                });
             firstTokenID = decodedAttributes.originalTokenID;
         }
         if (secondInputToken.attributes) {
-            const decodedAttributes = this.simpleLockService.decodeLockedTokenAttributes(
-                {
+            const decodedAttributes =
+                this.simpleLockService.decodeLockedTokenAttributes({
                     identifier: secondInputToken.tokenID,
                     attributes: secondInputToken.attributes,
-                },
-            );
+                });
             secondTokenID = decodedAttributes.originalTokenID;
         }
 
@@ -231,14 +247,13 @@ export class SimpleLockTransactionService {
         await this.validateInputLpProxyToken(inputTokens);
 
         const transactions = [];
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const contract = await this.getContract(this.lockType);
 
-        const lpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
-            {
+        const lpProxyTokenAttributes =
+            this.simpleLockService.decodeLpProxyTokenAttributes({
                 attributes: attributes,
                 identifier: inputTokens.tokenID,
-            },
-        );
+            });
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             lpProxyTokenAttributes.lpTokenID,
@@ -304,13 +319,13 @@ export class SimpleLockTransactionService {
                 .name,
         );
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const contract = await this.getContract(this.lockType);
 
         const gasLimit =
             inputTokens.length > 1
                 ? gasConfig.simpleLock.enterFarmLockedToken.withTokenMerge
                 : gasConfig.simpleLock.enterFarmLockedToken.default;
-        const mappedPayments = inputTokens.map(inputToken =>
+        const mappedPayments = inputTokens.map((inputToken) =>
             TokenPayment.metaEsdtFromBigInteger(
                 inputToken.tokenID,
                 inputToken.nonce,
@@ -342,7 +357,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const contract = await this.getContract(this.lockType);
 
         let interaction: Interaction;
         switch (endpointName) {
@@ -350,7 +365,8 @@ export class SimpleLockTransactionService {
                 interaction = contract.methodsExplicit.exitFarmLockedToken();
                 break;
             case 'farmClaimRewardsLockedToken':
-                interaction = contract.methodsExplicit.farmClaimRewardsLockedToken();
+                interaction =
+                    contract.methodsExplicit.farmClaimRewardsLockedToken();
                 break;
             default:
                 break;
@@ -433,17 +449,15 @@ export class SimpleLockTransactionService {
             });
         }
 
-        const lpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
-            {
+        const lpProxyTokenAttributes =
+            this.simpleLockService.decodeLpProxyTokenAttributes({
                 attributes: lpProxyToken.attributes,
                 identifier: lpProxyToken.tokenID,
-            },
-        );
-        const decodedAttributesBatch = await this.simpleLockService.decodeBatchFarmProxyTokenAttributes(
-            {
+            });
+        const decodedAttributesBatch =
+            await this.simpleLockService.decodeBatchFarmProxyTokenAttributes({
                 batchAttributes: decodeAttributesArgs,
-            },
-        );
+            });
 
         for (const decodedAttributes of decodedAttributesBatch) {
             const sameFarmingToken =
@@ -462,10 +476,22 @@ export class SimpleLockTransactionService {
     private async validateInputFarmProxyToken(
         inputTokens: InputTokenModel,
     ): Promise<void> {
-        const farmProxyTokenID = await this.simpleLockGetter.getFarmProxyTokenID();
+        const farmProxyTokenID =
+            await this.simpleLockGetter.getFarmProxyTokenID();
 
         if (inputTokens.tokenID !== farmProxyTokenID || inputTokens.nonce < 1) {
             throw new Error('Invalid input token');
+        }
+    }
+
+    private async getContract(
+        simpleLockType: SimpleLockType,
+    ): Promise<SmartContract> {
+        switch (simpleLockType) {
+            case SimpleLockType.BASE_TYPE:
+                return await this.elrondProxy.getSimpleLockSmartContract();
+            case SimpleLockType.ENERGY_TYPE:
+                return await this.elrondProxy.getSimpleLockEnergySmartContract();
         }
     }
 }

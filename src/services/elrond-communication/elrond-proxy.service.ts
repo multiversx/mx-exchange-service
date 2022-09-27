@@ -159,6 +159,14 @@ export class ElrondProxyService {
         );
     }
 
+    async getSimpleLockEnergySmartContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.simpleLockEnergy,
+            abiConfig.simpleLockEnergy,
+            'SimpleLockEnergy',
+        );
+    }
+
     async getMetabondingStakingSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.metabondingStakingAddress,
