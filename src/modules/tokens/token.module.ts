@@ -12,6 +12,8 @@ import { DatabaseModule } from 'src/services/database/database.module';
 import { TokenComputeService } from './services/token.compute.service';
 import { TokenSetterService } from './services/token.setter.service';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { NftCollectionResolver } from './nftCollection.resolver';
+import { NftTokenResolver } from './nftToken.resolver';
 
 @Module({
     imports: [
@@ -31,6 +33,8 @@ import { ElrondCommunicationModule } from 'src/services/elrond-communication/elr
         TokenComputeService,
         TokenRepositoryService,
         TokensResolver,
+        NftCollectionResolver,
+        NftTokenResolver,
     ],
     exports: [
         TokenRepositoryService,
