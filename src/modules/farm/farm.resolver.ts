@@ -540,13 +540,9 @@ export class FarmResolver extends GenericResolver {
     async getRewardsForPosition(
         @Args('farmsPositions') args: BatchFarmRewardsComputeArgs,
     ): Promise<RewardsModel[]> {
-        try {
-            return await this.farmService.getBatchRewardsForPosition(
-                args.farmsPositions,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericQuery(() =>
+            this.farmService.getBatchRewardsForPosition(args.farmsPositions),
+        );
     }
 
     @UseGuards(GqlAuthGuard)
@@ -554,7 +550,9 @@ export class FarmResolver extends GenericResolver {
     async getExitFarmTokens(
         @Args('args') args: CalculateRewardsArgs,
     ): Promise<ExitFarmTokensModel> {
-        return this.farmService.getTokensForExitFarm(args);
+        return await this.genericQuery(() =>
+            this.farmService.getTokensForExitFarm(args),
+        );
     }
 
     @UseGuards(GqlAuthGuard)
@@ -563,14 +561,9 @@ export class FarmResolver extends GenericResolver {
         @Args() args: EnterFarmArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        try {
-            return await this.transactionsService.enterFarm(
-                user.publicKey,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericQuery(() =>
+            this.transactionsService.enterFarm(user.publicKey, args),
+        );
     }
 
     @UseGuards(GqlAuthGuard)
@@ -579,7 +572,9 @@ export class FarmResolver extends GenericResolver {
         @Args() args: ExitFarmArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.exitFarm(user.publicKey, args);
+        return await this.genericQuery(() =>
+            this.transactionsService.exitFarm(user.publicKey, args),
+        );
     }
 
     @UseGuards(GqlAuthGuard)
@@ -588,9 +583,8 @@ export class FarmResolver extends GenericResolver {
         @Args() args: ClaimRewardsArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.claimRewards(
-            user.publicKey,
-            args,
+        return await this.genericQuery(() =>
+            this.transactionsService.claimRewards(user.publicKey, args),
         );
     }
 
@@ -600,9 +594,8 @@ export class FarmResolver extends GenericResolver {
         @Args() args: CompoundRewardsArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.compoundRewards(
-            user.publicKey,
-            args,
+        return await this.genericQuery(() =>
+            this.transactionsService.compoundRewards(user.publicKey, args),
         );
     }
 
@@ -612,9 +605,8 @@ export class FarmResolver extends GenericResolver {
         @Args() args: ExitFarmArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.migrateToNewFarm(
-            user.publicKey,
-            args,
+        return await this.genericQuery(() =>
+            this.transactionsService.migrateToNewFarm(user.publicKey, args),
         );
     }
 
@@ -622,17 +614,32 @@ export class FarmResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async setFarmMigrationConfig(
         @Args() args: FarmMigrationConfigArgs,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.setFarmMigrationConfig(args);
+        try {
+            await this.farmService.requireOwner(
+                args.oldFarmAddress,
+                user.publicKey,
+            );
+            return await this.transactionsService.setFarmMigrationConfig(args);
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async stopRewardsAndMigrateRps(
         @Args('farmAddress') farmAddress: string,
+        @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.stopRewardsAndMigrateRps(
-            farmAddress,
-        );
+        try {
+            await this.farmService.requireOwner(farmAddress, user.publicKey);
+            return this.transactionsService.stopRewardsAndMigrateRps(
+                farmAddress,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }
