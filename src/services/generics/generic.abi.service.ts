@@ -27,7 +27,6 @@ export class GenericAbiService {
     }
 
     async getGenericData(
-        serviceName: string,
         interaction: Interaction,
     ): Promise<TypedOutcomeBundle> {
         try {
@@ -40,7 +39,7 @@ export class GenericAbiService {
             );
         } catch (error) {
             const logMessage = generateRunQueryLogMessage(
-                serviceName,
+                this.constructor.name,
                 interaction.getEndpoint().name,
                 error.message,
             );

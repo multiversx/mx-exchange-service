@@ -23,10 +23,7 @@ export class AbiRouterService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairsManagedAddresses();
 
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((pairAddress) => {
             return pairAddress.toString();
         });
@@ -37,10 +34,7 @@ export class AbiRouterService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairContractMetadata();
 
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((v) => {
             return new PairMetadata({
                 firstTokenID: v.first_token_id.toString(),
@@ -54,10 +48,7 @@ export class AbiRouterService extends GenericAbiService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getPairCreationEnabled();
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 
@@ -65,30 +56,21 @@ export class AbiRouterService extends GenericAbiService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLastErrorMessage();
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
     async getState(): Promise<boolean> {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getState();
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 
     async getOwner(): Promise<string> {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getOwner();
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().bech32();
     }
 
@@ -96,10 +78,7 @@ export class AbiRouterService extends GenericAbiService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairsManagedAddresses();
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((address) => address.bech32());
     }
 
@@ -107,10 +86,7 @@ export class AbiRouterService extends GenericAbiService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairTokens();
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().map((v) => {
             return new PairTokens({
                 firstTokenID: v.first_token_id.toString(),
@@ -123,10 +99,7 @@ export class AbiRouterService extends GenericAbiService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getPairTemplateAddress();
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().bech32();
     }
 
@@ -134,10 +107,7 @@ export class AbiRouterService extends GenericAbiService {
         const contract = await this.elrondProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getTemporaryOwnerPeriod();
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
@@ -146,10 +116,7 @@ export class AbiRouterService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getEnableSwapByUserConfig();
 
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
 
         const rawConfig = response.firstValue.valueOf();
         const minLockedTokenValue = new BigNumber(
@@ -167,10 +134,7 @@ export class AbiRouterService extends GenericAbiService {
         const interaction: Interaction =
             contract.methodsExplicit.getCommonTokensForUserPairs();
 
-        const response = await this.getGenericData(
-            AbiRouterService.name,
-            interaction,
-        );
+        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 }
