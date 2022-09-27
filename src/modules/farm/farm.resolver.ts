@@ -4,6 +4,7 @@ import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
 import {
     ExitFarmTokensModel,
+    FarmMigrationConfig,
     FarmModel,
     RewardsModel,
 } from './models/farm.model';
@@ -26,315 +27,224 @@ import { User } from 'src/helpers/userDecorator';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { PairModel } from '../pair/models/pair.model';
 import { LockedAssetModel } from '../locked-asset-factory/models/locked-asset.model';
+import { GenericResolver } from 'src/services/generics/generic.resolver';
+import { EsdtToken } from '../tokens/models/esdtToken.model';
+import { NftCollection } from '../tokens/models/nftCollection.model';
 
 @Resolver(() => FarmModel)
-export class FarmResolver {
+export class FarmResolver extends GenericResolver {
     constructor(
         private readonly farmService: FarmService,
         private readonly farmGetterService: FarmGetterService,
         private readonly transactionsService: TransactionsFarmService,
-    ) {}
-
-    @ResolveField()
-    async farmedToken(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmedToken(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    ) {
+        super();
     }
 
     @ResolveField()
-    async farmToken(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmToken(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    async farmedToken(@Parent() parent: FarmModel): Promise<EsdtToken> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmedToken(parent.address),
+        );
     }
 
     @ResolveField()
-    async farmingToken(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmingToken(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    async farmToken(@Parent() parent: FarmModel): Promise<NftCollection> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmToken(parent.address),
+        );
     }
 
     @ResolveField()
-    async produceRewardsEnabled(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getProduceRewardsEnabled(
+    async farmingToken(@Parent() parent: FarmModel): Promise<EsdtToken> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmingToken(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async produceRewardsEnabled(@Parent() parent: FarmModel): Promise<boolean> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getProduceRewardsEnabled(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async perBlockRewards(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getRewardsPerBlock(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async farmTokenSupply(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmTokenSupply(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async farmingTokenReserve(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmingTokenReserve(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async farmedTokenPriceUSD(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmedTokenPriceUSD(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async farmTokenPriceUSD(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmTokenPriceUSD(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async farmingTokenPriceUSD(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmingTokenPriceUSD(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async penaltyPercent(@Parent() parent: FarmModel): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getPenaltyPercent(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async minimumFarmingEpochs(@Parent() parent: FarmModel): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getMinimumFarmingEpochs(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async rewardPerShare(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getRewardPerShare(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async rewardReserve(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getRewardReserve(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async lastRewardBlockNonce(@Parent() parent: FarmModel): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getLastRewardBlockNonce(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async undistributedFees(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getUndistributedFees(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async currentBlockFee(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getCurrentBlockFee(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async divisionSafetyConstant(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getDivisionSafetyConstant(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async aprMultiplier(@Parent() parent: FarmModel): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getLockedRewardAprMuliplier(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async unlockedRewardsAPR(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getUnlockedRewardsAPR(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async lockedRewardsAPR(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getLockedRewardsAPR(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async apr(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmAPR(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async totalValueLockedUSD(parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getTotalValueLockedUSD(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async lockedFarmingTokenReserve(parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getLockedFarmingTokenReserve(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async unlockedFarmingTokenReserve(parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getUnlockedFarmingTokenReserve(
                 parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+            ),
+        );
     }
 
     @ResolveField()
-    async perBlockRewards(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getRewardsPerBlock(
+    async lockedFarmingTokenReserveUSD(parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getLockedFarmingTokenReserveUSD(
                 parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+            ),
+        );
     }
 
     @ResolveField()
-    async farmTokenSupply(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmTokenSupply(
+    async unlockedFarmingTokenReserveUSD(parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getUnlockedFarmingTokenReserveUSD(
                 parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+            ),
+        );
     }
 
     @ResolveField()
-    async farmingTokenReserve(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmingTokenReserve(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    async state(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getState(parent.address),
+        );
     }
 
     @ResolveField()
-    async farmedTokenPriceUSD(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmedTokenPriceUSD(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async farmTokenPriceUSD(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmTokenPriceUSD(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async farmingTokenPriceUSD(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmingTokenPriceUSD(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async penaltyPercent(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getPenaltyPercent(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async minimumFarmingEpochs(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getMinimumFarmingEpochs(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async rewardPerShare(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getRewardPerShare(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async rewardReserve(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getRewardReserve(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async lastRewardBlockNonce(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getLastRewardBlockNonce(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async undistributedFees(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getUndistributedFees(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async currentBlockFee(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getCurrentBlockFee(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async divisionSafetyConstant(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getDivisionSafetyConstant(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async aprMultiplier(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getLockedRewardAprMuliplier(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async unlockedRewardsAPR(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getUnlockedRewardsAPR(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async lockedRewardsAPR(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getLockedRewardsAPR(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async apr(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmAPR(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async totalValueLockedUSD(parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getTotalValueLockedUSD(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async lockedFarmingTokenReserve(parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getLockedFarmingTokenReserve(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async unlockedFarmingTokenReserve(parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getUnlockedFarmingTokenReserve(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async lockedFarmingTokenReserveUSD(parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getLockedFarmingTokenReserveUSD(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async unlockedFarmingTokenReserveUSD(parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getUnlockedFarmingTokenReserveUSD(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async state(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getState(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async requireWhitelist(@Parent() parent: FarmModel) {
+    async requireWhitelist(@Parent() parent: FarmModel): Promise<boolean> {
         try {
             const whitelists = await this.farmGetterService.getWhitelist(
                 parent.address,
@@ -346,27 +256,25 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async migrationConfig(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getFarmMigrationConfiguration(
+    async migrationConfig(
+        @Parent() parent: FarmModel,
+    ): Promise<FarmMigrationConfig> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getFarmMigrationConfiguration(
                 parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+            ),
+        );
     }
 
     @ResolveField()
-    async burnGasLimit(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getBurnGasLimit(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    async burnGasLimit(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getBurnGasLimit(parent.address),
+        );
     }
 
     @ResolveField()
-    async pair(@Parent() parent: FarmModel) {
+    async pair(@Parent() parent: FarmModel): Promise<PairModel> {
         try {
             const address =
                 await this.farmGetterService.getPairContractManagedAddress(
@@ -379,7 +287,9 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async lockedAssetFactory(@Parent() parent: FarmModel) {
+    async lockedAssetFactory(
+        @Parent() parent: FarmModel,
+    ): Promise<LockedAssetModel> {
         try {
             const address =
                 await this.farmGetterService.getLockedAssetFactoryManagedAddress(
@@ -392,25 +302,17 @@ export class FarmResolver {
     }
 
     @ResolveField()
-    async transferExecGasLimit(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getTransferExecGasLimit(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    async transferExecGasLimit(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getTransferExecGasLimit(parent.address),
+        );
     }
 
     @ResolveField()
-    async lastErrorMessage(@Parent() parent: FarmModel) {
-        try {
-            return await this.farmGetterService.getLastErrorMessage(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    async lastErrorMessage(@Parent() parent: FarmModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetterService.getLastErrorMessage(parent.address),
+        );
     }
 
     @UseGuards(GqlAuthGuard)
