@@ -1,8 +1,6 @@
-import {
-    AssetsModel,
-    EsdtToken,
-    RolesModel,
-} from 'src/modules/tokens/models/esdtToken.model';
+import { AssetsModel } from 'src/modules/tokens/models/assets.model';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { RolesModel } from 'src/modules/tokens/models/roles.model';
 
 export const Tokens = (tokenID: string): EsdtToken => {
     switch (tokenID) {
