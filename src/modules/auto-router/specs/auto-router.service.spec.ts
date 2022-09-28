@@ -30,11 +30,6 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
-import {
-    AssetsModel,
-    EsdtToken,
-    RolesModel,
-} from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from 'src/modules/pair/models/pair-info.model';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';

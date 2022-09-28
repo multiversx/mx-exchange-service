@@ -48,7 +48,6 @@ import { PriceDiscoveryGetterServiceProvider } from '../../price-discovery/mocks
 import { PriceDiscoveryServiceProvider } from '../../price-discovery/mocks/price.discovery.service.mock';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { SimpleLockGetterServiceProvider } from '../../simple-lock/mocks/simple.lock.getter.service.mock';
-import { AssetsModel, RolesModel } from '../../tokens/models/esdtToken.model';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from '../../remote-config/mocks/remote-config.getter.mock';
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
@@ -58,6 +57,8 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { RolesModel } from 'src/modules/tokens/models/roles.model';
+import { AssetsModel } from 'src/modules/tokens/models/assets.model';
 
 describe('UserService', () => {
     let userMetaEsdts: UserService;

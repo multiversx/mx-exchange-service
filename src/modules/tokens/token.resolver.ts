@@ -1,7 +1,9 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { constantsConfig } from 'src/config';
-import { AssetsModel, EsdtToken, RolesModel } from './models/esdtToken.model';
+import { AssetsModel } from './models/assets.model';
+import { EsdtToken } from './models/esdtToken.model';
+import { RolesModel } from './models/roles.model';
 import { TokensFiltersArgs } from './models/tokens.filter.args';
 import { TokenGetterService } from './services/token.getter.service';
 import { TokenService } from './services/token.service';
@@ -45,12 +47,12 @@ export class TokensResolver {
         );
     }
 
-    @ResolveField(() => AssetsModel)
+    @ResolveField(() => AssetsModel, { nullable: true })
     async assets(@Parent() parent: EsdtToken): Promise<AssetsModel> {
         return new AssetsModel(parent.assets);
     }
 
-    @ResolveField(() => RolesModel)
+    @ResolveField(() => RolesModel, { nullable: true })
     async roles(@Parent() parent: EsdtToken): Promise<RolesModel> {
         return new RolesModel(parent.roles);
     }
