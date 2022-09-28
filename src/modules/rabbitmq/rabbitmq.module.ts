@@ -21,6 +21,8 @@ import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { PairHandler } from './handlers/pair.handler.service';
+import { EnergyHandler } from './handlers/energy.handler.service';
+import { SimpleLockModule } from '../simple-lock/simple.lock.module';
 
 @Module({
     imports: [
@@ -35,6 +37,7 @@ import { PairHandler } from './handlers/pair.handler.service';
         MetabondingModule,
         PriceDiscoveryModule,
         TokenModule,
+        SimpleLockModule,
     ],
     providers: [
         RabbitMqConsumer,
@@ -44,6 +47,7 @@ import { PairHandler } from './handlers/pair.handler.service';
         RabbitMQEsdtTokenHandlerService,
         RabbitMQMetabondingHandlerService,
         PriceDiscoveryEventHandler,
+        EnergyHandler,
         PairHandler,
         LiquidityHandler,
         SwapEventHandler,
