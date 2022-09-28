@@ -8,13 +8,15 @@ export abstract class WeeklyRewardsSplittingAbiService extends GenericAbiService
 
     abstract outdatedVersion(version: string): boolean
 
-    async getUserEnergyForWeek(farmAddress: string, user: string, week: number): Promise<number> {
-        const [contract, version] = await this.getContract(farmAddress);
+    //TODO: add currentClaimProgress
+
+    async userEnergyForWeek(address: string, user: string, week: number): Promise<number> {
+        const [contract, version] = await this.getContract(address);
         if (this.outdatedVersion(version)) {
             return null;
         }
 
-        const interaction: Interaction = contract.methodsExplicit.getUserEnergyForWeek(
+        const interaction: Interaction = contract.methodsExplicit.userEnergyForWeek(
             [
                 new AddressValue(Address.fromString(user)),
                 new U32Value(new BigNumber(week))
@@ -24,8 +26,8 @@ export abstract class WeeklyRewardsSplittingAbiService extends GenericAbiService
         return response.firstValue.valueOf().toFixed();
     }
 
-    async lastActiveWeekForUser(farmAddress: string, user: string): Promise<number> {
-        const [contract, version] = await this.getContract(farmAddress);
+    async lastActiveWeekForUser(address: string, user: string): Promise<number> {
+        const [contract, version] = await this.getContract(address);
         if (this.outdatedVersion(version)) {
             return null;
         }
@@ -37,8 +39,8 @@ export abstract class WeeklyRewardsSplittingAbiService extends GenericAbiService
         return response.firstValue.valueOf();
     }
 
-    async lastGlobalUpdateWeek(farmAddress: string): Promise<number> {
-        const [contract, version] = await this.getContract(farmAddress);
+    async lastGlobalUpdateWeek(address: string): Promise<number> {
+        const [contract, version] = await this.getContract(address);
         if (this.outdatedVersion(version)) {
             return null;
         }
@@ -48,8 +50,8 @@ export abstract class WeeklyRewardsSplittingAbiService extends GenericAbiService
         return response.firstValue.valueOf();
     }
 
-    async totalRewardsForWeek(farmAddress: string, week: number): Promise<number> {
-        const [contract, version] = await this.getContract(farmAddress);
+    async totalRewardsForWeek(address: string, week: number): Promise<number> {
+        const [contract, version] = await this.getContract(address);
         if (this.outdatedVersion(version)) {
             return null;
         }
@@ -61,8 +63,21 @@ export abstract class WeeklyRewardsSplittingAbiService extends GenericAbiService
         return response.firstValue.valueOf();
     }
 
-    async totalLockedTokensForWeek(farmAddress: string, week: number): Promise<number> {
-        const [contract, version] = await this.getContract(farmAddress);
+    async totalEnergyForWeek(address: string, week: number): Promise<number> {
+        const [contract, version] = await this.getContract(address);
+        if (this.outdatedVersion(version)) {
+            return null;
+        }
+
+        const interaction: Interaction = contract.methodsExplicit.totalEnergyForWeek(
+            [new U32Value(new BigNumber(week))]
+        );
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf();
+    }
+
+    async totalLockedTokensForWeek(address: string, week: number): Promise<number> {
+        const [contract, version] = await this.getContract(address);
         if (this.outdatedVersion(version)) {
             return null;
         }
