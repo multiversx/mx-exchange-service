@@ -233,22 +233,36 @@ export class AnalyticsReindexService {
 
     private async initState(): Promise<void> {
         if (this.state === undefined) {
+            this.state = new AnalyticsReindexState();
+
             const state = await this.analyticsReindexRepositoryService.findOne(
                 {},
             );
 
-            if (!this.state) {
-                this.state = new AnalyticsReindexState();
-                this.state.lastIntervalStartDate = state.lastIntervalStartDate;
+            if (!state) {
+                this.state.lastIntervalStartDate =
+                    elrondData.indexingStartTimeUtc;
+                const allValidPairs = await this.getAllValidPairsMetadata();
+                for (const pair of allValidPairs) {
+                    this.state.pairsState[pair.address] = {
+                        firstTokenID: pair.firstTokenID,
+                        secondTokenID: pair.secondTokenID,
+                        firstTokenReserves: '0',
+                        secondTokenReserves: '0',
+                        liquidityPoolSupply: '0',
+                    };
+                }
             }
 
-            if (state?.pairsState) {
+            if (state) {
                 Object.keys(state.pairsState).forEach(async (pairAddress) => {
                     await this.updatePairState(
                         pairAddress,
                         state.pairsState[pairAddress],
                     );
                 });
+
+                this.state.lastIntervalStartDate = state.lastIntervalStartDate;
             }
         }
     }
