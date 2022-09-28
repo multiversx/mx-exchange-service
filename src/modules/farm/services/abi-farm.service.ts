@@ -3,7 +3,7 @@ import {
     BigUIntValue,
     BytesValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Interaction } from '@elrondnetwork/erdjs';
+import { Address, Interaction } from '@elrondnetwork/erdjs';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../models/farm.args';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
@@ -69,7 +69,9 @@ export class AbiFarmService extends GenericAbiService {
             contract.methodsExplicit.getWhitelist();
         const response = await this.getGenericData(interaction);
 
-        return response.firstValue.valueOf().map((address) => address.bech32());
+        return response.firstValue
+            .valueOf()
+            .map((address: Address) => address.bech32());
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
@@ -227,7 +229,7 @@ export class AbiFarmService extends GenericAbiService {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const interaction: Interaction = contract.methodsExplicit.getState([]);
+        const interaction: Interaction = contract.methodsExplicit.getState();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().name;
     }
