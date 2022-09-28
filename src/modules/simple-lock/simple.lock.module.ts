@@ -53,6 +53,11 @@ import { EnergyComputeService } from './services/energy/energy.compute.service';
         EnergyResolver,
         TransactionResolver,
     ],
-    exports: [SimpleLockService, SimpleLockGetterService],
+    exports: [
+        SimpleLockService,
+        SimpleLockGetterService,
+        EnergyGetterService,
+        EnergySetterService,
+    ],
 })
 export class SimpleLockModule {}
