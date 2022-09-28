@@ -5,12 +5,8 @@ import {
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
-import {
-    BigUIntType,
-    FieldDefinition,
-    StructType,
-    U64Type,
-} from '@elrondnetwork/erdjs/out';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
 
 export enum FarmType {
     SIMPLE_FARM,
@@ -132,7 +128,7 @@ export class SimpleLockModel {
 @ObjectType()
 export class SimpleLockEnergyModel extends SimpleLockModel {
     @Field()
-    baseAssetTokenID: string;
+    baseAssetToken: EsdtToken;
     @Field(() => [Int])
     lockOptions: number[];
     @Field()
@@ -145,7 +141,7 @@ export class SimpleLockEnergyModel extends SimpleLockModel {
 }
 
 @ObjectType()
-export class Energy {
+export class EnergyModel {
     @Field()
     amount: string;
     @Field(() => Int)
@@ -153,15 +149,7 @@ export class Energy {
     @Field()
     totalLockedTokens: string;
 
-    constructor(init?: Partial<Energy>) {
+    constructor(init?: Partial<EnergyType>) {
         Object.assign(this, init);
-    }
-
-    static getStructure(): StructType {
-        return new StructType('Energy', [
-            new FieldDefinition('amount', '', new BigUIntType()),
-            new FieldDefinition('lastUpdateEpoch', '', new U64Type()),
-            new FieldDefinition('totalLockedTokens', '', new BigUIntType()),
-        ]);
     }
 }

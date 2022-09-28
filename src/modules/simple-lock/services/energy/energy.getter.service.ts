@@ -1,7 +1,9 @@
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
-import { oneDay, oneHour } from 'src/helpers/helpers';
+import { oneDay, oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
@@ -17,25 +19,30 @@ export class EnergyGetterService extends SimpleLockGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly tokenGetter: TokenGetterService,
-        private readonly energyAbiService: EnergyAbiService,
+        protected readonly abiService: EnergyAbiService,
         private readonly apiService: ElrondApiService,
     ) {
-        super(cachingService, logger, energyAbiService, tokenGetter);
+        super(cachingService, logger, abiService, tokenGetter);
         this.lockType = SimpleLockType.ENERGY_TYPE;
     }
 
     async getBaseAssetTokenID(): Promise<string> {
         return await this.getData(
             this.getEnergyCacheKey('baseAssetTokenID'),
-            () => this.energyAbiService.getLockedTokenID(),
+            () => this.abiService.getBaseAssetTokenID(),
             oneHour(),
         );
+    }
+
+    async getBaseAssetToken(): Promise<EsdtToken> {
+        const tokenID = await this.getBaseAssetTokenID();
+        return await this.tokenGetter.getTokenMetadata(tokenID);
     }
 
     async getLockOptions(): Promise<number[]> {
         return await this.getData(
             this.getEnergyCacheKey('lockOptions'),
-            () => this.energyAbiService.getLockOptions(),
+            () => this.abiService.getLockOptions(),
             oneHour(),
         );
     }
@@ -43,21 +50,29 @@ export class EnergyGetterService extends SimpleLockGetterService {
     async getPauseState(): Promise<boolean> {
         return await this.getData(
             this.getEnergyCacheKey('pauseState'),
-            () => this.energyAbiService.isPaused(),
+            () => this.abiService.isPaused(),
             oneHour(),
         );
     }
 
-    async getOwner(): Promise<string> {
+    async getOwnerAddress(): Promise<string> {
         return await this.getData(
-            this.getEnergyCacheKey('owner'),
+            this.getEnergyCacheKey('ownerAddress'),
             async () =>
                 (
                     await this.apiService.getAccountStats(
                         scAddress.simpleLockEnergy,
                     )
-                ).owner,
-            oneDay(),
+                ).ownerAddress,
+            oneSecond(),
+        );
+    }
+
+    async getEnergyEntryForUser(userAddress: string): Promise<EnergyType> {
+        return await this.getData(
+            this.getEnergyCacheKey('energyEntry', userAddress),
+            () => this.abiService.getEnergyEntryForUser(userAddress),
+            oneMinute(),
         );
     }
 

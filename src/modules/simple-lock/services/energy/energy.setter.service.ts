@@ -1,6 +1,7 @@
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
+import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -36,6 +37,17 @@ export class EnergySetterService extends SimpleLockSetterService {
             this.getEnergyCacheKey('pauseState'),
             value,
             oneHour(),
+        );
+    }
+
+    async setEnergyEntryForUser(
+        userAddress: string,
+        value: EnergyType,
+    ): Promise<string> {
+        return await this.setData(
+            this.getEnergyCacheKey('energyEntry', userAddress),
+            value,
+            oneMinute(),
         );
     }
 

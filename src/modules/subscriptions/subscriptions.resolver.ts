@@ -2,11 +2,13 @@ import {
     FARM_EVENTS,
     PAIR_EVENTS,
     PROXY_EVENTS,
+    SIMPLE_LOCK_ENERGY_EVENTS,
 } from '@elrondnetwork/erdjs-dex';
 import { Inject } from '@nestjs/common';
 import { Resolver, Subscription } from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
+import { UpdatedEnergyEventModel } from './models/energy/updated.energy.event.model';
 import { EnterFarmEventModel } from './models/farm/enterFarm.event.model';
 import { ExitFarmEventModel } from './models/farm/exitFarm.event.model';
 import { RewardsEventModel } from './models/farm/rewards.event.model';
@@ -27,7 +29,7 @@ export class SubscriptionsResolver {
     constructor(@Inject(PUB_SUB) private pubSub: RedisPubSub) {}
 
     @Subscription(() => SwapFixedInputEventModel, {
-        resolve: event =>
+        resolve: (event) =>
             new SwapFixedInputEventModel(event.swapFixedInputEvent),
     })
     swapFixedInputEvent() {
@@ -35,7 +37,7 @@ export class SubscriptionsResolver {
     }
 
     @Subscription(() => SwapFixedOutputEventModel, {
-        resolve: event =>
+        resolve: (event) =>
             new SwapFixedOutputEventModel(event.swapFixedOutputEvent),
     })
     swapFixedOutputEvent() {
@@ -43,14 +45,14 @@ export class SubscriptionsResolver {
     }
 
     @Subscription(() => AddLiquidityEventModel, {
-        resolve: event => new AddLiquidityEventModel(event.addLiquidityEvent),
+        resolve: (event) => new AddLiquidityEventModel(event.addLiquidityEvent),
     })
     addLiquidityEvent() {
         return this.pubSub.asyncIterator(PAIR_EVENTS.ADD_LIQUIDITY);
     }
 
     @Subscription(() => RemoveLiquidityEventModel, {
-        resolve: event =>
+        resolve: (event) =>
             new RemoveLiquidityEventModel(event.removeLiquidityEvent),
     })
     removeLiquidityEvent() {
@@ -58,42 +60,42 @@ export class SubscriptionsResolver {
     }
 
     @Subscription(() => SwapNoFeeEventModel, {
-        resolve: event => new SwapNoFeeEventModel(event.swapNoFeeEvent),
+        resolve: (event) => new SwapNoFeeEventModel(event.swapNoFeeEvent),
     })
     swapNoFeeEvent() {
         return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_NO_FEE);
     }
 
     @Subscription(() => EnterFarmEventModel, {
-        resolve: event => new EnterFarmEventModel(event.enterFarmEvent),
+        resolve: (event) => new EnterFarmEventModel(event.enterFarmEvent),
     })
     enterFarmEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.ENTER_FARM);
     }
 
     @Subscription(() => ExitFarmEventModel, {
-        resolve: event => new ExitFarmEventModel(event.exitFarmEvent),
+        resolve: (event) => new ExitFarmEventModel(event.exitFarmEvent),
     })
     exitFarmEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.EXIT_FARM);
     }
 
     @Subscription(() => RewardsEventModel, {
-        resolve: event => new RewardsEventModel(event.claimRewardsEvent),
+        resolve: (event) => new RewardsEventModel(event.claimRewardsEvent),
     })
     claimRewardsEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.CLAIM_REWARDS);
     }
 
     @Subscription(() => RewardsEventModel, {
-        resolve: event => new RewardsEventModel(event.compoundRewardsEvent),
+        resolve: (event) => new RewardsEventModel(event.compoundRewardsEvent),
     })
     compoundRewardsEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.COMPOUND_REWARDS);
     }
 
     @Subscription(() => AddLiquidityProxyEventModel, {
-        resolve: event =>
+        resolve: (event) =>
             new AddLiquidityProxyEventModel(event.addLiquidityProxyEvent),
     })
     addLiquidityProxyEvent() {
@@ -101,7 +103,7 @@ export class SubscriptionsResolver {
     }
 
     @Subscription(() => PairProxyEventModel, {
-        resolve: event =>
+        resolve: (event) =>
             new PairProxyEventModel(event.removeLiquidityProxyEvent),
     })
     removeLiquidityProxyEvent() {
@@ -109,7 +111,7 @@ export class SubscriptionsResolver {
     }
 
     @Subscription(() => EnterFarmProxyEventModel, {
-        resolve: event =>
+        resolve: (event) =>
             new EnterFarmProxyEventModel(event.enterFarmProxyEvent),
     })
     enterFarmProxyEvent() {
@@ -117,14 +119,15 @@ export class SubscriptionsResolver {
     }
 
     @Subscription(() => ExitFarmProxyEventModel, {
-        resolve: event => new ExitFarmProxyEventModel(event.exitFarmProxyEvent),
+        resolve: (event) =>
+            new ExitFarmProxyEventModel(event.exitFarmProxyEvent),
     })
     exitFarmProxyEvent() {
         return this.pubSub.asyncIterator(PROXY_EVENTS.EXIT_FARM_PROXY);
     }
 
     @Subscription(() => ClaimRewardsProxyEventModel, {
-        resolve: event =>
+        resolve: (event) =>
             new ClaimRewardsProxyEventModel(event.claimRewardsProxyEvent),
     })
     claimRewardsProxyEvent() {
@@ -132,10 +135,19 @@ export class SubscriptionsResolver {
     }
 
     @Subscription(() => RewardsProxyEventModel, {
-        resolve: event =>
+        resolve: (event) =>
             new RewardsProxyEventModel(event.compoundRewardsProxyEvent),
     })
     compoundRewardsProxyEvent() {
         return this.pubSub.asyncIterator(PROXY_EVENTS.COMPOUND_REWARDS_PROXY);
+    }
+
+    @Subscription(() => UpdatedEnergyEventModel, {
+        resolve: (event) => new UpdatedEnergyEventModel(event.updatedEnergy),
+    })
+    updatedEnergy() {
+        return this.pubSub.asyncIterator(
+            SIMPLE_LOCK_ENERGY_EVENTS.ENERGY_UPDATED,
+        );
     }
 }
