@@ -195,10 +195,11 @@ export class FarmService {
         });
     }
 
-    async requireOwner(farmAddress, sender) {
-        return (
-            (await this.apiService.getAccountStats(farmAddress))
-                .ownerAddress === sender
-        );
+    async requireOwner(farmAddress: string, sender: string) {
+        if (
+            (await this.farmGetterService.getOwnerAddress(farmAddress)) !==
+            sender
+        )
+            throw new Error('You are not the owner.');
     }
 }
