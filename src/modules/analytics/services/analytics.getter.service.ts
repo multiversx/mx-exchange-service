@@ -45,7 +45,8 @@ export class AnalyticsGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.analyticsCompute.computeTotalValueLockedUSD(),
-            oneMinute() * 2,
+            oneMinute() * 10,
+            oneMinute() * 5,
         );
     }
 
@@ -54,7 +55,8 @@ export class AnalyticsGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.analyticsCompute.computeLockedValueUSDFarms(),
-            oneMinute() * 2,
+            oneMinute() * 10,
+            oneMinute() * 5,
         );
     }
 
@@ -66,7 +68,8 @@ export class AnalyticsGetterService extends GenericGetterService {
         return this.getData(
             cacheKey,
             () => this.analyticsCompute.computeTotalAggregatedRewards(days),
-            oneMinute() * 2,
+            oneMinute() * 10,
+            oneMinute() * 5,
         );
     }
 
@@ -84,6 +87,7 @@ export class AnalyticsGetterService extends GenericGetterService {
                     time,
                     'feeBurned',
                 ),
+            oneMinute() * 30,
             oneMinute() * 10,
         );
     }
@@ -105,6 +109,7 @@ export class AnalyticsGetterService extends GenericGetterService {
                     time,
                     'penaltyBurned',
                 ),
+            oneMinute() * 30,
             oneMinute() * 10,
         );
     }
