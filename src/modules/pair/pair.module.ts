@@ -10,7 +10,6 @@ import { CachingModule } from '../../services/caching/cache.module';
 import { PairGetterService } from './services/pair.getter.service';
 import { PairComputeService } from './services/pair.compute.service';
 import { PairSetterService } from './services/pair.setter.service';
-import { DatabaseModule } from 'src/services/database/database.module';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
@@ -23,7 +22,6 @@ import { CommonAppModule } from 'src/common.app.module';
         WrappingModule,
         CachingModule,
         AWSModule,
-        DatabaseModule,
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
     ],

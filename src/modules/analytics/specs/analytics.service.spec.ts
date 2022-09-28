@@ -9,7 +9,6 @@ import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
-import { AWSModule } from 'src/services/aws/aws.module';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
@@ -28,11 +27,8 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
-import { RemoteConfigGetterServiceMock } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
-import { ElrondDataReadService } from 'src/services/elrond-communication/elrond-data.read.service';
-import { NativeAuthModule } from 'src/modules/native-auth/native-auth.module';
-import { ElrondDataReadServiceMock } from 'src/services/elrond-communication/elrond-data.read.service.mock';
+import { ElrondDataReadServiceProvider } from 'src/services/elrond-communication/elrond-data.read.service.mock';
+import { AWSTimestreamQueryServiceProvider } from 'src/services/aws/mocks/aws.timestream.query.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -82,24 +78,9 @@ describe('AnalyticsService', () => {
         useClass: WrapServiceMock,
     };
 
-    const RemoteConfigGetterServiceProvider = {
-        provide: RemoteConfigGetterService,
-        useClass: RemoteConfigGetterServiceMock,
-    };
-
-    const ElrondDataReadServiceProvider = {
-        provide: ElrondDataReadService,
-        useClass: ElrondDataReadServiceMock,
-    };
-
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                CommonAppModule,
-                CachingModule,
-                AWSModule,
-                NativeAuthModule,
-            ],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,
@@ -117,9 +98,9 @@ describe('AnalyticsService', () => {
                 RouterGetterServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
-                AnalyticsComputeService,
+                AWSTimestreamQueryServiceProvider,
                 ElrondDataReadServiceProvider,
-                RemoteConfigGetterServiceProvider,
+                AnalyticsComputeService,
             ],
         }).compile();
 

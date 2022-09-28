@@ -30,11 +30,7 @@ describe('LockedAssetService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [
-                CommonAppModule,
-                CachingModule,
-                ElrondCommunicationModule,
-            ],
+            imports: [CommonAppModule, CachingModule],
             providers: [
                 ContextGetterServiceProvider,
                 TokenGetterServiceProvider,
