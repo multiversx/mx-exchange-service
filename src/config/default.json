@@ -408,7 +408,13 @@
             "exitFarmProxy",
             "claimRewardsProxy",
             "compoundRewardsProxy"
-        ]
+        ],
+        "slippage": {
+            "DEFAULT_SLIPPAGE": 0.01,
+            "SLIPPAGE_VALUES": [0.001, 0.005, 0.01],
+            "MAX_SLIPPAGE": 0.05
+        },
+        "MIN_SWAP_AMOUNT": 0.05
     },
     "security": {
         "admins": []
