@@ -30,6 +30,7 @@ import { LockedAssetModel } from '../locked-asset-factory/models/locked-asset.mo
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { NftCollection } from '../tokens/models/nftCollection.model';
+import { Address } from '@elrondnetwork/erdjs/out';
 
 @Resolver(() => FarmModel)
 export class FarmResolver extends GenericResolver {
@@ -280,7 +281,9 @@ export class FarmResolver extends GenericResolver {
                 await this.farmGetterService.getPairContractManagedAddress(
                     parent.address,
                 );
-            return new PairModel({ address });
+            return Address.fromString(address).equals(Address.Zero())
+                ? undefined
+                : new PairModel({ address });
         } catch (error) {
             throw new ApolloError(error);
         }
