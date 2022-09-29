@@ -22,7 +22,6 @@ export class FeesCollectorGetterService extends Mixin(GenericGetterService, Week
         private readonly abiService: FeesCollectorAbiService,
     ) {
         super(cachingService, logger);
-        this.address = scAddress.feesCollector
     }
 
     private getCacheKey(address: string, ...args: any) {

@@ -6,6 +6,7 @@ import { Logger } from "winston";
 import { oneHour, oneMinute } from "../../../helpers/helpers";
 import { generateCacheKeyFromParams } from "../../../utils/generate-cache-key";
 import { WeeklyRewardsSplittingAbiService } from "./weekly-rewards-splitting.abi.service";
+import { Energy } from "../../../modules/simple-lock/models/simple.lock.model";
 
 @Injectable()
 export abstract class WeeklyRewardsSplittingGetterService extends GenericGetterService {
@@ -17,52 +18,50 @@ export abstract class WeeklyRewardsSplittingGetterService extends GenericGetterS
         super(cachingService, logger);
     }
 
-    abstract address: string;
-
-    async userEnergyForWeek(user: string, week: number): Promise<number> {
+    async userEnergyForWeek(scAddress: string, userAddress: string, week: number): Promise<Energy> {
         return this.getData(
-            this.getWeeklyRewardsCacheKey(this.address,'userEnergyForWeek', user, week),
-            () => this.weeklyRewardsAbiService.userEnergyForWeek(this.address, user, week),
+            this.getWeeklyRewardsCacheKey(scAddress,'userEnergyForWeek', userAddress, week),
+            () => this.weeklyRewardsAbiService.userEnergyForWeek(scAddress, userAddress, week),
             oneMinute(),
         )
     }
 
-    async lastActiveWeekForUser(user: string, week: number): Promise<number> {
+    async lastActiveWeekForUser(scAddress: string, userAddress: string, week: number): Promise<number> {
         return this.getData(
-            this.getWeeklyRewardsCacheKey(this.address,'lastActiveWeekForUser', user, week),
-            () => this.weeklyRewardsAbiService.lastActiveWeekForUser(this.address, user),
+            this.getWeeklyRewardsCacheKey(scAddress,'lastActiveWeekForUser', userAddress, week),
+            () => this.weeklyRewardsAbiService.lastActiveWeekForUser(scAddress, userAddress),
             oneMinute(),
         )
     }
 
-    async lastGlobalUpdateWeek(): Promise<number> {
+    async lastGlobalUpdateWeek(scAddress: string): Promise<number> {
         return this.getData(
-            this.getWeeklyRewardsCacheKey(this.address,'lastGlobalUpdateWeek'),
-            () => this.weeklyRewardsAbiService.lastGlobalUpdateWeek(this.address),
+            this.getWeeklyRewardsCacheKey(scAddress,'lastGlobalUpdateWeek'),
+            () => this.weeklyRewardsAbiService.lastGlobalUpdateWeek(scAddress),
             oneHour(),
         )
     }
 
-    async totalRewardsForWeek(week: number): Promise<string> {
+    async totalRewardsForWeek(scAddress: string, week: number): Promise<string> {
         return this.getData(
-            this.getWeeklyRewardsCacheKey(this.address,'totalRewardsForWeek', week),
-            () => this.weeklyRewardsAbiService.totalRewardsForWeek(this.address, week),
+            this.getWeeklyRewardsCacheKey(scAddress,'totalRewardsForWeek', week),
+            () => this.weeklyRewardsAbiService.totalRewardsForWeek(scAddress, week),
             oneHour(),
         );
     }
 
-    async totalEnergyForWeek(week: number): Promise<string> {
+    async totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
         return this.getData(
-            this.getWeeklyRewardsCacheKey(this.address,'totalEnergyForWeek', week),
-            () => this.weeklyRewardsAbiService.totalEnergyForWeek(this.address, week),
+            this.getWeeklyRewardsCacheKey(scAddress,'totalEnergyForWeek', week),
+            () => this.weeklyRewardsAbiService.totalEnergyForWeek(scAddress, week),
             oneHour(),
         );
     }
 
-    async totalLockedTokensForWeek(week: number): Promise<string> {
+    async totalLockedTokensForWeek(scAddress: string, week: number): Promise<string> {
         return this.getData(
-            this.getWeeklyRewardsCacheKey(this.address,'totalLockedTokensForWeek', week),
-            () => this.weeklyRewardsAbiService.totalLockedTokensForWeek(this.address, week),
+            this.getWeeklyRewardsCacheKey(scAddress,'totalLockedTokensForWeek', week),
+            () => this.weeklyRewardsAbiService.totalLockedTokensForWeek(scAddress, week),
             oneHour(),
         );
     }

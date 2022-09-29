@@ -21,11 +21,8 @@ export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewa
         super(elrondProxy, logger);
     }
 
-    async getContract(address: string): Promise<[SmartContract, string]> {
-        return [await this.elrondProxy.getFeesCollectorContract(), ""]
-    }
-
-    outdatedVersion(_version: string): boolean {
-        return false;
+    async getContract(address: string): Promise<SmartContract> {
+        const contract = await this.elrondProxy.getFeesCollectorContract()
+        return contract
     }
 }
