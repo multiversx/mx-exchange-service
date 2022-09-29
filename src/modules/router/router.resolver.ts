@@ -180,10 +180,7 @@ export class RouterResolver {
 
     @ResolveField(() => Float)
     async maxSlippage(): Promise<number> {
-        console.log(constantsConfig.slippage.SLIPPAGE_VALUES);
-        return constantsConfig.slippage.SLIPPAGE_VALUES[
-            constantsConfig.slippage.SLIPPAGE_VALUES.length - 1
-        ];
+        return constantsConfig.slippage.MAX_SLIPPAGE;
     }
 
     @ResolveField(() => Float)
