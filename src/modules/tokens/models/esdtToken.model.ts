@@ -1,40 +1,11 @@
 import { ObjectType } from '@nestjs/graphql';
-import { IAssets, IEsdtToken, IRoles } from './esdtToken.interface';
+import { AssetsModel } from './assets.model';
+import { IEsdtToken } from './esdtToken.interface';
+import { RolesModel } from './roles.model';
 
 export enum EsdtTokenType {
     FungibleToken = 'FungibleESDT',
     FungibleLpToken = 'FungibleESDT-LP',
-}
-
-@ObjectType({
-    implements: () => [IAssets],
-})
-export class AssetsModel implements IAssets {
-    website?: string;
-    description?: string;
-    status?: string;
-    pngUrl?: string;
-    svgUrl?: string;
-    lockedAccounts?: string[];
-    extraTokens?: string[];
-
-    constructor(init?: Partial<AssetsModel>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType({
-    implements: () => [IRoles],
-})
-export class RolesModel implements IRoles {
-    address?: string;
-    canMint?: boolean;
-    canBurn?: boolean;
-    roles?: string[];
-
-    constructor(init?: Partial<RolesModel>) {
-        Object.assign(this, init);
-    }
 }
 
 @ObjectType({

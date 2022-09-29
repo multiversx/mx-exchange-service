@@ -1,4 +1,5 @@
 import { ObjectType } from '@nestjs/graphql';
+import { AssetsModel } from './assets.model';
 import { INFTToken } from './nft.interface';
 
 @ObjectType({
@@ -20,6 +21,7 @@ export class NftToken implements INFTToken {
     url?: string;
     tags?: string[];
     balance: string;
+    assets?: AssetsModel;
 
     constructor(init?: Partial<NftToken>) {
         Object.assign(this, init);
