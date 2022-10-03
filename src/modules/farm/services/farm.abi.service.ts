@@ -3,17 +3,12 @@ import {
     BigUIntValue,
     BytesValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Address, Interaction } from '@elrondnetwork/erdjs';
+import { Interaction } from '@elrondnetwork/erdjs';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../models/farm.args';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import {
-    FarmMigrationConfig,
-    FarmRewardType,
-    FarmVersion,
-} from '../models/farm.model';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
@@ -57,23 +52,6 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getWhitelist(farmAddress: string): Promise<string[]> {
-        const [contract, version, type] =
-            await this.elrondProxy.getFarmSmartContract(farmAddress);
-
-        if (type !== FarmRewardType.CUSTOM_REWARDS) {
-            return null;
-        }
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getWhitelist();
-        const response = await this.getGenericData(interaction);
-
-        return response.firstValue
-            .valueOf()
-            .map((address: Address) => address.bech32());
-    }
-
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
@@ -82,19 +60,6 @@ export class AbiFarmService extends GenericAbiService {
             contract.methodsExplicit.getFarmTokenSupply();
         const response = await this.getGenericData(interaction);
 
-        return response.firstValue.valueOf().toFixed();
-    }
-
-    async getFarmingTokenReserve(farmAddress: string): Promise<string> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
-        if (version !== FarmVersion.V1_2) {
-            return null;
-        }
-        const interaction: Interaction =
-            contract.methodsExplicit.getFarmingTokenReserve();
-        const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
     }
 
@@ -158,46 +123,6 @@ export class AbiFarmService extends GenericAbiService {
         return response.firstValue.valueOf().toFixed();
     }
 
-    async getUndistributedFees(farmAddress: string): Promise<string> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
-        if (version !== FarmVersion.V1_2) {
-            return null;
-        }
-        const interaction: Interaction =
-            contract.methodsExplicit.getUndistributedFees();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
-    }
-
-    async getCurrentBlockFee(farmAddress: string): Promise<string> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
-        if (version !== FarmVersion.V1_2) {
-            return null;
-        }
-        const interaction: Interaction =
-            contract.methodsExplicit.getCurrentBlockFee();
-        const response = await this.getGenericData(interaction);
-        const currentBlockFee = response.firstValue.valueOf();
-        return currentBlockFee ? currentBlockFee[1].toFixed() : '0';
-    }
-
-    async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
-        if (version !== FarmVersion.V1_2) {
-            return null;
-        }
-        const interaction: Interaction =
-            contract.methodsExplicit.getLockedRewardAprMuliplier();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().integerValue();
-    }
-
     async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
@@ -240,41 +165,6 @@ export class AbiFarmService extends GenericAbiService {
             'produce_rewards_enabled',
         );
         return response === '01';
-    }
-
-    async getFarmMigrationConfiguration(
-        farmAddress: string,
-    ): Promise<FarmMigrationConfig | undefined> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
-
-        try {
-            const interaction: Interaction =
-                contract.methodsExplicit.getFarmMigrationConfiguration();
-            const response = await this.getGenericData(interaction);
-            const decodedResponse = response.firstValue.valueOf();
-
-            if (version === FarmVersion.V1_2) {
-                return new FarmMigrationConfig({
-                    migrationRole: decodedResponse.migration_role.name,
-                    oldFarmAddress: decodedResponse.old_farm_address.bech32(),
-                    oldFarmTokenID:
-                        decodedResponse.old_farm_token_id.toString(),
-                    newFarmAddress: decodedResponse.new_farm_address.bech32(),
-                    newLockedFarmAddress:
-                        decodedResponse.new_farm_with_lock_address.bech32(),
-                });
-            }
-
-            return new FarmMigrationConfig({
-                migrationRole: decodedResponse.migration_role.name,
-                oldFarmAddress: decodedResponse.old_farm_address.bech32(),
-                oldFarmTokenID: decodedResponse.old_farm_token_id.toString(),
-            });
-        } catch (error) {
-            return undefined;
-        }
     }
 
     async getBurnGasLimit(farmAddress: string): Promise<string> {
