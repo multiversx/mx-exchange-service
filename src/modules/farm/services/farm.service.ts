@@ -2,10 +2,10 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { constantsConfig } from '../../../config';
 import {
     ExitFarmTokensModel,
-    FarmModel,
     RewardsModel,
+    FarmVersion,
 } from '../models/farm.model';
-import { AbiFarmService } from './abi-farm.service';
+import { AbiFarmService } from './farm.abi.service';
 import { CalculateRewardsArgs } from '../models/farm.args';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -17,8 +17,11 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { CachingService } from 'src/services/caching/cache.service';
+import { FarmModelV1_2 } from '../models/farm.v1.2.model';
+import { FarmModelV1_3 } from '../models/farm.v1.3.model';
+import { FarmCustomModel } from '../models/farm.custom.model';
+import { FarmsUnion } from '../models/farm.union';
 
 @Injectable()
 export class FarmService {
@@ -28,21 +31,40 @@ export class FarmService {
         private readonly farmGetterService: FarmGetterService,
         private readonly farmComputeService: FarmComputeService,
         private readonly contextGetter: ContextGetterService,
-        private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    getFarms(): FarmModel[] {
-        const farms: Array<FarmModel> = [];
-        for (const farmAddress of farmsAddresses()) {
-            farms.push(
-                new FarmModel({
-                    address: farmAddress,
-                    version: farmVersion(farmAddress),
-                    rewardType: farmType(farmAddress),
-                }),
-            );
+    getFarms(): Array<typeof FarmsUnion> {
+        const farms: Array<typeof FarmsUnion> = [];
+        for (const address of farmsAddresses()) {
+            const version = farmVersion(address);
+            switch (version) {
+                case FarmVersion.V1_2:
+                    farms.push(
+                        new FarmModelV1_2({
+                            address,
+                            version,
+                        }),
+                    );
+                    break;
+                case FarmVersion.V1_3:
+                    farms.push(
+                        new FarmModelV1_3({
+                            address,
+                            version,
+                            rewardType: farmType(address),
+                        }),
+                    );
+                    break;
+                default:
+                    farms.push(
+                        new FarmCustomModel({
+                            address,
+                        }),
+                    );
+                    break;
+            }
         }
 
         return farms;
