@@ -23,6 +23,7 @@ import { FarmCustomGetterService } from './services/custom/farm.custom.getter.se
 import { FarmV12Resolver } from './resolvers/farm.v1.2.resolver';
 import { FarmV13Resolver } from './resolvers/farm.v1.3.resolver';
 import { FarmCustomResolver } from './resolvers/farm.custom.resolver';
+import { FarmQueryResolver } from './resolvers/farm.query.resolver';
 
 @Module({
     imports: [
@@ -52,6 +53,7 @@ import { FarmCustomResolver } from './resolvers/farm.custom.resolver';
         FarmV12Resolver,
         FarmV13Resolver,
         FarmCustomResolver,
+        FarmQueryResolver,
     ],
     exports: [
         FarmService,

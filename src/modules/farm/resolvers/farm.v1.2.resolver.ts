@@ -2,18 +2,12 @@ import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { FarmResolver } from './farm.resolver';
 import { FarmMigrationConfig } from '../models/farm.model';
 import { FarmModelV1_2 } from '../models/farm.v1.2.model';
-import { FarmService } from '../services/farm.service';
-import { TransactionsFarmService } from '../services/transactions-farm.service';
 import { FarmV12GetterService } from '../services/v1.2/farm.v1.2.getter.service';
 
 @Resolver(() => FarmModelV1_2)
 export class FarmV12Resolver extends FarmResolver {
-    constructor(
-        protected readonly farmService: FarmService,
-        protected readonly farmGetter: FarmV12GetterService,
-        protected readonly transactionsService: TransactionsFarmService,
-    ) {
-        super(farmService, farmGetter, transactionsService);
+    constructor(protected readonly farmGetter: FarmV12GetterService) {
+        super(farmGetter);
     }
 
     @ResolveField()
