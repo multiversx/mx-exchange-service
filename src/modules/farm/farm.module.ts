@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { FarmService } from './services/farm.service';
-import { FarmResolver } from './farm.resolver';
+import { FarmResolver } from './resolvers/farm.resolver';
 import { AbiFarmService } from './services/farm.abi.service';
 import { TransactionsFarmService } from './services/transactions-farm.service';
 import { PairModule } from '../pair/pair.module';

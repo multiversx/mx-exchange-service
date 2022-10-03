@@ -1,13 +1,13 @@
-import { FarmService } from './services/farm.service';
+import { FarmService } from '../services/farm.service';
 import { Resolver, Query, ResolveField, Parent, Args } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
-import { TransactionModel } from '../../models/transaction.model';
+import { TransactionModel } from '../../../models/transaction.model';
 import {
     ExitFarmTokensModel,
     BaseFarmModel,
     RewardsModel,
-} from './models/farm.model';
-import { TransactionsFarmService } from './services/transactions-farm.service';
+} from '../models/farm.model';
+import { TransactionsFarmService } from '../services/transactions-farm.service';
 import {
     BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,
@@ -17,20 +17,20 @@ import {
     ExitFarmArgs,
     FarmMigrationConfigArgs,
     MergeFarmTokensArgs,
-} from './models/farm.args';
+} from '../models/farm.args';
 import { ApolloError } from 'apollo-server-express';
-import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
-import { FarmGetterService } from './services/farm.getter.service';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
+import { FarmGetterService } from '../services/farm.getter.service';
+import { GqlAuthGuard } from '../../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
-import { GqlAdminGuard } from '../auth/gql.admin.guard';
-import { PairModel } from '../pair/models/pair.model';
-import { LockedAssetModel } from '../locked-asset-factory/models/locked-asset.model';
+import { GqlAdminGuard } from '../../auth/gql.admin.guard';
+import { PairModel } from '../../pair/models/pair.model';
+import { LockedAssetModel } from '../../locked-asset-factory/models/locked-asset.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
-import { EsdtToken } from '../tokens/models/esdtToken.model';
-import { NftCollection } from '../tokens/models/nftCollection.model';
+import { EsdtToken } from '../../tokens/models/esdtToken.model';
+import { NftCollection } from '../../tokens/models/nftCollection.model';
 import { Address } from '@elrondnetwork/erdjs/out';
-import { FarmsUnion } from './models/farm.union';
+import { FarmsUnion } from '../models/farm.union';
 
 @Resolver(() => BaseFarmModel)
 export class FarmResolver extends GenericResolver {

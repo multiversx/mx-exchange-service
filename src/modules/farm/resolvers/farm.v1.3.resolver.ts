@@ -1,5 +1,5 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { FarmResolver } from '../farm.resolver';
+import { FarmResolver } from './farm.resolver';
 import { FarmModelV1_3 } from '../models/farm.v1.3.model';
 import { FarmService } from '../services/farm.service';
 import { TransactionsFarmService } from '../services/transactions-farm.service';
