@@ -20,7 +20,7 @@ import { ExitFarmTokensModel, RewardsModel } from '../models/farm.model';
 import { FarmsUnion } from '../models/farm.union';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmService } from '../services/farm.service';
-import { TransactionsFarmService } from '../services/transactions-farm.service';
+import { TransactionsFarmService } from '../services/farm.transaction.service';
 
 @Resolver()
 export class FarmQueryResolver extends GenericResolver {

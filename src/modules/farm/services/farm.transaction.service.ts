@@ -42,14 +42,14 @@ export class TransactionsFarmService {
         sender: string,
         args: EnterFarmArgs,
     ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
-            args.farmAddress,
-        );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
+        // const whitelists = await this.farmGetterService.getWhitelist(
+        //     args.farmAddress,
+        // );
+        // if (whitelists && whitelists.length > 0) {
+        //     throw new Error(
+        //         `whitelisted addresses only for farm ${args.farmAddress}`,
+        //     );
+        // }
 
         try {
             await this.validateInputTokens(args.farmAddress, args.tokens);
@@ -79,7 +79,7 @@ export class TransactionsFarmService {
                 ? gasConfig.farms[version].enterFarm.withTokenMerge
                 : gasConfig.farms[version].enterFarm.default;
 
-        const mappedPayments = args.tokens.map(tokenPayment =>
+        const mappedPayments = args.tokens.map((tokenPayment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,
@@ -102,14 +102,14 @@ export class TransactionsFarmService {
         sender: string,
         args: ExitFarmArgs,
     ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
-            args.farmAddress,
-        );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
+        // const whitelists = await this.farmGetterService.getWhitelist(
+        //     args.farmAddress,
+        // );
+        // if (whitelists && whitelists.length > 0) {
+        //     throw new Error(
+        //         `whitelisted addresses only for farm ${args.farmAddress}`,
+        //     );
+        // }
         const [contract] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
@@ -135,14 +135,14 @@ export class TransactionsFarmService {
         sender: string,
         args: ClaimRewardsArgs,
     ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
-            args.farmAddress,
-        );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
+        // const whitelists = await this.farmGetterService.getWhitelist(
+        //     args.farmAddress,
+        // );
+        // if (whitelists && whitelists.length > 0) {
+        //     throw new Error(
+        //         `whitelisted addresses only for farm ${args.farmAddress}`,
+        //     );
+        // }
         const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
@@ -179,14 +179,14 @@ export class TransactionsFarmService {
         sender: string,
         args: CompoundRewardsArgs,
     ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
-            args.farmAddress,
-        );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
+        // const whitelists = await this.farmGetterService.getWhitelist(
+        //     args.farmAddress,
+        // );
+        // if (whitelists && whitelists.length > 0) {
+        //     throw new Error(
+        //         `whitelisted addresses only for farm ${args.farmAddress}`,
+        //     );
+        // }
 
         const [farmedTokenID, farmingTokenID] = await Promise.all([
             this.farmGetterService.getFarmedTokenID(args.farmAddress),
@@ -220,14 +220,14 @@ export class TransactionsFarmService {
         sender: string,
         args: ExitFarmArgs,
     ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
-            args.farmAddress,
-        );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
+        // const whitelists = await this.farmGetterService.getWhitelist(
+        //     args.farmAddress,
+        // );
+        // if (whitelists && whitelists.length > 0) {
+        //     throw new Error(
+        //         `whitelisted addresses only for farm ${args.farmAddress}`,
+        //     );
+        // }
         const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
@@ -333,9 +333,8 @@ export class TransactionsFarmService {
         );
 
         if (pairAddress) {
-            const trustedSwapPairs = await this.pairGetterService.getTrustedSwapPairs(
-                pairAddress,
-            );
+            const trustedSwapPairs =
+                await this.pairGetterService.getTrustedSwapPairs(pairAddress);
             const gasLimit = args.withPenalty
                 ? trustedSwapPairs.length > 0
                     ? gasConfig.farms[version][type].exitFarm.withPenalty
@@ -523,7 +522,7 @@ export class TransactionsFarmService {
         const [contract, version] = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const mappedPayments = payments.map(tokenPayment =>
+        const mappedPayments = payments.map((tokenPayment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,

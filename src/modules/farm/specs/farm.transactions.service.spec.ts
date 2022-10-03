@@ -17,7 +17,7 @@ import { WrapService } from '../../wrapping/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
-import { TransactionsFarmService } from '../../farm/services/transactions-farm.service';
+import { TransactionsFarmService } from '../services/farm.transaction.service';
 import { ElrondProxyServiceMock } from '../../../services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { encodeTransactionData } from '../../../helpers/helpers';
