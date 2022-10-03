@@ -7,6 +7,8 @@ import {
 } from 'src/modules/farm/models/farm.model';
 import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
+import { FarmV12ComputeService } from 'src/modules/farm/services/v1.2/farm.v1.2.compute.service';
+import { FarmV13ComputeService } from 'src/modules/farm/services/v1.3/farm.v1.3.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
@@ -16,18 +18,36 @@ import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 export class AnalyticsComputeService {
     constructor(
         private readonly routerGetter: RouterGetterService,
-        private readonly farmGetterService: FarmGetterService,
-        private readonly farmComputeService: FarmComputeService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly farmGetter: FarmGetterService,
+        private readonly farmCompute: FarmComputeService,
+        private readonly farmComputeV1_2: FarmV12ComputeService,
+        private readonly farmComputeV1_3: FarmV13ComputeService,
+        private readonly pairGetter: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
     ) {}
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
 
-        const promises: Promise<string>[] = farmsAddresses().map(farmAddress =>
-            this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
-        );
+        const promises: Promise<string>[] = [];
+        for (const farmAddress of farmsAddresses()) {
+            switch (farmVersion(farmAddress)) {
+                case FarmVersion.V1_2:
+                    promises.push(
+                        this.farmComputeV1_2.computeFarmLockedValueUSD(
+                            farmAddress,
+                        ),
+                    );
+                    break;
+                case FarmVersion.V1_3:
+                    promises.push(
+                        this.farmComputeV1_3.computeFarmLockedValueUSD(
+                            farmAddress,
+                        ),
+                    );
+                    break;
+            }
+        }
         const farmsLockedValueUSD = await Promise.all(promises);
         for (const farmLockedValueUSD of farmsLockedValueUSD) {
             const farmLockedValueUSDBig = new BigNumber(farmLockedValueUSD);
@@ -46,20 +66,18 @@ export class AnalyticsComputeService {
         );
 
         let totalValueLockedUSD = new BigNumber(0);
-        const promises = filteredPairs.map(pairAddress =>
-            this.pairGetterService.getLockedValueUSD(pairAddress),
+        const promises = filteredPairs.map((pairAddress) =>
+            this.pairGetter.getLockedValueUSD(pairAddress),
         );
 
         if (farmsAddresses()[5] !== undefined) {
             promises.push(
-                this.farmComputeService.computeFarmLockedValueUSD(
-                    farmsAddresses()[5],
-                ),
+                this.farmCompute.computeFarmLockedValueUSD(farmsAddresses()[5]),
             );
         }
         if (farmsAddresses()[12] !== undefined) {
             promises.push(
-                this.farmComputeService.computeFarmLockedValueUSD(
+                this.farmCompute.computeFarmLockedValueUSD(
                     farmsAddresses()[12],
                 ),
             );
@@ -79,14 +97,14 @@ export class AnalyticsComputeService {
 
     async computeTotalAggregatedRewards(days: number): Promise<string> {
         const addresses: string[] = farmsAddresses();
-        const promises = addresses.map(async farmAddress => {
+        const promises = addresses.map(async (farmAddress) => {
             if (
                 farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS ||
                 farmVersion(farmAddress) === FarmVersion.V1_2
             ) {
                 return '0';
             }
-            return this.farmGetterService.getRewardsPerBlock(farmAddress);
+            return this.farmGetter.getRewardsPerBlock(farmAddress);
         });
         const farmsRewardsPerBlock = await Promise.all(promises);
         const blocksNumber = (days * 24 * 60 * 60) / 6;
@@ -96,9 +114,8 @@ export class AnalyticsComputeService {
             const aggregatedRewards = new BigNumber(
                 rewardsPerBlock,
             ).multipliedBy(blocksNumber);
-            totalAggregatedRewards = totalAggregatedRewards.plus(
-                aggregatedRewards,
-            );
+            totalAggregatedRewards =
+                totalAggregatedRewards.plus(aggregatedRewards);
         }
         return totalAggregatedRewards.toFixed();
     }
@@ -121,9 +138,7 @@ export class AnalyticsComputeService {
     ): Promise<string[]> {
         const filteredPairs = [];
         for (const pairAddress of pairsAddress) {
-            const lpTokenID = await this.pairGetterService.getLpTokenID(
-                pairAddress,
-            );
+            const lpTokenID = await this.pairGetter.getLpTokenID(pairAddress);
             if (lpTokenID !== undefined) {
                 filteredPairs.push(pairAddress);
             }
