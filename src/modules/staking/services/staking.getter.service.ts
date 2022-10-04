@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -33,7 +34,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'farmTokenID'),
             () => this.abiService.getFarmTokenID(stakeAddress),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -41,7 +43,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'farmingTokenID'),
             () => this.abiService.getFarmingTokenID(stakeAddress),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -49,7 +52,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'rewardTokenID'),
             () => this.abiService.getRewardTokenID(stakeAddress),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

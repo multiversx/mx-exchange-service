@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
@@ -19,7 +20,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmTokenID'),
             value,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -30,7 +32,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenID'),
             value,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -41,7 +44,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmedTokenID'),
             value,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

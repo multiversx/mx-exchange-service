@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -19,15 +19,17 @@ export class SimpleLockSetterService extends GenericSetterService {
         return await this.setData(
             this.getSimpleLockCacheKey('lockedTokenID'),
             value,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
-    async getLpProxyTokenID(value: string): Promise<string> {
+    async setLpProxyTokenID(value: string): Promise<string> {
         return await this.setData(
             this.getSimpleLockCacheKey('lpProxyTokenID'),
             value,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

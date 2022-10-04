@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
 import { oneHour } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -26,7 +27,8 @@ export class LockedAssetGetterService extends GenericGetterService {
         return await this.getData(
             this.getLockedAssetFactoryCacheKey('assetTokenID'),
             () => this.abiService.getAssetTokenID(),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -34,7 +36,8 @@ export class LockedAssetGetterService extends GenericGetterService {
         return await this.getData(
             this.getLockedAssetFactoryCacheKey('lockedTokenID'),
             () => this.abiService.getLockedTokenID(),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

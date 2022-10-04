@@ -24,7 +24,7 @@ export class PairCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
     async cachePairs(): Promise<void> {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
         for (const pairMetadata of pairsMetadata) {

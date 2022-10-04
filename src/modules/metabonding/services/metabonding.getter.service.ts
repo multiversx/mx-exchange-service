@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
+import { oneMinute } from 'src/helpers/helpers';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -25,7 +26,8 @@ export class MetabondingGetterService extends GenericGetterService {
         return this.getData(
             this.getMetabondingCacheKey('lockedAssetTokenID'),
             () => this.abiService.getLockedAssetTokenID(),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

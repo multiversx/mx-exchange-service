@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -29,7 +30,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmedTokenID'),
             () => this.abiService.getFarmedTokenID(farmAddress),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -37,7 +39,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmTokenID'),
             () => this.abiService.getFarmTokenID(farmAddress),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -45,7 +48,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenID'),
             () => this.abiService.getFarmingTokenID(farmAddress),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
+import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -20,7 +21,8 @@ export class MetabondingSetterService extends GenericSetterService {
         return await this.setData(
             this.getMetabondingCacheKey('lockedAssetTokenID'),
             value,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

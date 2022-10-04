@@ -12,6 +12,8 @@ import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from './price.discovery.compute.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
+
 @Injectable()
 export class PriceDiscoveryGetterService extends GenericGetterService {
     constructor(
@@ -33,7 +35,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'launchedTokenID',
             ),
             () => this.abiService.getLaunchedTokenID(priceDiscoveryAddress),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -44,7 +47,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'acceptedTokenID',
             ),
             () => this.abiService.getAcceptedTokenID(priceDiscoveryAddress),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -55,7 +59,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'redeemTokenID',
             ),
             () => this.abiService.getRedeemTokenID(priceDiscoveryAddress),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneSecond } from 'src/helpers/helpers';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
+import { oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -19,7 +20,12 @@ export class TokenSetterService extends GenericSetterService {
 
     async setTokenMetadata(tokenID: string, value: EsdtToken): Promise<string> {
         const cacheKey = this.getTokenCacheKey(tokenID);
-        return await this.setData(cacheKey, value, oneHour());
+        return await this.setData(
+            cacheKey,
+            value,
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
+        );
     }
 
     async setNftCollectionMetadata(
@@ -27,14 +33,20 @@ export class TokenSetterService extends GenericSetterService {
         value: NftCollection,
     ): Promise<string> {
         const cacheKey = this.getTokenCacheKey(collection);
-        return await this.setData(cacheKey, value, oneHour());
+        return await this.setData(
+            cacheKey,
+            value,
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
+        );
     }
 
     async setEsdtTokenType(tokenID: string, type: string): Promise<string> {
         return await this.setData(
             this.getTokenCacheKey(tokenID, 'type'),
             type,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

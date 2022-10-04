@@ -6,6 +6,7 @@ import { GenericSetterService } from 'src/services/generics/generic.setter.servi
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { FeeDestination } from '../models/pair.model';
 import { Logger } from 'winston';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
 
 @Injectable()
 export class PairSetterService extends GenericSetterService {
@@ -20,7 +21,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'firstTokenID'),
             value,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -31,7 +33,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'secondTokenID'),
             value,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -39,7 +42,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'lpTokenID'),
             value,
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 

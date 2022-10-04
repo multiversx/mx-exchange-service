@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneSecond } from 'src/helpers/helpers';
+import { TokenTtl } from 'src/helpers/cachingTTLs';
+import { oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
@@ -32,7 +33,8 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getToken(tokenID),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -41,7 +43,8 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getNftCollection(collection),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
@@ -49,7 +52,8 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             this.getTokenCacheKey(tokenID, 'type'),
             () => this.tokenRepositoryService.getTokenType(tokenID),
-            oneHour(),
+            TokenTtl.remoteTtl,
+            TokenTtl.localTtl,
         );
     }
 
