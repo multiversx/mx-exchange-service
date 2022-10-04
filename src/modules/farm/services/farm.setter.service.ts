@@ -56,6 +56,7 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmTokenSupply'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -67,6 +68,7 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenReserve'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -78,7 +80,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'rewardsPerBlock'),
             value,
-            oneMinute() * 2,
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -89,7 +92,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'penaltyPercent'),
             value,
-            oneMinute(),
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -100,7 +104,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'minimumFarmingEpochs'),
             value,
-            oneHour(),
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -108,7 +113,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'state'),
             value,
-            oneMinute(),
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -119,7 +125,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'produceRewardsEnabled'),
             value,
-            oneMinute() * 2,
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -130,6 +137,7 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'rewardPerShare'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -141,6 +149,7 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'rewardReserve'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -152,6 +161,7 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'lastRewardBlocknonce'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -163,6 +173,7 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'undistributedFees'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -174,6 +185,7 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'currentBlockFee'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -196,7 +208,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'aprMultiplier'),
             value,
-            oneMinute(),
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 

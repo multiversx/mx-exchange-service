@@ -80,6 +80,7 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmTokenSupply'),
             () => this.abiService.getFarmTokenSupply(farmAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -88,6 +89,7 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenReserve'),
             () => this.abiService.getFarmingTokenReserve(farmAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -96,7 +98,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'produceRewardsEnabled'),
             () => this.abiService.getProduceRewardsEnabled(farmAddress),
-            oneMinute() * 2,
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -104,7 +107,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'rewardsPerBlock'),
             () => this.abiService.getRewardsPerBlock(farmAddress),
-            oneMinute() * 2,
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -112,7 +116,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'penaltyPercent'),
             () => this.abiService.getPenaltyPercent(farmAddress),
-            oneMinute(),
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -120,7 +125,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'minimumFarmingEpochs'),
             () => this.abiService.getMinimumFarmingEpochs(farmAddress),
-            oneHour(),
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -128,7 +134,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'state'),
             () => this.abiService.getState(farmAddress),
-            oneMinute(),
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 
@@ -136,6 +143,7 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'rewardPerShare'),
             () => this.abiService.getRewardPerShare(farmAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -144,6 +152,7 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'rewardReserve'),
             () => this.abiService.getRewardReserve(farmAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -152,6 +161,7 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'lastRewardBlocknonce'),
             () => this.abiService.getLastRewardBlockNonce(farmAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -160,6 +170,7 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'undistributedFees'),
             () => this.abiService.getUndistributedFees(farmAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -168,6 +179,7 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'currentBlockFee'),
             () => this.abiService.getCurrentBlockFee(farmAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -184,7 +196,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'aprMultiplier'),
             () => this.abiService.getLockedRewardAprMuliplier(farmAddress),
-            oneMinute(),
+            oneMinute() * 10,
+            oneMinute() * 3,
         );
     }
 

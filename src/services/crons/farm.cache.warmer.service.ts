@@ -23,7 +23,7 @@ export class FarmCacheWarmerService {
     ) {}
 
     @Cron(CronExpression.EVERY_HOUR)
-    async cacheFarms(): Promise<void> {
+    async cacheFarmsTokens(): Promise<void> {
         const farmsAddress: string[] = farmsAddresses();
         const promises = farmsAddress.map(async (farmAddress) => {
             const [farmTokenID, farmingTokenID, farmedTokenID] =
