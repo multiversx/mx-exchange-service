@@ -16,8 +16,8 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { AbiFarmServiceProvider } from '../mocks/abi.farm.service.mock';
-import { FarmGetterServiceProvider } from '../mocks/farm.getter.service.mock';
 import { FarmV13ComputeService } from '../services/v1.3/farm.v1.3.compute.service';
+import { FarmV13GetterServiceProvider } from '../mocks/farm.v1.3.getter.service.mock';
 
 describe('FarmService', () => {
     let service: FarmV13ComputeService;
@@ -47,7 +47,7 @@ describe('FarmService', () => {
             imports: [CommonAppModule, CachingModule],
             providers: [
                 AbiFarmServiceProvider,
-                FarmGetterServiceProvider,
+                FarmV13GetterServiceProvider,
                 FarmV13ComputeService,
                 ElrondApiServiceProvider,
                 ContextGetterServiceProvider,
@@ -58,7 +58,6 @@ describe('FarmService', () => {
                 TokenComputeService,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
-                FarmService,
             ],
         }).compile();
 
@@ -70,12 +69,7 @@ describe('FarmService', () => {
     });
 
     it('should compute farm APR', async () => {
-        const farmAPR_0 = await service.computeFarmAPR(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-        );
-        expect(farmAPR_0).toEqual(null);
-
-        const farmAPR_1 = await service.computeFarmAPR('farm_address_2');
-        expect(farmAPR_1).toEqual('10.05256');
+        const farmAPR = await service.computeFarmAPR('farm_address_2');
+        expect(farmAPR).toEqual('10.05256');
     });
 });

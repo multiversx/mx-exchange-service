@@ -2,7 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { FarmService } from '../services/farm.service';
 import { AbiFarmService } from '../services/farm.abi.service';
-import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
+import {
+    AbiFarmServiceMock,
+    AbiFarmServiceProvider,
+} from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
@@ -10,7 +13,10 @@ import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../services/farm.getter.service';
 import { FarmComputeService } from '../services/farm.compute.service';
-import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
+import {
+    FarmGetterServiceMock,
+    FarmGetterServiceProvider,
+} from '../mocks/farm.getter.service.mock';
 import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../../modules/pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
@@ -24,16 +30,6 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 
 describe('FarmService', () => {
     let service: FarmComputeService;
-
-    const AbiFarmServiceProvider = {
-        provide: AbiFarmService,
-        useClass: AbiFarmServiceMock,
-    };
-
-    const FarmGetterServiceProvider = {
-        provide: FarmGetterService,
-        useClass: FarmGetterServiceMock,
-    };
 
     const ElrondApiServiceProvider = {
         provide: ElrondApiService,
@@ -96,13 +92,6 @@ describe('FarmService', () => {
         expect(farmingTokenPriceUSD).toEqual('40');
     });
 
-    it('should compute farm locked value USD', async () => {
-        const farmLockedValueUSD = await service.computeFarmLockedValueUSD(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-        );
-        expect(farmLockedValueUSD).toEqual('32000080000000');
-    });
-
     it('should compute farm rewards for position', async () => {
         const farmRewardsForPosition =
             await service.computeFarmRewardsForPosition(
@@ -122,7 +111,7 @@ describe('FarmService', () => {
                 }),
             );
         expect(farmRewardsForPosition.toFixed()).toEqual(
-            '18333333333333333350000000',
+            '18333333333333333333333000',
         );
     });
 

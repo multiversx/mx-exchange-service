@@ -58,7 +58,6 @@ describe('FarmService', () => {
                 TokenComputeService,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
-                FarmService,
             ],
         }).compile();
 
@@ -67,6 +66,13 @@ describe('FarmService', () => {
 
     it('should be defined', () => {
         expect(service).toBeDefined();
+    });
+
+    it('should compute farm locked value USD', async () => {
+        const farmLockedValueUSD = await service.computeFarmLockedValueUSD(
+            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+        );
+        expect(farmLockedValueUSD).toEqual('32000080000000');
     });
 
     it('should get unlocked rewards APR', async () => {

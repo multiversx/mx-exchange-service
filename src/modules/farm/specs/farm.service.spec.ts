@@ -193,7 +193,7 @@ describe('FarmService', () => {
                     rewardPerShare: '0',
                 },
                 remainingFarmingEpochs: 1047,
-                rewards: '110000000000000000150000000000',
+                rewards: '110000000000000000100000000000',
             },
         ]);
     });
@@ -210,7 +210,7 @@ describe('FarmService', () => {
         });
         expect(tokensForExitFarm).toEqual({
             farmingTokens: '999000000000000',
-            rewards: '110000000000000000150000000000',
+            rewards: '110000000000000000100000000000',
         });
     });
 
