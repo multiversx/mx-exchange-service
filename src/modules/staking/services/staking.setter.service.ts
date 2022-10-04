@@ -67,6 +67,7 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'farmTokenSupply'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -78,6 +79,7 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'rewardPerShare'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -89,6 +91,7 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'accumulatedRewards'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -100,6 +103,7 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'rewardCapacity'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -111,7 +115,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'annualPercentageRewards'),
             value,
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -122,7 +127,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'minUnboundEpochs'),
             value,
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -133,7 +139,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'penaltyPercent'),
             value,
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -144,7 +151,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'minimumFarmingEpochs'),
             value,
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -155,6 +163,7 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'perBlockRewards'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -166,6 +175,7 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'lastRewardBlockNonce'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -177,7 +187,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'divisionSafetyConstant'),
             value,
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -185,7 +196,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'state'),
             value,
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 

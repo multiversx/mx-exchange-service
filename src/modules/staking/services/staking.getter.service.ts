@@ -76,6 +76,7 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'farmTokenSupply'),
             () => this.abiService.getFarmTokenSupply(stakeAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -84,6 +85,7 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'rewardPerShare'),
             () => this.abiService.getRewardPerShare(stakeAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -92,6 +94,7 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'accumulatedRewards'),
             () => this.abiService.getAccumulatedRewards(stakeAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -100,6 +103,7 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'rewardCapacity'),
             () => this.abiService.getRewardCapacity(stakeAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -108,7 +112,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'annualPercentageRewards'),
             () => this.abiService.getAnnualPercentageRewards(stakeAddress),
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -116,7 +121,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'minUnboundEpochs'),
             () => this.abiService.getMinUnbondEpochs(stakeAddress),
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -124,7 +130,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'penaltyPercent'),
             () => this.abiService.getPenaltyPercent(stakeAddress),
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -132,7 +139,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'minimumFarmingEpochs'),
             () => this.abiService.getMinimumFarmingEpoch(stakeAddress),
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -140,6 +148,7 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'perBlockRewards'),
             () => this.abiService.getPerBlockRewardAmount(stakeAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -148,6 +157,7 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'lastRewardBlockNonce'),
             () => this.abiService.getLastRewardBlockNonce(stakeAddress),
+            oneMinute() * 3,
             oneMinute(),
         );
     }
@@ -156,7 +166,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'divisionSafetyConstant'),
             () => this.abiService.getDivisionSafetyConstant(stakeAddress),
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
@@ -188,7 +199,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'state'),
             () => this.abiService.getState(stakeAddress),
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 3,
         );
     }
 
