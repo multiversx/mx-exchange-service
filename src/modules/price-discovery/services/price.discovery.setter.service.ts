@@ -71,6 +71,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'launchedTokenAmount',
             ),
             value,
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -85,6 +86,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'acceptedTokenAmount',
             ),
             value,
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -99,6 +101,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'launchedTokenRedeemBalance',
             ),
             value,
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -113,6 +116,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'acceptedTokenRedeemBalance',
             ),
             value,
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -127,6 +131,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'launchedTokenPrice',
             ),
             value,
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -141,6 +146,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'acceptedTokenPrice',
             ),
             value,
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -155,6 +161,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'launchedTokenPriceUSD',
             ),
             value,
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -169,6 +176,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'acceptedTokenPriceUSD',
             ),
             value,
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }

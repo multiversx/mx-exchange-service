@@ -97,6 +97,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             ),
             () =>
                 this.abiService.getLaunchedTokenBalance(priceDiscoveryAddress),
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -111,6 +112,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             ),
             () =>
                 this.abiService.getAcceptedTokenBalance(priceDiscoveryAddress),
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -127,6 +129,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getLaunchedTokenRedeemBalance(
                     priceDiscoveryAddress,
                 ),
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -143,6 +146,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getAcceptedTokenRedeemBalance(
                     priceDiscoveryAddress,
                 ),
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -159,6 +163,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.priceDiscoveryCompute.computeLaunchedTokenPrice(
                     priceDiscoveryAddress,
                 ),
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -175,6 +180,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.priceDiscoveryCompute.computeAcceptedTokenPrice(
                     priceDiscoveryAddress,
                 ),
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -191,6 +197,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(
                     priceDiscoveryAddress,
                 ),
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
@@ -207,6 +214,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'acceptedTokenPriceUSD',
             ),
             () => this.pairGetter.getTokenPriceUSD(acceptedTokenID),
+            oneSecond() * 30,
             oneSecond() * 12,
         );
     }
