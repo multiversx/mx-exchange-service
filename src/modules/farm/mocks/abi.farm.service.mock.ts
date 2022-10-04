@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import BigNumber from 'bignumber.js';
 import { CalculateRewardsArgs } from '../models/farm.args';
+import { AbiFarmService } from '../services/farm.abi.service';
 
 export class AbiFarmServiceMock {
     async getPenaltyPercent(farmAddress: string): Promise<number> {
@@ -13,6 +15,11 @@ export class AbiFarmServiceMock {
     async calculateRewardsForGivenPosition(
         args: CalculateRewardsArgs,
     ): Promise<BigNumber> {
-        return new BigNumber(1000000000000000000);
+        return new BigNumber('1000000000000000000');
     }
 }
+
+export const AbiFarmServiceProvider = {
+    provide: AbiFarmService,
+    useClass: AbiFarmServiceMock,
+};
