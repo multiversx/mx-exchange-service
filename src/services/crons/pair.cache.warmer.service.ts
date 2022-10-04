@@ -182,7 +182,7 @@ export class PairCacheWarmerService {
         }
     }
 
-    @Cron('*/6 * * * * *') // Update prices and reserves every 6 seconds
+    @Cron('*/12 * * * * *') // Update prices and reserves every 12 seconds
     async cacheTokenPrices(): Promise<void> {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
         const invalidatedKeys = [];

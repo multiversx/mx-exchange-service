@@ -92,7 +92,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'firstTokenReserve'),
             value,
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -103,7 +104,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'secondTokenReserve'),
             value,
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -111,7 +113,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'totalSupply'),
             value,
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -122,7 +125,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'firstTokenPrice'),
             value,
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -133,7 +137,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'secondTokenPrice'),
             value,
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -144,7 +149,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'firstTokenPriceUSD'),
             value,
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -155,7 +161,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'secondTokenPriceUSD'),
             value,
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -163,7 +170,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey('priceUSD', tokenID),
             value,
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -174,7 +182,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'lpTokenPriceUSD'),
             value,
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 

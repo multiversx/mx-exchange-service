@@ -98,7 +98,8 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, 'firstTokenPrice'),
             () => this.pairComputeService.computeFirstTokenPrice(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -106,7 +107,8 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, 'secondTokenPrice'),
             () => this.pairComputeService.computeSecondTokenPrice(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -114,7 +116,8 @@ export class PairGetterService extends GenericGetterService {
         return await this.getData(
             this.getPairCacheKey('priceUSD', tokenID),
             () => this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -123,7 +126,8 @@ export class PairGetterService extends GenericGetterService {
             this.getPairCacheKey(pairAddress, 'firstTokenPriceUSD'),
             () =>
                 this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -132,7 +136,8 @@ export class PairGetterService extends GenericGetterService {
             this.getPairCacheKey(pairAddress, 'secondTokenPriceUSD'),
             () =>
                 this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -140,7 +145,8 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, 'lpTokenPriceUSD'),
             () => this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -149,7 +155,8 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, 'firstTokenReserve'),
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -158,7 +165,8 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, 'secondTokenReserve'),
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
@@ -166,7 +174,8 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, 'totalSupply'),
             () => this.abiService.getTotalSupply(pairAddress),
-            oneSecond() * 12,
+            oneMinute(),
+            oneSecond() * 30,
         );
     }
 
