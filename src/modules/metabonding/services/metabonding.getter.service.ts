@@ -42,6 +42,7 @@ export class MetabondingGetterService extends GenericGetterService {
         return this.getData(
             this.getMetabondingCacheKey('lockedAssetTokenSupply'),
             () => this.abiService.getTotalLockedAssetSupply(),
+            oneMinute() * 3,
             oneMinute(),
         );
     }

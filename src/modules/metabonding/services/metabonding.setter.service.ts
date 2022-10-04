@@ -30,6 +30,7 @@ export class MetabondingSetterService extends GenericSetterService {
         return await this.setData(
             this.getMetabondingCacheKey('lockedAssetTokenSupply'),
             value,
+            oneMinute() * 3,
             oneMinute(),
         );
     }
