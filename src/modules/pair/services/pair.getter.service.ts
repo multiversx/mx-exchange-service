@@ -186,6 +186,7 @@ export class PairGetterService extends GenericGetterService {
                 this.pairComputeService.computeFirstTokenLockedValueUSD(
                     pairAddress,
                 ),
+            oneMinute() * 2,
             oneMinute(),
         );
     }
@@ -197,6 +198,7 @@ export class PairGetterService extends GenericGetterService {
                 this.pairComputeService.computeSecondTokenLockedValueUSD(
                     pairAddress,
                 ),
+            oneMinute() * 2,
             oneMinute(),
         );
     }
@@ -205,6 +207,7 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getPairCacheKey(pairAddress, 'lockedValueUSD'),
             () => this.pairComputeService.computeLockedValueUSD(pairAddress),
+            oneMinute() * 2,
             oneMinute(),
         );
     }

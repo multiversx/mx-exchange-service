@@ -54,7 +54,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'totalFeePercent'),
             value,
-            oneHour(),
+            oneMinute() * 5,
+            oneMinute() * 2,
         );
     }
 
@@ -65,7 +66,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'specialFeePercent'),
             value,
-            oneHour(),
+            oneMinute() * 5,
+            oneMinute() * 2,
         );
     }
 
@@ -73,7 +75,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'state'),
             value,
-            oneHour(),
+            oneMinute() * 5,
+            oneMinute() * 2,
         );
     }
 
@@ -81,7 +84,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'feeState'),
             value,
-            oneHour(),
+            oneMinute() * 5,
+            oneMinute() * 2,
         );
     }
 
@@ -276,7 +280,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'feesAPR'),
             value,
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 2,
         );
     }
 
@@ -284,7 +289,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'type'),
             value,
-            oneMinute(),
+            oneMinute() * 5,
+            oneMinute() * 2,
         );
     }
 
