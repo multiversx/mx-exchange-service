@@ -11,8 +11,6 @@ import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
 export class AnalyticsCacheWarmerService {
-    private invalidatedKeys = [];
-
     constructor(
         private readonly analyticsGetterService: AnalyticsGetterService,
         private readonly analyticsCompute: AnalyticsComputeService,
@@ -34,25 +32,28 @@ export class AnalyticsCacheWarmerService {
             this.analyticsCompute.computeTotalAggregatedRewards(30),
             this.analyticsCompute.computeLockedValueUSDFarms(),
         ]);
-        await Promise.all([
+        const cachedKeys = await Promise.all([
             this.setAnalyticsCache(
                 ['totalValueLockedUSD'],
                 totalValueLockedUSD,
-                oneMinute() * 2,
+                oneMinute() * 10,
+                oneMinute() * 5,
             ),
             this.setAnalyticsCache(
                 [30, 'totalAggregatedRewards'],
                 totalAggregatedRewards,
-                oneMinute() * 2,
+                oneMinute() * 10,
+                oneMinute() * 5,
             ),
             this.setAnalyticsCache(
                 ['lockedValueUSDFarms'],
                 totalValueLockedUSDFarms,
-                oneMinute() * 2,
+                oneMinute() * 10,
+                oneMinute() * 5,
             ),
         ]);
 
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(cachedKeys);
     }
 
     @Cron(CronExpression.EVERY_5_MINUTES)
@@ -70,10 +71,11 @@ export class AnalyticsCacheWarmerService {
             ),
         ]);
 
-        await Promise.all([
+        const cachedKeys = await Promise.all([
             this.setAnalyticsCache(
                 [constantsConfig.MEX_TOKEN_ID, awsOneYear(), 'feeTokenBurned'],
                 feeBurned,
+                oneMinute() * 30,
                 oneMinute() * 10,
             ),
             this.setAnalyticsCache(
@@ -83,24 +85,30 @@ export class AnalyticsCacheWarmerService {
                     'penaltyTokenBurned',
                 ],
                 penaltyBurned,
+                oneMinute() * 30,
                 oneMinute() * 10,
             ),
         ]);
-        await this.deleteCacheKeys();
+        await this.deleteCacheKeys(cachedKeys);
     }
 
     private async setAnalyticsCache(
         keys: any[],
         value: any,
-        ttl: number = cacheConfig.default,
-    ) {
+        remoteTtl: number = cacheConfig.default,
+        localTtl?: number,
+    ): Promise<string> {
         const cacheKey = generateCacheKeyFromParams('analytics', ...keys);
-        await this.cachingService.setCache(cacheKey, value, ttl);
-        this.invalidatedKeys.push(cacheKey);
+        await this.cachingService.setCache(
+            cacheKey,
+            value,
+            remoteTtl,
+            localTtl,
+        );
+        return cacheKey;
     }
 
-    private async deleteCacheKeys() {
-        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
-        this.invalidatedKeys = [];
+    private async deleteCacheKeys(invalidatedKeys: string[]) {
+        await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }
