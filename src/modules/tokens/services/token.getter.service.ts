@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { TokenTtl } from 'src/helpers/cachingTTLs';
-import { oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
@@ -11,6 +10,7 @@ import { EsdtToken } from '../models/esdtToken.model';
 import { NftCollection } from '../models/nftCollection.model';
 import { TokenComputeService } from './token.compute.service';
 import { TokenRepositoryService } from './token.repository.service';
+import { TokenCachingTtl } from "./token.caching.info";
 
 @Injectable()
 export class TokenGetterService extends GenericGetterService {
@@ -61,7 +61,7 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             this.getTokenCacheKey(tokenID, 'derivedEGLD'),
             () => this.tokenCompute.computeTokenPriceDerivedEGLD(tokenID),
-            oneSecond() * 12,
+            TokenCachingTtl.DerivedEGLD.remoteTtl,
         );
     }
 
@@ -69,7 +69,7 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             this.getTokenCacheKey(tokenID, 'derivedUSD'),
             () => this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
-            oneSecond() * 12,
+            TokenCachingTtl.DerivedEGLD.remoteTtl,
         );
     }
 

@@ -1,5 +1,10 @@
 import { oneHour } from './helpers';
 
+export class CachingTtl {
+    remoteTtl: number;
+    localTtl?: number;
+}
+
 export type CachingTtlType = {
     remoteTtl: number;
     localTtl: number;
