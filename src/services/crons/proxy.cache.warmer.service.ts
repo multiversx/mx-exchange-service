@@ -11,7 +11,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour } from '../../helpers/helpers';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { TokenTtl } from 'src/helpers/cachingTTLs';
+import { CacheTtlInfo } from '../caching/cache.ttl.info';
 
 @Injectable()
 export class ProxyCacheWarmerService {
@@ -58,22 +58,22 @@ export class ProxyCacheWarmerService {
                 'proxy',
                 'assetTokenID',
                 assetTokenID,
-                TokenTtl.remoteTtl,
-                TokenTtl.localTtl,
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
             ),
             this.setProxyCache(
                 'proxy',
                 'lockedAssetTokenID',
                 lockedAssetTokenID,
-                TokenTtl.remoteTtl,
-                TokenTtl.localTtl,
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
             ),
             this.setProxyCache(
                 'proxyPair',
                 'wrappedLpTokenID',
                 wrappedLpTokenID,
-                TokenTtl.remoteTtl,
-                TokenTtl.localTtl,
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
             ),
             this.setProxyCache(
                 'proxyPair',
@@ -85,8 +85,8 @@ export class ProxyCacheWarmerService {
                 'proxyFarm',
                 'wrappedFarmTokenID',
                 wrappedFarmTokenID,
-                TokenTtl.remoteTtl,
-                TokenTtl.localTtl,
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
             ),
             this.setProxyCache(
                 'proxyFarm',
