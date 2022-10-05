@@ -28,6 +28,10 @@ import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { FarmV12ComputeService } from 'src/modules/farm/services/v1.2/farm.v1.2.compute.service';
+import { FarmV12GetterServiceProvider } from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
+import { FarmV13ComputeService } from 'src/modules/farm/services/v1.3/farm.v1.3.compute.service';
+import { FarmV13GetterServiceProvider } from 'src/modules/farm/mocks/farm.v1.3.getter.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -86,7 +90,11 @@ describe('AnalyticsService', () => {
                 ElrondApiServiceProvider,
                 FarmServiceProvider,
                 FarmGetterServiceProvider,
+                FarmV12GetterServiceProvider,
+                FarmV13GetterServiceProvider,
                 FarmComputeService,
+                FarmV12ComputeService,
+                FarmV13ComputeService,
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
@@ -109,7 +117,8 @@ describe('AnalyticsService', () => {
     });
 
     it('should get total value locked in farms', async () => {
-        const totalLockedValueUSDFarms = await service.computeLockedValueUSDFarms();
+        const totalLockedValueUSDFarms =
+            await service.computeLockedValueUSDFarms();
         expect(totalLockedValueUSDFarms.toString()).toEqual(
             '32000080010000.0001600006',
         );
