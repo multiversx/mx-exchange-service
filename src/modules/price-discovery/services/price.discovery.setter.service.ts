@@ -1,8 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { TokenTtl } from 'src/helpers/cachingTTLs';
-import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -26,8 +26,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'launchedTokenID',
             ),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -41,8 +41,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'acceptedTokenID',
             ),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -56,8 +56,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'redeemTokenID',
             ),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -71,8 +71,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'launchedTokenAmount',
             ),
             value,
-            oneSecond() * 30,
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -86,8 +86,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'acceptedTokenAmount',
             ),
             value,
-            oneSecond() * 30,
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -101,8 +101,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'launchedTokenRedeemBalance',
             ),
             value,
-            oneSecond() * 30,
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -116,8 +116,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'acceptedTokenRedeemBalance',
             ),
             value,
-            oneSecond() * 30,
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -131,8 +131,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'launchedTokenPrice',
             ),
             value,
-            oneSecond() * 30,
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -146,8 +146,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'acceptedTokenPrice',
             ),
             value,
-            oneSecond() * 30,
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -161,8 +161,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'launchedTokenPriceUSD',
             ),
             value,
-            oneSecond() * 30,
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -176,8 +176,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'acceptedTokenPriceUSD',
             ),
             value,
-            oneSecond() * 30,
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -188,7 +188,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         return await this.setData(
             this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'startEpoch'),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -199,7 +200,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         return await this.setData(
             this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'endEpoch'),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -213,7 +215,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'currentPhase',
             ),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -227,7 +230,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'minLaunchedTokenPrice',
             ),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -241,7 +245,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'noLimitPhaseDurationBlocks',
             ),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -255,7 +260,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'linearPenaltyPhaseDurationBlocks',
             ),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -269,7 +275,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'fixedPenaltyPhaseDurationBlocks',
             ),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -283,7 +290,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'lockingScAddress',
             ),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -297,7 +305,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'unlockEpoch',
             ),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -311,7 +320,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'penaltyMinPercentage',
             ),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -325,7 +335,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'penaltyMaxPercentage',
             ),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -339,7 +350,8 @@ export class PriceDiscoverySetterService extends GenericSetterService {
                 'fixedPenaltyPercentage',
             ),
             value,
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
