@@ -381,6 +381,8 @@
                 "unlockedRewards": "./src/abis/farms/v1.3/farm.abi.json",
                 "lockedRewards": "./src/abis/farms/v1.3/farm_with_lock.abi.json",
                 "customRewards": "./src/abis/farms/v1.3/farm_custom_rewards.abi.json"
+            },
+            "v2": "./src/abis/farms/v2/farm.abi.json"
         },
         "staking": "./src/abis/farm-staking.abi.json",
         "stakingProxy": "./src/abis/farm-staking-proxy.abi.json"
