@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { FeeDestination } from '../models/pair.model';
 import { Logger } from 'winston';
-import { TokenTtl } from 'src/helpers/cachingTTLs';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class PairSetterService extends GenericSetterService {
@@ -21,8 +21,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'firstTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -33,8 +33,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'secondTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -42,8 +42,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'lpTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -54,8 +54,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'totalFeePercent'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 2,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -66,8 +66,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'specialFeePercent'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 2,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -75,8 +75,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'state'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 2,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -84,8 +84,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'feeState'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 2,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -96,8 +96,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'firstTokenReserve'),
             value,
-            oneMinute(),
-            oneSecond() * 30,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -108,8 +108,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'secondTokenReserve'),
             value,
-            oneMinute(),
-            oneSecond() * 30,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -117,8 +117,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'totalSupply'),
             value,
-            oneMinute(),
-            oneSecond() * 30,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -129,8 +129,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'firstTokenPrice'),
             value,
-            oneMinute(),
-            oneSecond() * 30,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -141,8 +141,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'secondTokenPrice'),
             value,
-            oneMinute(),
-            oneSecond() * 30,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -153,8 +153,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'firstTokenPriceUSD'),
             value,
-            oneMinute(),
-            oneSecond() * 30,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -165,8 +165,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'secondTokenPriceUSD'),
             value,
-            oneMinute(),
-            oneSecond() * 30,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -174,8 +174,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey('priceUSD', tokenID),
             value,
-            oneMinute(),
-            oneSecond() * 30,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -186,8 +186,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'lpTokenPriceUSD'),
             value,
-            oneMinute(),
-            oneSecond() * 30,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -198,7 +198,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'firstTokenLockedValueUSD'),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -209,7 +210,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'secondTokenLockedValueUSD'),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -220,7 +222,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'lockedValueUSD'),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -232,8 +235,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, `firstTokenVolume.${time}`),
             value,
-            oneMinute() * 30,
-            oneMinute() * 10,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
@@ -245,8 +248,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, `secondTokenVolume.${time}`),
             value,
-            oneMinute() * 30,
-            oneMinute() * 10,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
@@ -258,8 +261,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, `volumeUSD.${time}`),
             value,
-            oneMinute() * 30,
-            oneMinute() * 10,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
@@ -271,8 +274,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, `feesUSD.${time}`),
             value,
-            oneMinute() * 30,
-            oneMinute() * 10,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
@@ -280,8 +283,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'feesAPR'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 2,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -289,8 +292,8 @@ export class PairSetterService extends GenericSetterService {
         return await this.setData(
             this.getPairCacheKey(pairAddress, 'type'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 2,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
