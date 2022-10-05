@@ -1,11 +1,11 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { TokenTtl } from 'src/helpers/cachingTTLs';
-import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -30,8 +30,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmedTokenID'),
             () => this.abiService.getFarmedTokenID(farmAddress),
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -39,8 +39,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmTokenID'),
             () => this.abiService.getFarmTokenID(farmAddress),
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -48,8 +48,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenID'),
             () => this.abiService.getFarmingTokenID(farmAddress),
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -80,8 +80,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmTokenSupply'),
             () => this.abiService.getFarmTokenSupply(farmAddress),
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -89,8 +89,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenReserve'),
             () => this.abiService.getFarmingTokenReserve(farmAddress),
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -98,8 +98,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'produceRewardsEnabled'),
             () => this.abiService.getProduceRewardsEnabled(farmAddress),
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -107,8 +107,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'rewardsPerBlock'),
             () => this.abiService.getRewardsPerBlock(farmAddress),
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -116,8 +116,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'penaltyPercent'),
             () => this.abiService.getPenaltyPercent(farmAddress),
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -125,8 +125,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'minimumFarmingEpochs'),
             () => this.abiService.getMinimumFarmingEpochs(farmAddress),
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -134,8 +134,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'state'),
             () => this.abiService.getState(farmAddress),
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -143,8 +143,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'rewardPerShare'),
             () => this.abiService.getRewardPerShare(farmAddress),
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -152,8 +152,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'rewardReserve'),
             () => this.abiService.getRewardReserve(farmAddress),
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -161,8 +161,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'lastRewardBlocknonce'),
             () => this.abiService.getLastRewardBlockNonce(farmAddress),
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -170,8 +170,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'undistributedFees'),
             () => this.abiService.getUndistributedFees(farmAddress),
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -179,8 +179,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'currentBlockFee'),
             () => this.abiService.getCurrentBlockFee(farmAddress),
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -196,8 +196,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'aprMultiplier'),
             () => this.abiService.getLockedRewardAprMuliplier(farmAddress),
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -205,7 +205,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmedTokenPriceUSD'),
             () => this.computeService.computeFarmedTokenPriceUSD(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -217,7 +218,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenPriceUSD'),
             () => this.computeService.computeFarmingTokenPriceUSD(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -228,7 +230,8 @@ export class FarmGetterService extends GenericGetterService {
                 this.computeService.computeLockedFarmingTokenReserve(
                     farmAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -239,7 +242,8 @@ export class FarmGetterService extends GenericGetterService {
                 this.computeService.computeUnlockedFarmingTokenReserve(
                     farmAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -247,7 +251,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'totalValueLockedUSD'),
             () => this.computeService.computeFarmLockedValueUSD(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -260,7 +265,8 @@ export class FarmGetterService extends GenericGetterService {
                 this.computeService.computeLockedFarmingTokenReserveUSD(
                     farmAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -273,7 +279,8 @@ export class FarmGetterService extends GenericGetterService {
                 this.computeService.computeUnlockedFarmingTokenReserveUSD(
                     farmAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -281,7 +288,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'unlockedRewardsAPR'),
             () => this.computeService.computeUnlockedRewardsAPR(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -289,7 +297,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'lockedRewardsAPR'),
             () => this.computeService.computeLockedRewardsAPR(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -297,7 +306,8 @@ export class FarmGetterService extends GenericGetterService {
         return await this.getData(
             this.getFarmCacheKey(farmAddress, 'farmAPR'),
             () => this.computeService.computeFarmAPR(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -307,7 +317,8 @@ export class FarmGetterService extends GenericGetterService {
         return this.getData(
             this.getFarmCacheKey(farmAddress, 'migrationConfig'),
             () => this.abiService.getFarmMigrationConfiguration(farmAddress),
-            oneSecond(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 

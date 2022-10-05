@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { TokenTtl } from 'src/helpers/cachingTTLs';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -20,8 +20,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -32,8 +32,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -44,8 +44,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmedTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -56,8 +56,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmTokenSupply'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -68,8 +68,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenReserve'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -80,8 +80,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'rewardsPerBlock'),
             value,
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -92,8 +92,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'penaltyPercent'),
             value,
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -104,8 +104,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'minimumFarmingEpochs'),
             value,
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -113,8 +113,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'state'),
             value,
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -125,8 +125,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'produceRewardsEnabled'),
             value,
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -137,8 +137,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'rewardPerShare'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -149,8 +149,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'rewardReserve'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -161,8 +161,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'lastRewardBlocknonce'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -173,8 +173,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'undistributedFees'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -185,8 +185,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'currentBlockFee'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -208,8 +208,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'aprMultiplier'),
             value,
-            oneMinute() * 10,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -220,7 +220,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmedTokenPriceUSD'),
             value,
-            oneMinute(),
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -231,7 +232,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmingTokenPriceUSD'),
             value,
-            oneMinute(),
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -242,7 +244,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'totalValueLockedUSD'),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -253,7 +256,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'unlockedRewardsAPR'),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -264,7 +268,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'lockedRewardsAPR'),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -272,7 +277,8 @@ export class FarmSetterService extends GenericSetterService {
         return await this.setData(
             this.getFarmCacheKey(farmAddress, 'farmAPR'),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
