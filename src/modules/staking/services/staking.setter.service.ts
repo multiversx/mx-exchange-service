@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { TokenTtl } from 'src/helpers/cachingTTLs';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -31,8 +31,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'farmTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -43,8 +43,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'farmingTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -55,8 +55,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'rewardTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -67,8 +67,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'farmTokenSupply'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -79,8 +79,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'rewardPerShare'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -91,8 +91,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'accumulatedRewards'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -103,8 +103,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'rewardCapacity'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -115,8 +115,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'annualPercentageRewards'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -127,8 +127,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'minUnboundEpochs'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -139,8 +139,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'penaltyPercent'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -151,8 +151,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'minimumFarmingEpochs'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -163,8 +163,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'perBlockRewards'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -175,8 +175,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'lastRewardBlockNonce'),
             value,
-            oneMinute() * 3,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -187,8 +187,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'divisionSafetyConstant'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -196,8 +196,8 @@ export class StakingSetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeCacheKey(stakeAddress, 'state'),
             value,
-            oneMinute() * 5,
-            oneMinute() * 3,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 

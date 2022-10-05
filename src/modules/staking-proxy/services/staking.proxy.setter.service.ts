@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { TokenTtl } from 'src/helpers/cachingTTLs';
 import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -59,8 +59,8 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'stakingTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -71,8 +71,8 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'farmTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -83,8 +83,8 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'dualYieldTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -95,8 +95,8 @@ export class StakingProxySetterService extends GenericSetterService {
         return await this.setData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'lpFarmTokenID'),
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
