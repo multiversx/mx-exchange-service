@@ -2,7 +2,7 @@ import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 
 export class CacheTtlInfo {
     remoteTtl: number;
-    localTtl: number;
+    localTtl?: number;
 
     constructor(remoteTtl = oneMinute(), localTtl?: number) {
         this.remoteTtl = remoteTtl;
