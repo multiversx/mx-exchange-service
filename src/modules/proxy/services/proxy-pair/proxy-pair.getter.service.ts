@@ -8,7 +8,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneHour } from 'src/helpers/helpers';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
-import { TokenTtl } from 'src/helpers/cachingTTLs';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class ProxyPairGetterService extends GenericGetterService {
@@ -25,8 +25,8 @@ export class ProxyPairGetterService extends GenericGetterService {
         return await this.getData(
             this.getProxyPairCacheKey('wrappedLpTokenID'),
             () => this.abiService.getWrappedLpTokenID(),
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
