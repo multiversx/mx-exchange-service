@@ -1,7 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { TokenTtl } from 'src/helpers/cachingTTLs';
-import { oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
