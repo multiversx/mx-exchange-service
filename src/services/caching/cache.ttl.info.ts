@@ -30,4 +30,9 @@ export class CacheTtlInfo {
         oneMinute(),
         oneSecond() * 30,
     );
+
+    static Analytics: CacheTtlInfo = new CacheTtlInfo(
+        oneMinute() * 30,
+        oneMinute() * 10,
+    );
 }
