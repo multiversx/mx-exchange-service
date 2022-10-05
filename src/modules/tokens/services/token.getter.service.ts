@@ -3,6 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { TokenTtl } from 'src/helpers/cachingTTLs';
 import { oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -33,8 +34,8 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getToken(tokenID),
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -43,8 +44,8 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.apiService.getNftCollection(collection),
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -52,8 +53,8 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             this.getTokenCacheKey(tokenID, 'type'),
             () => this.tokenRepositoryService.getTokenType(tokenID),
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -61,7 +62,8 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             this.getTokenCacheKey(tokenID, 'derivedEGLD'),
             () => this.tokenCompute.computeTokenPriceDerivedEGLD(tokenID),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -69,7 +71,8 @@ export class TokenGetterService extends GenericGetterService {
         return await this.getData(
             this.getTokenCacheKey(tokenID, 'derivedUSD'),
             () => this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 

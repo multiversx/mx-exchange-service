@@ -3,6 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { TokenTtl } from 'src/helpers/cachingTTLs';
 import { oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -23,8 +24,8 @@ export class TokenSetterService extends GenericSetterService {
         return await this.setData(
             cacheKey,
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -36,8 +37,8 @@ export class TokenSetterService extends GenericSetterService {
         return await this.setData(
             cacheKey,
             value,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -45,8 +46,8 @@ export class TokenSetterService extends GenericSetterService {
         return await this.setData(
             this.getTokenCacheKey(tokenID, 'type'),
             type,
-            TokenTtl.remoteTtl,
-            TokenTtl.localTtl,
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -54,7 +55,8 @@ export class TokenSetterService extends GenericSetterService {
         return await this.setData(
             this.getTokenCacheKey(tokenID, 'derivedEGLD'),
             value,
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -62,7 +64,8 @@ export class TokenSetterService extends GenericSetterService {
         return await this.setData(
             this.getTokenCacheKey(tokenID, 'derivedUSD'),
             value,
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
