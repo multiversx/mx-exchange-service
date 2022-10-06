@@ -163,6 +163,31 @@ export class RouterResolver {
         }
     }
 
+    @ResolveField(() => Float)
+    async defaultSlippage(): Promise<number> {
+        return constantsConfig.slippage.DEFAULT_SLIPPAGE;
+    }
+
+    @ResolveField(() => [Float])
+    async slippageValues(): Promise<number[]> {
+        return constantsConfig.slippage.SLIPPAGE_VALUES;
+    }
+
+    @ResolveField(() => Float)
+    async minSlippage(): Promise<number> {
+        return constantsConfig.slippage.SLIPPAGE_VALUES[0];
+    }
+
+    @ResolveField(() => Float)
+    async maxSlippage(): Promise<number> {
+        return constantsConfig.slippage.MAX_SLIPPAGE;
+    }
+
+    @ResolveField(() => Float)
+    async minSwapAmount(): Promise<number> {
+        return constantsConfig.MIN_SWAP_AMOUNT;
+    }
+
     @ResolveField(() => String)
     async lastErrorMessage(): Promise<string> {
         try {
