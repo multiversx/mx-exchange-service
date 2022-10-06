@@ -6,19 +6,28 @@ import { Logger } from "winston";
 import { oneHour, oneMinute } from "../../../helpers/helpers";
 import { generateCacheKeyFromParams } from "../../../utils/generate-cache-key";
 import { WeeklyRewardsSplittingAbiService } from "./weekly-rewards-splitting.abi.service";
-import { Energy } from "../../../modules/simple-lock/models/simple.lock.model";
+import { ClaimProgress } from "./progress/progress.compute.service";
+import { EnergyType } from "@elrondnetwork/erdjs-dex";
 
 @Injectable()
 export abstract class WeeklyRewardsSplittingGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly weeklyRewardsAbiService: WeeklyRewardsSplittingAbiService,
+        protected readonly weeklyRewardsAbiService: WeeklyRewardsSplittingAbiService,
     ) {
         super(cachingService, logger);
     }
 
-    async userEnergyForWeek(scAddress: string, userAddress: string, week: number): Promise<Energy> {
+    async currentClaimProgress(scAddress: string, userAddress: string): Promise<ClaimProgress> {
+        return this.getData(
+            this.getWeeklyRewardsCacheKey(scAddress,'currentClaimProgress', userAddress),
+            () => this.weeklyRewardsAbiService.currentClaimProgress(scAddress, userAddress),
+            oneMinute(),
+        )
+    }
+
+    async userEnergyForWeek(scAddress: string, userAddress: string, week: number): Promise<EnergyType> {
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress,'userEnergyForWeek', userAddress, week),
             () => this.weeklyRewardsAbiService.userEnergyForWeek(scAddress, userAddress, week),
@@ -26,9 +35,9 @@ export abstract class WeeklyRewardsSplittingGetterService extends GenericGetterS
         )
     }
 
-    async lastActiveWeekForUser(scAddress: string, userAddress: string, week: number): Promise<number> {
+    async lastActiveWeekForUser(scAddress: string, userAddress: string): Promise<number> {
         return this.getData(
-            this.getWeeklyRewardsCacheKey(scAddress,'lastActiveWeekForUser', userAddress, week),
+            this.getWeeklyRewardsCacheKey(scAddress,'lastActiveWeekForUser', userAddress),
             () => this.weeklyRewardsAbiService.lastActiveWeekForUser(scAddress, userAddress),
             oneMinute(),
         )

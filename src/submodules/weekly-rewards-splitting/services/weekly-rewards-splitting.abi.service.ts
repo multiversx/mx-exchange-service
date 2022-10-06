@@ -5,7 +5,15 @@ import BigNumber from "bignumber.js";
 
 export abstract class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     abstract getContract(scAddress: string): Promise<SmartContract>
-    //TODO: add currentClaimProgress
+
+    async currentClaimProgress(scAddress: string, user: string): Promise<number> {
+        const contract = await this.getContract(scAddress);
+        const interaction: Interaction = contract.methodsExplicit.currentClaimProgress(
+            [new AddressValue(Address.fromString(user))]
+        );
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf();
+    }
 
     async userEnergyForWeek(scAddress: string, user: string, week: number): Promise<number> {
         const contract = await this.getContract(scAddress);

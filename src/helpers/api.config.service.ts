@@ -77,6 +77,15 @@ export class ApiConfigService {
         return privateAppActive === 'true';
     }
 
+    getEpochsInWeek(): number {
+        const epochs = this.configService.get<number>('EPOCHS_IN_WEEK');
+        if (!epochs) {
+            throw new Error('No epochs in week');
+        }
+
+        return epochs;
+    }
+
     isEventsNotifierAppActive(): boolean {
         const eventsNotifierAppActive = this.configService.get<string>(
             'ENABLE_EVENTS_NOTIFIER',

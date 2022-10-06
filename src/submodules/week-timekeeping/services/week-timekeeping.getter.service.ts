@@ -1,11 +1,11 @@
-import { GenericGetterService } from "../../services/generics/generic.getter.service";
-import { CachingService } from "../../services/caching/cache.service";
+import { GenericGetterService } from "../../../services/generics/generic.getter.service";
+import { CachingService } from "../../../services/caching/cache.service";
 import { Inject } from "@nestjs/common";
 import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { Logger } from "winston";
 import { WeekTimekeepingAbiService } from "./week-timekeeping.abi.service";
-import { generateCacheKeyFromParams } from "../../utils/generate-cache-key";
-import { oneMinute } from "../../helpers/helpers";
+import { generateCacheKeyFromParams } from "../../../utils/generate-cache-key";
+import { oneMinute } from "../../../helpers/helpers";
 
 export abstract class WeekTimekeepingGetterService extends GenericGetterService {
     constructor(
@@ -20,6 +20,14 @@ export abstract class WeekTimekeepingGetterService extends GenericGetterService 
         return this.getData(
             this.getWeekTimekeepingCacheKey(scAddress,'currentWeek'),
             () => this.weekTimekeepingAbiService.getCurrentWeek(scAddress),
+            oneMinute(),
+        )
+    }
+
+    async getFirstWeekStartEpoch(scAddress: string): Promise<number> {
+        return this.getData(
+            this.getWeekTimekeepingCacheKey(scAddress, 'firstWeekStartEpoc'),
+            () => this.weekTimekeepingAbiService.firstWeekStartEpoch(scAddress),
             oneMinute(),
         )
     }
