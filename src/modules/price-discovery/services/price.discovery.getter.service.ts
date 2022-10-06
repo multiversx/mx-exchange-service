@@ -1,6 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -12,6 +11,8 @@ import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from './price.discovery.compute.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+
 @Injectable()
 export class PriceDiscoveryGetterService extends GenericGetterService {
     constructor(
@@ -33,7 +34,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'launchedTokenID',
             ),
             () => this.abiService.getLaunchedTokenID(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -44,7 +46,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'acceptedTokenID',
             ),
             () => this.abiService.getAcceptedTokenID(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -55,7 +58,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'redeemTokenID',
             ),
             () => this.abiService.getRedeemTokenID(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -92,7 +96,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             ),
             () =>
                 this.abiService.getLaunchedTokenBalance(priceDiscoveryAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -106,7 +111,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             ),
             () =>
                 this.abiService.getAcceptedTokenBalance(priceDiscoveryAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -122,7 +128,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getLaunchedTokenRedeemBalance(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -138,7 +145,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getAcceptedTokenRedeemBalance(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -154,7 +162,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.priceDiscoveryCompute.computeLaunchedTokenPrice(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -170,7 +179,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.priceDiscoveryCompute.computeAcceptedTokenPrice(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -186,7 +196,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -202,7 +213,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'acceptedTokenPriceUSD',
             ),
             () => this.pairGetter.getTokenPriceUSD(acceptedTokenID),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -210,7 +222,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         return this.getData(
             this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'startEpoch'),
             () => this.abiService.getStartBlock(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -218,7 +231,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         return this.getData(
             this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'endEpoch'),
             () => this.abiService.getEndBlock(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -229,7 +243,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'currentPhase',
             ),
             () => this.abiService.getCurrentPhase(priceDiscoveryAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -243,7 +258,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             ),
             () =>
                 this.abiService.getMinLaunchedTokenPrice(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -259,7 +275,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getNoLimitPhaseDurationBlocks(
                     priceDiscoveryAddress,
                 ),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -275,7 +292,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getLinearPenaltyPhaseDurationBlocks(
                     priceDiscoveryAddress,
                 ),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -291,7 +309,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getFixedPenaltyPhaseDurationBlocks(
                     priceDiscoveryAddress,
                 ),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -302,7 +321,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'lockingScAddress',
             ),
             () => this.abiService.getLockingScAddress(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -313,7 +333,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 'unlockEpoch',
             ),
             () => this.abiService.getUnlockEpoch(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -327,7 +348,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             ),
             () =>
                 this.abiService.getPenaltyMinPercentage(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -341,7 +363,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             ),
             () =>
                 this.abiService.getPenaltyMaxPercentage(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -357,7 +380,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getFixedPenaltyPercentage(
                     priceDiscoveryAddress,
                 ),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 

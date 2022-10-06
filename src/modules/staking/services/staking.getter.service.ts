@@ -5,6 +5,7 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -33,7 +34,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'farmTokenID'),
             () => this.abiService.getFarmTokenID(stakeAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -41,7 +43,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'farmingTokenID'),
             () => this.abiService.getFarmingTokenID(stakeAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -49,7 +52,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'rewardTokenID'),
             () => this.abiService.getRewardTokenID(stakeAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -72,7 +76,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'farmTokenSupply'),
             () => this.abiService.getFarmTokenSupply(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -80,7 +85,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'rewardPerShare'),
             () => this.abiService.getRewardPerShare(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -88,7 +94,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'accumulatedRewards'),
             () => this.abiService.getAccumulatedRewards(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -96,7 +103,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'rewardCapacity'),
             () => this.abiService.getRewardCapacity(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -104,7 +112,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'annualPercentageRewards'),
             () => this.abiService.getAnnualPercentageRewards(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -112,7 +121,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'minUnboundEpochs'),
             () => this.abiService.getMinUnbondEpochs(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -120,7 +130,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'penaltyPercent'),
             () => this.abiService.getPenaltyPercent(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -128,7 +139,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'minimumFarmingEpochs'),
             () => this.abiService.getMinimumFarmingEpoch(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -136,7 +148,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'perBlockRewards'),
             () => this.abiService.getPerBlockRewardAmount(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -144,7 +157,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'lastRewardBlockNonce'),
             () => this.abiService.getLastRewardBlockNonce(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -152,7 +166,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'divisionSafetyConstant'),
             () => this.abiService.getDivisionSafetyConstant(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -160,7 +175,8 @@ export class StakingGetterService extends GenericGetterService {
         return this.getData(
             this.getStakeCacheKey(stakeAddress, 'produceRewardsEnabled'),
             () => this.abiService.getProduceRewardsEnabled(stakeAddress),
-            oneMinute() * 2,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -184,7 +200,8 @@ export class StakingGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeCacheKey(stakeAddress, 'state'),
             () => this.abiService.getState(stakeAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 

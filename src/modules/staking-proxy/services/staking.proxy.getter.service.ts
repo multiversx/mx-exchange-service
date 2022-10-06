@@ -9,6 +9,7 @@ import { Logger } from 'winston';
 import { AbiStakingProxyService } from './staking.proxy.abi.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class StakingProxyGetterService extends GenericGetterService {
@@ -52,7 +53,8 @@ export class StakingProxyGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'stakingTokenID'),
             () => this.abiService.getStakingTokenID(stakingProxyAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -60,7 +62,8 @@ export class StakingProxyGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'farmTokenID'),
             () => this.abiService.getFarmTokenID(stakingProxyAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -68,7 +71,8 @@ export class StakingProxyGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'dualYieldTokenID'),
             () => this.abiService.getDualYieldTokenID(stakingProxyAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -76,7 +80,8 @@ export class StakingProxyGetterService extends GenericGetterService {
         return await this.getData(
             this.getStakeProxyCacheKey(stakingProxyAddress, 'lpFarmTokenID'),
             () => this.abiService.getLpFarmTokenID(stakingProxyAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 

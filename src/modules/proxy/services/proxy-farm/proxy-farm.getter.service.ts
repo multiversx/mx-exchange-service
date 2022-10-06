@@ -8,6 +8,7 @@ import { generateCacheKeyFromParams } from '../../../../utils/generate-cache-key
 import { oneHour } from '../../../../helpers/helpers';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class ProxyFarmGetterService extends GenericGetterService {
@@ -24,7 +25,8 @@ export class ProxyFarmGetterService extends GenericGetterService {
         return this.getData(
             this.getProxyFarmCacheKey('wrappedFarmTokenID'),
             () => this.abiService.getWrappedFarmTokenID(),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
