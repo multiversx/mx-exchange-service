@@ -405,6 +405,7 @@
         "PRECISION_EX_INCREASE": 1000,
         "UNBOND_EPOCHS": 3,
         "MAINTENANCE": false,
+        "EPOCHS_IN_WEEK": 7,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",

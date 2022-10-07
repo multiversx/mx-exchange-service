@@ -11,9 +11,10 @@ export abstract class FeesCollectorService {
         });
     }
 
-    userFeesCollector(scAddress: string, week: number): UserEntryFeesCollectorModel {
+    userFeesCollector(scAddress: string, userAddress: string, week: number): UserEntryFeesCollectorModel {
         return new UserEntryFeesCollectorModel({
             address: scAddress,
+            userAddress: userAddress,
             week: week,
         });
     }

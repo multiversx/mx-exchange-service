@@ -3,7 +3,7 @@ import { WeekForEpochModel, WeeklyTimekeepingModel } from "../models/weekly-time
 
 
 @Injectable()
-export abstract class WeeklyTimekeepingService {
+export class WeeklyTimekeepingService {
     getWeeklyTimekeeping(scAddress: string, week: number): WeeklyTimekeepingModel {
         return new WeeklyTimekeepingModel({
             scAddress: scAddress,

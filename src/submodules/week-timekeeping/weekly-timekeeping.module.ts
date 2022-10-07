@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { WeekTimekeepingAbiService } from "./services/week-timekeeping.abi.service";
-import { WeekTimekeepingComputerService } from "./services/week-timekeeping.computer.service";
+import { WeekTimekeepingComputeService } from "./services/week-timekeeping.compute.service";
 import { WeekTimekeepingGetterService } from "./services/week-timekeeping.getter.service";
 
 
@@ -11,7 +11,7 @@ import { WeekTimekeepingGetterService } from "./services/week-timekeeping.getter
     exports: [
         WeekTimekeepingAbiService,
         WeekTimekeepingGetterService,
-        WeekTimekeepingComputerService,
+        WeekTimekeepingComputeService,
     ],
 })
 export class WeeklyTimekeepingModule {}

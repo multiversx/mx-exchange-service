@@ -11,7 +11,6 @@ import {
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
-import { genericFieldResover } from "../../utils/resolver";
 
 @Resolver(() => SimpleLockModel)
 export class SimpleLockResolver extends GenericResolver {
@@ -24,35 +23,35 @@ export class SimpleLockResolver extends GenericResolver {
 
     @ResolveField()
     async lockedToken(): Promise<NftCollection> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.simpleLockGetter.getLockedToken(),
         );
     }
 
     @ResolveField()
     async lpProxyToken(): Promise<NftCollection> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.simpleLockGetter.getLpProxyToken(),
         );
     }
 
     @ResolveField()
     async farmProxyToken(): Promise<NftCollection> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.simpleLockGetter.getFarmProxyToken(),
         );
     }
 
     @ResolveField()
     async intermediatedPairs(): Promise<string[]> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.simpleLockGetter.getIntermediatedPairs(),
         );
     }
 
     @ResolveField()
     async intermediatedFarms(): Promise<string[]> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.simpleLockGetter.getIntermediatedFarms(),
         );
     }

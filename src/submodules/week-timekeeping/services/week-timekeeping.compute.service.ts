@@ -3,10 +3,11 @@ import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { Logger } from "winston";
 import { ApiConfigService } from "../../../helpers/api.config.service";
 import { WeekTimekeepingGetterService } from "./week-timekeeping.getter.service";
+import { constantsConfig } from "../../../config";
 
 
 @Injectable()
-export abstract class WeekTimekeepingComputerService {
+export abstract class WeekTimekeepingComputeService {
     firstWeekStartEpoch: number;
     epochsInWeek: number;
     constructor(
@@ -14,7 +15,7 @@ export abstract class WeekTimekeepingComputerService {
         private readonly configService: ApiConfigService,
         private readonly weekTimekeepingGetterService: WeekTimekeepingGetterService,
     ) {
-        this.epochsInWeek = this.configService.getEpochsInWeek();
+        this.epochsInWeek = constantsConfig.EPOCHS_IN_WEEK;
     }
 
     async computeWeekForEpoch(scAddress: string, epoch: number): Promise<number> {

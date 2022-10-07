@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { WeeklyRewardsSplittingGetterService } from "./weekly-rewards.splitting.getter.service";
-import { WeekTimekeepingComputerService } from "../../week-timekeeping/services/week-timekeeping.computer.service";
+import { WeekTimekeepingComputeService } from "../../week-timekeeping/services/week-timekeeping.compute.service";
 import { ClaimProgress, ProgressComputeService } from "./progress/progress.compute.service";
 
 interface TokenAmountPair {
@@ -16,7 +16,7 @@ interface TokenAmountPair {
 export abstract class WeeklyRewardsSplittingComputeService  {
     constructor(
         private readonly weekTimekeepingGetterService: WeekTimekeepingGetterService,
-        private readonly weekTimekeepingComputerService: WeekTimekeepingComputerService,
+        private readonly weekTimekeepingComputeService: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingGetterService: WeeklyRewardsSplittingGetterService,
         private readonly progressComputeService: ProgressComputeService,
     ) {}
@@ -52,7 +52,7 @@ export abstract class WeeklyRewardsSplittingComputeService  {
 
         const nextWeek = progress.week + 1;
         const userEnergyNextWeek = await this.weeklyRewardsSplittingGetterService.userEnergyForWeek(scAddress, userAddress, nextWeek)
-        progress = this.progressComputeService.advanceWeek(progress, userEnergyNextWeek, this.weekTimekeepingComputerService.epochsInWeek)
+        progress = this.progressComputeService.advanceWeek(progress, userEnergyNextWeek, this.weekTimekeepingComputeService.epochsInWeek)
         return [userRewards, progress];
     }
 

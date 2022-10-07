@@ -14,21 +14,23 @@ import {
 import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
 import { PriceDiscoveryService } from './services/price.discovery.service';
 import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
-import { genericFieldResover } from "../../utils/resolver";
+import { GenericResolver } from "../../services/generics/generic.resolver";
 
 @Resolver(() => PriceDiscoveryModel)
-export class PriceDiscoveryResolver {
+export class PriceDiscoveryResolver extends GenericResolver {
     constructor(
         private readonly priceDiscoveryService: PriceDiscoveryService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly priceDiscoveryTransactions: PriceDiscoveryTransactionService,
-    ) {}
+    ) {
+        super();
+    }
 
     @ResolveField()
     async launchedToken(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<EsdtToken> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getLaunchedToken(parent.address),
         );
     }
@@ -37,7 +39,7 @@ export class PriceDiscoveryResolver {
     async acceptedToken(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<EsdtToken> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getAcceptedToken(parent.address),
         );
     }
@@ -46,7 +48,7 @@ export class PriceDiscoveryResolver {
     async redeemToken(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<NftCollection> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getRedeemToken(parent.address),
         );
     }
@@ -55,7 +57,7 @@ export class PriceDiscoveryResolver {
     async launchedTokenAmount(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getLaunchedTokenAmount(parent.address),
         );
     }
@@ -64,7 +66,7 @@ export class PriceDiscoveryResolver {
     async acceptedTokenAmount(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getAcceptedTokenAmount(parent.address),
         );
     }
@@ -73,7 +75,7 @@ export class PriceDiscoveryResolver {
     async launchedTokenRedeemBalance(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getLaunchedTokenRedeemBalance(
                 parent.address,
             ),
@@ -84,7 +86,7 @@ export class PriceDiscoveryResolver {
     async acceptedTokenRedeemBalance(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getAcceptedTokenRedeemBalance(
                 parent.address,
             ),
@@ -95,7 +97,7 @@ export class PriceDiscoveryResolver {
     async launchedTokenPrice(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getLaunchedTokenPrice(parent.address),
         );
     }
@@ -104,7 +106,7 @@ export class PriceDiscoveryResolver {
     async acceptedTokenPrice(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getAcceptedTokenPrice(parent.address),
         );
     }
@@ -113,7 +115,7 @@ export class PriceDiscoveryResolver {
     async launchedTokenPriceUSD(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getLaunchedTokenPriceUSD(parent.address),
         );
     }
@@ -122,21 +124,21 @@ export class PriceDiscoveryResolver {
     async acceptedTokenPriceUSD(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getAcceptedTokenPriceUSD(parent.address),
         );
     }
 
     @ResolveField()
     async startBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getStartBlock(parent.address),
         );
     }
 
     @ResolveField()
     async endBlock(@Parent() parent: PriceDiscoveryModel): Promise<number> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getEndBlock(parent.address),
         );
     }
@@ -145,7 +147,7 @@ export class PriceDiscoveryResolver {
     async currentPhase(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<PhaseModel> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getCurrentPhase(parent.address),
         );
     }
@@ -154,7 +156,7 @@ export class PriceDiscoveryResolver {
     async minLaunchedTokenPrice(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getMinLaunchedTokenPrice(parent.address),
         );
     }
@@ -163,7 +165,7 @@ export class PriceDiscoveryResolver {
     async noLimitPhaseDurationBlocks(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getNoLimitPhaseDurationBlocks(
                 parent.address,
             ),
@@ -174,7 +176,7 @@ export class PriceDiscoveryResolver {
     async linearPenaltyPhaseDurationBlocks(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getLinearPenaltyPhaseDurationBlocks(
                 parent.address,
             ),
@@ -185,7 +187,7 @@ export class PriceDiscoveryResolver {
     async fixedPenaltyPhaseDurationBlocks(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<number> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getFixedPenaltyPhaseDurationBlocks(
                 parent.address,
             ),
@@ -196,14 +198,14 @@ export class PriceDiscoveryResolver {
     async lockingScAddress(
         @Parent() parent: PriceDiscoveryModel,
     ): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getLockingScAddress(parent.address),
         );
     }
 
     @ResolveField()
     async unlockEpoch(@Parent() parent: PriceDiscoveryModel): Promise<number> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getUnlockEpoch(parent.address),
         );
     }
@@ -211,8 +213,8 @@ export class PriceDiscoveryResolver {
     @ResolveField()
     async penaltyMinPercentage(
         @Parent() parent: PriceDiscoveryModel,
-    ): Promise<string> {
-        return await genericFieldResover(() =>
+    ): Promise<number> {
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getPenaltyMinPercentage(parent.address),
         );
     }
@@ -220,8 +222,8 @@ export class PriceDiscoveryResolver {
     @ResolveField()
     async penaltyMaxPercentage(
         @Parent() parent: PriceDiscoveryModel,
-    ): Promise<string> {
-        return await genericFieldResover(() =>
+    ): Promise<number> {
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getPenaltyMaxPercentage(parent.address),
         );
     }
@@ -229,8 +231,8 @@ export class PriceDiscoveryResolver {
     @ResolveField()
     async fixedPenaltyPercentage(
         @Parent() parent: PriceDiscoveryModel,
-    ): Promise<string> {
-        return await genericFieldResover(() =>
+    ): Promise<number> {
+        return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getFixedPenaltyPercentage(parent.address),
         );
     }

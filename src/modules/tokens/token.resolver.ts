@@ -7,18 +7,20 @@ import { RolesModel } from './models/roles.model';
 import { TokensFiltersArgs } from './models/tokens.filter.args';
 import { TokenGetterService } from './services/token.getter.service';
 import { TokenService } from './services/token.service';
-import { genericFieldResover } from "../../utils/resolver";
+import { GenericResolver } from "../../services/generics/generic.resolver";
 
 @Resolver(() => EsdtToken)
-export class TokensResolver {
+export class TokensResolver extends GenericResolver {
     constructor(
         private readonly tokenService: TokenService,
         private readonly tokenGetter: TokenGetterService,
-    ) {}
+    ) {
+        super();
+    }
 
     @ResolveField(() => String)
     async derivedEGLD(@Parent() parent: EsdtToken): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.tokenGetter.getDerivedEGLD(parent.identifier),
         );
     }
@@ -28,14 +30,14 @@ export class TokensResolver {
         if (constantsConfig.USDC_TOKEN_ID === parent.identifier) {
             return '1';
         }
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.tokenGetter.getDerivedUSD(parent.identifier),
         );
     }
 
     @ResolveField(() => String)
     async type(@Parent() parent: EsdtToken): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.tokenGetter.getEsdtTokenType(parent.identifier),
         );
     }

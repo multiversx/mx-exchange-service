@@ -1,7 +1,5 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-
 import { FeesCollectorModel, UserEntryFeesCollectorModel } from "./models/fees-collector.model";
-import { FeesCollectorGetterService } from "./services/fees-collector.getter.service";
 import { ApolloError } from "apollo-server-express";
 import { FeesCollectorService } from "./services/fees-collector.service";
 import { WeeklyTimekeepingModel } from "../../submodules/week-timekeeping/models/weekly-timekeeping.model";
@@ -20,7 +18,6 @@ import { GqlAuthGuard } from "../auth/gql.auth.guard";
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver {
     constructor(
-        private readonly farmGetterService: FeesCollectorGetterService,
         private readonly feesCollectorService: FeesCollectorService,
         private readonly weeklyTimekeepingService: WeeklyTimekeepingService,
         private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
@@ -59,11 +56,10 @@ export class FeesCollectorResolver {
 
     @ResolveField()
     async userSplitRewards(
-        @User() user: any,
-        @Parent() parent: FeesCollectorModel
+        @Parent() parent: UserEntryFeesCollectorModel
     ): Promise<UserWeeklyRewardsSplittingModel> {
         try {
-            return this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(parent.address, user.publicKey, parent.week);
+            return this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(parent.address, parent.userAddress, parent.week);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -72,11 +68,12 @@ export class FeesCollectorResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => UserEntryFeesCollectorModel)
     async userFeesCollector(
+        @User() user: any,
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,
     ): Promise<UserEntryFeesCollectorModel> {
         try {
-            return this.feesCollectorService.userFeesCollector(scAddress, week);
+            return this.feesCollectorService.userFeesCollector(scAddress, user.publicKey, week);
         } catch (error) {
             throw new ApolloError(error);
         }

@@ -5,26 +5,27 @@ import {
 } from "./models/weekly-rewards-splitting.model";
 import { UseGuards } from "@nestjs/common";
 import { WeeklyRewardsSplittingGetterService } from "./services/weekly-rewards.splitting.getter.service";
-import { NftCollection } from "../../modules/tokens/models/nftCollection.model";
 import { ApolloError } from "apollo-server-express";
 import { WeeklyRewardsSplittingService } from "./services/weekly-rewards-splitting.service";
 import { GqlAuthGuard } from "../../modules/auth/gql.auth.guard";
 import { User } from "../../helpers/userDecorator";
-import { genericFieldResover } from "../../utils/resolver";
+import { GenericResolver } from "../../services/generics/generic.resolver";
 
 
 @Resolver(() => WeeklyRewardsSplittingModel)
-export class WeeklyRewardsSplittingResolver {
+export class WeeklyRewardsSplittingResolver extends GenericResolver {
     constructor(
         protected readonly weeklyRewardsSplittingGetterService: WeeklyRewardsSplittingGetterService,
         protected readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
-    ) {}
+    ) {
+        super();
+    }
 
     @ResolveField()
     async totalRewards(
         @Parent() parent: WeeklyRewardsSplittingModel
-    ): Promise<NftCollection> {
-        return await genericFieldResover(() =>
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
             this.weeklyRewardsSplittingGetterService.totalRewardsForWeek(parent.scAddress, parent.week),
         );
     }
@@ -32,8 +33,8 @@ export class WeeklyRewardsSplittingResolver {
     @ResolveField()
     async totalEnergy(
         @Parent() parent: WeeklyRewardsSplittingModel
-    ): Promise<NftCollection> {
-        return await genericFieldResover(() =>
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
             this.weeklyRewardsSplittingGetterService.totalEnergyForWeek(parent.scAddress, parent.week),
         );
     }
@@ -41,8 +42,8 @@ export class WeeklyRewardsSplittingResolver {
     @ResolveField()
     async totalLockedTokens(
         @Parent() parent: WeeklyRewardsSplittingModel
-    ): Promise<NftCollection> {
-        return await genericFieldResover(() =>
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
             this.weeklyRewardsSplittingGetterService.totalLockedTokensForWeek(parent.scAddress, parent.week),
         );
     }
@@ -50,8 +51,8 @@ export class WeeklyRewardsSplittingResolver {
     @ResolveField()
     async lastGlobalUpdateWeek(
         @Parent() parent: WeeklyRewardsSplittingModel
-    ): Promise<NftCollection> {
-        return await genericFieldResover(() =>
+    ): Promise<number> {
+        return await this.genericFieldResover(() =>
             this.weeklyRewardsSplittingGetterService.lastGlobalUpdateWeek(parent.scAddress),
         );
     }

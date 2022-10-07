@@ -30,6 +30,9 @@ export class UserEntryFeesCollectorModel {
     address: string;
 
     @Field()
+    userAddress: string;
+
+    @Field()
     week: number;
 
     @Field()
@@ -38,7 +41,7 @@ export class UserEntryFeesCollectorModel {
     @Field()
     userSplitRewards: UserWeeklyRewardsSplittingModel;
 
-    constructor(init?: Partial<FeesCollectorModel>) {
+    constructor(init?: Partial<UserEntryFeesCollectorModel>) {
         Object.assign(this, init);
     }
 }
