@@ -355,11 +355,7 @@
                     "type": "Address"
                 }
             ],
-            "outputs": [
-                {
-                    "type": "permissions_module::permissions::Permissions"
-                }
-            ]
+            "outputs": []
         },
         {
             "name": "set_penalty_percent",

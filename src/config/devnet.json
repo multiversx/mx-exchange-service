@@ -59,7 +59,8 @@
                 "erd1qqqqqqqqqqqqqpgqxafjlvah06svpkv34hvq738t4zvt47wh0n4sudtc0p"
             ],
             "customRewards": []
-        }
+        },
+        "v2": ["erd1qqqqqqqqqqqqqpgqetwkcsv2x9qpryyu828wv942qd8juhp80n4sv0c9q9"]
     },
     "tokenProviderUSD": "WEGLD-d7c6bb",
     "tokensSupply": ["MEX-dc289c"],
