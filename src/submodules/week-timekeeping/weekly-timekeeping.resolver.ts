@@ -1,5 +1,4 @@
 import { Args, Parent, Query, ResolveField, Resolver } from "@nestjs/graphql";
-import { ApolloError } from "apollo-server-express";
 import {
     WeeklyRewardsSplittingModel
 } from "../weekly-rewards-splitting/models/weekly-rewards-splitting.model";
@@ -62,11 +61,9 @@ export class WeeklyTimekeepingResolver extends GenericResolver{
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,
     ): Promise<WeeklyTimekeepingModel> {
-        try {
-            return this.weeklyTimekeepingService.getWeeklyTimekeeping(scAddress, week);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericFieldResover(() =>
+            this.weeklyTimekeepingService.getWeeklyTimekeeping(scAddress, week),
+        );
     }
 
     @ResolveField()
@@ -83,10 +80,8 @@ export class WeeklyTimekeepingResolver extends GenericResolver{
         @Args('scAddress') scAddress: string,
         @Args('epoch') epoch: number,
     ): Promise<WeekForEpochModel> {
-        try {
-            return this.weeklyTimekeepingService.getWeekForEpoch(scAddress, epoch);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericFieldResover(() =>
+            this.weeklyTimekeepingService.getWeekForEpoch(scAddress, epoch),
+        );
     }
 }

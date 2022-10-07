@@ -100,7 +100,7 @@ export class FarmResolver extends GenericResolver {
 
     @ResolveField()
     async farmTokenPriceUSD(@Parent() parent: FarmModel): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.farmGetterService.getFarmTokenPriceUSD(parent.address),
         );
     }
@@ -114,14 +114,14 @@ export class FarmResolver extends GenericResolver {
 
     @ResolveField()
     async penaltyPercent(@Parent() parent: FarmModel): Promise<number> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.farmGetterService.getPenaltyPercent(parent.address),
         );
     }
 
     @ResolveField()
     async minimumFarmingEpochs(@Parent() parent: FarmModel): Promise<number> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.farmGetterService.getMinimumFarmingEpochs(parent.address),
         );
     }
@@ -135,21 +135,21 @@ export class FarmResolver extends GenericResolver {
 
     @ResolveField()
     async rewardReserve(@Parent() parent: FarmModel): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.farmGetterService.getRewardReserve(parent.address),
         );
     }
 
     @ResolveField()
     async lastRewardBlockNonce(@Parent() parent: FarmModel): Promise<number> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.farmGetterService.getLastRewardBlockNonce(parent.address),
         );
     }
 
     @ResolveField()
     async undistributedFees(@Parent() parent: FarmModel): Promise<string> {
-        return await genericFieldResover(() =>
+        return await this.genericFieldResover(() =>
             this.farmGetterService.getUndistributedFees(parent.address),
         );
     }

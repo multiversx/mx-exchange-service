@@ -7,9 +7,9 @@ import { WeeklyRewardsSplittingGetterService } from "./weekly-rewards.splitting.
 export abstract class WeeklyRewardsSplittingService {
     constructor(
         private readonly getterService: WeeklyRewardsSplittingGetterService,
-    ) {
-    }
-    getWeeklyRewardsSplit(scAddress: string, week: number): WeeklyRewardsSplittingModel {
+    ) {}
+
+    async getWeeklyRewardsSplit(scAddress: string, week: number): Promise<WeeklyRewardsSplittingModel> {
         return new WeeklyRewardsSplittingModel({
             scAddress: scAddress,
             week: week,
@@ -17,12 +17,21 @@ export abstract class WeeklyRewardsSplittingService {
     }
 
     async getUserWeeklyRewardsSplit(scAddress: string, userAddress: string, week: number): Promise<UserWeeklyRewardsSplittingModel> {
+        const [
+            claimProgress,
+            energyFrorWeek,
+            lastActiveWeekForUser,
+        ] = await Promise.all([
+            this.getterService.currentClaimProgress(scAddress, userAddress),
+            this.getterService.userEnergyForWeek(scAddress, userAddress, week),
+            this.getterService.lastActiveWeekForUser(scAddress, userAddress),
+        ]);
         return new UserWeeklyRewardsSplittingModel({
             scAddress: scAddress,
             week: week,
-            claimProgress: await this.getterService.currentClaimProgress(scAddress, userAddress),
-            energyFrorWeek: await this.getterService.userEnergyForWeek(scAddress, userAddress, week),
-            lastActiveWeekForUser: await this.getterService.lastActiveWeekForUser(scAddress, userAddress)
+            claimProgress: claimProgress,
+            energyFrorWeek: energyFrorWeek,
+            lastActiveWeekForUser: lastActiveWeekForUser
         });
     }
 }

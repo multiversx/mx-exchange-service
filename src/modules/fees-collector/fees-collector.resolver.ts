@@ -1,6 +1,5 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { FeesCollectorModel, UserEntryFeesCollectorModel } from "./models/fees-collector.model";
-import { ApolloError } from "apollo-server-express";
 import { FeesCollectorService } from "./services/fees-collector.service";
 import { WeeklyTimekeepingModel } from "../../submodules/week-timekeeping/models/weekly-timekeeping.model";
 import { WeeklyTimekeepingService } from "../../submodules/week-timekeeping/services/weekly-timekeeping.service";
@@ -14,32 +13,31 @@ import {
 import { User } from "../../helpers/userDecorator";
 import { UseGuards } from "@nestjs/common";
 import { GqlAuthGuard } from "../auth/gql.auth.guard";
+import { GenericResolver } from "../../services/generics/generic.resolver";
 
 @Resolver(() => FeesCollectorModel)
-export class FeesCollectorResolver {
+export class FeesCollectorResolver extends GenericResolver{
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
         private readonly weeklyTimekeepingService: WeeklyTimekeepingService,
         private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
-    ) {}
+    ) {
+        super();
+    }
 
 
     @ResolveField()
     async time(@Parent() parent: FeesCollectorModel): Promise<WeeklyTimekeepingModel> {
-        try {
-            return this.weeklyTimekeepingService.getWeeklyTimekeeping(parent.address, parent.week);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericQuery(() =>
+            this.weeklyTimekeepingService.getWeeklyTimekeeping(parent.address, parent.week),
+        );
     }
 
     @ResolveField()
     async splitRewards(@Parent() parent: FeesCollectorModel): Promise<WeeklyRewardsSplittingModel> {
-        try {
-            return this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(parent.address, parent.week);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericQuery(() =>
+            this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(parent.address, parent.week),
+        );
     }
 
     @Query(() => FeesCollectorModel)
@@ -47,22 +45,18 @@ export class FeesCollectorResolver {
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,
     ): Promise<FeesCollectorModel> {
-        try {
-            return this.feesCollectorService.feesCollector(scAddress, week);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericQuery(() =>
+            this.feesCollectorService.feesCollector(scAddress, week),
+        );
     }
 
     @ResolveField()
     async userSplitRewards(
         @Parent() parent: UserEntryFeesCollectorModel
     ): Promise<UserWeeklyRewardsSplittingModel> {
-        try {
-            return this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(parent.address, parent.userAddress, parent.week);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericQuery(() =>
+            this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(parent.address, parent.userAddress, parent.week),
+        );
     }
 
     @UseGuards(GqlAuthGuard)
@@ -72,10 +66,8 @@ export class FeesCollectorResolver {
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,
     ): Promise<UserEntryFeesCollectorModel> {
-        try {
-            return this.feesCollectorService.userFeesCollector(scAddress, user.publicKey, week);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericQuery(() =>
+            this.feesCollectorService.userFeesCollector(scAddress, user.publicKey, week),
+        );
     }
 }

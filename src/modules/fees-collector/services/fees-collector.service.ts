@@ -4,14 +4,14 @@ import { FeesCollectorModel, UserEntryFeesCollectorModel } from "../models/fees-
 
 @Injectable()
 export abstract class FeesCollectorService {
-    feesCollector(scAddress: string, week: number): FeesCollectorModel {
+    async feesCollector(scAddress: string, week: number): Promise<FeesCollectorModel> {
         return new FeesCollectorModel({
             address: scAddress,
             week: week,
         });
     }
 
-    userFeesCollector(scAddress: string, userAddress: string, week: number): UserEntryFeesCollectorModel {
+    async userFeesCollector(scAddress: string, userAddress: string, week: number): Promise<UserEntryFeesCollectorModel> {
         return new UserEntryFeesCollectorModel({
             address: scAddress,
             userAddress: userAddress,

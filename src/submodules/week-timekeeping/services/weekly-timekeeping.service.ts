@@ -4,14 +4,14 @@ import { WeekForEpochModel, WeeklyTimekeepingModel } from "../models/weekly-time
 
 @Injectable()
 export class WeeklyTimekeepingService {
-    getWeeklyTimekeeping(scAddress: string, week: number): WeeklyTimekeepingModel {
+    async getWeeklyTimekeeping(scAddress: string, week: number): Promise<WeeklyTimekeepingModel> {
         return new WeeklyTimekeepingModel({
             scAddress: scAddress,
             week: week,
         });
     }
 
-    getWeekForEpoch(scAddress: string, epoch: number): WeekForEpochModel {
+    async getWeekForEpoch(scAddress: string, epoch: number): Promise<WeekForEpochModel> {
         return new WeekForEpochModel({
             scAddress: scAddress,
             epoch: epoch,
