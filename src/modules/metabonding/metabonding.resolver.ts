@@ -15,6 +15,7 @@ import {
 import { MetabondingGetterService } from './services/metabonding.getter.service';
 import { MetabondingService } from './services/metabonding.service';
 import { MetabondingTransactionService } from './services/metabonding.transactions.service';
+import { genericFieldResover } from "../../utils/resolver";
 
 @Resolver(() => MetabondingStakingModel)
 export class MetabondingResolver {
@@ -25,24 +26,16 @@ export class MetabondingResolver {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    private async genericFieldResover(fieldResolver: () => any): Promise<any> {
-        try {
-            return await fieldResolver();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
     @ResolveField()
     async lockedAssetToken(): Promise<NftCollection> {
-        return await this.genericFieldResover(() =>
+        return await genericFieldResover(() =>
             this.metabondingGetter.getLockedAssetToken(),
         );
     }
 
     @ResolveField()
     async lockedAssetTokenSupply(): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await genericFieldResover(() =>
             this.metabondingGetter.getTotalLockedAssetSupply(),
         );
     }

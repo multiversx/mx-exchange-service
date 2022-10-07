@@ -1,12 +1,13 @@
 import { Address, AddressValue, Interaction, SmartContract, U32Value } from "@elrondnetwork/erdjs/out";
 import { GenericAbiService } from "../../../services/generics/generic.abi.service";
 import BigNumber from "bignumber.js";
+import { ClaimProgress } from "./progress/progress.compute.service";
 
 
 export abstract class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     abstract getContract(scAddress: string): Promise<SmartContract>
 
-    async currentClaimProgress(scAddress: string, user: string): Promise<number> {
+    async currentClaimProgress(scAddress: string, user: string): Promise<ClaimProgress> {
         const contract = await this.getContract(scAddress);
         const interaction: Interaction = contract.methodsExplicit.currentClaimProgress(
             [new AddressValue(Address.fromString(user))]
