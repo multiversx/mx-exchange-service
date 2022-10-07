@@ -22,17 +22,18 @@ import { FarmModelV1_2 } from '../models/farm.v1.2.model';
 import { FarmModelV1_3 } from '../models/farm.v1.3.model';
 import { FarmCustomModel } from '../models/farm.custom.model';
 import { FarmsUnion } from '../models/farm.union';
+import { FarmModelV2 } from '../models/farm.v2.model';
 
 @Injectable()
 export class FarmService {
     constructor(
-        private readonly abiService: AbiFarmService,
+        protected readonly abiService: AbiFarmService,
         @Inject(forwardRef(() => FarmGetterService))
-        private readonly farmGetterService: FarmGetterService,
-        private readonly farmComputeService: FarmComputeService,
-        private readonly contextGetter: ContextGetterService,
-        private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        protected readonly farmGetter: FarmGetterService,
+        protected readonly farmCompute: FarmComputeService,
+        protected readonly contextGetter: ContextGetterService,
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
     getFarms(): Array<typeof FarmsUnion> {
@@ -57,6 +58,13 @@ export class FarmService {
                         }),
                     );
                     break;
+                case FarmVersion.V2:
+                    farms.push(
+                        new FarmModelV2({
+                            address,
+                            version,
+                        }),
+                    );
                 default:
                     farms.push(
                         new FarmCustomModel({
@@ -72,7 +80,7 @@ export class FarmService {
 
     async isFarmToken(tokenID: string): Promise<boolean> {
         for (const farmAddress of farmsAddresses()) {
-            const farmTokenID = await this.farmGetterService.getFarmTokenID(
+            const farmTokenID = await this.farmGetter.getFarmTokenID(
                 farmAddress,
             );
             if (tokenID === farmTokenID) {
@@ -92,7 +100,7 @@ export class FarmService {
             return cachedValue;
         }
         for (const farmAddress of farmsAddresses()) {
-            const farmTokenID = await this.farmGetterService.getFarmTokenID(
+            const farmTokenID = await this.farmGetter.getFarmTokenID(
                 farmAddress,
             );
             if (farmTokenID === tokenID) {
@@ -130,17 +138,16 @@ export class FarmService {
                 positon,
             );
         } else {
-            rewards =
-                await this.farmComputeService.computeFarmRewardsForPosition(
-                    positon.farmAddress,
-                    positon.liquidity,
-                    farmTokenAttributes,
-                );
+            rewards = await this.farmCompute.computeFarmRewardsForPosition(
+                positon.farmAddress,
+                positon.liquidity,
+                farmTokenAttributes,
+            );
         }
 
         const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
             this.contextGetter.getCurrentEpoch(),
-            this.farmGetterService.getMinimumFarmingEpochs(positon.farmAddress),
+            this.farmGetter.getMinimumFarmingEpochs(positon.farmAddress),
         ]);
 
         const remainingFarmingEpochs = Math.max(
@@ -183,10 +190,9 @@ export class FarmService {
         );
 
         if (rewardsForPosition.remainingFarmingEpochs > 0) {
-            const penaltyPercent =
-                await this.farmGetterService.getPenaltyPercent(
-                    args.farmAddress,
-                );
+            const penaltyPercent = await this.farmGetter.getPenaltyPercent(
+                args.farmAddress,
+            );
             initialFarmingAmount = initialFarmingAmount.minus(
                 initialFarmingAmount
                     .multipliedBy(penaltyPercent)
@@ -218,10 +224,7 @@ export class FarmService {
     }
 
     async requireOwner(farmAddress: string, sender: string) {
-        if (
-            (await this.farmGetterService.getOwnerAddress(farmAddress)) !==
-            sender
-        )
+        if ((await this.farmGetter.getOwnerAddress(farmAddress)) !== sender)
             throw new Error('You are not the owner.');
     }
 }
