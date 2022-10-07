@@ -23,7 +23,7 @@ export class FarmV2AbiService extends AbiFarmService {
     async getBoostedYieldsRewardsPercenatage(
         farmAddress: string,
     ): Promise<number> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
 
@@ -34,7 +34,7 @@ export class FarmV2AbiService extends AbiFarmService {
     }
 
     async getCurrentWeek(farmAddress: string): Promise<number> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
 
@@ -45,7 +45,7 @@ export class FarmV2AbiService extends AbiFarmService {
     }
 
     async getEnergyFactoryAddress(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
 
@@ -62,7 +62,7 @@ export class FarmV2AbiService extends AbiFarmService {
             service: FarmV2AbiService.name,
             method: this.calculateRewardsForGivenPosition.name,
         });
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
         const decodedAttributes = FarmTokenAttributes.fromAttributes(

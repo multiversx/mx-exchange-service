@@ -5,8 +5,9 @@ import { AbiFarmService } from '../farm.abi.service';
 @Injectable()
 export class FarmCustomAbiService extends AbiFarmService {
     async getWhitelist(farmAddress: string): Promise<string[]> {
-        const [contract, version, type] =
-            await this.elrondProxy.getFarmSmartContract(farmAddress);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
 
         const interaction: Interaction =
             contract.methodsExplicit.getWhitelist();

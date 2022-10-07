@@ -8,7 +8,7 @@ export class FarmV13AbiService extends AbiFarmService {
     async getFarmMigrationConfiguration(
         farmAddress: string,
     ): Promise<FarmMigrationConfig | undefined> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
 

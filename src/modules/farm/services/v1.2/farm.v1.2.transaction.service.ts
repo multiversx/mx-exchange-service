@@ -40,7 +40,7 @@ export class FarmV12TransactionService extends TransactionsFarmService {
         sender: string,
         args: EnterFarmArgs,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
 
@@ -96,7 +96,7 @@ export class FarmV12TransactionService extends TransactionsFarmService {
         sender: string,
         args: ExitFarmArgs,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
         const gasLimit = gasConfig.farms[FarmVersion.V1_2].migrateToNewFarm;
@@ -119,7 +119,7 @@ export class FarmV12TransactionService extends TransactionsFarmService {
     async stopRewardsAndMigrateRps(
         farmAddress: string,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit

@@ -23,7 +23,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -33,7 +33,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -43,7 +43,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -53,7 +53,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -64,7 +64,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -74,7 +74,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getPenaltyPercent(farmAddress: string): Promise<number> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -84,7 +84,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -94,7 +94,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getRewardPerShare(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -104,7 +104,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getRewardReserve(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -114,7 +114,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getLastRewardBlockNonce(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -124,7 +124,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -136,7 +136,7 @@ export class AbiFarmService extends GenericAbiService {
     async calculateRewardsForGivenPosition(
         args: CalculateRewardsArgs,
     ): Promise<BigNumber> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
         const interaction: Interaction =
@@ -151,7 +151,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getState(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction = contract.methodsExplicit.getState();
@@ -168,7 +168,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getBurnGasLimit(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -178,7 +178,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getTransferExecGasLimit(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =
@@ -189,7 +189,7 @@ export class AbiFarmService extends GenericAbiService {
 
     async getPairContractManagedAddress(farmAddress: string): Promise<string> {
         try {
-            const [contract] = await this.elrondProxy.getFarmSmartContract(
+            const contract = await this.elrondProxy.getFarmSmartContract(
                 farmAddress,
             );
             const interaction: Interaction =
@@ -205,7 +205,7 @@ export class AbiFarmService extends GenericAbiService {
         farmAddress: string,
     ): Promise<string> {
         try {
-            const [contract] = await this.elrondProxy.getFarmSmartContract(
+            const contract = await this.elrondProxy.getFarmSmartContract(
                 farmAddress,
             );
             const interaction: Interaction =
@@ -218,7 +218,7 @@ export class AbiFarmService extends GenericAbiService {
     }
 
     async getLastErrorMessage(farmAddress: string): Promise<string> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const interaction: Interaction =

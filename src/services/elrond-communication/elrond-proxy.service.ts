@@ -79,9 +79,7 @@ export class ElrondProxyService {
         );
     }
 
-    async getFarmSmartContract(
-        farmAddress: string,
-    ): Promise<[SmartContract, string, string]> {
+    async getFarmSmartContract(farmAddress: string): Promise<SmartContract> {
         const version = farmVersion(farmAddress);
         const type = farmType(farmAddress);
 
@@ -89,12 +87,7 @@ export class ElrondProxyService {
             type === undefined
                 ? abiConfig.farm[version]
                 : abiConfig.farm[version][type];
-        const contract = await this.getSmartContract(
-            farmAddress,
-            abiPath,
-            'Farm',
-        );
-        return [contract, version, type];
+        return await this.getSmartContract(farmAddress, abiPath, 'Farm');
     }
 
     async getStakingSmartContract(

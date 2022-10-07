@@ -6,7 +6,7 @@ import { AbiFarmService } from '../farm.abi.service';
 @Injectable()
 export class FarmV12AbiService extends AbiFarmService {
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
 
@@ -17,7 +17,7 @@ export class FarmV12AbiService extends AbiFarmService {
     }
 
     async getUndistributedFees(farmAddress: string): Promise<string> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
 
@@ -28,7 +28,7 @@ export class FarmV12AbiService extends AbiFarmService {
     }
 
     async getCurrentBlockFee(farmAddress: string): Promise<string> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
 
@@ -40,7 +40,7 @@ export class FarmV12AbiService extends AbiFarmService {
     }
 
     async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
 
@@ -53,7 +53,7 @@ export class FarmV12AbiService extends AbiFarmService {
     async getFarmMigrationConfiguration(
         farmAddress: string,
     ): Promise<FarmMigrationConfig | undefined> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
 

@@ -82,7 +82,7 @@ export class TransactionsFarmService {
         version: FarmVersion,
         rewardType: FarmRewardType,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
         const gasLimit = await this.getExitFarmGasLimit(
@@ -112,7 +112,7 @@ export class TransactionsFarmService {
         args: ClaimRewardsArgs,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
 
@@ -145,7 +145,7 @@ export class TransactionsFarmService {
         if (farmedTokenID !== farmingTokenID) {
             throw new Error('failed to compound different tokens');
         }
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
 
@@ -168,7 +168,7 @@ export class TransactionsFarmService {
     async setFarmMigrationConfig(
         args: FarmMigrationConfigArgs,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.oldFarmAddress,
         );
         const transactionArgs = [
@@ -252,7 +252,7 @@ export class TransactionsFarmService {
     }
 
     async endProduceRewards(farmAddress: string): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -264,7 +264,7 @@ export class TransactionsFarmService {
     }
 
     async startProduceRewards(farmAddress: string): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -279,7 +279,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         amount: string,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -294,7 +294,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         percent: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -309,7 +309,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         epochs: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -326,7 +326,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -343,7 +343,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -355,7 +355,7 @@ export class TransactionsFarmService {
     }
 
     async pause(farmAddress: string): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -367,7 +367,7 @@ export class TransactionsFarmService {
     }
 
     async resume(farmAddress: string): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -384,7 +384,7 @@ export class TransactionsFarmService {
         tokenTicker: string,
         decimals: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const transactionArgs: TypedValue[] = [
@@ -403,7 +403,7 @@ export class TransactionsFarmService {
     async setLocalRolesFarmToken(
         farmAddress: string,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -419,7 +419,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const mappedPayments = payments.map((tokenPayment) =>
