@@ -24,6 +24,10 @@ import { FarmV12Resolver } from './resolvers/farm.v1.2.resolver';
 import { FarmV13Resolver } from './resolvers/farm.v1.3.resolver';
 import { FarmCustomResolver } from './resolvers/farm.custom.resolver';
 import { FarmQueryResolver } from './resolvers/farm.query.resolver';
+import { FarmV2Resolver } from './resolvers/farm.v2.resolver';
+import { FarmV2AbiService } from './services/v2/farm.v2.abi.service';
+import { FarmV2GetterService } from './services/v2/farm.v2.getter.service';
+import { FarmV2Service } from './services/v2/farm.v2.service';
 
 @Module({
     imports: [
@@ -47,18 +51,26 @@ import { FarmQueryResolver } from './resolvers/farm.query.resolver';
         FarmV13AbiService,
         FarmV13GetterService,
         FarmV13ComputeService,
+        FarmV2Service,
+        FarmV2AbiService,
+        FarmV2GetterService,
         FarmCustomAbiService,
         FarmCustomGetterService,
         FarmResolver,
         FarmV12Resolver,
         FarmV13Resolver,
+        FarmV2Resolver,
         FarmCustomResolver,
         FarmQueryResolver,
     ],
     exports: [
         FarmService,
         AbiFarmService,
+        FarmV12AbiService,
+        FarmV13AbiService,
         FarmGetterService,
+        FarmV12GetterService,
+        FarmV13GetterService,
         FarmSetterService,
         FarmComputeService,
         FarmV12ComputeService,
