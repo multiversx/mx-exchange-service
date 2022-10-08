@@ -1,7 +1,7 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 
 @ObjectType()
-export class WeeklyTimekeepingModel {
+export class WeekTimekeepingModel {
     @Field()
     scAddress: string;
 
@@ -20,7 +20,7 @@ export class WeeklyTimekeepingModel {
     @Field()
     endEpochForWeek: number;
 
-    constructor(init?: Partial<WeeklyTimekeepingModel>) {
+    constructor(init?: Partial<WeekTimekeepingModel>) {
         Object.assign(this, init);
     }
 }

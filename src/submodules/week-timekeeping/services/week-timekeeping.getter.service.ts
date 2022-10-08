@@ -1,6 +1,6 @@
 import { GenericGetterService } from "../../../services/generics/generic.getter.service";
 import { CachingService } from "../../../services/caching/cache.service";
-import { Inject } from "@nestjs/common";
+import { forwardRef, Inject } from "@nestjs/common";
 import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { Logger } from "winston";
 import { WeekTimekeepingAbiService } from "./week-timekeeping.abi.service";
@@ -8,11 +8,12 @@ import { generateCacheKeyFromParams } from "../../../utils/generate-cache-key";
 import { oneMinute } from "../../../helpers/helpers";
 import { WeekTimekeepingComputeService } from "./week-timekeeping.compute.service";
 
-export abstract class WeekTimekeepingGetterService extends GenericGetterService {
+export class WeekTimekeepingGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly weekTimekeepingAbiService: WeekTimekeepingAbiService,
+        @Inject(forwardRef(() => WeekTimekeepingComputeService))
         private readonly weekTimekeepingComputeService: WeekTimekeepingComputeService,
     ) {
         super(cachingService, logger);

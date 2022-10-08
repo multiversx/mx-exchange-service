@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { WeeklyTimekeepingModel } from "../../../submodules/week-timekeeping/models/weekly-timekeeping.model";
+import { WeekTimekeepingModel } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
 import {
     UserWeeklyRewardsSplittingModel,
     WeeklyRewardsSplittingModel
@@ -14,7 +14,7 @@ export class FeesCollectorModel {
     week: number;
 
     @Field()
-    time: WeeklyTimekeepingModel;
+    time: WeekTimekeepingModel;
 
     @Field()
     splitRewards: WeeklyRewardsSplittingModel;
@@ -36,9 +36,9 @@ export class UserEntryFeesCollectorModel {
     week: number;
 
     @Field()
-    time: WeeklyTimekeepingModel;
+    time: WeekTimekeepingModel;
 
-    @Field()
+    @Field(() => UserWeeklyRewardsSplittingModel)
     userSplitRewards: UserWeeklyRewardsSplittingModel;
 
     constructor(init?: Partial<UserEntryFeesCollectorModel>) {

@@ -1,6 +1,6 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ClaimProgress } from "../services/progress/progress.compute.service";
-import { EnergyType } from "@elrondnetwork/erdjs-dex";
+import { EnergyModel } from "../../../modules/simple-lock/models/simple.lock.model";
 
 @ObjectType()
 export class WeeklyRewardsSplittingModel {
@@ -39,7 +39,7 @@ export class UserWeeklyRewardsSplittingModel {
     claimProgress: ClaimProgress;
 
     @Field()
-    energyFrorWeek: EnergyType;
+    energyForWeek: EnergyModel;
 
     @Field()
     lastActiveWeekForUser: number;

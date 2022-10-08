@@ -10,23 +10,24 @@ import {
 import { Mixin } from "ts-mixer";
 import BigNumber from "bignumber.js";
 import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
+import { WeekTimekeepingAbiService } from "../../../submodules/week-timekeeping/services/week-timekeeping.abi.service";
 
 @Injectable()
-export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewardsSplittingAbiService) {
+export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(elrondProxy, logger);
+        this.getContractHandler = this.getContract
     }
-
-    async getContract(_scAddress: string): Promise<SmartContract> {
+    async getContract(): Promise<SmartContract> {
         const contract = await this.elrondProxy.getFeesCollectorContract()
         return contract
     }
 
     async accumulatedFees(scAddress: string, week: number, token: string): Promise<number> {
-        const contract = await this.getContract(scAddress);
+        const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction = contract.methodsExplicit.accumulatedFees(
             [
                 BytesValue.fromUTF8(token),

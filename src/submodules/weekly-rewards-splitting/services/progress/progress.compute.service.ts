@@ -1,10 +1,16 @@
 import { EnergyType } from "@elrondnetwork/erdjs-dex";
 import { EnergyComputeService } from "../../../../modules/simple-lock/services/energy/energy.compute.service";
+import { Field, ObjectType } from "@nestjs/graphql";
+import { EnergyModel } from "../../../../modules/simple-lock/models/simple.lock.model";
 
-export declare type ClaimProgress = {
-    energy: EnergyType;
+@ObjectType()
+export class ClaimProgress {
+    @Field()
+    energy: EnergyModel;
+
+    @Field()
     week: number
-};
+}
 
 export class ProgressComputeService {
     constructor(

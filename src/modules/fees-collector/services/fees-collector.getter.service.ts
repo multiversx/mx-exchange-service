@@ -24,7 +24,6 @@ export class FeesCollectorGetterService extends Mixin(GenericGetterService, Week
         private readonly abiService: FeesCollectorAbiService,
     ) {
         super(cachingService, logger);
-        super(cachingService, logger, this.weeklyRewardsAbiService);
     }
 
     async getAccumulatedFees(scAddress: string, week: number, token: string): Promise<ClaimProgress> {

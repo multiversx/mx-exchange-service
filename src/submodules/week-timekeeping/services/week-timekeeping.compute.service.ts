@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { Logger } from "winston";
 import { ApiConfigService } from "../../../helpers/api.config.service";
@@ -7,12 +7,13 @@ import { constantsConfig } from "../../../config";
 
 
 @Injectable()
-export abstract class WeekTimekeepingComputeService {
+export class WeekTimekeepingComputeService {
     firstWeekStartEpoch: number;
     epochsInWeek: number;
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly configService: ApiConfigService,
+        @Inject(forwardRef(() => WeekTimekeepingGetterService))
         private readonly weekTimekeepingGetterService: WeekTimekeepingGetterService,
     ) {
         this.epochsInWeek = constantsConfig.EPOCHS_IN_WEEK;

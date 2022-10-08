@@ -1,8 +1,8 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { FeesCollectorModel, UserEntryFeesCollectorModel } from "./models/fees-collector.model";
 import { FeesCollectorService } from "./services/fees-collector.service";
-import { WeeklyTimekeepingModel } from "../../submodules/week-timekeeping/models/weekly-timekeeping.model";
-import { WeeklyTimekeepingService } from "../../submodules/week-timekeeping/services/weekly-timekeeping.service";
+import { WeekTimekeepingModel } from "../../submodules/week-timekeeping/models/week-timekeeping.model";
+import { WeekTimekeepingService } from "../../submodules/week-timekeeping/services/week-timekeeping.service";
 import {
     UserWeeklyRewardsSplittingModel,
     WeeklyRewardsSplittingModel
@@ -19,7 +19,7 @@ import { GenericResolver } from "../../services/generics/generic.resolver";
 export class FeesCollectorResolver extends GenericResolver{
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
-        private readonly weeklyTimekeepingService: WeeklyTimekeepingService,
+        private readonly weeklyTimekeepingService: WeekTimekeepingService,
         private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
     ) {
         super();
@@ -27,7 +27,7 @@ export class FeesCollectorResolver extends GenericResolver{
 
 
     @ResolveField()
-    async time(@Parent() parent: FeesCollectorModel): Promise<WeeklyTimekeepingModel> {
+    async time(@Parent() parent: FeesCollectorModel): Promise<WeekTimekeepingModel> {
         return await this.genericQuery(() =>
             this.weeklyTimekeepingService.getWeeklyTimekeeping(parent.address, parent.week),
         );
@@ -50,7 +50,7 @@ export class FeesCollectorResolver extends GenericResolver{
         );
     }
 
-    @ResolveField()
+    @ResolveField(() => UserWeeklyRewardsSplittingModel)
     async userSplitRewards(
         @Parent() parent: UserEntryFeesCollectorModel
     ): Promise<UserWeeklyRewardsSplittingModel> {

@@ -23,6 +23,7 @@ import { AWSModule } from 'src/services/aws/aws.module';
 import { PairHandler } from './handlers/pair.handler.service';
 import { EnergyHandler } from './handlers/energy.handler.service';
 import { SimpleLockModule } from '../simple-lock/simple.lock.module';
+import { FeesCollectorModule } from "../fees-collector/fees-collector.module";
 
 @Module({
     imports: [
@@ -38,6 +39,7 @@ import { SimpleLockModule } from '../simple-lock/simple.lock.module';
         PriceDiscoveryModule,
         TokenModule,
         SimpleLockModule,
+        FeesCollectorModule
     ],
     providers: [
         RabbitMqConsumer,

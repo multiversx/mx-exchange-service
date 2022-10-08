@@ -1,17 +1,25 @@
 import { Module } from '@nestjs/common';
-import { WeeklyRewardsSplittingAbiService } from "./services/weekly-rewards-splitting.abi.service";
+import { WeeklyRewardsSplittingResolver } from "./weekly-rewards-splitting.resolver";
 import { WeeklyRewardsSplittingGetterService } from "./services/weekly-rewards.splitting.getter.service";
-import { WeeklyRewardsSplittingComputeService } from "./services/weekly-rewards.splitting.compute.service";
-
+import { CachingModule } from "../../services/caching/cache.module";
+import { WeeklyRewardsSplittingAbiService } from "./services/weekly-rewards-splitting.abi.service";
+import { ElrondCommunicationModule } from "../../services/elrond-communication/elrond-communication.module";
+import { WeeklyRewardsSplittingService } from "./services/weekly-rewards-splitting.service";
 
 @Module({
     imports: [
-        // TODO: add imports
+        ElrondCommunicationModule,
+        CachingModule
     ],
-    exports: [
+    providers: [
+        WeeklyRewardsSplittingService,
         WeeklyRewardsSplittingAbiService,
         WeeklyRewardsSplittingGetterService,
-        WeeklyRewardsSplittingComputeService,
+        WeeklyRewardsSplittingResolver
     ],
+    exports: [
+        WeeklyRewardsSplittingService,
+        WeeklyRewardsSplittingAbiService
+    ]
 })
 export class WeeklyRewardsSplittingModule {}

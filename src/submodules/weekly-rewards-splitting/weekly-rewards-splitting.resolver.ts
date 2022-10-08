@@ -22,7 +22,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
     }
 
     @ResolveField()
-    async totalRewards(
+    async totalRewardsForWeek(
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<string> {
         return await this.genericFieldResover(() =>
@@ -31,7 +31,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
     }
 
     @ResolveField()
-    async totalEnergy(
+    async totalEnergyForWeek(
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<string> {
         return await this.genericFieldResover(() =>
@@ -40,7 +40,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
     }
 
     @ResolveField()
-    async totalLockedTokens(
+    async totalLockedTokensForWeek(
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<string> {
         return await this.genericFieldResover(() =>

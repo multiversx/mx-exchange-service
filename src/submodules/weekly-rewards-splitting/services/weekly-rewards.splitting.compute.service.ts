@@ -13,7 +13,7 @@ interface TokenAmountPair {
 }
 
 @Injectable()
-export abstract class WeeklyRewardsSplittingComputeService  {
+export class WeeklyRewardsSplittingComputeService  {
     constructor(
         private readonly weekTimekeepingGetterService: WeekTimekeepingGetterService,
         private readonly weekTimekeepingComputeService: WeekTimekeepingComputeService,

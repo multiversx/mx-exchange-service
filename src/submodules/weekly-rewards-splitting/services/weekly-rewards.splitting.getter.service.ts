@@ -7,10 +7,10 @@ import { oneHour, oneMinute } from "../../../helpers/helpers";
 import { generateCacheKeyFromParams } from "../../../utils/generate-cache-key";
 import { WeeklyRewardsSplittingAbiService } from "./weekly-rewards-splitting.abi.service";
 import { ClaimProgress } from "./progress/progress.compute.service";
-import { EnergyType } from "@elrondnetwork/erdjs-dex";
+import { EnergyModel } from "../../../modules/simple-lock/models/simple.lock.model";
 
 @Injectable()
-export abstract class WeeklyRewardsSplittingGetterService extends GenericGetterService {
+export class WeeklyRewardsSplittingGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
@@ -27,7 +27,7 @@ export abstract class WeeklyRewardsSplittingGetterService extends GenericGetterS
         )
     }
 
-    async userEnergyForWeek(scAddress: string, userAddress: string, week: number): Promise<EnergyType> {
+    async userEnergyForWeek(scAddress: string, userAddress: string, week: number): Promise<EnergyModel> {
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress,'userEnergyForWeek', userAddress, week),
             () => this.weeklyRewardsAbiService.userEnergyForWeek(scAddress, userAddress, week),
