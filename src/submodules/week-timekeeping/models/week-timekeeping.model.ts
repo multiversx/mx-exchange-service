@@ -6,6 +6,9 @@ export class WeekTimekeepingModel {
     scAddress: string;
 
     @Field()
+    type: string;
+
+    @Field()
     firstWeekStartEpoch: number
 
     @Field()
@@ -29,6 +32,9 @@ export class WeekTimekeepingModel {
 export class WeekForEpochModel {
     @Field()
     scAddress: string;
+
+    @Field()
+    type: string;
 
     @Field()
     epoch: number

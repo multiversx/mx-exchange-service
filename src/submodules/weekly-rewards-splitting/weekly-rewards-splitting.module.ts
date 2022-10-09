@@ -19,7 +19,9 @@ import { WeeklyRewardsSplittingService } from "./services/weekly-rewards-splitti
     ],
     exports: [
         WeeklyRewardsSplittingService,
-        WeeklyRewardsSplittingAbiService
+        WeeklyRewardsSplittingAbiService,
+        WeeklyRewardsSplittingGetterService,
+        WeeklyRewardsSplittingResolver
     ]
 })
 export class WeeklyRewardsSplittingModule {}

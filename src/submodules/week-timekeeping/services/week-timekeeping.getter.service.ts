@@ -19,34 +19,34 @@ export class WeekTimekeepingGetterService extends GenericGetterService {
         super(cachingService, logger);
     }
 
-    async getCurrentWeek(scAddress: string): Promise<number> {
+    async getCurrentWeek(scAddress: string, type: string): Promise<number> {
         return this.getData(
             this.getWeekTimekeepingCacheKey(scAddress,'currentWeek'),
-            () => this.weekTimekeepingAbiService.getCurrentWeek(scAddress),
+            () => this.weekTimekeepingAbiService.getCurrentWeek(scAddress, type),
             oneMinute(),
         )
     }
 
-    async getFirstWeekStartEpoch(scAddress: string): Promise<number> {
+    async getFirstWeekStartEpoch(scAddress: string, type: string): Promise<number> {
         return this.getData(
             this.getWeekTimekeepingCacheKey(scAddress, 'firstWeekStartEpoc'),
-            () => this.weekTimekeepingAbiService.firstWeekStartEpoch(scAddress),
+            () => this.weekTimekeepingAbiService.firstWeekStartEpoch(scAddress, type),
             oneMinute(),
         )
     }
 
-    async getStartEpochForWeek(scAddress: string, week: number): Promise<number> {
+    async getStartEpochForWeek(scAddress: string, week: number, type: string): Promise<number> {
         return this.getData(
             this.getWeekTimekeepingCacheKey(scAddress, 'firstWeekStartEpoc'),
-            () => this.weekTimekeepingComputeService.computeStartEpochForWeek(scAddress, week),
+            () => this.weekTimekeepingComputeService.computeStartEpochForWeek(scAddress, week, type),
             oneMinute(),
         )
     }
 
-    async getEndEpochForWeek(scAddress: string, week: number): Promise<number> {
+    async getEndEpochForWeek(scAddress: string, week: number, type: string): Promise<number> {
         return this.getData(
             this.getWeekTimekeepingCacheKey(scAddress, 'firstWeekStartEpoc'),
-            () => this.weekTimekeepingComputeService.computeEndEpochForWeek(scAddress, week),
+            () => this.weekTimekeepingComputeService.computeEndEpochForWeek(scAddress, week, type),
             oneMinute(),
         )
     }

@@ -1,15 +1,12 @@
-import { Args, Parent, Query, ResolveField, Resolver } from "@nestjs/graphql";
+import { Parent, Query, ResolveField, Resolver } from "@nestjs/graphql";
 import {
     UserWeeklyRewardsSplittingModel,
     WeeklyRewardsSplittingModel,
 } from "./models/weekly-rewards-splitting.model";
-import { UseGuards } from "@nestjs/common";
 import { WeeklyRewardsSplittingGetterService } from "./services/weekly-rewards.splitting.getter.service";
-import { ApolloError } from "apollo-server-express";
 import { WeeklyRewardsSplittingService } from "./services/weekly-rewards-splitting.service";
-import { GqlAuthGuard } from "../../modules/auth/gql.auth.guard";
-import { User } from "../../helpers/userDecorator";
 import { GenericResolver } from "../../services/generics/generic.resolver";
+import { ApolloError } from "apollo-server-express";
 
 
 @Resolver(() => WeeklyRewardsSplittingModel)
@@ -26,16 +23,16 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetterService.totalRewardsForWeek(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingService.getTotalRewardsForWeekByToken(parent.scAddress, parent.week, parent.token, parent.type),
         );
     }
 
     @ResolveField()
     async totalEnergyForWeek(
-        @Parent() parent: WeeklyRewardsSplittingModel
+        @Parent() parent: any,
     ): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetterService.totalEnergyForWeek(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingGetterService.totalEnergyForWeek(parent.scAddress, parent.week, parent.type),
         );
     }
 
@@ -44,7 +41,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetterService.totalLockedTokensForWeek(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingGetterService.totalLockedTokensForWeek(parent.scAddress, parent.week, parent.type),
         );
     }
 
@@ -53,31 +50,29 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetterService.lastGlobalUpdateWeek(parent.scAddress),
+            this.weeklyRewardsSplittingGetterService.lastGlobalUpdateWeek(parent.scAddress, parent.type),
         );
     }
 
     @Query(() => WeeklyRewardsSplittingModel)
-    async weeklyRewardsSplitByWeek(
-        @Args('scAddress') scAddress: string,
-        @Args('week') week: number,
+    async weeklyRewardsSplit(
+        @Parent() parent: any,
+        type: string
     ): Promise<WeeklyRewardsSplittingModel> {
         try {
-            return this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(scAddress, week);
+            return this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(parent.address, parent.week, type);
         } catch (error) {
             throw new ApolloError(error);
         }
     }
 
-    @UseGuards(GqlAuthGuard)
     @Query(() => UserWeeklyRewardsSplittingModel)
-    async weeklyRewardsSplit(
-        @User() user: any,
-        @Args('scAddress') scAddress: string,
-        @Args('week') week: number,
+    async userWeeklyRewardsSplit(
+        @Parent() parent: any,
+        type: string
     ): Promise<UserWeeklyRewardsSplittingModel> {
         try {
-            return await this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(scAddress, user.publicKey, week);
+            return await this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(parent.address, parent.userAddress, parent.week, type);
         } catch (error) {
             throw new ApolloError(error);
         }

@@ -14,10 +14,16 @@ export class FeesCollectorModel {
     week: number;
 
     @Field()
-    time: WeekTimekeepingModel;
+    token: string;
 
     @Field()
+    time: WeekTimekeepingModel;
+
+    @Field( () => WeeklyRewardsSplittingModel)
     splitRewards: WeeklyRewardsSplittingModel;
+
+    @Field()
+    accumulatedFees: number;
 
     constructor(init?: Partial<FeesCollectorModel>) {
         Object.assign(this, init);
@@ -35,7 +41,7 @@ export class UserEntryFeesCollectorModel {
     @Field()
     week: number;
 
-    @Field()
+    @Field( () => WeekTimekeepingModel)
     time: WeekTimekeepingModel;
 
     @Field(() => UserWeeklyRewardsSplittingModel)

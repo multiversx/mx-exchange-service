@@ -6,6 +6,7 @@ import { WeekTimekeepingService } from "./services/week-timekeeping.service";
 import { ElrondCommunicationModule } from "../../services/elrond-communication/elrond-communication.module";
 import { CachingModule } from "../../services/caching/cache.module";
 import { ApiConfigService } from "../../helpers/api.config.service";
+import { WeekTimekeepingResolver } from "./week-timekeeping.resolver";
 
 
 @Module({
@@ -18,13 +19,15 @@ import { ApiConfigService } from "../../helpers/api.config.service";
         WeekTimekeepingService,
         WeekTimekeepingAbiService,
         WeekTimekeepingGetterService,
-        WeekTimekeepingComputeService
+        WeekTimekeepingComputeService,
+        WeekTimekeepingResolver
     ],
     exports: [
         WeekTimekeepingService,
         WeekTimekeepingAbiService,
         WeekTimekeepingGetterService,
         WeekTimekeepingComputeService,
+        WeekTimekeepingResolver
     ],
 })
 export class WeekTimekeepingModule {}

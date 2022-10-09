@@ -8,7 +8,13 @@ export class WeeklyRewardsSplittingModel {
     scAddress: string;
 
     @Field()
+    type: string;
+
+    @Field()
     week: number;
+
+    @Field()
+    token: string;
 
     @Field()
     totalRewardsForWeek: number;
@@ -33,12 +39,15 @@ export class UserWeeklyRewardsSplittingModel {
     scAddress: string;
 
     @Field()
+    type: string;
+
+    @Field()
     week: number;
 
-    @Field()
+    @Field(() => ClaimProgress)
     claimProgress: ClaimProgress;
 
-    @Field()
+    @Field(() => EnergyModel)
     energyForWeek: EnergyModel;
 
     @Field()

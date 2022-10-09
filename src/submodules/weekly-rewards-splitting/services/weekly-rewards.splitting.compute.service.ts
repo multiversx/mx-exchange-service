@@ -7,7 +7,7 @@ import { WeeklyRewardsSplittingGetterService } from "./weekly-rewards.splitting.
 import { WeekTimekeepingComputeService } from "../../week-timekeeping/services/week-timekeeping.compute.service";
 import { ClaimProgress, ProgressComputeService } from "./progress/progress.compute.service";
 
-interface TokenAmountPair {
+export interface TokenAmountPair {
     token: string;
     amount: BigNumber;
 }
@@ -21,14 +21,14 @@ export class WeeklyRewardsSplittingComputeService  {
         private readonly progressComputeService: ProgressComputeService,
     ) {}
 
-    async computeUserAllRewards(scAddress: string, userAddress: string): Promise<EsdtTokenPayment[]> {
-        const currentWeek = await this.weekTimekeepingGetterService.getCurrentWeek(scAddress);
-        let userProgress = await this.weeklyRewardsSplittingGetterService.currentClaimProgress(scAddress, userAddress);
+    async computeUserAllRewards(scAddress: string, userAddress: string, type: string): Promise<EsdtTokenPayment[]> {
+        const currentWeek = await this.weekTimekeepingGetterService.getCurrentWeek(scAddress, type);
+        let userProgress = await this.weeklyRewardsSplittingGetterService.currentClaimProgress(scAddress, userAddress, type);
 
         const totalRewards: Map<string, EsdtTokenPayment> = new Map<string, EsdtTokenPayment>();
         for (let week = userProgress.week; week < currentWeek; week++) {
             let rewardsForWeek: EsdtTokenPayment[];
-            [rewardsForWeek, userProgress] = await this.computeUserRewardsForWeekUpdatingProgress(scAddress, userAddress, week, userProgress);
+            [rewardsForWeek, userProgress] = await this.computeUserRewardsForWeekUpdatingProgress(scAddress, userAddress, week, userProgress, type);
             for (const esdtReward of rewardsForWeek) {
                 const tokenID = esdtReward.tokenID
                 const previousRewards = await totalRewards.get(tokenID);
@@ -45,24 +45,24 @@ export class WeeklyRewardsSplittingComputeService  {
         return [...totalRewards.values()]
     }
 
-    async computeUserRewardsForWeekUpdatingProgress(scAddress: string, userAddress: string, currentWeek: number, progress: ClaimProgress): Promise<[EsdtTokenPayment[], ClaimProgress]> {
-        const rewardsString = await this.weeklyRewardsSplittingGetterService.totalRewardsForWeek(scAddress, progress.week);
+    async computeUserRewardsForWeekUpdatingProgress(scAddress: string, userAddress: string, currentWeek: number, progress: ClaimProgress, type: string): Promise<[EsdtTokenPayment[], ClaimProgress]> {
+        const rewardsString = await this.weeklyRewardsSplittingGetterService.totalRewardsForWeek(scAddress, progress.week, type);
         const rewards = <TokenAmountPair[]>JSON.parse(rewardsString);
-        const userRewards = await this.computeUserRewardsForWeek(scAddress, progress.week, progress.energy.amount, rewards);
+        const userRewards = await this.computeUserRewardsForWeek(scAddress, progress.week, progress.energy.amount, rewards, type);
 
         const nextWeek = progress.week + 1;
-        const userEnergyNextWeek = await this.weeklyRewardsSplittingGetterService.userEnergyForWeek(scAddress, userAddress, nextWeek)
+        const userEnergyNextWeek = await this.weeklyRewardsSplittingGetterService.userEnergyForWeek(scAddress, userAddress, nextWeek, type)
         progress = this.progressComputeService.advanceWeek(progress, userEnergyNextWeek, this.weekTimekeepingComputeService.epochsInWeek)
         return [userRewards, progress];
     }
 
-    async computeUserRewardsForWeek(scAddress: string, week: number, energyAmount: string, totalRewards: TokenAmountPair[]): Promise<EsdtTokenPayment[]> {
+    async computeUserRewardsForWeek(scAddress: string, week: number, energyAmount: string, totalRewards: TokenAmountPair[], type: string): Promise<EsdtTokenPayment[]> {
         const payments: EsdtTokenPayment[] = [];
         if (!new BigNumber(energyAmount).isPositive()) {
             return payments;
         }
 
-        const totalEnergy = await this.weeklyRewardsSplittingGetterService.totalEnergyForWeek(scAddress, week);
+        const totalEnergy = await this.weeklyRewardsSplittingGetterService.totalEnergyForWeek(scAddress, week, type);
         for (const weeklyRewards of totalRewards) {
             const paymentAmount = weeklyRewards.amount
                 .multipliedBy(new BigNumber(energyAmount))

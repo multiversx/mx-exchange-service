@@ -4,30 +4,27 @@ import { ElrondProxyService } from "../../../services/elrond-communication/elron
 import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { Logger } from "winston";
 import { Interaction, SmartContract, U32Value } from "@elrondnetwork/erdjs/out";
-import {
-    WeeklyRewardsSplittingAbiService
-} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service";
-import { Mixin } from "ts-mixer";
 import BigNumber from "bignumber.js";
 import { BytesValue } from "@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes";
-import { WeekTimekeepingAbiService } from "../../../submodules/week-timekeeping/services/week-timekeeping.abi.service";
 
 @Injectable()
-export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
+export class FeesCollectorAbiService extends GenericAbiService {
+    static proxy: ElrondProxyService;
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(elrondProxy, logger);
-        this.getContractHandler = this.getContract
+        FeesCollectorAbiService.proxy = elrondProxy;
     }
-    async getContract(): Promise<SmartContract> {
-        const contract = await this.elrondProxy.getFeesCollectorContract()
+
+    static async getContract(scAddress: string): Promise<SmartContract> {
+        const contract = await this.proxy.getFeesCollectorContract()
         return contract
     }
 
     async accumulatedFees(scAddress: string, week: number, token: string): Promise<number> {
-        const contract = await this.getContractHandler(scAddress);
+        const contract = await FeesCollectorAbiService.getContract(scAddress);
         const interaction: Interaction = contract.methodsExplicit.accumulatedFees(
             [
                 BytesValue.fromUTF8(token),
