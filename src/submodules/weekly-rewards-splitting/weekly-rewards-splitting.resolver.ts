@@ -58,7 +58,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
     }
 
     @Query(() => WeeklyRewardsSplittingModel)
-    async weeklyRewardsSplitByWeek(
+    async weeklyRewardsSplit(
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,
     ): Promise<WeeklyRewardsSplittingModel> {
@@ -71,7 +71,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => UserWeeklyRewardsSplittingModel)
-    async weeklyRewardsSplit(
+    async userWeeklyRewardsSplit(
         @User() user: any,
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,

@@ -1,13 +1,19 @@
 import { Injectable } from "@nestjs/common";
 import { WeekForEpochModel, WeekTimekeepingModel } from "../models/week-timekeeping.model";
+import { WeekTimekeepingGetterService } from "./week-timekeeping.getter.service";
 
 
 @Injectable()
 export class WeekTimekeepingService {
-    async getWeeklyTimekeeping(scAddress: string, week: number): Promise<WeekTimekeepingModel> {
+    constructor(
+        private readonly weekTimekeepingGetterService: WeekTimekeepingGetterService,
+    ) {
+    }
+    async getWeeklyTimekeeping(scAddress: string): Promise<WeekTimekeepingModel> {
+        const currentWeek = await this.weekTimekeepingGetterService.getCurrentWeek(scAddress);
         return new WeekTimekeepingModel({
             scAddress: scAddress,
-            week: week,
+            currentWeek: currentWeek
         });
     }
 

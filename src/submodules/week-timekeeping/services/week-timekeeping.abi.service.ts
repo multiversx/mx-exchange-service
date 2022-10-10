@@ -9,13 +9,13 @@ export class WeekTimekeepingAbiService extends GenericAbiService {
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction = contract.methodsExplicit.getCurrentWeek();
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
+        return response.firstValue.valueOf().toNumber();
     }
 
     async firstWeekStartEpoch(scAddress: string): Promise<number> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.firstWeekStartEpoch();
+        const interaction: Interaction = contract.methodsExplicit.getFirstWeekStartEpoch();
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
+        return response.firstValue.valueOf().toNumber();
     }
 }

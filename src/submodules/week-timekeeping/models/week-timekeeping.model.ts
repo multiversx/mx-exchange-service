@@ -12,9 +12,6 @@ export class WeekTimekeepingModel {
     currentWeek: number
 
     @Field()
-    week: number;
-
-    @Field()
     startEpochForWeek: number;
 
     @Field()

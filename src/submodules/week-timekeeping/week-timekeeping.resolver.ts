@@ -39,7 +39,7 @@ export class WeekTimekeepingResolver extends GenericResolver{
         @Parent() parent: WeekTimekeepingModel
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weekTimekeepingGetterService.getStartEpochForWeek(parent.scAddress, parent.week),
+            this.weekTimekeepingGetterService.getStartEpochForWeek(parent.scAddress, parent.currentWeek),
         );
     }
 
@@ -48,21 +48,20 @@ export class WeekTimekeepingResolver extends GenericResolver{
         @Parent() parent: WeekTimekeepingModel
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weekTimekeepingGetterService.getEndEpochForWeek(parent.scAddress, parent.week),
+            this.weekTimekeepingGetterService.getEndEpochForWeek(parent.scAddress, parent.currentWeek),
         );
     }
 
     @Query(() => WeekTimekeepingModel)
     async weeklyTimekeeping(
         @Args('scAddress') scAddress: string,
-        @Args('week') week: number,
     ): Promise<WeekTimekeepingModel> {
         return await this.genericFieldResover(() =>
-            this.weeklyTimekeepingService.getWeeklyTimekeeping(scAddress, week),
+            this.weeklyTimekeepingService.getWeeklyTimekeeping(scAddress),
         );
     }
 
-    @ResolveField()
+    @ResolveField(() => WeekForEpochModel)
     async week(
         @Parent() parent: WeekForEpochModel
     ): Promise<number> {
