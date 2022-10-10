@@ -661,4 +661,4 @@ type Subscription {
   exitFarmProxyEvent: ExitFarmProxyEvent!
   claimRewardsProxyEvent: ClaimRewardsProxyEvent!
   compoundRewardsProxyEvent: CompoundRewardsProxyEvent!
-
+}
