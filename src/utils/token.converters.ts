@@ -16,7 +16,12 @@ export const computeValueUSD = (
     priceUSD: string,
 ): BigNumber => denominateAmount(amount, decimals).times(priceUSD);
 
-export const tokenNonce = (tokenID): number => {
+export const tokenCollection = (tokenID: string): string => {
+    const split = tokenID.split('-');
+    return `${split[0]}-${split[1]}`;
+};
+
+export const tokenNonce = (tokenID: string): number => {
     const tokenNonceHex = tokenID.split('-')[2];
     return parseInt(tokenNonceHex, 16);
 };
