@@ -2,10 +2,10 @@
     "buildInfo": {
         "rustc": {
             "version": "1.62.0-nightly",
-            "commitHash": "311e2683e1bad87715b1558f7900e294d24ce491",
-            "commitDate": "2022-04-18",
+            "commitHash": "082e4ca49770ebc9cb0ee616f3726a67471be8cb",
+            "commitDate": "2022-04-26",
             "channel": "Nightly",
-            "short": "rustc 1.62.0-nightly (311e2683e 2022-04-18)"
+            "short": "rustc 1.62.0-nightly (082e4ca49 2022-04-26)"
         },
         "contractCrate": {
             "name": "fees-collector",
@@ -252,6 +252,25 @@
             ],
             "inputs": [],
             "outputs": []
+        },
+        {
+            "name": "getAccumulatedFees",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                },
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
         },
         {
             "name": "setEnergyFactoryAddress",

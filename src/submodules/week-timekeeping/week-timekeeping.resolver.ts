@@ -52,15 +52,6 @@ export class WeekTimekeepingResolver extends GenericResolver{
         );
     }
 
-    @ResolveField()
-    async week(
-        @Parent() parent: any
-    ): Promise<number> {
-        return await this.genericFieldResover(() =>
-            this.computerService.computeWeekForEpoch(parent.scAddress, parent.epoch, parent.type),
-        );
-    }
-
     @Query(() => WeekForEpochModel)
     async weekForEpoch(
         @Parent() parent: any
