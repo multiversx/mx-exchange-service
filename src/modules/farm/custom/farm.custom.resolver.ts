@@ -1,6 +1,6 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { FarmResolver } from './farm.resolver';
+import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmCustomModel } from '../models/farm.custom.model';
 import { FarmCustomGetterService } from '../services/custom/farm.custom.getter.service';
 

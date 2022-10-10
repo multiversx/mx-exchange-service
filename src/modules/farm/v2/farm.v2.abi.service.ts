@@ -15,8 +15,8 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { CalculateRewardsArgs } from '../../models/farm.args';
-import { AbiFarmService } from '../farm.abi.service';
+import { CalculateRewardsArgs } from '../models/farm.args';
+import { AbiFarmService } from '../base-module/farm.abi.service';
 
 @Injectable()
 export class FarmV2AbiService extends AbiFarmService {

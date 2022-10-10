@@ -6,14 +6,14 @@ import { farmVersion } from 'src/utils/farm.utils';
 import {
     BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,
-} from '../models/farm.args';
+} from './models/farm.args';
 import {
     ExitFarmTokensModel,
     FarmVersion,
     RewardsModel,
-} from '../models/farm.model';
-import { FarmsUnion } from '../models/farm.union';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
+} from './models/farm.model';
+import { FarmsUnion } from './models/farm.union';
+import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 import { FarmService } from '../services/farm.service';
 import { FarmV2Service } from '../services/v2/farm.v2.service';
 

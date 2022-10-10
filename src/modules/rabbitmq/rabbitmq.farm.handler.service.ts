@@ -11,7 +11,7 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { farmVersion } from 'src/utils/farm.utils';
 import { Logger } from 'winston';
 import { FarmVersion } from '../farm/models/farm.model';
-import { AbiFarmService } from '../farm/services/farm.abi.service';
+import { AbiFarmService } from '../farm/base-module/farm.abi.service';
 import { FarmSetterService } from '../farm/services/farm.setter.service';
 
 @Injectable()

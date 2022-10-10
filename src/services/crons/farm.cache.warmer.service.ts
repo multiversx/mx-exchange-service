@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { AbiFarmService } from 'src/modules/farm/services/farm.abi.service';
+import { AbiFarmService } from 'src/modules/farm/base-module/farm.abi.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
@@ -9,7 +9,7 @@ import { FarmSetterService } from 'src/modules/farm/services/farm.setter.service
 import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { FarmV12AbiService } from 'src/modules/farm/services/v1.2/farm.v1.2.abi.service';
+import { FarmV12AbiService } from 'src/modules/farm/v1.2/farm.v1.2.abi.service';
 import { FarmV12ComputeService } from 'src/modules/farm/services/v1.2/farm.v1.2.compute.service';
 import { FarmV13ComputeService } from 'src/modules/farm/services/v1.3/farm.v1.3.compute.service';
 

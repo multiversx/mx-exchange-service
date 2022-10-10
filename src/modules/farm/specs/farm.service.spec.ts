@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { FarmService } from '../services/farm.service';
-import { AbiFarmService } from '../services/farm.abi.service';
+import { AbiFarmService } from '../base-module/farm.abi.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
