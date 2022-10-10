@@ -151,9 +151,11 @@ export class ElrondProxyService {
         );
     }
 
-    async getSimpleLockSmartContract(): Promise<SmartContract> {
+    async getSimpleLockSmartContract(
+        simpleLockAddress: string,
+    ): Promise<SmartContract> {
         return this.getSmartContract(
-            scAddress.simpleLockAddress,
+            simpleLockAddress,
             abiConfig.simpleLock,
             'SimpleLock',
         );

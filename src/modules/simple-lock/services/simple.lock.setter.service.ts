@@ -15,25 +15,35 @@ export class SimpleLockSetterService extends GenericSetterService {
         super(cachingService, logger);
     }
 
-    async setLockedTokenID(value: string): Promise<string> {
+    async setLockedTokenID(
+        simpleLockAddress: string,
+        value: string,
+    ): Promise<string> {
         return await this.setData(
-            this.getSimpleLockCacheKey('lockedTokenID'),
+            this.getSimpleLockCacheKey(simpleLockAddress, 'lockedTokenID'),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async setLpProxyTokenID(value: string): Promise<string> {
+    async setLpProxyTokenID(
+        simpleLockAddress: string,
+        value: string,
+    ): Promise<string> {
         return await this.setData(
-            this.getSimpleLockCacheKey('lpProxyTokenID'),
+            this.getSimpleLockCacheKey(simpleLockAddress, 'lpProxyTokenID'),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    private getSimpleLockCacheKey(...args: any) {
-        return generateCacheKeyFromParams('simpleLock', ...args);
+    private getSimpleLockCacheKey(simpleLockAddress: string, ...args: any) {
+        return generateCacheKeyFromParams(
+            'simpleLock',
+            simpleLockAddress,
+            ...args,
+        );
     }
 }

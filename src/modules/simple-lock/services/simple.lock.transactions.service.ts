@@ -41,9 +41,10 @@ export class SimpleLockTransactionService {
     async lockTokens(
         inputTokens: InputTokenModel,
         lockEpochs: number,
+        simpleLockAddress: string,
     ): Promise<TransactionModel> {
         const [contract, currentEpoch] = await Promise.all([
-            this.elrondProxy.getSimpleLockSmartContract(),
+            this.elrondProxy.getSimpleLockSmartContract(simpleLockAddress),
             this.contextGetter.getCurrentEpoch(),
         ]);
 
@@ -64,12 +65,15 @@ export class SimpleLockTransactionService {
     }
 
     async unlockTokens(
+        simpleLockAddress: string,
         sender: string,
         inputTokens: InputTokenModel,
     ): Promise<TransactionModel> {
-        await this.validateInputUnlockTokens(inputTokens);
+        await this.validateInputUnlockTokens(simpleLockAddress, inputTokens);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
 
         return contract.methodsExplicit
             .unlockTokens()
@@ -88,6 +92,7 @@ export class SimpleLockTransactionService {
     }
 
     async addLiquidityLockedTokenBatch(
+        simpleLockAddress: string,
         sender: string,
         inputTokens: InputTokenModel[],
         pairAddress: string,
@@ -126,6 +131,7 @@ export class SimpleLockTransactionService {
 
         transactions.push(
             await this.addLiquidityLockedToken(
+                simpleLockAddress,
                 sender,
                 [firstTokenInput, secondTokenInput],
                 pairAddress,
@@ -136,45 +142,44 @@ export class SimpleLockTransactionService {
     }
 
     async addLiquidityLockedToken(
+        simpleLockAddress: string,
         sender: string,
         inputTokens: InputTokenModel[],
         pairAddress: string,
         tolerance: number,
     ): Promise<TransactionModel> {
-        await this.validateInputAddLiquidityLockedToken(inputTokens);
+        await this.validateInputAddLiquidityLockedToken(
+            simpleLockAddress,
+            inputTokens,
+        );
 
         let [firstInputToken, secondInputToken] = inputTokens;
 
-        const [
-            pairFirstTokenID,
-            pairSecondTokenID,
-            contract,
-        ] = await Promise.all([
-            this.pairGetterService.getFirstTokenID(pairAddress),
-            this.pairGetterService.getSecondTokenID(pairAddress),
-            this.elrondProxy.getSimpleLockSmartContract(),
-        ]);
+        const [pairFirstTokenID, pairSecondTokenID, contract] =
+            await Promise.all([
+                this.pairGetterService.getFirstTokenID(pairAddress),
+                this.pairGetterService.getSecondTokenID(pairAddress),
+                this.elrondProxy.getSimpleLockSmartContract(simpleLockAddress),
+            ]);
 
         let [firstTokenID, secondTokenID] = [
             firstInputToken.tokenID,
             secondInputToken.tokenID,
         ];
         if (firstInputToken.attributes) {
-            const decodedAttributes = this.simpleLockService.decodeLockedTokenAttributes(
-                {
+            const decodedAttributes =
+                this.simpleLockService.decodeLockedTokenAttributes({
                     identifier: firstInputToken.tokenID,
                     attributes: firstInputToken.attributes,
-                },
-            );
+                });
             firstTokenID = decodedAttributes.originalTokenID;
         }
         if (secondInputToken.attributes) {
-            const decodedAttributes = this.simpleLockService.decodeLockedTokenAttributes(
-                {
+            const decodedAttributes =
+                this.simpleLockService.decodeLockedTokenAttributes({
                     identifier: secondInputToken.tokenID,
                     attributes: secondInputToken.attributes,
-                },
-            );
+                });
             secondTokenID = decodedAttributes.originalTokenID;
         }
 
@@ -223,22 +228,24 @@ export class SimpleLockTransactionService {
     }
 
     async removeLiquidityLockedToken(
+        simpleLockAddress: string,
         sender: string,
         inputTokens: InputTokenModel,
         attributes: string,
         tolerance: number,
     ): Promise<TransactionModel[]> {
-        await this.validateInputLpProxyToken(inputTokens);
+        await this.validateInputLpProxyToken(simpleLockAddress, inputTokens);
 
         const transactions = [];
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
 
-        const lpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
-            {
+        const lpProxyTokenAttributes =
+            this.simpleLockService.decodeLpProxyTokenAttributes({
                 attributes: attributes,
                 identifier: inputTokens.tokenID,
-            },
-        );
+            });
 
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             lpProxyTokenAttributes.lpTokenID,
@@ -285,6 +292,7 @@ export class SimpleLockTransactionService {
     }
 
     async enterFarmLockedToken(
+        simpleLockAddress: string,
         sender: string,
         inputTokens: InputTokenModel[],
         farmAddress: string,
@@ -299,18 +307,21 @@ export class SimpleLockTransactionService {
                 break;
         }
         await this.validateInputEnterFarmProxyToken(
+            simpleLockAddress,
             inputTokens,
             FarmTypeEnumType.getVariantByDiscriminant(farmTypeDiscriminant)
                 .name,
         );
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
 
         const gasLimit =
             inputTokens.length > 1
                 ? gasConfig.simpleLock.enterFarmLockedToken.withTokenMerge
                 : gasConfig.simpleLock.enterFarmLockedToken.default;
-        const mappedPayments = inputTokens.map(inputToken =>
+        const mappedPayments = inputTokens.map((inputToken) =>
             TokenPayment.metaEsdtFromBigInteger(
                 inputToken.tokenID,
                 inputToken.nonce,
@@ -335,14 +346,17 @@ export class SimpleLockTransactionService {
     }
 
     async farmProxyTokenInteraction(
+        simpleLockAddress: string,
         sender: string,
         inputTokens: InputTokenModel,
         endpointName: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        await this.validateInputFarmProxyToken(inputTokens);
+        await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract();
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
 
         let interaction: Interaction;
         switch (endpointName) {
@@ -350,7 +364,8 @@ export class SimpleLockTransactionService {
                 interaction = contract.methodsExplicit.exitFarmLockedToken();
                 break;
             case 'farmClaimRewardsLockedToken':
-                interaction = contract.methodsExplicit.farmClaimRewardsLockedToken();
+                interaction =
+                    contract.methodsExplicit.farmClaimRewardsLockedToken();
                 break;
             default:
                 break;
@@ -372,9 +387,12 @@ export class SimpleLockTransactionService {
     }
 
     private async validateInputUnlockTokens(
+        simpleLockAddress: string,
         inputTokens: InputTokenModel,
     ): Promise<void> {
-        const lockedTokenID = await this.simpleLockGetter.getLockedTokenID();
+        const lockedTokenID = await this.simpleLockGetter.getLockedTokenID(
+            simpleLockAddress,
+        );
 
         if (inputTokens.tokenID !== lockedTokenID || inputTokens.nonce < 1) {
             throw new Error('Invalid input token');
@@ -382,9 +400,12 @@ export class SimpleLockTransactionService {
     }
 
     private async validateInputAddLiquidityLockedToken(
+        simpleLockAddress: string,
         inputTokens: InputTokenModel[],
     ): Promise<void> {
-        const lockedTokenID = await this.simpleLockGetter.getLockedTokenID();
+        const lockedTokenID = await this.simpleLockGetter.getLockedTokenID(
+            simpleLockAddress,
+        );
 
         if (inputTokens.length !== 2) {
             throw new Error('Invalid number of tokens');
@@ -408,9 +429,12 @@ export class SimpleLockTransactionService {
     }
 
     private async validateInputLpProxyToken(
+        simpleLockAddress: string,
         inputTokens: InputTokenModel,
     ): Promise<void> {
-        const lockedLpTokenID = await this.simpleLockGetter.getLpProxyTokenID();
+        const lockedLpTokenID = await this.simpleLockGetter.getLpProxyTokenID(
+            simpleLockAddress,
+        );
 
         if (inputTokens.tokenID !== lockedLpTokenID || inputTokens.nonce < 1) {
             throw new Error('Invalid input token');
@@ -418,32 +442,34 @@ export class SimpleLockTransactionService {
     }
 
     private async validateInputEnterFarmProxyToken(
+        simpleLockAddress: string,
         inputTokens: InputTokenModel[],
         farmType: string,
     ): Promise<void> {
         const lpProxyToken = inputTokens[0];
-        await this.validateInputLpProxyToken(lpProxyToken);
+        await this.validateInputLpProxyToken(simpleLockAddress, lpProxyToken);
 
         const decodeAttributesArgs: DecodeAttributesModel[] = [];
         for (const inputToken of inputTokens.slice(1)) {
-            await this.validateInputFarmProxyToken(inputToken);
+            await this.validateInputFarmProxyToken(
+                inputToken,
+                simpleLockAddress,
+            );
             decodeAttributesArgs.push({
                 attributes: inputToken.attributes,
                 identifier: inputToken.tokenID,
             });
         }
 
-        const lpProxyTokenAttributes = this.simpleLockService.decodeLpProxyTokenAttributes(
-            {
+        const lpProxyTokenAttributes =
+            this.simpleLockService.decodeLpProxyTokenAttributes({
                 attributes: lpProxyToken.attributes,
                 identifier: lpProxyToken.tokenID,
-            },
-        );
-        const decodedAttributesBatch = await this.simpleLockService.decodeBatchFarmProxyTokenAttributes(
-            {
+            });
+        const decodedAttributesBatch =
+            this.simpleLockService.decodeBatchFarmProxyTokenAttributes({
                 batchAttributes: decodeAttributesArgs,
-            },
-        );
+            });
 
         for (const decodedAttributes of decodedAttributesBatch) {
             const sameFarmingToken =
@@ -461,8 +487,10 @@ export class SimpleLockTransactionService {
 
     private async validateInputFarmProxyToken(
         inputTokens: InputTokenModel,
+        simpleLockAddress: string,
     ): Promise<void> {
-        const farmProxyTokenID = await this.simpleLockGetter.getFarmProxyTokenID();
+        const farmProxyTokenID =
+            await this.simpleLockGetter.getFarmProxyTokenID(simpleLockAddress);
 
         if (inputTokens.tokenID !== farmProxyTokenID || inputTokens.nonce < 1) {
             throw new Error('Invalid input token');

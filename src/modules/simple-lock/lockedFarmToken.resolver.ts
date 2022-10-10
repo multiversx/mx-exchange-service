@@ -1,6 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
+import { tokenCollection } from 'src/utils/token.converters';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
@@ -20,6 +21,7 @@ export class LockedFarmTokenResolver {
     ): Promise<LpProxyTokenAttributesModel> {
         try {
             return await this.simpleLockService.getLpTokenProxyAttributes(
+                tokenCollection(parent.identifier),
                 parent.farmingTokenLockedNonce,
             );
         } catch (error) {
