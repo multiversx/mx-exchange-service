@@ -57,9 +57,12 @@ export class EnergyResolver extends SimpleLockResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => EnergyModel)
-    async userEnergy(@User() user: any): Promise<EnergyModel> {
+    async userEnergy(
+        @Args('vmQuery', { nullable: true }) vmQuery: boolean,
+        @User() user: any,
+    ): Promise<EnergyModel> {
         return await this.genericQuery(() =>
-            this.energyService.getUserEnergy(user.publicKey),
+            this.energyService.getUserEnergy(user.publicKey, vmQuery),
         );
     }
 
