@@ -12,7 +12,6 @@ import { Mixin } from "ts-mixer";
 import {
     WeeklyRewardsSplittingAbiService
 } from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service";
-import { ClaimProgress } from "../../../submodules/weekly-rewards-splitting/services/progress/progress.compute.service";
 import { oneMinute } from "../../../helpers/helpers";
 
 @Injectable()
@@ -26,13 +25,23 @@ export class FeesCollectorGetterService extends Mixin(GenericGetterService, Week
         super(cachingService, logger);
     }
 
-    async getAccumulatedFees(scAddress: string, week: number, token: string): Promise<ClaimProgress> {
+    async getAccumulatedFees(scAddress: string, week: number, token: string): Promise<string> {
         return this.getData(
             this.getFeesCollectorCacheKey(scAddress,'accumulatedFees', week, token),
             () => this.abiService.accumulatedFees(scAddress, week, token),
             oneMinute(),
         )
     }
+
+    async getAllTokens(scAddress: string): Promise<string[]> {
+        return this.getData(
+            this.getFeesCollectorCacheKey(scAddress,'allTokens'),
+            () => this.abiService.allTokens(scAddress),
+            oneMinute(),
+        )
+    }
+
+
 
     private getFeesCollectorCacheKey(address: string, ...args: any) {
         return generateCacheKeyFromParams(address, ...args);

@@ -1,6 +1,7 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ClaimProgress } from "../services/progress/progress.compute.service";
 import { EnergyModel } from "../../../modules/simple-lock/models/simple.lock.model";
+import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
 
 @ObjectType()
 export class WeeklyRewardsSplittingModel {
@@ -10,8 +11,8 @@ export class WeeklyRewardsSplittingModel {
     @Field()
     week: number;
 
-    @Field()
-    totalRewardsForWeek: number;
+    @Field(() => [EsdtTokenPayment])
+    totalRewardsForWeek: [EsdtTokenPayment];
 
     @Field()
     totalEnergyForWeek: number;

@@ -3,6 +3,7 @@ import { GenericAbiService } from "../../../services/generics/generic.abi.servic
 import BigNumber from "bignumber.js";
 import { ClaimProgress } from "./progress/progress.compute.service";
 import { Injectable } from "@nestjs/common";
+import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
@@ -10,7 +11,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
 
     async currentClaimProgress(scAddress: string, user: string): Promise<ClaimProgress> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.currentClaimProgress(
+        const interaction: Interaction = contract.methodsExplicit.getCurrentClaimProgress(
             [new AddressValue(Address.fromString(user))]
         );
         const response = await this.getGenericData(interaction);
@@ -19,56 +20,57 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
 
     async userEnergyForWeek(scAddress: string, user: string, week: number): Promise<number> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.userEnergyForWeek(
+        const interaction: Interaction = contract.methodsExplicit.getUserEnergyForWeek(
             [
                 new AddressValue(Address.fromString(user)),
                 new U32Value(new BigNumber(week))
             ]
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+        return response.firstValue.valueOf().toNumber();
     }
 
     async lastActiveWeekForUser(scAddress: string, user: string): Promise<number> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.lastActiveWeekForUser(
+        const interaction: Interaction = contract.methodsExplicit.getLastActiveWeekForUser(
             [new AddressValue(Address.fromString(user))]
         );
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
+        const response = await this.getGenericData(interaction)
+        return response.firstValue.valueOf().toNumber();
     }
 
     async lastGlobalUpdateWeek(scAddress: string): Promise<number> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.lastGlobalUpdateWeek();
+        const interaction: Interaction = contract.methodsExplicit.getLastGlobalUpdateWeek();
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
+        return response.firstValue.valueOf().toNumber();
     }
 
-    async totalRewardsForWeek(scAddress: string, week: number): Promise<number> {
+    async totalRewardsForWeek(scAddress: string, week: number): Promise<EsdtTokenPayment[]> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.totalRewardsForWeek(
+        const interaction: Interaction = contract.methodsExplicit.getTotalRewardsForWeek(
             [new U32Value(new BigNumber(week))]
         );
         const response = await this.getGenericData(interaction);
+        //TODO: returns good value
         return response.firstValue.valueOf();
     }
 
-    async totalEnergyForWeek(scAddress: string, week: number): Promise<number> {
+    async totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.totalEnergyForWeek(
+        const interaction: Interaction = contract.methodsExplicit.getTotalEnergyForWeek(
             [new U32Value(new BigNumber(week))]
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
+        return response.firstValue.valueOf().toString();
     }
 
-    async totalLockedTokensForWeek(scAddress: string, week: number): Promise<number> {
+    async totalLockedTokensForWeek(scAddress: string, week: number): Promise<string> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.totalLockedTokensForWeek(
+        const interaction: Interaction = contract.methodsExplicit.getTotalLockedTokensForWeek(
             [new U32Value(new BigNumber(week))]
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf();
+        return response.firstValue.valueOf().toString();
     }
 }

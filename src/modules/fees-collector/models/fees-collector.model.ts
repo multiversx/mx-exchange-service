@@ -4,6 +4,7 @@ import {
     UserWeeklyRewardsSplittingModel,
     WeeklyRewardsSplittingModel
 } from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
+import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
 
 @ObjectType()
 export class FeesCollectorModel {
@@ -11,13 +12,16 @@ export class FeesCollectorModel {
     address: string;
 
     @Field()
-    week: number;
-
-    @Field()
     time: WeekTimekeepingModel;
 
-    @Field()
-    splitRewards: WeeklyRewardsSplittingModel;
+    @Field( () => [WeeklyRewardsSplittingModel])
+    splitRewards: [WeeklyRewardsSplittingModel];
+
+    @Field( () => [String])
+    allTokens: string[]
+
+    @Field(() => [EsdtTokenPayment])
+    accumulatedFees: [EsdtTokenPayment]
 
     constructor(init?: Partial<FeesCollectorModel>) {
         Object.assign(this, init);
@@ -33,13 +37,10 @@ export class UserEntryFeesCollectorModel {
     userAddress: string;
 
     @Field()
-    week: number;
-
-    @Field()
     time: WeekTimekeepingModel;
 
-    @Field(() => UserWeeklyRewardsSplittingModel)
-    userSplitRewards: UserWeeklyRewardsSplittingModel;
+    @Field(() => [UserWeeklyRewardsSplittingModel])
+    userSplitRewards: [UserWeeklyRewardsSplittingModel];
 
     constructor(init?: Partial<UserEntryFeesCollectorModel>) {
         Object.assign(this, init);
