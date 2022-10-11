@@ -7,20 +7,15 @@ import { RolesModel } from './models/roles.model';
 import { TokensFiltersArgs } from './models/tokens.filter.args';
 import { TokenGetterService } from './services/token.getter.service';
 import { TokenService } from './services/token.service';
+import { GenericResolver } from "../../services/generics/generic.resolver";
 
 @Resolver(() => EsdtToken)
-export class TokensResolver {
+export class TokensResolver extends GenericResolver {
     constructor(
         private readonly tokenService: TokenService,
         private readonly tokenGetter: TokenGetterService,
-    ) {}
-
-    private async genericFieldResover(fieldResolver: () => any): Promise<any> {
-        try {
-            return await fieldResolver();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    ) {
+        super();
     }
 
     @ResolveField(() => String)
