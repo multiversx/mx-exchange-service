@@ -1,4 +1,4 @@
-import { CacheModule, HttpStatus, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
@@ -25,6 +25,7 @@ import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { FeesCollectorModule } from "./modules/fees-collector/fees-collector.module";
 
 @Module({
     imports: [
@@ -105,6 +106,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
         UserModule,
         AnalyticsModule,
         SubscriptionsModule,
+        FeesCollectorModule
     ],
     providers: [CachingService],
 })
