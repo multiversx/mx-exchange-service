@@ -4,11 +4,11 @@ import BigNumber from "bignumber.js";
 import { ClaimProgress } from "../models/weekly-rewards-splitting.model";
 import { Injectable } from "@nestjs/common";
 import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
-import { Errors } from "../../../utils/errors";
+import { ErrorGetContractHandlerNotSet } from '../../../utils/errors.constants';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
-    protected getContractHandler: (scAddress: string) => Promise<SmartContract> = scAddress => { throw Errors.ErrorGetContractHandlerNotSet};
+    protected getContractHandler: (scAddress: string) => Promise<SmartContract> = scAddress => { throw ErrorGetContractHandlerNotSet};
 
     async currentClaimProgress(scAddress: string, user: string): Promise<ClaimProgress> {
         const contract = await this.getContractHandler(scAddress);

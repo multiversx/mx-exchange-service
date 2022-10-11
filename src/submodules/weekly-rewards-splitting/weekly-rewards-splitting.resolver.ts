@@ -61,7 +61,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,
     ): Promise<WeeklyRewardsSplittingModel> {
-        return await this.genericFieldResover(() =>
+        return await this.genericQuery(() =>
             this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(scAddress, week),
         );
     }
@@ -73,7 +73,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,
     ): Promise<UserWeeklyRewardsSplittingModel> {
-        return await this.genericFieldResover(() =>
+        return await this.genericQuery(() =>
             this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(scAddress, user.publicKey, week),
         );
     }
