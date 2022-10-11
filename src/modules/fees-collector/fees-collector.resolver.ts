@@ -23,7 +23,7 @@ export class FeesCollectorResolver extends GenericResolver {
     @ResolveField(() => [WeeklyRewardsSplittingModel])
     async splitRewards(@Parent() parent: FeesCollectorModel): Promise<WeeklyRewardsSplittingModel[]> {
         return await this.genericFieldResover(() =>
-            Promise.all(this.feesCollectorService.getWeeklyRewardsSplitPromises(parent.address, parent.time.currentWeek)),
+            Promise.all(this.feesCollectorService.getWeeklyRewardsSplitPromises(parent.address, parent.startWeek, parent.endWeek)),
         );
     }
 
@@ -39,7 +39,7 @@ export class FeesCollectorResolver extends GenericResolver {
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<UserWeeklyRewardsSplittingModel[]> {
         return await this.genericFieldResover(() =>
-            Promise.all(this.feesCollectorService.getUserWeeklyRewardsSplitPromises(parent.address, parent.userAddress, parent.time.currentWeek)),
+            Promise.all(this.feesCollectorService.getUserWeeklyRewardsSplitPromises(parent.address, parent.userAddress, parent.startWeek, parent.endWeek)),
         );
     }
 

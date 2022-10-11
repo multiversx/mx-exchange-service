@@ -63,17 +63,17 @@ export class FeesCollectorService {
         });
     }
 
-    getWeeklyRewardsSplitPromises(scAddress: string, currentWeek: number) {
+    getWeeklyRewardsSplitPromises(scAddress: string, startWeek: number, endWeek: number) {
         const promisesList = []
-        for (let week = 1; week <= currentWeek; week++) {
+        for (let week = startWeek; week <= endWeek; week++) {
             promisesList.push(this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(scAddress, week))
         }
         return promisesList;
     }
 
-    getUserWeeklyRewardsSplitPromises(scAddress: string, userAddress: string, currentWeek: number) {
+    getUserWeeklyRewardsSplitPromises(scAddress: string, userAddress: string, startWeek: number, endWeek: number) {
         const promisesList = []
-        for (let week = 1; week <= currentWeek; week++) {
+        for (let week = startWeek; week <= endWeek; week++) {
             promisesList.push(this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(scAddress, userAddress, week))
         }
         return promisesList;
