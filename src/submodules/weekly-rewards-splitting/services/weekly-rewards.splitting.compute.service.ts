@@ -1,12 +1,12 @@
-import { Injectable } from "@nestjs/common";
-import { WeekTimekeepingGetterService } from "../../week-timekeeping/services/week-timekeeping.getter.service";
-import BigNumber from "bignumber.js";
+import { Injectable } from '@nestjs/common';
+import { WeekTimekeepingGetterService } from '../../week-timekeeping/services/week-timekeeping.getter.service';
+import BigNumber from 'bignumber.js';
 
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
-import { WeeklyRewardsSplittingGetterService } from "./weekly-rewards.splitting.getter.service";
-import { WeekTimekeepingComputeService } from "../../week-timekeeping/services/week-timekeeping.compute.service";
-import { ProgressComputeService } from "./progress.compute.service";
-import { ClaimProgress } from "../models/weekly-rewards-splitting.model";
+import { WeeklyRewardsSplittingGetterService } from './weekly-rewards.splitting.getter.service';
+import { WeekTimekeepingComputeService } from '../../week-timekeeping/services/week-timekeeping.compute.service';
+import { ProgressComputeService } from './progress.compute.service';
+import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 
 interface TokenAmountPair {
     token: string;
@@ -14,13 +14,14 @@ interface TokenAmountPair {
 }
 
 @Injectable()
-export class WeeklyRewardsSplittingComputeService  {
+export class WeeklyRewardsSplittingComputeService {
     constructor(
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
         private readonly progressCompute: ProgressComputeService,
-    ) {}
+    ) {
+    }
 
     async computeUserAllRewards(scAddress: string, userAddress: string): Promise<EsdtTokenPayment[]> {
         const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);

@@ -14,7 +14,7 @@ import { ProgressComputeService } from './services/progress.compute.service';
     imports: [
         ElrondCommunicationModule,
         CachingModule,
-    ]
+    ],
 })
 export class WeeklyRewardsSplittingModule {
     static register(abiProvider: any): DynamicModule {

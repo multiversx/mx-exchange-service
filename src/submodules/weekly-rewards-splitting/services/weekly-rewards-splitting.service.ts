@@ -1,13 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import { UserWeeklyRewardsSplittingModel, WeeklyRewardsSplittingModel } from "../models/weekly-rewards-splitting.model";
-import { WeeklyRewardsSplittingGetterService } from "./weekly-rewards.splitting.getter.service";
+import { Injectable } from '@nestjs/common';
+import { UserWeeklyRewardsSplittingModel, WeeklyRewardsSplittingModel } from '../models/weekly-rewards-splitting.model';
+import { WeeklyRewardsSplittingGetterService } from './weekly-rewards.splitting.getter.service';
 
 
 @Injectable()
 export class WeeklyRewardsSplittingService {
     constructor(
         private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
-    ) {}
+    ) {
+    }
 
     async getWeeklyRewardsSplit(scAddress: string, week: number): Promise<WeeklyRewardsSplittingModel> {
         return new WeeklyRewardsSplittingModel({
@@ -31,7 +32,7 @@ export class WeeklyRewardsSplittingService {
             week: week,
             claimProgress: claimProgress,
             energyForWeek: energyForWeek,
-            lastActiveWeekForUser: lastActiveWeekForUser
+            lastActiveWeekForUser: lastActiveWeekForUser,
         });
     }
 }
