@@ -121,7 +121,7 @@ export class SimpleLockResolver {
         }
     }
 
-    // @UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async unlockTokens(
         @Args('inputTokens', UnlockTokensValidationPipe)
