@@ -1,4 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { UserInputError } from 'apollo-server-express';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { SimpleLockGetterService } from '../services/simple.lock.getter.service';
 import { SimpleLockService } from '../services/simple.lock.service';
@@ -22,7 +23,7 @@ export class EmterFarmProxyTokensValidationPipe implements PipeTransform {
         ]);
 
         if (value[0].tokenID !== lockedLpTokenID || value[0].nonce < 1) {
-            throw new Error('Invalid lp proxy token');
+            throw new UserInputError('Invalid lp proxy token');
         }
 
         for (const inputToken of value.slice(1)) {
@@ -30,7 +31,7 @@ export class EmterFarmProxyTokensValidationPipe implements PipeTransform {
                 inputToken.tokenID !== farmProxyTokenID ||
                 inputToken.nonce < 1
             ) {
-                throw new Error('Invalid farm proxy token');
+                throw new UserInputError('Invalid farm proxy token');
             }
         }
 

@@ -1,4 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { UserInputError } from 'apollo-server-express';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { SimpleLockGetterService } from '../services/simple.lock.getter.service';
 import { SimpleLockService } from '../services/simple.lock.service';
@@ -21,7 +22,7 @@ export class LiquidityTokensValidationPipe implements PipeTransform {
         );
 
         if (value.length !== 2) {
-            throw new Error('Invalid number of tokens');
+            throw new UserInputError('Invalid number of tokens');
         }
 
         const [firstToken, secondToken] = value;
@@ -30,14 +31,14 @@ export class LiquidityTokensValidationPipe implements PipeTransform {
             firstToken.tokenID !== lockedTokenID &&
             secondToken.tokenID !== lockedTokenID
         ) {
-            throw new Error('Invalid tokens to send');
+            throw new UserInputError('Invalid tokens to send');
         }
 
         if (firstToken.tokenID === lockedTokenID && firstToken.nonce < 1) {
-            throw new Error('Invalid locked token');
+            throw new UserInputError('Invalid locked token');
         }
         if (secondToken.tokenID === lockedTokenID && secondToken.nonce < 1) {
-            throw new Error('Invalid locked token');
+            throw new UserInputError('Invalid locked token');
         }
 
         return value;

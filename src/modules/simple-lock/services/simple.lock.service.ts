@@ -4,6 +4,7 @@ import {
     LockedTokenAttributes,
 } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
+import { UserInputError } from 'apollo-server-express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -204,12 +205,12 @@ export class SimpleLockService {
             if (address && !simpleLockAddress) {
                 simpleLockAddress = address;
             } else if (address && address !== simpleLockAddress) {
-                throw new Error('Input tokens not from contract');
+                throw new UserInputError('Input tokens not from contract');
             }
         }
 
         if (simpleLockAddress === undefined) {
-            throw new Error('Invalid input tokens');
+            throw new UserInputError('Invalid input tokens');
         }
 
         return simpleLockAddress;

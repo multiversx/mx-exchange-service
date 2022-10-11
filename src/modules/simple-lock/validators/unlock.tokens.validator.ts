@@ -1,4 +1,5 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { UserInputError } from 'apollo-server-express';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { SimpleLockGetterService } from '../services/simple.lock.getter.service';
 import { SimpleLockService } from '../services/simple.lock.service';
@@ -21,7 +22,7 @@ export class UnlockTokensValidationPipe implements PipeTransform {
         );
 
         if (value.tokenID !== lockedTokenID || value.nonce < 1) {
-            throw new Error('Invalid locked token');
+            throw new UserInputError('Invalid locked token');
         }
         return value;
     }
