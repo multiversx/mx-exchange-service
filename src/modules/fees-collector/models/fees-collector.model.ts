@@ -1,10 +1,10 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { WeekTimekeepingModel } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
+import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import {
     UserWeeklyRewardsSplittingModel,
-    WeeklyRewardsSplittingModel
-} from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
-import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
+    WeeklyRewardsSplittingModel,
+} from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
 @ObjectType()
 export class FeesCollectorModel {
@@ -14,10 +14,10 @@ export class FeesCollectorModel {
     @Field()
     time: WeekTimekeepingModel;
 
-    @Field( () => [WeeklyRewardsSplittingModel])
+    @Field(() => [WeeklyRewardsSplittingModel])
     splitRewards: [WeeklyRewardsSplittingModel];
 
-    @Field( () => [String])
+    @Field(() => [String])
     allTokens: string[]
 
     @Field(() => [EsdtTokenPayment])
