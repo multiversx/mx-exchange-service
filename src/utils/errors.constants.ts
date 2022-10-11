@@ -3,3 +3,5 @@ export enum VmQueryError {
     INVALID_FUNCTION = 'invalid function',
     FUNCTION_NOT_FOUND = 'function not found',
 }
+
+export const ErrorGetContractHandlerNotSet = new Error("getContractHandler not set");
