@@ -5,7 +5,6 @@ import {
 } from "./models/weekly-rewards-splitting.model";
 import { UseGuards } from "@nestjs/common";
 import { WeeklyRewardsSplittingGetterService } from "./services/weekly-rewards.splitting.getter.service";
-import { ApolloError } from "apollo-server-express";
 import { WeeklyRewardsSplittingService } from "./services/weekly-rewards-splitting.service";
 import { GqlAuthGuard } from "../../modules/auth/gql.auth.guard";
 import { User } from "../../helpers/userDecorator";
@@ -15,7 +14,7 @@ import { GenericResolver } from "../../services/generics/generic.resolver";
 @Resolver(() => WeeklyRewardsSplittingModel)
 export class WeeklyRewardsSplittingResolver extends GenericResolver {
     constructor(
-        protected readonly weeklyRewardsSplittingGetterService: WeeklyRewardsSplittingGetterService,
+        protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
         protected readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
     ) {
         super();
@@ -26,7 +25,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetterService.totalRewardsForWeek(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingGetter.totalRewardsForWeek(parent.scAddress, parent.week),
         );
     }
 
@@ -35,7 +34,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetterService.totalEnergyForWeek(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingGetter.totalEnergyForWeek(parent.scAddress, parent.week),
         );
     }
 
@@ -44,7 +43,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetterService.totalLockedTokensForWeek(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(parent.scAddress, parent.week),
         );
     }
 
@@ -53,7 +52,7 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Parent() parent: WeeklyRewardsSplittingModel
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetterService.lastGlobalUpdateWeek(parent.scAddress),
+            this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(parent.scAddress),
         );
     }
 
@@ -62,11 +61,9 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,
     ): Promise<WeeklyRewardsSplittingModel> {
-        try {
-            return this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(scAddress, week);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericFieldResover(() =>
+            this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(scAddress, week),
+        );
     }
 
     @UseGuards(GqlAuthGuard)
@@ -76,10 +73,8 @@ export class WeeklyRewardsSplittingResolver extends GenericResolver {
         @Args('scAddress') scAddress: string,
         @Args('week') week: number,
     ): Promise<UserWeeklyRewardsSplittingModel> {
-        try {
-            return await this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(scAddress, user.publicKey, week);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+        return await this.genericFieldResover(() =>
+            this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(scAddress, user.publicKey, week),
+        );
     }
 }

@@ -6,7 +6,7 @@ import { Logger } from "winston";
 import { oneHour, oneMinute } from "../../../helpers/helpers";
 import { generateCacheKeyFromParams } from "../../../utils/generate-cache-key";
 import { WeeklyRewardsSplittingAbiService } from "./weekly-rewards-splitting.abi.service";
-import { ClaimProgress } from "./progress/progress.compute.service";
+import { ClaimProgress } from "../models/weekly-rewards-splitting.model";
 import { EnergyModel } from "../../../modules/simple-lock/models/simple.lock.model";
 
 @Injectable()

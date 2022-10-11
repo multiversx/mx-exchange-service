@@ -1,16 +1,6 @@
 import { EnergyType } from "@elrondnetwork/erdjs-dex";
-import { EnergyComputeService } from "../../../../modules/simple-lock/services/energy/energy.compute.service";
-import { Field, ObjectType } from "@nestjs/graphql";
-import { EnergyModel } from "../../../../modules/simple-lock/models/simple.lock.model";
-
-@ObjectType()
-export class ClaimProgress {
-    @Field()
-    energy: EnergyModel;
-
-    @Field()
-    week: number
-}
+import { EnergyComputeService } from "../../../modules/simple-lock/services/energy/energy.compute.service";
+import { ClaimProgress } from "../models/weekly-rewards-splitting.model"
 
 export class ProgressComputeService {
     constructor(

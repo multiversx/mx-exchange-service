@@ -12,9 +12,9 @@ export class WeekTimekeepingGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly weekTimekeepingAbiService: WeekTimekeepingAbiService,
+        private readonly weekTimekeepingAbi: WeekTimekeepingAbiService,
         @Inject(forwardRef(() => WeekTimekeepingComputeService))
-        private readonly weekTimekeepingComputeService: WeekTimekeepingComputeService,
+        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
     ) {
         super(cachingService, logger);
     }
@@ -22,7 +22,7 @@ export class WeekTimekeepingGetterService extends GenericGetterService {
     async getCurrentWeek(scAddress: string): Promise<number> {
         return this.getData(
             this.getWeekTimekeepingCacheKey(scAddress,'currentWeek'),
-            () => this.weekTimekeepingAbiService.getCurrentWeek(scAddress),
+            () => this.weekTimekeepingAbi.getCurrentWeek(scAddress),
             oneMinute(),
         )
     }
@@ -30,7 +30,7 @@ export class WeekTimekeepingGetterService extends GenericGetterService {
     async getFirstWeekStartEpoch(scAddress: string): Promise<number> {
         return this.getData(
             this.getWeekTimekeepingCacheKey(scAddress, 'firstWeekStartEpoc'),
-            () => this.weekTimekeepingAbiService.firstWeekStartEpoch(scAddress),
+            () => this.weekTimekeepingAbi.firstWeekStartEpoch(scAddress),
             oneMinute(),
         )
     }
@@ -38,7 +38,7 @@ export class WeekTimekeepingGetterService extends GenericGetterService {
     async getStartEpochForWeek(scAddress: string, week: number): Promise<number> {
         return this.getData(
             this.getWeekTimekeepingCacheKey(scAddress, 'firstWeekStartEpoc'),
-            () => this.weekTimekeepingComputeService.computeStartEpochForWeek(scAddress, week),
+            () => this.weekTimekeepingCompute.computeStartEpochForWeek(scAddress, week),
             oneMinute(),
         )
     }
@@ -46,7 +46,7 @@ export class WeekTimekeepingGetterService extends GenericGetterService {
     async getEndEpochForWeek(scAddress: string, week: number): Promise<number> {
         return this.getData(
             this.getWeekTimekeepingCacheKey(scAddress, 'firstWeekStartEpoc'),
-            () => this.weekTimekeepingComputeService.computeEndEpochForWeek(scAddress, week),
+            () => this.weekTimekeepingCompute.computeEndEpochForWeek(scAddress, week),
             oneMinute(),
         )
     }

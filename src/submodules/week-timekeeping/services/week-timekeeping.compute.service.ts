@@ -14,7 +14,7 @@ export class WeekTimekeepingComputeService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly configService: ApiConfigService,
         @Inject(forwardRef(() => WeekTimekeepingGetterService))
-        private readonly weekTimekeepingGetterService: WeekTimekeepingGetterService,
+        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
     ) {
         this.epochsInWeek = constantsConfig.EPOCHS_IN_WEEK;
     }
@@ -30,7 +30,7 @@ export class WeekTimekeepingComputeService {
 
     async computeStartEpochForWeek(scAddress: string, week: number): Promise<number> {
         await this.checkAndSetFirstWeekStartEpoch(scAddress);
-        if (week == 0) {
+        if (week === 0) {
             return -1;
         }
 
@@ -38,7 +38,7 @@ export class WeekTimekeepingComputeService {
     }
 
     async computeEndEpochForWeek(scAddress: string, week: number): Promise<number> {
-        if (week == 0) {
+        if (week === 0) {
             return -1;
         }
 
@@ -47,7 +47,7 @@ export class WeekTimekeepingComputeService {
     }
 
     private async setFirstWeekStartEpoch(scAddress: string) {
-        this.firstWeekStartEpoch = await this.weekTimekeepingGetterService.getFirstWeekStartEpoch(scAddress);
+        this.firstWeekStartEpoch = await this.weekTimekeepingGetter.getFirstWeekStartEpoch(scAddress);
     }
 
     private async checkAndSetFirstWeekStartEpoch(scAddress: string) {

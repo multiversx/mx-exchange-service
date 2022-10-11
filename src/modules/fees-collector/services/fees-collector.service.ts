@@ -3,18 +3,21 @@ import {
     FeesCollectorModel,
     UserEntryFeesCollectorModel
 } from "../models/fees-collector.model";
-import { WeekTimekeepingResolver } from "../../../submodules/week-timekeeping/week-timekeeping.resolver";
 import { FeesCollectorGetterService } from "./fees-collector.getter.service";
 import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
+import { WeekTimekeepingService } from "../../../submodules/week-timekeeping/services/week-timekeeping.service";
+import {
+    WeeklyRewardsSplittingService
+} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service";
 
 
 @Injectable()
 export class FeesCollectorService {
     constructor(
-        private readonly weekTimekeepingResolver: WeekTimekeepingResolver,
         private readonly feesCollectorGetterService: FeesCollectorGetterService,
-    ) {
-    }
+        private readonly weekTimekeepingService: WeekTimekeepingService,
+        private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
+    ) {}
 
     async getAccumulatedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
         const accumulatedFees: EsdtTokenPayment[] = []
@@ -35,7 +38,7 @@ export class FeesCollectorService {
             time,
             allToken
         ] = await Promise.all([
-            this.weekTimekeepingResolver.weeklyTimekeeping(scAddress),
+            this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
             this.feesCollectorGetterService.getAllTokens(scAddress)
         ])
 
@@ -51,7 +54,7 @@ export class FeesCollectorService {
     }
 
     async userFeesCollector(scAddress: string, userAddress: string, startWeek: number, endWeek: number): Promise<UserEntryFeesCollectorModel> {
-        const time = await this.weekTimekeepingResolver.weeklyTimekeeping(scAddress);
+        const time = await this.weekTimekeepingService.getWeeklyTimekeeping(scAddress);
         const [start, end] = this.validateAndSetIfUndefined(startWeek, endWeek, time.currentWeek);
         return new UserEntryFeesCollectorModel({
             address: scAddress,
@@ -60,6 +63,22 @@ export class FeesCollectorService {
             endWeek: end,
             time: time
         });
+    }
+
+    getWeeklyRewardsSplitPromises(scAddress: string, currentWeek: number) {
+        const promisesList = []
+        for (let week = 1; week <= currentWeek; week++) {
+            promisesList.push(this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(scAddress, week))
+        }
+        return promisesList;
+    }
+
+    getUserWeeklyRewardsSplitPromises(scAddress: string, userAddress: string, currentWeek: number) {
+        const promisesList = []
+        for (let week = 1; week <= currentWeek; week++) {
+            promisesList.push(this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(scAddress, userAddress, week))
+        }
+        return promisesList;
     }
 
     private validateAndSetIfUndefined(startWeek: number, endWeek: number, currentWeek: number) {
