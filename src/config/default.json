@@ -35,7 +35,8 @@
         "stakingProxy": [
             "erd1qqqqqqqqqqqqqpgqpgl505hxumyjdtqnjrhmds9wsf4tyydu0n4skwfkf0",
             "erd1qqqqqqqqqqqqqpgqkq58a23glv6dzyz8a8fsc30wzc59y6m60n4szjktz0"
-        ]
+        ],
+        "feesCollector": "erd1qqqqqqqqqqqqqpgqagq2v9exkrn3wnauq3lw4xcetwsmgmwjd8ssjt4k7s"
     },
     "tokenProviderUSD": "WEGLD-71e90a",
     "tokensSupply": ["MEX-27f4cd"],
@@ -385,7 +386,8 @@
             "v2": "./src/abis/farms/v2/farm.abi.json"
         },
         "staking": "./src/abis/farm-staking.abi.json",
-        "stakingProxy": "./src/abis/farm-staking-proxy.abi.json"
+        "stakingProxy": "./src/abis/farm-staking-proxy.abi.json",
+        "feesCollector": "./src/abis/fees-collector.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,
@@ -406,6 +408,7 @@
         "PRECISION_EX_INCREASE": 1000,
         "UNBOND_EPOCHS": 3,
         "MAINTENANCE": false,
+        "EPOCHS_IN_WEEK": 7,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",
@@ -423,7 +426,13 @@
             "exitFarmProxy",
             "claimRewardsProxy",
             "compoundRewardsProxy"
-        ]
+        ],
+        "slippage": {
+            "DEFAULT_SLIPPAGE": 0.01,
+            "SLIPPAGE_VALUES": [0.001, 0.005, 0.01],
+            "MAX_SLIPPAGE": 0.05
+        },
+        "MIN_SWAP_AMOUNT": 0.05
     },
     "security": {
         "admins": []

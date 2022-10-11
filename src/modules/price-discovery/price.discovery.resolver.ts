@@ -14,21 +14,16 @@ import {
 import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
 import { PriceDiscoveryService } from './services/price.discovery.service';
 import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
+import { GenericResolver } from "../../services/generics/generic.resolver";
 
 @Resolver(() => PriceDiscoveryModel)
-export class PriceDiscoveryResolver {
+export class PriceDiscoveryResolver extends GenericResolver {
     constructor(
         private readonly priceDiscoveryService: PriceDiscoveryService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly priceDiscoveryTransactions: PriceDiscoveryTransactionService,
-    ) {}
-
-    private async genericFieldResover(fieldResolver: () => any): Promise<any> {
-        try {
-            return await fieldResolver();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    ) {
+        super();
     }
 
     @ResolveField()
@@ -218,7 +213,7 @@ export class PriceDiscoveryResolver {
     @ResolveField()
     async penaltyMinPercentage(
         @Parent() parent: PriceDiscoveryModel,
-    ): Promise<string> {
+    ): Promise<number> {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getPenaltyMinPercentage(parent.address),
         );
@@ -227,7 +222,7 @@ export class PriceDiscoveryResolver {
     @ResolveField()
     async penaltyMaxPercentage(
         @Parent() parent: PriceDiscoveryModel,
-    ): Promise<string> {
+    ): Promise<number> {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getPenaltyMaxPercentage(parent.address),
         );
@@ -236,7 +231,7 @@ export class PriceDiscoveryResolver {
     @ResolveField()
     async fixedPenaltyPercentage(
         @Parent() parent: PriceDiscoveryModel,
-    ): Promise<string> {
+    ): Promise<number> {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getFixedPenaltyPercentage(parent.address),
         );

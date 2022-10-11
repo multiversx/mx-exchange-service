@@ -35,4 +35,5 @@ export class GenericGetterService {
             throw error;
         }
     }
+    //TODO SERVICES-731: add getCacheKey
 }

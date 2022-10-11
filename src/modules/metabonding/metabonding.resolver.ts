@@ -15,22 +15,17 @@ import {
 import { MetabondingGetterService } from './services/metabonding.getter.service';
 import { MetabondingService } from './services/metabonding.service';
 import { MetabondingTransactionService } from './services/metabonding.transactions.service';
+import { GenericResolver } from "../../services/generics/generic.resolver";
 
 @Resolver(() => MetabondingStakingModel)
-export class MetabondingResolver {
+export class MetabondingResolver extends GenericResolver {
     constructor(
         private readonly metabondingService: MetabondingService,
         private readonly metabondingGetter: MetabondingGetterService,
         private readonly metabondingTransactions: MetabondingTransactionService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
-
-    private async genericFieldResover(fieldResolver: () => any): Promise<any> {
-        try {
-            return await fieldResolver();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    ) {
+        super();
     }
 
     @ResolveField()
