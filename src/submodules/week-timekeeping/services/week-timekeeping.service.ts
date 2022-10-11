@@ -6,11 +6,11 @@ import { WeekTimekeepingGetterService } from "./week-timekeeping.getter.service"
 @Injectable()
 export class WeekTimekeepingService {
     constructor(
-        private readonly weekTimekeepingGetterService: WeekTimekeepingGetterService,
+        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
     ) {
     }
     async getWeeklyTimekeeping(scAddress: string): Promise<WeekTimekeepingModel> {
-        const currentWeek = await this.weekTimekeepingGetterService.getCurrentWeek(scAddress);
+        const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
         return new WeekTimekeepingModel({
             scAddress: scAddress,
             currentWeek: currentWeek

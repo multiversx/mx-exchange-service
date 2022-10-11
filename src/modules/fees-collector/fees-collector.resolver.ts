@@ -9,10 +9,6 @@ import { User } from "../../helpers/userDecorator";
 import { UseGuards } from "@nestjs/common";
 import { GqlAuthGuard } from "../auth/gql.auth.guard";
 import { GenericResolver } from "../../services/generics/generic.resolver";
-import { WeekTimekeepingResolver } from "../../submodules/week-timekeeping/week-timekeeping.resolver";
-import {
-    WeeklyRewardsSplittingResolver
-} from "../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.resolver";
 import { scAddress } from "../../config";
 import { EsdtTokenPayment } from "../../models/esdtTokenPayment.model";
 
@@ -20,27 +16,30 @@ import { EsdtTokenPayment } from "../../models/esdtTokenPayment.model";
 export class FeesCollectorResolver extends GenericResolver{
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
-        private readonly weekTimekeepingResolver: WeekTimekeepingResolver,
-        private readonly weeklyRewardsSplittingResolver: WeeklyRewardsSplittingResolver,
     ) {
         super();
     }
 
     @ResolveField(() => [WeeklyRewardsSplittingModel])
     async splitRewards(@Parent() parent: FeesCollectorModel): Promise<WeeklyRewardsSplittingModel[]> {
-        const promisesList = []
-        for (let week = 1; week <= parent.time.currentWeek; week++) {
-            promisesList.push(this.weeklyRewardsSplittingResolver.weeklyRewardsSplit(parent.address, week))
-        }
-        return await this.genericQuery(() =>
-            Promise.all(promisesList),
+        return await this.genericFieldResover(() =>
+            Promise.all(this.feesCollectorService.getWeeklyRewardsSplitPromises(parent.address, parent.time.currentWeek)),
         );
     }
 
     @ResolveField(() => [EsdtTokenPayment])
     async accumulatedFees(@Parent() parent: FeesCollectorModel): Promise<EsdtTokenPayment[]> {
-        return await this.genericQuery(() =>
+        return await this.genericFieldResover(() =>
             this.feesCollectorService.getAccumulatedFees(parent.address, parent.time.currentWeek, parent.allTokens)
+        );
+    }
+
+    @ResolveField(() => [UserWeeklyRewardsSplittingModel])
+    async userSplitRewards(
+        @Parent() parent: UserEntryFeesCollectorModel
+    ): Promise<UserWeeklyRewardsSplittingModel[]> {
+        return await this.genericFieldResover(() =>
+            Promise.all(this.feesCollectorService.getUserWeeklyRewardsSplitPromises(parent.address, parent.userAddress, parent.time.currentWeek)),
         );
     }
 
@@ -49,19 +48,6 @@ export class FeesCollectorResolver extends GenericResolver{
     ): Promise<FeesCollectorModel> {
         return await this.genericQuery(() =>
             this.feesCollectorService.feesCollector(scAddress.feesCollector),
-        );
-    }
-
-    @ResolveField(() => [UserWeeklyRewardsSplittingModel])
-    async userSplitRewards(
-        @Parent() parent: UserEntryFeesCollectorModel
-    ): Promise<UserWeeklyRewardsSplittingModel[]> {
-        const promisesList = []
-        for (let week = 1; week <= parent.time.currentWeek; week++) {
-            promisesList.push(this.weeklyRewardsSplittingResolver.userWeeklyRewardsSplit(parent.address, parent.userAddress, week))
-        }
-        return await this.genericQuery(() =>
-            Promise.all(promisesList),
         );
     }
 

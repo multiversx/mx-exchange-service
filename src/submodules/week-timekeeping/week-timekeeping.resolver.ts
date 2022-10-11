@@ -9,9 +9,9 @@ import { GenericResolver } from "../../services/generics/generic.resolver";
 @Resolver(() => WeekTimekeepingModel)
 export class WeekTimekeepingResolver extends GenericResolver{
     constructor(
-        protected readonly weekTimekeepingGetterService: WeekTimekeepingGetterService,
-        protected readonly computerService: WeekTimekeepingComputeService,
-        protected readonly weeklyTimekeepingService: WeekTimekeepingService,
+        protected readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
+        protected readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
+        protected readonly weekTimekeepingService: WeekTimekeepingService,
     ) {
         super();
     }
@@ -21,7 +21,7 @@ export class WeekTimekeepingResolver extends GenericResolver{
         @Parent() parent: WeekTimekeepingModel
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weekTimekeepingGetterService.getFirstWeekStartEpoch(parent.scAddress),
+            this.weekTimekeepingGetter.getFirstWeekStartEpoch(parent.scAddress),
         );
     }
 
@@ -30,7 +30,7 @@ export class WeekTimekeepingResolver extends GenericResolver{
         @Parent() parent: WeekTimekeepingModel
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weekTimekeepingGetterService.getCurrentWeek(parent.scAddress),
+            this.weekTimekeepingGetter.getCurrentWeek(parent.scAddress),
         );
     }
 
@@ -39,7 +39,7 @@ export class WeekTimekeepingResolver extends GenericResolver{
         @Parent() parent: WeekTimekeepingModel
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weekTimekeepingGetterService.getStartEpochForWeek(parent.scAddress, parent.currentWeek),
+            this.weekTimekeepingGetter.getStartEpochForWeek(parent.scAddress, parent.currentWeek),
         );
     }
 
@@ -48,7 +48,7 @@ export class WeekTimekeepingResolver extends GenericResolver{
         @Parent() parent: WeekTimekeepingModel
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weekTimekeepingGetterService.getEndEpochForWeek(parent.scAddress, parent.currentWeek),
+            this.weekTimekeepingGetter.getEndEpochForWeek(parent.scAddress, parent.currentWeek),
         );
     }
 
@@ -57,7 +57,7 @@ export class WeekTimekeepingResolver extends GenericResolver{
         @Args('scAddress') scAddress: string,
     ): Promise<WeekTimekeepingModel> {
         return await this.genericFieldResover(() =>
-            this.weeklyTimekeepingService.getWeeklyTimekeeping(scAddress),
+            this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
         );
     }
 
@@ -66,7 +66,7 @@ export class WeekTimekeepingResolver extends GenericResolver{
         @Parent() parent: WeekForEpochModel
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.computerService.computeWeekForEpoch(parent.scAddress, parent.epoch),
+            this.weekTimekeepingCompute.computeWeekForEpoch(parent.scAddress, parent.epoch),
         );
     }
 
@@ -76,7 +76,7 @@ export class WeekTimekeepingResolver extends GenericResolver{
         @Args('epoch') epoch: number,
     ): Promise<WeekForEpochModel> {
         return await this.genericFieldResover(() =>
-            this.weeklyTimekeepingService.getWeekForEpoch(scAddress, epoch),
+            this.weekTimekeepingService.getWeekForEpoch(scAddress, epoch),
         );
     }
 }

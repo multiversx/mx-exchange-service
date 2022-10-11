@@ -5,7 +5,8 @@ import BigNumber from "bignumber.js";
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { WeeklyRewardsSplittingGetterService } from "./weekly-rewards.splitting.getter.service";
 import { WeekTimekeepingComputeService } from "../../week-timekeeping/services/week-timekeeping.compute.service";
-import { ClaimProgress, ProgressComputeService } from "./progress/progress.compute.service";
+import { ProgressComputeService } from "./progress.compute.service";
+import { ClaimProgress } from "../models/weekly-rewards-splitting.model";
 
 interface TokenAmountPair {
     token: string;
@@ -15,15 +16,15 @@ interface TokenAmountPair {
 @Injectable()
 export class WeeklyRewardsSplittingComputeService  {
     constructor(
-        private readonly weekTimekeepingGetterService: WeekTimekeepingGetterService,
-        private readonly weekTimekeepingComputeService: WeekTimekeepingComputeService,
-        private readonly weeklyRewardsSplittingGetterService: WeeklyRewardsSplittingGetterService,
-        private readonly progressComputeService: ProgressComputeService,
+        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
+        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
+        private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
+        private readonly progressCompute: ProgressComputeService,
     ) {}
 
     async computeUserAllRewards(scAddress: string, userAddress: string): Promise<EsdtTokenPayment[]> {
-        const currentWeek = await this.weekTimekeepingGetterService.getCurrentWeek(scAddress);
-        let userProgress = await this.weeklyRewardsSplittingGetterService.currentClaimProgress(scAddress, userAddress);
+        const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
+        let userProgress = await this.weeklyRewardsSplittingGetter.currentClaimProgress(scAddress, userAddress);
 
         const totalRewards: Map<string, EsdtTokenPayment> = new Map<string, EsdtTokenPayment>();
         for (let week = userProgress.week; week < currentWeek; week++) {
@@ -46,13 +47,13 @@ export class WeeklyRewardsSplittingComputeService  {
     }
 
     async computeUserRewardsForWeekUpdatingProgress(scAddress: string, userAddress: string, currentWeek: number, progress: ClaimProgress): Promise<[EsdtTokenPayment[], ClaimProgress]> {
-        const rewardsString = await this.weeklyRewardsSplittingGetterService.totalRewardsForWeek(scAddress, progress.week);
+        const rewardsString = await this.weeklyRewardsSplittingGetter.totalRewardsForWeek(scAddress, progress.week);
         const rewards = <TokenAmountPair[]>JSON.parse(rewardsString);
         const userRewards = await this.computeUserRewardsForWeek(scAddress, progress.week, progress.energy.amount, rewards);
 
         const nextWeek = progress.week + 1;
-        const userEnergyNextWeek = await this.weeklyRewardsSplittingGetterService.userEnergyForWeek(scAddress, userAddress, nextWeek)
-        progress = this.progressComputeService.advanceWeek(progress, userEnergyNextWeek, this.weekTimekeepingComputeService.epochsInWeek)
+        const userEnergyNextWeek = await this.weeklyRewardsSplittingGetter.userEnergyForWeek(scAddress, userAddress, nextWeek)
+        progress = this.progressCompute.advanceWeek(progress, userEnergyNextWeek, this.weekTimekeepingCompute.epochsInWeek)
         return [userRewards, progress];
     }
 
@@ -62,7 +63,7 @@ export class WeeklyRewardsSplittingComputeService  {
             return payments;
         }
 
-        const totalEnergy = await this.weeklyRewardsSplittingGetterService.totalEnergyForWeek(scAddress, week);
+        const totalEnergy = await this.weeklyRewardsSplittingGetter.totalEnergyForWeek(scAddress, week);
         for (const weeklyRewards of totalRewards) {
             const paymentAmount = weeklyRewards.amount
                 .multipliedBy(new BigNumber(energyAmount))

@@ -1,13 +1,14 @@
 import { Address, AddressValue, Interaction, SmartContract, U32Value } from "@elrondnetwork/erdjs/out";
 import { GenericAbiService } from "../../../services/generics/generic.abi.service";
 import BigNumber from "bignumber.js";
-import { ClaimProgress } from "./progress/progress.compute.service";
+import { ClaimProgress } from "../models/weekly-rewards-splitting.model";
 import { Injectable } from "@nestjs/common";
 import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
+import { Errors } from "../../../utils/errors";
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
-    protected getContractHandler: (scAddress: string) => Promise<SmartContract> = scAddress => { throw new Error("getContract")};
+    protected getContractHandler: (scAddress: string) => Promise<SmartContract> = scAddress => { throw Errors.ErrorGetContractHandlerNotSet};
 
     async currentClaimProgress(scAddress: string, user: string): Promise<ClaimProgress> {
         const contract = await this.getContractHandler(scAddress);
@@ -18,7 +19,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         return response.firstValue.valueOf();
     }
 
-    async userEnergyForWeek(scAddress: string, user: string, week: number): Promise<number> {
+    async userEnergyForWeek(scAddress: string, user: string, week: number): Promise<string> {
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction = contract.methodsExplicit.getUserEnergyForWeek(
             [
@@ -27,7 +28,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             ]
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toNumber();
+        return response.firstValue.valueOf().toFixed();
     }
 
     async lastActiveWeekForUser(scAddress: string, user: string): Promise<number> {
@@ -62,7 +63,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             [new U32Value(new BigNumber(week))]
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
+        return response.firstValue.valueOf().toFixed();
     }
 
     async totalLockedTokensForWeek(scAddress: string, week: number): Promise<string> {

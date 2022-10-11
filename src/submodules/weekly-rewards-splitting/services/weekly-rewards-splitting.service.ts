@@ -6,7 +6,7 @@ import { WeeklyRewardsSplittingGetterService } from "./weekly-rewards.splitting.
 @Injectable()
 export class WeeklyRewardsSplittingService {
     constructor(
-        private readonly getterService: WeeklyRewardsSplittingGetterService,
+        private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
     ) {}
 
     async getWeeklyRewardsSplit(scAddress: string, week: number): Promise<WeeklyRewardsSplittingModel> {
@@ -22,9 +22,9 @@ export class WeeklyRewardsSplittingService {
             energyForWeek,
             lastActiveWeekForUser,
         ] = await Promise.all([
-            this.getterService.currentClaimProgress(scAddress, userAddress),
-            this.getterService.userEnergyForWeek(scAddress, userAddress, week),
-            this.getterService.lastActiveWeekForUser(scAddress, userAddress),
+            this.weeklyRewardsSplittingGetter.currentClaimProgress(scAddress, userAddress),
+            this.weeklyRewardsSplittingGetter.userEnergyForWeek(scAddress, userAddress, week),
+            this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress),
         ]);
         return new UserWeeklyRewardsSplittingModel({
             scAddress: scAddress,
