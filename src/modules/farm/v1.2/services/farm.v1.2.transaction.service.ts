@@ -15,8 +15,8 @@ import {
     ExitFarmArgs,
 } from '../../models/farm.args';
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
-import { FarmGetterService } from '../farm.getter.service';
-import { TransactionsFarmService } from '../farm.transaction.service';
+import { FarmGetterService } from '../../base-module/services/farm.getter.service';
+import { TransactionsFarmService } from '../../base-module/services/farm.transaction.service';
 
 @Injectable()
 export class FarmV12TransactionService extends TransactionsFarmService {

@@ -14,12 +14,12 @@ import {
     ExitFarmArgs,
     FarmMigrationConfigArgs,
     MergeFarmTokensArgs,
-} from '../models/farm.args';
-import { FarmVersion } from '../models/farm.model';
-import { FarmCustomTransactionService } from '../services/custom/farm.custom.transaction.service';
-import { FarmService } from '../services/farm.service';
-import { FarmV12TransactionService } from '../services/v1.2/farm.v1.2.transaction.service';
-import { FarmV13TransactionService } from '../services/v1.3/farm.v1.3.transaction.service';
+} from './models/farm.args';
+import { FarmVersion } from './models/farm.model';
+import { FarmCustomTransactionService } from './custom/services/farm.custom.transaction.service';
+import { FarmService } from './base-module/services/farm.service';
+import { FarmV12TransactionService } from './v1.2/services/farm.v1.2.transaction.service';
+import { FarmV13TransactionService } from './v1.3/services/farm.v1.3.transaction.service';
 
 @Resolver()
 export class FarmTransactionResolver extends GenericResolver {

@@ -3,6 +3,7 @@ import { Args, Query, Resolver } from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/gql.auth.guard';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { farmVersion } from 'src/utils/farm.utils';
+import { FarmService } from './base-module/services/farm.service';
 import {
     BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,
@@ -14,8 +15,7 @@ import {
 } from './models/farm.model';
 import { FarmsUnion } from './models/farm.union';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
-import { FarmService } from '../services/farm.service';
-import { FarmV2Service } from '../services/v2/farm.v2.service';
+import { FarmV2Service } from './v2/services/farm.v2.service';
 
 @Resolver()
 export class FarmQueryResolver extends GenericResolver {

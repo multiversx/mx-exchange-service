@@ -1,4 +1,4 @@
-import { TransactionModel } from '../../../models/transaction.model';
+import { TransactionModel } from '../../../../models/transaction.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import {
@@ -9,7 +9,7 @@ import {
     TokenPayment,
     TypedValue,
 } from '@elrondnetwork/erdjs';
-import { elrondConfig, gasConfig } from '../../../config';
+import { elrondConfig, gasConfig } from '../../../../config';
 import { BigNumber } from 'bignumber.js';
 import {
     ClaimRewardsArgs,
@@ -17,14 +17,14 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
     FarmMigrationConfigArgs,
-} from '../models/farm.args';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+} from '../../models/farm.args';
+import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { FarmGetterService } from './farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import { FarmRewardType, FarmVersion } from '../models/farm.model';
+import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 

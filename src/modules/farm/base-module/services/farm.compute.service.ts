@@ -9,7 +9,7 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
+import { FarmTokenAttributesModel } from '../../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
 
 @Injectable()

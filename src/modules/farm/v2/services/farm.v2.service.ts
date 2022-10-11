@@ -3,8 +3,8 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { Logger } from 'winston';
-import { FarmComputeService } from '../farm.compute.service';
-import { FarmService } from '../farm.service';
+import { FarmComputeService } from '../../base-module/services/farm.compute.service';
+import { FarmService } from '../../base-module/services/farm.service';
 import { FarmV2AbiService } from './farm.v2.abi.service';
 import { FarmV2GetterService } from './farm.v2.getter.service';
 

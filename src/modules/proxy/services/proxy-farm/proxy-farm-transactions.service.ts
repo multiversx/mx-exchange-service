@@ -24,7 +24,7 @@ import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
+import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 
@@ -78,7 +78,7 @@ export class TransactionsProxyFarmService {
             args.tokens.length > 1
                 ? gasConfig.proxy.farms[version].enterFarm.withTokenMerge
                 : gasConfig.proxy.farms[version].enterFarm.default;
-        const mappedPayments = args.tokens.map(token =>
+        const mappedPayments = args.tokens.map((token) =>
             TokenPayment.metaEsdtFromBigInteger(
                 token.tokenID,
                 token.nonce,
@@ -250,7 +250,7 @@ export class TransactionsProxyFarmService {
             BytesValue.fromHex(new Address(farmAddress).hex()),
         ];
         const gasLimit = gasConfig.proxy.farms.defaultMergeWFMT * tokens.length;
-        const mappedPayments = tokens.map(token =>
+        const mappedPayments = tokens.map((token) =>
             TokenPayment.metaEsdtFromBigInteger(
                 token.tokenID,
                 token.nonce,
@@ -273,7 +273,8 @@ export class TransactionsProxyFarmService {
     private async validateWFMTInputTokens(
         tokens: InputTokenModel[],
     ): Promise<void> {
-        const wrappedFarmTokenID = await this.proxyFarmGetter.getwrappedFarmTokenID();
+        const wrappedFarmTokenID =
+            await this.proxyFarmGetter.getwrappedFarmTokenID();
 
         for (const wrappedFarmToken of tokens) {
             if (
@@ -334,9 +335,8 @@ export class TransactionsProxyFarmService {
         );
 
         if (pairAddress) {
-            const trustedSwapPairs = await this.pairGetterService.getTrustedSwapPairs(
-                pairAddress,
-            );
+            const trustedSwapPairs =
+                await this.pairGetterService.getTrustedSwapPairs(pairAddress);
             const gasLimit = args.withPenalty
                 ? trustedSwapPairs.length > 0
                     ? gasConfig.proxy.farms[version][type].exitFarm.withPenalty

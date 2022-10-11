@@ -6,7 +6,7 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
 } from '../../models/farm.args';
-import { TransactionsFarmService } from '../farm.transaction.service';
+import { TransactionsFarmService } from '../../base-module/services/farm.transaction.service';
 
 @Injectable()
 export class FarmCustomTransactionService extends TransactionsFarmService {

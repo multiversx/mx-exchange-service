@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
-import { FarmService } from 'src/modules/farm/services/farm.service';
+import { FarmService } from 'src/modules/farm/base-module/services/farm.service';
 import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
@@ -41,7 +41,8 @@ export class SimpleLockService {
     async getLockedTokenAttributes(
         tokenNonce: number,
     ): Promise<LockedTokenAttributesModel> {
-        const lockedEsdtCollection = await this.simpleLockGetter.getLockedTokenID();
+        const lockedEsdtCollection =
+            await this.simpleLockGetter.getLockedTokenID();
         const lockedTokenIdentifier = tokenIdentifier(
             lockedEsdtCollection,
             tokenNonce,
@@ -59,7 +60,7 @@ export class SimpleLockService {
     decodeBatchLockedTokenAttributes(
         args: DecodeAttributesArgs,
     ): LockedTokenAttributesModel[] {
-        return args.batchAttributes.map(arg => {
+        return args.batchAttributes.map((arg) => {
             return this.decodeLockedTokenAttributes(arg);
         });
     }
@@ -77,7 +78,8 @@ export class SimpleLockService {
     async getLpTokenProxyAttributes(
         tokenNonce: number,
     ): Promise<LpProxyTokenAttributesModel> {
-        const lockedLpTokenCollection = await this.simpleLockGetter.getLpProxyTokenID();
+        const lockedLpTokenCollection =
+            await this.simpleLockGetter.getLpProxyTokenID();
         const lockedLpTokenIdentifier = tokenIdentifier(
             lockedLpTokenCollection,
             tokenNonce,
@@ -96,7 +98,7 @@ export class SimpleLockService {
     decodeBatchLpTokenProxyAttributes(
         args: DecodeAttributesArgs,
     ): LpProxyTokenAttributesModel[] {
-        return args.batchAttributes.map(arg => {
+        return args.batchAttributes.map((arg) => {
             return this.decodeLpProxyTokenAttributes(arg);
         });
     }
@@ -126,13 +128,12 @@ export class SimpleLockService {
     decodeFarmProxyTokenAttributes(
         args: DecodeAttributesModel,
     ): FarmProxyTokenAttributesModel {
-        const lockedFarmTokenAttributesModel = new FarmProxyTokenAttributesModel(
-            {
+        const lockedFarmTokenAttributesModel =
+            new FarmProxyTokenAttributesModel({
                 ...LockedFarmTokenAttributes.fromAttributes(args.attributes),
                 attributes: args.attributes,
                 identifier: args.identifier,
-            },
-        );
+            });
 
         return lockedFarmTokenAttributesModel;
     }

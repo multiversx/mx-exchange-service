@@ -2,7 +2,7 @@ import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmMigrationConfig } from '../models/farm.model';
 import { FarmModelV1_2 } from '../models/farm.v1.2.model';
-import { FarmV12GetterService } from '../services/v1.2/farm.v1.2.getter.service';
+import { FarmV12GetterService } from './services/farm.v1.2.getter.service';
 
 @Resolver(() => FarmModelV1_2)
 export class FarmV12Resolver extends FarmResolver {

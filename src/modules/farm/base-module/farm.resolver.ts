@@ -1,7 +1,7 @@
 import { Resolver, ResolveField, Parent } from '@nestjs/graphql';
 import { BaseFarmModel } from '../models/farm.model';
 import { ApolloError } from 'apollo-server-express';
-import { FarmGetterService } from '../services/farm.getter.service';
+import { FarmGetterService } from './services/farm.getter.service';
 import { PairModel } from '../../pair/models/pair.model';
 import { LockedAssetModel } from '../../locked-asset-factory/models/locked-asset.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';

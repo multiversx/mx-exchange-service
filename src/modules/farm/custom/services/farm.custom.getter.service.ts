@@ -5,8 +5,8 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { Logger } from 'winston';
-import { FarmComputeService } from '../farm.compute.service';
-import { FarmGetterService } from '../farm.getter.service';
+import { FarmComputeService } from '../../base-module/services/farm.compute.service';
+import { FarmGetterService } from '../../base-module/services/farm.getter.service';
 import { FarmCustomAbiService } from './farm.custom.abi.service';
 
 @Injectable()

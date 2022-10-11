@@ -25,7 +25,7 @@ import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { FeesCollectorModule } from "./modules/fees-collector/fees-collector.module";
+import { FeesCollectorModule } from './modules/fees-collector/fees-collector.module';
 
 @Module({
     imports: [
@@ -106,7 +106,7 @@ import { FeesCollectorModule } from "./modules/fees-collector/fees-collector.mod
         UserModule,
         AnalyticsModule,
         SubscriptionsModule,
-        FeesCollectorModule
+        FeesCollectorModule,
     ],
     providers: [CachingService],
 })

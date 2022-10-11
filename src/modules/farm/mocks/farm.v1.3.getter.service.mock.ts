@@ -1,4 +1,4 @@
-import { FarmV13GetterService } from '../services/v1.3/farm.v1.3.getter.service';
+import { FarmV13GetterService } from '../v1.3/services/farm.v1.3.getter.service';
 import { FarmGetterServiceMock } from './farm.getter.service.mock';
 
 export class FarmV13GetterServiceMock extends FarmGetterServiceMock {}

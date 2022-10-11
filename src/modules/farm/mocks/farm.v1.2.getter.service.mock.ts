@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { FarmV12GetterService } from '../services/v1.2/farm.v1.2.getter.service';
+import { FarmV12GetterService } from '../v1.2/services/farm.v1.2.getter.service';
 import { farms } from './farm.constants';
 import { FarmGetterServiceMock } from './farm.getter.service.mock';
 

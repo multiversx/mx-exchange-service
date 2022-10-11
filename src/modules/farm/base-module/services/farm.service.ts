@@ -1,28 +1,28 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { constantsConfig } from '../../../config';
+import { constantsConfig } from '../../../../config';
 import {
     ExitFarmTokensModel,
     RewardsModel,
     FarmVersion,
-} from '../models/farm.model';
+} from '../../models/farm.model';
 import { AbiFarmService } from './farm.abi.service';
-import { CalculateRewardsArgs } from '../models/farm.args';
+import { CalculateRewardsArgs } from '../../models/farm.args';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import BigNumber from 'bignumber.js';
-import { oneHour, ruleOfThree } from '../../../helpers/helpers';
+import { oneHour, ruleOfThree } from '../../../../helpers/helpers';
 import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
+import { FarmTokenAttributesModel } from '../../models/farmTokenAttributes.model';
 import { CachingService } from 'src/services/caching/cache.service';
-import { FarmModelV1_2 } from '../models/farm.v1.2.model';
-import { FarmModelV1_3 } from '../models/farm.v1.3.model';
-import { FarmCustomModel } from '../models/farm.custom.model';
-import { FarmsUnion } from '../models/farm.union';
-import { FarmModelV2 } from '../models/farm.v2.model';
+import { FarmModelV1_2 } from '../../models/farm.v1.2.model';
+import { FarmModelV1_3 } from '../../models/farm.v1.3.model';
+import { FarmCustomModel } from '../../models/farm.custom.model';
+import { FarmsUnion } from '../../models/farm.union';
+import { FarmModelV2 } from '../../models/farm.v2.model';
 
 @Injectable()
 export class FarmService {

@@ -3,7 +3,6 @@ import { AWSModule } from 'src/services/aws/aws.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
-import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
 import { AnalyticsResolver } from './analytics.resolver';
@@ -16,6 +15,9 @@ import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairDayDataResolver } from './analytics.pair.resolver';
 import { TokenModule } from '../tokens/token.module';
 import { AnalyticsAWSSetterService } from './services/analytics.aws.setter.service';
+import { FarmBaseModule } from '../farm/base-module/farm.base.module';
+import { FarmV12Module } from '../farm/v1.2/farm.v1.2.module';
+import { FarmV13Module } from '../farm/v1.3/farm.v1.3.module';
 
 @Module({
     imports: [
@@ -25,7 +27,9 @@ import { AnalyticsAWSSetterService } from './services/analytics.aws.setter.servi
         ContextModule,
         RouterModule,
         PairModule,
-        FarmModule,
+        FarmBaseModule,
+        FarmV12Module,
+        FarmV13Module,
         ProxyModule,
         LockedAssetModule,
         TokenModule,

@@ -6,7 +6,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { Logger } from 'winston';
 import { FarmMigrationConfig } from '../../models/farm.model';
-import { FarmGetterService } from '../farm.getter.service';
+import { FarmGetterService } from '../../base-module/services/farm.getter.service';
 import { FarmV13AbiService } from './farm.v1.3.abi.service';
 import { FarmV13ComputeService } from './farm.v1.3.compute.service';
 

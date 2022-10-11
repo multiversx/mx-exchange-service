@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { FarmService } from '../../farm/services/farm.service';
+import { FarmService } from '../../farm/base-module/services/farm.service';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
@@ -17,7 +17,7 @@ import { oneHour, oneSecond } from '../../../helpers/helpers';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { FarmGetterService } from '../../farm/services/farm.getter.service';
+import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
@@ -132,9 +132,10 @@ export class UserService {
 
             switch (userNftTokenType) {
                 case NftTokenType.FarmToken:
-                    const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
-                        userNft.collection,
-                    );
+                    const farmAddress =
+                        await this.farmService.getFarmAddressByFarmTokenID(
+                            userNft.collection,
+                        );
                     promises.push(
                         this.userComputeService.farmTokenUSD(
                             userNft,
@@ -178,9 +179,10 @@ export class UserService {
                     );
                     break;
                 case NftTokenType.RedeemToken:
-                    const priceDiscoveryAddress = await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
-                        userNft.collection,
-                    );
+                    const priceDiscoveryAddress =
+                        await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
+                            userNft.collection,
+                        );
                     promises.push(
                         this.userComputeService.redeemTokenUSD(
                             userNft,
@@ -250,41 +252,44 @@ export class UserService {
             promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
         }
         const farmTokenIDs = await Promise.all(promises);
-        if (farmTokenIDs.find(farmTokenID => farmTokenID === tokenID)) {
+        if (farmTokenIDs.find((farmTokenID) => farmTokenID === tokenID)) {
             return NftTokenType.FarmToken;
         }
 
         promises = [];
-        const staking = await this.remoteConfigGetterService.getStakingAddresses();
+        const staking =
+            await this.remoteConfigGetterService.getStakingAddresses();
         for (const address of staking) {
             promises.push(this.stakeGetterService.getFarmTokenID(address));
         }
         const stakeFarmTokenIDs = await Promise.all(promises);
         if (
             stakeFarmTokenIDs.find(
-                stakeFarmTokenID => stakeFarmTokenID === tokenID,
+                (stakeFarmTokenID) => stakeFarmTokenID === tokenID,
             )
         ) {
             return NftTokenType.StakeFarmToken;
         }
 
         promises = [];
-        const stakingProxy = await this.remoteConfigGetterService.getStakingProxyAddresses();
+        const stakingProxy =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
         for (const address of stakingProxy) {
             promises.push(this.proxyStakeGetter.getDualYieldTokenID(address));
         }
         const dualYieldTokenIDs = await Promise.all(promises);
         if (
             dualYieldTokenIDs.find(
-                dualYieldTokenID => dualYieldTokenID === tokenID,
+                (dualYieldTokenID) => dualYieldTokenID === tokenID,
             )
         ) {
             return NftTokenType.DualYieldToken;
         }
 
-        const priceDiscoveryAddress = await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
-            tokenID,
-        );
+        const priceDiscoveryAddress =
+            await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
+                tokenID,
+            );
         if (priceDiscoveryAddress) {
             return NftTokenType.RedeemToken;
         }
@@ -300,23 +305,19 @@ export class UserService {
             this.apiService.getNftsCountForUser(address),
         ]);
 
-        const [
-            egldPrice,
-            userStats,
-            userEsdtTokens,
-            userNftTokens,
-        ] = await Promise.all([
-            this.pairGetter.getFirstTokenPrice(scAddress.WEGLD_USDC),
-            this.apiService.getAccountStats(address),
-            this.userEsdt.getAllEsdtTokens(address, {
-                offset: 0,
-                limit: userEsdtTokensCount,
-            }),
-            this.getAllNftTokens(address, {
-                offset: 0,
-                limit: userNftTokensCount,
-            }),
-        ]);
+        const [egldPrice, userStats, userEsdtTokens, userNftTokens] =
+            await Promise.all([
+                this.pairGetter.getFirstTokenPrice(scAddress.WEGLD_USDC),
+                this.apiService.getAccountStats(address),
+                this.userEsdt.getAllEsdtTokens(address, {
+                    offset: 0,
+                    limit: userEsdtTokensCount,
+                }),
+                this.getAllNftTokens(address, {
+                    offset: 0,
+                    limit: userNftTokensCount,
+                }),
+            ]);
         if (!userStats) {
             return undefined;
         }

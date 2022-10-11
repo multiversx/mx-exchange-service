@@ -4,7 +4,6 @@ import { PairModule } from '../modules/pair/pair.module';
 import { ContextModule } from './context/context.module';
 import { CacheWarmerService } from './crons/cache.warmer.service';
 import { CachingService } from './caching/cache.service';
-import { FarmModule } from 'src/modules/farm/farm.module';
 import { ProxyModule } from 'src/modules/proxy/proxy.module';
 import { ProxyFarmModule } from 'src/modules/proxy/services/proxy-farm/proxy-farm.module';
 import { ProxyPairModule } from 'src/modules/proxy/services/proxy-pair/proxy-pair.module';
@@ -31,6 +30,9 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
 import { RouterModule } from 'src/modules/router/router.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
 import { AWSQueryCacheWarmerService } from './crons/aws.query.cache.warmer.service';
+import { FarmBaseModule } from 'src/modules/farm/base-module/farm.base.module';
+import { FarmV12Module } from 'src/modules/farm/v1.2/farm.v1.2.module';
+import { FarmV13Module } from 'src/modules/farm/v1.3/farm.v1.3.module';
 
 @Module({
     imports: [
@@ -41,7 +43,9 @@ import { AWSQueryCacheWarmerService } from './crons/aws.query.cache.warmer.servi
         RouterModule,
         ElrondCommunicationModule,
         ContextModule,
-        FarmModule,
+        FarmBaseModule,
+        FarmV12Module,
+        FarmV13Module,
         StakingModule,
         StakingProxyModule,
         MetabondingModule,

@@ -4,7 +4,6 @@ import {
     AddressValue,
     BigUIntType,
     BigUIntValue,
-    BytesValue,
     Field,
     FieldDefinition,
     Interaction,
@@ -15,8 +14,8 @@ import {
 } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { CalculateRewardsArgs } from '../models/farm.args';
-import { AbiFarmService } from '../base-module/farm.abi.service';
+import { CalculateRewardsArgs } from '../../models/farm.args';
+import { AbiFarmService } from '../../base-module/services/farm.abi.service';
 
 @Injectable()
 export class FarmV2AbiService extends AbiFarmService {

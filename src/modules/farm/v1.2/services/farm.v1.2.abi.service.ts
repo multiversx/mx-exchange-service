@@ -1,7 +1,7 @@
 import { Interaction } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
-import { FarmMigrationConfig } from '../models/farm.model';
-import { AbiFarmService } from '../base-module/farm.abi.service';
+import { FarmMigrationConfig } from '../../models/farm.model';
+import { AbiFarmService } from '../../base-module/services/farm.abi.service';
 
 @Injectable()
 export class FarmV12AbiService extends AbiFarmService {

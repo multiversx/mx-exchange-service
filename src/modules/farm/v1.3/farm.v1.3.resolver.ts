@@ -1,7 +1,7 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { FarmResolver } from '../base-module/farm.resolver';
 import { FarmModelV1_3 } from '../models/farm.v1.3.model';
-import { FarmV13GetterService } from '../services/v1.3/farm.v1.3.getter.service';
+import { FarmV13GetterService } from './services/farm.v1.3.getter.service';
 
 @Resolver(FarmModelV1_3)
 export class FarmV13Resolver extends FarmResolver {

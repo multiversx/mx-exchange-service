@@ -5,10 +5,10 @@ import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
-import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
-import { FarmV12ComputeService } from 'src/modules/farm/services/v1.2/farm.v1.2.compute.service';
-import { FarmV13ComputeService } from 'src/modules/farm/services/v1.3/farm.v1.3.compute.service';
+import { FarmComputeService } from 'src/modules/farm/base-module/services/farm.compute.service';
+import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
+import { FarmV12ComputeService } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
+import { FarmV13ComputeService } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
