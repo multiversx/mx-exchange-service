@@ -1,0 +1,511 @@
+{
+  "buildInfo": {
+    "rustc": {
+      "version": "1.62.0-nightly",
+      "commitHash": "082e4ca49770ebc9cb0ee616f3726a67471be8cb",
+      "commitDate": "2022-04-26",
+      "channel": "Nightly",
+      "short": "rustc 1.62.0-nightly (082e4ca49 2022-04-26)"
+    },
+    "contractCrate": {
+      "name": "fees-collector",
+      "version": "0.0.0",
+      "git_version": "v1.6.0-377-gbf55c323-modified"
+    },
+    "framework": {
+      "name": "elrond-wasm",
+      "version": "0.34.1"
+    }
+  },
+  "name": "FeesCollector",
+  "constructor": {
+    "inputs": [],
+    "outputs": []
+  },
+  "endpoints": [
+    {
+      "name": "claimRewards",
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "List<EsdtTokenPayment>"
+        }
+      ]
+    },
+    {
+      "docs": [
+        "Accepts pairs of (user address, energy amount, total locked tokens).",
+        "Sets the given amounts for the user's positions,",
+        "and recomputes the global amounts.",
+        "",
+        "Returns whether the operation was fully completed.",
+        "If not, it also returns the last processed index."
+      ],
+      "name": "recomputeEnergy",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "arg_pairs",
+          "type": "variadic<multi<Address,BigUint,BigUint>>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": [
+        {
+          "type": "OperationCompletionStatus"
+        },
+        {
+          "type": "optional<u32>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "addKnownContracts",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "contracts",
+          "type": "variadic<Address>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeKnownContracts",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "contracts",
+          "type": "variadic<Address>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "addKnownTokens",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tokens",
+          "type": "variadic<TokenIdentifier>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeKnownTokens",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tokens",
+          "type": "variadic<TokenIdentifier>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getAllTokens",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<TokenIdentifier>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getAllKnownContracts",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<Address>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getCurrentClaimProgress",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "ClaimProgress"
+        }
+      ]
+    },
+    {
+      "name": "getUserEnergyForWeek",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        },
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "Energy"
+        }
+      ]
+    },
+    {
+      "name": "getLastActiveWeekForUser",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getLastGlobalUpdateWeek",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getTotalRewardsForWeek",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "List<TokenAmountPair>"
+        }
+      ]
+    },
+    {
+      "name": "getTotalEnergyForWeek",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "getTotalLockedTokensForWeek",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "docs": [
+        "Pair SC will deposit the fees through this endpoint",
+        "Deposits for current week are accessible starting next week"
+      ],
+      "name": "depositSwapFees",
+      "mutability": "mutable",
+      "payableInTokens": [
+        "*"
+      ],
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "getAccumulatedFees",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "week",
+          "type": "u32"
+        },
+        {
+          "name": "token",
+          "type": "TokenIdentifier"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "setEnergyFactoryAddress",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "sc_address",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getEnergyFactoryAddress",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "Address"
+        }
+      ]
+    },
+    {
+      "docs": [
+        "Week starts from 1"
+      ],
+      "name": "getCurrentWeek",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getFirstWeekStartEpoch",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "isPaused",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "pause",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "unpause",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    }
+  ],
+  "events": [
+    {
+      "identifier": "deposit_swap_fees_event",
+      "inputs": [
+        {
+          "name": "caller",
+          "type": "Address",
+          "indexed": true
+        },
+        {
+          "name": "current_week",
+          "type": "u32",
+          "indexed": true
+        },
+        {
+          "name": "payment_token",
+          "type": "TokenIdentifier",
+          "indexed": true
+        },
+        {
+          "name": "payment_amount",
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "identifier": "claim_multi_event",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address",
+          "indexed": true
+        },
+        {
+          "name": "current_week",
+          "type": "u32",
+          "indexed": true
+        },
+        {
+          "name": "energy",
+          "type": "Energy",
+          "indexed": true
+        },
+        {
+          "name": "all_payments",
+          "type": "List<EsdtTokenPayment>"
+        }
+      ]
+    },
+    {
+      "identifier": "update_user_energy_event",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address",
+          "indexed": true
+        },
+        {
+          "name": "current_week",
+          "type": "u32",
+          "indexed": true
+        },
+        {
+          "name": "energy",
+          "type": "Energy",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "identifier": "update_global_amounts_event",
+      "inputs": [
+        {
+          "name": "current_week",
+          "type": "u32",
+          "indexed": true
+        },
+        {
+          "name": "total_locked_tokens",
+          "type": "BigUint",
+          "indexed": true
+        },
+        {
+          "name": "total_energy",
+          "type": "BigUint",
+          "indexed": true
+        }
+      ]
+    }
+  ],
+  "hasCallback": false,
+  "types": {
+    "ClaimProgress": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "energy",
+          "type": "Energy"
+        },
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ]
+    },
+    "Energy": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "BigInt"
+        },
+        {
+          "name": "last_update_epoch",
+          "type": "u64"
+        },
+        {
+          "name": "total_locked_tokens",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "EsdtTokenPayment": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "token_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "TokenAmountPair": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "OperationCompletionStatus": {
+      "type": "enum",
+      "variants": [
+        {
+          "name": "Completed",
+          "discriminant": 0
+        },
+        {
+          "name": "InterruptedBeforeOutOfGas",
+          "discriminant": 1
+        }
+      ]
+    }
+  }
+}
