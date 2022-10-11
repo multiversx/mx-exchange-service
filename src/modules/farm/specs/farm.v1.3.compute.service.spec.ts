@@ -1,22 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { FarmService } from '../services/farm.service';
-import { AbiFarmService } from '../services/farm.abi.service';
-import {
-    AbiFarmServiceMock,
-    AbiFarmServiceProvider,
-} from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../services/farm.getter.service';
-import { FarmComputeService } from '../services/farm.compute.service';
-import {
-    FarmGetterServiceMock,
-    FarmGetterServiceProvider,
-} from '../mocks/farm.getter.service.mock';
 import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../../modules/pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
@@ -27,9 +15,12 @@ import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { AbiFarmServiceProvider } from '../mocks/abi.farm.service.mock';
+import { FarmV13ComputeService } from '../services/v1.3/farm.v1.3.compute.service';
+import { FarmV13GetterServiceProvider } from '../mocks/farm.v1.3.getter.service.mock';
 
 describe('FarmService', () => {
-    let service: FarmComputeService;
+    let service: FarmV13ComputeService;
 
     const ElrondApiServiceProvider = {
         provide: ElrondApiService,
@@ -56,8 +47,8 @@ describe('FarmService', () => {
             imports: [CommonAppModule, CachingModule],
             providers: [
                 AbiFarmServiceProvider,
-                FarmGetterServiceProvider,
-                FarmComputeService,
+                FarmV13GetterServiceProvider,
+                FarmV13ComputeService,
                 ElrondApiServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
@@ -67,58 +58,18 @@ describe('FarmService', () => {
                 TokenComputeService,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
-                FarmService,
             ],
         }).compile();
 
-        service = module.get<FarmComputeService>(FarmComputeService);
+        service = module.get<FarmV13ComputeService>(FarmV13ComputeService);
     });
 
     it('should be defined', () => {
         expect(service).toBeDefined();
     });
 
-    it('should compute farmed token price USD', async () => {
-        const farmedTokenPriceUSD = await service.computeFarmedTokenPriceUSD(
-            'farm_address_2',
-        );
-        expect(farmedTokenPriceUSD).toEqual('10');
-    });
-
-    it('should compute farming token price USD', async () => {
-        const farmingTokenPriceUSD = await service.computeFarmingTokenPriceUSD(
-            'farm_address_2',
-        );
-        expect(farmingTokenPriceUSD).toEqual('40');
-    });
-
-    it('should compute farm rewards for position', async () => {
-        const farmRewardsForPosition =
-            await service.computeFarmRewardsForPosition(
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-                '100000000000000000000000000000',
-                new FarmTokenAttributesModel({
-                    identifier: undefined,
-                    attributes: undefined,
-                    rewardPerShare: '100',
-                    originalEnteringEpoch: 0,
-                    enteringEpoch: 0,
-                    aprMultiplier: 25,
-                    initialFarmingAmount: '10000000000000000000',
-                    compoundedReward: '500000000000000',
-                    currentFarmAmount: '100000000000000',
-                    lockedRewards: true,
-                }),
-            );
-        expect(farmRewardsForPosition.toFixed()).toEqual(
-            '18333333333333333333333000',
-        );
-    });
-
-    it('should compute anual rewards USD', async () => {
-        const anualRewardsUSD = await service.computeAnualRewardsUSD(
-            'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-        );
-        expect(anualRewardsUSD).toEqual('2102400000');
+    it('should compute farm APR', async () => {
+        const farmAPR = await service.computeFarmAPR('farm_address_2');
+        expect(farmAPR).toEqual('10.05256');
     });
 });

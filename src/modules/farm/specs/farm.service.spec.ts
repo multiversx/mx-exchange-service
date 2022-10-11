@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { FarmService } from '../services/farm.service';
-import { AbiFarmService } from '../services/abi-farm.service';
+import { AbiFarmService } from '../services/farm.abi.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
@@ -165,8 +165,8 @@ describe('FarmService', () => {
     });
 
     it('should get batch rewards for position', async () => {
-        const batchRewardsForPosition = await service.getBatchRewardsForPosition(
-            [
+        const batchRewardsForPosition =
+            await service.getBatchRewardsForPosition([
                 {
                     farmAddress:
                         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
@@ -176,8 +176,7 @@ describe('FarmService', () => {
                         'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
                     vmQuery: false,
                 },
-            ],
-        );
+            ]);
         expect(batchRewardsForPosition).toEqual([
             {
                 decodedAttributes: {
@@ -194,7 +193,7 @@ describe('FarmService', () => {
                     rewardPerShare: '0',
                 },
                 remainingFarmingEpochs: 1047,
-                rewards: '110000000000000000150000000000',
+                rewards: '110000000000000000100000000000',
             },
         ]);
     });
@@ -211,7 +210,7 @@ describe('FarmService', () => {
         });
         expect(tokensForExitFarm).toEqual({
             farmingTokens: '999000000000000',
-            rewards: '110000000000000000150000000000',
+            rewards: '110000000000000000100000000000',
         });
     });
 

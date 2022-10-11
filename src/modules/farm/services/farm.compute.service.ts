@@ -7,10 +7,8 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { farmVersion } from 'src/utils/farm.utils';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
-import { FarmVersion } from '../models/farm.model';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
 
@@ -18,23 +16,28 @@ import { FarmGetterService } from './farm.getter.service';
 export class FarmComputeService {
     constructor(
         @Inject(forwardRef(() => FarmGetterService))
-        private readonly farmGetterService: FarmGetterService,
-        private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
-        private readonly pairComputeService: PairComputeService,
-        private readonly contextGetter: ContextGetterService,
-        private readonly tokenCompute: TokenComputeService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        protected readonly farmGetter: FarmGetterService,
+        protected readonly pairService: PairService,
+        protected readonly pairGetter: PairGetterService,
+        protected readonly pairCompute: PairComputeService,
+        protected readonly contextGetter: ContextGetterService,
+        protected readonly tokenCompute: TokenComputeService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
+    async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
+        return '0';
+    }
+
     async computeFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
-        const farmedTokenID = await this.farmGetterService.getFarmedTokenID(
+        const farmedTokenID = await this.farmGetter.getFarmedTokenID(
             farmAddress,
         );
         if (scAddress.has(farmedTokenID)) {
-            const tokenPriceUSD = await this.tokenCompute.computeTokenPriceDerivedUSD(
-                farmedTokenID,
-            );
+            const tokenPriceUSD =
+                await this.tokenCompute.computeTokenPriceDerivedUSD(
+                    farmedTokenID,
+                );
             return tokenPriceUSD;
         }
 
@@ -44,7 +47,7 @@ export class FarmComputeService {
     }
 
     async computeFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
-        const farmingTokenID = await this.farmGetterService.getFarmingTokenID(
+        const farmingTokenID = await this.farmGetter.getFarmingTokenID(
             farmAddress,
         );
         if (scAddress.has(farmingTokenID)) {
@@ -56,45 +59,7 @@ export class FarmComputeService {
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             farmingTokenID,
         );
-        return this.pairComputeService.computeLpTokenPriceUSD(pairAddress);
-    }
-
-    async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
-        const version = farmVersion(farmAddress);
-        const [
-            farmingToken,
-            farmingTokenReserve,
-            farmTokenSupply,
-        ] = await Promise.all([
-            this.farmGetterService.getFarmingToken(farmAddress),
-            this.farmGetterService.getFarmingTokenReserve(farmAddress),
-            this.farmGetterService.getFarmTokenSupply(farmAddress),
-        ]);
-
-        const reserves =
-            version === FarmVersion.V1_2
-                ? farmingTokenReserve
-                : farmTokenSupply;
-
-        if (scAddress.has(farmingToken.identifier)) {
-            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-                farmingToken.identifier,
-            );
-            return computeValueUSD(
-                reserves,
-                farmingToken.decimals,
-                tokenPriceUSD,
-            ).toFixed();
-        }
-
-        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            farmingToken.identifier,
-        );
-        const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
-            pairAddress,
-            reserves,
-        );
-        return lockedValuesUSD;
+        return this.pairCompute.computeLpTokenPriceUSD(pairAddress);
     }
 
     async computeFarmRewardsForPosition(
@@ -106,30 +71,24 @@ export class FarmComputeService {
             currentNonce,
             lastRewardBlockNonce,
             perBlockRewardAmount,
-            undistributedFees,
-            currentBlockFee,
             divisionSafetyConstant,
             farmTokenSupply,
             farmRewardPerShare,
             produceRewardsEnabled,
         ] = await Promise.all([
             this.contextGetter.getShardCurrentBlockNonce(1),
-            this.farmGetterService.getLastRewardBlockNonce(farmAddress),
-            this.farmGetterService.getRewardsPerBlock(farmAddress),
-            this.farmGetterService.getUndistributedFees(farmAddress),
-            this.farmGetterService.getCurrentBlockFee(farmAddress),
-            this.farmGetterService.getDivisionSafetyConstant(farmAddress),
-            this.farmGetterService.getFarmTokenSupply(farmAddress),
-            this.farmGetterService.getRewardPerShare(farmAddress),
-            this.farmGetterService.getProduceRewardsEnabled(farmAddress),
+            this.farmGetter.getLastRewardBlockNonce(farmAddress),
+            this.farmGetter.getRewardsPerBlock(farmAddress),
+            this.farmGetter.getDivisionSafetyConstant(farmAddress),
+            this.farmGetter.getFarmTokenSupply(farmAddress),
+            this.farmGetter.getRewardPerShare(farmAddress),
+            this.farmGetter.getProduceRewardsEnabled(farmAddress),
         ]);
 
         const amountBig = new BigNumber(liquidity);
         const currentBlockBig = new BigNumber(currentNonce);
         const lastRewardBlockNonceBig = new BigNumber(lastRewardBlockNonce);
         const perBlockRewardAmountBig = new BigNumber(perBlockRewardAmount);
-        const undistributedFeesBig = new BigNumber(undistributedFees);
-        const currentBlockFeeBig = new BigNumber(currentBlockFee);
         const divisionSafetyConstantBig = new BigNumber(divisionSafetyConstant);
         const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
         const farmRewardPerShareBig = new BigNumber(farmRewardPerShare);
@@ -138,16 +97,13 @@ export class FarmComputeService {
         );
 
         let toBeMinted = new BigNumber(0);
-        const feesBig = undistributedFeesBig.plus(currentBlockFeeBig);
 
         if (currentNonce > lastRewardBlockNonce && produceRewardsEnabled) {
             toBeMinted = perBlockRewardAmountBig.times(
                 currentBlockBig.minus(lastRewardBlockNonceBig),
             );
         }
-        const rewardIncrease = feesBig.isNaN()
-            ? toBeMinted
-            : toBeMinted.plus(feesBig);
+        const rewardIncrease = toBeMinted;
         const rewardPerShareIncrease = rewardIncrease
             .times(divisionSafetyConstantBig)
             .dividedBy(farmTokenSupplyBig);
@@ -158,9 +114,8 @@ export class FarmComputeService {
         if (
             futureRewardPerShare.isGreaterThan(decodedAttributes.rewardPerShare)
         ) {
-            const rewardPerShareDiff = futureRewardPerShare.minus(
-                rewardPerShareBig,
-            );
+            const rewardPerShareDiff =
+                futureRewardPerShare.minus(rewardPerShareBig);
 
             return amountBig
                 .times(rewardPerShareDiff)
@@ -169,146 +124,14 @@ export class FarmComputeService {
         return new BigNumber(0);
     }
 
-    async computeLockedFarmingTokenReserve(
-        farmAddress: string,
-    ): Promise<string> {
-        if (farmVersion(farmAddress) !== 'v1.2') {
-            return null;
-        }
-
-        const [
-            unlockedFarmingTokenReserve,
-            farmingTokenReserve,
-        ] = await Promise.all([
-            this.computeUnlockedFarmingTokenReserve(farmAddress),
-            this.farmGetterService.getFarmingTokenReserve(farmAddress),
-        ]);
-        return new BigNumber(farmingTokenReserve)
-            .minus(unlockedFarmingTokenReserve)
-            .toFixed();
-    }
-
-    async computeUnlockedFarmingTokenReserve(
-        farmAddress: string,
-    ): Promise<string> {
-        if (farmVersion(farmAddress) !== 'v1.2') {
-            return null;
-        }
-        const [
-            farmingTokenReserve,
-            farmTokenSupply,
-            aprMultiplier,
-        ] = await Promise.all([
-            this.farmGetterService.getFarmingTokenReserve(farmAddress),
-            this.farmGetterService.getFarmTokenSupply(farmAddress),
-            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
-        ]);
-
-        return new BigNumber(farmingTokenReserve)
-            .times(aprMultiplier)
-            .minus(farmTokenSupply)
-            .div(aprMultiplier - 1)
-            .toFixed();
-    }
-
-    async computeLockedFarmingTokenReserveUSD(
-        farmAddress: string,
-    ): Promise<string> {
-        if (farmVersion(farmAddress) !== 'v1.2') {
-            return null;
-        }
-
-        const [farmingToken, lockedFarmingTokenReserve] = await Promise.all([
-            this.farmGetterService.getFarmingToken(farmAddress),
-            this.computeLockedFarmingTokenReserve(farmAddress),
-        ]);
-
-        if (scAddress.has(farmingToken.identifier)) {
-            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-                farmingToken.identifier,
-            );
-            return computeValueUSD(
-                lockedFarmingTokenReserve,
-                farmingToken.decimals,
-                tokenPriceUSD,
-            ).toFixed();
-        }
-
-        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            farmingToken.identifier,
-        );
-        const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
-            pairAddress,
-            lockedFarmingTokenReserve,
-        );
-        return lockedValuesUSD;
-    }
-
-    async computeUnlockedFarmingTokenReserveUSD(
-        farmAddress: string,
-    ): Promise<string> {
-        if (farmVersion(farmAddress) !== 'v1.2') {
-            return null;
-        }
-
-        const [farmingToken, unlockedFarmingTokenReserve] = await Promise.all([
-            this.farmGetterService.getFarmingToken(farmAddress),
-            this.computeUnlockedFarmingTokenReserve(farmAddress),
-        ]);
-
-        if (scAddress.has(farmingToken.identifier)) {
-            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
-                farmingToken.identifier,
-            );
-            return computeValueUSD(
-                unlockedFarmingTokenReserve,
-                farmingToken.decimals,
-                tokenPriceUSD,
-            ).toFixed();
-        }
-
-        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            farmingToken.identifier,
-        );
-        const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
-            pairAddress,
-            unlockedFarmingTokenReserve,
-        );
-        return lockedValuesUSD;
-    }
-
-    async computeVirtualValueLockedUSD(farmAddress: string): Promise<string> {
-        if (farmVersion(farmAddress) !== 'v1.2') {
-            return null;
-        }
-        const [
-            lockedFarmingTokenReserveUSD,
-            unlockedFarmingTokenReserveUSD,
-            aprMultiplier,
-        ] = await Promise.all([
-            this.computeLockedFarmingTokenReserveUSD(farmAddress),
-            this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
-            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
-        ]);
-
-        return new BigNumber(lockedFarmingTokenReserveUSD)
-            .times(aprMultiplier)
-            .plus(unlockedFarmingTokenReserveUSD)
-            .toFixed();
-    }
-
     async computeAnualRewardsUSD(farmAddress: string): Promise<string> {
-        const farmedToken = await this.farmGetterService.getFarmedToken(
-            farmAddress,
-        );
+        const farmedToken = await this.farmGetter.getFarmedToken(farmAddress);
 
         const [farmedTokenPriceUSD, rewardsPerBlock] = await Promise.all([
             this.tokenCompute.computeTokenPriceDerivedUSD(
                 farmedToken.identifier,
             ),
-            this.farmGetterService.getRewardsPerBlock(farmAddress),
-            this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
-            this.computeVirtualValueLockedUSD(farmAddress),
+            this.farmGetter.getRewardsPerBlock(farmAddress),
         ]);
 
         // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
@@ -322,131 +145,5 @@ export class FarmComputeService {
             farmedToken.decimals,
             farmedTokenPriceUSD,
         ).toFixed();
-    }
-
-    async computeUnlockedRewardsAPR(farmAddress: string): Promise<string> {
-        if (farmVersion(farmAddress) !== 'v1.2') {
-            return null;
-        }
-        const [
-            farmedTokenID,
-            farmingTokenID,
-            totalRewardsPerYearUSD,
-            virtualValueLockedUSD,
-            unlockedFarmingTokenReserveUSD,
-        ] = await Promise.all([
-            this.farmGetterService.getFarmedTokenID(farmAddress),
-            this.farmGetterService.getFarmingTokenID(farmAddress),
-            this.computeAnualRewardsUSD(farmAddress),
-            this.computeVirtualValueLockedUSD(farmAddress),
-            this.computeUnlockedFarmingTokenReserveUSD(farmAddress),
-        ]);
-
-        const unlockedFarmingTokenReservePercent = new BigNumber(
-            unlockedFarmingTokenReserveUSD,
-        ).div(virtualValueLockedUSD);
-        const distributedRewardsUSD = new BigNumber(
-            totalRewardsPerYearUSD,
-        ).times(unlockedFarmingTokenReservePercent);
-
-        const unlockedRewardsAPR = distributedRewardsUSD.div(
-            unlockedFarmingTokenReserveUSD,
-        );
-
-        let feesAPR = new BigNumber(0);
-        if (farmedTokenID !== farmingTokenID) {
-            const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-                farmingTokenID,
-            );
-            feesAPR = new BigNumber(
-                await this.pairGetterService.getFeesAPR(pairAddress),
-            );
-        }
-        return feesAPR.isNaN()
-            ? unlockedRewardsAPR.toFixed()
-            : unlockedRewardsAPR.plus(feesAPR).toFixed();
-    }
-
-    async computeLockedRewardsAPR(farmAddress: string): Promise<string> {
-        if (farmVersion(farmAddress) !== 'v1.2') {
-            return null;
-        }
-        const [
-            farmedTokenID,
-            farmingTokenID,
-            totalRewardsPerYearUSD,
-            virtualValueLockedUSD,
-            lockedFarmingTokenReserveUSD,
-            aprMultiplier,
-        ] = await Promise.all([
-            this.farmGetterService.getFarmedTokenID(farmAddress),
-            this.farmGetterService.getFarmingTokenID(farmAddress),
-            this.computeAnualRewardsUSD(farmAddress),
-            this.computeVirtualValueLockedUSD(farmAddress),
-            this.computeLockedFarmingTokenReserveUSD(farmAddress),
-            this.farmGetterService.getLockedRewardAprMuliplier(farmAddress),
-        ]);
-
-        const lockedFarmingTokenReservePercent = new BigNumber(
-            lockedFarmingTokenReserveUSD,
-        )
-            .times(aprMultiplier)
-            .div(virtualValueLockedUSD);
-        const distributedRewardsUSD = new BigNumber(
-            totalRewardsPerYearUSD,
-        ).times(lockedFarmingTokenReservePercent);
-
-        const lockedRewardsAPR = distributedRewardsUSD.div(
-            lockedFarmingTokenReserveUSD,
-        );
-
-        let feesAPR = new BigNumber(0);
-        if (farmedTokenID !== farmingTokenID) {
-            const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-                farmingTokenID,
-            );
-            feesAPR = new BigNumber(
-                await this.pairGetterService.getFeesAPR(pairAddress),
-            );
-        }
-        return feesAPR.isNaN()
-            ? lockedRewardsAPR.toFixed()
-            : lockedRewardsAPR.plus(feesAPR).toFixed();
-    }
-
-    async computeFarmAPR(farmAddress: string): Promise<string> {
-        if (farmVersion(farmAddress) !== 'v1.3') {
-            return null;
-        }
-
-        const [
-            farmedTokenID,
-            farmingTokenID,
-            totalRewardsPerYearUSD,
-            farmTokenSupplyUSD,
-        ] = await Promise.all([
-            this.farmGetterService.getFarmedTokenID(farmAddress),
-            this.farmGetterService.getFarmingTokenID(farmAddress),
-            this.computeAnualRewardsUSD(farmAddress),
-            this.computeFarmLockedValueUSD(farmAddress),
-        ]);
-
-        const apr = new BigNumber(totalRewardsPerYearUSD).div(
-            farmTokenSupplyUSD,
-        );
-
-        let feesAPR: BigNumber = new BigNumber(0);
-        if (farmedTokenID !== farmingTokenID) {
-            const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-                farmingTokenID,
-            );
-
-            feesAPR = pairAddress
-                ? new BigNumber(
-                      await this.pairGetterService.getFeesAPR(pairAddress),
-                  )
-                : new BigNumber(0);
-        }
-        return feesAPR.isNaN() ? apr.toFixed() : apr.plus(feesAPR).toFixed();
     }
 }
