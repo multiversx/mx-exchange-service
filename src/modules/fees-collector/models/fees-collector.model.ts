@@ -14,6 +14,12 @@ export class FeesCollectorModel {
     @Field()
     time: WeekTimekeepingModel;
 
+    @Field()
+    startWeek: number;
+
+    @Field()
+    endWeek: number;
+
     @Field( () => [WeeklyRewardsSplittingModel])
     splitRewards: [WeeklyRewardsSplittingModel];
 
@@ -35,6 +41,12 @@ export class UserEntryFeesCollectorModel {
 
     @Field()
     userAddress: string;
+
+    @Field()
+    startWeek: number;
+
+    @Field()
+    endWeek: number;
 
     @Field()
     time: WeekTimekeepingModel;

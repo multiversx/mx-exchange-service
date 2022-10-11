@@ -1,4 +1,4 @@
-import { Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { FeesCollectorModel, UserEntryFeesCollectorModel } from "./models/fees-collector.model";
 import { FeesCollectorService } from "./services/fees-collector.service";
 import {
@@ -29,7 +29,7 @@ export class FeesCollectorResolver extends GenericResolver{
     @ResolveField(() => [WeeklyRewardsSplittingModel])
     async splitRewards(@Parent() parent: FeesCollectorModel): Promise<WeeklyRewardsSplittingModel[]> {
         const promisesList = []
-        for (let week = 1; week <= parent.time.currentWeek; week++) {
+        for (let week = parent.startWeek; week <= parent.endWeek; week++) {
             promisesList.push(this.weeklyRewardsSplittingResolver.weeklyRewardsSplit(parent.address, week))
         }
         return await this.genericQuery(() =>
@@ -46,9 +46,11 @@ export class FeesCollectorResolver extends GenericResolver{
 
     @Query(() => FeesCollectorModel)
     async feesCollector(
+        @Args('startWeek', { nullable: true }) startWeek: number,
+        @Args('endWeek', { nullable: true }) endWeek: number,
     ): Promise<FeesCollectorModel> {
         return await this.genericQuery(() =>
-            this.feesCollectorService.feesCollector(scAddress.feesCollector),
+            this.feesCollectorService.feesCollector(scAddress.feesCollector, startWeek, endWeek),
         );
     }
 
@@ -57,7 +59,7 @@ export class FeesCollectorResolver extends GenericResolver{
         @Parent() parent: UserEntryFeesCollectorModel
     ): Promise<UserWeeklyRewardsSplittingModel[]> {
         const promisesList = []
-        for (let week = 1; week <= parent.time.currentWeek; week++) {
+        for (let week = parent.startWeek; week <= parent.endWeek; week++) {
             promisesList.push(this.weeklyRewardsSplittingResolver.userWeeklyRewardsSplit(parent.address, parent.userAddress, week))
         }
         return await this.genericQuery(() =>
@@ -69,9 +71,11 @@ export class FeesCollectorResolver extends GenericResolver{
     @Query(() => UserEntryFeesCollectorModel)
     async userFeesCollector(
         @User() user: any,
+        @Args('startWeek', { nullable: true }) startWeek: number,
+        @Args('endWeek', { nullable: true }) endWeek: number,
     ): Promise<UserEntryFeesCollectorModel> {
         return await this.genericQuery(() =>
-            this.feesCollectorService.userFeesCollector(scAddress.feesCollector, user.publicKey),
+            this.feesCollectorService.userFeesCollector(scAddress.feesCollector, user.publicKey, startWeek, endWeek),
         );
     }
 }

@@ -30,7 +30,7 @@ export class FeesCollectorService {
         return accumulatedFees
     }
 
-    async feesCollector(scAddress: string): Promise<FeesCollectorModel> {
+    async feesCollector(scAddress: string, startWeek: number, endWeek: number): Promise<FeesCollectorModel> {
         const [
             time,
             allToken
@@ -39,19 +39,50 @@ export class FeesCollectorService {
             this.feesCollectorGetterService.getAllTokens(scAddress)
         ])
 
+        const [start, end] = this.validateAndSetIfUndefined(startWeek, endWeek, time.currentWeek);
+
         return new FeesCollectorModel({
             address: scAddress,
+            startWeek: start,
+            endWeek: end,
             time: time,
             allTokens: allToken
         });
     }
 
-    async userFeesCollector(scAddress: string, userAddress: string): Promise<UserEntryFeesCollectorModel> {
+    async userFeesCollector(scAddress: string, userAddress: string, startWeek: number, endWeek: number): Promise<UserEntryFeesCollectorModel> {
         const time = await this.weekTimekeepingResolver.weeklyTimekeeping(scAddress);
+        const [start, end] = this.validateAndSetIfUndefined(startWeek, endWeek, time.currentWeek);
         return new UserEntryFeesCollectorModel({
             address: scAddress,
             userAddress: userAddress,
+            startWeek: start,
+            endWeek: end,
             time: time
         });
+    }
+
+    private validateAndSetIfUndefined(startWeek: number, endWeek: number, currentWeek: number) {
+        if (startWeek === undefined && endWeek === undefined) {
+            return [1, currentWeek]
+        }
+
+        if (startWeek !== undefined) {
+            if (startWeek > currentWeek) {
+                throw new Error('Invalid start week');
+            }
+        } else {
+            startWeek = 1
+        }
+
+        if (endWeek !== undefined) {
+            if (endWeek > currentWeek) {
+                throw new Error('Invalid end week');
+            }
+        } else {
+            endWeek = startWeek
+        }
+
+        return [startWeek, endWeek]
     }
 }
