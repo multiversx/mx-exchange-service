@@ -1,14 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
+import { FeesCollectorModel, UserEntryFeesCollectorModel } from '../models/fees-collector.model';
+import { FeesCollectorGetterService } from './fees-collector.getter.service';
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
+import { WeekTimekeepingService } from '../../../submodules/week-timekeeping/services/week-timekeeping.service';
 import {
-    FeesCollectorModel,
-    UserEntryFeesCollectorModel
-} from "../models/fees-collector.model";
-import { FeesCollectorGetterService } from "./fees-collector.getter.service";
-import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
-import { WeekTimekeepingService } from "../../../submodules/week-timekeeping/services/week-timekeeping.service";
-import {
-    WeeklyRewardsSplittingService
-} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service";
+    WeeklyRewardsSplittingService,
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
 
 
 @Injectable()
@@ -17,17 +14,18 @@ export class FeesCollectorService {
         private readonly feesCollectorGetterService: FeesCollectorGetterService,
         private readonly weekTimekeepingService: WeekTimekeepingService,
         private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
-    ) {}
+    ) {
+    }
 
     async getAccumulatedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
         const accumulatedFees: EsdtTokenPayment[] = []
 
         for (const token of allTokens) {
-            accumulatedFees.push( new EsdtTokenPayment({
+            accumulatedFees.push(new EsdtTokenPayment({
                 tokenID: token,
                 tokenType: 0,
                 amount: await this.feesCollectorGetterService.getAccumulatedFees(scAddress, week, token),
-                nonce: 0
+                nonce: 0,
             }))
         }
         return accumulatedFees
@@ -36,10 +34,10 @@ export class FeesCollectorService {
     async feesCollector(scAddress: string, startWeek: number, endWeek: number): Promise<FeesCollectorModel> {
         const [
             time,
-            allToken
+            allToken,
         ] = await Promise.all([
             this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
-            this.feesCollectorGetterService.getAllTokens(scAddress)
+            this.feesCollectorGetterService.getAllTokens(scAddress),
         ])
 
         const [start, end] = this.validateAndSetIfUndefined(startWeek, endWeek, time.currentWeek);
@@ -49,7 +47,7 @@ export class FeesCollectorService {
             startWeek: start,
             endWeek: end,
             time: time,
-            allTokens: allToken
+            allTokens: allToken,
         });
     }
 
@@ -61,7 +59,7 @@ export class FeesCollectorService {
             userAddress: userAddress,
             startWeek: start,
             endWeek: end,
-            time: time
+            time: time,
         });
     }
 

@@ -1,6 +1,6 @@
-import { Field, ObjectType } from "@nestjs/graphql";
-import { EnergyModel } from "../../../modules/simple-lock/models/simple.lock.model";
-import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
+import { Field, ObjectType } from '@nestjs/graphql';
+import { EnergyModel } from '../../../modules/simple-lock/models/simple.lock.model';
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
 @ObjectType()
 export class ClaimProgress {
