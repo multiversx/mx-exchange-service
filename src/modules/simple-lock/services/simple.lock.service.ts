@@ -6,6 +6,7 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
+import { InputTokenModel } from 'src/models/inputToken.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { FarmService } from 'src/modules/farm/services/farm.service';
 import {
@@ -187,5 +188,30 @@ export class SimpleLockService {
                 return address;
             }
         }
+    }
+
+    async getSimpleLockAddressFromInputTokens(
+        inputTokens: InputTokenModel[],
+    ): Promise<string> {
+        let simpleLockAddress: string;
+        for (const token of inputTokens) {
+            if (token.nonce === 0) {
+                continue;
+            }
+            const address = await this.getSimpleLockAddressByTokenID(
+                token.tokenID,
+            );
+            if (address && !simpleLockAddress) {
+                simpleLockAddress = address;
+            } else if (address && address !== simpleLockAddress) {
+                throw new Error('Input tokens not from contract');
+            }
+        }
+
+        if (simpleLockAddress === undefined) {
+            throw new Error('Invalid input tokens');
+        }
+
+        return simpleLockAddress;
     }
 }

@@ -15,7 +15,11 @@ import {
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
-import { Address } from '@elrondnetwork/erdjs/out';
+import { UnlockTokensValidationPipe } from './validators/unlock.tokens.validator';
+import { LiquidityTokensValidationPipe } from './validators/liquidity.token.validator';
+import { LpProxyTokensValidationPipe } from './validators/lpProxy.token.validator';
+import { FarmProxyTokensValidationPipe } from './validators/farm.token.validator';
+import { EmterFarmProxyTokensValidationPipe } from './validators/enter.farm.tokens.validator';
 
 @Resolver(() => SimpleLockModel)
 export class SimpleLockResolver {
@@ -117,20 +121,18 @@ export class SimpleLockResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    // @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async unlockTokens(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', UnlockTokensValidationPipe)
+        inputTokens: InputTokenModel,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const simpleLockAddress =
-            await this.simpleLockService.getSimpleLockAddressByTokenID(
-                inputTokens.tokenID,
-            );
-        if (simpleLockAddress === undefined) {
-            throw new ApolloError('Invalid input tokens');
-        }
         try {
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    [inputTokens],
+                );
             return await this.simpleLockTransactions.unlockTokens(
                 simpleLockAddress,
                 user.publicKey,
@@ -144,32 +146,21 @@ export class SimpleLockResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
     async addLiquidityLockedTokenBatch(
-        @Args('inputTokens', { type: () => [InputTokenModel] })
+        @Args(
+            'inputTokens',
+            { type: () => [InputTokenModel] },
+            LiquidityTokensValidationPipe,
+        )
         inputTokens: InputTokenModel[],
         @Args('pairAddress') pairAddress: string,
         @Args('tolerance') tolerance: number,
         @User() user: any,
     ): Promise<TransactionModel[]> {
-        let simpleLockAddress: string;
-        for (const token of inputTokens) {
-            if (token.nonce === 0) {
-                continue;
-            }
-            const address =
-                await this.simpleLockService.getSimpleLockAddressByTokenID(
-                    token.tokenID,
-                );
-            if (address && !simpleLockAddress) {
-                simpleLockAddress = address;
-            } else if (address && address !== simpleLockAddress) {
-                throw new ApolloError('Input tokens not from contract');
-            }
-        }
-
-        if (simpleLockAddress === undefined) {
-            throw new ApolloError('Invalid input tokens');
-        }
         try {
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    inputTokens,
+                );
             return await this.simpleLockTransactions.addLiquidityLockedTokenBatch(
                 simpleLockAddress,
                 user.publicKey,
@@ -185,19 +176,17 @@ export class SimpleLockResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
     async removeLiquidityLockedToken(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', LpProxyTokensValidationPipe)
+        inputTokens: InputTokenModel,
         @Args('attributes') attributes: string,
         @Args('tolerance') tolerance: number,
         @User() user: any,
     ): Promise<TransactionModel[]> {
-        const simpleLockAddress =
-            await this.simpleLockService.getSimpleLockAddressByTokenID(
-                inputTokens.tokenID,
-            );
-        if (simpleLockAddress === undefined) {
-            throw new ApolloError('Invalid input tokens');
-        }
         try {
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    [inputTokens],
+                );
             return await this.simpleLockTransactions.removeLiquidityLockedToken(
                 simpleLockAddress,
                 user.publicKey,
@@ -213,28 +202,20 @@ export class SimpleLockResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async enterFarmLockedToken(
-        @Args('inputTokens', { type: () => [InputTokenModel] })
+        @Args(
+            'inputTokens',
+            { type: () => [InputTokenModel] },
+            EmterFarmProxyTokensValidationPipe,
+        )
         inputTokens: InputTokenModel[],
         @Args('farmAddress') farmAddress: string,
         @User() user: any,
     ): Promise<TransactionModel> {
-        let simpleLockAddress: string;
-        for (const token of inputTokens) {
-            if (token.nonce === 0) {
-                throw new ApolloError('Invalid input tokens');
-            }
-            const address =
-                await this.simpleLockService.getSimpleLockAddressByTokenID(
-                    token.tokenID,
-                );
-            if (address && !simpleLockAddress) {
-                simpleLockAddress = address;
-            } else if (address && address !== simpleLockAddress) {
-                throw new ApolloError('Input tokens not from contract');
-            }
-        }
-
         try {
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    inputTokens,
+                );
             return await this.simpleLockTransactions.enterFarmLockedToken(
                 simpleLockAddress,
                 user.publicKey,
@@ -249,17 +230,15 @@ export class SimpleLockResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async exitFarmLockedToken(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', FarmProxyTokensValidationPipe)
+        inputTokens: InputTokenModel,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const simpleLockAddress =
-            await this.simpleLockService.getSimpleLockAddressByTokenID(
-                inputTokens.tokenID,
-            );
-        if (simpleLockAddress === undefined) {
-            throw new ApolloError('Invalid input tokens');
-        }
         try {
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    [inputTokens],
+                );
             return await this.simpleLockTransactions.farmProxyTokenInteraction(
                 simpleLockAddress,
                 user.publicKey,
@@ -275,17 +254,15 @@ export class SimpleLockResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async claimRewardsFarmLockedToken(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', FarmProxyTokensValidationPipe)
+        inputTokens: InputTokenModel,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const simpleLockAddress =
-            await this.simpleLockService.getSimpleLockAddressByTokenID(
-                inputTokens.tokenID,
-            );
-        if (simpleLockAddress === undefined) {
-            throw new ApolloError('Invalid input tokens');
-        }
         try {
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    [inputTokens],
+                );
             return await this.simpleLockTransactions.farmProxyTokenInteraction(
                 simpleLockAddress,
                 user.publicKey,
