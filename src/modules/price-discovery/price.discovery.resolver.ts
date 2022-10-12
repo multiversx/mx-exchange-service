@@ -14,6 +14,7 @@ import {
 import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
 import { PriceDiscoveryService } from './services/price.discovery.service';
 import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
+import { SimpleLockModel } from '../simple-lock/models/simple.lock.model';
 
 @Resolver(() => PriceDiscoveryModel)
 export class PriceDiscoveryResolver {
@@ -199,12 +200,12 @@ export class PriceDiscoveryResolver {
         );
     }
 
-    @ResolveField()
-    async lockingScAddress(
+    @ResolveField(() => SimpleLockModel)
+    async lockingSC(
         @Parent() parent: PriceDiscoveryModel,
-    ): Promise<string> {
+    ): Promise<SimpleLockModel> {
         return await this.genericFieldResover(() =>
-            this.priceDiscoveryGetter.getLockingScAddress(parent.address),
+            this.priceDiscoveryGetter.getLockingSC(parent.address),
         );
     }
 
