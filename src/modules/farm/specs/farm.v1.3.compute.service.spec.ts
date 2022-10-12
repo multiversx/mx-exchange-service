@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { FarmService } from '../services/farm.service';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
@@ -16,7 +15,7 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { AbiFarmServiceProvider } from '../mocks/abi.farm.service.mock';
-import { FarmV13ComputeService } from '../services/v1.3/farm.v1.3.compute.service';
+import { FarmV13ComputeService } from '../v1.3/services/farm.v1.3.compute.service';
 import { FarmV13GetterServiceProvider } from '../mocks/farm.v1.3.getter.service.mock';
 
 describe('FarmService', () => {

@@ -1,22 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { FarmService } from '../services/farm.service';
-import { AbiFarmService } from '../base-module/services/farm.abi.service';
-import {
-    AbiFarmServiceMock,
-    AbiFarmServiceProvider,
-} from '../mocks/abi.farm.service.mock';
+import { FarmService } from '../base-module/services/farm.service';
+import { AbiFarmServiceProvider } from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../services/farm.getter.service';
-import { FarmComputeService } from '../services/farm.compute.service';
-import {
-    FarmGetterServiceMock,
-    FarmGetterServiceProvider,
-} from '../mocks/farm.getter.service.mock';
+import { FarmComputeService } from '../base-module/services/farm.compute.service';
+import { FarmGetterServiceProvider } from '../mocks/farm.getter.service.mock';
 import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../../modules/pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
