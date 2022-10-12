@@ -12,6 +12,7 @@ import { PriceDiscoveryComputeService } from './price.discovery.compute.service'
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 
 @Injectable()
 export class PriceDiscoveryGetterService extends GenericGetterService {
@@ -314,8 +315,10 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         );
     }
 
-    async getLockingScAddress(priceDiscoveryAddress: string): Promise<string> {
-        return this.getData(
+    async getLockingSC(
+        priceDiscoveryAddress: string,
+    ): Promise<SimpleLockModel> {
+        const address = await this.getData(
             this.getPriceDiscoveryCacheKey(
                 priceDiscoveryAddress,
                 'lockingScAddress',
@@ -324,6 +327,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
+
+        return new SimpleLockModel({ address });
     }
 
     async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
