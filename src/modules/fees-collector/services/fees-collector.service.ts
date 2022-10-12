@@ -6,6 +6,7 @@ import { WeekTimekeepingService } from '../../../submodules/week-timekeeping/ser
 import {
     WeeklyRewardsSplittingService,
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
+import { WeekFilterPeriodModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 
 
 @Injectable()
@@ -31,7 +32,11 @@ export class FeesCollectorService {
         return accumulatedFees
     }
 
-    async feesCollector(scAddress: string, startWeek: number, endWeek: number): Promise<FeesCollectorModel> {
+    async feesCollector(
+        scAddress: string,
+        weekFilter: WeekFilterPeriodModel,
+    ): Promise<FeesCollectorModel> {
+
         const [
             time,
             allToken,
@@ -40,25 +45,29 @@ export class FeesCollectorService {
             this.feesCollectorGetterService.getAllTokens(scAddress),
         ])
 
-        const [start, end] = this.validateAndSetIfUndefined(startWeek, endWeek, time.currentWeek);
+        weekFilter= this.setIfUndefined(weekFilter, time.currentWeek);
 
         return new FeesCollectorModel({
             address: scAddress,
             time: time,
-            startWeek: start,
-            endWeek: end,
+            startWeek: weekFilter.start,
+            endWeek: weekFilter.end,
             allTokens: allToken,
         });
     }
 
-    async userFeesCollector(scAddress: string, userAddress: string, startWeek: number, endWeek: number): Promise<UserEntryFeesCollectorModel> {
+    async userFeesCollector(
+        scAddress: string,
+        userAddress: string,
+        weekFilter: WeekFilterPeriodModel
+    ): Promise<UserEntryFeesCollectorModel> {
         const time = await this.weekTimekeepingService.getWeeklyTimekeeping(scAddress);
-        const [start, end] = this.validateAndSetIfUndefined(startWeek, endWeek, time.currentWeek);
+        weekFilter = this.setIfUndefined(weekFilter, time.currentWeek);
         return new UserEntryFeesCollectorModel({
             address: scAddress,
             userAddress: userAddress,
-            startWeek: start,
-            endWeek: end,
+            startWeek: weekFilter.start,
+            endWeek: weekFilter.end,
             time: time,
         });
     }
@@ -66,7 +75,7 @@ export class FeesCollectorService {
     getWeeklyRewardsSplitPromises(scAddress: string, startWeek: number, endWeek: number) {
         const promisesList = []
         for (let week = startWeek; week <= endWeek; week++) {
-            promisesList.push(this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(scAddress, week))
+            promisesList.push(this.weeklyRewardsSplittingService.getGlobalInfoByWeek(scAddress, week))
         }
         return promisesList;
     }
@@ -74,32 +83,23 @@ export class FeesCollectorService {
     getUserWeeklyRewardsSplitPromises(scAddress: string, userAddress: string, startWeek: number, endWeek: number) {
         const promisesList = []
         for (let week = startWeek; week <= endWeek; week++) {
-            promisesList.push(this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(scAddress, userAddress, week))
+            promisesList.push(this.weeklyRewardsSplittingService.getUserInfoByWeek(scAddress, userAddress, week))
         }
         return promisesList;
     }
 
-    private validateAndSetIfUndefined(startWeek: number, endWeek: number, currentWeek: number) {
-        if (startWeek === undefined && endWeek === undefined) {
-            return [1, currentWeek]
+    private setIfUndefined(
+        weekFilter: WeekFilterPeriodModel,
+        currentWeek: number): WeekFilterPeriodModel{
+        if (weekFilter.start === undefined) {
+            return new WeekFilterPeriodModel({
+                start: 1,
+                end: weekFilter.end ?? currentWeek
+            })
         }
-
-        if (startWeek !== undefined) {
-            if (startWeek > currentWeek) {
-                throw new Error('Invalid start week');
-            }
-        } else {
-            startWeek = 1
-        }
-
-        if (endWeek !== undefined) {
-            if (endWeek > currentWeek) {
-                throw new Error('Invalid end week');
-            }
-        } else {
-            endWeek = startWeek
-        }
-
-        return [startWeek, endWeek]
+        return new WeekFilterPeriodModel({
+            start: weekFilter.start,
+            end: weekFilter.start
+        })
     }
 }

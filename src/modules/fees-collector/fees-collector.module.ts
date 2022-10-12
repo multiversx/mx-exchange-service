@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
 import { FeesCollectorAbiService } from './services/fees-collector.abi.service';
-import { FeesCollectorResolver } from './fees-collector.resolver';
+import { FeesCollectorResolver, UserEntryFeesCollectorResolver } from './fees-collector.resolver';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
 import { CachingModule } from '../../services/caching/cache.module';
 import { FeesCollectorService } from './services/fees-collector.service';
@@ -22,6 +22,7 @@ import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-ti
         FeesCollectorAbiService,
         FeesCollectorGetterService,
         FeesCollectorResolver,
+        UserEntryFeesCollectorResolver,
     ],
     exports: [],
 })

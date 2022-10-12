@@ -7,7 +7,7 @@ import { FeesCollectorAbiService } from './fees-collector.abi.service';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import {
     WeeklyRewardsSplittingGetterService,
-} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards.splitting.getter.service';
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import { Mixin } from 'ts-mixer';
 import { oneMinute } from '../../../helpers/helpers';
 
