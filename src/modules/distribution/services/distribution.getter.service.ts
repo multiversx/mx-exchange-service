@@ -3,7 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+
 import { Logger } from 'winston';
 import { CommunityDistributionModel } from '../models/distribution.model';
 import { AbiDistributionService } from './abi-distribution.service';
@@ -27,6 +27,6 @@ export class DistributionGetterService extends GenericGetterService {
     }
 
     private getDistributionCacheKey(...args: any) {
-        return generateCacheKeyFromParams('distribution', ...args);
+        return this.getCacheKey('distribution', ...args)
     }
 }

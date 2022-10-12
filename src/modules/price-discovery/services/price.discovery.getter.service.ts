@@ -5,13 +5,14 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from './price.discovery.compute.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+
 @Injectable()
 export class PriceDiscoveryGetterService extends GenericGetterService {
     constructor(
@@ -365,10 +366,6 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
         ...args: any
     ) {
-        return generateCacheKeyFromParams(
-            'priceDiscovery',
-            priceDiscoveryAddress,
-            ...args,
-        );
+        return this.getCacheKey('priceDiscovery', priceDiscoveryAddress, ...args);
     }
 }

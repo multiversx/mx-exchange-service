@@ -5,7 +5,7 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { FlagRepositoryService } from 'src/services/database/repositories/flag.repository';
 import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+
 import { Logger } from 'winston';
 import { SCAddressType } from './models/sc-address.model';
 
@@ -103,10 +103,10 @@ export class RemoteConfigGetterService extends GenericGetterService {
     }
 
     private getFlagCacheKey(flagName: string, ...args: any) {
-        return generateCacheKeyFromParams('flag', flagName, ...args);
+        return this.getCacheKey('flag', flagName, ...args);
     }
 
     private getSCAddressCacheKey(category: SCAddressType, ...args: any) {
-        return generateCacheKeyFromParams('scAddress', category, ...args);
+        return this.getCacheKey('scAddress', category, ...args);
     }
 }

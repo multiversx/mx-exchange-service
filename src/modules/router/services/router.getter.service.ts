@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { AbiRouterService } from './abi.router.service';
 import { PairMetadata } from '../models/pair.metadata.model';
@@ -166,5 +165,9 @@ export class RouterGetterService extends GenericGetterService {
             () => this.abiService.getTemporaryOwnerPeriod(),
             oneMinute() * 10,
         );
+    }
+
+    private getRouterCacheKey(...args: any) {
+        return this.getCacheKey('router', ...args);
     }
 }

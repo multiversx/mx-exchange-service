@@ -4,7 +4,7 @@ import { oneHour, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+
 import { Logger } from 'winston';
 import { EsdtToken } from '../models/esdtToken.model';
 import { NftCollection } from '../models/nftCollection.model';
@@ -70,6 +70,6 @@ export class TokenGetterService extends GenericGetterService {
     }
 
     private getTokenCacheKey(tokenID: string, ...args: any): string {
-        return generateCacheKeyFromParams('token', tokenID, args);
+        return this.getCacheKey('token', tokenID, ...args);
     }
 }

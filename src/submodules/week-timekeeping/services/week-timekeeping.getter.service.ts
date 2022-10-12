@@ -4,7 +4,6 @@ import { forwardRef, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { WeekTimekeepingAbiService } from './week-timekeeping.abi.service';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { oneMinute } from '../../../helpers/helpers';
 import { WeekTimekeepingComputeService } from './week-timekeeping.compute.service';
 
@@ -52,6 +51,6 @@ export class WeekTimekeepingGetterService extends GenericGetterService {
     }
 
     private getWeekTimekeepingCacheKey(address: string, ...args: any) {
-        return generateCacheKeyFromParams('weekTimekeeping', address, ...args);
+        return this.getCacheKey('weekTimekeeping', address, ...args);
     }
 }

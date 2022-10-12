@@ -7,7 +7,7 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+
 import { Logger } from 'winston';
 import { FarmMigrationConfig } from '../models/farm.model';
 import { AbiFarmService } from './abi-farm.service';
@@ -358,6 +358,6 @@ export class FarmGetterService extends GenericGetterService {
     }
 
     private getFarmCacheKey(farmAddress: string, ...args: any) {
-        return generateCacheKeyFromParams('farm', farmAddress, ...args);
+        return this.getCacheKey('farm', farmAddress, ...args)
     }
 }

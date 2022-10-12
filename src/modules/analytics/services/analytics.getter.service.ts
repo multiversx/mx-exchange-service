@@ -5,7 +5,6 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { AnalyticsComputeService } from './analytics.compute.service';
 
@@ -112,6 +111,6 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     private getAnalyticsCacheKey(...args: any) {
-        return generateCacheKeyFromParams('analytics', ...args);
+        return this.getCacheKey('analytics', ...args)
     }
 }
