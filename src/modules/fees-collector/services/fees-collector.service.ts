@@ -6,7 +6,10 @@ import { WeekTimekeepingService } from '../../../submodules/week-timekeeping/ser
 import {
     WeeklyRewardsSplittingService,
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
-import { WeekFilterPeriodModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import {
+    GlobalInfoByWeekModel, UserInfoByWeekModel,
+    WeekFilterPeriodModel,
+} from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 
 
 @Injectable()
@@ -68,19 +71,19 @@ export class FeesCollectorService {
         });
     }
 
-    getWeeklyRewardsSplitPromises(scAddress: string, startWeek: number, endWeek: number) {
-        const promisesList = []
+    getWeeklyRewardsSplit(scAddress: string, startWeek: number, endWeek: number): GlobalInfoByWeekModel[] {
+        const modelsList = []
         for (let week = startWeek; week <= endWeek; week++) {
-            promisesList.push(this.weeklyRewardsSplittingService.getGlobalInfoByWeek(scAddress, week))
+            modelsList.push(this.weeklyRewardsSplittingService.getGlobalInfoByWeek(scAddress, week))
         }
-        return promisesList;
+        return modelsList;
     }
 
-    getUserWeeklyRewardsSplitPromises(scAddress: string, userAddress: string, startWeek: number, endWeek: number) {
-        const promisesList = []
+    getUserWeeklyRewardsSplit(scAddress: string, userAddress: string, startWeek: number, endWeek: number): UserInfoByWeekModel[] {
+        const modelsList = []
         for (let week = startWeek; week <= endWeek; week++) {
-            promisesList.push(this.weeklyRewardsSplittingService.getUserInfoByWeek(scAddress, userAddress, week))
+            modelsList.push(this.weeklyRewardsSplittingService.getUserInfoByWeek(scAddress, userAddress, week))
         }
-        return promisesList;
+        return modelsList;
     }
 }

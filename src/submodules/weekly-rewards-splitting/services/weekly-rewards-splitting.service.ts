@@ -6,14 +6,14 @@ import {
 @Injectable()
 export class WeeklyRewardsSplittingService {
 
-    async getGlobalInfoByWeek(scAddress: string, week: number): Promise<GlobalInfoByWeekModel> {
+    getGlobalInfoByWeek(scAddress: string, week: number): GlobalInfoByWeekModel {
         return new GlobalInfoByWeekModel({
             scAddress: scAddress,
             week: week,
         });
     }
 
-    async getUserInfoByWeek(scAddress: string, userAddress: string, week: number): Promise<UserInfoByWeekModel> {
+    getUserInfoByWeek(scAddress: string, userAddress: string, week: number): UserInfoByWeekModel {
         return new UserInfoByWeekModel({
             scAddress: scAddress,
             userAddress: userAddress,

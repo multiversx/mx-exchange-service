@@ -32,9 +32,7 @@ export class FeesCollectorResolver extends GenericResolver {
 
     @ResolveField(() => [GlobalInfoByWeekModel])
     async undistributedRewards(@Parent() parent: FeesCollectorModel): Promise<GlobalInfoByWeekModel[]> {
-        return await this.genericFieldResover(() =>
-            Promise.all(this.feesCollectorService.getWeeklyRewardsSplitPromises(parent.address, parent.startWeek, parent.endWeek)),
-        );
+        return this.feesCollectorService.getWeeklyRewardsSplit(parent.address, parent.startWeek, parent.endWeek);
     }
 
     @ResolveField(() => [EsdtTokenPayment])
@@ -95,9 +93,7 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
     async undistributedRewards(
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<UserInfoByWeekModel[]> {
-        return await this.genericFieldResover(() =>
-            Promise.all(this.feesCollectorService.getUserWeeklyRewardsSplitPromises(parent.address, parent.userAddress, parent.startWeek, parent.endWeek)),
-        );
+        return this.feesCollectorService.getUserWeeklyRewardsSplit(parent.address, parent.userAddress, parent.startWeek, parent.endWeek);
     }
 
     @ResolveField(() => ClaimProgress)
