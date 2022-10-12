@@ -1,18 +1,9 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { EnergyModel } from '../../../modules/simple-lock/models/simple.lock.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
 @ObjectType()
-export class ClaimProgress {
-    @Field()
-    energy: EnergyModel;
-
-    @Field()
-    week: number
-}
-
-@ObjectType()
-export class WeeklyRewardsSplittingModel {
+export class GlobalInfoByWeekModel {
     @Field()
     scAddress: string;
 
@@ -28,32 +19,51 @@ export class WeeklyRewardsSplittingModel {
     @Field()
     totalLockedTokensForWeek: number;
 
-    @Field()
-    lastGlobalUpdateWeek: number;
-
-    constructor(init?: Partial<WeeklyRewardsSplittingModel>) {
+    constructor(init?: Partial<GlobalInfoByWeekModel>) {
         Object.assign(this, init);
     }
 }
 
 @ObjectType()
-export class UserWeeklyRewardsSplittingModel {
+export class UserInfoByWeekModel {
     @Field()
     scAddress: string;
+
+    @Field()
+    userAddress: string;
 
     @Field()
     week: number;
 
     @Field()
-    claimProgress: ClaimProgress;
-
-    @Field()
     energyForWeek: EnergyModel;
 
-    @Field()
-    lastActiveWeekForUser: number;
+    @Field( () => [EsdtTokenPayment])
+    rewardsForWeek: [EsdtTokenPayment];
 
-    constructor(init?: Partial<UserWeeklyRewardsSplittingModel>) {
+    constructor(init?: Partial<UserInfoByWeekModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class ClaimProgress {
+    @Field()
+    energy: EnergyModel;
+
+    @Field()
+    week: number
+}
+
+@InputType()
+export class WeekFilterPeriodModel {
+    @Field( {nullable: true})
+    start: number
+
+    @Field( {nullable: true})
+    end: number
+
+    constructor(init?: Partial<WeekFilterPeriodModel>) {
         Object.assign(this, init);
     }
 }

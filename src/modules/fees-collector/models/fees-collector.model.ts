@@ -1,8 +1,8 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import {
-    UserWeeklyRewardsSplittingModel,
-    WeeklyRewardsSplittingModel,
+    ClaimProgress,
+    GlobalInfoByWeekModel, UserInfoByWeekModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
@@ -14,14 +14,23 @@ export class FeesCollectorModel {
     @Field()
     time: WeekTimekeepingModel;
 
-    @Field(() => [WeeklyRewardsSplittingModel])
-    splitRewards: [WeeklyRewardsSplittingModel];
+    @Field()
+    startWeek: number;
+
+    @Field()
+    endWeek: number;
+
+    @Field(() => [GlobalInfoByWeekModel])
+    undistributedRewards: [GlobalInfoByWeekModel];
 
     @Field(() => [String])
     allTokens: string[]
 
     @Field(() => [EsdtTokenPayment])
     accumulatedFees: [EsdtTokenPayment]
+
+    @Field()
+    lastGlobalUpdateWeek: number;
 
     constructor(init?: Partial<FeesCollectorModel>) {
         Object.assign(this, init);
@@ -39,8 +48,20 @@ export class UserEntryFeesCollectorModel {
     @Field()
     time: WeekTimekeepingModel;
 
-    @Field(() => [UserWeeklyRewardsSplittingModel])
-    userSplitRewards: [UserWeeklyRewardsSplittingModel];
+    @Field()
+    startWeek: number;
+
+    @Field()
+    endWeek: number;
+
+    @Field(() => [UserInfoByWeekModel])
+    undistributedRewards: [UserInfoByWeekModel];
+
+    @Field(() => ClaimProgress)
+    claimProgress: ClaimProgress;
+
+    @Field()
+    lastActiveWeekForUser: number;
 
     constructor(init?: Partial<UserEntryFeesCollectorModel>) {
         Object.assign(this, init);

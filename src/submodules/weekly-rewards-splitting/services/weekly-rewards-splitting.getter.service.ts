@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { GenericGetterService } from '../../../services/generics/generic.getter.service';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -8,6 +8,8 @@ import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WeeklyRewardsSplittingAbiService } from './weekly-rewards-splitting.abi.service';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { EnergyModel } from '../../../modules/simple-lock/models/simple.lock.model';
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
+import { WeeklyRewardsSplittingComputeService } from './weekly-rewards-splitting.compute.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingGetterService extends GenericGetterService {
@@ -15,6 +17,8 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly weeklyRewardsAbiService: WeeklyRewardsSplittingAbiService,
+        @Inject(forwardRef(() => WeeklyRewardsSplittingComputeService))
+        protected readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
         super(cachingService, logger);
     }
@@ -35,6 +39,14 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService {
         )
     }
 
+    async userRewardsForWeek(scAddress: string, userAddress: string, week: number): Promise<EsdtTokenPayment[]> {
+        return this.getData(
+            this.getWeeklyRewardsCacheKey(scAddress, 'userRewardsForWeek', userAddress, week),
+            () => this.weeklyRewardsSplittingCompute.computeUserRewardsForWeek(scAddress, week, userAddress),
+            oneMinute(),
+        )
+    }
+
     async lastActiveWeekForUser(scAddress: string, userAddress: string): Promise<number> {
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'lastActiveWeekForUser', userAddress),
@@ -51,7 +63,7 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService {
         )
     }
 
-    async totalRewardsForWeek(scAddress: string, week: number): Promise<string> {
+    async totalRewardsForWeek(scAddress: string, week: number): Promise<EsdtTokenPayment[]> {
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalRewardsForWeek', week),
             () => this.weeklyRewardsAbiService.totalRewardsForWeek(scAddress, week),
