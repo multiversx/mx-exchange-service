@@ -5,6 +5,8 @@ import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { ErrorGetContractHandlerNotSet } from '../../../utils/errors.constants';
+import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
+import { ReturnCode } from '@elrondnetwork/erdjs/out/smartcontracts/returnCode';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
@@ -14,10 +16,21 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             [new AddressValue(Address.fromString(user))],
         );
         const response = await this.getGenericData(interaction);
+        if (response.returnCode === ReturnCode.UserError
+            && response.returnMessage === "storage decode error: input too short") {
+            return {
+                energy: {
+                    amount: "0",
+                    lastUpdateEpoch: 0,
+                    totalLockedTokens: "0",
+                },
+                week: 0
+            }
+        }
         return response.firstValue.valueOf();
     }
 
-    async userEnergyForWeek(scAddress: string, user: string, week: number): Promise<string> {
+    async userEnergyForWeek(scAddress: string, user: string, week: number): Promise<EnergyType> {
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction = contract.methodsExplicit.getUserEnergyForWeek(
             [
@@ -26,7 +39,15 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             ],
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+        if (response.returnCode === ReturnCode.UserError
+            && response.returnMessage === "storage decode error: input too short") {
+            return {
+                amount: "0",
+                lastUpdateEpoch: 0,
+                totalLockedTokens: "0"
+            }
+        }
+        return Energy.fromDecodedAttributes(response.firstValue.valueOf()).toJSON();
     }
 
     async lastActiveWeekForUser(scAddress: string, user: string): Promise<number> {
