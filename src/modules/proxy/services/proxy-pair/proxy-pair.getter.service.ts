@@ -4,7 +4,6 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { oneHour } from 'src/helpers/helpers';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
@@ -44,6 +43,6 @@ export class ProxyPairGetterService extends GenericGetterService {
     }
 
     private getProxyPairCacheKey(...args: any) {
-        return generateCacheKeyFromParams('proxyPair', ...args);
+        return this.getCacheKey('proxyPair', ...args);
     }
 }

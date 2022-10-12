@@ -4,7 +4,6 @@ import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { oneHour, oneMinute } from '../../../helpers/helpers';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WeeklyRewardsSplittingAbiService } from './weekly-rewards-splitting.abi.service';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { EnergyModel } from '../../../modules/simple-lock/models/simple.lock.model';
@@ -88,6 +87,6 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService {
     }
 
     private getWeeklyRewardsCacheKey(address: string, ...args: any) {
-        return generateCacheKeyFromParams('weeklyRewards', address, ...args);
+        return this.getCacheKey('weeklyRewards', address, ...args)
     }
 }

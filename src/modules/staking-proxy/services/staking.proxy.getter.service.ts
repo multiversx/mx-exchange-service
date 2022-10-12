@@ -4,7 +4,7 @@ import { oneHour } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+
 import { Logger } from 'winston';
 import { AbiStakingProxyService } from './staking.proxy.abi.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
@@ -109,10 +109,6 @@ export class StakingProxyGetterService extends GenericGetterService {
     }
 
     private getStakeProxyCacheKey(stakingProxyAddress: string, ...args: any) {
-        return generateCacheKeyFromParams(
-            'stakeProxy',
-            stakingProxyAddress,
-            ...args,
-        );
+        return this.getCacheKey('stakeProxy', stakingProxyAddress, ...args);
     }
 }

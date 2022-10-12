@@ -11,7 +11,7 @@ import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
 import { FeeDestination, LockedTokensInfo } from '../models/pair.model';
@@ -536,6 +536,6 @@ export class PairGetterService extends GenericGetterService {
     }
 
     private getPairCacheKey(pairAddress: string, ...args: any) {
-        return generateCacheKeyFromParams('pair', pairAddress, ...args);
+        return this.getCacheKey('pair', pairAddress, ...args);
     }
 }

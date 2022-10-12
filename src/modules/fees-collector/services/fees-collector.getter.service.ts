@@ -4,7 +4,6 @@ import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import {
     WeeklyRewardsSplittingGetterService,
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
@@ -39,7 +38,7 @@ export class FeesCollectorGetterService extends Mixin(GenericGetterService, Week
 
 
     private getFeesCollectorCacheKey(address: string, ...args: any) {
-        return generateCacheKeyFromParams(address, ...args);
+        return this.getCacheKey('feesCollector', address, ...args)
     }
 
 

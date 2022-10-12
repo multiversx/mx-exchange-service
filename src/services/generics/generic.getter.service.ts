@@ -3,6 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 
 @Injectable()
 export class GenericGetterService {
@@ -35,5 +36,8 @@ export class GenericGetterService {
             throw error;
         }
     }
-    //TODO SERVICES-731: add getCacheKey
+
+    protected getCacheKey(baseKey: string, ...args: any) {
+        return generateCacheKeyFromParams(baseKey, ...args);
+    }
 }
