@@ -99,10 +99,6 @@ export class RouterGetterService extends GenericGetterService {
         );
     }
 
-    private getRouterCacheKey(...args: any) {
-        return generateCacheKeyFromParams('router', ...args);
-    }
-
     async getPairCreationEnabled(): Promise<boolean> {
         return this.getData(
             'pairCreationEnabled',
