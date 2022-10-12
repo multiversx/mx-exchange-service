@@ -44,9 +44,6 @@ export class FeesCollectorService {
             this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
             this.feesCollectorGetterService.getAllTokens(scAddress),
         ])
-
-        weekFilter= this.setIfUndefined(weekFilter, time.currentWeek);
-
         return new FeesCollectorModel({
             address: scAddress,
             time: time,
@@ -62,7 +59,6 @@ export class FeesCollectorService {
         weekFilter: WeekFilterPeriodModel
     ): Promise<UserEntryFeesCollectorModel> {
         const time = await this.weekTimekeepingService.getWeeklyTimekeeping(scAddress);
-        weekFilter = this.setIfUndefined(weekFilter, time.currentWeek);
         return new UserEntryFeesCollectorModel({
             address: scAddress,
             userAddress: userAddress,
@@ -86,20 +82,5 @@ export class FeesCollectorService {
             promisesList.push(this.weeklyRewardsSplittingService.getUserInfoByWeek(scAddress, userAddress, week))
         }
         return promisesList;
-    }
-
-    private setIfUndefined(
-        weekFilter: WeekFilterPeriodModel,
-        currentWeek: number): WeekFilterPeriodModel{
-        if (weekFilter.start === undefined) {
-            return new WeekFilterPeriodModel({
-                start: 1,
-                end: weekFilter.end ?? currentWeek
-            })
-        }
-        return new WeekFilterPeriodModel({
-            start: weekFilter.start,
-            end: weekFilter.start
-        })
     }
 }
