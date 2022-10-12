@@ -20,67 +20,71 @@ export class SimpleLockGetterService extends GenericGetterService {
         super(cachingService, logger);
     }
 
-    async getLockedTokenID(): Promise<string> {
+    async getLockedTokenID(simpleLockAddress: string): Promise<string> {
         return await this.getData(
-            this.getSimpleLockCacheKey('lockedTokenID'),
-            () => this.abiService.getLockedTokenID(),
+            this.getSimpleLockCacheKey(simpleLockAddress, 'lockedTokenID'),
+            () => this.abiService.getLockedTokenID(simpleLockAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async getLpProxyTokenID(): Promise<string> {
+    async getLpProxyTokenID(simpleLockAddress: string): Promise<string> {
         return await this.getData(
-            this.getSimpleLockCacheKey('lpProxyTokenID'),
-            () => this.abiService.getLpProxyTokenID(),
+            this.getSimpleLockCacheKey(simpleLockAddress, 'lpProxyTokenID'),
+            () => this.abiService.getLpProxyTokenID(simpleLockAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async getFarmProxyTokenID(): Promise<string> {
+    async getFarmProxyTokenID(simpleLockAddress: string): Promise<string> {
         return await this.getData(
-            this.getSimpleLockCacheKey('farmProxyTokenID'),
-            () => this.abiService.getFarmProxyTokenID(),
+            this.getSimpleLockCacheKey(simpleLockAddress, 'farmProxyTokenID'),
+            () => this.abiService.getFarmProxyTokenID(simpleLockAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async getLockedToken(): Promise<NftCollection> {
-        const tokenID = await this.getLockedTokenID();
+    async getLockedToken(simpleLockAddress: string): Promise<NftCollection> {
+        const tokenID = await this.getLockedTokenID(simpleLockAddress);
         return await this.tokenGetter.getNftCollectionMetadata(tokenID);
     }
 
-    async getLpProxyToken(): Promise<NftCollection> {
-        const tokenID = await this.getLpProxyTokenID();
+    async getLpProxyToken(simpleLockAddress: string): Promise<NftCollection> {
+        const tokenID = await this.getLpProxyTokenID(simpleLockAddress);
         return await this.tokenGetter.getNftCollectionMetadata(tokenID);
     }
 
-    async getFarmProxyToken(): Promise<NftCollection> {
-        const tokenID = await this.getFarmProxyTokenID();
+    async getFarmProxyToken(simpleLockAddress: string): Promise<NftCollection> {
+        const tokenID = await this.getFarmProxyTokenID(simpleLockAddress);
         return await this.tokenGetter.getNftCollectionMetadata(tokenID);
     }
 
-    async getIntermediatedPairs(): Promise<string[]> {
+    async getIntermediatedPairs(simpleLockAddress: string): Promise<string[]> {
         return await this.getData(
-            this.getSimpleLockCacheKey('intermediatedPairs'),
-            () => this.abiService.getKnownLiquidityPools(),
+            this.getSimpleLockCacheKey(simpleLockAddress, 'intermediatedPairs'),
+            () => this.abiService.getKnownLiquidityPools(simpleLockAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
     }
 
-    async getIntermediatedFarms(): Promise<string[]> {
+    async getIntermediatedFarms(simpleLockAddress: string): Promise<string[]> {
         return await this.getData(
-            this.getSimpleLockCacheKey('intermediatedFarms'),
-            () => this.abiService.getKnownFarms(),
+            this.getSimpleLockCacheKey(simpleLockAddress, 'intermediatedFarms'),
+            () => this.abiService.getKnownFarms(simpleLockAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
     }
 
-    private getSimpleLockCacheKey(...args: any) {
-        return generateCacheKeyFromParams('simpleLock', ...args);
+    private getSimpleLockCacheKey(simpleLockAddress: string, ...args: any) {
+        return generateCacheKeyFromParams(
+            'simpleLock',
+            simpleLockAddress,
+            ...args,
+        );
     }
 }

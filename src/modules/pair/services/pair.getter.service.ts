@@ -2,8 +2,9 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig, constantsConfig } from 'src/config';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
@@ -480,7 +481,7 @@ export class PairGetterService extends GenericGetterService {
         }
 
         return new LockedTokensInfo({
-            lockingScAddress,
+            lockingSC: new SimpleLockModel({ address: lockingScAddress }),
             unlockEpoch,
             lockingDeadlineEpoch,
         });
