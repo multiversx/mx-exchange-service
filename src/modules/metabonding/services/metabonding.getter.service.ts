@@ -6,7 +6,6 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { UserEntryModel } from '../models/metabonding.model';
 import { MetabondingAbiService } from './metabonding.abi.service';
@@ -20,11 +19,12 @@ export class MetabondingGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'metabonding';
     }
 
     async getLockedAssetTokenID(): Promise<string> {
         return this.getData(
-            this.getMetabondingCacheKey('lockedAssetTokenID'),
+            this.getCacheKey('lockedAssetTokenID'),
             () => this.abiService.getLockedAssetTokenID(),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -40,7 +40,7 @@ export class MetabondingGetterService extends GenericGetterService {
 
     async getTotalLockedAssetSupply(): Promise<string> {
         return this.getData(
-            this.getMetabondingCacheKey('lockedAssetTokenSupply'),
+            this.getCacheKey('lockedAssetTokenSupply'),
             () => this.abiService.getTotalLockedAssetSupply(),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
@@ -49,7 +49,7 @@ export class MetabondingGetterService extends GenericGetterService {
 
     async getStakedAmountForUser(userAddress: string): Promise<string> {
         return this.getData(
-            this.getMetabondingCacheKey(`${userAddress}.stakedAmount`),
+            this.getCacheKey(`${userAddress}.stakedAmount`),
             () => this.abiService.getStakedAmountForUser(userAddress),
             oneMinute(),
         );
@@ -57,13 +57,9 @@ export class MetabondingGetterService extends GenericGetterService {
 
     async getUserEntry(userAddress: string): Promise<UserEntryModel> {
         return this.getData(
-            this.getMetabondingCacheKey(`${userAddress}.userEntry`),
+            this.getCacheKey(`${userAddress}.userEntry`),
             () => this.abiService.getUserEntry(userAddress),
             oneMinute() * 10,
         );
-    }
-
-    private getMetabondingCacheKey(...args: any) {
-        return generateCacheKeyFromParams('metabonding', ...args);
     }
 }
