@@ -4,20 +4,43 @@ import BigNumber from 'bignumber.js';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
-import { ErrorGetContractHandlerNotSet } from '../../../utils/errors.constants';
+import { ErrorGetContractHandlerNotSet, VmQueryError } from '../../../utils/errors.constants';
+import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
+import { ReturnCode } from '@elrondnetwork/erdjs/out/smartcontracts/returnCode';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
-    async currentClaimProgress(scAddress: string, user: string): Promise<ClaimProgress> {
+    async currentClaimProgress(
+        scAddress: string,
+        user: string,
+    ): Promise<ClaimProgress> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.getCurrentClaimProgress(
-            [new AddressValue(Address.fromString(user))],
-        );
+        const interaction: Interaction =
+            contract.methodsExplicit.getCurrentClaimProgress([
+                new AddressValue(Address.fromString(user)),
+            ]);
         const response = await this.getGenericData(interaction);
+        if (
+            response.returnCode.equals(ReturnCode.UserError) &&
+            response.returnMessage === VmQueryError.INPUT_TOO_SHORT
+        ) {
+            return {
+                energy: {
+                    amount: '0',
+                    lastUpdateEpoch: 0,
+                    totalLockedTokens: '0',
+                },
+                week: 0,
+            };
+        }
         return response.firstValue.valueOf();
     }
 
-    async userEnergyForWeek(scAddress: string, user: string, week: number): Promise<string> {
+    async userEnergyForWeek(
+        scAddress: string,
+        user: string,
+        week: number
+    ): Promise<EnergyType> {
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction = contract.methodsExplicit.getUserEnergyForWeek(
             [
@@ -26,7 +49,17 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             ],
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+        if (
+            response.returnCode.equals(ReturnCode.UserError) &&
+            response.returnMessage === VmQueryError.INPUT_TOO_SHORT
+        ) {
+           return {
+                amount: '0',
+                lastUpdateEpoch: 0,
+                totalLockedTokens: '0',
+            };
+        }
+        return Energy.fromDecodedAttributes(response.firstValue.valueOf()).toJSON();
     }
 
     async lastActiveWeekForUser(scAddress: string, user: string): Promise<number> {
