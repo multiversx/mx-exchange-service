@@ -4,7 +4,6 @@ import { oneHour, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { EsdtToken } from '../models/esdtToken.model';
 import { NftCollection } from '../models/nftCollection.model';
@@ -21,14 +20,14 @@ export class TokenGetterService extends GenericGetterService {
         private readonly tokenCompute: TokenComputeService,
         private readonly apiService: ElrondApiService,
     ) {
-        super(cachingService, logger);
+        super(cachingService, logger, 'token');
     }
 
     async getTokenMetadata(tokenID: string): Promise<EsdtToken> {
         if (tokenID === undefined) {
             return undefined;
         }
-        const cacheKey = this.getTokenCacheKey(tokenID);
+        const cacheKey = this.getCacheKey(tokenID);
         return await this.getData(
             cacheKey,
             () => this.apiService.getToken(tokenID),
@@ -37,7 +36,7 @@ export class TokenGetterService extends GenericGetterService {
     }
 
     async getNftCollectionMetadata(collection: string): Promise<NftCollection> {
-        const cacheKey = this.getTokenCacheKey(collection);
+        const cacheKey = this.getCacheKey(collection);
         return await this.getData(
             cacheKey,
             () => this.apiService.getNftCollection(collection),
@@ -47,7 +46,7 @@ export class TokenGetterService extends GenericGetterService {
 
     async getEsdtTokenType(tokenID: string): Promise<string> {
         return await this.getData(
-            this.getTokenCacheKey(tokenID, 'type'),
+            this.getCacheKey(tokenID, 'type'),
             () => this.tokenRepositoryService.getTokenType(tokenID),
             oneHour(),
         );
@@ -55,7 +54,7 @@ export class TokenGetterService extends GenericGetterService {
 
     async getDerivedEGLD(tokenID: string): Promise<string> {
         return await this.getData(
-            this.getTokenCacheKey(tokenID, 'derivedEGLD'),
+            this.getCacheKey(tokenID, 'derivedEGLD'),
             () => this.tokenCompute.computeTokenPriceDerivedEGLD(tokenID),
             oneSecond() * 12,
         );
@@ -63,13 +62,9 @@ export class TokenGetterService extends GenericGetterService {
 
     async getDerivedUSD(tokenID: string): Promise<string> {
         return await this.getData(
-            this.getTokenCacheKey(tokenID, 'derivedUSD'),
+            this.getCacheKey(tokenID, 'derivedUSD'),
             () => this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
             oneSecond() * 12,
         );
-    }
-
-    private getTokenCacheKey(tokenID: string, ...args: any): string {
-        return generateCacheKeyFromParams('token', tokenID, args);
     }
 }

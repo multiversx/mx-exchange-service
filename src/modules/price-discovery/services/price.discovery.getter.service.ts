@@ -5,13 +5,13 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from './price.discovery.compute.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+
 @Injectable()
 export class PriceDiscoveryGetterService extends GenericGetterService {
     constructor(
@@ -23,12 +23,12 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         private readonly priceDiscoveryCompute: PriceDiscoveryComputeService,
         private readonly pairGetter: PairGetterService,
     ) {
-        super(cachingService, logger);
+        super(cachingService, logger, 'priceDiscovery');
     }
 
     async getLaunchedTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenID',
             ),
@@ -39,7 +39,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getAcceptedTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenID',
             ),
@@ -50,7 +50,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getRedeemTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'redeemTokenID',
             ),
@@ -86,7 +86,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenAmount',
             ),
@@ -100,7 +100,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenAmount',
             ),
@@ -114,7 +114,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenRedeemBalance',
             ),
@@ -130,7 +130,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenRedeemBalance',
             ),
@@ -146,7 +146,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenPrice',
             ),
@@ -162,7 +162,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenPrice',
             ),
@@ -178,7 +178,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenPriceUSD',
             ),
@@ -197,7 +197,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             priceDiscoveryAddress,
         );
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenPriceUSD',
             ),
@@ -208,7 +208,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getStartBlock(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'startEpoch'),
+            this.getCacheKey(priceDiscoveryAddress, 'startEpoch'),
             () => this.abiService.getStartBlock(priceDiscoveryAddress),
             oneHour(),
         );
@@ -216,7 +216,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getEndBlock(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'endEpoch'),
+            this.getCacheKey(priceDiscoveryAddress, 'endEpoch'),
             () => this.abiService.getEndBlock(priceDiscoveryAddress),
             oneHour(),
         );
@@ -224,7 +224,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getCurrentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'currentPhase',
             ),
@@ -237,7 +237,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'minLaunchedTokenPrice',
             ),
@@ -251,7 +251,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'noLimitPhaseDurationBlocks',
             ),
@@ -267,7 +267,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'linearPenaltyPhaseDurationBlocks',
             ),
@@ -283,7 +283,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'fixedPenaltyPhaseDurationBlocks',
             ),
@@ -297,7 +297,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getLockingScAddress(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'lockingScAddress',
             ),
@@ -308,7 +308,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'unlockEpoch',
             ),
@@ -321,7 +321,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'penaltyMinPercentage',
             ),
@@ -335,7 +335,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'penaltyMaxPercentage',
             ),
@@ -349,7 +349,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'fixedPenaltyPercentage',
             ),
@@ -358,17 +358,6 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                     priceDiscoveryAddress,
                 ),
             oneHour(),
-        );
-    }
-
-    private getPriceDiscoveryCacheKey(
-        priceDiscoveryAddress: string,
-        ...args: any
-    ) {
-        return generateCacheKeyFromParams(
-            'priceDiscovery',
-            priceDiscoveryAddress,
-            ...args,
         );
     }
 }

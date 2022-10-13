@@ -4,7 +4,6 @@ import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { FeesCollectorAbiService } from './fees-collector.abi.service';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import {
     WeeklyRewardsSplittingGetterService,
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
@@ -18,12 +17,12 @@ export class FeesCollectorGetterService extends Mixin(GenericGetterService, Week
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: FeesCollectorAbiService,
     ) {
-        super(cachingService, logger);
+        super(cachingService, logger, 'feesCollector');
     }
 
     async getAccumulatedFees(scAddress: string, week: number, token: string): Promise<string> {
         return this.getData(
-            this.getFeesCollectorCacheKey(scAddress, 'accumulatedFees', week, token),
+            this.getCacheKey(scAddress, 'accumulatedFees', week, token),
             () => this.abiService.accumulatedFees(scAddress, week, token),
             oneMinute(),
         )
@@ -31,16 +30,9 @@ export class FeesCollectorGetterService extends Mixin(GenericGetterService, Week
 
     async getAllTokens(scAddress: string): Promise<string[]> {
         return this.getData(
-            this.getFeesCollectorCacheKey(scAddress, 'allTokens'),
+            this.getCacheKey(scAddress, 'allTokens'),
             () => this.abiService.allTokens(scAddress),
             oneMinute(),
         )
     }
-
-
-    private getFeesCollectorCacheKey(address: string, ...args: any) {
-        return generateCacheKeyFromParams(address, ...args);
-    }
-
-
 }
