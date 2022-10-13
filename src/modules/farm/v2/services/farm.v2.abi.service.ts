@@ -1,4 +1,4 @@
-import { FarmTokenAttributes, FarmVersion } from '@elrondnetwork/erdjs-dex';
+import { FarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import {
     Address,
     AddressValue,
@@ -65,7 +65,7 @@ export class FarmV2AbiService extends AbiFarmService {
             args.farmAddress,
         );
         const decodedAttributes = FarmTokenAttributes.fromAttributes(
-            FarmVersion.V2,
+            undefined,
             args.attributes,
         );
         const interaction: Interaction =

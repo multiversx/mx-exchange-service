@@ -8,11 +8,7 @@ import {
     BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,
 } from './models/farm.args';
-import {
-    ExitFarmTokensModel,
-    FarmVersion,
-    RewardsModel,
-} from './models/farm.model';
+import { ExitFarmTokensModel, RewardsModel } from './models/farm.model';
 import { FarmsUnion } from './models/farm.union';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
 import { FarmV2Service } from './v2/services/farm.v2.service';
@@ -70,8 +66,6 @@ export class FarmQueryResolver extends GenericResolver {
     private getService(farmAddress: string): FarmService | FarmV2Service {
         const version = farmVersion(farmAddress);
         switch (version) {
-            case FarmVersion.V2:
-                return this.farmV2Service;
             default:
                 return this.farmService;
         }
