@@ -10,7 +10,7 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondDataApiReadService } from 'src/services/elrond-communication/elrond-data-api.read.service';
+import { ElrondDataApiQueryService } from 'src/services/data-api/elrond.data-api.query';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -32,7 +32,7 @@ export class PairGetterService extends GenericGetterService {
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-        private readonly elrondDataApiReadService: ElrondDataApiReadService,
+        private readonly elrondDataApiQuery: ElrondDataApiQueryService,
     ) {
         super(cachingService, logger);
     }
@@ -203,12 +203,12 @@ export class PairGetterService extends GenericGetterService {
         start: string,
     ): Promise<string> {
         const isTimescaleReadActive =
-            await this.elrondDataApiReadService.isReadActive();
+            await this.elrondDataApiQuery.isReadActive();
         return this.getData(
             this.getPairCacheKey(pairAddress, `firstTokenVolume.${start}`),
             () => {
                 isTimescaleReadActive
-                    ? this.elrondDataApiReadService.getAggregatedValue({
+                    ? this.elrondDataApiQuery.getAggregatedValue({
                         series: pairAddress,
                         key: 'firstTokenVolume',
                         start,
@@ -230,12 +230,12 @@ export class PairGetterService extends GenericGetterService {
         start: string,
     ): Promise<string> {
         const isTimescaleReadActive =
-            await this.elrondDataApiReadService.isReadActive();
+            await this.elrondDataApiQuery.isReadActive();
         return this.getData(
             this.getPairCacheKey(pairAddress, `secondTokenVolume.${start}`),
             () => {
                 isTimescaleReadActive
-                    ? this.elrondDataApiReadService.getAggregatedValue({
+                    ? this.elrondDataApiQuery.getAggregatedValue({
                         series: pairAddress,
                         key: 'secondTokenVolume',
                         start,
@@ -254,12 +254,12 @@ export class PairGetterService extends GenericGetterService {
 
     async getVolumeUSD(pairAddress: string, start: string): Promise<string> {
         const isTimescaleReadActive =
-            await this.elrondDataApiReadService.isReadActive();
+            await this.elrondDataApiQuery.isReadActive();
         return this.getData(
             this.getPairCacheKey(pairAddress, `volumeUSD.${start}`),
             () => {
                 isTimescaleReadActive
-                    ? this.elrondDataApiReadService.getAggregatedValue({
+                    ? this.elrondDataApiQuery.getAggregatedValue({
                         series: pairAddress,
                         key: 'volumeUSD',
                         start,
@@ -278,12 +278,12 @@ export class PairGetterService extends GenericGetterService {
 
     async getFeesUSD(pairAddress: string, start: string): Promise<string> {
         const isTimescaleReadActive =
-            await this.elrondDataApiReadService.isReadActive();
+            await this.elrondDataApiQuery.isReadActive();
         return this.getData(
             this.getPairCacheKey(pairAddress, `feesUSD.${start}`),
             () => {
                 isTimescaleReadActive
-                    ? this.elrondDataApiReadService.getAggregatedValue({
+                    ? this.elrondDataApiQuery.getAggregatedValue({
                         series: pairAddress,
                         key: 'feesUSD',
                         start,

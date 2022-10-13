@@ -10,7 +10,7 @@ import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
-import { ElrondDataApiReadService } from 'src/services/elrond-communication/elrond-data-api.read.service';
+import { ElrondDataApiQueryService } from 'src/services/data-api/elrond.data-api.query';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class AnalyticsComputeService {
         private readonly farmComputeService: FarmComputeService,
         private readonly pairGetterService: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-        private readonly elrondDataApiReadService: ElrondDataApiReadService,
+        private readonly elrondDataApiQuery: ElrondDataApiQueryService,
     ) { }
 
     async computeLockedValueUSDFarms(): Promise<string> {
@@ -110,8 +110,8 @@ export class AnalyticsComputeService {
         start: string,
         key: string,
     ): Promise<string> {
-        return (await this.elrondDataApiReadService.isReadActive())
-            ? await this.elrondDataApiReadService.getAggregatedValue({
+        return (await this.elrondDataApiQuery.isReadActive())
+            ? await this.elrondDataApiQuery.getAggregatedValue({
                 series: tokenID,
                 key,
                 start,

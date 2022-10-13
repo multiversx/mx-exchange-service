@@ -44,7 +44,7 @@ import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
-import { ElrondDataApiWriteService } from 'src/services/elrond-communication/elrond-data-api.write.service';
+import { ElrondDataApiWriteService } from 'src/services/data-api/elrond.data-api.write';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -62,7 +62,7 @@ export class RabbitMqConsumer {
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
-        private readonly elrondDataApiWriteService: ElrondDataApiWriteService,
+        private readonly elrondDataApiWrite: ElrondDataApiWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) { }
 
@@ -241,7 +241,7 @@ export class RabbitMqConsumer {
                     data: this.data,
                     Time: timestamp,
                 }),
-                this.elrondDataApiWriteService.ingestObject({
+                this.elrondDataApiWrite.ingestObject({
                     data: this.data,
                     timestamp: timestamp,
                 }),

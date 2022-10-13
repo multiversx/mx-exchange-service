@@ -31,6 +31,7 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
 import { RouterModule } from 'src/modules/router/router.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
 import { AnalyticsQueryCacheWarmerService } from './crons/analytics.query.cache.warmer.service';
+import { ElrondDataApiModule } from './data-api/elrond.data-api.module';
 
 @Module({
     imports: [
@@ -52,6 +53,7 @@ import { AnalyticsQueryCacheWarmerService } from './crons/analytics.query.cache.
         PriceDiscoveryModule,
         TokenModule,
         AWSModule,
+        ElrondDataApiModule,
         RemoteConfigModule,
     ],
     controllers: [],

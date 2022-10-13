@@ -18,7 +18,7 @@ import {
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
-export class ElrondDataApiReadService {
+export class ElrondDataApiQueryService {
     private readonly url: string;
     private readonly config: AxiosRequestConfig;
 
@@ -65,7 +65,7 @@ export class ElrondDataApiReadService {
             return response.data;
         } catch (error) {
             this.logger.error(error.message, {
-                path: `${ElrondDataApiReadService.name}.${this.doPostGeneric.name}`,
+                path: `${ElrondDataApiQueryService.name}.${this.doPostGeneric.name}`,
             });
         }
     }
@@ -81,7 +81,7 @@ export class ElrondDataApiReadService {
             return await Promise.all(promises);
         } catch (error) {
             this.logger.error(error.message, {
-                path: `${ElrondDataApiReadService.name}.${this.doPostGeneric.name}`,
+                path: `${ElrondDataApiQueryService.name}.${this.doPostGeneric.name}`,
             });
         }
     }
@@ -100,7 +100,7 @@ export class ElrondDataApiReadService {
             6 * oneMonth(),
         );
 
-        let queries: any[] = [];
+        const queries: any[] = [];
 
         for (let i = 0; i < dateIntervals.length - 1; i++) {
             const startDate = toUtc(dateIntervals[i]);
@@ -149,7 +149,7 @@ export class ElrondDataApiReadService {
             6 * oneMonth(),
         );
 
-        let queries: any[] = [];
+        const queries: any[] = [];
 
         for (let i = 0; i < dateIntervals.length - 1; i++) {
             const startDate = toUtc(dateIntervals[i]);
@@ -339,7 +339,7 @@ export class ElrondDataApiReadService {
                time
              }
            }
-         }`;
+        }`;
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 

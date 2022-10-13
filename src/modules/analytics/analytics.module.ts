@@ -15,11 +15,13 @@ import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairDayDataResolver } from './analytics.pair.resolver';
 import { TokenModule } from '../tokens/token.module';
 import { AnalyticsSetterService } from './services/analytics.setter.service';
+import { ElrondDataApiModule } from 'src/services/data-api/elrond.data-api.module';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
         AWSModule,
+        ElrondDataApiModule,
         CachingModule,
         ContextModule,
         RouterModule,

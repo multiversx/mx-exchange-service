@@ -14,6 +14,7 @@ import { AutoRouterResolver } from './auto-router.resolver';
 import { PairTransactionService } from '../pair/services/pair.transactions.service';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { TokenModule } from '../tokens/token.module';
+import { ElrondDataApiModule } from 'src/services/data-api/elrond.data-api.module';
 
 @Module({
     imports: [
@@ -23,6 +24,7 @@ import { TokenModule } from '../tokens/token.module';
         CachingModule,
         PairModule,
         AWSModule,
+        ElrondDataApiModule,
         WrappingModule,
         RouterModule,
         TokenModule,

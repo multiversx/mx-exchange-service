@@ -14,6 +14,7 @@ import { AWSModule } from 'src/services/aws/aws.module';
 import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
 import { CommonAppModule } from 'src/common.app.module';
+import { ElrondDataApiModule } from 'src/services/data-api/elrond.data-api.module';
 @Module({
     imports: [
         CommonAppModule,
@@ -22,6 +23,7 @@ import { CommonAppModule } from 'src/common.app.module';
         WrappingModule,
         CachingModule,
         AWSModule,
+        ElrondDataApiModule,
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
     ],

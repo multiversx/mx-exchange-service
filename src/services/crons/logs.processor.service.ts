@@ -13,10 +13,10 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { EsdtLocalBurnEvent, ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
-import { ElrondDataApiWriteService } from '../elrond-communication/elrond-data-api.write.service';
-import { IngestRecord } from '../elrond-communication/ingest-records.model';
+import { ElrondDataApiWriteService } from '../data-api/elrond.data-api.write';
 import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
 import TimestreamWrite from 'aws-sdk/clients/timestreamwrite';
+import { IngestRecord } from '../data-api/models/ingest.records.model';
 
 @Injectable()
 export class LogsProcessorService {
@@ -27,8 +27,8 @@ export class LogsProcessorService {
     constructor(
         private readonly cachingService: CachingService,
         private readonly apiService: ElrondApiService,
-        private readonly awsWrite: AWSTimestreamWriteService,
-        private readonly elrondDataApiWriteService: ElrondDataApiWriteService,
+        private readonly awsTimestreamWrite: AWSTimestreamWriteService,
+        private readonly elrondDataApiWrite: ElrondDataApiWriteService,
         private readonly elasticService: ElasticService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -188,9 +188,9 @@ export class LogsProcessorService {
             { Name: 'series', Value: constantsConfig.MEX_TOKEN_ID },
         ];
         const MeasureValueType = 'DOUBLE';
-        let Records: TimestreamWrite.Records = [];
+        const Records: TimestreamWrite.Records = [];
 
-        let ingestRecords: IngestRecord[] = [];
+        const ingestRecords: IngestRecord[] = [];
 
         let totalAwsWriteRecords = 0;
         let totalElrondDataWrites = 0;
@@ -222,7 +222,7 @@ export class LogsProcessorService {
                 const [timestreamIngestedCount, timescaleIngested] =
                     await Promise.all([
                         this.pushAWSRecords(Records),
-                        this.elrondDataApiWriteService.ingest(ingestRecords),
+                        this.elrondDataApiWrite.ingest(ingestRecords),
                     ]);
 
                 totalAwsWriteRecords += timestreamIngestedCount;
@@ -246,7 +246,7 @@ export class LogsProcessorService {
             const [timestreamIngestedCount, timescaleIngested] =
                 await Promise.all([
                     this.pushAWSRecords(Records),
-                    this.elrondDataApiWriteService.ingest(ingestRecords),
+                    this.elrondDataApiWrite.ingest(ingestRecords),
                 ]);
 
             totalAwsWriteRecords += timestreamIngestedCount;
@@ -272,7 +272,7 @@ export class LogsProcessorService {
         Records: TimestreamWrite.Records,
     ): Promise<number> {
         try {
-            await this.awsWrite.multiRecordsIngest('tradingInfo', Records);
+            await this.awsTimestreamWrite.multiRecordsIngest('tradingInfo', Records);
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(

@@ -5,7 +5,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Logger } from 'winston';
 import Agent, { HttpsAgent } from 'agentkeepalive';
 import axios, { AxiosRequestConfig } from 'axios';
-import { IngestRecord } from './ingest-records.model';
+import { IngestRecord } from './models/ingest.records.model';
 import { NativeAuthClientService } from 'src/modules/native-auth/native-auth-client.service';
 import BigNumber from 'bignumber.js';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
@@ -92,13 +92,13 @@ export class ElrondDataApiWriteService {
             return;
         }
 
-        let ingestRecords = this.objectToIngestRecords({ data, timestamp });
+        const ingestRecords = this.objectToIngestRecords({ data, timestamp });
 
         return await this.ingest(ingestRecords);
     }
 
     objectToIngestRecords({ data, timestamp }): IngestRecord[] {
-        let ingestRecords: IngestRecord[] = [];
+        const ingestRecords: IngestRecord[] = [];
 
         Object.keys(data).forEach((series) => {
             Object.keys(data[series]).forEach((MeasureName) => {
