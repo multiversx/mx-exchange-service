@@ -1,0 +1,1 @@
+export const ErrInvalidWeek = new Error("invalid week");

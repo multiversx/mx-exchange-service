@@ -5,3 +5,4 @@ export enum VmQueryError {
 }
 
 export const ErrorGetContractHandlerNotSet = new Error("getContractHandler not set");
+export const ErrorNotImplemented = new Error("Not implemented");
