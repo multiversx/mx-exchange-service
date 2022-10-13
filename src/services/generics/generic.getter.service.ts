@@ -36,6 +36,9 @@ export class GenericGetterService {
     }
 
     protected getCacheKey(...args: any) {
+        if (typeof this.baseKey === 'undefined' || this.baseKey === null) {
+            this.logger.error('baseKey was not set')
+        }
         return generateCacheKeyFromParams(this.baseKey, ...args);
     }
 }

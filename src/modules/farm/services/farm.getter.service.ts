@@ -23,6 +23,7 @@ export class FarmGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'farm';
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
