@@ -4,6 +4,7 @@ import { Logger } from 'winston';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import { WeekTimekeepingGetterService } from './week-timekeeping.getter.service';
 import { constantsConfig } from '../../../config';
+import { ErrInvalidWeek } from '../errors';
 
 
 @Injectable()
@@ -31,16 +32,16 @@ export class WeekTimekeepingComputeService {
 
     async computeStartEpochForWeek(scAddress: string, week: number): Promise<number> {
         await this.checkAndSetFirstWeekStartEpoch(scAddress);
-        if (week === 0) {
-            return -1;
+        if (week <= 0) {
+            throw ErrInvalidWeek
         }
 
         return this.firstWeekStartEpoch + (week - 1) * this.epochsInWeek
     }
 
     async computeEndEpochForWeek(scAddress: string, week: number): Promise<number> {
-        if (week === 0) {
-            return -1;
+        if (week <= 0) {
+            throw ErrInvalidWeek
         }
 
         const startEpochForWeek = await this.computeStartEpochForWeek(scAddress, week)

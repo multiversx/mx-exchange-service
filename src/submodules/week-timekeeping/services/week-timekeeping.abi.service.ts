@@ -1,9 +1,10 @@
 import { Interaction, SmartContract } from '@elrondnetwork/erdjs/out';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import { ErrorGetContractHandlerNotSet } from '../../../utils/errors.constants';
+import { IWeekTimekeepingAbiService } from '../interfaces';
 
 
-export class WeekTimekeepingAbiService extends GenericAbiService {
+export class WeekTimekeepingAbiService extends GenericAbiService implements IWeekTimekeepingAbiService {
 
     async getCurrentWeek(scAddress: string): Promise<number> {
         const contract = await this.getContractHandler(scAddress);
