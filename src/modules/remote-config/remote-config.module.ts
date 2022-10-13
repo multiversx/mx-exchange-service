@@ -10,6 +10,8 @@ import { RemoteConfigGetterService } from './remote-config.getter.service';
 import { RemoteConfigSetterService } from './remote-config.setter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingModule } from 'src/services/caching/cache.module';
+import { FlagsGetterService } from './flags.getter.service';
+import { AddressesGetterService } from './addresses.getter.service';
 
 @Module({
     imports: [
@@ -24,6 +26,9 @@ import { CachingModule } from 'src/services/caching/cache.module';
         RemoteConfigController,
         FlagRepositoryService,
         SCAddressRepositoryService,
+        RemoteConfigGetterService,
+        FlagsGetterService,
+        AddressesGetterService,
         RemoteConfigGetterService,
         RemoteConfigSetterService,
         ApiConfigService,

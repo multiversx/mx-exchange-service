@@ -5,7 +5,6 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
 
@@ -18,11 +17,12 @@ export class SimpleLockGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'simpleLock';
     }
 
     async getLockedTokenID(simpleLockAddress: string): Promise<string> {
         return await this.getData(
-            this.getSimpleLockCacheKey(simpleLockAddress, 'lockedTokenID'),
+            this.getCacheKey(simpleLockAddress, 'lockedTokenID'),
             () => this.abiService.getLockedTokenID(simpleLockAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -31,7 +31,7 @@ export class SimpleLockGetterService extends GenericGetterService {
 
     async getLpProxyTokenID(simpleLockAddress: string): Promise<string> {
         return await this.getData(
-            this.getSimpleLockCacheKey(simpleLockAddress, 'lpProxyTokenID'),
+            this.getCacheKey(simpleLockAddress, 'lpProxyTokenID'),
             () => this.abiService.getLpProxyTokenID(simpleLockAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -40,7 +40,7 @@ export class SimpleLockGetterService extends GenericGetterService {
 
     async getFarmProxyTokenID(simpleLockAddress: string): Promise<string> {
         return await this.getData(
-            this.getSimpleLockCacheKey(simpleLockAddress, 'farmProxyTokenID'),
+            this.getCacheKey(simpleLockAddress, 'farmProxyTokenID'),
             () => this.abiService.getFarmProxyTokenID(simpleLockAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -64,7 +64,7 @@ export class SimpleLockGetterService extends GenericGetterService {
 
     async getIntermediatedPairs(simpleLockAddress: string): Promise<string[]> {
         return await this.getData(
-            this.getSimpleLockCacheKey(simpleLockAddress, 'intermediatedPairs'),
+            this.getCacheKey(simpleLockAddress, 'intermediatedPairs'),
             () => this.abiService.getKnownLiquidityPools(simpleLockAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -73,18 +73,10 @@ export class SimpleLockGetterService extends GenericGetterService {
 
     async getIntermediatedFarms(simpleLockAddress: string): Promise<string[]> {
         return await this.getData(
-            this.getSimpleLockCacheKey(simpleLockAddress, 'intermediatedFarms'),
+            this.getCacheKey(simpleLockAddress, 'intermediatedFarms'),
             () => this.abiService.getKnownFarms(simpleLockAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    private getSimpleLockCacheKey(simpleLockAddress: string, ...args: any) {
-        return generateCacheKeyFromParams(
-            'simpleLock',
-            simpleLockAddress,
-            ...args,
         );
     }
 }

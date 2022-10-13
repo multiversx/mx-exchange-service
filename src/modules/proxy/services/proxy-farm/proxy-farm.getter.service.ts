@@ -4,7 +4,6 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from '../../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateCacheKeyFromParams } from '../../../../utils/generate-cache-key';
 import { oneHour } from '../../../../helpers/helpers';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
@@ -19,11 +18,12 @@ export class ProxyFarmGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'proxyFarm';
     }
 
     async getwrappedFarmTokenID(): Promise<string> {
         return this.getData(
-            this.getProxyFarmCacheKey('wrappedFarmTokenID'),
+            this.getCacheKey('wrappedFarmTokenID'),
             () => this.abiService.getWrappedFarmTokenID(),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -37,13 +37,9 @@ export class ProxyFarmGetterService extends GenericGetterService {
 
     async getIntermediatedFarms(): Promise<string[]> {
         return await this.getData(
-            this.getProxyFarmCacheKey('intermediatedFarms'),
+            this.getCacheKey('intermediatedFarms'),
             () => this.abiService.getIntermediatedFarmsAddress(),
             oneHour(),
         );
-    }
-
-    private getProxyFarmCacheKey(...args: any) {
-        return generateCacheKeyFromParams('proxyFarm', ...args);
     }
 }
