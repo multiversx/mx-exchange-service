@@ -3,9 +3,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { scAddress } from '../../../config';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { PairModel } from '../../pair/models/pair.model';
-import { RouterGetterService } from '../services/router.getter.service';
+import { RouterGetterService } from './router.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
@@ -138,10 +137,6 @@ export class RouterService {
         }
 
         return filteredPairsMetadata;
-    }
-
-    private getRouterCacheKey(...args: any) {
-        return generateCacheKeyFromParams('router', ...args);
     }
 
     async requireOwner(sender: string) {

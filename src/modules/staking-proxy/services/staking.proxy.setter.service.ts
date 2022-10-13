@@ -4,7 +4,6 @@ import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 
 @Injectable()
@@ -14,6 +13,7 @@ export class StakingProxySetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'stakeProxy';
     }
 
     async setLpFarmAddress(
@@ -21,7 +21,7 @@ export class StakingProxySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'lpFarmAddress'),
+            this.getCacheKey(stakingProxyAddress, 'lpFarmAddress'),
             value,
             oneHour(),
         );
@@ -32,7 +32,7 @@ export class StakingProxySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getStakeProxyCacheKey(
+            this.getCacheKey(
                 stakingProxyAddress,
                 'stakingFarmAddress',
             ),
@@ -46,7 +46,7 @@ export class StakingProxySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'pairAddress'),
+            this.getCacheKey(stakingProxyAddress, 'pairAddress'),
             value,
             oneHour(),
         );
@@ -57,7 +57,7 @@ export class StakingProxySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'stakingTokenID'),
+            this.getCacheKey(stakingProxyAddress, 'stakingTokenID'),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -69,7 +69,7 @@ export class StakingProxySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'farmTokenID'),
+            this.getCacheKey(stakingProxyAddress, 'farmTokenID'),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -81,7 +81,7 @@ export class StakingProxySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'dualYieldTokenID'),
+            this.getCacheKey(stakingProxyAddress, 'dualYieldTokenID'),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -93,18 +93,10 @@ export class StakingProxySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'lpFarmTokenID'),
+            this.getCacheKey(stakingProxyAddress, 'lpFarmTokenID'),
             value,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
-        );
-    }
-
-    private getStakeProxyCacheKey(stakingProxyAddress: string, ...args: any) {
-        return generateCacheKeyFromParams(
-            'stakeProxy',
-            stakingProxyAddress,
-            ...args,
         );
     }
 }

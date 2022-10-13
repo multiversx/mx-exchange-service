@@ -1,10 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';
 
@@ -14,6 +12,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'priceDiscovery';
     }
 
     async setLaunchedTokenID(
@@ -21,7 +20,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenID',
             ),
@@ -36,7 +35,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenID',
             ),
@@ -51,7 +50,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'redeemTokenID',
             ),
@@ -66,7 +65,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenAmount',
             ),
@@ -81,7 +80,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenAmount',
             ),
@@ -96,7 +95,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenRedeemBalance',
             ),
@@ -111,7 +110,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenRedeemBalance',
             ),
@@ -126,7 +125,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenPrice',
             ),
@@ -141,7 +140,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenPrice',
             ),
@@ -156,7 +155,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenPriceUSD',
             ),
@@ -171,7 +170,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenPriceUSD',
             ),
@@ -186,7 +185,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'startEpoch'),
+            this.getCacheKey(priceDiscoveryAddress, 'startEpoch'),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -198,7 +197,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'endEpoch'),
+            this.getCacheKey(priceDiscoveryAddress, 'endEpoch'),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -210,7 +209,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: PhaseModel,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'currentPhase',
             ),
@@ -225,7 +224,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'minLaunchedTokenPrice',
             ),
@@ -240,7 +239,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'noLimitPhaseDurationBlocks',
             ),
@@ -255,7 +254,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'linearPenaltyPhaseDurationBlocks',
             ),
@@ -270,7 +269,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'fixedPenaltyPhaseDurationBlocks',
             ),
@@ -285,7 +284,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: string,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'lockingScAddress',
             ),
@@ -300,7 +299,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'unlockEpoch',
             ),
@@ -315,7 +314,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'penaltyMinPercentage',
             ),
@@ -330,7 +329,7 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'penaltyMaxPercentage',
             ),
@@ -345,24 +344,13 @@ export class PriceDiscoverySetterService extends GenericSetterService {
         value: number,
     ): Promise<string> {
         return await this.setData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'fixedPenaltyPercentage',
             ),
             value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    private getPriceDiscoveryCacheKey(
-        priceDiscoveryAddress: string,
-        ...args: any
-    ) {
-        return generateCacheKeyFromParams(
-            'priceDiscovery',
-            priceDiscoveryAddress,
-            ...args,
         );
     }
 }

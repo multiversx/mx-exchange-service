@@ -2,43 +2,18 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { generateSetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { HistoricDataModel } from '../models/analytics.model';
+import { GenericSetterService } from '../../../services/generics/generic.setter.service';
 
 @Injectable()
-export class AnalyticsAWSSetterService {
+export class AnalyticsAWSSetterService extends GenericSetterService {
     constructor(
-        private readonly cachingService: CachingService,
+        protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-    ) {}
-
-    private async setData<T>(
-        cacheKey: string,
-        value: T,
-        methodName: string,
-        remoteTTl = oneMinute() * 30,
-        localTtl = oneMinute() * 10,
-    ): Promise<string> {
-        try {
-            await this.cachingService.setCache<T>(
-                cacheKey,
-                value,
-                remoteTTl,
-                localTtl,
-            );
-            return cacheKey;
-        } catch (error) {
-            const logMessage = generateSetLogMessage(
-                this.constructor.name,
-                methodName,
-                cacheKey,
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
+    ) {
+        super(cachingService, logger);
+        this.baseKey = 'analytics';
     }
 
     async setLatestCompleteValues(
@@ -46,7 +21,7 @@ export class AnalyticsAWSSetterService {
         metric: string,
         values: HistoricDataModel[],
     ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
+        const cacheKey = this.getCacheKey(
             'latestCompleteValues',
             series,
             metric,
@@ -54,7 +29,8 @@ export class AnalyticsAWSSetterService {
         return await this.setData(
             cacheKey,
             values,
-            this.setLatestCompleteValues.name,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -63,7 +39,7 @@ export class AnalyticsAWSSetterService {
         metric: string,
         values: HistoricDataModel[],
     ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
+        const cacheKey = this.getCacheKey(
             'sumCompleteValues',
             series,
             metric,
@@ -71,7 +47,8 @@ export class AnalyticsAWSSetterService {
         return await this.setData(
             cacheKey,
             values,
-            this.setSumCompleteValues.name,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -80,12 +57,17 @@ export class AnalyticsAWSSetterService {
         metric: string,
         values: HistoricDataModel[],
     ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
+        const cacheKey = this.getCacheKey(
             'values24hSum',
             series,
             metric,
         );
-        return await this.setData(cacheKey, values, this.setValues24hSum.name);
+        return await this.setData(
+            cacheKey,
+            values,
+            oneMinute() * 30,
+            oneMinute() * 10,
+        );
     }
 
     async setValues24h(
@@ -93,8 +75,13 @@ export class AnalyticsAWSSetterService {
         metric: string,
         values: HistoricDataModel[],
     ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey('values24h', series, metric);
-        return await this.setData(cacheKey, values, this.setValues24h.name);
+        const cacheKey = this.getCacheKey('values24h', series, metric);
+        return await this.setData(
+            cacheKey,
+            values,
+            oneMinute() * 30,
+            oneMinute() * 10,
+        );
     }
 
     async setLatestHistoricData(
@@ -104,7 +91,7 @@ export class AnalyticsAWSSetterService {
         start: string,
         values: HistoricDataModel[],
     ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
+        const cacheKey = this.getCacheKey(
             'latestHistoricData',
             time,
             series,
@@ -114,7 +101,8 @@ export class AnalyticsAWSSetterService {
         return await this.setData(
             cacheKey,
             values,
-            this.setLatestHistoricData.name,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
     }
 
@@ -126,7 +114,7 @@ export class AnalyticsAWSSetterService {
         start: string,
         values: HistoricDataModel[],
     ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
+        const cacheKey = this.getCacheKey(
             'latestBinnedHistoricData',
             time,
             series,
@@ -137,11 +125,8 @@ export class AnalyticsAWSSetterService {
         return await this.setData(
             cacheKey,
             values,
-            this.setLatestBinnedHistoricData.name,
+            oneMinute() * 30,
+            oneMinute() * 10,
         );
-    }
-
-    private getAnalyticsCacheKey(...args: any) {
-        return generateCacheKeyFromParams('analytics', ...args);
     }
 }
