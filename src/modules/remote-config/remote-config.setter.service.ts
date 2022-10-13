@@ -1,72 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
-import { CachingService } from 'src/services/caching/cache.service';
-import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
-import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { PUB_SUB } from 'src/services/redis.pubSub.module';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { Logger } from 'winston';
-import { SCAddressType } from './models/sc-address.model';
+import { Injectable } from '@nestjs/common';
+import { FlagsSetterService } from './flags.setter.service';
+import { AddressesSetterService } from './addresses.setter.service';
+import { Mixin } from 'ts-mixer';
+
 @Injectable()
-export class RemoteConfigSetterService extends GenericSetterService {
-    constructor(
-        protected readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        @Inject(PUB_SUB) private pubSub: RedisPubSub,
-        private readonly scAddressRepositoryService: SCAddressRepositoryService,
-    ) {
-        super(cachingService, logger);
-    }
-
-    async setFlag(name: string, value: boolean): Promise<string> {
-        return await this.setData(this.getFlagCacheKey(name), value, oneHour());
-    }
-
-    async setSCAddresses(
-        cacheKey: string,
-        addresses: string[],
-    ): Promise<string> {
-        await this.setData(cacheKey, addresses, oneHour());
-        await this.deleteCacheKeys([cacheKey]);
-        return cacheKey;
-    }
-
-    async setSCAddressesFromDB(category: SCAddressType): Promise<string> {
-        const [cacheKey, addresses] = await Promise.all([
-            this.getSCAddressCacheKey(category),
-            this.scAddressRepositoryService.find({
-                category: category,
-            }),
-        ]);
-        return await this.setSCAddresses(
-            cacheKey,
-            addresses.map(a => a.address),
-        );
-    }
-
-    async deleteFlag(name: string): Promise<void> {
-        const cacheKey = this.getFlagCacheKey(name);
-        await this.cachingService.deleteInCache(cacheKey);
-        await this.deleteCacheKeys([cacheKey]);
-    }
-
-    async deleteSCAddresses(category: SCAddressType): Promise<void> {
-        const cacheKey = this.getSCAddressCacheKey(category);
-        await this.cachingService.deleteInCache(cacheKey);
-        await this.deleteCacheKeys([cacheKey]);
-    }
-
-    private getSCAddressCacheKey(category: SCAddressType, ...args: any) {
-        return generateCacheKeyFromParams('scAddress', category, ...args);
-    }
-
-    private getFlagCacheKey(flagName: string, ...args: any) {
-        return generateCacheKeyFromParams('flag', flagName, ...args);
-    }
-
-    private async deleteCacheKeys(invalidatedKeys: string[]): Promise<void> {
-        await this.pubSub.publish('deleteCacheKeys', invalidatedKeys);
-    }
+export class RemoteConfigSetterService extends Mixin(FlagsSetterService, AddressesSetterService) {
 }

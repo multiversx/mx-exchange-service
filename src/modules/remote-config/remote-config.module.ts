@@ -12,6 +12,8 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { FlagsGetterService } from './flags.getter.service';
 import { AddressesGetterService } from './addresses.getter.service';
+import { FlagsSetterService } from './flags.setter.service';
+import { AddressesSetterService } from './addresses.setter.service';
 
 @Module({
     imports: [
@@ -29,8 +31,9 @@ import { AddressesGetterService } from './addresses.getter.service';
         RemoteConfigGetterService,
         FlagsGetterService,
         AddressesGetterService,
-        RemoteConfigGetterService,
         RemoteConfigSetterService,
+        FlagsSetterService,
+        AddressesSetterService,
         ApiConfigService,
     ],
     exports: [

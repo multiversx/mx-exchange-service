@@ -1,14 +1,15 @@
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
-import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
+import { CacheKeyGenerator } from './cache-key-generator';
 
-export class GenericGetterService {
-    protected baseKey: string|undefined
+export class GenericGetterService extends CacheKeyGenerator{
     constructor(
         protected readonly cachingService: CachingService,
         protected readonly logger: Logger
-    ) {}
+    ) {
+        super(logger);
+    }
 
     protected async getData(
         cacheKey: string,
@@ -33,12 +34,5 @@ export class GenericGetterService {
             this.logger.error(logMessage);
             throw error;
         }
-    }
-
-    protected getCacheKey(...args: any) {
-        if (!this.baseKey) {
-            this.logger.error('baseKey was not set')
-        }
-        return generateCacheKeyFromParams(this.baseKey, ...args);
     }
 }

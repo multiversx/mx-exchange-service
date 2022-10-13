@@ -1,15 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateSetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
+import { CacheKeyGenerator } from './cache-key-generator';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 
-@Injectable()
-export class GenericSetterService {
+export class GenericSetterService extends CacheKeyGenerator {
     constructor(
         protected readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-    ) {}
+        protected readonly logger: Logger,
+    ) {
+        super(logger);
+    }
 
     protected async setData(
         cacheKey: string,
@@ -35,5 +36,10 @@ export class GenericSetterService {
             this.logger.error(logMessage);
             throw error;
         }
+    }
+
+    //TODO: SERVICES-770
+    protected async deleteCacheKeys(pubSub: RedisPubSub, invalidatedKeys: string[]): Promise<void> {
+        await pubSub.publish('deleteCacheKeys', invalidatedKeys);
     }
 }

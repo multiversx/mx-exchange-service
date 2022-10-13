@@ -3,7 +3,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericSetterService } from 'src/services/generics/generic.setter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { EsdtToken } from '../models/esdtToken.model';
 import { NftCollection } from '../models/nftCollection.model';
@@ -15,10 +14,11 @@ export class TokenSetterService extends GenericSetterService {
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'token';
     }
 
     async setTokenMetadata(tokenID: string, value: EsdtToken): Promise<string> {
-        const cacheKey = this.getTokenCacheKey(tokenID);
+        const cacheKey = this.getCacheKey(tokenID);
         return await this.setData(
             cacheKey,
             value,
@@ -31,7 +31,7 @@ export class TokenSetterService extends GenericSetterService {
         collection: string,
         value: NftCollection,
     ): Promise<string> {
-        const cacheKey = this.getTokenCacheKey(collection);
+        const cacheKey = this.getCacheKey(collection);
         return await this.setData(
             cacheKey,
             value,
@@ -42,7 +42,7 @@ export class TokenSetterService extends GenericSetterService {
 
     async setEsdtTokenType(tokenID: string, type: string): Promise<string> {
         return await this.setData(
-            this.getTokenCacheKey(tokenID, 'type'),
+            this.getCacheKey(tokenID, 'type'),
             type,
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -51,7 +51,7 @@ export class TokenSetterService extends GenericSetterService {
 
     async setDerivedEGLD(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            this.getTokenCacheKey(tokenID, 'derivedEGLD'),
+            this.getCacheKey(tokenID, 'derivedEGLD'),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -60,14 +60,10 @@ export class TokenSetterService extends GenericSetterService {
 
     async setDerivedUSD(tokenID: string, value: string): Promise<string> {
         return await this.setData(
-            this.getTokenCacheKey(tokenID, 'derivedUSD'),
+            this.getCacheKey(tokenID, 'derivedUSD'),
             value,
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
         );
-    }
-
-    private getTokenCacheKey(tokenID: string, ...args: any): string {
-        return generateCacheKeyFromParams('token', tokenID, args);
     }
 }
