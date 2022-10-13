@@ -4,7 +4,7 @@ import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 
 export class GenericGetterService {
-    protected baseKey: string
+    protected baseKey: string|undefined
     constructor(
         protected readonly cachingService: CachingService,
         protected readonly logger: Logger
@@ -36,7 +36,7 @@ export class GenericGetterService {
     }
 
     protected getCacheKey(...args: any) {
-        if (typeof this.baseKey === 'undefined' || this.baseKey === null) {
+        if (!this.baseKey) {
             this.logger.error('baseKey was not set')
         }
         return generateCacheKeyFromParams(this.baseKey, ...args);
