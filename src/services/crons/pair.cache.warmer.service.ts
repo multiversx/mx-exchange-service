@@ -24,7 +24,7 @@ export class PairCacheWarmerService {
         private readonly awsQuery: AWSTimestreamQueryService,
         private readonly elrondDataReadService: ElrondDataReadService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    ) {}
+    ) { }
 
     @Cron(CronExpression.EVERY_30_MINUTES)
     async cachePairs(): Promise<void> {
@@ -109,52 +109,52 @@ export class PairCacheWarmerService {
             ] = await Promise.all([
                 isTimescaleReadActive
                     ? this.elrondDataReadService.getAggregatedValue({
-                          series: pairAddress,
-                          key: 'firstTokenVolume',
-                          start: time,
-                      })
+                        series: pairAddress,
+                        key: 'firstTokenVolume',
+                        start: time,
+                    })
                     : this.awsQuery.getAggregatedValue({
-                          table: awsConfig.timestream.tableName,
-                          series: pairAddress,
-                          metric: 'firstTokenVolume',
-                          time,
-                      }),
+                        table: awsConfig.timestream.tableName,
+                        series: pairAddress,
+                        metric: 'firstTokenVolume',
+                        time,
+                    }),
                 isTimescaleReadActive
                     ? this.elrondDataReadService.getAggregatedValue({
-                          series: pairAddress,
-                          key: 'secondTokenVolume',
-                          start: time,
-                      })
+                        series: pairAddress,
+                        key: 'secondTokenVolume',
+                        start: time,
+                    })
                     : this.awsQuery.getAggregatedValue({
-                          table: awsConfig.timestream.tableName,
-                          series: pairAddress,
-                          metric: 'secondTokenVolume',
-                          time,
-                      }),
+                        table: awsConfig.timestream.tableName,
+                        series: pairAddress,
+                        metric: 'secondTokenVolume',
+                        time,
+                    }),
                 isTimescaleReadActive
                     ? this.elrondDataReadService.getAggregatedValue({
-                          series: pairAddress,
-                          key: 'volumeUSD',
-                          start: time,
-                      })
+                        series: pairAddress,
+                        key: 'volumeUSD',
+                        start: time,
+                    })
                     : this.awsQuery.getAggregatedValue({
-                          table: awsConfig.timestream.tableName,
-                          series: pairAddress,
-                          metric: 'volumeUSD',
-                          time,
-                      }),
+                        table: awsConfig.timestream.tableName,
+                        series: pairAddress,
+                        metric: 'volumeUSD',
+                        time,
+                    }),
                 isTimescaleReadActive
                     ? this.elrondDataReadService.getAggregatedValue({
-                          series: pairAddress,
-                          key: 'feesUSD',
-                          start: time,
-                      })
+                        series: pairAddress,
+                        key: 'feesUSD',
+                        start: time,
+                    })
                     : this.awsQuery.getAggregatedValue({
-                          table: awsConfig.timestream.tableName,
-                          series: pairAddress,
-                          metric: 'feesUSD',
-                          time,
-                      }),
+                        table: awsConfig.timestream.tableName,
+                        series: pairAddress,
+                        metric: 'feesUSD',
+                        time,
+                    }),
             ]);
 
             const cachedKeys = await Promise.all([

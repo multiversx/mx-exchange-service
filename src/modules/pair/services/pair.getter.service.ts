@@ -10,7 +10,7 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondDataReadService } from 'src/services/elrond-communication/elrond-data.read.service';
+import { ElrondDataApiReadService } from 'src/services/elrond-communication/elrond-data-api.read.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -32,7 +32,7 @@ export class PairGetterService extends GenericGetterService {
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-        private readonly elrondDataReadService: ElrondDataReadService,
+        private readonly elrondDataApiReadService: ElrondDataApiReadService,
     ) {
         super(cachingService, logger);
     }

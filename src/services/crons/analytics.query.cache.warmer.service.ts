@@ -7,7 +7,7 @@ import { AnalyticsSetterService } from 'src/modules/analytics/services/analytics
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
-import { ElrondDataReadService } from '../elrond-communication/elrond-data.read.service';
+import { ElrondDataApiReadService } from '../elrond-communication/elrond-data-api.read.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()

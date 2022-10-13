@@ -13,7 +13,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { EsdtLocalBurnEvent, ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
-import { ElrondDataWriteService } from '../elrond-communication/elrond-data.write.service';
+import { ElrondDataApiWriteService } from '../elrond-communication/elrond-data-api.write.service';
 import { IngestRecord } from '../elrond-communication/ingest-records.model';
 import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
 import TimestreamWrite from 'aws-sdk/clients/timestreamwrite';

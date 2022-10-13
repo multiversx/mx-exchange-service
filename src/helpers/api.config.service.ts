@@ -55,12 +55,6 @@ export class ApiConfigService {
         );
     }
 
-    isEventsReindexingCronjobActive(): boolean {
-        return (
-            this.getGenericConfig<string>('ENABLE_EVENTS_REINDEXING') === 'true'
-        );
-    }
-
     isTracerActive(): boolean {
         return this.getGenericConfig<string>('ENABLE_TRACER') === 'true';
     }

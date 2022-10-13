@@ -6,8 +6,8 @@ import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-conf
 import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.module';
 import { CachingModule } from '../caching/cache.module';
 import { ElrondApiService } from './elrond-api.service';
-import { ElrondDataReadService } from './elrond-data.read.service';
-import { ElrondDataWriteService } from './elrond-data.write.service';
+import { ElrondDataApiReadService } from './elrond-data-api.read.service';
+import { ElrondDataApiWriteService } from './elrond-data-api.write.service';
 import { ElrondGatewayService } from './elrond-gateway.service';
 import { ElrondProxyService } from './elrond-proxy.service';
 
@@ -18,8 +18,8 @@ import { ElrondProxyService } from './elrond-proxy.service';
         ElrondProxyService,
         ElrondApiService,
         ElrondGatewayService,
-        ElrondDataReadService,
-        ElrondDataWriteService,
+        ElrondDataApiReadService,
+        ElrondDataApiWriteService,
         RemoteConfigGetterService,
         NativeAuthClientService,
     ],
@@ -27,8 +27,8 @@ import { ElrondProxyService } from './elrond-proxy.service';
         ElrondProxyService,
         ElrondApiService,
         ElrondGatewayService,
-        ElrondDataReadService,
-        ElrondDataWriteService,
+        ElrondDataApiReadService,
+        ElrondDataApiWriteService,
         NativeAuthClientService,
     ],
 })

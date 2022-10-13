@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig, elrondData } from 'src/config';
+import { elrondConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Logger } from 'winston';
 import Agent, { HttpsAgent } from 'agentkeepalive';
@@ -11,7 +11,7 @@ import BigNumber from 'bignumber.js';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
-export class ElrondDataWriteService {
+export class ElrondDataApiWriteService {
     private readonly url: string;
     private readonly config: AxiosRequestConfig;
 
@@ -58,7 +58,7 @@ export class ElrondDataWriteService {
             return response.data;
         } catch (error) {
             this.logger.error(error.message, {
-                path: `${ElrondDataWriteService.name}.${this.doPostGeneric.name}`,
+                path: `${ElrondDataApiWriteService.name}.${this.doPostGeneric.name}`,
             });
         }
     }
@@ -76,9 +76,7 @@ export class ElrondDataWriteService {
             return;
         }
 
-        const query = `mutation { ingestData( table: ${
-            elrondData.timescale.table
-        }, input: [ ${records.map((r) => {
+        const query = `mutation { ingestData( table: maiar_exchange_analytics, input: [ ${records.map((r) => {
             return `{ timestamp: ${r.timestamp}, series: "${r.series}", key: "${r.key}", value: "${r.value}" }`;
         })} ] ) }`;
 

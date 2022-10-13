@@ -10,7 +10,7 @@ import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
-import { ElrondDataReadService } from 'src/services/elrond-communication/elrond-data.read.service';
+import { ElrondDataApiReadService } from 'src/services/elrond-communication/elrond-data-api.read.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()

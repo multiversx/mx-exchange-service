@@ -421,10 +421,5 @@
             "MemoryStoreRetentionPeriodInHours": 768,
             "MagneticStoreRetentionPeriodInDays": 73000
         }
-    },
-    "elrondData": {
-        "timescale": {
-            "table": "maiar_exchange_analytics"
-        }
     }
 }

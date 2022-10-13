@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig, elrondData } from 'src/config';
+import { elrondConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { Logger } from 'winston';
 import Agent, { HttpsAgent } from 'agentkeepalive';
@@ -18,7 +18,7 @@ import {
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 
 @Injectable()
-export class ElrondDataReadService {
+export class ElrondDataApiReadService {
     private readonly url: string;
     private readonly config: AxiosRequestConfig;
 
@@ -65,7 +65,7 @@ export class ElrondDataReadService {
             return response.data;
         } catch (error) {
             this.logger.error(error.message, {
-                path: `${ElrondDataReadService.name}.${this.doPostGeneric.name}`,
+                path: `${ElrondDataApiReadService.name}.${this.doPostGeneric.name}`,
             });
         }
     }
@@ -81,7 +81,7 @@ export class ElrondDataReadService {
             return await Promise.all(promises);
         } catch (error) {
             this.logger.error(error.message, {
-                path: `${ElrondDataReadService.name}.${this.doPostGeneric.name}`,
+                path: `${ElrondDataApiReadService.name}.${this.doPostGeneric.name}`,
             });
         }
     }
@@ -106,7 +106,7 @@ export class ElrondDataReadService {
             const startDate = toUtc(dateIntervals[i]);
             const endDate = toUtc(dateIntervals[i + 1]);
             const query = `query generic_query {
-                ${elrondData.timescale.table} {
+                ${elrondData.timescale.tableName} {
                   metric(
                     series: "${series}"
                     key: "${key}"
@@ -129,7 +129,7 @@ export class ElrondDataReadService {
         let data: HistoricDataModel[] = [];
         for (const result of results) {
             data = data.concat(
-                result.data[elrondData.timescale.table]['metric'].map(
+                result.data[elrondData.timescale.tableName]['metric'].map(
                     (r) =>
                         new HistoricDataModel({
                             timestamp: r.time,
@@ -155,7 +155,7 @@ export class ElrondDataReadService {
             const startDate = toUtc(dateIntervals[i]);
             const endDate = toUtc(dateIntervals[i + 1]);
             const query = `query generic_query {
-                ${elrondData.timescale.table} {
+                ${elrondData.timescale.tableName} {
                   metric(
                     series: "${series}"
                     key: "${key}"
@@ -177,7 +177,7 @@ export class ElrondDataReadService {
         let data: HistoricDataModel[] = [];
         for (const result of results) {
             data = data.concat(
-                result.data[elrondData.timescale.table]['metric'].map(
+                result.data[elrondData.timescale.tableName]['metric'].map(
                     (r) =>
                         new HistoricDataModel({
                             timestamp: r.time,
@@ -192,7 +192,7 @@ export class ElrondDataReadService {
 
     async getLatestValue({ series, key }): Promise<string> {
         const query = `query generic_query {
-            ${elrondData.timescale.table} {
+            ${elrondData.timescale.tableName} {
                 metric(
                   series: "${series}"
                   key: "${key}"
@@ -206,12 +206,12 @@ export class ElrondDataReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        return result.data[elrondData.timescale.table]['metric'][0].last;
+        return result.data[elrondData.timescale.tableName]['metric'][0].last;
     }
 
     async getValues24h({ series, key }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${elrondData.timescale.table} {
+            ${elrondData.timescale.tableName} {
              metric(
                series: "${series}"
                key: "${key}"
@@ -225,7 +225,7 @@ export class ElrondDataReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[elrondData.timescale.table]['metric'].map(
+        const data = result.data[elrondData.timescale.tableName]['metric'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
@@ -238,13 +238,13 @@ export class ElrondDataReadService {
 
     async getValues24hSum({ series, key }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${elrondData.timescale.table} {
+            ${elrondData.timescale.tableName} {
               metric(
                 series: "${series}"
                 key: "${key}"
                 query: { start_date: "${daysAgoUtc(
-                    2,
-                )}", resolution: INTERVAL_HOUR, fill_data_gaps: true }
+            2,
+        )}", resolution: INTERVAL_HOUR, fill_data_gaps: true }
               ) {
                 sum
                 time
@@ -255,7 +255,7 @@ export class ElrondDataReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[elrondData.timescale.table]['metric'].map(
+        const data = result.data[elrondData.timescale.tableName]['metric'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
@@ -272,7 +272,7 @@ export class ElrondDataReadService {
 
     async getAggregatedValue({ series, key, start }): Promise<string> {
         const query = `query { 
-            ${elrondData.timescale.table} { 
+            ${elrondData.timescale.tableName} { 
                 metric (series: "${series}" key: "${key}" 
                     query: { 
                         start_date: "${start}", 
@@ -284,7 +284,7 @@ export class ElrondDataReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const sum = result.data[elrondData.timescale.table].metric[0].sum;
+        const sum = result.data[elrondData.timescale.tableName].metric[0].sum;
 
         return sum;
     }
@@ -296,7 +296,7 @@ export class ElrondDataReadService {
         endDate,
     }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${elrondData.timescale.table} {
+            ${elrondData.timescale.tableName} {
              values(
                series: "${series}"
                key: "${key}"
@@ -310,7 +310,7 @@ export class ElrondDataReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[elrondData.timescale.table]['values'].map(
+        const data = result.data[elrondData.timescale.tableName]['values'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
@@ -329,7 +329,7 @@ export class ElrondDataReadService {
         resolution,
     }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${elrondData.timescale.table} {
+            ${elrondData.timescale.tableName} {
              metric(
                series: "${series}"
                key: "${key}"
@@ -343,7 +343,7 @@ export class ElrondDataReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[elrondData.timescale.table]['metric'].map(
+        const data = result.data[elrondData.timescale.tableName]['metric'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,

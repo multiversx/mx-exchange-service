@@ -82,8 +82,5 @@
             "MemoryStoreRetentionPeriodInHours": 768,
             "MagneticStoreRetentionPeriodInDays": 73000
         }
-    },
-    "elrondData": {
-        "indexingStartTimeUtc": "2021-11-15T00:00:00Z"
     }
 }
