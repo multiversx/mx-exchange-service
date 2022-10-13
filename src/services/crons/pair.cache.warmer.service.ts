@@ -10,7 +10,7 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
 import { awsConfig } from 'src/config';
-import { ElrondDataReadService } from '../elrond-communication/elrond-data.read.service';
+import { ElrondDataApiReadService } from '../elrond-communication/elrond-data-api.read.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -22,7 +22,7 @@ export class PairCacheWarmerService {
         private readonly apiService: ElrondApiService,
         private readonly tokenSetter: TokenSetterService,
         private readonly awsQuery: AWSTimestreamQueryService,
-        private readonly elrondDataReadService: ElrondDataReadService,
+        private readonly elrondDataApiReadService: ElrondDataApiReadService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) { }
 
@@ -97,7 +97,7 @@ export class PairCacheWarmerService {
     async cachePairsAnalytics(): Promise<void> {
         const [pairsAddresses, isTimescaleReadActive] = await Promise.all([
             this.routerGetter.getAllPairsAddress(),
-            this.elrondDataReadService.isReadActive(),
+            this.elrondDataApiReadService.isReadActive(),
         ]);
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
@@ -108,7 +108,7 @@ export class PairCacheWarmerService {
                 feesUSD24h,
             ] = await Promise.all([
                 isTimescaleReadActive
-                    ? this.elrondDataReadService.getAggregatedValue({
+                    ? this.elrondDataApiReadService.getAggregatedValue({
                         series: pairAddress,
                         key: 'firstTokenVolume',
                         start: time,
@@ -120,7 +120,7 @@ export class PairCacheWarmerService {
                         time,
                     }),
                 isTimescaleReadActive
-                    ? this.elrondDataReadService.getAggregatedValue({
+                    ? this.elrondDataApiReadService.getAggregatedValue({
                         series: pairAddress,
                         key: 'secondTokenVolume',
                         start: time,
@@ -132,7 +132,7 @@ export class PairCacheWarmerService {
                         time,
                     }),
                 isTimescaleReadActive
-                    ? this.elrondDataReadService.getAggregatedValue({
+                    ? this.elrondDataApiReadService.getAggregatedValue({
                         series: pairAddress,
                         key: 'volumeUSD',
                         start: time,
@@ -144,7 +144,7 @@ export class PairCacheWarmerService {
                         time,
                     }),
                 isTimescaleReadActive
-                    ? this.elrondDataReadService.getAggregatedValue({
+                    ? this.elrondDataApiReadService.getAggregatedValue({
                         series: pairAddress,
                         key: 'feesUSD',
                         start: time,

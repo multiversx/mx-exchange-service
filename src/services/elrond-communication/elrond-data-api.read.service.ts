@@ -95,7 +95,7 @@ export class ElrondDataApiReadService {
         key,
     }): Promise<HistoricDataModel[]> {
         const dateIntervals = splitDateRangeIntoIntervalsUtc(
-            elrondData.timescale.indexingStartTimeUtc,
+            'elrondData.timescale.indexingStartTimeUtc', // TODO
             nowUtc(),
             6 * oneMonth(),
         );
@@ -106,7 +106,7 @@ export class ElrondDataApiReadService {
             const startDate = toUtc(dateIntervals[i]);
             const endDate = toUtc(dateIntervals[i + 1]);
             const query = `query generic_query {
-                ${elrondData.timescale.tableName} {
+                maiar_exchange_analytics {
                   metric(
                     series: "${series}"
                     key: "${key}"
@@ -129,7 +129,7 @@ export class ElrondDataApiReadService {
         let data: HistoricDataModel[] = [];
         for (const result of results) {
             data = data.concat(
-                result.data[elrondData.timescale.tableName]['metric'].map(
+                result.data.maiar_exchange_analytics['metric'].map(
                     (r) =>
                         new HistoricDataModel({
                             timestamp: r.time,
@@ -144,7 +144,7 @@ export class ElrondDataApiReadService {
 
     async getSumCompleteValues({ series, key }): Promise<HistoricDataModel[]> {
         const dateIntervals = splitDateRangeIntoIntervalsUtc(
-            elrondData.timescale.indexingStartTimeUtc,
+            'elrondData.timescale.indexingStartTimeUtc', // TODO
             nowUtc(),
             6 * oneMonth(),
         );
@@ -155,7 +155,7 @@ export class ElrondDataApiReadService {
             const startDate = toUtc(dateIntervals[i]);
             const endDate = toUtc(dateIntervals[i + 1]);
             const query = `query generic_query {
-                ${elrondData.timescale.tableName} {
+                maiar_exchange_analytics {
                   metric(
                     series: "${series}"
                     key: "${key}"
@@ -177,7 +177,7 @@ export class ElrondDataApiReadService {
         let data: HistoricDataModel[] = [];
         for (const result of results) {
             data = data.concat(
-                result.data[elrondData.timescale.tableName]['metric'].map(
+                result.data.maiar_exchange_analytics['metric'].map(
                     (r) =>
                         new HistoricDataModel({
                             timestamp: r.time,
@@ -192,7 +192,7 @@ export class ElrondDataApiReadService {
 
     async getLatestValue({ series, key }): Promise<string> {
         const query = `query generic_query {
-            ${elrondData.timescale.tableName} {
+            maiar_exchange_analytics {
                 metric(
                   series: "${series}"
                   key: "${key}"
@@ -206,12 +206,12 @@ export class ElrondDataApiReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        return result.data[elrondData.timescale.tableName]['metric'][0].last;
+        return result.data.maiar_exchange_analytics['metric'][0].last;
     }
 
     async getValues24h({ series, key }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${elrondData.timescale.tableName} {
+            maiar_exchange_analytics {
              metric(
                series: "${series}"
                key: "${key}"
@@ -225,7 +225,7 @@ export class ElrondDataApiReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[elrondData.timescale.tableName]['metric'].map(
+        const data = result.data.maiar_exchange_analytics['metric'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
@@ -238,7 +238,7 @@ export class ElrondDataApiReadService {
 
     async getValues24hSum({ series, key }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${elrondData.timescale.tableName} {
+            maiar_exchange_analytics {
               metric(
                 series: "${series}"
                 key: "${key}"
@@ -255,7 +255,7 @@ export class ElrondDataApiReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[elrondData.timescale.tableName]['metric'].map(
+        const data = result.data.maiar_exchange_analytics['metric'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
@@ -272,7 +272,7 @@ export class ElrondDataApiReadService {
 
     async getAggregatedValue({ series, key, start }): Promise<string> {
         const query = `query { 
-            ${elrondData.timescale.tableName} { 
+            maiar_exchange_analytics { 
                 metric (series: "${series}" key: "${key}" 
                     query: { 
                         start_date: "${start}", 
@@ -284,7 +284,7 @@ export class ElrondDataApiReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const sum = result.data[elrondData.timescale.tableName].metric[0].sum;
+        const sum = result.data.maiar_exchange_analytics.metric[0].sum;
 
         return sum;
     }
@@ -296,7 +296,7 @@ export class ElrondDataApiReadService {
         endDate,
     }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${elrondData.timescale.tableName} {
+            maiar_exchange_analytics {
              values(
                series: "${series}"
                key: "${key}"
@@ -310,7 +310,7 @@ export class ElrondDataApiReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[elrondData.timescale.tableName]['values'].map(
+        const data = result.data.maiar_exchange_analytics['values'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,
@@ -329,7 +329,7 @@ export class ElrondDataApiReadService {
         resolution,
     }): Promise<HistoricDataModel[]> {
         const query = `query generic_query {
-            ${elrondData.timescale.tableName} {
+            maiar_exchange_analytics {
              metric(
                series: "${series}"
                key: "${key}"
@@ -343,7 +343,7 @@ export class ElrondDataApiReadService {
 
         const result = await this.doPostGeneric('data-api/graphql', { query });
 
-        const data = result.data[elrondData.timescale.tableName]['metric'].map(
+        const data = result.data.maiar_exchange_analytics['metric'].map(
             (r) =>
                 new HistoricDataModel({
                     timestamp: r.time,

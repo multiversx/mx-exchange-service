@@ -14,12 +14,12 @@ import { PUB_SUB } from '../redis.pubSub.module';
 export class AnalyticsQueryCacheWarmerService {
     constructor(
         private readonly awsQuery: AWSTimestreamQueryService,
-        private readonly elrondDataRead: ElrondDataReadService,
+        private readonly elrondDataRead: ElrondDataApiReadService,
         private readonly tokenService: TokenService,
         private readonly routerGetter: RouterGetterService,
         private readonly analyticsSetter: AnalyticsSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    ) {}
+    ) { }
 
     @Cron(CronExpression.EVERY_5_MINUTES)
     async updateHistoricTokensData(): Promise<void> {
@@ -27,72 +27,72 @@ export class AnalyticsQueryCacheWarmerService {
         for (const tokenID of tokens) {
             const priceUSD24h = (await this.elrondDataRead.isReadActive())
                 ? await this.elrondDataRead.getValues24h({
-                      series: tokenID,
-                      key: 'priceUSD',
-                  })
+                    series: tokenID,
+                    key: 'priceUSD',
+                })
                 : await this.awsQuery.getValues24h({
-                      table: awsConfig.timestream.tableName,
-                      series: tokenID,
-                      metric: 'priceUSD',
-                  });
+                    table: awsConfig.timestream.tableName,
+                    series: tokenID,
+                    metric: 'priceUSD',
+                });
             delay(1000);
             const priceUSDCompleteValues =
                 (await this.elrondDataRead.isReadActive())
                     ? await this.elrondDataRead.getLatestCompleteValues({
-                          series: tokenID,
-                          key: 'priceUSD',
-                      })
+                        series: tokenID,
+                        key: 'priceUSD',
+                    })
                     : await this.awsQuery.getLatestCompleteValues({
-                          table: awsConfig.timestream.tableName,
-                          series: tokenID,
-                          metric: 'priceUSD',
-                      });
+                        table: awsConfig.timestream.tableName,
+                        series: tokenID,
+                        metric: 'priceUSD',
+                    });
             delay(1000);
             const lockedValueUSD24h = (await this.elrondDataRead.isReadActive())
                 ? await this.elrondDataRead.getValues24h({
-                      series: tokenID,
-                      key: 'lockedValueUSD',
-                  })
+                    series: tokenID,
+                    key: 'lockedValueUSD',
+                })
                 : await this.awsQuery.getValues24h({
-                      table: awsConfig.timestream.tableName,
-                      series: tokenID,
-                      metric: 'lockedValueUSD',
-                  });
+                    table: awsConfig.timestream.tableName,
+                    series: tokenID,
+                    metric: 'lockedValueUSD',
+                });
             delay(1000);
             const lockedValueUSDCompleteValues =
                 (await this.elrondDataRead.isReadActive())
                     ? await this.elrondDataRead.getLatestCompleteValues({
-                          series: tokenID,
-                          key: 'lockedValueUSD',
-                      })
+                        series: tokenID,
+                        key: 'lockedValueUSD',
+                    })
                     : await this.awsQuery.getLatestCompleteValues({
-                          table: awsConfig.timestream.tableName,
-                          series: tokenID,
-                          metric: 'lockedValueUSD',
-                      });
+                        table: awsConfig.timestream.tableName,
+                        series: tokenID,
+                        metric: 'lockedValueUSD',
+                    });
             delay(1000);
             const volumeUSD24hSum = (await this.elrondDataRead.isReadActive())
                 ? await this.elrondDataRead.getValues24hSum({
-                      series: tokenID,
-                      key: 'volumeUSD',
-                  })
+                    series: tokenID,
+                    key: 'volumeUSD',
+                })
                 : await this.awsQuery.getValues24hSum({
-                      table: awsConfig.timestream.tableName,
-                      series: tokenID,
-                      metric: 'volumeUSD',
-                  });
+                    table: awsConfig.timestream.tableName,
+                    series: tokenID,
+                    metric: 'volumeUSD',
+                });
             delay(1000);
             const volumeUSDCompleteValuesSum =
                 (await this.elrondDataRead.isReadActive())
                     ? await this.elrondDataRead.getSumCompleteValues({
-                          series: tokenID,
-                          key: 'volumeUSD',
-                      })
+                        series: tokenID,
+                        key: 'volumeUSD',
+                    })
                     : await this.awsQuery.getSumCompleteValues({
-                          table: awsConfig.timestream.tableName,
-                          series: tokenID,
-                          metric: 'volumeUSD',
-                      });
+                        table: awsConfig.timestream.tableName,
+                        series: tokenID,
+                        metric: 'volumeUSD',
+                    });
 
             const cachedKeys = await Promise.all([
                 this.analyticsSetter.setValues24h(

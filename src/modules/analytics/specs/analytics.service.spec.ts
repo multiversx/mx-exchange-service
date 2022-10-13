@@ -27,7 +27,6 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { ElrondDataReadServiceProvider } from 'src/services/elrond-communication/elrond-data.read.service.mock';
 import { AWSTimestreamQueryServiceProvider } from 'src/services/aws/mocks/aws.timestream.query.mock';
 
 describe('AnalyticsService', () => {
@@ -99,7 +98,6 @@ describe('AnalyticsService', () => {
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 AWSTimestreamQueryServiceProvider,
-                ElrondDataReadServiceProvider,
                 AnalyticsComputeService,
             ],
         }).compile();

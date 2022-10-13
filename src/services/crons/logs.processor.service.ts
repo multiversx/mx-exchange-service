@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
-import { constantsConfig, elrondData } from 'src/config';
+import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
 import { QueryType } from 'src/helpers/entities/elastic/query.type';
@@ -28,7 +28,7 @@ export class LogsProcessorService {
         private readonly cachingService: CachingService,
         private readonly apiService: ElrondApiService,
         private readonly awsWrite: AWSTimestreamWriteService,
-        private readonly elrondDataWriteService: ElrondDataWriteService,
+        private readonly elrondDataApiWriteService: ElrondDataApiWriteService,
         private readonly elasticService: ElasticService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -222,7 +222,7 @@ export class LogsProcessorService {
                 const [timestreamIngestedCount, timescaleIngested] =
                     await Promise.all([
                         this.pushAWSRecords(Records),
-                        this.elrondDataWriteService.ingest(ingestRecords),
+                        this.elrondDataApiWriteService.ingest(ingestRecords),
                     ]);
 
                 totalAwsWriteRecords += timestreamIngestedCount;
@@ -246,7 +246,7 @@ export class LogsProcessorService {
             const [timestreamIngestedCount, timescaleIngested] =
                 await Promise.all([
                     this.pushAWSRecords(Records),
-                    this.elrondDataWriteService.ingest(ingestRecords),
+                    this.elrondDataApiWriteService.ingest(ingestRecords),
                 ]);
 
             totalAwsWriteRecords += timestreamIngestedCount;

@@ -4,7 +4,7 @@ import { Logger } from 'winston';
 import { RabbitMQFarmHandlerService } from './rabbitmq.farm.handler.service';
 import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
-import { awsConfig, elrondData, scAddress } from 'src/config';
+import { awsConfig, scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
 import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
@@ -44,7 +44,7 @@ import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
-import { ElrondDataWriteService } from 'src/services/elrond-communication/elrond-data.write.service';
+import { ElrondDataApiWriteService } from 'src/services/elrond-communication/elrond-data-api.write.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -62,9 +62,9 @@ export class RabbitMqConsumer {
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
-        private readonly elrondDataWriteService: ElrondDataWriteService,
+        private readonly elrondDataApiWriteService: ElrondDataApiWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     @CompetingRabbitConsumer({
         queueName: process.env.RABBITMQ_QUEUE,
@@ -241,7 +241,7 @@ export class RabbitMqConsumer {
                     data: this.data,
                     Time: timestamp,
                 }),
-                this.elrondDataWriteService.ingestObject({
+                this.elrondDataApiWriteService.ingestObject({
                     data: this.data,
                     timestamp: timestamp,
                 }),
@@ -271,8 +271,8 @@ export class RabbitMqConsumer {
                 ) {
                     this.data[series][measure] = this.data[series][measure]
                         ? new BigNumber(this.data[series][measure])
-                              .plus(eventData[series][measure])
-                              .toFixed()
+                            .plus(eventData[series][measure])
+                            .toFixed()
                         : eventData[series][measure];
                 } else {
                     this.data[series][measure] = eventData[series][measure];

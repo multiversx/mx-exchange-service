@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { awsConfig, constantsConfig, elrondData } from 'src/config';
+import { awsConfig, constantsConfig } from 'src/config';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -203,22 +203,22 @@ export class PairGetterService extends GenericGetterService {
         start: string,
     ): Promise<string> {
         const isTimescaleReadActive =
-            await this.elrondDataReadService.isReadActive();
+            await this.elrondDataApiReadService.isReadActive();
         return this.getData(
             this.getPairCacheKey(pairAddress, `firstTokenVolume.${start}`),
             () => {
                 isTimescaleReadActive
-                    ? this.elrondDataReadService.getAggregatedValue({
-                          series: pairAddress,
-                          key: 'firstTokenVolume',
-                          start,
-                      })
+                    ? this.elrondDataApiReadService.getAggregatedValue({
+                        series: pairAddress,
+                        key: 'firstTokenVolume',
+                        start,
+                    })
                     : this.awsTimestreamQuery.getAggregatedValue({
-                          table: awsConfig.timestream.tableName,
-                          series: pairAddress,
-                          metric: 'firstTokenVolume',
-                          time: start,
-                      });
+                        table: awsConfig.timestream.tableName,
+                        series: pairAddress,
+                        metric: 'firstTokenVolume',
+                        time: start,
+                    });
             },
             oneMinute() * 30,
             oneMinute() * 10,
@@ -230,22 +230,22 @@ export class PairGetterService extends GenericGetterService {
         start: string,
     ): Promise<string> {
         const isTimescaleReadActive =
-            await this.elrondDataReadService.isReadActive();
+            await this.elrondDataApiReadService.isReadActive();
         return this.getData(
             this.getPairCacheKey(pairAddress, `secondTokenVolume.${start}`),
             () => {
                 isTimescaleReadActive
-                    ? this.elrondDataReadService.getAggregatedValue({
-                          series: pairAddress,
-                          key: 'secondTokenVolume',
-                          start,
-                      })
+                    ? this.elrondDataApiReadService.getAggregatedValue({
+                        series: pairAddress,
+                        key: 'secondTokenVolume',
+                        start,
+                    })
                     : this.awsTimestreamQuery.getAggregatedValue({
-                          table: awsConfig.timestream.tableName,
-                          series: pairAddress,
-                          metric: 'secondTokenVolume',
-                          time: start,
-                      });
+                        table: awsConfig.timestream.tableName,
+                        series: pairAddress,
+                        metric: 'secondTokenVolume',
+                        time: start,
+                    });
             },
             oneMinute() * 30,
             oneMinute() * 10,
@@ -254,22 +254,22 @@ export class PairGetterService extends GenericGetterService {
 
     async getVolumeUSD(pairAddress: string, start: string): Promise<string> {
         const isTimescaleReadActive =
-            await this.elrondDataReadService.isReadActive();
+            await this.elrondDataApiReadService.isReadActive();
         return this.getData(
             this.getPairCacheKey(pairAddress, `volumeUSD.${start}`),
             () => {
                 isTimescaleReadActive
-                    ? this.elrondDataReadService.getAggregatedValue({
-                          series: pairAddress,
-                          key: 'volumeUSD',
-                          start,
-                      })
+                    ? this.elrondDataApiReadService.getAggregatedValue({
+                        series: pairAddress,
+                        key: 'volumeUSD',
+                        start,
+                    })
                     : this.awsTimestreamQuery.getAggregatedValue({
-                          table: awsConfig.timestream.tableName,
-                          series: pairAddress,
-                          metric: 'volumeUSD',
-                          time: start,
-                      });
+                        table: awsConfig.timestream.tableName,
+                        series: pairAddress,
+                        metric: 'volumeUSD',
+                        time: start,
+                    });
             },
             oneMinute() * 30,
             oneMinute() * 10,
@@ -278,22 +278,22 @@ export class PairGetterService extends GenericGetterService {
 
     async getFeesUSD(pairAddress: string, start: string): Promise<string> {
         const isTimescaleReadActive =
-            await this.elrondDataReadService.isReadActive();
+            await this.elrondDataApiReadService.isReadActive();
         return this.getData(
             this.getPairCacheKey(pairAddress, `feesUSD.${start}`),
             () => {
                 isTimescaleReadActive
-                    ? this.elrondDataReadService.getAggregatedValue({
-                          series: pairAddress,
-                          key: 'feesUSD',
-                          start,
-                      })
+                    ? this.elrondDataApiReadService.getAggregatedValue({
+                        series: pairAddress,
+                        key: 'feesUSD',
+                        start,
+                    })
                     : this.awsTimestreamQuery.getAggregatedValue({
-                          table: awsConfig.timestream.tableName,
-                          series: pairAddress,
-                          metric: 'feesUSD',
-                          time: start,
-                      });
+                        table: awsConfig.timestream.tableName,
+                        series: pairAddress,
+                        metric: 'feesUSD',
+                        time: start,
+                    });
             },
             oneMinute() * 30,
             oneMinute() * 10,

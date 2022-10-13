@@ -76,7 +76,7 @@ export class ElrondDataApiWriteService {
             return;
         }
 
-        const query = `mutation { ingestData( table: maiar_exchange_analytics, input: [ ${records.map((r) => {
+        const query = `mutation { ingestData( table: MAIAR_EXCHANGE_ANALYTICS, input: [ ${records.map((r) => {
             return `{ timestamp: ${r.timestamp}, series: "${r.series}", key: "${r.key}", value: "${r.value}" }`;
         })} ] ) }`;
 

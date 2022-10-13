@@ -21,8 +21,8 @@ export class AnalyticsComputeService {
         private readonly farmComputeService: FarmComputeService,
         private readonly pairGetterService: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-        private readonly elrondDataReadService: ElrondDataReadService,
-    ) {}
+        private readonly elrondDataApiReadService: ElrondDataApiReadService,
+    ) { }
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
@@ -110,18 +110,18 @@ export class AnalyticsComputeService {
         start: string,
         key: string,
     ): Promise<string> {
-        return (await this.elrondDataReadService.isReadActive())
-            ? await this.elrondDataReadService.getAggregatedValue({
-                  series: tokenID,
-                  key,
-                  start,
-              })
+        return (await this.elrondDataApiReadService.isReadActive())
+            ? await this.elrondDataApiReadService.getAggregatedValue({
+                series: tokenID,
+                key,
+                start,
+            })
             : await this.awsTimestreamQuery.getAggregatedValue({
-                  table: awsConfig.timestream.tableName,
-                  series: tokenID,
-                  metric: key,
-                  time: start,
-              });
+                table: awsConfig.timestream.tableName,
+                series: tokenID,
+                metric: key,
+                time: start,
+            });
     }
 
     private async fiterPairsByIssuedLpToken(
