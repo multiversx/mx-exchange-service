@@ -10,7 +10,10 @@
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
-        "simpleLockAddress": ["erd1qqqqqqqqqqqqqpgqvcw9cxy5xlssc4em9l97pvhnvgtn5z6l0n4sc9glts"],
+        "simpleLockAddress": [
+            "erd1qqqqqqqqqqqqqpgqvcw9cxy5xlssc4em9l97pvhnvgtn5z6l0n4sc9glts",
+            "erd1qqqqqqqqqqqqqpgqxsyrdj38fclflak2mwtqdknqzqhuxy4s0n4sc3e0jy"
+        ],
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh",
