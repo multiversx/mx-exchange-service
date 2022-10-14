@@ -13,9 +13,10 @@ export class MetabondingCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
     async cacheMetabonding(): Promise<void> {
-        const lockedAssetTokenID = await this.metabondingAbi.getLockedAssetTokenID();
+        const lockedAssetTokenID =
+            await this.metabondingAbi.getLockedAssetTokenID();
         const invalidatedKeys = await Promise.all([
             this.metabondingSetter.setLockedAssetTokenID(lockedAssetTokenID),
         ]);
@@ -24,7 +25,8 @@ export class MetabondingCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheMetabondingInfo(): Promise<void> {
-        const lockedAssetsSupply = await this.metabondingAbi.getTotalLockedAssetSupply();
+        const lockedAssetsSupply =
+            await this.metabondingAbi.getTotalLockedAssetSupply();
         const invalidatedKeys = await Promise.all([
             this.metabondingSetter.setTotalLockedAssetSupply(
                 lockedAssetsSupply,

@@ -2,17 +2,18 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { awsConfig, constantsConfig } from 'src/config';
-import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneHour } from 'src/helpers/helpers';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
+import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondDataApiQueryService } from 'src/services/data-api/elrond.data-api.query';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
 import { FeeDestination, LockedTokensInfo } from '../models/pair.model';
@@ -35,29 +36,33 @@ export class PairGetterService extends GenericGetterService {
         private readonly elrondDataApiQuery: ElrondDataApiQueryService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'pair';
     }
 
     async getFirstTokenID(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'firstTokenID'),
+            this.getCacheKey(pairAddress, 'firstTokenID'),
             () => this.abiService.getFirstTokenID(pairAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getSecondTokenID(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'secondTokenID'),
+            this.getCacheKey(pairAddress, 'secondTokenID'),
             () => this.abiService.getSecondTokenID(pairAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getLpTokenID(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'lpTokenID'),
+            this.getCacheKey(pairAddress, 'lpTokenID'),
             () => this.abiService.getLpTokenID(pairAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -94,107 +99,119 @@ export class PairGetterService extends GenericGetterService {
 
     async getFirstTokenPrice(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'firstTokenPrice'),
+            this.getCacheKey(pairAddress, 'firstTokenPrice'),
             () => this.pairComputeService.computeFirstTokenPrice(pairAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
     async getSecondTokenPrice(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'secondTokenPrice'),
+            this.getCacheKey(pairAddress, 'secondTokenPrice'),
             () => this.pairComputeService.computeSecondTokenPrice(pairAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
     async getTokenPriceUSD(tokenID: string): Promise<string> {
         return await this.getData(
-            this.getPairCacheKey('priceUSD', tokenID),
+            this.getCacheKey('priceUSD', tokenID),
             () => this.tokenCompute.computeTokenPriceDerivedUSD(tokenID),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
     async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'firstTokenPriceUSD'),
+            this.getCacheKey(pairAddress, 'firstTokenPriceUSD'),
             () =>
                 this.pairComputeService.computeFirstTokenPriceUSD(pairAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
     async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'secondTokenPriceUSD'),
+            this.getCacheKey(pairAddress, 'secondTokenPriceUSD'),
             () =>
                 this.pairComputeService.computeSecondTokenPriceUSD(pairAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
     async getLpTokenPriceUSD(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'lpTokenPriceUSD'),
+            this.getCacheKey(pairAddress, 'lpTokenPriceUSD'),
             () => this.pairComputeService.computeLpTokenPriceUSD(pairAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
     async getFirstTokenReserve(pairAddress: string): Promise<string> {
         const tokenID = await this.getFirstTokenID(pairAddress);
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'firstTokenReserve'),
+            this.getCacheKey(pairAddress, 'firstTokenReserve'),
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
     async getSecondTokenReserve(pairAddress: string): Promise<string> {
         const tokenID = await this.getSecondTokenID(pairAddress);
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'secondTokenReserve'),
+            this.getCacheKey(pairAddress, 'secondTokenReserve'),
             () => this.abiService.getTokenReserve(pairAddress, tokenID),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
     async getTotalSupply(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'totalSupply'),
+            this.getCacheKey(pairAddress, 'totalSupply'),
             () => this.abiService.getTotalSupply(pairAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
     async getFirstTokenLockedValueUSD(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'firstTokenLockedValueUSD'),
+            this.getCacheKey(pairAddress, 'firstTokenLockedValueUSD'),
             () =>
                 this.pairComputeService.computeFirstTokenLockedValueUSD(
                     pairAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getSecondTokenLockedValueUSD(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'secondTokenLockedValueUSD'),
+            this.getCacheKey(pairAddress, 'secondTokenLockedValueUSD'),
             () =>
                 this.pairComputeService.computeSecondTokenLockedValueUSD(
                     pairAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getLockedValueUSD(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'lockedValueUSD'),
+            this.getCacheKey(pairAddress, 'lockedValueUSD'),
             () => this.pairComputeService.computeLockedValueUSD(pairAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -205,7 +222,7 @@ export class PairGetterService extends GenericGetterService {
         const isTimescaleReadActive =
             await this.elrondDataApiQuery.isReadActive();
         return this.getData(
-            this.getPairCacheKey(pairAddress, `firstTokenVolume.${start}`),
+            this.getCacheKey(pairAddress, `firstTokenVolume.${time}`),
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataApiQuery.getAggregatedValue({
@@ -220,8 +237,8 @@ export class PairGetterService extends GenericGetterService {
                         time: start,
                     });
             },
-            oneMinute() * 30,
-            oneMinute() * 10,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
@@ -232,7 +249,7 @@ export class PairGetterService extends GenericGetterService {
         const isTimescaleReadActive =
             await this.elrondDataApiQuery.isReadActive();
         return this.getData(
-            this.getPairCacheKey(pairAddress, `secondTokenVolume.${start}`),
+            this.getCacheKey(pairAddress, `secondTokenVolume.${time}`),
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataApiQuery.getAggregatedValue({
@@ -247,8 +264,8 @@ export class PairGetterService extends GenericGetterService {
                         time: start,
                     });
             },
-            oneMinute() * 30,
-            oneMinute() * 10,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
@@ -256,7 +273,7 @@ export class PairGetterService extends GenericGetterService {
         const isTimescaleReadActive =
             await this.elrondDataApiQuery.isReadActive();
         return this.getData(
-            this.getPairCacheKey(pairAddress, `volumeUSD.${start}`),
+            this.getCacheKey(pairAddress, `volumeUSD.${time}`),
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataApiQuery.getAggregatedValue({
@@ -271,8 +288,8 @@ export class PairGetterService extends GenericGetterService {
                         time: start,
                     });
             },
-            oneMinute() * 30,
-            oneMinute() * 10,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
@@ -280,7 +297,7 @@ export class PairGetterService extends GenericGetterService {
         const isTimescaleReadActive =
             await this.elrondDataApiQuery.isReadActive();
         return this.getData(
-            this.getPairCacheKey(pairAddress, `feesUSD.${start}`),
+            this.getCacheKey(pairAddress, `feesUSD.${time}`),
             () => {
                 isTimescaleReadActive
                     ? this.elrondDataApiQuery.getAggregatedValue({
@@ -295,16 +312,17 @@ export class PairGetterService extends GenericGetterService {
                         time: start,
                     });
             },
-            oneMinute() * 30,
-            oneMinute() * 10,
+            CacheTtlInfo.Analytics.remoteTtl,
+            CacheTtlInfo.Analytics.localTtl,
         );
     }
 
     async getFeesAPR(pairAddress: string): Promise<string> {
         return this.getData(
-            this.getPairCacheKey(pairAddress, 'feesAPR'),
+            this.getCacheKey(pairAddress, 'feesAPR'),
             () => this.pairComputeService.computeFeesAPR(pairAddress),
-            oneMinute() * 5,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -325,9 +343,10 @@ export class PairGetterService extends GenericGetterService {
 
     async getTotalFeePercent(pairAddress: string): Promise<number> {
         const totalFeePercent = await this.getData(
-            this.getPairCacheKey(pairAddress, 'totalFeePercent'),
+            this.getCacheKey(pairAddress, 'totalFeePercent'),
             () => this.abiService.getTotalFeePercent(pairAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
         return new BigNumber(totalFeePercent)
             .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
@@ -336,9 +355,10 @@ export class PairGetterService extends GenericGetterService {
 
     async getSpecialFeePercent(pairAddress: string): Promise<number> {
         const specialFeePercent = await this.getData(
-            this.getPairCacheKey(pairAddress, 'specialFeePercent'),
+            this.getCacheKey(pairAddress, 'specialFeePercent'),
             () => this.abiService.getSpecialFeePercent(pairAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
         return new BigNumber(specialFeePercent)
             .dividedBy(constantsConfig.SWAP_FEE_PERCENT_BASE_POINTS)
@@ -347,15 +367,16 @@ export class PairGetterService extends GenericGetterService {
 
     async getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'trustedSwapPairs'),
+            this.getCacheKey(pairAddress, 'trustedSwapPairs'),
             () => this.abiService.getTrustedSwapPairs(pairAddress),
-            oneSecond(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'initialLiquidtyAdder'),
+            this.getCacheKey(pairAddress, 'initialLiquidtyAdder'),
             () => this.abiService.getInitialLiquidityAdder(pairAddress),
             oneHour(),
         );
@@ -363,32 +384,35 @@ export class PairGetterService extends GenericGetterService {
 
     async getState(pairAddress: string): Promise<string> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'state'),
+            this.getCacheKey(pairAddress, 'state'),
             () => this.abiService.getState(pairAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getFeeState(pairAddress: string): Promise<boolean> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'feeState'),
+            this.getCacheKey(pairAddress, 'feeState'),
             () => this.abiService.getFeeState(pairAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getType(pairAddress: string): Promise<string> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'type'),
+            this.getCacheKey(pairAddress, 'type'),
             () => this.pairComputeService.computeTypeFromTokens(pairAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getLockingScAddress(
         pairAddress: string,
     ): Promise<string | undefined> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'lockingScAddress');
+        const cacheKey = this.getCacheKey(pairAddress, 'lockingScAddress');
         const cachedValue: string = await this.cachingService.getCache(
             cacheKey,
         );
@@ -403,12 +427,17 @@ export class PairGetterService extends GenericGetterService {
             await this.cachingService.setCache(cacheKey, value, oneHour());
             return value;
         }
-        await this.cachingService.setCache(cacheKey, '', oneMinute() * 10);
+        await this.cachingService.setCache(
+            cacheKey,
+            '',
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
         return undefined;
     }
 
     async getUnlockEpoch(pairAddress: string): Promise<number | undefined> {
-        const cacheKey = this.getPairCacheKey(pairAddress, 'unlockEpoch');
+        const cacheKey = this.getCacheKey(pairAddress, 'unlockEpoch');
         const cachedValue: number = await this.cachingService.getCache(
             cacheKey,
         );
@@ -423,14 +452,19 @@ export class PairGetterService extends GenericGetterService {
             await this.cachingService.setCache(cacheKey, value, oneHour());
             return value;
         }
-        await this.cachingService.setCache(cacheKey, -1, oneMinute() * 10);
+        await this.cachingService.setCache(
+            cacheKey,
+            -1,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
         return undefined;
     }
 
     async getLockingDeadlineEpoch(
         pairAddress: string,
     ): Promise<number | undefined> {
-        const cacheKey = this.getPairCacheKey(
+        const cacheKey = this.getCacheKey(
             pairAddress,
             'lockingDeadlineEpoch',
         );
@@ -450,7 +484,12 @@ export class PairGetterService extends GenericGetterService {
             await this.cachingService.setCache(cacheKey, value, oneHour());
             return value;
         }
-        await this.cachingService.setCache(cacheKey, -1, oneMinute() * 10);
+        await this.cachingService.setCache(
+            cacheKey,
+            -1,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
         return undefined;
     }
 
@@ -480,7 +519,7 @@ export class PairGetterService extends GenericGetterService {
         }
 
         return new LockedTokensInfo({
-            lockingScAddress,
+            lockingSC: new SimpleLockModel({ address: lockingScAddress }),
             unlockEpoch,
             lockingDeadlineEpoch,
         });
@@ -488,7 +527,7 @@ export class PairGetterService extends GenericGetterService {
 
     async getFeeDestinations(pairAddress: string): Promise<FeeDestination[]> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'feeDestinations'),
+            this.getCacheKey(pairAddress, 'feeDestinations'),
             () => this.abiService.getFeeDestinations(pairAddress),
             oneHour(),
         );
@@ -498,7 +537,7 @@ export class PairGetterService extends GenericGetterService {
         pairAddress: string,
     ): Promise<string[]> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'whitelistedManagedAddresses'),
+            this.getCacheKey(pairAddress, 'whitelistedManagedAddresses'),
             () => this.abiService.getWhitelistedManagedAddresses(pairAddress),
             oneHour(),
         );
@@ -506,7 +545,7 @@ export class PairGetterService extends GenericGetterService {
 
     async getRouterManagedAddress(address: string): Promise<string> {
         return await this.getData(
-            this.getPairCacheKey(address, 'routerManagedAddress'),
+            this.getCacheKey(address, 'routerManagedAddress'),
             () => this.abiService.getRouterManagedAddress(address),
             oneHour(),
         );
@@ -514,7 +553,7 @@ export class PairGetterService extends GenericGetterService {
 
     async getRouterOwnerManagedAddress(address: string): Promise<string> {
         return await this.getData(
-            this.getPairCacheKey(address, 'routerOwnerManagedAddress'),
+            this.getCacheKey(address, 'routerOwnerManagedAddress'),
             () => this.abiService.getRouterOwnerManagedAddress(address),
             oneHour(),
         );
@@ -522,7 +561,7 @@ export class PairGetterService extends GenericGetterService {
 
     async getExternSwapGasLimit(pairAddress: string): Promise<number> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'externSwapGasLimit'),
+            this.getCacheKey(pairAddress, 'externSwapGasLimit'),
             () => this.abiService.getExternSwapGasLimit(pairAddress),
             oneHour(),
         );
@@ -530,7 +569,7 @@ export class PairGetterService extends GenericGetterService {
 
     async getTransferExecGasLimit(pairAddress: string): Promise<number> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'transferExecGasLimit'),
+            this.getCacheKey(pairAddress, 'transferExecGasLimit'),
             () => this.abiService.getTransferExecGasLimit(pairAddress),
             oneHour(),
         );
@@ -541,13 +580,14 @@ export class PairGetterService extends GenericGetterService {
         esdtTokenPayment: EsdtTokenPayment,
     ): Promise<EsdtTokenPayment> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'safePrice'),
+            this.getCacheKey(pairAddress, 'safePrice'),
             () =>
                 this.abiService.updateAndGetSafePrice(
                     pairAddress,
                     esdtTokenPayment,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -556,9 +596,10 @@ export class PairGetterService extends GenericGetterService {
         address: string,
     ): Promise<number> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'numSwapsByAddress', address),
+            this.getCacheKey(pairAddress, 'numSwapsByAddress', address),
             () => this.abiService.getNumSwapsByAddress(pairAddress, address),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -567,13 +608,10 @@ export class PairGetterService extends GenericGetterService {
         address: string,
     ): Promise<string> {
         return await this.getData(
-            this.getPairCacheKey(pairAddress, 'numAddsByAddress', address),
+            this.getCacheKey(pairAddress, 'numAddsByAddress', address),
             () => this.abiService.getNumAddsByAddress(pairAddress, address),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
-    }
-
-    private getPairCacheKey(pairAddress: string, ...args: any) {
-        return generateCacheKeyFromParams('pair', pairAddress, ...args);
     }
 }

@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
 
 @ObjectType()
 export class EnableSwapByUserConfig {
@@ -43,6 +43,16 @@ export class FactoryModel {
     commonTokensForUserPairs: string[];
     @Field(() => EnableSwapByUserConfig)
     enableSwapByUserConfig: EnableSwapByUserConfig;
+    @Field()
+    defaultSlippage: number;
+    @Field(() => [Float])
+    slippageValues: number[];
+    @Field()
+    minSlippage: number;
+    @Field()
+    maxSlippage: number;
+    @Field()
+    minSwapAmount: number;
     @Field()
     lastErrorMessage: string;
 

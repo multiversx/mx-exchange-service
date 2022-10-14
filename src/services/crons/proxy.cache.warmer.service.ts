@@ -11,6 +11,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { oneHour } from '../../helpers/helpers';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
+import { CacheTtlInfo } from '../caching/cache.ttl.info';
 
 @Injectable()
 export class ProxyCacheWarmerService {
@@ -26,7 +27,7 @@ export class ProxyCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
     async cacheProxy(): Promise<void> {
         const [
             assetTokenID,
@@ -44,36 +45,35 @@ export class ProxyCacheWarmerService {
             this.abiProxyFarmService.getIntermediatedFarmsAddress(),
         ]);
 
-        const [
-            assetToken,
-            lockedAssetToken,
-            wrappedLpToken,
-            wrappedFarmToken,
-        ] = await Promise.all([
-            this.apiService.getToken(assetTokenID),
-            this.apiService.getNftCollection(lockedAssetTokenID),
-            this.apiService.getNftCollection(wrappedLpTokenID),
-            this.apiService.getNftCollection(wrappedFarmTokenID),
-        ]);
+        const [assetToken, lockedAssetToken, wrappedLpToken, wrappedFarmToken] =
+            await Promise.all([
+                this.apiService.getToken(assetTokenID),
+                this.apiService.getNftCollection(lockedAssetTokenID),
+                this.apiService.getNftCollection(wrappedLpTokenID),
+                this.apiService.getNftCollection(wrappedFarmTokenID),
+            ]);
 
         await Promise.all([
             this.setProxyCache(
                 'proxy',
                 'assetTokenID',
                 assetTokenID,
-                oneHour(),
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
             ),
             this.setProxyCache(
                 'proxy',
                 'lockedAssetTokenID',
                 lockedAssetTokenID,
-                oneHour(),
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
             ),
             this.setProxyCache(
                 'proxyPair',
                 'wrappedLpTokenID',
                 wrappedLpTokenID,
-                oneHour(),
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
             ),
             this.setProxyCache(
                 'proxyPair',
@@ -85,7 +85,8 @@ export class ProxyCacheWarmerService {
                 'proxyFarm',
                 'wrappedFarmTokenID',
                 wrappedFarmTokenID,
-                oneHour(),
+                CacheTtlInfo.Token.remoteTtl,
+                CacheTtlInfo.Token.localTtl,
             ),
             this.setProxyCache(
                 'proxyFarm',
@@ -114,10 +115,16 @@ export class ProxyCacheWarmerService {
         proxy: string,
         key: string,
         value: any,
-        ttl: number = cacheConfig.default,
+        remoteTtl: number = cacheConfig.default,
+        localTtl?: number,
     ) {
         const cacheKey = generateCacheKeyFromParams(proxy, key);
-        await this.cachingService.setCache(cacheKey, value, ttl);
+        await this.cachingService.setCache(
+            cacheKey,
+            value,
+            remoteTtl,
+            localTtl,
+        );
         this.invalidatedKeys.push(cacheKey);
     }
 

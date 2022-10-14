@@ -37,6 +37,7 @@ import {
         SCAddressRepositoryService,
         AnalyticsReindexRepositoryService,
         RemoteConfigGetterService,
+        RemoteConfigGetterService,
         RemoteConfigSetterService,
         ApiConfigService,
     ],

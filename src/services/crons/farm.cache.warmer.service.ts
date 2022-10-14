@@ -22,19 +22,16 @@ export class FarmCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
-    async cacheFarms(): Promise<void> {
+    @Cron(CronExpression.EVERY_HOUR)
+    async cacheFarmsTokens(): Promise<void> {
         const farmsAddress: string[] = farmsAddresses();
-        const promises = farmsAddress.map(async farmAddress => {
-            const [
-                farmTokenID,
-                farmingTokenID,
-                farmedTokenID,
-            ] = await Promise.all([
-                this.abiFarmService.getFarmTokenID(farmAddress),
-                this.abiFarmService.getFarmingTokenID(farmAddress),
-                this.abiFarmService.getFarmedTokenID(farmAddress),
-            ]);
+        const promises = farmsAddress.map(async (farmAddress) => {
+            const [farmTokenID, farmingTokenID, farmedTokenID] =
+                await Promise.all([
+                    this.abiFarmService.getFarmTokenID(farmAddress),
+                    this.abiFarmService.getFarmingTokenID(farmAddress),
+                    this.abiFarmService.getFarmedTokenID(farmAddress),
+                ]);
 
             const [farmToken, farmingToken, farmedToken] = await Promise.all([
                 this.apiService.getNftCollection(farmTokenID),
