@@ -216,7 +216,7 @@ export class FarmService {
     }
 
     async requireOwner(farmAddress: string, sender: string) {
-        if ((await this.farmGetter.getOwnerAddress(farmAddress)) !== sender)
-            throw new Error('You are not the owner.');
+        const owner = await this.farmGetter.getOwnerAddress(farmAddress);
+        if (owner !== sender) throw new Error('You are not the owner.');
     }
 }
