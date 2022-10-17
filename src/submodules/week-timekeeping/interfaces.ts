@@ -10,3 +10,9 @@ export interface IWeekTimekeepingGetterService {
     getStartEpochForWeek(scAddress: string, week: number): Promise<number>;
     getEndEpochForWeek(scAddress: string, week: number): Promise<number>;
 }
+
+export interface IWeekTimekeepingComputeService {
+    computeWeekForEpoch(scAddress: string, epoch: number): Promise<number>;
+    computeStartEpochForWeek(scAddress: string, week: number): Promise<number>;
+    computeEndEpochForWeek(scAddress: string, week: number): Promise<number>;
+}
