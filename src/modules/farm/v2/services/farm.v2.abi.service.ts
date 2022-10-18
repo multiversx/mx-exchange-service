@@ -18,7 +18,7 @@ import { CalculateRewardsArgs } from '../../models/farm.args';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
 
 @Injectable()
-export class FarmV2AbiService extends AbiFarmService {
+export class FarmAbiServiceV2 extends AbiFarmService {
     async getBoostedYieldsRewardsPercenatage(
         farmAddress: string,
     ): Promise<number> {
@@ -58,7 +58,7 @@ export class FarmV2AbiService extends AbiFarmService {
         args: CalculateRewardsArgs,
     ): Promise<BigNumber> {
         console.log({
-            service: FarmV2AbiService.name,
+            service: FarmAbiServiceV2.name,
             method: this.calculateRewardsForGivenPosition.name,
         });
         const contract = await this.elrondProxy.getFarmSmartContract(

@@ -7,14 +7,14 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import { Logger } from 'winston';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
 import { FarmGetterService } from '../../base-module/services/farm.getter.service';
-import { FarmV2AbiService } from './farm.v2.abi.service';
+import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 
 @Injectable()
-export class FarmV2GetterService extends FarmGetterService {
+export class FarmGetterServiceV2 extends FarmGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly abiService: FarmV2AbiService,
+        protected readonly abiService: FarmAbiServiceV2,
         @Inject(forwardRef(() => FarmComputeService))
         protected readonly computeService: FarmComputeService,
         protected readonly tokenGetter: TokenGetterService,

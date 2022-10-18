@@ -11,13 +11,13 @@ import {
 import { ExitFarmTokensModel, RewardsModel } from './models/farm.model';
 import { FarmsUnion } from './models/farm.union';
 import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
-import { FarmV2Service } from './v2/services/farm.v2.service';
+import { FarmServiceV2 } from './v2/services/farm.v2.service';
 
 @Resolver()
 export class FarmQueryResolver extends GenericResolver {
     constructor(
         private readonly farmService: FarmService,
-        private readonly farmV2Service: FarmV2Service,
+        private readonly farmV2Service: FarmServiceV2,
     ) {
         super();
     }
@@ -63,7 +63,7 @@ export class FarmQueryResolver extends GenericResolver {
         );
     }
 
-    private getService(farmAddress: string): FarmService | FarmV2Service {
+    private getService(farmAddress: string): FarmService | FarmServiceV2 {
         const version = farmVersion(farmAddress);
         switch (version) {
             default:

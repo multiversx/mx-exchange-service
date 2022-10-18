@@ -5,15 +5,15 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { Logger } from 'winston';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
 import { FarmService } from '../../base-module/services/farm.service';
-import { FarmV2AbiService } from './farm.v2.abi.service';
-import { FarmV2GetterService } from './farm.v2.getter.service';
+import { FarmAbiServiceV2 } from './farm.v2.abi.service';
+import { FarmGetterServiceV2 } from './farm.v2.getter.service';
 
 @Injectable()
-export class FarmV2Service extends FarmService {
+export class FarmServiceV2 extends FarmService {
     constructor(
-        protected readonly abiService: FarmV2AbiService,
-        @Inject(forwardRef(() => FarmV2GetterService))
-        protected readonly farmGetter: FarmV2GetterService,
+        protected readonly abiService: FarmAbiServiceV2,
+        @Inject(forwardRef(() => FarmGetterServiceV2))
+        protected readonly farmGetter: FarmGetterServiceV2,
         protected readonly farmCompute: FarmComputeService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
