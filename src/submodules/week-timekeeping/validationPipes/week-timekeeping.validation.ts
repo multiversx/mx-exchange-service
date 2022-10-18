@@ -11,7 +11,7 @@ export abstract class AbstractWeekValidation implements PipeTransform {
         private readonly weekTimekeepingService: WeekTimekeepingService,
     ) {
     }
-    async transform(weekFilter: WeekFilterPeriodModel, metadata: ArgumentMetadata): Promise<WeekFilterPeriodModel> {
+    async transform(weekFilter: WeekFilterPeriodModel | undefined, metadata: ArgumentMetadata): Promise<WeekFilterPeriodModel> {
         const time = await this.weekTimekeepingService.getWeeklyTimekeeping(this.address);
         this.setIfUndefined(weekFilter, time.currentWeek);
 
@@ -35,8 +35,14 @@ export abstract class AbstractWeekValidation implements PipeTransform {
     }
 
     private setIfUndefined(
-        weekFilter: WeekFilterPeriodModel,
-        currentWeek: number): WeekFilterPeriodModel{
+        weekFilter: WeekFilterPeriodModel | undefined,
+        currentWeek: number): WeekFilterPeriodModel {
+        if (weekFilter === undefined) {
+            return new WeekFilterPeriodModel({
+                start: 1,
+                end: currentWeek
+            })
+        }
         if (weekFilter.start === undefined) {
             return new WeekFilterPeriodModel({
                 start: 1,
