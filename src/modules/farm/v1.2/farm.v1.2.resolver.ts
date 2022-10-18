@@ -5,7 +5,7 @@ import { FarmModelV1_2 } from '../models/farm.v1.2.model';
 import { FarmV12GetterService } from './services/farm.v1.2.getter.service';
 
 @Resolver(() => FarmModelV1_2)
-export class FarmV12Resolver extends FarmResolver {
+export class FarmResolverV1_2 extends FarmResolver {
     constructor(protected readonly farmGetter: FarmV12GetterService) {
         super(farmGetter);
     }

@@ -5,11 +5,11 @@ import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
 import { FarmBaseModule } from '../base-module/farm.base.module';
-import { FarmV12AbiService } from './services/farm.v1.2.abi.service';
-import { FarmV12ComputeService } from './services/farm.v1.2.compute.service';
+import { FarmAbiServiceV1_2 } from './services/farm.v1.2.abi.service';
+import { FarmComputeServiceV1_2 } from './services/farm.v1.2.compute.service';
 import { FarmV12GetterService } from './services/farm.v1.2.getter.service';
-import { FarmV12Resolver } from './farm.v1.2.resolver';
-import { FarmV12TransactionService } from './services/farm.v1.2.transaction.service';
+import { FarmResolverV1_2 } from './farm.v1.2.resolver';
+import { FarmTransactionServiceV1_2 } from './services/farm.v1.2.transaction.service';
 
 @Module({
     imports: [
@@ -21,16 +21,16 @@ import { FarmV12TransactionService } from './services/farm.v1.2.transaction.serv
         PairModule,
     ],
     providers: [
-        FarmV12AbiService,
+        FarmAbiServiceV1_2,
         FarmV12GetterService,
-        FarmV12ComputeService,
-        FarmV12TransactionService,
-        FarmV12Resolver,
+        FarmComputeServiceV1_2,
+        FarmTransactionServiceV1_2,
+        FarmResolverV1_2,
     ],
     exports: [
-        FarmV12AbiService,
-        FarmV12ComputeService,
-        FarmV12TransactionService,
+        FarmAbiServiceV1_2,
+        FarmComputeServiceV1_2,
+        FarmTransactionServiceV1_2,
     ],
 })
-export class FarmV12Module {}
+export class FarmModuleV1_2 {}

@@ -7,17 +7,17 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import { Logger } from 'winston';
 import { FarmMigrationConfig } from '../../models/farm.model';
 import { FarmGetterService } from '../../base-module/services/farm.getter.service';
-import { FarmV12AbiService } from './farm.v1.2.abi.service';
-import { FarmV12ComputeService } from './farm.v1.2.compute.service';
+import { FarmAbiServiceV1_2 } from './farm.v1.2.abi.service';
+import { FarmComputeServiceV1_2 } from './farm.v1.2.compute.service';
 
 @Injectable()
 export class FarmV12GetterService extends FarmGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly abiService: FarmV12AbiService,
-        @Inject(forwardRef(() => FarmV12ComputeService))
-        protected readonly computeService: FarmV12ComputeService,
+        protected readonly abiService: FarmAbiServiceV1_2,
+        @Inject(forwardRef(() => FarmComputeServiceV1_2))
+        protected readonly computeService: FarmComputeServiceV1_2,
         protected readonly tokenGetter: TokenGetterService,
         protected readonly apiService: ElrondApiService,
     ) {

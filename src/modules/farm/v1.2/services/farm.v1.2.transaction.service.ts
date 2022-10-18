@@ -19,7 +19,7 @@ import { FarmGetterService } from '../../base-module/services/farm.getter.servic
 import { TransactionsFarmService } from '../../base-module/services/farm.transaction.service';
 
 @Injectable()
-export class FarmV12TransactionService extends TransactionsFarmService {
+export class FarmTransactionServiceV1_2 extends TransactionsFarmService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         protected readonly farmGetterService: FarmGetterService,

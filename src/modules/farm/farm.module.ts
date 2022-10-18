@@ -8,7 +8,7 @@ import { TokenModule } from '../tokens/token.module';
 import { FarmQueryResolver } from './farm.query.resolver';
 import { FarmTransactionResolver } from './farm.transaction.resolver';
 import { FarmBaseModule } from './base-module/farm.base.module';
-import { FarmV12Module } from './v1.2/farm.v1.2.module';
+import { FarmModuleV1_2 } from './v1.2/farm.v1.2.module';
 import { FarmV2Module } from './v2/farm.v2.module';
 import { FarmCustomModule } from './custom/farm.custom.module';
 import { FarmV13Module } from './v1.3/farm.v1.3.module';
@@ -23,7 +23,7 @@ import { FarmV13Module } from './v1.3/farm.v1.3.module';
         TokenModule,
         FarmBaseModule,
         FarmCustomModule,
-        FarmV12Module,
+        FarmModuleV1_2,
         FarmV13Module,
         FarmV2Module,
         FarmCustomModule,

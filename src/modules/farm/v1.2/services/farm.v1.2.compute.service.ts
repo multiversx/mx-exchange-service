@@ -13,7 +13,7 @@ import { FarmComputeService } from '../../base-module/services/farm.compute.serv
 import { FarmV12GetterService } from './farm.v1.2.getter.service';
 
 @Injectable()
-export class FarmV12ComputeService extends FarmComputeService {
+export class FarmComputeServiceV1_2 extends FarmComputeService {
     constructor(
         @Inject(forwardRef(() => FarmV12GetterService))
         protected readonly farmGetter: FarmV12GetterService,

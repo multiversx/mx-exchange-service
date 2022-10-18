@@ -4,7 +4,7 @@ import { FarmMigrationConfig } from '../../models/farm.model';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
 
 @Injectable()
-export class FarmV12AbiService extends AbiFarmService {
+export class FarmAbiServiceV1_2 extends AbiFarmService {
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
