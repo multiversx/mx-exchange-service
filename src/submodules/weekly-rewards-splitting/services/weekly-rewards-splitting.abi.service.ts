@@ -5,6 +5,7 @@ import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { ErrorGetContractHandlerNotSet } from '../../../utils/errors.constants';
+import { Energy, EnergyType } from "@elrondnetwork/erdjs-dex";
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
@@ -17,7 +18,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         return response.firstValue.valueOf();
     }
 
-    async userEnergyForWeek(scAddress: string, user: string, week: number): Promise<string> {
+    async userEnergyForWeek(scAddress: string, user: string, week: number): Promise<EnergyType> {
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction = contract.methodsExplicit.getUserEnergyForWeek(
             [
@@ -26,7 +27,8 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             ],
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toFixed();
+        const rawEnergy = response.firstValue.valueOf();
+        return Energy.fromDecodedAttributes(rawEnergy).toJSON();
     }
 
     async lastActiveWeekForUser(scAddress: string, user: string): Promise<number> {

@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import {
-    GlobalInfoByWeekModel, UserInfoByWeekModel,
-} from '../models/weekly-rewards-splitting.model';
+import { GlobalInfoByWeekModel, UserInfoByWeekModel, } from '../models/weekly-rewards-splitting.model';
+import { IWeeklyRewardsSplittingService } from "../interfaces";
 
 @Injectable()
-export class WeeklyRewardsSplittingService {
+export class WeeklyRewardsSplittingService implements IWeeklyRewardsSplittingService {
 
     getGlobalInfoByWeek(scAddress: string, week: number): GlobalInfoByWeekModel {
         return new GlobalInfoByWeekModel({

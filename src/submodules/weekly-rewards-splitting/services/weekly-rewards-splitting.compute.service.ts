@@ -7,9 +7,10 @@ import { WeeklyRewardsSplittingGetterService } from './weekly-rewards-splitting.
 import { WeekTimekeepingComputeService } from '../../week-timekeeping/services/week-timekeeping.compute.service';
 import { ProgressComputeService } from './progress.compute.service';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
+import { IWeeklyRewardsSplittingComputeService } from "../interfaces";
 
 @Injectable()
-export class WeeklyRewardsSplittingComputeService {
+export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplittingComputeService {
     constructor(
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
         private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
@@ -46,18 +47,23 @@ export class WeeklyRewardsSplittingComputeService {
     async advanceWeek(scAddress: string, userAddress: string, progress: ClaimProgress): Promise<ClaimProgress> {
         const nextWeek = progress.week + 1;
         const userEnergyNextWeek = await this.weeklyRewardsSplittingGetter.userEnergyForWeek(scAddress, userAddress, nextWeek)
-        progress = this.progressCompute.advanceWeek(progress, userEnergyNextWeek, this.weekTimekeepingCompute.epochsInWeek)
+        progress = await this.progressCompute.advanceWeek(progress, userEnergyNextWeek, this.weekTimekeepingCompute.epochsInWeek)
         return progress;
     }
 
     async computeUserRewardsForWeek(scAddress: string, week: number, userAddress: string, energyAmount?: string): Promise<EsdtTokenPayment[]> {
         const totalRewards = await this.weeklyRewardsSplittingGetter.totalRewardsForWeek(scAddress, week);
         const payments: EsdtTokenPayment[] = [];
+        if (totalRewards.length === 0) {
+            return payments;
+        }
         if (energyAmount === undefined) {
             const userEnergyModel = await this.weeklyRewardsSplittingGetter.userEnergyForWeek(scAddress, userAddress, week)
             energyAmount = userEnergyModel.amount
         }
-        if (!new BigNumber(energyAmount).isPositive()) {
+        const zero = new BigNumber(0);
+        const userHasEnergy = new BigNumber(energyAmount).isGreaterThan(zero);
+        if (!userHasEnergy) {
             return payments;
         }
 
@@ -66,12 +72,13 @@ export class WeeklyRewardsSplittingComputeService {
             const paymentAmount = new BigNumber(weeklyRewards.amount)
                 .multipliedBy(new BigNumber(energyAmount))
                 .dividedBy(new BigNumber(totalEnergy))
-            if (paymentAmount.comparedTo(new BigNumber(0))) {
+            if (paymentAmount.isGreaterThan(zero)) {
                 const payment = new EsdtTokenPayment();
                 payment.amount = paymentAmount.toFixed()
                 payment.nonce = 0
                 payment.tokenID = weeklyRewards.tokenID
-                payments.push(new EsdtTokenPayment);
+                payment.tokenType = weeklyRewards.tokenType
+                payments.push(payment);
             }
         }
 

@@ -32,5 +32,4 @@ export class WeekTimekeepingComputeServiceMock implements IWeekTimekeepingComput
     constructor(init?: Partial<WeekTimekeepingComputeServiceMock>) {
         Object.assign(this, init);
     }
-
 }

@@ -10,9 +10,10 @@ import {
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import { Mixin } from 'ts-mixer';
 import { oneMinute } from '../../../helpers/helpers';
+import { IFeesCollectorGetterService } from "../interfaces";
 
 @Injectable()
-export class FeesCollectorGetterService extends Mixin(GenericGetterService, WeeklyRewardsSplittingGetterService) {
+export class FeesCollectorGetterService extends Mixin(GenericGetterService, WeeklyRewardsSplittingGetterService) implements IFeesCollectorGetterService{
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
