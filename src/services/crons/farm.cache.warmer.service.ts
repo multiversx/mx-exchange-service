@@ -9,9 +9,9 @@ import { FarmSetterService } from 'src/modules/farm/base-module/services/farm.se
 import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { FarmV12AbiService } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
-import { FarmV12ComputeService } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
-import { FarmV13ComputeService } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
+import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
+import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
+import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
 
 @Injectable()
 export class FarmCacheWarmerService {
@@ -19,9 +19,9 @@ export class FarmCacheWarmerService {
 
     constructor(
         private readonly abiFarm: AbiFarmService,
-        private readonly abiFarmV1_2: FarmV12AbiService,
-        private readonly farmComputeV1_2: FarmV12ComputeService,
-        private readonly farmComputeV1_3: FarmV13ComputeService,
+        private readonly abiFarmV1_2: FarmAbiServiceV1_2,
+        private readonly farmComputeV1_2: FarmComputeServiceV1_2,
+        private readonly farmComputeV1_3: FarmComputeServiceV1_3,
         private readonly farmSetter: FarmSetterService,
         private readonly farmCompute: FarmComputeService,
         private readonly apiService: ElrondApiService,

@@ -16,8 +16,8 @@ import { PairDayDataResolver } from './analytics.pair.resolver';
 import { TokenModule } from '../tokens/token.module';
 import { AnalyticsAWSSetterService } from './services/analytics.aws.setter.service';
 import { FarmBaseModule } from '../farm/base-module/farm.base.module';
-import { FarmV12Module } from '../farm/v1.2/farm.v1.2.module';
-import { FarmV13Module } from '../farm/v1.3/farm.v1.3.module';
+import { FarmModuleV1_2 } from '../farm/v1.2/farm.v1.2.module';
+import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
 
 @Module({
     imports: [
@@ -28,8 +28,8 @@ import { FarmV13Module } from '../farm/v1.3/farm.v1.3.module';
         RouterModule,
         PairModule,
         FarmBaseModule,
-        FarmV12Module,
-        FarmV13Module,
+        FarmModuleV1_2,
+        FarmModuleV1_3,
         ProxyModule,
         LockedAssetModule,
         TokenModule,
