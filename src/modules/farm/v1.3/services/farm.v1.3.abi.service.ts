@@ -4,7 +4,7 @@ import { FarmMigrationConfig } from '../../models/farm.model';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
 
 @Injectable()
-export class FarmV13AbiService extends AbiFarmService {
+export class FarmAbiServiceV1_3 extends AbiFarmService {
     async getFarmMigrationConfiguration(
         farmAddress: string,
     ): Promise<FarmMigrationConfig | undefined> {

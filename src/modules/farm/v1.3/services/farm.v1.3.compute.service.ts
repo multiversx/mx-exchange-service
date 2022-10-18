@@ -10,13 +10,13 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { FarmComputeService } from '../../base-module/services/farm.compute.service';
-import { FarmV13GetterService } from './farm.v1.3.getter.service';
+import { FarmGetterServiceV1_3 } from './farm.v1.3.getter.service';
 
 @Injectable()
-export class FarmV13ComputeService extends FarmComputeService {
+export class FarmComputeServiceV1_3 extends FarmComputeService {
     constructor(
-        @Inject(forwardRef(() => FarmV13GetterService))
-        protected readonly farmGetter: FarmV13GetterService,
+        @Inject(forwardRef(() => FarmGetterServiceV1_3))
+        protected readonly farmGetter: FarmGetterServiceV1_3,
         protected readonly pairService: PairService,
         protected readonly pairGetter: PairGetterService,
         protected readonly pairCompute: PairComputeService,

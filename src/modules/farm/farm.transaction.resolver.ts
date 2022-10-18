@@ -19,13 +19,13 @@ import { FarmVersion } from './models/farm.model';
 import { FarmCustomTransactionService } from './custom/services/farm.custom.transaction.service';
 import { FarmService } from './base-module/services/farm.service';
 import { FarmTransactionServiceV1_2 } from './v1.2/services/farm.v1.2.transaction.service';
-import { FarmV13TransactionService } from './v1.3/services/farm.v1.3.transaction.service';
+import { FarmTransactionServiceV1_3 } from './v1.3/services/farm.v1.3.transaction.service';
 
 @Resolver()
 export class FarmTransactionResolver extends GenericResolver {
     constructor(
         private readonly farmV12Transaction: FarmTransactionServiceV1_2,
-        private readonly farmV13Transaction: FarmV13TransactionService,
+        private readonly farmV13Transaction: FarmTransactionServiceV1_3,
         private readonly farmCustomTransaction: FarmCustomTransactionService,
         private readonly farmService: FarmService,
     ) {
@@ -333,7 +333,7 @@ export class FarmTransactionResolver extends GenericResolver {
         farmAddress: string,
     ):
         | FarmTransactionServiceV1_2
-        | FarmV13TransactionService
+        | FarmTransactionServiceV1_3
         | FarmCustomTransactionService {
         switch (farmVersion(farmAddress)) {
             case FarmVersion.V1_2:
