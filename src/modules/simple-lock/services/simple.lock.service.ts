@@ -152,6 +152,7 @@ export class SimpleLockService {
     async getFarmTokenAttributes(
         farmTokenID: string,
         farmTokenNonce: number,
+        simpleLockAddress: string,
     ): Promise<FarmTokenAttributesModel> {
         const farmTokenIdentifier = tokenIdentifier(
             farmTokenID,
@@ -159,7 +160,7 @@ export class SimpleLockService {
         );
         const [farmToken, farmAddress] = await Promise.all([
             this.apiService.getNftByTokenIdentifier(
-                scAddress.simpleLockAddress,
+                simpleLockAddress,
                 farmTokenIdentifier,
             ),
             this.farmService.getFarmAddressByFarmTokenID(farmTokenID),
