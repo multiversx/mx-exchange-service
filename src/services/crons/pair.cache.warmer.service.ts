@@ -10,6 +10,7 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
 import { awsConfig } from 'src/config';
+import { delay } from 'src/helpers/helpers';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -81,37 +82,36 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
-            const [
-                firstTokenVolume24h,
-                secondTokenVolume24h,
-                volumeUSD24h,
-                feesUSD24h,
-            ] = await Promise.all([
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'firstTokenVolume',
-                    time,
-                }),
-                this.awsQuery.getAggregatedValue({
+            const firstTokenVolume24h = await this.awsQuery.getAggregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'firstTokenVolume',
+                time,
+            });
+            delay(1000);
+            const secondTokenVolume24h = await this.awsQuery.getAggregatedValue(
+                {
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'secondTokenVolume',
                     time,
-                }),
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'volumeUSD',
-                    time,
-                }),
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'feesUSD',
-                    time,
-                }),
-            ]);
+                },
+            );
+            delay(1000);
+            const volumeUSD24h = await this.awsQuery.getAggregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'volumeUSD',
+                time,
+            });
+            delay(1000);
+            const feesUSD24h = await this.awsQuery.getAggregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'feesUSD',
+                time,
+            });
+            delay(1000);
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenVolume(
