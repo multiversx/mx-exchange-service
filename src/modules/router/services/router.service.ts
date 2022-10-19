@@ -10,7 +10,6 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
 
-
 @Injectable()
 export class RouterService {
     constructor(
@@ -44,7 +43,7 @@ export class RouterService {
 
         return pairsMetadata
             .map(
-                pairMetadata =>
+                (pairMetadata) =>
                     new PairModel({
                         address: pairMetadata.address,
                     }),
@@ -58,7 +57,7 @@ export class RouterService {
     ): PairMetadata[] {
         if (pairFilter.address) {
             pairsMetadata = pairsMetadata.filter(
-                pair => pairFilter.address === pair.address,
+                (pair) => pairFilter.address === pair.address,
             );
         }
         return pairsMetadata;
@@ -71,7 +70,7 @@ export class RouterService {
         if (pairFilter.firstTokenID) {
             if (pairFilter.secondTokenID) {
                 pairsMetadata = pairsMetadata.filter(
-                    pair =>
+                    (pair) =>
                         (pairFilter.firstTokenID === pair.firstTokenID &&
                             pairFilter.secondTokenID === pair.secondTokenID) ||
                         (pairFilter.firstTokenID === pair.secondTokenID &&
@@ -79,12 +78,12 @@ export class RouterService {
                 );
             } else {
                 pairsMetadata = pairsMetadata.filter(
-                    pair => pairFilter.firstTokenID === pair.firstTokenID,
+                    (pair) => pairFilter.firstTokenID === pair.firstTokenID,
                 );
             }
         } else if (pairFilter.secondTokenID) {
             pairsMetadata = pairsMetadata.filter(
-                pair => pairFilter.secondTokenID === pair.secondTokenID,
+                (pair) => pairFilter.secondTokenID === pair.secondTokenID,
             );
         }
         return pairsMetadata;
@@ -98,7 +97,7 @@ export class RouterService {
             return pairsMetadata;
         }
 
-        const promises = pairsMetadata.map(pairMetadata =>
+        const promises = pairsMetadata.map((pairMetadata) =>
             this.pairGetterService.getLpTokenID(pairMetadata.address),
         );
         const lpTokensIDs = await Promise.all(promises);
@@ -125,7 +124,7 @@ export class RouterService {
             return pairsMetadata;
         }
 
-        const promises = pairsMetadata.map(pairMetadata =>
+        const promises = pairsMetadata.map((pairMetadata) =>
             this.pairGetterService.getState(pairMetadata.address),
         );
         const pairsStates = await Promise.all(promises);
