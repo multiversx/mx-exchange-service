@@ -53,6 +53,10 @@ export class ClaimProgress {
 
     @Field()
     week: number
+
+    constructor(init?: Partial<ClaimProgress>) {
+        Object.assign(this, init);
+    }
 }
 
 @InputType()

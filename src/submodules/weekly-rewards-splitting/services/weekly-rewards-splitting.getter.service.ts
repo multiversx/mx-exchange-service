@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { GenericGetterService } from '../../../services/generics/generic.getter.service';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -7,12 +6,14 @@ import { oneHour, oneMinute } from '../../../helpers/helpers';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WeeklyRewardsSplittingAbiService } from './weekly-rewards-splitting.abi.service';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
-import { EnergyModel } from '../../../modules/simple-lock/models/simple.lock.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { WeeklyRewardsSplittingComputeService } from './weekly-rewards-splitting.compute.service';
+import { IWeeklyRewardsSplittingGetterService } from "../interfaces";
+import { GenericGetterService } from "../../../services/generics/generic.getter.service";
+import { EnergyType } from "@elrondnetwork/erdjs-dex/dist/attributes-decoder/energy/energy.type";
 
 @Injectable()
-export class WeeklyRewardsSplittingGetterService extends GenericGetterService {
+export class WeeklyRewardsSplittingGetterService extends GenericGetterService implements IWeeklyRewardsSplittingGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
@@ -31,7 +32,7 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService {
         )
     }
 
-    async userEnergyForWeek(scAddress: string, userAddress: string, week: number): Promise<EnergyModel> {
+    async userEnergyForWeek(scAddress: string, userAddress: string, week: number): Promise<EnergyType> {
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'userEnergyForWeek', userAddress, week),
             () => this.weeklyRewardsAbiService.userEnergyForWeek(scAddress, userAddress, week),

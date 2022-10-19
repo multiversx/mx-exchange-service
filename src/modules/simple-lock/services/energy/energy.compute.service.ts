@@ -1,9 +1,10 @@
 import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
+import { IEnergyComputeService } from "../../interfaces";
 
 @Injectable()
-export class EnergyComputeService {
+export class EnergyComputeService implements IEnergyComputeService {
     depleteUserEnergy(
         energyEntry: EnergyType,
         currentEpoch: number,

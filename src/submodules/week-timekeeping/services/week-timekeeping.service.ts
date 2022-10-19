@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { WeekForEpochModel, WeekTimekeepingModel } from '../models/week-timekeeping.model';
 import { WeekTimekeepingGetterService } from './week-timekeeping.getter.service';
+import { IWeekTimekeepingService } from "../interfaces";
 
 
 @Injectable()
-export class WeekTimekeepingService {
+export class WeekTimekeepingService implements IWeekTimekeepingService {
     constructor(
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
     ) {
