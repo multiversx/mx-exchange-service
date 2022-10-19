@@ -8,9 +8,28 @@ import { EnergyModel } from "../../../modules/simple-lock/models/simple.lock.mod
 import BigNumber from "bignumber.js";
 
 describe('WeeklyRewardsSplittingComputeService', () => {
+    const expectedErr = new Error('expected err')
     it('init service; should be defined', async () => {
         const service = await createService({});
         expect(service).toBeDefined();
+    });
+    it('advanceWeek' +
+        'depleteUserEnergy throws error should error', async () => {
+
+        const service = await createService({
+            depleteUserEnergyCalled:(
+                energyEntry: EnergyType,
+                currentEpoch: number,
+            ) => {
+                throw expectedErr;
+            },
+        })
+        const progress = createMockProgress()
+        try {
+            service.advanceWeek(progress, undefined, 7)
+        } catch (e) {
+            expect(e).toEqual(expectedErr)
+        }
     });
     it('advanceWeek' +
         'undefined nextWeekEnergy', async () => {
