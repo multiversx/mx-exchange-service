@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { AbiRouterService } from './abi.router.service';
 import { PairMetadata } from '../models/pair.metadata.model';
@@ -21,11 +20,12 @@ export class RouterGetterService extends GenericGetterService {
         private readonly routerComputeService: RouterComputeService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'router';
     }
 
     async getAllPairsAddress(): Promise<string[]> {
         return this.getData(
-            this.getRouterCacheKey('pairsAddress'),
+            this.getCacheKey('pairsAddress'),
             () => this.abiService.getAllPairsAddress(),
             oneMinute(),
         );
@@ -33,7 +33,7 @@ export class RouterGetterService extends GenericGetterService {
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
         return this.getData(
-            this.getRouterCacheKey('pairsMetadata'),
+            this.getCacheKey('pairsMetadata'),
             () => this.abiService.getPairsMetadata(),
             oneMinute(),
         );
@@ -46,7 +46,7 @@ export class RouterGetterService extends GenericGetterService {
 
     async getEnableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
         return await this.getData(
-            this.getRouterCacheKey('enableSwapByUserConfig'),
+            this.getCacheKey('enableSwapByUserConfig'),
             () => this.abiService.getEnableSwapByUserConfig(),
             oneHour(),
         );
@@ -54,7 +54,7 @@ export class RouterGetterService extends GenericGetterService {
 
     async getCommonTokensForUserPairs(): Promise<string[]> {
         return await this.getData(
-            this.getRouterCacheKey('commonTokensForUserPairs'),
+            this.getCacheKey('commonTokensForUserPairs'),
             () => this.abiService.getCommonTokensForUserPairs(),
             oneMinute(),
         );
@@ -62,7 +62,7 @@ export class RouterGetterService extends GenericGetterService {
 
     async getTotalLockedValueUSD(): Promise<string> {
         return this.getData(
-            this.getRouterCacheKey('totalLockedValueUSD'),
+            this.getCacheKey('totalLockedValueUSD'),
             () => this.routerComputeService.computeTotalLockedValueUSD(),
             oneMinute(),
         );
@@ -70,7 +70,7 @@ export class RouterGetterService extends GenericGetterService {
 
     async getTotalVolumeUSD(time: string): Promise<string> {
         return this.getData(
-            this.getRouterCacheKey(`totalVolumeUSD.${time}`),
+            this.getCacheKey(`totalVolumeUSD.${time}`),
             () => this.routerComputeService.computeTotalVolumeUSD(time),
             oneMinute() * 5,
         );
@@ -78,7 +78,7 @@ export class RouterGetterService extends GenericGetterService {
 
     async getTotalFeesUSD(time: string): Promise<string> {
         return this.getData(
-            this.getRouterCacheKey(`totalFeesUSD.${time}`),
+            this.getCacheKey(`totalFeesUSD.${time}`),
             () => this.routerComputeService.computeTotalFeesUSD(time),
             oneMinute() * 5,
         );
@@ -86,7 +86,7 @@ export class RouterGetterService extends GenericGetterService {
 
     async getPairCount(): Promise<number> {
         return this.getData(
-            this.getRouterCacheKey('pairCount'),
+            this.getCacheKey('pairCount'),
             async () => (await this.getAllPairsAddress()).length,
             oneHour(),
         );
@@ -94,14 +94,10 @@ export class RouterGetterService extends GenericGetterService {
 
     async getTotalTxCount(): Promise<number> {
         return this.getData(
-            this.getRouterCacheKey('totalTxCount'),
+            this.getCacheKey('totalTxCount'),
             () => this.routerComputeService.computeTotalTxCount(),
             oneMinute() * 30,
         );
-    }
-
-    private getRouterCacheKey(...args: any) {
-        return generateCacheKeyFromParams('router', ...args);
     }
 
     async getPairCreationEnabled(): Promise<boolean> {

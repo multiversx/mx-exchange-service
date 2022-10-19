@@ -1,17 +1,18 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';
 import { PriceDiscoveryAbiService } from './price.discovery.abi.service';
 import { PriceDiscoveryComputeService } from './price.discovery.compute.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
+
 @Injectable()
 export class PriceDiscoveryGetterService extends GenericGetterService {
     constructor(
@@ -24,38 +25,42 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         private readonly pairGetter: PairGetterService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'priceDiscovery';
     }
 
     async getLaunchedTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenID',
             ),
             () => this.abiService.getLaunchedTokenID(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getAcceptedTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenID',
             ),
             () => this.abiService.getAcceptedTokenID(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getRedeemTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'redeemTokenID',
             ),
             () => this.abiService.getRedeemTokenID(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -86,13 +91,14 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenAmount',
             ),
             () =>
                 this.abiService.getLaunchedTokenBalance(priceDiscoveryAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -100,13 +106,14 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenAmount',
             ),
             () =>
                 this.abiService.getAcceptedTokenBalance(priceDiscoveryAddress),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -114,7 +121,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenRedeemBalance',
             ),
@@ -122,7 +129,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getLaunchedTokenRedeemBalance(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -130,7 +138,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenRedeemBalance',
             ),
@@ -138,7 +146,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getAcceptedTokenRedeemBalance(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -146,7 +155,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenPrice',
             ),
@@ -154,7 +163,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.priceDiscoveryCompute.computeLaunchedTokenPrice(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -162,7 +172,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenPrice',
             ),
@@ -170,7 +180,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.priceDiscoveryCompute.computeAcceptedTokenPrice(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -178,7 +189,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'launchedTokenPriceUSD',
             ),
@@ -186,7 +197,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(
                     priceDiscoveryAddress,
                 ),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -197,39 +209,43 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             priceDiscoveryAddress,
         );
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'acceptedTokenPriceUSD',
             ),
             () => this.pairGetter.getTokenPriceUSD(acceptedTokenID),
-            oneSecond() * 12,
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
     async getStartBlock(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'startEpoch'),
+            this.getCacheKey(priceDiscoveryAddress, 'startEpoch'),
             () => this.abiService.getStartBlock(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getEndBlock(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(priceDiscoveryAddress, 'endEpoch'),
+            this.getCacheKey(priceDiscoveryAddress, 'endEpoch'),
             () => this.abiService.getEndBlock(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getCurrentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'currentPhase',
             ),
             () => this.abiService.getCurrentPhase(priceDiscoveryAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -237,13 +253,14 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'minLaunchedTokenPrice',
             ),
             () =>
                 this.abiService.getMinLaunchedTokenPrice(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -251,7 +268,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'noLimitPhaseDurationBlocks',
             ),
@@ -259,7 +276,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getNoLimitPhaseDurationBlocks(
                     priceDiscoveryAddress,
                 ),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -267,7 +285,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'linearPenaltyPhaseDurationBlocks',
             ),
@@ -275,7 +293,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getLinearPenaltyPhaseDurationBlocks(
                     priceDiscoveryAddress,
                 ),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -283,7 +302,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'fixedPenaltyPhaseDurationBlocks',
             ),
@@ -291,29 +310,36 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getFixedPenaltyPhaseDurationBlocks(
                     priceDiscoveryAddress,
                 ),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
-    async getLockingScAddress(priceDiscoveryAddress: string): Promise<string> {
-        return this.getData(
-            this.getPriceDiscoveryCacheKey(
+    async getLockingSC(
+        priceDiscoveryAddress: string,
+    ): Promise<SimpleLockModel> {
+        const address = await this.getData(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'lockingScAddress',
             ),
             () => this.abiService.getLockingScAddress(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
+
+        return new SimpleLockModel({ address });
     }
 
     async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'unlockEpoch',
             ),
             () => this.abiService.getUnlockEpoch(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -321,13 +347,14 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'penaltyMinPercentage',
             ),
             () =>
                 this.abiService.getPenaltyMinPercentage(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -335,13 +362,14 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'penaltyMaxPercentage',
             ),
             () =>
                 this.abiService.getPenaltyMaxPercentage(priceDiscoveryAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -349,7 +377,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getPriceDiscoveryCacheKey(
+            this.getCacheKey(
                 priceDiscoveryAddress,
                 'fixedPenaltyPercentage',
             ),
@@ -357,18 +385,8 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
                 this.abiService.getFixedPenaltyPercentage(
                     priceDiscoveryAddress,
                 ),
-            oneHour(),
-        );
-    }
-
-    private getPriceDiscoveryCacheKey(
-        priceDiscoveryAddress: string,
-        ...args: any
-    ) {
-        return generateCacheKeyFromParams(
-            'priceDiscovery',
-            priceDiscoveryAddress,
-            ...args,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 }

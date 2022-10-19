@@ -1,12 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { FarmMigrationConfig } from '../models/farm.model';
 import { AbiFarmService } from './abi-farm.service';
@@ -23,29 +23,33 @@ export class FarmGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'farm';
     }
 
     async getFarmedTokenID(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmedTokenID'),
+            this.getCacheKey(farmAddress, 'farmedTokenID'),
             () => this.abiService.getFarmedTokenID(farmAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getFarmTokenID(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmTokenID'),
+            this.getCacheKey(farmAddress, 'farmTokenID'),
             () => this.abiService.getFarmTokenID(farmAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getFarmingTokenID(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmingTokenID'),
+            this.getCacheKey(farmAddress, 'farmingTokenID'),
             () => this.abiService.getFarmingTokenID(farmAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -66,7 +70,7 @@ export class FarmGetterService extends GenericGetterService {
 
     async getWhitelist(farmAddress: string): Promise<string[]> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddress, 'whitelist'),
+            this.getCacheKey(farmAddress, 'whitelist'),
             () => this.abiService.getWhitelist(farmAddress),
             oneHour(),
         );
@@ -74,103 +78,115 @@ export class FarmGetterService extends GenericGetterService {
 
     async getFarmTokenSupply(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmTokenSupply'),
+            this.getCacheKey(farmAddress, 'farmTokenSupply'),
             () => this.abiService.getFarmTokenSupply(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmingTokenReserve'),
+            this.getCacheKey(farmAddress, 'farmingTokenReserve'),
             () => this.abiService.getFarmingTokenReserve(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getProduceRewardsEnabled(farmAddress: string): Promise<boolean> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'produceRewardsEnabled'),
+            this.getCacheKey(farmAddress, 'produceRewardsEnabled'),
             () => this.abiService.getProduceRewardsEnabled(farmAddress),
-            oneMinute() * 2,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'rewardsPerBlock'),
+            this.getCacheKey(farmAddress, 'rewardsPerBlock'),
             () => this.abiService.getRewardsPerBlock(farmAddress),
-            oneMinute() * 2,
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getPenaltyPercent(farmAddress: string): Promise<number> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'penaltyPercent'),
+            this.getCacheKey(farmAddress, 'penaltyPercent'),
             () => this.abiService.getPenaltyPercent(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'minimumFarmingEpochs'),
+            this.getCacheKey(farmAddress, 'minimumFarmingEpochs'),
             () => this.abiService.getMinimumFarmingEpochs(farmAddress),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getState(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'state'),
+            this.getCacheKey(farmAddress, 'state'),
             () => this.abiService.getState(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getRewardPerShare(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'rewardPerShare'),
+            this.getCacheKey(farmAddress, 'rewardPerShare'),
             () => this.abiService.getRewardPerShare(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getRewardReserve(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'rewardReserve'),
+            this.getCacheKey(farmAddress, 'rewardReserve'),
             () => this.abiService.getRewardReserve(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getLastRewardBlockNonce(farmAddress: string): Promise<number> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'lastRewardBlocknonce'),
+            this.getCacheKey(farmAddress, 'lastRewardBlocknonce'),
             () => this.abiService.getLastRewardBlockNonce(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getUndistributedFees(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'undistributedFees'),
+            this.getCacheKey(farmAddress, 'undistributedFees'),
             () => this.abiService.getUndistributedFees(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getCurrentBlockFee(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'currentBlockFee'),
+            this.getCacheKey(farmAddress, 'currentBlockFee'),
             () => this.abiService.getCurrentBlockFee(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'divisionSafetyConstant'),
+            this.getCacheKey(farmAddress, 'divisionSafetyConstant'),
             () => this.abiService.getDivisionSafetyConstant(farmAddress),
             oneHour(),
         );
@@ -178,17 +194,19 @@ export class FarmGetterService extends GenericGetterService {
 
     async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'aprMultiplier'),
+            this.getCacheKey(farmAddress, 'aprMultiplier'),
             () => this.abiService.getLockedRewardAprMuliplier(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getFarmedTokenPriceUSD(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmedTokenPriceUSD'),
+            this.getCacheKey(farmAddress, 'farmedTokenPriceUSD'),
             () => this.computeService.computeFarmedTokenPriceUSD(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
@@ -198,39 +216,43 @@ export class FarmGetterService extends GenericGetterService {
 
     async getFarmingTokenPriceUSD(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmingTokenPriceUSD'),
+            this.getCacheKey(farmAddress, 'farmingTokenPriceUSD'),
             () => this.computeService.computeFarmingTokenPriceUSD(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.Price.remoteTtl,
+            CacheTtlInfo.Price.localTtl,
         );
     }
 
     async getLockedFarmingTokenReserve(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'lockedFarmingTokenReserve'),
+            this.getCacheKey(farmAddress, 'lockedFarmingTokenReserve'),
             () =>
                 this.computeService.computeLockedFarmingTokenReserve(
                     farmAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
     async getUnlockedFarmingTokenReserve(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'unlockedFarmingTokenReserve'),
+            this.getCacheKey(farmAddress, 'unlockedFarmingTokenReserve'),
             () =>
                 this.computeService.computeUnlockedFarmingTokenReserve(
                     farmAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
     async getTotalValueLockedUSD(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'totalValueLockedUSD'),
+            this.getCacheKey(farmAddress, 'totalValueLockedUSD'),
             () => this.computeService.computeFarmLockedValueUSD(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -238,12 +260,13 @@ export class FarmGetterService extends GenericGetterService {
         farmAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'lockedFarmingTokenReserveUSD'),
+            this.getCacheKey(farmAddress, 'lockedFarmingTokenReserveUSD'),
             () =>
                 this.computeService.computeLockedFarmingTokenReserveUSD(
                     farmAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
@@ -251,36 +274,40 @@ export class FarmGetterService extends GenericGetterService {
         farmAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'unlockedFarmingTokenReserveUSD'),
+            this.getCacheKey(farmAddress, 'unlockedFarmingTokenReserveUSD'),
             () =>
                 this.computeService.computeUnlockedFarmingTokenReserveUSD(
                     farmAddress,
                 ),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         );
     }
 
     async getUnlockedRewardsAPR(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'unlockedRewardsAPR'),
+            this.getCacheKey(farmAddress, 'unlockedRewardsAPR'),
             () => this.computeService.computeUnlockedRewardsAPR(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getLockedRewardsAPR(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'lockedRewardsAPR'),
+            this.getCacheKey(farmAddress, 'lockedRewardsAPR'),
             () => this.computeService.computeLockedRewardsAPR(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
     async getFarmAPR(farmAddress: string): Promise<string> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmAPR'),
+            this.getCacheKey(farmAddress, 'farmAPR'),
             () => this.computeService.computeFarmAPR(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -288,15 +315,16 @@ export class FarmGetterService extends GenericGetterService {
         farmAddress: string,
     ): Promise<FarmMigrationConfig> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'migrationConfig'),
+            this.getCacheKey(farmAddress, 'migrationConfig'),
             () => this.abiService.getFarmMigrationConfiguration(farmAddress),
-            oneSecond(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
     async getBurnGasLimit(farmAddresses: string): Promise<string> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddresses, 'burnGasLimit'),
+            this.getCacheKey(farmAddresses, 'burnGasLimit'),
             () => this.abiService.getBurnGasLimit(farmAddresses),
             oneHour(),
         );
@@ -304,7 +332,7 @@ export class FarmGetterService extends GenericGetterService {
 
     async getTransferExecGasLimit(farmAddresses: string): Promise<string> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddresses, 'transferExecGasLimit'),
+            this.getCacheKey(farmAddresses, 'transferExecGasLimit'),
             () => this.abiService.getTransferExecGasLimit(farmAddresses),
             oneHour(),
         );
@@ -314,7 +342,7 @@ export class FarmGetterService extends GenericGetterService {
         farmAddresses: string,
     ): Promise<string> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddresses, 'pairContractManagedAddress'),
+            this.getCacheKey(farmAddresses, 'pairContractManagedAddress'),
             () => this.abiService.getPairContractManagedAddress(farmAddresses),
             oneHour(),
         );
@@ -324,7 +352,7 @@ export class FarmGetterService extends GenericGetterService {
         farmAddresses: string,
     ): Promise<string> {
         return await this.getData(
-            this.getFarmCacheKey(
+            this.getCacheKey(
                 farmAddresses,
                 'lockedAssetFactoryManagedAddress',
             ),
@@ -338,13 +366,9 @@ export class FarmGetterService extends GenericGetterService {
 
     async getLastErrorMessage(farmAddresses: string): Promise<string> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddresses, 'lastErrorMessage'),
+            this.getCacheKey(farmAddresses, 'lastErrorMessage'),
             () => this.abiService.getLastErrorMessage(farmAddresses),
             oneMinute(),
         );
-    }
-
-    private getFarmCacheKey(farmAddress: string, ...args: any) {
-        return generateCacheKeyFromParams('farm', farmAddress, ...args);
     }
 }
