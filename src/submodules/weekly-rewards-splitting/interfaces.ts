@@ -26,5 +26,5 @@ export interface IWeeklyRewardsSplittingService {
 }
 
 export interface IProgressComputeService {
-    advanceWeek(progress: ClaimProgress, nextWeekEnergy: EnergyType, epochsInWeek: number): Promise<ClaimProgress>;
+    advanceWeek(progress: ClaimProgress, nextWeekEnergy: EnergyType, epochsInWeek: number): ClaimProgress;
 }

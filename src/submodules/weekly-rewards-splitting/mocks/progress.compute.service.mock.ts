@@ -4,9 +4,9 @@ import { IProgressComputeService } from "../interfaces";
 import { ErrorNotImplemented } from "../../../utils/errors.constants";
 
 export class ProgressComputeServiceMock implements IProgressComputeService {
-    advanceWeekCalled:(progress: ClaimProgress, nextWeekEnergy: EnergyType, epochsInWeek: number) => Promise<ClaimProgress>;
+    advanceWeekCalled:(progress: ClaimProgress, nextWeekEnergy: EnergyType, epochsInWeek: number) => ClaimProgress;
 
-    advanceWeek(progress: ClaimProgress, nextWeekEnergy: EnergyType, epochsInWeek: number): Promise<ClaimProgress> {
+    advanceWeek(progress: ClaimProgress, nextWeekEnergy: EnergyType, epochsInWeek: number): ClaimProgress {
         if (this.advanceWeekCalled !== undefined) {
             return this.advanceWeekCalled(progress, nextWeekEnergy, epochsInWeek);
         }

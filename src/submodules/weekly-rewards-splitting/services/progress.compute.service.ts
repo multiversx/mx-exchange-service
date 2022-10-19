@@ -11,7 +11,7 @@ export class ProgressComputeService implements IProgressComputeService {
     ) {
     }
 
-    async advanceWeek(progress: ClaimProgress, nextWeekEnergy: EnergyType|undefined, epochsInWeek: number): Promise<ClaimProgress> {
+    advanceWeek(progress: ClaimProgress, nextWeekEnergy: EnergyType|undefined, epochsInWeek: number): ClaimProgress {
         progress.week++;
 
         if (nextWeekEnergy !== undefined) {
@@ -20,7 +20,7 @@ export class ProgressComputeService implements IProgressComputeService {
         }
 
         const nextWeekEpoch = progress.energy.lastUpdateEpoch + epochsInWeek;
-        progress.energy = await this.energyComputeService.depleteUserEnergy(progress.energy, nextWeekEpoch);
+        progress.energy = this.energyComputeService.depleteUserEnergy(progress.energy, nextWeekEpoch);
         return progress;
     }
 }

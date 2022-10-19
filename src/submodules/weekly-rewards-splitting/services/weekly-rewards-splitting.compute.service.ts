@@ -47,7 +47,7 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
     async advanceWeek(scAddress: string, userAddress: string, progress: ClaimProgress): Promise<ClaimProgress> {
         const nextWeek = progress.week + 1;
         const userEnergyNextWeek = await this.weeklyRewardsSplittingGetter.userEnergyForWeek(scAddress, userAddress, nextWeek)
-        progress = await this.progressCompute.advanceWeek(progress, userEnergyNextWeek, this.weekTimekeepingCompute.epochsInWeek)
+        progress = this.progressCompute.advanceWeek(progress, userEnergyNextWeek, this.weekTimekeepingCompute.epochsInWeek)
         return progress;
     }
 
