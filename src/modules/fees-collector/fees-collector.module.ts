@@ -9,6 +9,9 @@ import {
     WeeklyRewardsSplittingModule,
 } from '../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-timekeeping.module';
+import { FeesCollectorComputeService } from "./services/fees-collector.compute.service";
+import { RouterModule } from "../router/router.module";
+import { PairModule } from "../pair/pair.module";
 
 @Module({
     imports: [
@@ -16,11 +19,14 @@ import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-ti
         CachingModule,
         WeekTimekeepingModule.register(FeesCollectorAbiService),
         WeeklyRewardsSplittingModule.register(FeesCollectorAbiService),
+        RouterModule,
+        PairModule,
     ],
     providers: [
         FeesCollectorService,
         FeesCollectorAbiService,
         FeesCollectorGetterService,
+        FeesCollectorComputeService,
         FeesCollectorResolver,
         UserEntryFeesCollectorResolver,
     ],

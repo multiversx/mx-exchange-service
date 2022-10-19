@@ -9,6 +9,7 @@ import { WeeklyRewardsSplittingComputeService } from './services/weekly-rewards-
 import { WeekTimekeepingModule } from '../week-timekeeping/week-timekeeping.module';
 import { ProgressComputeService } from './services/progress.compute.service';
 import { GlobalInfoByWeekResolver, UserInfoByWeekResolver } from './weekly-rewards-splitting.resolver';
+import { SimpleLockModule } from "../../modules/simple-lock/simple.lock.module";
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ export class WeeklyRewardsSplittingModule {
             module: WeeklyRewardsSplittingModule,
             imports: [
                 WeekTimekeepingModule.register(abiProvider),
+                SimpleLockModule
             ],
             providers: [
                 ApiConfigService,

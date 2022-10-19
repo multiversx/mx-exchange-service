@@ -15,6 +15,7 @@ import {
     GlobalInfoByWeekModel, UserInfoByWeekModel, WeekFilterPeriodModel,
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { AbstractWeekValidation } from '../../submodules/week-timekeeping/validationPipes/week-timekeeping.validation';
+import { FeesCollectorComputeService } from "./services/fees-collector.compute.service";
 
 @Injectable()
 export class FeesCollectorWeekValidation extends AbstractWeekValidation {
@@ -25,6 +26,7 @@ export class FeesCollectorWeekValidation extends AbstractWeekValidation {
 export class FeesCollectorResolver extends GenericResolver {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
+        private readonly feesCollectorCompute: FeesCollectorComputeService,
         protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
     ) {
         super();
@@ -39,6 +41,13 @@ export class FeesCollectorResolver extends GenericResolver {
     async accumulatedFees(@Parent() parent: FeesCollectorModel): Promise<EsdtTokenPayment[]> {
         return await this.genericFieldResover(() =>
             this.feesCollectorService.getAccumulatedFees(parent.address, parent.time.currentWeek, parent.allTokens),
+        );
+    }
+
+    @ResolveField()
+    async apr(@Parent() parent: FeesCollectorModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.feesCollectorCompute.computeApr(parent.address, parent.time.currentWeek),
         );
     }
 
