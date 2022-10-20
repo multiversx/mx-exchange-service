@@ -24,10 +24,10 @@ import { elrondConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
-import { FarmV12TransactionService } from '../v1.2/services/farm.v1.2.transaction.service';
+import { FarmTransactionServiceV1_2 } from '../v1.2/services/farm.v1.2.transaction.service';
 
 describe('FarmService', () => {
-    let transactionV1_2: FarmV12TransactionService;
+    let transactionV1_2: FarmTransactionServiceV1_2;
 
     const AbiFarmServiceProvider = {
         provide: AbiFarmService,
@@ -77,13 +77,13 @@ describe('FarmService', () => {
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
                 ElrondProxyServiceProvider,
-                FarmV12TransactionService,
+                FarmTransactionServiceV1_2,
                 FarmService,
             ],
         }).compile();
 
-        transactionV1_2 = module.get<FarmV12TransactionService>(
-            FarmV12TransactionService,
+        transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
         );
     });
 

@@ -7,7 +7,7 @@ import { ElrondCommunicationModule } from 'src/services/elrond-communication/elr
 import { FarmBaseModule } from '../base-module/farm.base.module';
 import { FarmAbiServiceV1_2 } from './services/farm.v1.2.abi.service';
 import { FarmComputeServiceV1_2 } from './services/farm.v1.2.compute.service';
-import { FarmV12GetterService } from './services/farm.v1.2.getter.service';
+import { FarmGetterServiceV1_2 } from './services/farm.v1.2.getter.service';
 import { FarmResolverV1_2 } from './farm.v1.2.resolver';
 import { FarmTransactionServiceV1_2 } from './services/farm.v1.2.transaction.service';
 
@@ -22,7 +22,7 @@ import { FarmTransactionServiceV1_2 } from './services/farm.v1.2.transaction.ser
     ],
     providers: [
         FarmAbiServiceV1_2,
-        FarmV12GetterService,
+        FarmGetterServiceV1_2,
         FarmComputeServiceV1_2,
         FarmTransactionServiceV1_2,
         FarmResolverV1_2,

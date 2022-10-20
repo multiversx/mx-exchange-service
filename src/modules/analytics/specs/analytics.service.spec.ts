@@ -28,10 +28,10 @@ import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
-import { FarmV12ComputeService } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
-import { FarmV12GetterServiceProvider } from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
-import { FarmV13ComputeService } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
-import { FarmV13GetterServiceProvider } from 'src/modules/farm/mocks/farm.v1.3.getter.service.mock';
+import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
+import { FarmGetterServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
+import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
+import { FarmGetterServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.getter.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -90,11 +90,11 @@ describe('AnalyticsService', () => {
                 ElrondApiServiceProvider,
                 FarmServiceProvider,
                 FarmGetterServiceProvider,
-                FarmV12GetterServiceProvider,
-                FarmV13GetterServiceProvider,
+                FarmGetterServiceProviderV1_2,
+                FarmGetterServiceProviderV1_3,
                 FarmComputeService,
-                FarmV12ComputeService,
-                FarmV13ComputeService,
+                FarmComputeServiceV1_2,
+                FarmComputeServiceV1_3,
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,

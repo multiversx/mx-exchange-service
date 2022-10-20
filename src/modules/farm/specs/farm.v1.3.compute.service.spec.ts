@@ -15,11 +15,11 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { AbiFarmServiceProvider } from '../mocks/abi.farm.service.mock';
-import { FarmV13ComputeService } from '../v1.3/services/farm.v1.3.compute.service';
-import { FarmV13GetterServiceProvider } from '../mocks/farm.v1.3.getter.service.mock';
+import { FarmComputeServiceV1_3 } from '../v1.3/services/farm.v1.3.compute.service';
+import { FarmGetterServiceProviderV1_3 } from '../mocks/farm.v1.3.getter.service.mock';
 
 describe('FarmService', () => {
-    let service: FarmV13ComputeService;
+    let service: FarmComputeServiceV1_3;
 
     const ElrondApiServiceProvider = {
         provide: ElrondApiService,
@@ -46,8 +46,8 @@ describe('FarmService', () => {
             imports: [CommonAppModule, CachingModule],
             providers: [
                 AbiFarmServiceProvider,
-                FarmV13GetterServiceProvider,
-                FarmV13ComputeService,
+                FarmGetterServiceProviderV1_3,
+                FarmComputeServiceV1_3,
                 ElrondApiServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
@@ -60,7 +60,7 @@ describe('FarmService', () => {
             ],
         }).compile();
 
-        service = module.get<FarmV13ComputeService>(FarmV13ComputeService);
+        service = module.get<FarmComputeServiceV1_3>(FarmComputeServiceV1_3);
     });
 
     it('should be defined', () => {

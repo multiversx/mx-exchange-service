@@ -11,7 +11,7 @@ import { FarmAbiServiceV1_2 } from './farm.v1.2.abi.service';
 import { FarmComputeServiceV1_2 } from './farm.v1.2.compute.service';
 
 @Injectable()
-export class FarmV12GetterService extends FarmGetterService {
+export class FarmGetterServiceV1_2 extends FarmGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
