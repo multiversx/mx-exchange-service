@@ -19,13 +19,6 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
-    async currentWeek(@Parent() parent: FarmModelV2): Promise<number> {
-        return await this.genericFieldResover(() =>
-            this.farmGetter.getCurrentWeek(parent.address),
-        );
-    }
-
-    @ResolveField()
     async energyFactoryAddress(@Parent() parent: FarmModelV2): Promise<string> {
         return await this.genericFieldResover(() =>
             this.farmGetter.getEnergyFactoryAddress(parent.address),
