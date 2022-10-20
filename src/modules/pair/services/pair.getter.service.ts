@@ -426,10 +426,7 @@ export class PairGetterService extends GenericGetterService {
     async getLockingDeadlineEpoch(
         pairAddress: string,
     ): Promise<number | undefined> {
-        const cacheKey = this.getCacheKey(
-            pairAddress,
-            'lockingDeadlineEpoch',
-        );
+        const cacheKey = this.getCacheKey(pairAddress, 'lockingDeadlineEpoch');
         const cachedValue: number = await this.cachingService.getCache(
             cacheKey,
         );
@@ -481,6 +478,7 @@ export class PairGetterService extends GenericGetterService {
         }
 
         return new LockedTokensInfo({
+            lockingScAddress: lockingScAddress,
             lockingSC: new SimpleLockModel({ address: lockingScAddress }),
             unlockEpoch,
             lockingDeadlineEpoch,

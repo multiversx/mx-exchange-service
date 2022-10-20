@@ -30,10 +30,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getLaunchedTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'launchedTokenID',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'launchedTokenID'),
             () => this.abiService.getLaunchedTokenID(priceDiscoveryAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -42,10 +39,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getAcceptedTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'acceptedTokenID',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'acceptedTokenID'),
             () => this.abiService.getAcceptedTokenID(priceDiscoveryAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -54,10 +48,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getRedeemTokenID(priceDiscoveryAddress: string): Promise<string> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'redeemTokenID',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'redeemTokenID'),
             () => this.abiService.getRedeemTokenID(priceDiscoveryAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -91,10 +82,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'launchedTokenAmount',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'launchedTokenAmount'),
             () =>
                 this.abiService.getLaunchedTokenBalance(priceDiscoveryAddress),
             CacheTtlInfo.ContractBalance.remoteTtl,
@@ -106,10 +94,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'acceptedTokenAmount',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'acceptedTokenAmount'),
             () =>
                 this.abiService.getAcceptedTokenBalance(priceDiscoveryAddress),
             CacheTtlInfo.ContractBalance.remoteTtl,
@@ -155,10 +140,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'launchedTokenPrice',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'launchedTokenPrice'),
             () =>
                 this.priceDiscoveryCompute.computeLaunchedTokenPrice(
                     priceDiscoveryAddress,
@@ -172,10 +154,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'acceptedTokenPrice',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'acceptedTokenPrice'),
             () =>
                 this.priceDiscoveryCompute.computeAcceptedTokenPrice(
                     priceDiscoveryAddress,
@@ -189,10 +168,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'launchedTokenPriceUSD',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'launchedTokenPriceUSD'),
             () =>
                 this.priceDiscoveryCompute.computeLaunchedTokenPriceUSD(
                     priceDiscoveryAddress,
@@ -209,10 +185,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
             priceDiscoveryAddress,
         );
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'acceptedTokenPriceUSD',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'acceptedTokenPriceUSD'),
             () => this.pairGetter.getTokenPriceUSD(acceptedTokenID),
             CacheTtlInfo.Price.remoteTtl,
             CacheTtlInfo.Price.localTtl,
@@ -239,10 +212,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
 
     async getCurrentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'currentPhase',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'currentPhase'),
             () => this.abiService.getCurrentPhase(priceDiscoveryAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -253,10 +223,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'minLaunchedTokenPrice',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'minLaunchedTokenPrice'),
             () =>
                 this.abiService.getMinLaunchedTokenPrice(priceDiscoveryAddress),
             CacheTtlInfo.ContractState.remoteTtl,
@@ -315,28 +282,25 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         );
     }
 
-    async getLockingSC(
-        priceDiscoveryAddress: string,
-    ): Promise<SimpleLockModel> {
-        const address = await this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'lockingScAddress',
-            ),
+    async getLockingScAddress(priceDiscoveryAddress: string): Promise<string> {
+        return await this.getData(
+            this.getCacheKey(priceDiscoveryAddress, 'lockingScAddress'),
             () => this.abiService.getLockingScAddress(priceDiscoveryAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         );
+    }
 
+    async getLockingSC(
+        priceDiscoveryAddress: string,
+    ): Promise<SimpleLockModel> {
+        const address = await this.getLockingScAddress(priceDiscoveryAddress);
         return new SimpleLockModel({ address });
     }
 
     async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'unlockEpoch',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'unlockEpoch'),
             () => this.abiService.getUnlockEpoch(priceDiscoveryAddress),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
@@ -347,10 +311,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'penaltyMinPercentage',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'penaltyMinPercentage'),
             () =>
                 this.abiService.getPenaltyMinPercentage(priceDiscoveryAddress),
             CacheTtlInfo.ContractState.remoteTtl,
@@ -362,10 +323,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'penaltyMaxPercentage',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'penaltyMaxPercentage'),
             () =>
                 this.abiService.getPenaltyMaxPercentage(priceDiscoveryAddress),
             CacheTtlInfo.ContractState.remoteTtl,
@@ -377,10 +335,7 @@ export class PriceDiscoveryGetterService extends GenericGetterService {
         priceDiscoveryAddress: string,
     ): Promise<number> {
         return this.getData(
-            this.getCacheKey(
-                priceDiscoveryAddress,
-                'fixedPenaltyPercentage',
-            ),
+            this.getCacheKey(priceDiscoveryAddress, 'fixedPenaltyPercentage'),
             () =>
                 this.abiService.getFixedPenaltyPercentage(
                     priceDiscoveryAddress,

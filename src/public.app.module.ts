@@ -25,6 +25,8 @@ import { SimpleLockModule } from './modules/simple-lock/simple.lock.module';
 import { TokenModule } from './modules/tokens/token.module';
 import { AutoRouterModule } from './modules/auto-router/auto-router.module';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { deprecationLoggerMiddleware } from './utils/deprecate.logger.middleware';
+import { GraphQLRequestContext, GraphQLResponse } from 'apollo-server-types';
 
 @Module({
     imports: [
@@ -35,6 +37,27 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
             driver: ApolloDriver,
             autoSchemaFile: 'schema.gql',
             installSubscriptionHandlers: true,
+            buildSchemaOptions: {
+                fieldMiddleware: [deprecationLoggerMiddleware],
+            },
+            formatResponse: (
+                response: GraphQLResponse,
+                requestContext: GraphQLRequestContext,
+            ) => {
+                const { context } = requestContext;
+                const { req } = context;
+                const extensionResponse = req?.deprecationWarning
+                    ? {
+                          extensions: {
+                              deprecationWarning: req?.deprecationWarning,
+                          },
+                      }
+                    : {};
+                return {
+                    ...response,
+                    ...extensionResponse,
+                };
+            },
             formatError: (error: GraphQLError) => {
                 const graphQLFormattedError: GraphQLFormattedError = {
                     message: error.message,
