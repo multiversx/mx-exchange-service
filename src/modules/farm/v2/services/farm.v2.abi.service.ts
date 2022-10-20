@@ -32,17 +32,6 @@ export class FarmAbiServiceV2 extends AbiFarmService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getCurrentWeek(farmAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
-
-        const interaction: Interaction =
-            contract.methodsExplicit.getCurrentWeek();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toNumber();
-    }
-
     async getEnergyFactoryAddress(farmAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,

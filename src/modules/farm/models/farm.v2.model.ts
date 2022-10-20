@@ -1,13 +1,10 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 import { BaseFarmModel } from './farm.model';
 
 @ObjectType()
 export class FarmModelV2 extends BaseFarmModel {
     @Field()
     boostedYieldsRewardsPercenatage: number;
-
-    @Field(() => Int)
-    currentWeek: number;
 
     @Field()
     energyFactoryAddress: string;

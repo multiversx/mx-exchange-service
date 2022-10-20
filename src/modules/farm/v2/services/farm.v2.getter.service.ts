@@ -41,14 +41,6 @@ export class FarmGetterServiceV2 extends FarmGetterService {
         );
     }
 
-    async getCurrentWeek(farmAddress: string): Promise<number> {
-        return await this.getData(
-            this.getCacheKey(farmAddress, 'currentWeek'),
-            () => this.abiService.getCurrentWeek(farmAddress),
-            oneMinute(),
-        );
-    }
-
     async getEnergyFactoryAddress(farmAddress: string): Promise<string> {
         return await this.getData(
             this.getCacheKey(farmAddress, 'energyFactoryAddress'),
