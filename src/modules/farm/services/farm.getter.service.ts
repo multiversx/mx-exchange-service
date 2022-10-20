@@ -230,7 +230,7 @@ export class FarmGetterService extends GenericGetterService {
 
     async getOwnerAddress(farmAddress: string): Promise<string> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddress, 'ownerAddress'),
+            this.getCacheKey(farmAddress, 'ownerAddress'),
             async () => {
                 return (await this.apiService.getAccountStats(farmAddress))
                     .ownerAddress;

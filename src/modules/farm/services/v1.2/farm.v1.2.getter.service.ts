@@ -33,7 +33,7 @@ export class FarmV12GetterService extends FarmGetterService {
 
     async getFarmingTokenReserve(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmingTokenReserve'),
+            this.getCacheKey(farmAddress, 'farmingTokenReserve'),
             () => this.abiService.getFarmingTokenReserve(farmAddress),
             oneMinute(),
         );
@@ -41,7 +41,7 @@ export class FarmV12GetterService extends FarmGetterService {
 
     async getUndistributedFees(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'undistributedFees'),
+            this.getCacheKey(farmAddress, 'undistributedFees'),
             () => this.abiService.getUndistributedFees(farmAddress),
             oneMinute(),
         );
@@ -49,7 +49,7 @@ export class FarmV12GetterService extends FarmGetterService {
 
     async getCurrentBlockFee(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'currentBlockFee'),
+            this.getCacheKey(farmAddress, 'currentBlockFee'),
             () => this.abiService.getCurrentBlockFee(farmAddress),
             oneMinute(),
         );
@@ -57,7 +57,7 @@ export class FarmV12GetterService extends FarmGetterService {
 
     async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'aprMultiplier'),
+            this.getCacheKey(farmAddress, 'aprMultiplier'),
             () => this.abiService.getLockedRewardAprMuliplier(farmAddress),
             oneMinute(),
         );
@@ -65,7 +65,7 @@ export class FarmV12GetterService extends FarmGetterService {
 
     async getLockedFarmingTokenReserve(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'lockedFarmingTokenReserve'),
+            this.getCacheKey(farmAddress, 'lockedFarmingTokenReserve'),
             () =>
                 this.computeService.computeLockedFarmingTokenReserve(
                     farmAddress,
@@ -76,7 +76,7 @@ export class FarmV12GetterService extends FarmGetterService {
 
     async getUnlockedFarmingTokenReserve(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'unlockedFarmingTokenReserve'),
+            this.getCacheKey(farmAddress, 'unlockedFarmingTokenReserve'),
             () =>
                 this.computeService.computeUnlockedFarmingTokenReserve(
                     farmAddress,
@@ -89,7 +89,7 @@ export class FarmV12GetterService extends FarmGetterService {
         farmAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'lockedFarmingTokenReserveUSD'),
+            this.getCacheKey(farmAddress, 'lockedFarmingTokenReserveUSD'),
             () =>
                 this.computeService.computeLockedFarmingTokenReserveUSD(
                     farmAddress,
@@ -102,7 +102,7 @@ export class FarmV12GetterService extends FarmGetterService {
         farmAddress: string,
     ): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'unlockedFarmingTokenReserveUSD'),
+            this.getCacheKey(farmAddress, 'unlockedFarmingTokenReserveUSD'),
             () =>
                 this.computeService.computeUnlockedFarmingTokenReserveUSD(
                     farmAddress,
@@ -113,7 +113,7 @@ export class FarmV12GetterService extends FarmGetterService {
 
     async getUnlockedRewardsAPR(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'unlockedRewardsAPR'),
+            this.getCacheKey(farmAddress, 'unlockedRewardsAPR'),
             () => this.computeService.computeUnlockedRewardsAPR(farmAddress),
             oneMinute(),
         );
@@ -121,7 +121,7 @@ export class FarmV12GetterService extends FarmGetterService {
 
     async getLockedRewardsAPR(farmAddress: string): Promise<string> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'lockedRewardsAPR'),
+            this.getCacheKey(farmAddress, 'lockedRewardsAPR'),
             () => this.computeService.computeLockedRewardsAPR(farmAddress),
             oneMinute(),
         );
@@ -131,7 +131,7 @@ export class FarmV12GetterService extends FarmGetterService {
         farmAddress: string,
     ): Promise<FarmMigrationConfig> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'migrationConfig'),
+            this.getCacheKey(farmAddress, 'migrationConfig'),
             () => this.abiService.getFarmMigrationConfiguration(farmAddress),
             oneHour(),
         );

@@ -83,10 +83,13 @@ export class SimpleLockAbiService extends GenericAbiService {
 
     private async getContract(
         simpleLockType: SimpleLockType,
+        simpleLockAddress: string,
     ): Promise<SmartContract> {
         switch (simpleLockType) {
             case SimpleLockType.BASE_TYPE:
-                return await this.elrondProxy.getSimpleLockSmartContract();
+                return await this.elrondProxy.getSimpleLockSmartContract(
+                    simpleLockAddress,
+                );
             case SimpleLockType.ENERGY_TYPE:
                 return await this.elrondProxy.getSimpleLockEnergySmartContract();
         }
