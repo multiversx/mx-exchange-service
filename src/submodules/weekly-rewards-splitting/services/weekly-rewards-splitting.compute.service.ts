@@ -94,8 +94,7 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
         return payments;
     }
 
-    async computeTotalRewardsForWeekPriceUSD(scAddress: string, week: number): Promise<string> {
-        const totalRewardsForWeek = await this.weeklyRewardsSplittingGetter.totalRewardsForWeek(scAddress, week);
+    async computeTotalRewardsForWeekPriceUSD(scAddress: string, week: number, totalRewardsForWeek: EsdtTokenPayment[]): Promise<string> {
         const pairs = await this.routerService.getPairsMetadata()
         let totalPriceUSD = new BigNumber("0");
         for (const pair of pairs) {
@@ -118,9 +117,7 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
         return totalPriceUSD.toFixed()
     }
 
-    async computeTotalLockedTokensForWeekPriceUSD(address: string, week: number): Promise<string> {
-        const totalLockedTokensForWeek = await this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(address, week);
-
+    async computeTotalLockedTokensForWeekPriceUSD(address: string, week: number, totalLockedTokensForWeek: string): Promise<string> {
         const baseAssetTokenID = await this.energyGetter.getBaseAssetTokenID()
         let tokenPriceUSD = "0";
         if (scAddress.has(baseAssetTokenID)) {
@@ -133,15 +130,40 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
         return totalPriceUSD.toFixed()
     }
 
-    async computeApr(scAddress: string, week: number): Promise<string> {
+    async computeAprGivenLockedTokensAndRewards(scAddress: string, week: number, totalLockedTokensForWeek: string, totalRewardsForWeek: EsdtTokenPayment[]): Promise<string> {
         const totalLockedTokensForWeekPriceUSD =
-            await this.computeTotalLockedTokensForWeekPriceUSD(scAddress, week);
+            await this.computeTotalLockedTokensForWeekPriceUSD(scAddress, week, totalLockedTokensForWeek);
         const totalRewardsForWeekPriceUSD =
-            await this.computeTotalRewardsForWeekPriceUSD(scAddress, week);
+            await this.computeTotalRewardsForWeekPriceUSD(scAddress, week, totalRewardsForWeek);
 
         return new BigNumber(totalRewardsForWeekPriceUSD)
             .times(52)
             .div(totalLockedTokensForWeekPriceUSD)
+            .toFixed()
+    }
+
+    async computeApr(scAddress: string, week: number): Promise<string> {
+        const totalLockedTokensForWeek = await this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(scAddress, week);
+        const totalRewardsForWeek = await this.weeklyRewardsSplittingGetter.totalRewardsForWeek(scAddress, week);
+        return this.computeAprGivenLockedTokensAndRewards(scAddress, week, totalLockedTokensForWeek, totalRewardsForWeek);
+    }
+
+    async computeUserApr(scAddress: string, userAddress: string, week: number): Promise<string> {
+        const totalLockedTokensForWeek = await this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(scAddress, week);
+        const totalRewardsForWeek = await this.weeklyRewardsSplittingGetter.totalRewardsForWeek(scAddress, week);
+        const globalApr = await this.computeAprGivenLockedTokensAndRewards(scAddress, week, totalLockedTokensForWeek, totalRewardsForWeek);
+
+        const totalEnergyForWeek = await this.weeklyRewardsSplittingGetter.totalEnergyForWeek(scAddress, week);
+        const userEnergyForWeek = await this.weeklyRewardsSplittingGetter.userEnergyForWeek(scAddress, userAddress, week);
+        return new BigNumber(globalApr)
+            .multipliedBy(
+                new BigNumber(totalEnergyForWeek)
+            )
+            .multipliedBy(
+                new BigNumber(userEnergyForWeek.totalLockedTokens)
+            )
+            .div(new BigNumber(userEnergyForWeek.amount))
+            .div(new BigNumber(totalLockedTokensForWeek))
             .toFixed()
     }
 }

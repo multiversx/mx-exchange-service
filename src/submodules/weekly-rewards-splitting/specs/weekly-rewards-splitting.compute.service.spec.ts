@@ -16,10 +16,19 @@ import { ClaimProgress } from "../models/weekly-rewards-splitting.model";
 import { EnergyType } from "@elrondnetwork/erdjs-dex";
 import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
 import BigNumber from "bignumber.js";
-import { RouterModule } from "../../../modules/router/router.module";
-import { PairModule } from "../../../modules/pair/pair.module";
-import { TokenModule } from "../../../modules/tokens/token.module";
-import { SimpleLockModule } from "../../../modules/simple-lock/simple.lock.module";
+import { AbiRouterService } from "../../../modules/router/services/abi.router.service";
+import { PairComputeService } from "../../../modules/pair/services/pair.compute.service";
+import { EnergyGetterService } from "../../../modules/simple-lock/services/energy/energy.getter.service";
+import { TokenComputeService } from "../../../modules/tokens/services/token.compute.service";
+import { PairService } from "../../../modules/pair/services/pair.service";
+import { WrapService } from "../../../modules/wrapping/wrap.service";
+import { PairGetterServiceMock } from "../../../modules/pair/mocks/pair.getter.service.mock";
+import { PairGetterService } from "../../../modules/pair/services/pair.getter.service";
+import { TokenGetterServiceMock } from "../../../modules/tokens/mocks/token.getter.service.mock";
+import { RouterGetterServiceMock } from "../../../modules/router/mocks/router.getter.service.mock";
+import { RouterGetterService } from "../../../modules/router/services/router.getter.service";
+import { TokenGetterService } from "../../../modules/tokens/services/token.getter.service";
+import { EnergyGetterServiceMock } from "../../../modules/simple-lock/mocks/energy.getter.service.mock";
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     const dummyScAddress = 'erd'
@@ -248,13 +257,30 @@ async function createService(getterHandlers: any, computeHandlers: any, weeklyGe
         imports: [
             ElrondCommunicationModule,
             CachingModule,
-            SimpleLockModule,
-            RouterModule,
-            PairModule,
-            TokenModule,
         ],
         providers: [
+            AbiRouterService,
+            PairComputeService,
+            PairService,
+            TokenComputeService,
+            WrapService,
             ApiConfigService,
+            {
+                provide: PairGetterService,
+                useClass: PairGetterServiceMock
+            },
+            {
+                provide: TokenGetterService,
+                useClass: TokenGetterServiceMock
+            },
+            {
+                provide: RouterGetterService,
+                useClass: RouterGetterServiceMock
+            },
+            {
+                provide: EnergyGetterService,
+                useValue: EnergyGetterServiceMock
+            },
             {
                 provide: WeekTimekeepingGetterService,
                 useValue: getter,

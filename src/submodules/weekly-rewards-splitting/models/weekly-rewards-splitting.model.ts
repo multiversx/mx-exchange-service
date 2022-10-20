@@ -17,10 +17,10 @@ export class GlobalInfoByWeekModel {
     totalRewardsForWeek: [EsdtTokenPayment];
 
     @Field()
-    totalEnergyForWeek: number;
+    totalEnergyForWeek: string;
 
     @Field()
-    totalLockedTokensForWeek: number;
+    totalLockedTokensForWeek: string;
 
     constructor(init?: Partial<GlobalInfoByWeekModel>) {
         Object.assign(this, init);
@@ -37,6 +37,9 @@ export class UserInfoByWeekModel {
 
     @Field()
     week: number;
+
+    @Field()
+    apr: string;
 
     @Field()
     energyForWeek: EnergyModel;

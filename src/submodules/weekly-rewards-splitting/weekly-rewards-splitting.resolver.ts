@@ -58,6 +58,7 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
 export class UserInfoByWeekResolver extends GenericResolver {
     constructor(
         protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
+        protected readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
         super();
     }
@@ -68,6 +69,13 @@ export class UserInfoByWeekResolver extends GenericResolver {
     ): Promise<EnergyModel> {
         return await this.genericFieldResover(() =>
             this.weeklyRewardsSplittingGetter.userEnergyForWeek(parent.scAddress, parent.userAddress, parent.week),
+        );
+    }
+
+    @ResolveField()
+    async apr(@Parent() parent: UserInfoByWeekModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.weeklyRewardsSplittingCompute.computeUserApr(parent.scAddress, parent.userAddress, parent.week),
         );
     }
 
