@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { Records } from "aws-sdk/clients/timestreamwrite";
 import { PerformanceProfiler } from "src/utils/performance.profiler";
 import { TimeSeriesWriteInterface } from "./time-series.write.interface";
 
@@ -23,5 +24,9 @@ export class TimeSeriesWriteService implements TimeSeriesWriteInterface {
 
   async ingest({ TableName, data, Time }): Promise<void> {
     return await this.execute('ingest', this.timeSeriesWriteInterface.ingest({ TableName, data, Time }));
+  }
+
+  async multiRecordsIngest(TableName: string, Records: Records): Promise<void> {
+    return await this.execute('multiRecordsIngest', this.timeSeriesWriteInterface.multiRecordsIngest(TableName, Records));
   }
 }

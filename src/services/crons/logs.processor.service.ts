@@ -9,12 +9,12 @@ import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { oneMinute } from 'src/helpers/helpers';
-import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
 import { TimestreamWrite } from 'aws-sdk';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { EsdtLocalBurnEvent, ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
+import { TimeSeriesWriteService } from '../time-series/time-series.write.service';
 
 @Injectable()
 export class LogsProcessorService {
@@ -26,7 +26,7 @@ export class LogsProcessorService {
         private readonly cachingService: CachingService,
         private readonly apiService: ElrondApiService,
         private readonly elasticService: ElasticService,
-        private readonly awsWrite: AWSTimestreamWriteService,
+        private readonly timeSeriesWrite: TimeSeriesWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -224,7 +224,7 @@ export class LogsProcessorService {
         Records: TimestreamWrite.Records,
     ): Promise<number> {
         try {
-            await this.awsWrite.multiRecordsIngest('tradingInfo', Records);
+            await this.timeSeriesWrite.multiRecordsIngest('tradingInfo', Records);
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(

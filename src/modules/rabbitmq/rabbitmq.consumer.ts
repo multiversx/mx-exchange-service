@@ -40,10 +40,10 @@ import {
     RawEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { RouterGetterService } from '../router/services/router.getter.service';
-import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
+import { TimeSeriesWriteService } from 'src/services/time-series/time-series.write.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -60,7 +60,7 @@ export class RabbitMqConsumer {
         private readonly wsEsdtTokenHandler: RabbitMQEsdtTokenHandlerService,
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
-        private readonly awsTimestreamWrite: AWSTimestreamWriteService,
+        private readonly timeSeriesWriteService: TimeSeriesWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -233,7 +233,7 @@ export class RabbitMqConsumer {
         }
 
         if (Object.keys(this.data).length > 0) {
-            await this.awsTimestreamWrite.ingest({
+            await this.timeSeriesWriteService.ingest({
                 TableName: awsConfig.timestream.tableName,
                 data: this.data,
                 Time: timestamp,
