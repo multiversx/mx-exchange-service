@@ -460,16 +460,21 @@ export class UserComputeService {
                 identifier: nftToken.identifier,
                 attributes: nftToken.attributes,
             });
-        const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
-            decodedAttributes.farmTokenID,
-        );
+        const [simpleLockAddress, farmAddress] = await Promise.all([
+            this.simpleLockService.getSimpleLockAddressByTokenID(
+                nftToken.collection,
+            ),
+            this.farmService.getFarmAddressByFarmTokenID(
+                decodedAttributes.farmTokenID,
+            ),
+        ]);
 
         const farmTokenIdentifier = tokenIdentifier(
             decodedAttributes.farmTokenID,
             decodedAttributes.farmTokenNonce,
         );
         const farmToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.simpleLockAddress,
+            simpleLockAddress,
             farmTokenIdentifier,
         );
         const userFarmToken = await this.farmTokenUSD(

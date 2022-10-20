@@ -25,6 +25,7 @@ import { CachingModule } from 'src/services/caching/cache.module';
         FlagRepositoryService,
         SCAddressRepositoryService,
         RemoteConfigGetterService,
+        RemoteConfigGetterService,
         RemoteConfigSetterService,
         ApiConfigService,
     ],

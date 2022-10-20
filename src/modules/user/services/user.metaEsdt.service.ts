@@ -216,21 +216,12 @@ export class UserService {
     }
 
     private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
-        const [
-            lockedMEXTokenID,
-            lockedLpTokenID,
-            lockedFarmTokenID,
-            lockedTokenID,
-            lpProxyTokenID,
-            lpFarmProxyTokenID,
-        ] = await Promise.all([
-            this.lockedAssetGetter.getLockedTokenID(),
-            this.proxyPairGetter.getwrappedLpTokenID(),
-            this.proxyFarmGetter.getwrappedFarmTokenID(),
-            this.simpleLockGetter.getLockedTokenID(),
-            this.simpleLockGetter.getLpProxyTokenID(),
-            this.simpleLockGetter.getFarmProxyTokenID(),
-        ]);
+        const [lockedMEXTokenID, lockedLpTokenID, lockedFarmTokenID] =
+            await Promise.all([
+                this.lockedAssetGetter.getLockedTokenID(),
+                this.proxyPairGetter.getwrappedLpTokenID(),
+                this.proxyFarmGetter.getwrappedFarmTokenID(),
+            ]);
 
         switch (tokenID) {
             case lockedMEXTokenID:
@@ -239,12 +230,26 @@ export class UserService {
                 return NftTokenType.LockedLpToken;
             case lockedFarmTokenID:
                 return NftTokenType.LockedFarmToken;
-            case lockedTokenID:
-                return NftTokenType.LockedEsdtToken;
-            case lpProxyTokenID:
-                return NftTokenType.LockedSimpleLpToken;
-            case lpFarmProxyTokenID:
-                return NftTokenType.LockedSimpleFarmToken;
+        }
+
+        for (const simpleLockAddress of scAddress.simpleLockAddress) {
+            const [lockedTokenID, lpProxyTokenID, lpFarmProxyTokenID] =
+                await Promise.all([
+                    this.simpleLockGetter.getLockedTokenID(simpleLockAddress),
+                    this.simpleLockGetter.getLpProxyTokenID(simpleLockAddress),
+                    this.simpleLockGetter.getFarmProxyTokenID(
+                        simpleLockAddress,
+                    ),
+                ]);
+
+            switch (tokenID) {
+                case lockedTokenID:
+                    return NftTokenType.LockedEsdtToken;
+                case lpProxyTokenID:
+                    return NftTokenType.LockedSimpleLpToken;
+                case lpFarmProxyTokenID:
+                    return NftTokenType.LockedSimpleFarmToken;
+            }
         }
 
         let promises: Promise<string>[] = [];

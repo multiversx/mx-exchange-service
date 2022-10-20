@@ -5,8 +5,8 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { UnlockMileStoneModel } from '../models/locked-asset.model';
 import { AbiLockedAssetService } from './abi-locked-asset.service';
@@ -20,21 +20,24 @@ export class LockedAssetGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'lockedAssetFactory';
     }
 
     async getAssetTokenID(): Promise<string> {
         return await this.getData(
-            this.getLockedAssetFactoryCacheKey('assetTokenID'),
+            this.getCacheKey('assetTokenID'),
             () => this.abiService.getAssetTokenID(),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getLockedTokenID(): Promise<string> {
         return await this.getData(
-            this.getLockedAssetFactoryCacheKey('lockedTokenID'),
+            this.getCacheKey('lockedTokenID'),
             () => this.abiService.getLockedTokenID(),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -50,7 +53,7 @@ export class LockedAssetGetterService extends GenericGetterService {
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
         return await this.getData(
-            this.getLockedAssetFactoryCacheKey('defaultUnlockPeriod'),
+            this.getCacheKey('defaultUnlockPeriod'),
             () => this.abiService.getDefaultUnlockPeriod(),
             oneHour(),
         );
@@ -58,7 +61,7 @@ export class LockedAssetGetterService extends GenericGetterService {
 
     async getInitEpoch(): Promise<number> {
         return await this.getData(
-            this.getLockedAssetFactoryCacheKey('initEpoch'),
+            this.getCacheKey('initEpoch'),
             () => this.abiService.getInitEpoch(),
             oneHour(),
         );
@@ -66,15 +69,11 @@ export class LockedAssetGetterService extends GenericGetterService {
 
     async getExtendedAttributesActivationNonce(): Promise<number> {
         return await this.getData(
-            this.getLockedAssetFactoryCacheKey(
+            this.getCacheKey(
                 'extendedAttributesActivationNonce',
             ),
             () => this.abiService.getExtendedAttributesActivationNonce(),
             oneHour(),
         );
-    }
-
-    private getLockedAssetFactoryCacheKey(...args: any) {
-        return generateCacheKeyFromParams('lockedAssetFactory', ...args);
     }
 }

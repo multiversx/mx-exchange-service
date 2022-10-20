@@ -1,14 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
+import { generateCacheKeyFromParams } from '../../utils/generate-cache-key';
 
-@Injectable()
 export class GenericGetterService {
+    protected baseKey: string | undefined;
     constructor(
         protected readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        protected readonly logger: Logger,
     ) {}
 
     protected async getData(
@@ -35,5 +34,11 @@ export class GenericGetterService {
             throw error;
         }
     }
-    //TODO SERVICES-731: add getCacheKey
+
+    protected getCacheKey(...args: any) {
+        if (!this.baseKey) {
+            this.logger.error('baseKey was not set');
+        }
+        return generateCacheKeyFromParams(this.baseKey, ...args);
+    }
 }

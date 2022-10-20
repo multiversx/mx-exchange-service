@@ -29,8 +29,8 @@ export class FarmCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
-    async cacheFarms(): Promise<void> {
+    @Cron(CronExpression.EVERY_HOUR)
+    async cacheFarmsTokens(): Promise<void> {
         const farmsAddress: string[] = farmsAddresses();
         const promises = farmsAddress.map(async (farmAddress) => {
             const [farmTokenID, farmingTokenID, farmedTokenID] =
