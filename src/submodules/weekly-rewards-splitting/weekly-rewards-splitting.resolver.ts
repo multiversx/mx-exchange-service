@@ -1,6 +1,5 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { WeeklyRewardsSplittingGetterService } from './services/weekly-rewards-splitting.getter.service';
-import { WeeklyRewardsSplittingService } from './services/weekly-rewards-splitting.service';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import {
     GlobalInfoByWeekModel,
