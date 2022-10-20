@@ -88,6 +88,22 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         );
     }
 
+    async getTotalRewardsForWeekPriceUSD(scAddress: string, week: number): Promise<string> {
+        return this.getData(
+            this.getWeeklyRewardsCacheKey(scAddress, 'totalRewardsForWeekPriceUSD', week),
+            () => this.weeklyRewardsSplittingCompute.computeTotalRewardsForWeekPriceUSD(scAddress, week),
+            oneMinute(),
+        )
+    }
+
+    async getTotalLockedTokensForWeekPriceUSD(scAddress: string, week: number): Promise<string> {
+        return this.getData(
+            this.getWeeklyRewardsCacheKey(scAddress, 'totalLockedTokensForWeekPriceUSD', week),
+            () => this.weeklyRewardsSplittingCompute.computeTotalLockedTokensForWeekPriceUSD(scAddress, week),
+            oneMinute(),
+        )
+    }
+
     private getWeeklyRewardsCacheKey(address: string, ...args: any) {
         return generateCacheKeyFromParams('weeklyRewards', address, ...args);
     }

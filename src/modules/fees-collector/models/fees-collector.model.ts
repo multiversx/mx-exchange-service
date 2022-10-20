@@ -20,9 +20,6 @@ export class FeesCollectorModel {
     @Field()
     endWeek: number;
 
-    @Field()
-    apr: string;
-
     @Field(() => [GlobalInfoByWeekModel])
     undistributedRewards: [GlobalInfoByWeekModel];
 

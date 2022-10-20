@@ -10,6 +10,9 @@ export class GlobalInfoByWeekModel {
     @Field()
     week: number;
 
+    @Field()
+    apr: string;
+
     @Field(() => [EsdtTokenPayment])
     totalRewardsForWeek: [EsdtTokenPayment];
 

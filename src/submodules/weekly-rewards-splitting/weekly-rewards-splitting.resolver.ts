@@ -8,13 +8,14 @@ import {
 } from './models/weekly-rewards-splitting.model';
 import { EnergyModel } from '../../modules/simple-lock/models/simple.lock.model';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
+import { WeeklyRewardsSplittingComputeService } from "./services/weekly-rewards-splitting.compute.service";
 
 
 @Resolver(() => GlobalInfoByWeekModel)
 export class GlobalInfoByWeekResolver extends GenericResolver {
     constructor(
         protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
-        protected readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
+        protected readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
         super();
     }
@@ -43,6 +44,13 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
     ): Promise<string> {
         return await this.genericFieldResover(() =>
             this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(parent.scAddress, parent.week),
+        );
+    }
+
+    @ResolveField()
+    async apr(@Parent() parent: GlobalInfoByWeekModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.weeklyRewardsSplittingCompute.computeApr(parent.scAddress, parent.week),
         );
     }
 }
