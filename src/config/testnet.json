@@ -1,5 +1,25 @@
 {
-    "caching": {
-        "default": 20
+    "scAddress": {
+        "routerAddress": "erd1qqqqqqqqqqqqqpgqk9yrxngdft4az4092hg9hmnu7ngewwm6pr9sk3wqel",
+        "E2ETK2HFNW-1a3033": "erd1qqqqqqqqqqqqqpgq2gq62dvtwhfrjfghwrlrvjlt94wtf2wvpr9sgdk955",
+        "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqnx8t7pfz06390prhclqu47fj6clh8mrrpr9sdgqs69",
+        "simpleLockAddress": "erd1qqqqqqqqqqqqqpgqkm6x7z42fem46hrlt6qwhh2xg0wqaqwdpr9sx3c35g",
+        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgqkm6x7z42fem46hrlt6qwhh2xg0wqaqwdpr9sx3c35g",
+        "feesCollector": "erd1qqqqqqqqqqqqqpgqlf6mxrk4smzw357ha5s2q6dp8gxnjnp4pr9spyeyel"
+    },
+    "farms": {
+        "v1.2": [],
+        "v1.3": {
+            "unlockedRewards": [],
+            "lockedRewards": [],
+            "customRewards": []
+        }
+    },
+    "tokenProviderUSD": "E2ETK2HFNW-710601",
+    "tokensSupply": ["E2ETK2HFNW-1a3033"],
+    "cachedTokensPrice": ["E2ETK2HFNW-1a3033"],
+    "constants": {
+        "MEX_TOKEN_ID": "E2ETK2HFNW-1a3033",
+        "USDC_TOKEN_ID": "E2ETK2HFNW-713232"
     }
 }

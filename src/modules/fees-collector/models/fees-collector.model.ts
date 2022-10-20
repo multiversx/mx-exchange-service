@@ -1,13 +1,12 @@
 import { Field, ObjectType } from '@nestjs/graphql';
 import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import {
-    ClaimProgress,
-    GlobalInfoByWeekModel, UserInfoByWeekModel,
+    GlobalInfoByWeekModel, GlobalInfoByWeekSubModel, UserInfoByWeekModel, UserInfoByWeekSubModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
 @ObjectType()
-export class FeesCollectorModel {
+export class FeesCollectorModel extends GlobalInfoByWeekSubModel {
     @Field()
     address: string;
 
@@ -29,16 +28,14 @@ export class FeesCollectorModel {
     @Field(() => [EsdtTokenPayment])
     accumulatedFees: [EsdtTokenPayment]
 
-    @Field()
-    lastGlobalUpdateWeek: number;
-
     constructor(init?: Partial<FeesCollectorModel>) {
+        super(init);
         Object.assign(this, init);
     }
 }
 
 @ObjectType()
-export class UserEntryFeesCollectorModel {
+export class UserEntryFeesCollectorModel extends UserInfoByWeekSubModel {
     @Field()
     address: string;
 
@@ -57,13 +54,8 @@ export class UserEntryFeesCollectorModel {
     @Field(() => [UserInfoByWeekModel])
     undistributedRewards: [UserInfoByWeekModel];
 
-    @Field(() => ClaimProgress)
-    claimProgress: ClaimProgress;
-
-    @Field()
-    lastActiveWeekForUser: number;
-
     constructor(init?: Partial<UserEntryFeesCollectorModel>) {
+        super(init);
         Object.assign(this, init);
     }
 }
