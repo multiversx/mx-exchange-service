@@ -52,5 +52,4 @@ export class EnergyGetterServiceMock implements IEnergyGetterService {
         }
         throw ErrorNotImplemented
     }
-
 }
