@@ -65,6 +65,29 @@ export class ClaimProgress {
     }
 }
 
+@ObjectType()
+export class GlobalInfoByWeekSubModel {
+    @Field()
+    lastGlobalUpdateWeek: number;
+
+    constructor(init?: Partial<GlobalInfoByWeekSubModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserInfoByWeekSubModel {
+    @Field(() => ClaimProgress)
+    claimProgress: ClaimProgress;
+
+    @Field()
+    lastActiveWeekForUser: number;
+
+    constructor(init?: Partial<UserInfoByWeekSubModel>) {
+        Object.assign(this, init);
+    }
+}
+
 @InputType()
 export class WeekFilterPeriodModel {
     @Field( {nullable: true})

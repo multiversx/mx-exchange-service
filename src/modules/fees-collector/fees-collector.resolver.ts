@@ -11,10 +11,13 @@ import {
     WeeklyRewardsSplittingGetterService
 } from '../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import {
-    ClaimProgress,
     GlobalInfoByWeekModel, UserInfoByWeekModel, WeekFilterPeriodModel,
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { AbstractWeekValidation } from '../../submodules/week-timekeeping/validationPipes/week-timekeeping.validation';
+import { Mixin } from "ts-mixer";
+import {
+    GlobalInfoByWeekSubResolver, UserInfoByWeekSubResolver
+} from "../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.resolver";
 
 @Injectable()
 export class FeesCollectorWeekValidation extends AbstractWeekValidation {
@@ -22,12 +25,12 @@ export class FeesCollectorWeekValidation extends AbstractWeekValidation {
 }
 
 @Resolver(() => FeesCollectorModel)
-export class FeesCollectorResolver extends GenericResolver {
+export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWeekSubResolver) {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
         protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
     ) {
-        super();
+        super(weeklyRewardsSplittingGetter);
     }
 
     @ResolveField(() => [GlobalInfoByWeekModel])
@@ -39,15 +42,6 @@ export class FeesCollectorResolver extends GenericResolver {
     async accumulatedFees(@Parent() parent: FeesCollectorModel): Promise<EsdtTokenPayment[]> {
         return await this.genericFieldResover(() =>
             this.feesCollectorService.getAccumulatedFees(parent.address, parent.time.currentWeek, parent.allTokens),
-        );
-    }
-
-    @ResolveField()
-    async lastGlobalUpdateWeek(
-        @Parent() parent: FeesCollectorModel,
-    ): Promise<number> {
-        return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(parent.address),
         );
     }
 
@@ -63,21 +57,12 @@ export class FeesCollectorResolver extends GenericResolver {
 
 
 @Resolver(() => UserEntryFeesCollectorModel)
-export class UserEntryFeesCollectorResolver extends GenericResolver {
+export class UserEntryFeesCollectorResolver extends Mixin(GenericResolver, UserInfoByWeekSubResolver) {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
         protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
     ) {
-        super();
-    }
-
-    @ResolveField()
-    async lastActiveWeekForUser(
-        @Parent() parent: UserEntryFeesCollectorModel,
-    ): Promise<number> {
-        return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(parent.address, parent.userAddress)
-        );
+        super(weeklyRewardsSplittingGetter);
     }
 
     @ResolveField(() => [UserInfoByWeekModel])
@@ -85,15 +70,6 @@ export class UserEntryFeesCollectorResolver extends GenericResolver {
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<UserInfoByWeekModel[]> {
         return this.feesCollectorService.getUserWeeklyRewardsSplit(parent.address, parent.userAddress, parent.startWeek, parent.endWeek);
-    }
-
-    @ResolveField(() => ClaimProgress)
-    async claimProgress(
-        @Parent() parent: UserEntryFeesCollectorModel,
-    ): Promise<ClaimProgress> {
-        return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.currentClaimProgress(parent.address, parent.userAddress),
-        );
     }
 
     @UseGuards(GqlAuthGuard)
