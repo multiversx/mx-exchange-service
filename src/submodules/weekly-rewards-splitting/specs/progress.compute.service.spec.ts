@@ -25,9 +25,11 @@ describe('WeeklyRewardsSplittingComputeService', () => {
             },
         })
         const progress = createMockProgress()
-        await expect(service.advanceWeek(progress, undefined, 7))
-            .rejects
-            .toThrowError(expectedErr);
+        try {
+            service.advanceWeek(progress, undefined, 7)
+        } catch (e) {
+            expect(e).toEqual(expectedErr)
+        }
     });
     it('advanceWeek' +
         'undefined nextWeekEnergy', async () => {
