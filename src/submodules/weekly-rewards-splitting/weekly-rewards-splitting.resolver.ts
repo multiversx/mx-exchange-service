@@ -1,6 +1,5 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { WeeklyRewardsSplittingGetterService } from './services/weekly-rewards-splitting.getter.service';
-import { WeeklyRewardsSplittingService } from './services/weekly-rewards-splitting.service';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import {
     GlobalInfoByWeekModel,
@@ -8,13 +7,14 @@ import {
 } from './models/weekly-rewards-splitting.model';
 import { EnergyModel } from '../../modules/simple-lock/models/simple.lock.model';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
+import { WeeklyRewardsSplittingComputeService } from "./services/weekly-rewards-splitting.compute.service";
 
 
 @Resolver(() => GlobalInfoByWeekModel)
 export class GlobalInfoByWeekResolver extends GenericResolver {
     constructor(
         protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
-        protected readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
+        protected readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
         super();
     }
@@ -45,12 +45,20 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
             this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(parent.scAddress, parent.week),
         );
     }
+
+    @ResolveField()
+    async apr(@Parent() parent: GlobalInfoByWeekModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.weeklyRewardsSplittingCompute.computeApr(parent.scAddress, parent.week),
+        );
+    }
 }
 
 @Resolver(() => UserInfoByWeekModel)
 export class UserInfoByWeekResolver extends GenericResolver {
     constructor(
         protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
+        protected readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
     ) {
         super();
     }
@@ -61,6 +69,13 @@ export class UserInfoByWeekResolver extends GenericResolver {
     ): Promise<EnergyModel> {
         return await this.genericFieldResover(() =>
             this.weeklyRewardsSplittingGetter.userEnergyForWeek(parent.scAddress, parent.userAddress, parent.week),
+        );
+    }
+
+    @ResolveField()
+    async apr(@Parent() parent: UserInfoByWeekModel): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.weeklyRewardsSplittingCompute.computeUserApr(parent.scAddress, parent.userAddress, parent.week),
         );
     }
 

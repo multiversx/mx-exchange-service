@@ -51,15 +51,6 @@ export class FeesCollectorResolver extends GenericResolver {
         );
     }
 
-    @ResolveField(() => ClaimProgress)
-    async claimProgress(
-        @Parent() parent: UserEntryFeesCollectorModel,
-    ): Promise<ClaimProgress> {
-        return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.currentClaimProgress(parent.address, parent.userAddress),
-        );
-    }
-
     @Query(() => FeesCollectorModel)
     async feesCollector(
         @Args('weekFilter', { nullable: true }, FeesCollectorWeekValidation) weekFilter: WeekFilterPeriodModel,

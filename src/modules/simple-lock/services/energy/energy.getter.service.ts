@@ -2,7 +2,7 @@ import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
-import { oneDay, oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
@@ -12,9 +12,10 @@ import { Logger } from 'winston';
 import { SimpleLockType } from '../../models/simple.lock.model';
 import { SimpleLockGetterService } from '../simple.lock.getter.service';
 import { EnergyAbiService } from './energy.abi.service';
+import { IEnergyGetterService } from '../../interfaces';
 
 @Injectable()
-export class EnergyGetterService extends SimpleLockGetterService {
+export class EnergyGetterService extends SimpleLockGetterService implements IEnergyGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

@@ -58,6 +58,7 @@ import { EnergyComputeService } from './services/energy/energy.compute.service';
         SimpleLockGetterService,
         EnergyGetterService,
         EnergySetterService,
+        EnergyComputeService,
     ],
 })
 export class SimpleLockModule {}

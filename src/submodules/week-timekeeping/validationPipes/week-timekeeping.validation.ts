@@ -13,7 +13,7 @@ export abstract class AbstractWeekValidation implements PipeTransform {
     }
     async transform(weekFilter: WeekFilterPeriodModel | undefined, metadata: ArgumentMetadata): Promise<WeekFilterPeriodModel> {
         const time = await this.weekTimekeepingService.getWeeklyTimekeeping(this.address);
-        this.setIfUndefined(weekFilter, time.currentWeek);
+        weekFilter = this.setIfUndefined(weekFilter, time.currentWeek);
 
         if (weekFilter.start > weekFilter.end) {
             throw new UserInputError(`${metadata.data}.start must be less than or equal to ${metadata.data}.end`);

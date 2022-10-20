@@ -84,8 +84,17 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             [new U32Value(new BigNumber(week))],
         );
         const response = await this.getGenericData(interaction);
-        //TODO: returns good value
-        return response.firstValue.valueOf();
+        const rewardsRaw = response.firstValue.valueOf()
+        const rewards: EsdtTokenPayment[] = []
+        for (const rewardRaw of rewardsRaw) {
+            rewards.push(new EsdtTokenPayment({
+                tokenID: rewardRaw.token,
+                amount: rewardRaw.amount,
+                tokenType: 0,
+                nonce: 0
+            }))
+        }
+        return rewards;
     }
 
     async totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
