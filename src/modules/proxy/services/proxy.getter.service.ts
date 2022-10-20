@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { AbiProxyService } from './proxy-abi.service';
 
@@ -19,21 +18,24 @@ export class ProxyGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'proxy';
     }
 
     async getAssetTokenID(): Promise<string> {
         return await this.getData(
-            this.getProxyCacheKey('assetTokenID'),
+            this.getCacheKey('assetTokenID'),
             () => this.abiService.getAssetTokenID(),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getLockedAssetTokenID(): Promise<string> {
         return this.getData(
-            this.getProxyCacheKey('lockedAssetTokenID'),
+            this.getCacheKey('lockedAssetTokenID'),
             () => this.abiService.getLockedAssetTokenID(),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -45,9 +47,5 @@ export class ProxyGetterService extends GenericGetterService {
     async getlockedAssetToken(): Promise<NftCollection> {
         const lockedAssetTokenID = await this.getLockedAssetTokenID();
         return this.tokenGetter.getNftCollectionMetadata(lockedAssetTokenID);
-    }
-
-    private getProxyCacheKey(...args: any) {
-        return generateCacheKeyFromParams('proxy', ...args);
     }
 }

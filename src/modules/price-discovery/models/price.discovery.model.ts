@@ -1,5 +1,6 @@
 import { PriceDiscoveryPhase } from '@elrondnetwork/erdjs-dex';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
@@ -55,7 +56,13 @@ export class PriceDiscoveryModel {
     linearPenaltyPhaseDurationBlocks: number;
     @Field(() => Int)
     fixedPenaltyPhaseDurationBlocks: number;
-    @Field()
+    @Field(() => SimpleLockModel)
+    lockingSC: SimpleLockModel;
+    @Field({
+        deprecationReason:
+            'field is deprecated and will be removed on next release;' +
+            'value can be obtained from lockingSC field',
+    })
     lockingScAddress: string;
     @Field(() => Int)
     unlockEpoch: number;

@@ -132,9 +132,10 @@ export class UserService {
 
             switch (userNftTokenType) {
                 case NftTokenType.FarmToken:
-                    const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
-                        userNft.collection,
-                    );
+                    const farmAddress =
+                        await this.farmService.getFarmAddressByFarmTokenID(
+                            userNft.collection,
+                        );
                     promises.push(
                         this.userComputeService.farmTokenUSD(
                             userNft,
@@ -178,9 +179,10 @@ export class UserService {
                     );
                     break;
                 case NftTokenType.RedeemToken:
-                    const priceDiscoveryAddress = await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
-                        userNft.collection,
-                    );
+                    const priceDiscoveryAddress =
+                        await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
+                            userNft.collection,
+                        );
                     promises.push(
                         this.userComputeService.redeemTokenUSD(
                             userNft,
@@ -214,21 +216,12 @@ export class UserService {
     }
 
     private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
-        const [
-            lockedMEXTokenID,
-            lockedLpTokenID,
-            lockedFarmTokenID,
-            lockedTokenID,
-            lpProxyTokenID,
-            lpFarmProxyTokenID,
-        ] = await Promise.all([
-            this.lockedAssetGetter.getLockedTokenID(),
-            this.proxyPairGetter.getwrappedLpTokenID(),
-            this.proxyFarmGetter.getwrappedFarmTokenID(),
-            this.simpleLockGetter.getLockedTokenID(),
-            this.simpleLockGetter.getLpProxyTokenID(),
-            this.simpleLockGetter.getFarmProxyTokenID(),
-        ]);
+        const [lockedMEXTokenID, lockedLpTokenID, lockedFarmTokenID] =
+            await Promise.all([
+                this.lockedAssetGetter.getLockedTokenID(),
+                this.proxyPairGetter.getwrappedLpTokenID(),
+                this.proxyFarmGetter.getwrappedFarmTokenID(),
+            ]);
 
         switch (tokenID) {
             case lockedMEXTokenID:
@@ -237,12 +230,26 @@ export class UserService {
                 return NftTokenType.LockedLpToken;
             case lockedFarmTokenID:
                 return NftTokenType.LockedFarmToken;
-            case lockedTokenID:
-                return NftTokenType.LockedEsdtToken;
-            case lpProxyTokenID:
-                return NftTokenType.LockedSimpleLpToken;
-            case lpFarmProxyTokenID:
-                return NftTokenType.LockedSimpleFarmToken;
+        }
+
+        for (const simpleLockAddress of scAddress.simpleLockAddress) {
+            const [lockedTokenID, lpProxyTokenID, lpFarmProxyTokenID] =
+                await Promise.all([
+                    this.simpleLockGetter.getLockedTokenID(simpleLockAddress),
+                    this.simpleLockGetter.getLpProxyTokenID(simpleLockAddress),
+                    this.simpleLockGetter.getFarmProxyTokenID(
+                        simpleLockAddress,
+                    ),
+                ]);
+
+            switch (tokenID) {
+                case lockedTokenID:
+                    return NftTokenType.LockedEsdtToken;
+                case lpProxyTokenID:
+                    return NftTokenType.LockedSimpleLpToken;
+                case lpFarmProxyTokenID:
+                    return NftTokenType.LockedSimpleFarmToken;
+            }
         }
 
         let promises: Promise<string>[] = [];
@@ -250,41 +257,44 @@ export class UserService {
             promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
         }
         const farmTokenIDs = await Promise.all(promises);
-        if (farmTokenIDs.find(farmTokenID => farmTokenID === tokenID)) {
+        if (farmTokenIDs.find((farmTokenID) => farmTokenID === tokenID)) {
             return NftTokenType.FarmToken;
         }
 
         promises = [];
-        const staking = await this.remoteConfigGetterService.getStakingAddresses();
+        const staking =
+            await this.remoteConfigGetterService.getStakingAddresses();
         for (const address of staking) {
             promises.push(this.stakeGetterService.getFarmTokenID(address));
         }
         const stakeFarmTokenIDs = await Promise.all(promises);
         if (
             stakeFarmTokenIDs.find(
-                stakeFarmTokenID => stakeFarmTokenID === tokenID,
+                (stakeFarmTokenID) => stakeFarmTokenID === tokenID,
             )
         ) {
             return NftTokenType.StakeFarmToken;
         }
 
         promises = [];
-        const stakingProxy = await this.remoteConfigGetterService.getStakingProxyAddresses();
+        const stakingProxy =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
         for (const address of stakingProxy) {
             promises.push(this.proxyStakeGetter.getDualYieldTokenID(address));
         }
         const dualYieldTokenIDs = await Promise.all(promises);
         if (
             dualYieldTokenIDs.find(
-                dualYieldTokenID => dualYieldTokenID === tokenID,
+                (dualYieldTokenID) => dualYieldTokenID === tokenID,
             )
         ) {
             return NftTokenType.DualYieldToken;
         }
 
-        const priceDiscoveryAddress = await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
-            tokenID,
-        );
+        const priceDiscoveryAddress =
+            await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
+                tokenID,
+            );
         if (priceDiscoveryAddress) {
             return NftTokenType.RedeemToken;
         }
@@ -300,23 +310,19 @@ export class UserService {
             this.apiService.getNftsCountForUser(address),
         ]);
 
-        const [
-            egldPrice,
-            userStats,
-            userEsdtTokens,
-            userNftTokens,
-        ] = await Promise.all([
-            this.pairGetter.getFirstTokenPrice(scAddress.WEGLD_USDC),
-            this.apiService.getAccountStats(address),
-            this.userEsdt.getAllEsdtTokens(address, {
-                offset: 0,
-                limit: userEsdtTokensCount,
-            }),
-            this.getAllNftTokens(address, {
-                offset: 0,
-                limit: userNftTokensCount,
-            }),
-        ]);
+        const [egldPrice, userStats, userEsdtTokens, userNftTokens] =
+            await Promise.all([
+                this.pairGetter.getFirstTokenPrice(scAddress.WEGLD_USDC),
+                this.apiService.getAccountStats(address),
+                this.userEsdt.getAllEsdtTokens(address, {
+                    offset: 0,
+                    limit: userEsdtTokensCount,
+                }),
+                this.getAllNftTokens(address, {
+                    offset: 0,
+                    limit: userNftTokensCount,
+                }),
+            ]);
         if (!userStats) {
             return undefined;
         }
