@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
-import { AWSModule } from 'src/services/aws/aws.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
@@ -14,6 +13,7 @@ import { AutoRouterResolver } from './auto-router.resolver';
 import { PairTransactionService } from '../pair/services/pair.transactions.service';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { TokenModule } from '../tokens/token.module';
+import { TimeSeriesModule } from 'src/services/time-series/time-series.module';
 
 @Module({
     imports: [
@@ -22,7 +22,7 @@ import { TokenModule } from '../tokens/token.module';
         ElrondCommunicationModule,
         CachingModule,
         PairModule,
-        AWSModule,
+        TimeSeriesModule,
         WrappingModule,
         RouterModule,
         TokenModule,

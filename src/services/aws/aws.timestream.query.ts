@@ -12,9 +12,10 @@ import { PromiseResult } from 'aws-sdk/lib/request';
 import { QueryResponse } from 'aws-sdk/clients/timestreamquery';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { TimeSeriesQueryInterface } from '../time-series/time-series.query.interface';
 
 @Injectable()
-export class AWSTimestreamQueryService {
+export class AWSTimestreamQueryService implements TimeSeriesQueryInterface {
     private queryExecutor: PendingExecutor<
         {
             params: TimestreamQuery.QueryRequest;

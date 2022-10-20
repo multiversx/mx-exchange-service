@@ -11,7 +11,6 @@ import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
-import { AWSModule } from 'src/services/aws/aws.module';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
@@ -28,6 +27,7 @@ import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { TimeSeriesModule } from 'src/services/time-series/time-series.module';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -79,7 +79,7 @@ describe('AnalyticsService', () => {
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule, AWSModule],
+            imports: [CommonAppModule, CachingModule, TimeSeriesModule],
             providers: [
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,

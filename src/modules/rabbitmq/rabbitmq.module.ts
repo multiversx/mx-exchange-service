@@ -19,14 +19,14 @@ import { PriceDiscoveryModule } from '../price-discovery/price.discovery.module'
 import { TokenModule } from '../tokens/token.module';
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
-import { AWSModule } from 'src/services/aws/aws.module';
 import { PairHandler } from './handlers/pair.handler.service';
+import { TimeSeriesModule } from 'src/services/time-series/time-series.module';
 
 @Module({
     imports: [
         CommonAppModule,
         ElrondCommunicationModule,
-        AWSModule,
+        TimeSeriesModule,
         CachingModule,
         ContextModule,
         PairModule,

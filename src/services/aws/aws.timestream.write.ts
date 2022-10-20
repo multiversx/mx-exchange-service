@@ -4,9 +4,10 @@ import { Logger } from 'winston';
 import AWS, { TimestreamWrite } from 'aws-sdk';
 import { HttpsAgent } from 'agentkeepalive';
 import { awsConfig } from 'src/config';
+import { TimeSeriesWriteInterface } from '../time-series/time-series.write.interface';
 
 @Injectable()
-export class AWSTimestreamWriteService {
+export class AWSTimestreamWriteService implements TimeSeriesWriteInterface {
     private writeClient: TimestreamWrite;
     private readonly DatabaseName: string;
 

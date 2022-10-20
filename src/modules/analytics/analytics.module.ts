@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AWSModule } from 'src/services/aws/aws.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
@@ -16,11 +15,12 @@ import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairDayDataResolver } from './analytics.pair.resolver';
 import { TokenModule } from '../tokens/token.module';
 import { AnalyticsAWSSetterService } from './services/analytics.aws.setter.service';
+import { TimeSeriesModule } from 'src/services/time-series/time-series.module';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
-        AWSModule,
+        TimeSeriesModule,
         CachingModule,
         ContextModule,
         RouterModule,
