@@ -34,10 +34,7 @@ export class FarmGetterServiceV2 extends FarmGetterService {
         farmAddress: string,
     ): Promise<number> {
         return await this.getData(
-            this.getFarmCacheKey(
-                farmAddress,
-                'boostedYieldsRewardsPercenatage',
-            ),
+            this.getCacheKey(farmAddress, 'boostedYieldsRewardsPercenatage'),
             () =>
                 this.abiService.getBoostedYieldsRewardsPercenatage(farmAddress),
             oneMinute(),
@@ -46,7 +43,7 @@ export class FarmGetterServiceV2 extends FarmGetterService {
 
     async getCurrentWeek(farmAddress: string): Promise<number> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddress, 'currentWeek'),
+            this.getCacheKey(farmAddress, 'currentWeek'),
             () => this.abiService.getCurrentWeek(farmAddress),
             oneMinute(),
         );
@@ -54,7 +51,7 @@ export class FarmGetterServiceV2 extends FarmGetterService {
 
     async getEnergyFactoryAddress(farmAddress: string): Promise<string> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddress, 'energyFactoryAddress'),
+            this.getCacheKey(farmAddress, 'energyFactoryAddress'),
             () => this.abiService.getEnergyFactoryAddress(farmAddress),
             oneMinute(),
         );
