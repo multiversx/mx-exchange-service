@@ -18,6 +18,10 @@ import { TokenModule } from "../../modules/tokens/token.module";
     imports: [
         ElrondCommunicationModule,
         CachingModule,
+        SimpleLockModule,
+        RouterModule,
+        PairModule,
+        TokenModule
     ],
 })
 export class WeeklyRewardsSplittingModule {
@@ -26,10 +30,6 @@ export class WeeklyRewardsSplittingModule {
             module: WeeklyRewardsSplittingModule,
             imports: [
                 WeekTimekeepingModule.register(abiProvider),
-                SimpleLockModule,
-                RouterModule,
-                PairModule,
-                TokenModule
             ],
             providers: [
                 ApiConfigService,

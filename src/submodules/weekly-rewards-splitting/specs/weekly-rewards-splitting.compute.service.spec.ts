@@ -16,6 +16,10 @@ import { ClaimProgress } from "../models/weekly-rewards-splitting.model";
 import { EnergyType } from "@elrondnetwork/erdjs-dex";
 import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
 import BigNumber from "bignumber.js";
+import { RouterModule } from "../../../modules/router/router.module";
+import { PairModule } from "../../../modules/pair/pair.module";
+import { TokenModule } from "../../../modules/tokens/token.module";
+import { SimpleLockModule } from "../../../modules/simple-lock/simple.lock.module";
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     const dummyScAddress = 'erd'
@@ -241,7 +245,14 @@ async function createService(getterHandlers: any, computeHandlers: any, weeklyGe
     const weeklyGetter = new WeeklyRewardsSplittingGetterServiceMock(weeklyGetterHandlers);
     const progressCompute = new ProgressComputeServiceMock(progressComputeHandlers);
     const module: TestingModule = await Test.createTestingModule({
-        imports: [ElrondCommunicationModule, CachingModule],
+        imports: [
+            ElrondCommunicationModule,
+            CachingModule,
+            SimpleLockModule,
+            RouterModule,
+            PairModule,
+            TokenModule,
+        ],
         providers: [
             ApiConfigService,
             {
