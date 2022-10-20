@@ -10,7 +10,6 @@ import { TimeSeriesQueryService } from "./time-series.query.service";
 import { TimeSeriesWriteInterface } from "./time-series.write.interface";
 import { TimeSeriesWriteService } from "./time-series.write.service";
 
-@Global()
 @Module({})
 export class TimeSeriesModule {
   static register(): DynamicModule {

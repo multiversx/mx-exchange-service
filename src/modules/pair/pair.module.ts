@@ -15,6 +15,7 @@ import { TokenModule } from '../tokens/token.module';
 import { RouterModule } from '../router/router.module';
 import { CommonAppModule } from 'src/common.app.module';
 import { TimeSeriesModule } from 'src/services/time-series/time-series.module';
+
 @Module({
     imports: [
         CommonAppModule,

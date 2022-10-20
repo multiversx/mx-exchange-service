@@ -22,6 +22,10 @@ export class TimeSeriesQueryService implements TimeSeriesQueryInterface {
     }
   }
 
+  async getAggregatedValue({ table, series, metric, time }): Promise<string> {
+    return await this.execute('getAggregatedValue', this.timeSeriesQueryInterface.getAggregatedValue({ table, series, metric, time }));
+  }
+
   async getLatestCompleteValues({ table, series, metric }): Promise<HistoricDataModel[]> {
     return await this.execute('getLatestCompleteValues', this.timeSeriesQueryInterface.getLatestCompleteValues({ table, series, metric }));
   }

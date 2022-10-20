@@ -8,11 +8,11 @@ import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.mode
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
+import { TimeSeriesQueryService } from 'src/services/time-series/time-series.query.service';
 import { Logger } from 'winston';
 import { PairInfoModel } from '../models/pair-info.model';
 import { FeeDestination, LockedTokensInfo } from '../models/pair.model';
@@ -31,7 +31,7 @@ export class PairGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly timeSeriesQuery: TimeSeriesQueryService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'pair';
@@ -220,7 +220,7 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getCacheKey(pairAddress, `firstTokenVolume.${time}`),
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
+                this.timeSeriesQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'firstTokenVolume',
@@ -238,7 +238,7 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getCacheKey(pairAddress, `secondTokenVolume.${time}`),
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
+                this.timeSeriesQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'secondTokenVolume',
@@ -253,7 +253,7 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getCacheKey(pairAddress, `volumeUSD.${time}`),
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
+                this.timeSeriesQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'volumeUSD',
@@ -268,7 +268,7 @@ export class PairGetterService extends GenericGetterService {
         return this.getData(
             this.getCacheKey(pairAddress, `feesUSD.${time}`),
             () =>
-                this.awsTimestreamQuery.getAggregatedValue({
+                this.timeSeriesQuery.getAggregatedValue({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'feesUSD',

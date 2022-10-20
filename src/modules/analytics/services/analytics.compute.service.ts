@@ -9,7 +9,7 @@ import { FarmComputeService } from 'src/modules/farm/services/farm.compute.servi
 import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
+import { TimeSeriesQueryService } from 'src/services/time-series/time-series.query.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class AnalyticsComputeService {
         private readonly farmGetterService: FarmGetterService,
         private readonly farmComputeService: FarmComputeService,
         private readonly pairGetterService: PairGetterService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly timeSeriesQuery: TimeSeriesQueryService,
     ) {}
 
     async computeLockedValueUSDFarms(): Promise<string> {
@@ -108,7 +108,7 @@ export class AnalyticsComputeService {
         time: string,
         metric: string,
     ): Promise<string> {
-        return await this.awsTimestreamQuery.getAggregatedValue({
+        return await this.timeSeriesQuery.getAggregatedValue({
             table: awsConfig.timestream.tableName,
             series: tokenID,
             metric,
