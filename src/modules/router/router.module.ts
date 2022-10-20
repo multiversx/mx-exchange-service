@@ -15,6 +15,8 @@ import { WrappingModule } from '../wrapping/wrap.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { MetricsService } from 'src/endpoints/metrics/metrics.service';
 import { ElasticService } from 'src/helpers/elastic.service';
+import { SwapEnableConfigResolver } from './swap.enable.config.resolver';
+import { SimpleLockModule } from '../simple-lock/simple.lock.module';
 
 @Module({
     imports: [
@@ -22,6 +24,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
         ElrondCommunicationModule,
         CachingModule,
         PairModule,
+        SimpleLockModule,
         ContextModule,
         WrappingModule,
         RemoteConfigModule,
@@ -35,6 +38,7 @@ import { ElasticService } from 'src/helpers/elastic.service';
         TransactionRouterService,
         MetricsService,
         ElasticService,
+        SwapEnableConfigResolver,
         RouterResolver,
     ],
     exports: [

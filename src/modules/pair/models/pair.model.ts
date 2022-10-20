@@ -22,6 +22,12 @@ export class LiquidityPosition {
 
 @ObjectType()
 export class LockedTokensInfo {
+    @Field({
+        deprecationReason:
+            'field is deprecated and will be removed on next release;' +
+            'value can be obtained from lockingSC field',
+    })
+    lockingScAddress: string;
     @Field(() => SimpleLockModel)
     lockingSC: SimpleLockModel;
     @Field(() => Int)

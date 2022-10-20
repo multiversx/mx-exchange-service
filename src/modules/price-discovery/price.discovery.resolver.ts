@@ -210,6 +210,15 @@ export class PriceDiscoveryResolver {
     }
 
     @ResolveField()
+    async lockingScAddress(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getLockingScAddress(parent.address),
+        );
+    }
+
+    @ResolveField()
     async unlockEpoch(@Parent() parent: PriceDiscoveryModel): Promise<number> {
         return await this.genericFieldResover(() =>
             this.priceDiscoveryGetter.getUnlockEpoch(parent.address),

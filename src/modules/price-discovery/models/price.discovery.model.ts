@@ -58,6 +58,12 @@ export class PriceDiscoveryModel {
     fixedPenaltyPhaseDurationBlocks: number;
     @Field(() => SimpleLockModel)
     lockingSC: SimpleLockModel;
+    @Field({
+        deprecationReason:
+            'field is deprecated and will be removed on next release;' +
+            'value can be obtained from lockingSC field',
+    })
+    lockingScAddress: string;
     @Field(() => Int)
     unlockEpoch: number;
     @Field()
