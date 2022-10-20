@@ -61,6 +61,8 @@ import { FarmQueryResolver } from './resolvers/farm.query.resolver';
         FarmGetterService,
         FarmSetterService,
         FarmComputeService,
+        FarmV12AbiService,
+        FarmV13AbiService,
         FarmV12ComputeService,
         FarmV13ComputeService,
     ],
