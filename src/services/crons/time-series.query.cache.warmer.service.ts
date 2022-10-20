@@ -3,19 +3,19 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { awsConfig } from 'src/config';
 import { delay } from 'src/helpers/helpers';
-import { AnalyticsAWSSetterService } from 'src/modules/analytics/services/analytics.aws.setter.service';
+import { AnalyticsTimeSeriesSetterService } from 'src/modules/analytics/services/analytics.time-series.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
-export class AWSQueryCacheWarmerService {
+export class TimeSeriesQueryCacheWarmerService {
     constructor(
         private readonly awsQuery: AWSTimestreamQueryService,
         private readonly tokenService: TokenService,
         private readonly routerGetter: RouterGetterService,
-        private readonly analyticsAWSSetter: AnalyticsAWSSetterService,
+        private readonly analyticsTimeSeriesSetter: AnalyticsTimeSeriesSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -63,32 +63,32 @@ export class AWSQueryCacheWarmerService {
                 });
 
             const cachedKeys = await Promise.all([
-                this.analyticsAWSSetter.setValues24h(
+                this.analyticsTimeSeriesSetter.setValues24h(
                     tokenID,
                     'priceUSD',
                     priceUSD24h,
                 ),
-                this.analyticsAWSSetter.setLatestCompleteValues(
+                this.analyticsTimeSeriesSetter.setLatestCompleteValues(
                     tokenID,
                     'priceUSD',
                     priceUSDCompleteValues,
                 ),
-                this.analyticsAWSSetter.setValues24h(
+                this.analyticsTimeSeriesSetter.setValues24h(
                     tokenID,
                     'lockedValueUSD',
                     lockedValueUSD24h,
                 ),
-                this.analyticsAWSSetter.setLatestCompleteValues(
+                this.analyticsTimeSeriesSetter.setLatestCompleteValues(
                     tokenID,
                     'lockedValueUSD',
                     lockedValueUSDCompleteValues,
                 ),
-                this.analyticsAWSSetter.setValues24hSum(
+                this.analyticsTimeSeriesSetter.setValues24hSum(
                     tokenID,
                     'volumeUSD',
                     volumeUSD24hSum,
                 ),
-                this.analyticsAWSSetter.setSumCompleteValues(
+                this.analyticsTimeSeriesSetter.setSumCompleteValues(
                     tokenID,
                     'volumeUSD',
                     volumeUSDCompleteValuesSum,
@@ -135,27 +135,27 @@ export class AWSQueryCacheWarmerService {
                 });
 
             const cachedKeys = await Promise.all([
-                this.analyticsAWSSetter.setValues24h(
+                this.analyticsTimeSeriesSetter.setValues24h(
                     pairAddress,
                     'lockedValueUSD',
                     lockedValueUSD24h,
                 ),
-                this.analyticsAWSSetter.setLatestCompleteValues(
+                this.analyticsTimeSeriesSetter.setLatestCompleteValues(
                     pairAddress,
                     'lockedValueUSD',
                     lockedValueUSDCompleteValues,
                 ),
-                this.analyticsAWSSetter.setValues24hSum(
+                this.analyticsTimeSeriesSetter.setValues24hSum(
                     pairAddress,
                     'feesUSD',
                     feesUSD,
                 ),
-                this.analyticsAWSSetter.setValues24hSum(
+                this.analyticsTimeSeriesSetter.setValues24hSum(
                     pairAddress,
                     'volumeUSD',
                     volumeUSD24hSum,
                 ),
-                this.analyticsAWSSetter.setSumCompleteValues(
+                this.analyticsTimeSeriesSetter.setSumCompleteValues(
                     pairAddress,
                     'volumeUSD',
                     volumeUSDCompleteValuesSum,

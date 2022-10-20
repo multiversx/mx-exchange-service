@@ -4,13 +4,13 @@ import { Args, Resolver } from '@nestjs/graphql';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { AWSQueryArgs } from './models/query.args';
 import { AnalyticsGetterService } from './services/analytics.getter.service';
-import { AnalyticsAWSGetterService } from './services/analytics.aws.getter.service';
 import { ApolloError } from 'apollo-server-express';
+import { AnalyticsTimeSeriesGetterService } from './services/analytics.time-series.getter.service';
 
 @Resolver()
 export class AnalyticsResolver {
     constructor(
-        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
+        private readonly analyticsTimeSeriesGetter: AnalyticsTimeSeriesGetterService,
         private readonly analyticsGetter: AnalyticsGetterService,
     ) {}
 
@@ -91,7 +91,7 @@ export class AnalyticsResolver {
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getLatestCompleteValues(
+            this.analyticsTimeSeriesGetter.getLatestCompleteValues(
                 args.series,
                 args.metric,
             ),
@@ -110,7 +110,7 @@ export class AnalyticsResolver {
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getSumCompleteValues(
+            this.analyticsTimeSeriesGetter.getSumCompleteValues(
                 args.series,
                 args.metric,
             ),
@@ -127,7 +127,7 @@ export class AnalyticsResolver {
     )
     async values24h(@Args() args: AWSQueryArgs): Promise<HistoricDataModel[]> {
         return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getValues24h(args.series, args.metric),
+            this.analyticsTimeSeriesGetter.getValues24h(args.series, args.metric),
         );
     }
 
@@ -143,7 +143,7 @@ export class AnalyticsResolver {
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getValues24hSum(args.series, args.metric),
+            this.analyticsTimeSeriesGetter.getValues24hSum(args.series, args.metric),
         );
     }
 
@@ -159,7 +159,7 @@ export class AnalyticsResolver {
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getLatestHistoricData(
+            this.analyticsTimeSeriesGetter.getLatestHistoricData(
                 args.time,
                 args.series,
                 args.metric,
@@ -180,7 +180,7 @@ export class AnalyticsResolver {
         @Args() args: AWSQueryArgs,
     ): Promise<HistoricDataModel[]> {
         return await this.genericQuery(() =>
-            this.analyticsAWSGetter.getLatestBinnedHistoricData(
+            this.analyticsTimeSeriesGetter.getLatestBinnedHistoricData(
                 args.time,
                 args.series,
                 args.metric,

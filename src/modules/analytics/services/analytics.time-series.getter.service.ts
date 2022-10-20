@@ -11,7 +11,7 @@ import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query
 import { awsConfig } from 'src/config';
 
 @Injectable()
-export class AnalyticsAWSGetterService extends GenericGetterService {
+export class AnalyticsTimeSeriesGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

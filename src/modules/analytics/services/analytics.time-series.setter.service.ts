@@ -8,7 +8,7 @@ import { Logger } from 'winston';
 import { HistoricDataModel } from '../models/analytics.model';
 
 @Injectable()
-export class AnalyticsAWSSetterService {
+export class AnalyticsTimeSeriesSetterService {
     constructor(
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

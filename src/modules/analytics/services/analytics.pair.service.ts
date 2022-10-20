@@ -3,20 +3,20 @@ import BigNumber from 'bignumber.js';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { HistoricDataModel, PairDayDataModel } from '../models/analytics.model';
-import { AnalyticsAWSGetterService } from './analytics.aws.getter.service';
+import { AnalyticsTimeSeriesGetterService } from './analytics.time-series.getter.service';
 
 @Injectable()
 export class AnalyticsPairService {
     constructor(
         private readonly pairGetterService: PairGetterService,
         private readonly routerGetter: RouterGetterService,
-        private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
+        private readonly analyticsTimeSeriesGetter: AnalyticsTimeSeriesGetterService,
     ) {}
 
     async getClosingLockedValueUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestCompleteValues(
+        return await this.analyticsTimeSeriesGetter.getLatestCompleteValues(
             pairAddress,
             'lockedValueUSD',
         );
@@ -25,21 +25,21 @@ export class AnalyticsPairService {
     async getDailyVolumesUSD(
         pairAddress: string,
     ): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getSumCompleteValues(
+        return await this.analyticsTimeSeriesGetter.getSumCompleteValues(
             pairAddress,
             'volumeUSD',
         );
     }
 
     async getDailyFeesUSD(pairAddress: string): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getSumCompleteValues(
+        return await this.analyticsTimeSeriesGetter.getSumCompleteValues(
             pairAddress,
             'feesUSD',
         );
     }
 
     async getClosingPriceUSD(tokenID: string): Promise<HistoricDataModel[]> {
-        return await this.analyticsAWSGetter.getLatestCompleteValues(
+        return await this.analyticsTimeSeriesGetter.getLatestCompleteValues(
             tokenID,
             'priceUSD',
         );
