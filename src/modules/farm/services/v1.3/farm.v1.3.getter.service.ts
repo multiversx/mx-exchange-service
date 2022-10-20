@@ -33,7 +33,7 @@ export class FarmV13GetterService extends FarmGetterService {
 
     async getFarmAPR(farmAddress: string): Promise<string> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddress, 'farmAPR'),
+            this.getCacheKey(farmAddress, 'farmAPR'),
             () => this.computeService.computeFarmAPR(farmAddress),
             oneMinute(),
         );
@@ -43,7 +43,7 @@ export class FarmV13GetterService extends FarmGetterService {
         farmAddress: string,
     ): Promise<FarmMigrationConfig> {
         return this.getData(
-            this.getFarmCacheKey(farmAddress, 'migrationConfig'),
+            this.getCacheKey(farmAddress, 'migrationConfig'),
             () => this.abiService.getFarmMigrationConfiguration(farmAddress),
             oneHour(),
         );

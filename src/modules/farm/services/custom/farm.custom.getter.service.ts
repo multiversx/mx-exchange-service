@@ -31,7 +31,7 @@ export class FarmCustomGetterService extends FarmGetterService {
 
     async getWhitelist(farmAddress: string): Promise<string[]> {
         return await this.getData(
-            this.getFarmCacheKey(farmAddress, 'whitelist'),
+            this.getCacheKey(farmAddress, 'whitelist'),
             () => this.abiService.getWhitelist(farmAddress),
             oneHour(),
         );

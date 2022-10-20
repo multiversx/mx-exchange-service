@@ -20,21 +20,59 @@ export class PriceDiscoveryCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_5_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
+    async cacheTokens(): Promise<void> {
+        const priceDiscoveryAddresses: string[] = scAddress.priceDiscovery;
+        for (const address of priceDiscoveryAddresses) {
+            const [launchedTokenID, acceptedTokenID, redeemTokenID] =
+                await Promise.all([
+                    this.priceDiscoveryAbi.getLaunchedTokenID(address),
+                    this.priceDiscoveryAbi.getAcceptedTokenID(address),
+                    this.priceDiscoveryAbi.getRedeemTokenID(address),
+                ]);
+            const [launchedToken, acceptedToken, redeemToken] =
+                await Promise.all([
+                    this.apiService.getToken(launchedTokenID),
+                    this.apiService.getToken(acceptedTokenID),
+                    this.apiService.getNftCollection(redeemTokenID),
+                ]);
+            const cachedKeys = await Promise.all([
+                this.priceDiscoverySetter.setLaunchedTokenID(
+                    address,
+                    launchedTokenID,
+                ),
+                this.priceDiscoverySetter.setAcceptedTokenID(
+                    address,
+                    acceptedTokenID,
+                ),
+                this.priceDiscoverySetter.setRedeemTokenID(
+                    address,
+                    redeemTokenID,
+                ),
+                this.tokenSetter.setTokenMetadata(
+                    launchedTokenID,
+                    launchedToken,
+                ),
+                this.tokenSetter.setTokenMetadata(
+                    acceptedTokenID,
+                    acceptedToken,
+                ),
+                this.tokenSetter.setNftCollectionMetadata(
+                    redeemTokenID,
+                    redeemToken,
+                ),
+            ]);
+
+            await this.deleteCacheKeys(cachedKeys);
+        }
+    }
+
+    @Cron(CronExpression.EVERY_MINUTE)
     async cachePriceDiscovery(): Promise<void> {
         const priceDiscoveryAddresses: string[] = scAddress.priceDiscovery;
 
         for (const address of priceDiscoveryAddresses) {
-            const [
-                launchedTokenID,
-                acceptedTokenID,
-                redeemTokenID,
-                startBlock,
-                endBlock,
-            ] = await Promise.all([
-                this.priceDiscoveryAbi.getLaunchedTokenID(address),
-                this.priceDiscoveryAbi.getAcceptedTokenID(address),
-                this.priceDiscoveryAbi.getRedeemTokenID(address),
+            const [startBlock, endBlock] = await Promise.all([
                 this.priceDiscoveryAbi.getStartBlock(address),
                 this.priceDiscoveryAbi.getEndBlock(address),
             ]);
@@ -64,29 +102,8 @@ export class PriceDiscoveryCacheWarmerService {
                 this.priceDiscoveryAbi.getPenaltyMaxPercentage(address),
                 this.priceDiscoveryAbi.getFixedPenaltyPercentage(address),
             ]);
-            const [
-                launchedToken,
-                acceptedToken,
-                redeemToken,
-            ] = await Promise.all([
-                this.apiService.getToken(launchedTokenID),
-                this.apiService.getToken(acceptedTokenID),
-                this.apiService.getNftCollection(redeemTokenID),
-            ]);
 
             const invalidatedKeys = await Promise.all([
-                this.priceDiscoverySetter.setLaunchedTokenID(
-                    address,
-                    launchedTokenID,
-                ),
-                this.priceDiscoverySetter.setAcceptedTokenID(
-                    address,
-                    acceptedTokenID,
-                ),
-                this.priceDiscoverySetter.setRedeemTokenID(
-                    address,
-                    redeemTokenID,
-                ),
                 this.priceDiscoverySetter.setStartBlock(address, startBlock),
                 this.priceDiscoverySetter.setEndBlock(address, endBlock),
                 this.priceDiscoverySetter.setMinLaunchedTokenPrice(
@@ -124,28 +141,11 @@ export class PriceDiscoveryCacheWarmerService {
                 ),
             ]);
 
-            const contextCacheKeys = await Promise.all([
-                this.tokenSetter.setTokenMetadata(
-                    launchedTokenID,
-                    launchedToken,
-                ),
-                this.tokenSetter.setTokenMetadata(
-                    acceptedTokenID,
-                    acceptedToken,
-                ),
-                this.tokenSetter.setNftCollectionMetadata(
-                    redeemTokenID,
-                    redeemToken,
-                ),
-            ]);
-
-            invalidatedKeys.push(...contextCacheKeys);
-
             await this.deleteCacheKeys(invalidatedKeys);
         }
     }
 
-    @Cron('*/6 * * * * *') // Update prices and reserves every 6 seconds
+    @Cron('*/12 * * * * *') // Update prices and reserves every 6 seconds
     async cacheTokensPrices(): Promise<void> {
         const priceDiscoveryAddresses: string[] = scAddress.priceDiscovery;
 

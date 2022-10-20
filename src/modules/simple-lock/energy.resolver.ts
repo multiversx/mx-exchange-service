@@ -71,8 +71,16 @@ export class EnergyResolver extends SimpleLockResolver {
         @Args('epochsToReduce', { nullable: true }) epochsToReduce: number,
         @User() user: any,
     ): Promise<TransactionModel> {
+        const simpleLockAddress =
+            await this.simpleLockService.getSimpleLockAddressByTokenID(
+                inputTokens.tokenID,
+            );
+        if (simpleLockAddress === undefined) {
+            throw new ApolloError('invalid input token');
+        }
         return await this.genericQuery(() =>
             this.energyTransaction.unlockTokens(
+                simpleLockAddress,
                 user.publicKey,
                 inputTokens,
                 unlockType,

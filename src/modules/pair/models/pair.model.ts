@@ -2,6 +2,7 @@ import { ObjectType, Field, ArgsType, Int, InputType } from '@nestjs/graphql';
 import { PaginationArgs } from '../../dex.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from './pair-info.model';
+import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 
 @ArgsType()
 export class GetPairsArgs extends PaginationArgs {}
@@ -21,8 +22,14 @@ export class LiquidityPosition {
 
 @ObjectType()
 export class LockedTokensInfo {
-    @Field()
+    @Field({
+        deprecationReason:
+            'field is deprecated and will be removed on next release;' +
+            'value can be obtained from lockingSC field',
+    })
     lockingScAddress: string;
+    @Field(() => SimpleLockModel)
+    lockingSC: SimpleLockModel;
     @Field(() => Int)
     unlockEpoch: number;
     @Field(() => Int)
