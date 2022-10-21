@@ -3,13 +3,20 @@ import { CachingModule } from '../../../services/caching/cache.module';
 import { ElrondCommunicationModule } from '../../../services/elrond-communication/elrond-communication.module';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import { FeesCollectorGetterService } from "../services/fees-collector.getter.service";
-import { FeesCollectorGetterServiceMock } from "../mocks/fees-collector.getter.service.mock";
+import {
+    FeesCollectorGetterHandlers,
+    FeesCollectorGetterServiceMock
+} from "../mocks/fees-collector.getter.service.mock";
 import { FeesCollectorService } from "../services/fees-collector.service";
 import { WeekTimekeepingService } from "../../../submodules/week-timekeeping/services/week-timekeeping.service";
 import {
+    WeeklyRewardsSplittingHandlers,
     WeeklyRewardsSplittingServiceMock
 } from "../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.service.mock";
-import { WeekTimekeepingServiceMock } from "../../../submodules/week-timekeeping/mocks/week-timekeeping.service.mock";
+import {
+    WeekTimekeepingHandlers,
+    WeekTimekeepingServiceMock
+} from "../../../submodules/week-timekeeping/mocks/week-timekeeping.service.mock";
 import {
     WeeklyRewardsSplittingService
 } from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service";
@@ -25,17 +32,21 @@ describe('FeesCollectorService', () => {
         end: 10
     })
     it('init service; should be defined', async () => {
-        const service = await createService({}, {}, {});
+        const service = await createService({
+            getter: {}, weekTimekeeping: {}, weeklyRewards: {}
+        });
         expect(service).toBeDefined();
     });
     it('getAccumulatedFees' +
         'no rewards for tokens', async () => {
         const service = await createService({
-            getAccumulatedFees: (scAddress: string, week: number, token: string) => {
-                expect(scAddress).toEqual(dummyScAddress)
-                return Promise.resolve("0")
-        }
-        }, {}, {})
+            getter: {
+                getAccumulatedFees: (scAddress: string, week: number, token: string) => {
+                    expect(scAddress).toEqual(dummyScAddress)
+                    return Promise.resolve("0")
+                }
+            }, weeklyRewards: {}, weekTimekeeping: {}
+        })
         const tokens = []
         const firstToken = "WEGLD-abcabc"
         tokens.push(firstToken)
@@ -56,22 +67,26 @@ describe('FeesCollectorService', () => {
         'should work', async () => {
         const firstToken = "WEGLD-abcabc"
         const secondToken = "MEX-abcabc"
-        const rewardsFirstToken =  "100"
-        const rewardsSecondToken =  "300"
+        const rewardsFirstToken = "100"
+        const rewardsSecondToken = "300"
         const service = await createService({
-            getAccumulatedFees: (scAddress: string, week: number, token: string) => {
-                let rewards = "0"
-                switch (token) {
-                    case firstToken:
-                        rewards = rewardsFirstToken
-                        break
-                    case secondToken:
-                        rewards = rewardsSecondToken
-                        break
+            getter: {
+                getAccumulatedFees: (scAddress: string, week: number, token: string) => {
+                    let rewards = "0"
+                    switch (token) {
+                        case firstToken:
+                            rewards = rewardsFirstToken
+                            break
+                        case secondToken:
+                            rewards = rewardsSecondToken
+                            break
+                    }
+                    return Promise.resolve(rewards)
                 }
-                return Promise.resolve(rewards)
-            }
-        }, {}, {})
+            },
+            weekTimekeeping: {},
+            weeklyRewards: {}
+        })
         const tokens = []
 
         tokens.push(firstToken)
@@ -97,19 +112,23 @@ describe('FeesCollectorService', () => {
         expectedTokens.push("token4")
         const expectedCurrentWeek = 10
         const service = await createService({
-            getAllTokens: (scAddress: string) => {
-                expect(scAddress).toEqual(dummyScAddress)
-                return Promise.resolve([])
-            }
-        }, {
-            getWeeklyTimekeeping: (scAddress: string) => {
-                expect(scAddress).toEqual(dummyScAddress)
-                return Promise.resolve(new WeekTimekeepingModel({
-                    scAddress: dummyScAddress,
-                    currentWeek: expectedCurrentWeek
-                }))
-            }
-        }, {})
+            getter: {
+                getAllTokens: (scAddress: string) => {
+                    expect(scAddress).toEqual(dummyScAddress)
+                    return Promise.resolve([])
+                }
+            },
+            weekTimekeeping: {
+                getWeeklyTimekeeping: (scAddress: string) => {
+                    expect(scAddress).toEqual(dummyScAddress)
+                    return Promise.resolve(new WeekTimekeepingModel({
+                        scAddress: dummyScAddress,
+                        currentWeek: expectedCurrentWeek
+                    }))
+                }
+            },
+            weeklyRewards: {}
+        })
 
         const model = await service.feesCollector(dummyScAddress, dummyWeekFilter);
         expect(model.allTokens).toEqual([])
@@ -124,20 +143,24 @@ describe('FeesCollectorService', () => {
         expectedTokens.push("token4")
         const expectedCurrentWeek = 10
         const service = await createService({
-            getAllTokens: (scAddress: string) => {
-                expect(scAddress).toEqual(dummyScAddress)
-                return Promise.resolve(expectedTokens)
-            }
-        }, {
-            getWeeklyTimekeeping: (scAddress: string) => {
-                expect(scAddress).toEqual(dummyScAddress)
-                return Promise.resolve(new WeekTimekeepingModel({
-                    scAddress: dummyScAddress,
-                    currentWeek: expectedCurrentWeek
-                }))
-            }
-            }, {}
-        )
+            getter:
+                {
+                    getAllTokens: (scAddress: string) => {
+                        expect(scAddress).toEqual(dummyScAddress)
+                        return Promise.resolve(expectedTokens)
+                    }
+                },
+            weekTimekeeping: {
+                getWeeklyTimekeeping: (scAddress: string) => {
+                    expect(scAddress).toEqual(dummyScAddress)
+                    return Promise.resolve(new WeekTimekeepingModel({
+                        scAddress: dummyScAddress,
+                        currentWeek: expectedCurrentWeek
+                    }))
+                }
+            },
+            weeklyRewards: {}
+        })
         const model = await service.feesCollector(dummyScAddress, dummyWeekFilter)
         expect(model.time.currentWeek).toEqual(expectedCurrentWeek)
         expect(model.allTokens.length).toEqual(expectedTokens.length)
@@ -148,10 +171,15 @@ describe('FeesCollectorService', () => {
 
 });
 
-async function createService(getterHandlers: any, weekTimekeepingServiceHandlers: any, weeklyServiceHandlers: any) {
-    const getter = new FeesCollectorGetterServiceMock(getterHandlers);
-    const timekeepingService = new WeekTimekeepingServiceMock(weekTimekeepingServiceHandlers);
-    const weeklyRewardsService = new WeeklyRewardsSplittingServiceMock(weeklyServiceHandlers);
+async function createService(
+    handlers: {
+        getter: Partial<FeesCollectorGetterHandlers>,
+        weekTimekeeping: Partial<WeekTimekeepingHandlers>,
+        weeklyRewards: Partial<WeeklyRewardsSplittingHandlers>
+    }) {
+    const getter = new FeesCollectorGetterServiceMock(handlers.getter);
+    const timekeepingService = new WeekTimekeepingServiceMock(handlers.weekTimekeeping);
+    const weeklyRewardsService = new WeeklyRewardsSplittingServiceMock(handlers.weeklyRewards);
     const module: TestingModule = await Test.createTestingModule({
         imports: [ElrondCommunicationModule, CachingModule],
         providers: [

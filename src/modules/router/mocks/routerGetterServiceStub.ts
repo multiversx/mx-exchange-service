@@ -2,7 +2,7 @@ import { PairMetadata } from '../models/pair.metadata.model';
 import { pairs } from 'src/modules/pair/mocks/pair.constants';
 import { RouterGetterService } from '../services/router.getter.service';
 
-export class RouterGetterServiceMock {
+export class RouterGetterServiceStub {
     async getAllPairsAddress(): Promise<string[]> {
         return pairs.map(p => {
             return p.address;
@@ -27,5 +27,5 @@ export class RouterGetterServiceMock {
 
 export const RouterGetterServiceProvider = {
     provide: RouterGetterService,
-    useClass: RouterGetterServiceMock,
+    useClass: RouterGetterServiceStub,
 };

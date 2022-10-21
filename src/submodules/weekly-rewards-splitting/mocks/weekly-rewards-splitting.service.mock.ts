@@ -2,24 +2,32 @@ import { GlobalInfoByWeekModel, UserInfoByWeekModel, } from '../models/weekly-re
 import { IWeeklyRewardsSplittingService } from "../interfaces";
 import { ErrorNotImplemented } from "../../../utils/errors.constants";
 
-export class WeeklyRewardsSplittingServiceMock implements IWeeklyRewardsSplittingService {
-    getGlobalInfoByWeekCalled: (scAddress: string, week: number) => GlobalInfoByWeekModel;
-    getUserInfoByWeekCalled:(scAddress: string, userAddress: string, week: number) => UserInfoByWeekModel;
+export class WeeklyRewardsSplittingHandlers implements IWeeklyRewardsSplittingService{
+    getGlobalInfoByWeek: (scAddress: string, week: number) => GlobalInfoByWeekModel;
+    getUserInfoByWeek:(scAddress: string, userAddress: string, week: number) => UserInfoByWeekModel;
 
+    constructor(init: Partial<WeeklyRewardsSplittingServiceMock>) {
+        Object.assign(this, init);
+    }
+}
+
+export class WeeklyRewardsSplittingServiceMock implements IWeeklyRewardsSplittingService {
+    handlers: WeeklyRewardsSplittingHandlers;
     getGlobalInfoByWeek(scAddress: string, week: number): GlobalInfoByWeekModel {
-        if (this.getGlobalInfoByWeekCalled !== undefined) {
-            return this.getGlobalInfoByWeekCalled(scAddress, week);
+        if (this.handlers.getGlobalInfoByWeek !== undefined) {
+            return this.handlers.getGlobalInfoByWeek(scAddress, week);
         }
         throw ErrorNotImplemented
     }
 
     getUserInfoByWeek(scAddress: string, userAddress: string, week: number): UserInfoByWeekModel {
-        if (this.getUserInfoByWeekCalled !== undefined) {
-            return this.getUserInfoByWeekCalled(scAddress, userAddress, week);
+        if (this.handlers.getUserInfoByWeek !== undefined) {
+            return this.handlers.getUserInfoByWeek(scAddress, userAddress, week);
         }
         throw ErrorNotImplemented
     }
-    constructor(init?: Partial<WeeklyRewardsSplittingServiceMock>) {
-        Object.assign(this, init);
+
+    constructor(init: Partial<WeeklyRewardsSplittingHandlers>) {
+        this.handlers = new WeeklyRewardsSplittingHandlers(init);
     }
 }

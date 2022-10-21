@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
-import { RouterGetterServiceMock } from '../mocks/router.getter.service.mock';
+import { RouterGetterServiceStub } from '../mocks/routerGetterServiceStub';
 import winston from 'winston';
 import {
     utilities as nestWinstonModuleUtilities,
@@ -20,12 +20,12 @@ describe('RouterService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const RouterGetterServiceProvider = {
         provide: RouterGetterService,
-        useClass: RouterGetterServiceMock,
+        useClass: RouterGetterServiceStub,
     };
 
     const logTransports: Transport[] = [

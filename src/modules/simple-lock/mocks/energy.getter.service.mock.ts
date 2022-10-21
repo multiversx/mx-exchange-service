@@ -3,53 +3,63 @@ import { EsdtToken } from "../../tokens/models/esdtToken.model";
 import { EnergyType } from "@elrondnetwork/erdjs-dex";
 import { ErrorNotImplemented } from "../../../utils/errors.constants";
 
-export class EnergyGetterServiceMock implements IEnergyGetterService {
-    getBaseAssetTokenIDCalled:() => Promise<string>;
-    getBaseAssetTokenCalled:() => Promise<EsdtToken>;
-    getLockOptionsCalled:() => Promise<number[]>;
-    getPauseStateCalled:() => Promise<boolean>;
-    getOwnerAddressCalled:() => Promise<string>;
-    getEnergyEntryForUserCalled:(userAddress: string) => Promise<EnergyType>;
+export class EnergyGetterHandlers implements IEnergyGetterService {
+    getBaseAssetTokenID:() => Promise<string>;
+    getBaseAssetToken:() => Promise<EsdtToken>;
+    getLockOptions:() => Promise<number[]>;
+    getPauseState:() => Promise<boolean>;
+    getOwnerAddress:() => Promise<string>;
+    getEnergyEntryForUser:(userAddress: string) => Promise<EnergyType>;
+    constructor(init: Partial<EnergyGetterHandlers>) {
+        Object.assign(this, init);
+    }
+}
 
+export class EnergyGetterServiceMock implements IEnergyGetterService {
+    handlers: EnergyGetterHandlers;
     getBaseAssetToken(): Promise<EsdtToken> {
-        if (this.getBaseAssetTokenCalled !== undefined) {
-            return this.getBaseAssetTokenCalled();
+        if (this.handlers.getBaseAssetToken !== undefined) {
+            return this.handlers.getBaseAssetToken();
         }
         throw ErrorNotImplemented
     }
 
     getBaseAssetTokenID(): Promise<string> {
-        if (this.getBaseAssetTokenIDCalled !== undefined) {
-            return this.getBaseAssetTokenIDCalled();
+        if (this.handlers.getBaseAssetTokenID !== undefined) {
+            return this.handlers.getBaseAssetTokenID();
         }
         throw ErrorNotImplemented
     }
 
     getEnergyEntryForUser(userAddress: string): Promise<EnergyType> {
-        if (this.getEnergyEntryForUserCalled !== undefined) {
-            return this.getEnergyEntryForUserCalled(userAddress);
+        if (this.handlers.getEnergyEntryForUser !== undefined) {
+            return this.handlers.getEnergyEntryForUser(userAddress);
         }
         throw ErrorNotImplemented
     }
 
     getLockOptions(): Promise<number[]> {
-        if (this.getLockOptionsCalled !== undefined) {
-            return this.getLockOptionsCalled();
+        if (this.handlers.getLockOptions !== undefined) {
+            return this.handlers.getLockOptions();
         }
         throw ErrorNotImplemented
     }
 
     getOwnerAddress(): Promise<string> {
-        if (this.getOwnerAddressCalled !== undefined) {
-            return this.getOwnerAddressCalled();
+        if (this.handlers.getOwnerAddress !== undefined) {
+            return this.handlers.getOwnerAddress();
         }
         throw ErrorNotImplemented
     }
 
     getPauseState(): Promise<boolean> {
-        if (this.getPauseStateCalled !== undefined) {
-            return this.getPauseStateCalled();
+        if (this.handlers.getPauseState !== undefined) {
+            return this.handlers.getPauseState();
         }
         throw ErrorNotImplemented
+    }
+
+    constructor(init: Partial<EnergyGetterHandlers>) {
+        this.handlers = new EnergyGetterHandlers(init)
     }
 }

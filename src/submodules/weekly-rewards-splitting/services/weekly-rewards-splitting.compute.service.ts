@@ -10,9 +10,9 @@ import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { IWeeklyRewardsSplittingComputeService } from "../interfaces";
 import { scAddress } from "../../../config";
 import { PairComputeService } from "../../../modules/pair/services/pair.compute.service";
-import { AbiRouterService } from "../../../modules/router/services/abi.router.service";
 import { EnergyGetterService } from "../../../modules/simple-lock/services/energy/energy.getter.service";
 import { TokenComputeService } from "../../../modules/tokens/services/token.compute.service";
+import { RouterGetterService } from "../../../modules/router/services/router.getter.service";
 
 @Injectable()
 export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplittingComputeService {
@@ -22,7 +22,7 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
         @Inject(forwardRef(() => WeeklyRewardsSplittingGetterService))
         private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
         private readonly progressCompute: ProgressComputeService,
-        private readonly routerService: AbiRouterService,
+        private readonly routerGetter: RouterGetterService,
         private readonly pairCompute: PairComputeService,
         private readonly energyGetter: EnergyGetterService,
         private readonly tokenCompute: TokenComputeService,
@@ -46,7 +46,7 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
                 }
                 previousRewards.amount = new BigNumber(previousRewards.amount)
                     .plus(new BigNumber(esdtReward.amount))
-                    .toString()
+                    .toFixed()
                 totalRewards.set(tokenID, previousRewards);
             }
         }
@@ -95,7 +95,7 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
     }
 
     async computeTotalRewardsForWeekPriceUSD(scAddress: string, week: number, totalRewardsForWeek: EsdtTokenPayment[]): Promise<string> {
-        const pairs = await this.routerService.getPairsMetadata()
+        const pairs = await this.routerGetter.getPairsMetadata()
         let totalPriceUSD = new BigNumber("0");
         for (const pair of pairs) {
             for (const token of totalRewardsForWeek) {

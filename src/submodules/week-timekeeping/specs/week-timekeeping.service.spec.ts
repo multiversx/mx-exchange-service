@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { ElrondCommunicationModule } from '../../../services/elrond-communication/elrond-communication.module';
-import { WeekTimekeepingGetterServiceMock } from '../mocks/week-timekeeping.getter.service.mock';
+import {
+    WeekTimekeepingGetterHandlers,
+    WeekTimekeepingGetterServiceMock
+} from '../mocks/week-timekeeping.getter.service.mock';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import { WeekTimekeepingGetterService } from '../services/week-timekeeping.getter.service';
 import { WeekTimekeepingService } from '../services/week-timekeeping.service';
@@ -59,7 +62,7 @@ describe('WeekTimekeepingService', () => {
 })
 ;
 
-async function createService(handlers: any) {
+async function createService(handlers: Partial<WeekTimekeepingGetterHandlers>) {
     const weekTimekeepingGetterServiceMock = new WeekTimekeepingGetterServiceMock(handlers)
     const module: TestingModule = await Test.createTestingModule({
         imports: [ElrondCommunicationModule, CachingModule],

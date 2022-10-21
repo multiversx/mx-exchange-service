@@ -5,7 +5,7 @@ import { PairInfoModel } from '../models/pair-info.model';
 import { PairsData } from './pair.constants';
 
 @Injectable()
-export class PairGetterServiceMock {
+export class PairGetterServiceStub {
     async getFirstTokenID(pairAddress: string): Promise<string> {
         return PairsData(pairAddress).firstToken.identifier;
     }

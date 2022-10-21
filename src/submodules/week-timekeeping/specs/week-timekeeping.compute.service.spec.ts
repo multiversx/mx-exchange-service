@@ -2,7 +2,10 @@ import { WeekTimekeepingComputeService } from '../services/week-timekeeping.comp
 import { Test, TestingModule } from '@nestjs/testing';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { ElrondCommunicationModule } from '../../../services/elrond-communication/elrond-communication.module';
-import { WeekTimekeepingGetterServiceMock } from '../mocks/week-timekeeping.getter.service.mock';
+import {
+    WeekTimekeepingGetterHandlers,
+    WeekTimekeepingGetterServiceMock
+} from '../mocks/week-timekeeping.getter.service.mock';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import { WeekTimekeepingGetterService } from '../services/week-timekeeping.getter.service';
 import { ErrInvalidEpochLowerThanFirstWeekStartEpoch, ErrInvalidWeek } from '../errors';
@@ -19,7 +22,7 @@ describe('WeekTimekeepingComputeService', () => {
         'getFirstWeekStartEpoch throws error should error', async () => {
 
         const service = await createService({
-            getFirstWeekStartEpochCalled: scAddress => {
+            getFirstWeekStartEpoch: scAddress => {
                 throw expectedErr;
             },
         })
@@ -32,7 +35,7 @@ describe('WeekTimekeepingComputeService', () => {
         const firstWeekStartEpoch = 50;
         let increment = 0
         const service = await createService({
-            getFirstWeekStartEpochCalled: scAddress => {
+            getFirstWeekStartEpoch: scAddress => {
                 if (increment > 0) throw expectedErr
                 increment++
                 return Promise.resolve(firstWeekStartEpoch);
@@ -52,7 +55,7 @@ describe('WeekTimekeepingComputeService', () => {
     const firstWeekStartEpoch = 250;
     it('computeWeekForEpoch', async () => {
         const service = await createService({
-            getFirstWeekStartEpochCalled: scAddress => {
+            getFirstWeekStartEpoch: scAddress => {
                 return Promise.resolve(firstWeekStartEpoch);
             },
         })
@@ -85,7 +88,7 @@ describe('WeekTimekeepingComputeService', () => {
 
     it('computeStartEpochForWeek', async () => {
         const service = await createService({
-            getFirstWeekStartEpochCalled: scAddress => {
+            getFirstWeekStartEpoch: scAddress => {
                 return Promise.resolve(250);
             },
         })
@@ -100,7 +103,7 @@ describe('WeekTimekeepingComputeService', () => {
     });
     it('computeEndEpochForWeek', async () => {
         const service = await createService({
-            getFirstWeekStartEpochCalled: scAddress => {
+            getFirstWeekStartEpoch: scAddress => {
                 return Promise.resolve(250);
             },
         })
@@ -118,7 +121,7 @@ describe('WeekTimekeepingComputeService', () => {
 })
 ;
 
-async function createService(handlers: any) {
+async function createService(handlers: Partial<WeekTimekeepingGetterHandlers>) {
     const weekTimekeepingGetterServiceMock = new WeekTimekeepingGetterServiceMock(handlers)
     const module: TestingModule = await Test.createTestingModule({
         imports: [ElrondCommunicationModule, CachingModule],
