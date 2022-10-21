@@ -84,315 +84,315 @@ export class PairGetterServiceMock implements IPairGetterService {
         if (this.handlers.getFirstTokenID !== undefined) {
             return this.handlers.getFirstTokenID(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getSecondTokenID(pairAddress: string): Promise<string> {
         if (this.handlers.getSecondTokenID !== undefined) {
             return this.handlers.getSecondTokenID(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getLpTokenID(pairAddress: string): Promise<string> {
         if (this.handlers.getLpTokenID !== undefined) {
             return this.handlers.getLpTokenID(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFirstToken(pairAddress: string): Promise<EsdtToken> {
         if (this.handlers.getFirstToken !== undefined) {
             return this.handlers.getFirstToken(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getSecondToken(pairAddress: string): Promise<EsdtToken> {
         if (this.handlers.getSecondToken !== undefined) {
             return this.handlers.getSecondToken(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getLpToken(pairAddress: string): Promise<EsdtToken> {
         if (this.handlers.getLpToken !== undefined) {
             return this.handlers.getLpToken(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTokenPrice(pairAddress: string, tokenID: string): Promise<string> {
         if (this.handlers.getTokenPrice !== undefined) {
             return this.handlers.getTokenPrice(pairAddress, tokenID);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFirstTokenPrice(pairAddress: string): Promise<string> {
         if (this.handlers.getFirstTokenPrice !== undefined) {
             return this.handlers.getFirstTokenPrice(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getSecondTokenPrice(pairAddress: string): Promise<string> {
         if (this.handlers.getSecondTokenPrice !== undefined) {
             return this.handlers.getSecondTokenPrice(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTokenPriceUSD(tokenID: string): Promise<string> {
         if (this.handlers.getTokenPriceUSD !== undefined) {
             return this.handlers.getTokenPriceUSD(tokenID);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
         if (this.handlers.getFirstTokenPriceUSD !== undefined) {
             return this.handlers.getFirstTokenPriceUSD(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
         if (this.handlers.getSecondTokenPriceUSD !== undefined) {
             return this.handlers.getSecondTokenPriceUSD(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getLpTokenPriceUSD(pairAddress: string): Promise<string> {
         if (this.handlers.getLpTokenPriceUSD !== undefined) {
             return this.handlers.getLpTokenPriceUSD(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFirstTokenReserve(pairAddress: string): Promise<string> {
         if (this.handlers.getFirstTokenReserve !== undefined) {
             return this.handlers.getFirstTokenReserve(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getSecondTokenReserve(pairAddress: string): Promise<string> {
         if (this.handlers.getSecondTokenReserve !== undefined) {
             return this.handlers.getSecondTokenReserve(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTotalSupply(pairAddress: string): Promise<string> {
         if (this.handlers.getTotalSupply !== undefined) {
             return this.handlers.getTotalSupply(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFirstTokenLockedValueUSD(pairAddress: string): Promise<string> {
         if (this.handlers.getFirstTokenLockedValueUSD !== undefined) {
             return this.handlers.getFirstTokenLockedValueUSD(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getSecondTokenLockedValueUSD(pairAddress: string): Promise<string> {
         if (this.handlers.getSecondTokenLockedValueUSD !== undefined) {
             return this.handlers.getSecondTokenLockedValueUSD(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getLockedValueUSD(pairAddress: string): Promise<string> {
         if (this.handlers.getLockedValueUSD !== undefined) {
             return this.handlers.getLockedValueUSD(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFirstTokenVolume(pairAddress: string, time: string): Promise<string> {
         if (this.handlers.getFirstTokenVolume !== undefined) {
             return this.handlers.getFirstTokenVolume(pairAddress, time);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getSecondTokenVolume(pairAddress: string, time: string): Promise<string> {
         if (this.handlers.getSecondTokenVolume !== undefined) {
             return this.handlers.getSecondTokenVolume(pairAddress, time);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getVolumeUSD(pairAddress: string, time: string): Promise<string> {
         if (this.handlers.getVolumeUSD !== undefined) {
             return this.handlers.getVolumeUSD(pairAddress, time);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFeesUSD(pairAddress: string, time: string): Promise<string> {
         if (this.handlers.getFeesUSD !== undefined) {
             return this.handlers.getFeesUSD(pairAddress, time);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFeesAPR(pairAddress: string): Promise<string> {
         if (this.handlers.getFeesAPR !== undefined) {
             return this.handlers.getFeesAPR(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         if (this.handlers.getPairInfoMetadata !== undefined) {
             return this.handlers.getPairInfoMetadata(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTotalFeePercent(pairAddress: string): Promise<number> {
         if (this.handlers.getTotalFeePercent !== undefined) {
             return this.handlers.getTotalFeePercent(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getSpecialFeePercent(pairAddress: string): Promise<number> {
         if (this.handlers.getSpecialFeePercent !== undefined) {
             return this.handlers.getSpecialFeePercent(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTrustedSwapPairs(pairAddress: string): Promise<string[]> {
         if (this.handlers.getTrustedSwapPairs !== undefined) {
             return this.handlers.getTrustedSwapPairs(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getInitialLiquidityAdder(pairAddress: string): Promise<string> {
         if (this.handlers.getInitialLiquidityAdder !== undefined) {
             return this.handlers.getInitialLiquidityAdder(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getState(pairAddress: string): Promise<string> {
         if (this.handlers.getState !== undefined) {
             return this.handlers.getState(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFeeState(pairAddress: string): Promise<boolean> {
         if (this.handlers.getFeeState !== undefined) {
             return this.handlers.getFeeState(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getType(pairAddress: string): Promise<string> {
         if (this.handlers.getType !== undefined) {
             return this.handlers.getType(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getLockingScAddress(pairAddress: string): Promise<string> {
         if (this.handlers.getLockingScAddress !== undefined) {
             return this.handlers.getLockingScAddress(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getUnlockEpoch(pairAddress: string): Promise<number> {
         if (this.handlers.getUnlockEpoch !== undefined) {
             return this.handlers.getUnlockEpoch(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getLockingDeadlineEpoch(pairAddress: string): Promise<number> {
         if (this.handlers.getLockingDeadlineEpoch !== undefined) {
             return this.handlers.getLockingDeadlineEpoch(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getLockedTokensInfo(pairAddress: string): Promise<LockedTokensInfo> {
         if (this.handlers.getLockedTokensInfo !== undefined) {
             return this.handlers.getLockedTokensInfo(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFeeDestinations(pairAddress: string): Promise<FeeDestination[]> {
         if (this.handlers.getFeeDestinations !== undefined) {
             return this.handlers.getFeeDestinations(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getWhitelistedManagedAddresses(pairAddress: string): Promise<string[]> {
         if (this.handlers.getWhitelistedManagedAddresses !== undefined) {
             return this.handlers.getWhitelistedManagedAddresses(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getRouterManagedAddress(address: string): Promise<string> {
         if (this.handlers.getRouterManagedAddress !== undefined) {
             return this.handlers.getRouterManagedAddress(address);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getRouterOwnerManagedAddress(address: string): Promise<string> {
         if (this.handlers.getRouterOwnerManagedAddress !== undefined) {
             return this.handlers.getRouterOwnerManagedAddress(address);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getExternSwapGasLimit(pairAddress: string): Promise<number> {
         if (this.handlers.getExternSwapGasLimit !== undefined) {
             return this.handlers.getExternSwapGasLimit(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTransferExecGasLimit(pairAddress: string): Promise<number> {
         if (this.handlers.getTransferExecGasLimit !== undefined) {
             return this.handlers.getTransferExecGasLimit(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     updateAndGetSafePrice(pairAddress: string, esdtTokenPayment: EsdtTokenPayment): Promise<EsdtTokenPayment> {
         if (this.handlers.updateAndGetSafePrice !== undefined) {
             return this.handlers.updateAndGetSafePrice(pairAddress, esdtTokenPayment);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getNumSwapsByAddress(pairAddress: string, address: string): Promise<number> {
         if (this.handlers.getNumSwapsByAddress !== undefined) {
             return this.handlers.getNumSwapsByAddress(pairAddress, address);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getNumAddsByAddress(pairAddress: string, address: string): Promise<string> {
         if (this.handlers.getNumAddsByAddress !== undefined) {
             return this.handlers.getNumAddsByAddress(pairAddress, address);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     constructor(init: Partial<PairGetterHandlers>) {

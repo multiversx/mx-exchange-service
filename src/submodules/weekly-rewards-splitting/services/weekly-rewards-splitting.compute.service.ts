@@ -7,12 +7,11 @@ import { WeeklyRewardsSplittingGetterService } from './weekly-rewards-splitting.
 import { WeekTimekeepingComputeService } from '../../week-timekeeping/services/week-timekeeping.compute.service';
 import { ProgressComputeService } from './progress.compute.service';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
-import { IWeeklyRewardsSplittingComputeService } from "../interfaces";
-import { scAddress } from "../../../config";
-import { PairComputeService } from "../../../modules/pair/services/pair.compute.service";
-import { EnergyGetterService } from "../../../modules/simple-lock/services/energy/energy.getter.service";
-import { TokenComputeService } from "../../../modules/tokens/services/token.compute.service";
-import { RouterGetterService } from "../../../modules/router/services/router.getter.service";
+import { IWeeklyRewardsSplittingComputeService } from '../interfaces';
+import { scAddress } from '../../../config';
+import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
+import { EnergyGetterService } from '../../../modules/simple-lock/services/energy/energy.getter.service';
+import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplittingComputeService {
@@ -22,7 +21,6 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
         @Inject(forwardRef(() => WeeklyRewardsSplittingGetterService))
         private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
         private readonly progressCompute: ProgressComputeService,
-        private readonly routerGetter: RouterGetterService,
         private readonly pairCompute: PairComputeService,
         private readonly energyGetter: EnergyGetterService,
         private readonly tokenCompute: TokenComputeService,
@@ -95,24 +93,11 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
     }
 
     async computeTotalRewardsForWeekPriceUSD(scAddress: string, week: number, totalRewardsForWeek: EsdtTokenPayment[]): Promise<string> {
-        const pairs = await this.routerGetter.getPairsMetadata()
         let totalPriceUSD = new BigNumber("0");
-        for (const pair of pairs) {
-            for (const token of totalRewardsForWeek) {
-                let tokenPriceUSD: string;
-                switch (token.tokenID) {
-                    case pair.firstTokenID:
-                        tokenPriceUSD = await this.pairCompute.computeFirstTokenPriceUSD(pair.address)
-                        break
-                    case pair.secondTokenID:
-                        tokenPriceUSD = await this.pairCompute.computeSecondTokenPriceUSD(pair.address)
-                        break
-                    default:
-                        continue
-                }
-                const rewardsPriceUSD = new BigNumber(tokenPriceUSD).multipliedBy(new BigNumber(token.amount))
-                totalPriceUSD = totalPriceUSD.plus(rewardsPriceUSD)
-            }
+        for (const token of totalRewardsForWeek) {
+            const tokenPriceUSD = await this.tokenCompute.computeTokenPriceDerivedUSD(token.tokenID);
+            const rewardsPriceUSD = new BigNumber(tokenPriceUSD).multipliedBy(new BigNumber(token.amount))
+            totalPriceUSD = totalPriceUSD.plus(rewardsPriceUSD)
         }
         return totalPriceUSD.toFixed()
     }
@@ -126,8 +111,9 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
                     baseAssetTokenID,
                 );
         }
-        const totalPriceUSD = new BigNumber(totalLockedTokensForWeek).multipliedBy(new BigNumber(tokenPriceUSD))
-        return totalPriceUSD.toFixed()
+        return new BigNumber(totalLockedTokensForWeek)
+            .multipliedBy(new BigNumber(tokenPriceUSD))
+            .toFixed()
     }
 
     async computeAprGivenLockedTokensAndRewards(scAddress: string, week: number, totalLockedTokensForWeek: string, totalRewardsForWeek: EsdtTokenPayment[]): Promise<string> {
@@ -155,15 +141,16 @@ export class WeeklyRewardsSplittingComputeService implements IWeeklyRewardsSplit
 
         const totalEnergyForWeek = await this.weeklyRewardsSplittingGetter.totalEnergyForWeek(scAddress, week);
         const userEnergyForWeek = await this.weeklyRewardsSplittingGetter.userEnergyForWeek(scAddress, userAddress, week);
-        return new BigNumber(globalApr)
+        const apr = new BigNumber(globalApr)
             .multipliedBy(
-                new BigNumber(totalEnergyForWeek)
+                new BigNumber(userEnergyForWeek.amount)
             )
             .multipliedBy(
-                new BigNumber(userEnergyForWeek.totalLockedTokens)
+                new BigNumber(totalLockedTokensForWeek)
             )
-            .div(new BigNumber(userEnergyForWeek.amount))
-            .div(new BigNumber(totalLockedTokensForWeek))
+            .div(new BigNumber(totalEnergyForWeek))
+            .div(new BigNumber(userEnergyForWeek.totalLockedTokens))
             .toFixed()
+        return apr
     }
 }

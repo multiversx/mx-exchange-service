@@ -16,7 +16,7 @@ export class ProgressComputeServiceMock implements IProgressComputeService {
         if (this.handlers.advanceWeek !== undefined) {
             return this.handlers.advanceWeek(progress, nextWeekEnergy, epochsInWeek);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
     constructor(init: Partial<ProgressComputeHandlers>) {
         this.handlers = new ProgressComputeHandlers(init);

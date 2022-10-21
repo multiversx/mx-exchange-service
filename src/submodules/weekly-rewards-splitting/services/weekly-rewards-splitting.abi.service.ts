@@ -116,6 +116,6 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     }
 
     protected getContractHandler: (scAddress: string) => Promise<SmartContract> = scAddress => {
-        throw ErrorGetContractHandlerNotSet
+        throw ErrorGetContractHandlerNotSet()
     };
 }

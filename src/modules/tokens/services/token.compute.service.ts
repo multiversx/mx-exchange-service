@@ -4,9 +4,10 @@ import { constantsConfig, scAddress, tokenProviderUSD } from 'src/config';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from 'src/modules/router/models/pair.metadata.model';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { ITokenComputeService } from "../interfaces";
 
 @Injectable()
-export class TokenComputeService {
+export class TokenComputeService implements ITokenComputeService {
     constructor(
         @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetter: PairGetterService,

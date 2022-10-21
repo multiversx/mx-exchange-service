@@ -17,14 +17,14 @@ export class WeeklyRewardsSplittingServiceMock implements IWeeklyRewardsSplittin
         if (this.handlers.getGlobalInfoByWeek !== undefined) {
             return this.handlers.getGlobalInfoByWeek(scAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getUserInfoByWeek(scAddress: string, userAddress: string, week: number): UserInfoByWeekModel {
         if (this.handlers.getUserInfoByWeek !== undefined) {
             return this.handlers.getUserInfoByWeek(scAddress, userAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     constructor(init: Partial<WeeklyRewardsSplittingHandlers>) {

@@ -18,28 +18,28 @@ export class WeekTimekeepingGetterServiceMock implements IWeekTimekeepingGetterS
         if (this.handlers.getCurrentWeek !== undefined) {
             return this.handlers.getCurrentWeek(scAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getEndEpochForWeek(scAddress: string, week: number): Promise<number> {
         if (this.handlers.getEndEpochForWeek !== undefined) {
             return this.handlers.getEndEpochForWeek(scAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getFirstWeekStartEpoch(scAddress: string): Promise<number> {
         if (this.handlers.getFirstWeekStartEpoch !== undefined) {
             return this.handlers.getFirstWeekStartEpoch(scAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getStartEpochForWeek(scAddress: string, week: number): Promise<number> {
         if (this.handlers.getStartEpochForWeek !== undefined) {
             return this.handlers.getStartEpochForWeek(scAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     constructor(init: Partial<WeekTimekeepingGetterHandlers>) {
