@@ -47,15 +47,17 @@ export class SimpleLockService {
         tokenID: string,
         tokenNonce: number,
     ): Promise<LockedTokenAttributesModel> {
-        const address = await this.getSimpleLockAddressByTokenID(tokenID);
+        const simpleLockAddress = await this.getSimpleLockAddressByTokenID(
+            tokenID,
+        );
         const lockedEsdtCollection =
-            await this.simpleLockGetter.getLockedTokenID(address);
+            await this.simpleLockGetter.getLockedTokenID(simpleLockAddress);
         const lockedTokenIdentifier = tokenIdentifier(
             lockedEsdtCollection,
             tokenNonce,
         );
         const lockedToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.simpleLockAddress,
+            simpleLockAddress,
             lockedTokenIdentifier,
         );
         return this.decodeLockedTokenAttributes({
@@ -86,17 +88,17 @@ export class SimpleLockService {
         lockedLpTokenID: string,
         tokenNonce: number,
     ): Promise<LpProxyTokenAttributesModel> {
-        const address = await this.getSimpleLockAddressByTokenID(
+        const simpleLockAddress = await this.getSimpleLockAddressByTokenID(
             lockedLpTokenID,
         );
         const lockedLpTokenCollection =
-            await this.simpleLockGetter.getLpProxyTokenID(address);
+            await this.simpleLockGetter.getLpProxyTokenID(simpleLockAddress);
         const lockedLpTokenIdentifier = tokenIdentifier(
             lockedLpTokenCollection,
             tokenNonce,
         );
         const lockedLpToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.simpleLockAddress,
+            simpleLockAddress,
             lockedLpTokenIdentifier,
         );
 
