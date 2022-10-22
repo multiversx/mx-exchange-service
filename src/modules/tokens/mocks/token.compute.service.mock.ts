@@ -1,5 +1,5 @@
-import { ITokenComputeService } from "../interfaces";
-import { ErrorNotImplemented } from "../../../utils/errors.constants";
+import { ITokenComputeService } from '../interfaces';
+import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
 export class TokenComputeHandlers implements ITokenComputeService {
     getEgldPriceInUSD:() => Promise<string>;
