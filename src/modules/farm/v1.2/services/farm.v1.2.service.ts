@@ -49,7 +49,7 @@ export class FarmServiceV1_2 extends FarmService {
             rewards = await this.farmCompute.computeFarmRewardsForPosition(
                 positon.farmAddress,
                 positon.liquidity,
-                farmTokenAttributes,
+                farmTokenAttributes.rewardPerShare,
             );
         }
 
