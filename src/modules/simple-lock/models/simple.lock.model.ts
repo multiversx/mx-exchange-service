@@ -4,7 +4,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/enum';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
+import { FarmTokenAttributesModelV1_3 } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { EnergyType } from '@elrondnetwork/erdjs-dex';
 
@@ -97,8 +97,8 @@ export class FarmProxyTokenAttributesModel {
     farmingTokenLockedNonce: number;
     @Field(() => LpProxyTokenAttributesModel)
     farmingTokenAttributes: LpProxyTokenAttributesModel;
-    @Field(() => FarmTokenAttributesModel)
-    farmTokenAttributes: FarmTokenAttributesModel;
+    @Field(() => FarmTokenAttributesModelV1_3)
+    farmTokenAttributes: FarmTokenAttributesModelV1_3;
 
     constructor(init?: Partial<FarmProxyTokenAttributesModel>) {
         Object.assign(this, init);
