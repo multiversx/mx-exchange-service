@@ -53,8 +53,13 @@ export class FarmServiceV1_3 extends FarmService {
             );
         }
 
+        const decodedAttributes = new FarmTokenAttributesModelV1_3({
+            ...farmTokenAttributes,
+            attributes: positon.attributes,
+            identifier: positon.identifier,
+        });
         return new RewardsModelV1_3({
-            decodedAttributes: farmTokenAttributes,
+            decodedAttributes,
             remainingFarmingEpochs: await this.getRemainingFarmingEpochs(
                 positon.farmAddress,
                 farmTokenAttributes.enteringEpoch,
