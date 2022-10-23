@@ -8,16 +8,24 @@ import {
     BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,
 } from './models/farm.args';
-import { ExitFarmTokensModel, RewardsModel } from './models/farm.model';
+import {
+    ExitFarmTokensModel,
+    FarmVersion,
+    RewardsModel,
+} from './models/farm.model';
 import { FarmsUnion } from './models/farm.union';
-import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
+import { FarmTokenAttributesUnion } from './models/farmTokenAttributes.model';
+import { FarmServiceV1_2 } from './v1.2/services/farm.v1.2.service';
+import { FarmServiceV1_3 } from './v1.3/services/farm.v1.3.service';
 import { FarmServiceV2 } from './v2/services/farm.v2.service';
 
 @Resolver()
 export class FarmQueryResolver extends GenericResolver {
     constructor(
         private readonly farmService: FarmService,
-        private readonly farmV2Service: FarmServiceV2,
+        private readonly farmServiceV1_2: FarmServiceV1_2,
+        private readonly farmServiceV1_3: FarmServiceV1_3,
+        private readonly farmServiceV2: FarmServiceV2,
     ) {
         super();
     }
@@ -28,14 +36,13 @@ export class FarmQueryResolver extends GenericResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => FarmTokenAttributesModel)
+    @Query(() => FarmTokenAttributesUnion)
     async farmTokenAttributes(
         @Args('farmAddress') farmAddress: string,
         @Args('identifier') identifier: string,
         @Args('attributes') attributes: string,
-    ): Promise<FarmTokenAttributesModel> {
+    ): Promise<typeof FarmTokenAttributesUnion> {
         return this.getService(farmAddress).decodeFarmTokenAttributes(
-            farmAddress,
             identifier,
             attributes,
         );
@@ -66,8 +73,12 @@ export class FarmQueryResolver extends GenericResolver {
     private getService(farmAddress: string): FarmService | FarmServiceV2 {
         const version = farmVersion(farmAddress);
         switch (version) {
-            default:
-                return this.farmService;
+            case FarmVersion.V1_2:
+                return this.farmServiceV1_2;
+            case FarmVersion.V1_3:
+                return this.farmServiceV1_3;
+            case FarmVersion.V2:
+                return this.farmServiceV2;
         }
     }
 }
