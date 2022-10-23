@@ -1,17 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { FarmService } from '../base-module/services/farm.service';
-import { AbiFarmService } from '../base-module/services/farm.abi.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
-import { RewardsModel } from '../models/farm.model';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
+import { RewardsModelV1_2, RewardsModelV1_3 } from '../models/farm.model';
+import {
+    FarmTokenAttributesModelV1_2,
+    FarmTokenAttributesModelV1_3,
+} from '../models/farmTokenAttributes.model';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../base-module/services/farm.getter.service';
-import { FarmComputeService } from '../base-module/services/farm.compute.service';
-import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
@@ -23,18 +21,39 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { Address } from '@elrondnetwork/erdjs/out';
+import { FarmServiceV1_2 } from '../v1.2/services/farm.v1.2.service';
+import { FarmAbiServiceV1_2 } from '../v1.2/services/farm.v1.2.abi.service';
+import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service';
+import { FarmGetterServiceMockV1_2 } from '../mocks/farm.v1.2.getter.service.mock';
+import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.service';
+import { FarmServiceV1_3 } from '../v1.3/services/farm.v1.3.service';
+import { FarmComputeServiceV1_3 } from '../v1.3/services/farm.v1.3.compute.service';
+import { FarmGetterServiceV1_3 } from '../v1.3/services/farm.v1.3.getter.service';
+import { FarmGetterServiceMockV1_3 } from '../mocks/farm.v1.3.getter.service.mock';
+import { FarmAbiServiceV1_3 } from '../v1.3/services/farm.v1.3.abi.service';
 
 describe('FarmService', () => {
-    let service: FarmService;
+    let serviceV1_2: FarmServiceV1_2;
+    let serviceV1_3: FarmServiceV1_3;
 
-    const AbiFarmServiceProvider = {
-        provide: AbiFarmService,
+    const AbiFarmServiceProviderV1_2 = {
+        provide: FarmAbiServiceV1_2,
         useClass: AbiFarmServiceMock,
     };
 
-    const FarmGetterServiceProvider = {
-        provide: FarmGetterService,
-        useClass: FarmGetterServiceMock,
+    const FarmGetterServiceProviderV1_2 = {
+        provide: FarmGetterServiceV1_2,
+        useClass: FarmGetterServiceMockV1_2,
+    };
+
+    const AbiFarmServiceProviderV1_3 = {
+        provide: FarmAbiServiceV1_3,
+        useClass: AbiFarmServiceMock,
+    };
+
+    const FarmGetterServiceProviderV1_3 = {
+        provide: FarmGetterServiceV1_3,
+        useClass: FarmGetterServiceMockV1_3,
     };
 
     const ElrondApiServiceProvider = {
@@ -61,9 +80,12 @@ describe('FarmService', () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
             providers: [
-                AbiFarmServiceProvider,
-                FarmGetterServiceProvider,
-                FarmComputeService,
+                AbiFarmServiceProviderV1_2,
+                FarmGetterServiceProviderV1_2,
+                FarmComputeServiceV1_2,
+                AbiFarmServiceProviderV1_3,
+                FarmGetterServiceProviderV1_3,
+                FarmComputeServiceV1_3,
                 ElrondApiServiceProvider,
                 ContextGetterServiceProvider,
                 RouterGetterServiceProvider,
@@ -74,15 +96,17 @@ describe('FarmService', () => {
                 WrapServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
-                FarmService,
+                FarmServiceV1_2,
+                FarmServiceV1_3,
             ],
         }).compile();
 
-        service = module.get<FarmService>(FarmService);
+        serviceV1_2 = module.get<FarmServiceV1_2>(FarmServiceV1_2);
+        serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
     });
 
     it('should be defined', () => {
-        expect(service).toBeDefined();
+        expect(serviceV1_2).toBeDefined();
     });
 
     it('should get rewards with locked rewards', async () => {
@@ -90,7 +114,7 @@ describe('FarmService', () => {
             'AAAABwc+9Mqu1tkAAAAAAAAAAQAAAAAAAAABAgEAAAAIiscjBInoAAAAAAAAAAAACQEVjkYJE9AAAA==';
         const identifier = 'MEXFARM-abcd-01';
         const liquidity = '2000000000000000000';
-        const rewards = await service.getRewardsForPosition({
+        const rewards = await serviceV1_2.getRewardsForPosition({
             farmAddress:
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             identifier: identifier,
@@ -101,8 +125,8 @@ describe('FarmService', () => {
         });
 
         expect(rewards).toEqual(
-            new RewardsModel({
-                decodedAttributes: new FarmTokenAttributesModel({
+            new RewardsModelV1_2({
+                decodedAttributes: new FarmTokenAttributesModelV1_2({
                     identifier: 'MEXFARM-abcd-01',
                     attributes:
                         'AAAABwc+9Mqu1tkAAAAAAAAAAQAAAAAAAAABAgEAAAAIiscjBInoAAAAAAAAAAAACQEVjkYJE9AAAA==',
@@ -122,7 +146,7 @@ describe('FarmService', () => {
     });
 
     it('should get farms', async () => {
-        const farms = await service.getFarms();
+        const farms = await serviceV1_2.getFarms();
         expect(farms).toEqual([
             {
                 address:
@@ -150,15 +174,15 @@ describe('FarmService', () => {
     });
 
     it('should check if farm token', async () => {
-        const isFarmToken_0 = await service.isFarmToken('TOK1TOK9LPStaked');
+        const isFarmToken_0 = await serviceV1_2.isFarmToken('TOK1TOK9LPStaked');
         expect(isFarmToken_0).toEqual(false);
 
-        const isFarmToken_1 = await service.isFarmToken('TOK1TOK4LPStaked');
+        const isFarmToken_1 = await serviceV1_2.isFarmToken('TOK1TOK4LPStaked');
         expect(isFarmToken_1).toEqual(true);
     });
 
     it('should get farm address by farm token ID', async () => {
-        const farmAddress = await service.getFarmAddressByFarmTokenID(
+        const farmAddress = await serviceV1_2.getFarmAddressByFarmTokenID(
             'TOK1TOK4LPStaked',
         );
         expect(farmAddress).toEqual(
@@ -168,7 +192,7 @@ describe('FarmService', () => {
 
     it('should get batch rewards for position', async () => {
         const batchRewardsForPosition =
-            await service.getBatchRewardsForPosition([
+            await serviceV1_3.getBatchRewardsForPosition([
                 {
                     farmAddress:
                         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
@@ -180,10 +204,10 @@ describe('FarmService', () => {
                     user: Address.Zero().bech32(),
                 },
             ]);
+
         expect(batchRewardsForPosition).toEqual([
-            {
-                decodedAttributes: {
-                    aprMultiplier: null,
+            new RewardsModelV1_3({
+                decodedAttributes: new FarmTokenAttributesModelV1_3({
                     attributes:
                         'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
                     compoundedReward: '0',
@@ -191,18 +215,17 @@ describe('FarmService', () => {
                     enteringEpoch: 1045,
                     identifier: 'EGLDMEXFL-a329b6-0b',
                     initialFarmingAmount: '1256235401928812748',
-                    lockedRewards: null,
                     originalEnteringEpoch: 1045,
                     rewardPerShare: '0',
-                },
+                }),
                 remainingFarmingEpochs: 1047,
                 rewards: '110000000000000000100000000000',
-            },
+            }),
         ]);
     });
 
     it('should get tokens for exit farm', async () => {
-        const tokensForExitFarm = await service.getTokensForExitFarm({
+        const tokensForExitFarm = await serviceV1_3.getTokensForExitFarm({
             farmAddress:
                 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             liquidity: '1000000000000000',
@@ -219,13 +242,11 @@ describe('FarmService', () => {
     });
 
     it('should get tokens for exit farm', async () => {
-        const tokensForExitFarm = await service.decodeFarmTokenAttributes(
-            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+        const tokensForExitFarm = serviceV1_3.decodeFarmTokenAttributes(
             'EGLDMEXFL-a329b6-0b',
             'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
         );
         expect(tokensForExitFarm).toEqual({
-            aprMultiplier: null,
             attributes:
                 'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
             compoundedReward: '0',
@@ -233,7 +254,6 @@ describe('FarmService', () => {
             enteringEpoch: 1045,
             identifier: 'EGLDMEXFL-a329b6-0b',
             initialFarmingAmount: '1256235401928812748',
-            lockedRewards: null,
             originalEnteringEpoch: 1045,
             rewardPerShare: '0',
         });

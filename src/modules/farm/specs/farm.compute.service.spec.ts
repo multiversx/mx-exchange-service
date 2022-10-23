@@ -4,7 +4,6 @@ import { FarmService } from '../base-module/services/farm.service';
 import { AbiFarmServiceProvider } from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmComputeService } from '../base-module/services/farm.compute.service';
@@ -89,18 +88,7 @@ describe('FarmService', () => {
             await service.computeFarmRewardsForPosition(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 '100000000000000000000000000000',
-                new FarmTokenAttributesModel({
-                    identifier: undefined,
-                    attributes: undefined,
-                    rewardPerShare: '100',
-                    originalEnteringEpoch: 0,
-                    enteringEpoch: 0,
-                    aprMultiplier: 25,
-                    initialFarmingAmount: '10000000000000000000',
-                    compoundedReward: '500000000000000',
-                    currentFarmAmount: '100000000000000',
-                    lockedRewards: true,
-                }),
+                '100',
             );
         expect(farmRewardsForPosition.toFixed()).toEqual(
             '18333333333333333333333000',
