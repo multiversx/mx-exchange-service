@@ -10,6 +10,7 @@ import { FarmComputeServiceV1_3 } from './services/farm.v1.3.compute.service';
 import { FarmGetterServiceV1_3 } from './services/farm.v1.3.getter.service';
 import { FarmResolverV1_3 } from './farm.v1.3.resolver';
 import { FarmTransactionServiceV1_3 } from './services/farm.v1.3.transaction.service';
+import { FarmServiceV1_3 } from './services/farm.v1.3.service';
 
 @Module({
     imports: [
@@ -21,12 +22,17 @@ import { FarmTransactionServiceV1_3 } from './services/farm.v1.3.transaction.ser
         PairModule,
     ],
     providers: [
+        FarmServiceV1_3,
         FarmAbiServiceV1_3,
         FarmGetterServiceV1_3,
         FarmComputeServiceV1_3,
         FarmTransactionServiceV1_3,
         FarmResolverV1_3,
     ],
-    exports: [FarmComputeServiceV1_3, FarmTransactionServiceV1_3],
+    exports: [
+        FarmServiceV1_3,
+        FarmComputeServiceV1_3,
+        FarmTransactionServiceV1_3,
+    ],
 })
 export class FarmModuleV1_3 {}

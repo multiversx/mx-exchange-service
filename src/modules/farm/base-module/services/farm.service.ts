@@ -15,8 +15,7 @@ import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
-import { FarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
-import { FarmTokenAttributesModel } from '../../models/farmTokenAttributes.model';
+import { FarmTokenAttributesModelV1_3 } from '../../models/farmTokenAttributes.model';
 import { CachingService } from 'src/services/caching/cache.service';
 import { FarmModelV1_2 } from '../../models/farm.v1.2.model';
 import { FarmModelV1_3 } from '../../models/farm.v1.3.model';
@@ -107,6 +106,21 @@ export class FarmService {
         return undefined;
     }
 
+    protected async getRemainingFarmingEpochs(
+        farmAddress: string,
+        enteringEpoch: number,
+    ): Promise<number> {
+        const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
+            this.contextGetter.getCurrentEpoch(),
+            this.farmGetter.getMinimumFarmingEpochs(farmAddress),
+        ]);
+
+        return Math.max(
+            0,
+            minimumFarmingEpochs - (currentEpoch - enteringEpoch),
+        );
+    }
+
     async getBatchRewardsForPosition(
         positions: CalculateRewardsArgs[],
     ): Promise<RewardsModel[]> {
@@ -119,51 +133,14 @@ export class FarmService {
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
-        const farmTokenAttributes: FarmTokenAttributes =
-            FarmTokenAttributes.fromAttributes(
-                farmVersion(positon.farmAddress),
-                positon.attributes,
-            );
-        let rewards: BigNumber;
-        if (positon.vmQuery) {
-            rewards = await this.abiService.calculateRewardsForGivenPosition(
-                positon,
-            );
-        } else {
-            rewards = await this.farmCompute.computeFarmRewardsForPosition(
-                positon.farmAddress,
-                positon.liquidity,
-                farmTokenAttributes,
-            );
-        }
-
-        const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
-            this.contextGetter.getCurrentEpoch(),
-            this.farmGetter.getMinimumFarmingEpochs(positon.farmAddress),
-        ]);
-
-        const remainingFarmingEpochs = Math.max(
-            0,
-            minimumFarmingEpochs -
-                (currentEpoch - farmTokenAttributes.enteringEpoch),
-        );
-
-        return new RewardsModel({
-            decodedAttributes: new FarmTokenAttributesModel({
-                ...farmTokenAttributes.toJSON(),
-                attributes: positon.attributes,
-                identifier: positon.identifier,
-            }),
-            remainingFarmingEpochs: remainingFarmingEpochs,
-            rewards: rewards.integerValue().toFixed(),
-        });
+        throw new Error('Method not implemented');
     }
 
     async getTokensForExitFarm(
         args: CalculateRewardsArgs,
     ): Promise<ExitFarmTokensModel> {
-        const farmTokenAttributes = FarmTokenAttributes.fromAttributes(
-            farmVersion(args.farmAddress),
+        const farmTokenAttributes = this.decodeFarmTokenAttributes(
+            args.identifier,
             args.attributes,
         );
         let initialFarmingAmount = ruleOfThree(
@@ -200,19 +177,10 @@ export class FarmService {
     }
 
     decodeFarmTokenAttributes(
-        farmAddress: string,
         identifier: string,
         attributes: string,
-    ): FarmTokenAttributesModel {
-        const farmTokenAttributes = FarmTokenAttributes.fromAttributes(
-            farmVersion(farmAddress),
-            attributes,
-        );
-        return new FarmTokenAttributesModel({
-            ...farmTokenAttributes.toJSON(),
-            attributes: attributes,
-            identifier: identifier,
-        });
+    ): FarmTokenAttributesModelV1_3 {
+        throw new Error('Method not implemented');
     }
 
     async requireOwner(farmAddress: string, sender: string) {
