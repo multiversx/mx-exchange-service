@@ -5,10 +5,10 @@ import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
-import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
-import { FarmV12ComputeService } from 'src/modules/farm/services/v1.2/farm.v1.2.compute.service';
-import { FarmV13ComputeService } from 'src/modules/farm/services/v1.3/farm.v1.3.compute.service';
+import { FarmComputeService } from 'src/modules/farm/base-module/services/farm.compute.service';
+import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
+import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
+import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
@@ -20,8 +20,8 @@ export class AnalyticsComputeService {
         private readonly routerGetter: RouterGetterService,
         private readonly farmGetter: FarmGetterService,
         private readonly farmCompute: FarmComputeService,
-        private readonly farmComputeV1_2: FarmV12ComputeService,
-        private readonly farmComputeV1_3: FarmV13ComputeService,
+        private readonly farmComputeV1_2: FarmComputeServiceV1_2,
+        private readonly farmComputeV1_3: FarmComputeServiceV1_3,
         private readonly pairGetter: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
     ) {}

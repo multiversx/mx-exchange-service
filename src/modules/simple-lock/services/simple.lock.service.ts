@@ -9,7 +9,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
-import { FarmService } from 'src/modules/farm/services/farm.service';
+import { FarmService } from 'src/modules/farm/base-module/services/farm.service';
 import {
     DecodeAttributesArgs,
     DecodeAttributesModel,

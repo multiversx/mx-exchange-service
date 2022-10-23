@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { FarmService } from '../../farm/services/farm.service';
+import { FarmService } from '../../farm/base-module/services/farm.service';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
@@ -17,7 +17,7 @@ import { oneHour, oneSecond } from '../../../helpers/helpers';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { FarmGetterService } from '../../farm/services/farm.getter.service';
+import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';

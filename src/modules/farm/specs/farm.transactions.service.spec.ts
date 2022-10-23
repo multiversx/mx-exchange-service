@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { FarmService } from '../services/farm.service';
-import { AbiFarmService } from '../services/farm.abi.service';
+import { FarmService } from '../base-module/services/farm.service';
+import { AbiFarmService } from '../base-module/services/farm.abi.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../services/farm.getter.service';
-import { FarmComputeService } from '../services/farm.compute.service';
+import { FarmGetterService } from '../base-module/services/farm.getter.service';
+import { FarmComputeService } from '../base-module/services/farm.compute.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { ApiConfigService } from '../../../helpers/api.config.service';
@@ -24,10 +24,10 @@ import { elrondConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
-import { FarmV12TransactionService } from '../services/v1.2/farm.v1.2.transaction.service';
+import { FarmTransactionServiceV1_2 } from '../v1.2/services/farm.v1.2.transaction.service';
 
 describe('FarmService', () => {
-    let transactionV1_2: FarmV12TransactionService;
+    let transactionV1_2: FarmTransactionServiceV1_2;
 
     const AbiFarmServiceProvider = {
         provide: AbiFarmService,
@@ -77,13 +77,13 @@ describe('FarmService', () => {
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
                 ElrondProxyServiceProvider,
-                FarmV12TransactionService,
+                FarmTransactionServiceV1_2,
                 FarmService,
             ],
         }).compile();
 
-        transactionV1_2 = module.get<FarmV12TransactionService>(
-            FarmV12TransactionService,
+        transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
         );
     });
 

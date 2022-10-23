@@ -1,0 +1,73 @@
+import { UseGuards } from '@nestjs/common';
+import { Args, Query, Resolver } from '@nestjs/graphql';
+import { GqlAuthGuard } from 'src/modules/auth/gql.auth.guard';
+import { GenericResolver } from 'src/services/generics/generic.resolver';
+import { farmVersion } from 'src/utils/farm.utils';
+import { FarmService } from './base-module/services/farm.service';
+import {
+    BatchFarmRewardsComputeArgs,
+    CalculateRewardsArgs,
+} from './models/farm.args';
+import { ExitFarmTokensModel, RewardsModel } from './models/farm.model';
+import { FarmsUnion } from './models/farm.union';
+import { FarmTokenAttributesModel } from './models/farmTokenAttributes.model';
+import { FarmServiceV2 } from './v2/services/farm.v2.service';
+
+@Resolver()
+export class FarmQueryResolver extends GenericResolver {
+    constructor(
+        private readonly farmService: FarmService,
+        private readonly farmV2Service: FarmServiceV2,
+    ) {
+        super();
+    }
+
+    @Query(() => [FarmsUnion])
+    async farms(): Promise<Array<typeof FarmsUnion>> {
+        return this.farmService.getFarms();
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => FarmTokenAttributesModel)
+    async farmTokenAttributes(
+        @Args('farmAddress') farmAddress: string,
+        @Args('identifier') identifier: string,
+        @Args('attributes') attributes: string,
+    ): Promise<FarmTokenAttributesModel> {
+        return this.getService(farmAddress).decodeFarmTokenAttributes(
+            farmAddress,
+            identifier,
+            attributes,
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => [RewardsModel])
+    async getRewardsForPosition(
+        @Args('farmsPositions') args: BatchFarmRewardsComputeArgs,
+    ): Promise<RewardsModel[]> {
+        return await this.genericQuery(() =>
+            this.getService(
+                args.farmsPositions[0].farmAddress,
+            ).getBatchRewardsForPosition(args.farmsPositions),
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => ExitFarmTokensModel)
+    async getExitFarmTokens(
+        @Args('args') args: CalculateRewardsArgs,
+    ): Promise<ExitFarmTokensModel> {
+        return await this.genericQuery(() =>
+            this.getService(args.farmAddress).getTokensForExitFarm(args),
+        );
+    }
+
+    private getService(farmAddress: string): FarmService | FarmServiceV2 {
+        const version = farmVersion(farmAddress);
+        switch (version) {
+            default:
+                return this.farmService;
+        }
+    }
+}

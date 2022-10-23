@@ -378,12 +378,13 @@
         "simpleLock": "./src/abis/simple-lock.abi.json",
         "simpleLockEnergy": "./src/abis/simple-lock-energy.abi.json",
         "farm": {
-            "v1.2": "./src/abis/v1.2/farm.abi.json",
+            "v1.2": "./src/abis/farms/v1.2/farm.abi.json",
             "v1.3": {
-                "unlockedRewards": "./src/abis/v1.3/farm.abi.json",
-                "lockedRewards": "./src/abis/v1.3/farm_with_lock.abi.json",
-                "customRewards": "./src/abis/v1.3/farm_custom_rewards.abi.json"
-            }
+                "unlockedRewards": "./src/abis/farms/v1.3/farm.abi.json",
+                "lockedRewards": "./src/abis/farms/v1.3/farm_with_lock.abi.json",
+                "customRewards": "./src/abis/farms/v1.3/farm_custom_rewards.abi.json"
+            },
+            "v2": "./src/abis/farms/v2/farm.abi.json"
         },
         "staking": "./src/abis/farm-staking.abi.json",
         "stakingProxy": "./src/abis/farm-staking-proxy.abi.json",

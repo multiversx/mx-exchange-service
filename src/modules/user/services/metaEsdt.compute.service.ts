@@ -6,8 +6,8 @@ import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model
 import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
-import { FarmGetterService } from '../../farm/services/farm.getter.service';
-import { FarmService } from '../../farm/services/farm.service';
+import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
+import { FarmService } from '../../farm/base-module/services/farm.service';
 import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
