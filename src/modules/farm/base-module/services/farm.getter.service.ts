@@ -13,7 +13,7 @@ import { AbiFarmService } from './farm.abi.service';
 import { FarmComputeService } from './farm.compute.service';
 
 @Injectable()
-export class FarmGetterService extends GenericGetterService {
+export abstract class FarmGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

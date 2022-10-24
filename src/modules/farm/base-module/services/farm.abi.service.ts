@@ -13,7 +13,7 @@ import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-g
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
 @Injectable()
-export class AbiFarmService extends GenericAbiService {
+export abstract class AbiFarmService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

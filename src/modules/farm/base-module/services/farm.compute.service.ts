@@ -12,7 +12,7 @@ import { Logger } from 'winston';
 import { FarmGetterService } from './farm.getter.service';
 
 @Injectable()
-export class FarmComputeService {
+export abstract class FarmComputeService {
     constructor(
         @Inject(forwardRef(() => FarmGetterService))
         protected readonly farmGetter: FarmGetterService,

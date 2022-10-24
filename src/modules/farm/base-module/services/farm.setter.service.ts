@@ -8,7 +8,7 @@ import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 
 @Injectable()
-export class FarmSetterService extends GenericSetterService {
+export abstract class FarmSetterService extends GenericSetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
