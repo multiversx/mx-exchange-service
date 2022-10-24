@@ -10,15 +10,54 @@ import {
     GlobalInfoByWeekModel, UserInfoByWeekModel,
     WeekFilterPeriodModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { TransactionModel } from "../../../models/transaction.model";
+import {
+    WeekTimekeepingGetterService
+} from "../../../submodules/week-timekeeping/services/week-timekeeping.getter.service";
+import {
+    WeeklyRewardsSplittingGetterService
+} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
+import { elrondConfig, gasConfig } from "../../../config";
+import { ElrondProxyService } from "../../../services/elrond-communication/elrond-proxy.service";
 
 
 @Injectable()
 export class FeesCollectorService {
     constructor(
         private readonly feesCollectorGetterService: FeesCollectorGetterService,
+        private readonly elrondProxy: ElrondProxyService,
         private readonly weekTimekeepingService: WeekTimekeepingService,
         private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
+        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
+        private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
     ) {
+    }
+
+    async claimRewardsBatch(
+        scAddress: string,
+        userAddress: string,
+    ): Promise<TransactionModel[]> {
+        const transactions: TransactionModel[] = [];
+        const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
+        const lastActiveWeekForUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress);
+        for (let week = lastActiveWeekForUser; week < currentWeek; week += 4) {
+            const claimTransaction = await this.claimRewards(userAddress, gasConfig.feesCollector.claimRewards);
+            transactions.push(claimTransaction);
+        }
+        return transactions;
+    }
+
+    async claimRewards(
+        sender: string,
+        gasLimit: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getFeesCollectorContract();
+        return contract.methodsExplicit
+            .claimRewards()
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async getAccumulatedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
