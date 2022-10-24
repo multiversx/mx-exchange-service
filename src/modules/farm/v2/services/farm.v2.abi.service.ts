@@ -1,4 +1,3 @@
-import { FarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import {
     Address,
     AddressValue,
@@ -16,6 +15,7 @@ import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
+import { FarmTokenAttributesV1_3 } from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
 export class FarmAbiServiceV2 extends AbiFarmService {
@@ -53,8 +53,7 @@ export class FarmAbiServiceV2 extends AbiFarmService {
         const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
-        const decodedAttributes = FarmTokenAttributes.fromAttributes(
-            undefined,
+        const decodedAttributes = FarmTokenAttributesV1_3.fromAttributes(
             args.attributes,
         );
         const interaction: Interaction =
