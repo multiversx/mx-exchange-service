@@ -46,7 +46,7 @@ export class DataApiWriteService {
         this.nativeAuthSigner = new NativeAuthSigner({
             host: 'MaiarExchangeService',
             apiUrl: this.apiConfigService.getApiUrl(),
-            signerPrivateKeyPath: this.apiConfigService.getNativeAuthPemKey(),
+            signerPrivateKey: this.apiConfigService.getNativeAuthKey(),
         });
     }
 

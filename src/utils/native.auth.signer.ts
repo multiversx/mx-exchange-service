@@ -2,11 +2,10 @@ import { UserSigner } from '@elrondnetwork/erdjs-walletcore/out';
 import { SignableMessage } from '@elrondnetwork/erdjs/out';
 import { NativeAuthClient } from '@elrondnetwork/native-auth-client';
 import { NativeAuthClientConfig } from '@elrondnetwork/native-auth-client/lib/src/entities/native.auth.client.config';
-import { promises as fs } from 'fs';
 import moment from 'moment';
 
 export class NativeAuthSignerConfig extends NativeAuthClientConfig {
-    signerPrivateKeyPath?: string = undefined;
+    signerPrivateKey?: string = undefined;
 }
 
 export class AccessTokenInfo {
@@ -31,7 +30,7 @@ export class NativeAuthSigner {
             return this.accessTokenInfo;
         }
 
-        const userSigner = await this.getUserSigner();
+        const userSigner = this.getUserSigner();
         const signableToken = await this.getSignableToken();
         const signerAddress = userSigner.getAddress().bech32();
 
@@ -50,17 +49,16 @@ export class NativeAuthSigner {
         };
     }
 
-    private async getUserSigner(): Promise<UserSigner> {
+    private getUserSigner(): UserSigner {
         if (this.userSigner) {
             return this.userSigner;
         }
 
-        if (!this.config.signerPrivateKeyPath) {
-            throw new Error('Missing SignerPrivateKeyPath in NativeAuthSigner.');
+        if (!this.config.signerPrivateKey) {
+            throw new Error('Missing SignerPrivateKey in NativeAuthSigner.');
         }
 
-        const pemFile = await fs.readFile(this.config.signerPrivateKeyPath);
-        const pemKey = pemFile.toString();
+        const pemKey = this.config.signerPrivateKey;
         return this.userSigner = UserSigner.fromPem(pemKey);
     }
 
