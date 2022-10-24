@@ -40,7 +40,6 @@ export class FeesCollectorService {
         const transactions: TransactionModel[] = [];
         const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
         const lastActiveWeekForUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress);
-        console.log(gasConfig.feesCollector)
         for (let week = lastActiveWeekForUser; week < currentWeek; week += 4) {
             const claimTransaction = await this.claimRewards(userAddress, gasConfig.feesCollector.claimRewards);
             transactions.push(claimTransaction);
