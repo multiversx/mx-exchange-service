@@ -362,6 +362,9 @@
                 "setOldLockedAssetFactoryAddress": 10000000
             }
         },
+        "feesCollector": {
+            "claimRewards": 10000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
