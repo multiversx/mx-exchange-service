@@ -32,13 +32,13 @@ import { PairService } from '../../../modules/pair/services/pair.service';
 import { WrapService } from '../../../modules/wrapping/wrap.service';
 import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
 import { TokenGetterServiceProvider } from '../../../modules/tokens/mocks/token.getter.service.mock';
-import { RouterGetterServiceProvider } from '../../../modules/router/mocks/routerGetterServiceStub';
+import { RouterGetterServiceProvider } from '../../../modules/router/mocks/router.getter.service.stub';
 import { RouterGetterService } from '../../../modules/router/services/router.getter.service';
 import {
     EnergyGetterHandlers,
     EnergyGetterServiceMock,
 } from '../../../modules/simple-lock/mocks/energy.getter.service.mock';
-import { RouterGetterHandlers, RouterGetterServiceMock } from '../../../modules/router/mocks/routerGetterServiceMock';
+import { RouterGetterHandlers, RouterGetterServiceMock } from '../../../modules/router/mocks/router.getter.service.mock';
 import {
     PairGetterHandlers,
     PairGetterServiceMock,

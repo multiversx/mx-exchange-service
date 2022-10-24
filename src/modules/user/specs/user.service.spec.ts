@@ -54,7 +54,7 @@ import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.serv
 import { UserEsdtService } from '../services/user.esdt.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { RouterGetterServiceStub } from 'src/modules/router/mocks/routerGetterServiceStub';
+import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';

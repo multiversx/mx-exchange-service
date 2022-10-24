@@ -22,7 +22,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { elrondConfig, gasConfig } from 'src/config';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/routerGetterServiceStub';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('TransactionPairService', () => {

@@ -9,7 +9,7 @@ import { PairService } from '../services/pair.service';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/routerGetterServiceStub';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 
 describe('PairService', () => {
     let service: PairComputeService;

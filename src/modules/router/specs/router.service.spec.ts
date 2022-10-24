@@ -3,7 +3,7 @@ import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-servic
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
-import { RouterGetterServiceStub } from '../mocks/routerGetterServiceStub';
+import { RouterGetterServiceStub } from '../mocks/router.getter.service.stub';
 import winston from 'winston';
 import {
     utilities as nestWinstonModuleUtilities,
