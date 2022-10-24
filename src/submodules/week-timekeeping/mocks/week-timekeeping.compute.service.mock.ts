@@ -17,21 +17,21 @@ export class WeekTimekeepingComputeServiceMock implements IWeekTimekeepingComput
         if (this.handlers.computeWeekForEpoch !== undefined) {
             return this.handlers.computeWeekForEpoch(scAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     computeStartEpochForWeek(scAddress: string, week: number): Promise<number> {
         if (this.handlers.computeStartEpochForWeek !== undefined) {
             return this.handlers.computeStartEpochForWeek(scAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     computeWeekForEpoch(scAddress: string, epoch: number): Promise<number> {
         if (this.handlers.computeEndEpochForWeek !== undefined) {
             return this.handlers.computeEndEpochForWeek(scAddress, epoch);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     constructor(init: Partial<WeekTimekeepingComputeHandlers>) {

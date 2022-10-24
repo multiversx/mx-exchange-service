@@ -21,6 +21,6 @@ export class WeekTimekeepingAbiService extends GenericAbiService implements IWee
     }
 
     protected getContractHandler: (scAddress: string) => Promise<SmartContract> = scAddress => {
-        throw ErrorGetContractHandlerNotSet
+        throw ErrorGetContractHandlerNotSet()
     };
 }

@@ -25,56 +25,56 @@ export class WeeklyRewardsSplittingGetterServiceMock implements IWeeklyRewardsSp
         if (this.handlers.currentClaimProgress !== undefined) {
             return this.handlers.currentClaimProgress(scAddress, userAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     lastActiveWeekForUser(scAddress: string, userAddress: string): Promise<number> {
         if (this.handlers.lastActiveWeekForUser !== undefined) {
             return this.handlers.lastActiveWeekForUser(scAddress, userAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     lastGlobalUpdateWeek(scAddress: string): Promise<number> {
         if (this.handlers.lastGlobalUpdateWeek !== undefined) {
             return this.handlers.lastGlobalUpdateWeek(scAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     totalEnergyForWeek(scAddress: string, week: number): Promise<string> {
         if (this.handlers.totalEnergyForWeek !== undefined) {
             return this.handlers.totalEnergyForWeek(scAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     totalLockedTokensForWeek(scAddress: string, week: number): Promise<string> {
         if (this.handlers.totalLockedTokensForWeek !== undefined) {
             return this.handlers.totalLockedTokensForWeek(scAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     totalRewardsForWeek(scAddress: string, week: number): Promise<EsdtTokenPayment[]> {
         if (this.handlers.totalRewardsForWeek !== undefined) {
             return this.handlers.totalRewardsForWeek(scAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     userEnergyForWeek(scAddress: string, userAddress: string, week: number): Promise<EnergyModel> {
         if (this.handlers.userEnergyForWeek !== undefined) {
             return this.handlers.userEnergyForWeek(scAddress, userAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     userRewardsForWeek(scAddress: string, userAddress: string, week: number): Promise<EsdtTokenPayment[]> {
         if (this.handlers.userRewardsForWeek !== undefined) {
             return this.handlers.userRewardsForWeek(scAddress, userAddress, week);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     constructor(init: Partial<WeeklyRewardsSplittingGetterHandlers>) {

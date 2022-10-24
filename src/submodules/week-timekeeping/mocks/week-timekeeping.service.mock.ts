@@ -16,14 +16,14 @@ export class WeekTimekeepingServiceMock implements IWeekTimekeepingService {
         if (this.handlers.getWeekForEpoch !== undefined) {
             return this.handlers.getWeekForEpoch(scAddress, epoch);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getWeeklyTimekeeping(scAddress: string): Promise<WeekTimekeepingModel> {
         if (this.handlers.getWeeklyTimekeeping !== undefined) {
             return this.handlers.getWeeklyTimekeeping(scAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     constructor(init: Partial<WeekTimekeepingHandlers>) {

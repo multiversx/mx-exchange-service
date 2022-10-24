@@ -35,126 +35,126 @@ export class RouterGetterServiceMock implements IRouterGetterService {
         if (this.handlers.getAllPairTokens !== undefined) {
             return this.handlers.getAllPairTokens();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getAllPairsAddress(): Promise<string[]> {
         if (this.handlers.getAllPairsAddress !== undefined) {
             return this.handlers.getAllPairsAddress();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getAllPairsManagedAddresses(): Promise<string[]> {
         if (this.handlers.getAllPairsManagedAddresses !== undefined) {
             return this.handlers.getAllPairsManagedAddresses();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getCommonTokensForUserPairs(): Promise<string[]> {
         if (this.handlers.getCommonTokensForUserPairs !== undefined) {
             return this.handlers.getCommonTokensForUserPairs();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getEnableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
         if (this.handlers.getEnableSwapByUserConfig !== undefined) {
             return this.handlers.getEnableSwapByUserConfig();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getLastErrorMessage(): Promise<string> {
         if (this.handlers.getLastErrorMessage !== undefined) {
             return this.handlers.getLastErrorMessage();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getOwner(): Promise<string> {
         if (this.handlers.getOwner !== undefined) {
             return this.handlers.getOwner();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getPairCount(): Promise<number> {
         if (this.handlers.getPairCount !== undefined) {
             return this.handlers.getPairCount();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getPairCreationEnabled(): Promise<boolean> {
         if (this.handlers.getPairCreationEnabled !== undefined) {
             return this.handlers.getPairCreationEnabled();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getPairMetadata(pairAddress: string): Promise<PairMetadata> {
         if (this.handlers.getPairMetadata !== undefined) {
             return this.handlers.getPairMetadata(pairAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getPairTemplateAddress(): Promise<string> {
         if (this.handlers.getPairTemplateAddress !== undefined) {
             return this.handlers.getPairTemplateAddress();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getPairsMetadata(): Promise<PairMetadata[]> {
         if (this.handlers.getPairsMetadata !== undefined) {
             return this.handlers.getPairsMetadata();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getState(): Promise<boolean> {
         if (this.handlers.getState !== undefined) {
             return this.handlers.getState();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTemporaryOwnerPeriod(): Promise<string> {
         if (this.handlers.getTemporaryOwnerPeriod !== undefined) {
             return this.handlers.getTemporaryOwnerPeriod();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTotalFeesUSD(time: string): Promise<string> {
         if (this.handlers.getTotalFeesUSD !== undefined) {
             return this.handlers.getTotalFeesUSD(time);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTotalLockedValueUSD(): Promise<string> {
         if (this.handlers.getTotalLockedValueUSD !== undefined) {
             return this.handlers.getTotalLockedValueUSD();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTotalTxCount(): Promise<number> {
         if (this.handlers.getTotalTxCount !== undefined) {
             return this.handlers.getTotalTxCount();
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getTotalVolumeUSD(time: string): Promise<string> {
         if (this.handlers.getTotalVolumeUSD !== undefined) {
             return this.handlers.getTotalVolumeUSD(time);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     constructor(init: Partial<RouterGetterHandlers>) {

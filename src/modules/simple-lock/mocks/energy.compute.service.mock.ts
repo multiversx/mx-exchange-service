@@ -23,7 +23,7 @@ export class EnergyComputeServiceMock implements IEnergyComputeService {
         if (this.handlers.depleteUserEnergy !== undefined) {
             return this.handlers.depleteUserEnergy(energyEntry, currentEpoch);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     constructor(init?: Partial<EnergyComputeHandlers>) {

@@ -5,5 +5,10 @@ export enum VmQueryError {
     INPUT_TOO_SHORT = 'storage decode error: input too short'
 }
 
-export const ErrorGetContractHandlerNotSet = new Error("getContractHandler not set");
-export const ErrorNotImplemented = new Error("Not implemented");
+export function ErrorNotImplemented() {
+    throw new Error("Method not implemented")
+}
+
+export function ErrorGetContractHandlerNotSet() {
+    throw new Error("getContractHandler not set")
+}

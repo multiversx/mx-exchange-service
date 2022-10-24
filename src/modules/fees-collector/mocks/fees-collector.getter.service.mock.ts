@@ -15,14 +15,14 @@ export class FeesCollectorGetterServiceMock implements IFeesCollectorGetterServi
         if (this.handlers.getAccumulatedFees !== undefined) {
             return this.handlers.getAccumulatedFees(scAddress, week, token);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
 
     getAllTokens(scAddress: string): Promise<string[]> {
         if (this.handlers.getAllTokens !== undefined) {
             return this.handlers.getAllTokens(scAddress);
         }
-        throw ErrorNotImplemented
+        ErrorNotImplemented()
     }
     constructor(init: Partial<FeesCollectorGetterHandlers>) {
         this.handlers = new FeesCollectorGetterHandlers(init);
