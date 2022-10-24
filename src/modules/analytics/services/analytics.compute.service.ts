@@ -25,8 +25,9 @@ export class AnalyticsComputeService {
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
 
-        const promises: Promise<string>[] = farmsAddresses().map(farmAddress =>
-            this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
+        const promises: Promise<string>[] = farmsAddresses().map(
+            (farmAddress) =>
+                this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
         );
         const farmsLockedValueUSD = await Promise.all(promises);
         for (const farmLockedValueUSD of farmsLockedValueUSD) {
@@ -46,7 +47,7 @@ export class AnalyticsComputeService {
         );
 
         let totalValueLockedUSD = new BigNumber(0);
-        const promises = filteredPairs.map(pairAddress =>
+        const promises = filteredPairs.map((pairAddress) =>
             this.pairGetterService.getLockedValueUSD(pairAddress),
         );
 
@@ -57,10 +58,10 @@ export class AnalyticsComputeService {
                 ),
             );
         }
-        if (farmsAddresses()[12] !== undefined) {
+        if (farmsAddresses()[13] !== undefined) {
             promises.push(
                 this.farmComputeService.computeFarmLockedValueUSD(
-                    farmsAddresses()[12],
+                    farmsAddresses()[13],
                 ),
             );
         }
@@ -79,7 +80,7 @@ export class AnalyticsComputeService {
 
     async computeTotalAggregatedRewards(days: number): Promise<string> {
         const addresses: string[] = farmsAddresses();
-        const promises = addresses.map(async farmAddress => {
+        const promises = addresses.map(async (farmAddress) => {
             if (
                 farmType(farmAddress) === FarmRewardType.CUSTOM_REWARDS ||
                 farmVersion(farmAddress) === FarmVersion.V1_2
@@ -96,9 +97,8 @@ export class AnalyticsComputeService {
             const aggregatedRewards = new BigNumber(
                 rewardsPerBlock,
             ).multipliedBy(blocksNumber);
-            totalAggregatedRewards = totalAggregatedRewards.plus(
-                aggregatedRewards,
-            );
+            totalAggregatedRewards =
+                totalAggregatedRewards.plus(aggregatedRewards);
         }
         return totalAggregatedRewards.toFixed();
     }
