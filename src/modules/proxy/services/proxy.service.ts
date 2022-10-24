@@ -3,7 +3,6 @@ import { ProxyModel } from '../models/proxy.model';
 import { WrappedLpTokenAttributesModel } from '../models/wrappedLpTokenAttributes.model';
 import { WrappedFarmTokenAttributesModel } from '../models/wrappedFarmTokenAttributes.model';
 import { scAddress } from '../../../config';
-import { FarmService } from '../../farm/base-module/services/farm.service';
 import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
@@ -24,18 +23,17 @@ import {
     FarmTokenAttributesModelV1_3,
     FarmTokenAttributesUnion,
 } from 'src/modules/farm/models/farmTokenAttributes.model';
-import { ProxyGetterService } from './proxy.getter.service';
 import { LockedAssetService } from 'src/modules/locked-asset-factory/services/locked-asset.service';
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { FarmFactoryService } from 'src/modules/farm/farm.service';
 
 @Injectable()
 export class ProxyService {
     constructor(
+        private readonly farmFactory: FarmFactoryService,
         private readonly apiService: ElrondApiService,
-        private readonly proxyGetter: ProxyGetterService,
         private readonly lockedAssetService: LockedAssetService,
-        private farmService: FarmService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -123,7 +121,7 @@ export class ProxyService {
             scAddress.proxyDexAddress,
             tokenIdentifier(farmTokenCollection, farmTokenNonce),
         );
-        const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
+        const farmAddress = await this.farmFactory.getFarmAddressByFarmTokenID(
             farmToken.collection,
         );
         const version = farmVersion(farmAddress);

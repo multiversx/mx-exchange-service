@@ -6,7 +6,7 @@ import { elrondConfig, gasConfig } from 'src/config';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { FarmService } from 'src/modules/farm/base-module/services/farm.service';
+import { FarmFactoryService } from 'src/modules/farm/farm.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
@@ -27,7 +27,7 @@ export class StakingProxyTransactionService {
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyGetter: StakingProxyGetterService,
         private readonly pairService: PairService,
-        private readonly farmService: FarmService,
+        private readonly farmFactory: FarmFactoryService,
         private readonly elrondProxy: ElrondProxyService,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -153,14 +153,16 @@ export class StakingProxyTransactionService {
             new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
         );
 
-        const exitFarmPosition = await this.farmService.getTokensForExitFarm({
-            attributes: farmToken.attributes,
-            identifier: farmToken.identifier,
-            farmAddress: farmAddress,
-            user: sender,
-            liquidity: liquidityPositionAmount.toFixed(),
-            vmQuery: false,
-        });
+        const exitFarmPosition = await this.farmFactory
+            .service(farmAddress)
+            .getTokensForExitFarm({
+                attributes: farmToken.attributes,
+                identifier: farmToken.identifier,
+                farmAddress: farmAddress,
+                user: sender,
+                liquidity: liquidityPositionAmount.toFixed(),
+                vmQuery: false,
+            });
 
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             pairAddress,
