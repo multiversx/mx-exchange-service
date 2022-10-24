@@ -199,4 +199,12 @@ export class ApiConfigService {
 
         return admins.split(',');
     }
+
+    getNativeAuthPemKey(): string {
+        const nativeAuthPemKey = this.configService.get<string>('NATIVE_AUTH_PEM_KEY');
+        if (!nativeAuthPemKey) {
+            throw new Error('No NativeAuthPemKey present');
+        }
+        return nativeAuthPemKey;
+    }
 }

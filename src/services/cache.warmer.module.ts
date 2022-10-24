@@ -31,6 +31,7 @@ import { RemoteConfigModule } from 'src/modules/remote-config/remote-config.modu
 import { RouterModule } from 'src/modules/router/router.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
 import { AWSQueryCacheWarmerService } from './crons/aws.query.cache.warmer.service';
+import { DataApiModule } from './data-api/data-api.module';
 
 @Module({
     imports: [
@@ -52,6 +53,7 @@ import { AWSQueryCacheWarmerService } from './crons/aws.query.cache.warmer.servi
         PriceDiscoveryModule,
         TokenModule,
         AWSModule,
+        DataApiModule,
         RemoteConfigModule,
     ],
     controllers: [],

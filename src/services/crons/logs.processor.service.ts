@@ -15,6 +15,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { EsdtLocalBurnEvent, ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
+import { DataApiWriteService } from '../data-api/data-api.write';
 
 @Injectable()
 export class LogsProcessorService {
@@ -27,6 +28,7 @@ export class LogsProcessorService {
         private readonly apiService: ElrondApiService,
         private readonly elasticService: ElasticService,
         private readonly awsWrite: AWSTimestreamWriteService,
+        private readonly dataApiWrite: DataApiWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -224,7 +226,10 @@ export class LogsProcessorService {
         Records: TimestreamWrite.Records,
     ): Promise<number> {
         try {
-            await this.awsWrite.multiRecordsIngest('tradingInfo', Records);
+            await Promise.all([
+                this.awsWrite.multiRecordsIngest('tradingInfo', Records),
+                this.dataApiWrite.multiRecordsIngest(Records),
+            ]);
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(

@@ -44,6 +44,7 @@ import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write
 import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
+import { DataApiWriteService } from 'src/services/data-api/data-api.write';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -61,6 +62,7 @@ export class RabbitMqConsumer {
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
+        private readonly dataApiWrite: DataApiWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -233,11 +235,17 @@ export class RabbitMqConsumer {
         }
 
         if (Object.keys(this.data).length > 0) {
-            await this.awsTimestreamWrite.ingest({
-                TableName: awsConfig.timestream.tableName,
-                data: this.data,
-                Time: timestamp,
-            });
+            await Promise.all([
+                this.awsTimestreamWrite.ingest({
+                    TableName: awsConfig.timestream.tableName,
+                    data: this.data,
+                    Time: timestamp,
+                }),
+                this.dataApiWrite.ingest({
+                    data: this.data,
+                    Time: timestamp,
+                }),
+            ]);
         }
     }
 

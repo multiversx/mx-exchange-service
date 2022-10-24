@@ -21,12 +21,14 @@ import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { PairHandler } from './handlers/pair.handler.service';
+import { DataApiModule } from 'src/services/data-api/data-api.module';
 
 @Module({
     imports: [
         CommonAppModule,
         ElrondCommunicationModule,
         AWSModule,
+        DataApiModule,
         CachingModule,
         ContextModule,
         PairModule,
