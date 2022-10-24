@@ -21,7 +21,7 @@ import { ProxyGetterService } from '../services/proxy.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/routerGetterServiceStub';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;

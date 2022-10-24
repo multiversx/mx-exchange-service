@@ -1,7 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute } from 'src/helpers/helpers';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { CachingService } from '../caching/cache.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
@@ -15,10 +14,11 @@ export class ContextGetterService extends GenericGetterService {
         private readonly apiService: ElrondApiService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'context';
     }
 
     async getCurrentEpoch(): Promise<number> {
-        const cacheKey = this.getContextCacheKey('currentEpoch');
+        const cacheKey = this.getCacheKey('currentEpoch');
         return await this.getData(
             cacheKey,
             async () => (await this.apiService.getStats()).epoch,
@@ -27,15 +27,11 @@ export class ContextGetterService extends GenericGetterService {
     }
 
     async getShardCurrentBlockNonce(shardID: number): Promise<number> {
-        const cacheKey = this.getContextCacheKey('shardBlockNonce', shardID);
+        const cacheKey = this.getCacheKey('shardBlockNonce', shardID);
         return await this.getData(
             cacheKey,
             () => this.apiService.getCurrentBlockNonce(shardID),
             oneMinute(),
         );
-    }
-
-    private getContextCacheKey(...args: any) {
-        return generateCacheKeyFromParams('context', ...args);
     }
 }

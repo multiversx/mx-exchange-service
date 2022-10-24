@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
@@ -22,42 +22,52 @@ export class SimpleLockResolver extends GenericResolver {
     }
 
     @ResolveField()
-    async lockedToken(): Promise<NftCollection> {
+    async lockedToken(
+        @Parent() parent: SimpleLockModel,
+    ): Promise<NftCollection> {
         return await this.genericFieldResover(() =>
-            this.simpleLockGetter.getLockedToken(),
+            this.simpleLockGetter.getLockedToken(parent.address),
         );
     }
 
     @ResolveField()
-    async lpProxyToken(): Promise<NftCollection> {
+    async lpProxyToken(
+        @Parent() parent: SimpleLockModel,
+    ): Promise<NftCollection> {
         return await this.genericFieldResover(() =>
-            this.simpleLockGetter.getLpProxyToken(),
+            this.simpleLockGetter.getLpProxyToken(parent.address),
         );
     }
 
     @ResolveField()
-    async farmProxyToken(): Promise<NftCollection> {
+    async farmProxyToken(
+        @Parent() parent: SimpleLockModel,
+    ): Promise<NftCollection> {
         return await this.genericFieldResover(() =>
-            this.simpleLockGetter.getFarmProxyToken(),
+            this.simpleLockGetter.getFarmProxyToken(parent.address),
         );
     }
 
     @ResolveField()
-    async intermediatedPairs(): Promise<string[]> {
+    async intermediatedPairs(
+        @Parent() parent: SimpleLockModel,
+    ): Promise<string[]> {
         return await this.genericFieldResover(() =>
-            this.simpleLockGetter.getIntermediatedPairs(),
+            this.simpleLockGetter.getIntermediatedPairs(parent.address),
         );
     }
 
     @ResolveField()
-    async intermediatedFarms(): Promise<string[]> {
+    async intermediatedFarms(
+        @Parent() parent: SimpleLockModel,
+    ): Promise<string[]> {
         return await this.genericFieldResover(() =>
-            this.simpleLockGetter.getIntermediatedFarms(),
+            this.simpleLockGetter.getIntermediatedFarms(parent.address),
         );
     }
 
-    @Query(() => SimpleLockModel)
-    async simpleLock(): Promise<SimpleLockModel> {
+    @Query(() => [SimpleLockModel])
+    async simpleLock(): Promise<SimpleLockModel[]> {
         try {
             return this.simpleLockService.getSimpleLock();
         } catch (error) {}

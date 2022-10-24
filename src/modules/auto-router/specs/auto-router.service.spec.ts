@@ -16,7 +16,7 @@ import { AutoRouterComputeService } from '../services/auto-router.compute.servic
 import { AutoRouterTransactionService } from '../services/auto-router.transactions.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { RouterGetterServiceStub } from 'src/modules/router/mocks/routerGetterServiceStub';
+import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';

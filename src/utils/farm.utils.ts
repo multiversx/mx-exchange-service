@@ -1,8 +1,6 @@
+import { FarmVersion } from '@elrondnetwork/erdjs-dex';
 import { farmsConfig } from 'src/config';
-import {
-    FarmRewardType,
-    FarmVersion,
-} from 'src/modules/farm/models/farm.model';
+import { FarmRewardType } from 'src/modules/farm/models/farm.model';
 
 const toVersionEnum = (version: string): FarmVersion => {
     switch (version) {
@@ -10,6 +8,8 @@ const toVersionEnum = (version: string): FarmVersion => {
             return FarmVersion.V1_2;
         case 'v1.3':
             return FarmVersion.V1_3;
+        default:
+            undefined;
     }
 };
 
@@ -29,7 +29,7 @@ export const farmVersion = (farmAddress: string): FarmVersion | undefined => {
     for (const version of versions) {
         if (Array.isArray(farmsConfig[version])) {
             const address = farmsConfig[version].find(
-                address => address === farmAddress,
+                (address: string) => address === farmAddress,
             );
             if (address !== undefined) {
                 return toVersionEnum(version);
@@ -38,7 +38,7 @@ export const farmVersion = (farmAddress: string): FarmVersion | undefined => {
             const types = Object.keys(farmsConfig[version]);
             for (const type of types) {
                 const address = farmsConfig[version][type].find(
-                    address => address === farmAddress,
+                    (address: string) => address === farmAddress,
                 );
                 if (address !== undefined) {
                     return toVersionEnum(version);
@@ -54,7 +54,7 @@ export const farmType = (farmAddress: string): FarmRewardType | undefined => {
     for (const version of versions) {
         if (Array.isArray(farmsConfig[version])) {
             const address = farmsConfig[version].find(
-                address => address === farmAddress,
+                (address: string) => address === farmAddress,
             );
             if (address !== undefined) {
                 return undefined;
@@ -63,7 +63,7 @@ export const farmType = (farmAddress: string): FarmRewardType | undefined => {
             const types = Object.keys(farmsConfig[version]);
             for (const type of types) {
                 const address = farmsConfig[version][type].find(
-                    address => address === farmAddress,
+                    (address: string) => address === farmAddress,
                 );
                 if (address !== undefined) {
                     return toRewardTypeEnum(type);

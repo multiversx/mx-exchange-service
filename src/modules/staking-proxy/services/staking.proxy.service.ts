@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, ruleOfThree } from 'src/helpers/helpers';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
-import { FarmService } from 'src/modules/farm/services/farm.service';
+import { FarmService } from 'src/modules/farm/base-module/services/farm.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
@@ -35,7 +35,8 @@ export class StakingProxyService {
     ) {}
 
     async getStakingProxies(): Promise<StakingProxyModel[]> {
-        const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
+        const stakingProxiesAddress: string[] =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
 
         const stakingProxies: StakingProxyModel[] = [];
         for (const address of stakingProxiesAddress) {
@@ -51,7 +52,7 @@ export class StakingProxyService {
     async getBatchRewardsForPosition(
         positions: CalculateRewardsArgs[],
     ): Promise<DualYieldRewardsModel[]> {
-        const promises = positions.map(position => {
+        const promises = positions.map((position) => {
             return this.getRewardsForPosition(position);
         });
         return await Promise.all(promises);
@@ -105,17 +106,15 @@ export class StakingProxyService {
             ],
         });
 
-        const [
-            farmAddress,
-            stakingFarmAddress,
-            farmTokenID,
-            stakingTokenID,
-        ] = await Promise.all([
-            this.stakingProxyGetter.getLpFarmAddress(position.farmAddress),
-            this.stakingProxyGetter.getStakingFarmAddress(position.farmAddress),
-            this.stakingProxyGetter.getLpFarmTokenID(position.farmAddress),
-            this.stakingProxyGetter.getFarmTokenID(position.farmAddress),
-        ]);
+        const [farmAddress, stakingFarmAddress, farmTokenID, stakingTokenID] =
+            await Promise.all([
+                this.stakingProxyGetter.getLpFarmAddress(position.farmAddress),
+                this.stakingProxyGetter.getStakingFarmAddress(
+                    position.farmAddress,
+                ),
+                this.stakingProxyGetter.getLpFarmTokenID(position.farmAddress),
+                this.stakingProxyGetter.getFarmTokenID(position.farmAddress),
+            ]);
 
         const [farmToken, stakingToken] = await Promise.all([
             this.apiService.getNftByTokenIdentifier(
@@ -145,6 +144,7 @@ export class StakingProxyService {
                 attributes: farmToken.attributes,
                 identifier: farmToken.identifier,
                 farmAddress,
+                user: position.user,
                 liquidity: lpFarmTokenAmount.toFixed(),
                 vmQuery: position.vmQuery,
             }),
@@ -152,6 +152,7 @@ export class StakingProxyService {
                 attributes: stakingToken.attributes,
                 identifier: stakingToken.identifier,
                 farmAddress: stakingFarmAddress,
+                user: position.user,
                 liquidity: position.liquidity,
                 vmQuery: position.vmQuery,
             }),
@@ -168,7 +169,7 @@ export class StakingProxyService {
     decodeDualYieldTokenAttributes(
         args: DecodeAttributesArgs,
     ): DualYieldTokenAttributesModel[] {
-        return args.batchAttributes.map(arg => {
+        return args.batchAttributes.map((arg) => {
             return new DualYieldTokenAttributesModel({
                 ...DualYieldTokenAttributes.fromAttributes(
                     arg.attributes,
@@ -188,12 +189,12 @@ export class StakingProxyService {
         if (cachedValue && cachedValue !== undefined) {
             return cachedValue;
         }
-        const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
+        const stakingProxiesAddress: string[] =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
 
         for (const address of stakingProxiesAddress) {
-            const dualYieldTokenID = await this.stakingProxyGetter.getDualYieldTokenID(
-                address,
-            );
+            const dualYieldTokenID =
+                await this.stakingProxyGetter.getDualYieldTokenID(address);
             if (dualYieldTokenID === tokenID) {
                 await this.cachingService.setCache(
                     `${tokenID}.stakingProxyAddress`,

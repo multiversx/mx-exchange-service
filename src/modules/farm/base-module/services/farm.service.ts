@@ -1,48 +1,70 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { constantsConfig } from '../../../config';
+import { constantsConfig } from '../../../../config';
 import {
     ExitFarmTokensModel,
-    FarmModel,
     RewardsModel,
-} from '../models/farm.model';
-import { AbiFarmService } from './abi-farm.service';
-import { CalculateRewardsArgs } from '../models/farm.args';
+    FarmVersion,
+} from '../../models/farm.model';
+import { AbiFarmService } from './farm.abi.service';
+import { CalculateRewardsArgs } from '../../models/farm.args';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import BigNumber from 'bignumber.js';
-import { oneHour, ruleOfThree } from '../../../helpers/helpers';
+import { oneHour, ruleOfThree } from '../../../../helpers/helpers';
 import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { FarmTokenAttributesModel } from '../../models/farmTokenAttributes.model';
 import { CachingService } from 'src/services/caching/cache.service';
+import { FarmModelV1_2 } from '../../models/farm.v1.2.model';
+import { FarmModelV1_3 } from '../../models/farm.v1.3.model';
+import { FarmCustomModel } from '../../models/farm.custom.model';
+import { FarmsUnion } from '../../models/farm.union';
 
 @Injectable()
 export class FarmService {
     constructor(
-        private readonly abiService: AbiFarmService,
+        protected readonly abiService: AbiFarmService,
         @Inject(forwardRef(() => FarmGetterService))
-        private readonly farmGetterService: FarmGetterService,
-        private readonly farmComputeService: FarmComputeService,
-        private readonly contextGetter: ContextGetterService,
-        private readonly apiService: ElrondApiService,
-        private readonly cachingService: CachingService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        protected readonly farmGetter: FarmGetterService,
+        protected readonly farmCompute: FarmComputeService,
+        protected readonly contextGetter: ContextGetterService,
+        protected readonly cachingService: CachingService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
-    getFarms(): FarmModel[] {
-        const farms: Array<FarmModel> = [];
-        for (const farmAddress of farmsAddresses()) {
-            farms.push(
-                new FarmModel({
-                    address: farmAddress,
-                    version: farmVersion(farmAddress),
-                    rewardType: farmType(farmAddress),
-                }),
-            );
+    getFarms(): Array<typeof FarmsUnion> {
+        const farms: Array<typeof FarmsUnion> = [];
+        for (const address of farmsAddresses()) {
+            const version = farmVersion(address);
+            switch (version) {
+                case FarmVersion.V1_2:
+                    farms.push(
+                        new FarmModelV1_2({
+                            address,
+                            version,
+                        }),
+                    );
+                    break;
+                case FarmVersion.V1_3:
+                    farms.push(
+                        new FarmModelV1_3({
+                            address,
+                            version,
+                            rewardType: farmType(address),
+                        }),
+                    );
+                    break;
+                default:
+                    farms.push(
+                        new FarmCustomModel({
+                            address,
+                        }),
+                    );
+                    break;
+            }
         }
 
         return farms;
@@ -50,7 +72,7 @@ export class FarmService {
 
     async isFarmToken(tokenID: string): Promise<boolean> {
         for (const farmAddress of farmsAddresses()) {
-            const farmTokenID = await this.farmGetterService.getFarmTokenID(
+            const farmTokenID = await this.farmGetter.getFarmTokenID(
                 farmAddress,
             );
             if (tokenID === farmTokenID) {
@@ -70,7 +92,7 @@ export class FarmService {
             return cachedValue;
         }
         for (const farmAddress of farmsAddresses()) {
-            const farmTokenID = await this.farmGetterService.getFarmTokenID(
+            const farmTokenID = await this.farmGetter.getFarmTokenID(
                 farmAddress,
             );
             if (farmTokenID === tokenID) {
@@ -108,17 +130,16 @@ export class FarmService {
                 positon,
             );
         } else {
-            rewards =
-                await this.farmComputeService.computeFarmRewardsForPosition(
-                    positon.farmAddress,
-                    positon.liquidity,
-                    farmTokenAttributes,
-                );
+            rewards = await this.farmCompute.computeFarmRewardsForPosition(
+                positon.farmAddress,
+                positon.liquidity,
+                farmTokenAttributes,
+            );
         }
 
         const [currentEpoch, minimumFarmingEpochs] = await Promise.all([
             this.contextGetter.getCurrentEpoch(),
-            this.farmGetterService.getMinimumFarmingEpochs(positon.farmAddress),
+            this.farmGetter.getMinimumFarmingEpochs(positon.farmAddress),
         ]);
 
         const remainingFarmingEpochs = Math.max(
@@ -161,10 +182,9 @@ export class FarmService {
         );
 
         if (rewardsForPosition.remainingFarmingEpochs > 0) {
-            const penaltyPercent =
-                await this.farmGetterService.getPenaltyPercent(
-                    args.farmAddress,
-                );
+            const penaltyPercent = await this.farmGetter.getPenaltyPercent(
+                args.farmAddress,
+            );
             initialFarmingAmount = initialFarmingAmount.minus(
                 initialFarmingAmount
                     .multipliedBy(penaltyPercent)
@@ -196,10 +216,7 @@ export class FarmService {
     }
 
     async requireOwner(farmAddress: string, sender: string) {
-        if (
-            (await this.farmGetterService.getOwnerAddress(farmAddress)) !==
-            sender
-        )
-            throw new Error('You are not the owner.');
+        const owner = await this.farmGetter.getOwnerAddress(farmAddress);
+        if (owner !== sender) throw new Error('You are not the owner.');
     }
 }

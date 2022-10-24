@@ -1,8 +1,16 @@
 import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
+import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
 
 @ObjectType()
 export class EnableSwapByUserConfig {
-    @Field() lockedTokenID: string;
+    @Field(() => SimpleLockModel)
+    lockingSC: SimpleLockModel;
+    @Field({
+        deprecationReason:
+            'field is deprecated and will be removed on next release;' +
+            'value can be obtained from lockingSC field',
+    })
+    lockedTokenID: string;
     @Field() minLockedTokenValue: string;
     @Field(() => Int) minLockPeriodEpochs: number;
 

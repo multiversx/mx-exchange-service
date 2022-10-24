@@ -1,4 +1,8 @@
-import { Interaction, SmartContract } from '@elrondnetwork/erdjs/out';
+import {
+    Interaction,
+    SmartContract,
+    TypedValue,
+} from '@elrondnetwork/erdjs/out';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
@@ -18,8 +22,10 @@ export class SimpleLockAbiService extends GenericAbiService {
         this.lockType = SimpleLockType.BASE_TYPE;
     }
 
-    async getLockedTokenID(): Promise<string> {
-        const contract = await this.getContract(this.lockType);
+    async getLockedTokenID(simpleLockAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getLockedTokenId();
 
@@ -27,8 +33,10 @@ export class SimpleLockAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getLpProxyTokenID(): Promise<string> {
-        const contract = await this.getContract(this.lockType);
+    async getLpProxyTokenID(simpleLockAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getLpProxyTokenId();
 
@@ -36,8 +44,10 @@ export class SimpleLockAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getFarmProxyTokenID(): Promise<string> {
-        const contract = await this.getContract(this.lockType);
+    async getFarmProxyTokenID(simpleLockAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getFarmProxyTokenId();
 
@@ -45,34 +55,41 @@ export class SimpleLockAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getKnownLiquidityPools(): Promise<string[]> {
-        const contract = await this.getContract(this.lockType);
+    async getKnownLiquidityPools(simpleLockAddress: string): Promise<string[]> {
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getKnownLiquidityPools();
 
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().map((pairAddress) => {
+        return response.firstValue.valueOf().map((pairAddress: TypedValue) => {
             return pairAddress.valueOf().toString();
         });
     }
 
-    async getKnownFarms(): Promise<string[]> {
-        const contract = await this.getContract(this.lockType);
+    async getKnownFarms(simpleLockAddress: string): Promise<string[]> {
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getKnownFarms();
 
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().map((farmAddress) => {
+        return response.firstValue.valueOf().map((farmAddress: TypedValue) => {
             return farmAddress.valueOf().toString();
         });
     }
 
     private async getContract(
         simpleLockType: SimpleLockType,
+        simpleLockAddress: string,
     ): Promise<SmartContract> {
         switch (simpleLockType) {
             case SimpleLockType.BASE_TYPE:
-                return await this.elrondProxy.getSimpleLockSmartContract();
+                return await this.elrondProxy.getSimpleLockSmartContract(
+                    simpleLockAddress,
+                );
             case SimpleLockType.ENERGY_TYPE:
                 return await this.elrondProxy.getSimpleLockEnergySmartContract();
         }

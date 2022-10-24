@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { farms } from './farm.constants';
+import { FarmGetterService } from '../base-module/services/farm.getter.service';
 
 export class FarmGetterServiceMock {
     async getFarmedTokenID(farmAddress: string): Promise<string> {
@@ -52,10 +54,6 @@ export class FarmGetterServiceMock {
         return farms.find((f) => f.address === farmAddress).farmTotalSupply;
     }
 
-    async getFarmingTokenReserve(farmAddress: string): Promise<string> {
-        return farms.find((f) => f.address === farmAddress).farmingTokenReserve;
-    }
-
     async getRewardsPerBlock(farmAddress: string): Promise<string> {
         return farms.find((f) => f.address === farmAddress).rewardsPerBlock;
     }
@@ -66,9 +64,6 @@ export class FarmGetterServiceMock {
 
     async getMinimumFarmingEpochs(farmAddress: string): Promise<number> {
         return 3;
-    }
-    async getLockedRewardAprMuliplier(farmAddress: string): Promise<number> {
-        return 2;
     }
 
     async getState(farmAddress: string): Promise<string> {
@@ -81,14 +76,6 @@ export class FarmGetterServiceMock {
 
     async getLastRewardBlockNonce(farmAddress: string): Promise<number> {
         return 1;
-    }
-
-    async getUndistributedFees(farmAddress: string): Promise<string> {
-        return '100';
-    }
-
-    async getCurrentBlockFee(farmAddress: string): Promise<string> {
-        return '0';
     }
 
     async getDivisionSafetyConstant(farmAddress: string): Promise<string> {
@@ -119,3 +106,8 @@ export class FarmGetterServiceMock {
         return [];
     }
 }
+
+export const FarmGetterServiceProvider = {
+    provide: FarmGetterService,
+    useClass: FarmGetterServiceMock,
+};

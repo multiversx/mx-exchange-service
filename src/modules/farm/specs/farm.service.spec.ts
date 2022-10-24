@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { FarmService } from '../services/farm.service';
-import { AbiFarmService } from '../services/abi-farm.service';
+import { FarmService } from '../base-module/services/farm.service';
+import { AbiFarmService } from '../base-module/services/farm.abi.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
@@ -9,8 +9,8 @@ import { RewardsModel } from '../models/farm.model';
 import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../services/farm.getter.service';
-import { FarmComputeService } from '../services/farm.compute.service';
+import { FarmGetterService } from '../base-module/services/farm.getter.service';
+import { FarmComputeService } from '../base-module/services/farm.compute.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
@@ -21,7 +21,8 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/routerGetterServiceStub';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
+import { Address } from '@elrondnetwork/erdjs/out';
 
 describe('FarmService', () => {
     let service: FarmService;
@@ -96,6 +97,7 @@ describe('FarmService', () => {
             attributes: attributes,
             liquidity: liquidity,
             vmQuery: true,
+            user: Address.Zero().bech32(),
         });
 
         expect(rewards).toEqual(
@@ -165,8 +167,8 @@ describe('FarmService', () => {
     });
 
     it('should get batch rewards for position', async () => {
-        const batchRewardsForPosition = await service.getBatchRewardsForPosition(
-            [
+        const batchRewardsForPosition =
+            await service.getBatchRewardsForPosition([
                 {
                     farmAddress:
                         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
@@ -175,9 +177,9 @@ describe('FarmService', () => {
                     attributes:
                         'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
                     vmQuery: false,
+                    user: Address.Zero().bech32(),
                 },
-            ],
-        );
+            ]);
         expect(batchRewardsForPosition).toEqual([
             {
                 decodedAttributes: {
@@ -194,7 +196,7 @@ describe('FarmService', () => {
                     rewardPerShare: '0',
                 },
                 remainingFarmingEpochs: 1047,
-                rewards: '110000000000000000150000000000',
+                rewards: '110000000000000000100000000000',
             },
         ]);
     });
@@ -208,10 +210,11 @@ describe('FarmService', () => {
             attributes:
                 'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
             vmQuery: false,
+            user: Address.Zero().bech32(),
         });
         expect(tokensForExitFarm).toEqual({
             farmingTokens: '999000000000000',
-            rewards: '110000000000000000150000000000',
+            rewards: '110000000000000000100000000000',
         });
     });
 

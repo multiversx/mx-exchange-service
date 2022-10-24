@@ -19,9 +19,10 @@ export class StakingProxyCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
     async cacheFarmsStaking(): Promise<void> {
-        const stakingProxiesAddress: string[] = await this.remoteConfigGetterService.getStakingProxyAddresses();
+        const stakingProxiesAddress: string[] =
+            await this.remoteConfigGetterService.getStakingProxyAddresses();
         for (const address of stakingProxiesAddress) {
             const [
                 lpFarmAddress,
@@ -41,27 +42,33 @@ export class StakingProxyCacheWarmerService {
                 this.abiService.getLpFarmTokenID(address),
             ]);
 
-            const [
-                stakingToken,
-                farmToken,
-                dualYieldToken,
-                lpFarmToken,
-            ] = await Promise.all([
-                this.apiService.getToken(stakingTokenID),
-                this.apiService.getNftCollection(farmTokenID),
-                this.apiService.getNftCollection(dualYieldTokenID),
-                this.apiService.getNftCollection(lpFarmTokenID),
-            ]);
+            const [stakingToken, farmToken, dualYieldToken, lpFarmToken] =
+                await Promise.all([
+                    this.apiService.getToken(stakingTokenID),
+                    this.apiService.getNftCollection(farmTokenID),
+                    this.apiService.getNftCollection(dualYieldTokenID),
+                    this.apiService.getNftCollection(lpFarmTokenID),
+                ]);
 
             const cacheKeys = await Promise.all([
-                this.stakingProxySetter.setLpFarmAddress(lpFarmAddress),
+                this.stakingProxySetter.setLpFarmAddress(
+                    address,
+                    lpFarmAddress,
+                ),
                 this.stakingProxySetter.setStakingFarmAddress(
+                    address,
                     stakingFarmAddress,
                 ),
-                this.stakingProxySetter.setPairAddress(pairAddress),
-                this.stakingProxySetter.setFarmTokenID(farmTokenID),
-                this.stakingProxySetter.setDualYieldTokenID(dualYieldTokenID),
-                this.stakingProxySetter.setLpFarmTokenID(lpFarmTokenID),
+                this.stakingProxySetter.setPairAddress(address, pairAddress),
+                this.stakingProxySetter.setFarmTokenID(address, farmTokenID),
+                this.stakingProxySetter.setDualYieldTokenID(
+                    address,
+                    dualYieldTokenID,
+                ),
+                this.stakingProxySetter.setLpFarmTokenID(
+                    address,
+                    lpFarmTokenID,
+                ),
                 this.tokenSetter.setTokenMetadata(stakingTokenID, stakingToken),
                 this.tokenSetter.setNftCollectionMetadata(
                     farmTokenID,

@@ -10,8 +10,11 @@
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
-        "simpleLockAddress": "erd1qqqqqqqqqqqqqpgqvcw9cxy5xlssc4em9l97pvhnvgtn5z6l0n4sc9glts",
         "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgq2anqkeemt2h5gzseusajuyxt2eaak3j50n4skqj5tz",
+        "simpleLockAddress": [
+            "erd1qqqqqqqqqqqqqpgqvcw9cxy5xlssc4em9l97pvhnvgtn5z6l0n4sc9glts",
+            "erd1qqqqqqqqqqqqqpgqxsyrdj38fclflak2mwtqdknqzqhuxy4s0n4sc3e0jy"
+        ],
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgq7ykazrzd905zvnlr88dpfw06677lxe9w0n4suz00uh",
@@ -45,7 +48,8 @@
                 "erd1qqqqqqqqqqqqqpgqwcxa43hpjq6qrvt878um0p7jmrhq4t9z0n4scdkqd3",
                 "erd1qqqqqqqqqqqqqpgq9ej0y7nzk3mzaykn7uu73dgmj27hnxtm0n4sj4sk3q",
                 "erd1qqqqqqqqqqqqqpgqhuy5unr4xr8w5tvzl865zaa4ey37p54x0n4st9t5x7",
-                "erd1qqqqqqqqqqqqqpgqslzadfd267cgfaxhn3fvpgz5zkqj9raf0n4s5ea9fj"
+                "erd1qqqqqqqqqqqqqpgqslzadfd267cgfaxhn3fvpgz5zkqj9raf0n4s5ea9fj",
+                "erd1qqqqqqqqqqqqqpgqge3w0prvkcyzvfjzqeusunvum62fkluw0n4s8wq27g"
             ],
             "lockedRewards": [
                 "erd1qqqqqqqqqqqqqpgq6wrtdnv7d5uypnaw2k8mtujfdl0s66t40n4sag5e7n",
@@ -56,10 +60,12 @@
                 "erd1qqqqqqqqqqqqqpgqcxq8g2zzx26qwlh0pkamwraeyemc5t230n4s8a24a7",
                 "erd1qqqqqqqqqqqqqpgqnl2cxmcrkzhvtgq660dzc8xu90jp7mhl0n4s4l2jlw",
                 "erd1qqqqqqqqqqqqqpgqh3nkxr7atnljvfmttumq8gf7zlq0cqkq0n4sustgqu",
-                "erd1qqqqqqqqqqqqqpgqxafjlvah06svpkv34hvq738t4zvt47wh0n4sudtc0p"
+                "erd1qqqqqqqqqqqqqpgqxafjlvah06svpkv34hvq738t4zvt47wh0n4sudtc0p",
+                "erd1qqqqqqqqqqqqqpgqu2xtgl5y002vlepu7n5fcxyngvxd8en00n4sws0rtg"
             ],
             "customRewards": []
-        }
+        },
+        "v2": ["erd1qqqqqqqqqqqqqpgqetwkcsv2x9qpryyu828wv942qd8juhp80n4sv0c9q9"]
     },
     "tokenProviderUSD": "WEGLD-d7c6bb",
     "tokensSupply": ["MEX-dc289c"],

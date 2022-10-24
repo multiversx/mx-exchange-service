@@ -3,7 +3,7 @@ import { ProxyModel } from '../models/proxy.model';
 import { WrappedLpTokenAttributesModel } from '../models/wrappedLpTokenAttributes.model';
 import { WrappedFarmTokenAttributesModel } from '../models/wrappedFarmTokenAttributes.model';
 import { scAddress } from '../../../config';
-import { FarmService } from '../../farm/services/farm.service';
+import { FarmService } from '../../farm/base-module/services/farm.service';
 import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
@@ -40,7 +40,7 @@ export class ProxyService {
     async getWrappedLpTokenAttributes(
         args: DecodeAttributesArgs,
     ): Promise<WrappedLpTokenAttributesModel[]> {
-        const promises = args.batchAttributes.map(arg =>
+        const promises = args.batchAttributes.map((arg) =>
             this.decodeWrappedLpTokenAttributes(arg),
         );
 
@@ -50,9 +50,8 @@ export class ProxyService {
     async decodeWrappedLpTokenAttributes(
         args: DecodeAttributesModel,
     ): Promise<WrappedLpTokenAttributesModel> {
-        const wrappedLpTokenAttributes = WrappedLpTokenAttributes.fromAttributes(
-            args.attributes,
-        );
+        const wrappedLpTokenAttributes =
+            WrappedLpTokenAttributes.fromAttributes(args.attributes);
 
         return new WrappedLpTokenAttributesModel({
             ...wrappedLpTokenAttributes.toJSON(),
@@ -69,16 +68,15 @@ export class ProxyService {
             scAddress.proxyDexAddress,
             tokenIdentifier(lockedAssetTokenCollection, lockedAssetNonce),
         );
-        const lockedAssetAttributes = await this.lockedAssetService.decodeLockedAssetAttributes(
-            {
+        const lockedAssetAttributes =
+            await this.lockedAssetService.decodeLockedAssetAttributes({
                 batchAttributes: [
                     {
                         attributes: lockedAssetToken.attributes,
                         identifier: lockedAssetToken.identifier,
                     },
                 ],
-            },
-        );
+            });
 
         return lockedAssetAttributes[0];
     }
@@ -86,7 +84,7 @@ export class ProxyService {
     async getWrappedFarmTokenAttributes(
         args: DecodeAttributesArgs,
     ): Promise<WrappedFarmTokenAttributesModel[]> {
-        const promises = args.batchAttributes.map(arg =>
+        const promises = args.batchAttributes.map((arg) =>
             this.decodeWrappedFarmTokenAttributes(arg),
         );
 
@@ -96,9 +94,8 @@ export class ProxyService {
     async decodeWrappedFarmTokenAttributes(
         arg: DecodeAttributesModel,
     ): Promise<WrappedFarmTokenAttributesModel> {
-        const wrappedFarmTokenAttributes = WrappedFarmTokenAttributes.fromAttributes(
-            arg.attributes,
-        );
+        const wrappedFarmTokenAttributes =
+            WrappedFarmTokenAttributes.fromAttributes(arg.attributes);
         const farmTokenIdentifier = tokenIdentifier(
             wrappedFarmTokenAttributes.farmTokenID,
             wrappedFarmTokenAttributes.farmTokenNonce,

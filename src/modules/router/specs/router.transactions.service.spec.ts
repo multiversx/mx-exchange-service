@@ -8,7 +8,7 @@ import { ElrondProxyService } from 'src/services/elrond-communication/elrond-pro
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
-import { RouterGetterServiceStub } from '../mocks/routerGetterServiceStub';
+import { RouterGetterServiceStub } from '../mocks/router.getter.service.stub';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';

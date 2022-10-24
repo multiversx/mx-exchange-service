@@ -5,7 +5,6 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { AnalyticsComputeService } from './analytics.compute.service';
 
@@ -18,7 +17,8 @@ export class AnalyticsGetterService extends GenericGetterService {
         private readonly analyticsCompute: AnalyticsComputeService,
         private readonly pairGetterService: PairGetterService,
     ) {
-        super(cachingService, logger);
+        super(cachingService, logger)
+        this.baseKey = 'analytics';
     }
 
     async getTokenPriceUSD(tokenID: string): Promise<string> {
@@ -26,7 +26,7 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     async getTotalTokenSupply(tokenID: string): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(tokenID, 'totalTokenSupply');
+        const cacheKey = this.getCacheKey(tokenID, 'totalTokenSupply');
         return await this.getData(
             cacheKey,
             async () =>
@@ -38,7 +38,7 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     async getTotalValueLockedUSD(): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey('totalValueLockedUSD');
+        const cacheKey = this.getCacheKey('totalValueLockedUSD');
         return await this.getData(
             cacheKey,
             () => this.analyticsCompute.computeTotalValueLockedUSD(),
@@ -48,7 +48,7 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     async getLockedValueUSDFarms(): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey('lockedValueUSDFarms');
+        const cacheKey = this.getCacheKey('lockedValueUSDFarms');
         return await this.getData(
             cacheKey,
             () => this.analyticsCompute.computeLockedValueUSDFarms(),
@@ -58,7 +58,7 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     async getTotalAggregatedRewards(days: number): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
+        const cacheKey = this.getCacheKey(
             days,
             'totalAggregatedRewards',
         );
@@ -71,7 +71,7 @@ export class AnalyticsGetterService extends GenericGetterService {
     }
 
     async getFeeTokenBurned(tokenID: string, time: string): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
+        const cacheKey = this.getCacheKey(
             tokenID,
             time,
             'feeTokenBurned',
@@ -93,7 +93,7 @@ export class AnalyticsGetterService extends GenericGetterService {
         tokenID: string,
         time: string,
     ): Promise<string> {
-        const cacheKey = this.getAnalyticsCacheKey(
+        const cacheKey = this.getCacheKey(
             tokenID,
             time,
             'penaltyTokenBurned',
@@ -109,9 +109,5 @@ export class AnalyticsGetterService extends GenericGetterService {
             oneMinute() * 30,
             oneMinute() * 10,
         );
-    }
-
-    private getAnalyticsCacheKey(...args: any) {
-        return generateCacheKeyFromParams('analytics', ...args);
     }
 }
