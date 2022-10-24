@@ -1,27 +1,27 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneHour } from 'src/helpers/helpers';
 import { CachingService } from 'src/services/caching/cache.service';
-import { FlagRepositoryService } from 'src/services/database/repositories/flag.repository';
-import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
-import { GenericGetterService } from 'src/services/generics/generic.getter.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { SCAddressRepositoryService } from 'src/services/database/repositories/scAddress.repository';
+import { FlagRepositoryService } from 'src/services/database/repositories/flag.repository';
+import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { SCAddressType } from './models/sc-address.model';
+import { oneHour } from 'src/helpers/helpers';
 
 @Injectable()
 export class RemoteConfigGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly flagRepositoryService: FlagRepositoryService,
-        private readonly scAddressRepositoryService: SCAddressRepositoryService,
+        protected readonly scAddressRepositoryService: SCAddressRepositoryService,
+        protected readonly flagRepositoryService: FlagRepositoryService,
     ) {
         super(cachingService, logger);
     }
 
     async getMaintenanceFlagValue(): Promise<boolean> {
-        const cacheKey = this.getFlagCacheKey('MAINTENANCE');
+        this.baseKey = 'flag';
+        const cacheKey = this.getCacheKey('MAINTENANCE');
         return await this.getData(
             cacheKey,
             () =>
@@ -29,7 +29,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .findOne({
                         name: 'MAINTENANCE',
                     })
-                    .then(res => {
+                    .then((res) => {
                         return res.value;
                     }),
             oneHour(),
@@ -37,7 +37,8 @@ export class RemoteConfigGetterService extends GenericGetterService {
     }
 
     async getMultiSwapStatus(): Promise<boolean> {
-        const cacheKey = this.getFlagCacheKey('MULTISWAP');
+        this.baseKey = 'flag';
+        const cacheKey = this.getCacheKey('MULTISWAP');
         return await this.getData(
             cacheKey,
             () =>
@@ -45,7 +46,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .findOne({
                         name: 'MULTISWAP',
                     })
-                    .then(res => {
+                    .then((res) => {
                         return res ? res.value : false;
                     }),
             oneHour(),
@@ -63,15 +64,16 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .find({
                         category: category,
                     })
-                    .then(res => {
-                        return res.map(scAddress => scAddress.address);
+                    .then((res) => {
+                        return res.map((scAddress) => scAddress.address);
                     }),
             oneHour(),
         );
     }
 
     async getStakingAddresses(): Promise<string[]> {
-        const cacheKey = this.getSCAddressCacheKey(SCAddressType.STAKING);
+        this.baseKey = 'scAddress';
+        const cacheKey = this.getCacheKey(SCAddressType.STAKING);
         return await this.getData(
             cacheKey,
             () =>
@@ -79,15 +81,16 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .find({
                         category: SCAddressType.STAKING,
                     })
-                    .then(res => {
-                        return res.map(scAddress => scAddress.address);
+                    .then((res) => {
+                        return res.map((scAddress) => scAddress.address);
                     }),
             oneHour(),
         );
     }
 
     async getStakingProxyAddresses(): Promise<string[]> {
-        const cacheKey = this.getSCAddressCacheKey(SCAddressType.STAKING_PROXY);
+        this.baseKey = 'scAddress';
+        const cacheKey = this.getCacheKey(SCAddressType.STAKING_PROXY);
         return await this.getData(
             cacheKey,
             () =>
@@ -95,18 +98,10 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     .find({
                         category: SCAddressType.STAKING_PROXY,
                     })
-                    .then(res => {
-                        return res.map(scAddress => scAddress.address);
+                    .then((res) => {
+                        return res.map((scAddress) => scAddress.address);
                     }),
             oneHour(),
         );
-    }
-
-    private getFlagCacheKey(flagName: string, ...args: any) {
-        return generateCacheKeyFromParams('flag', flagName, ...args);
-    }
-
-    private getSCAddressCacheKey(category: SCAddressType, ...args: any) {
-        return generateCacheKeyFromParams('scAddress', category, ...args);
     }
 }

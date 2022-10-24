@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
-import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { ProxyFarmModule } from '../proxy/services/proxy-farm/proxy-farm.module';
 import { ProxyPairModule } from '../proxy/services/proxy-pair/proxy-pair.module';
@@ -22,6 +21,7 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { RouterModule } from '../router/router.module';
 import { UserEsdtService } from './services/user.esdt.service';
 import { UserEsdtComputeService } from './services/esdt.compute.service';
+import { FarmBaseModule } from '../farm/base-module/farm.base.module';
 
 @Module({
     imports: [
@@ -33,7 +33,7 @@ import { UserEsdtComputeService } from './services/esdt.compute.service';
         ProxyModule,
         ProxyPairModule,
         ProxyFarmModule,
-        FarmModule,
+        FarmBaseModule,
         LockedAssetModule,
         WrappingModule,
         StakingModule,

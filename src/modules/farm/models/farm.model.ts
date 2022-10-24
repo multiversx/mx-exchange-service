@@ -8,6 +8,7 @@ import { FarmTokenAttributesModel } from './farmTokenAttributes.model';
 export enum FarmVersion {
     V1_2 = 'v1.2',
     V1_3 = 'v1.3',
+    V2 = 'v2',
 }
 
 export enum FarmRewardType {
@@ -64,7 +65,7 @@ export class FarmMigrationConfig {
 }
 
 @ObjectType()
-export class FarmModel {
+export class BaseFarmModel {
     @Field()
     address: string;
 
@@ -95,9 +96,6 @@ export class FarmModel {
     @Field()
     farmTokenSupply: string;
 
-    @Field({ nullable: true })
-    farmingTokenReserve: string;
-
     @Field(() => Int)
     penaltyPercent: number;
 
@@ -113,53 +111,17 @@ export class FarmModel {
     @Field(() => Int)
     lastRewardBlockNonce: number;
 
-    @Field({ nullable: true })
-    undistributedFees: string;
-
-    @Field({ nullable: true })
-    currentBlockFee: string;
-
     @Field()
     divisionSafetyConstant: string;
-
-    @Field(() => Int, { nullable: true })
-    aprMultiplier: number;
-
-    @Field({ nullable: true })
-    apr: string;
-
-    @Field({ nullable: true })
-    lockedRewardsAPR: string;
-
-    @Field({ nullable: true })
-    unlockedRewardsAPR: string;
 
     @Field()
     totalValueLockedUSD: string;
 
-    @Field({ nullable: true })
-    lockedFarmingTokenReserveUSD: string;
-
-    @Field({ nullable: true })
-    unlockedFarmingTokenReserveUSD: string;
-
-    @Field({ nullable: true })
-    lockedFarmingTokenReserve: string;
-
-    @Field({ nullable: true })
-    unlockedFarmingTokenReserve: string;
-
     @Field()
     state: string;
 
-    @Field({ nullable: true })
-    requireWhitelist: boolean;
-
     @Field()
     version: FarmVersion;
-
-    @Field({ nullable: true })
-    rewardType: FarmRewardType;
 
     @Field()
     burnGasLimit: string;
@@ -176,10 +138,7 @@ export class FarmModel {
     @Field()
     lastErrorMessage: string;
 
-    @Field(() => FarmMigrationConfig, { nullable: true })
-    migrationConfig: FarmMigrationConfig;
-
-    constructor(init?: Partial<FarmModel>) {
+    constructor(init?: Partial<BaseFarmModel>) {
         Object.assign(this, init);
     }
 }

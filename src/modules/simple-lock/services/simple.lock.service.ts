@@ -4,10 +4,12 @@ import {
     LockedTokenAttributes,
 } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
+import { UserInputError } from 'apollo-server-express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
+import { InputTokenModel } from 'src/models/inputToken.model';
 import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
-import { FarmService } from 'src/modules/farm/services/farm.service';
+import { FarmService } from 'src/modules/farm/base-module/services/farm.service';
 import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
@@ -32,22 +34,30 @@ export class SimpleLockService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    getSimpleLock() {
-        return new SimpleLockModel({
-            address: scAddress.simpleLockAddress,
-        });
+    getSimpleLock(): SimpleLockModel[] {
+        return scAddress.simpleLockAddress.map(
+            (address: string) =>
+                new SimpleLockModel({
+                    address,
+                }),
+        );
     }
 
     async getLockedTokenAttributes(
+        tokenID: string,
         tokenNonce: number,
     ): Promise<LockedTokenAttributesModel> {
-        const lockedEsdtCollection = await this.simpleLockGetter.getLockedTokenID();
+        const simpleLockAddress = await this.getSimpleLockAddressByTokenID(
+            tokenID,
+        );
+        const lockedEsdtCollection =
+            await this.simpleLockGetter.getLockedTokenID(simpleLockAddress);
         const lockedTokenIdentifier = tokenIdentifier(
             lockedEsdtCollection,
             tokenNonce,
         );
         const lockedToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.simpleLockAddress,
+            simpleLockAddress,
             lockedTokenIdentifier,
         );
         return this.decodeLockedTokenAttributes({
@@ -59,7 +69,7 @@ export class SimpleLockService {
     decodeBatchLockedTokenAttributes(
         args: DecodeAttributesArgs,
     ): LockedTokenAttributesModel[] {
-        return args.batchAttributes.map(arg => {
+        return args.batchAttributes.map((arg) => {
             return this.decodeLockedTokenAttributes(arg);
         });
     }
@@ -75,15 +85,20 @@ export class SimpleLockService {
     }
 
     async getLpTokenProxyAttributes(
+        lockedLpTokenID: string,
         tokenNonce: number,
     ): Promise<LpProxyTokenAttributesModel> {
-        const lockedLpTokenCollection = await this.simpleLockGetter.getLpProxyTokenID();
+        const simpleLockAddress = await this.getSimpleLockAddressByTokenID(
+            lockedLpTokenID,
+        );
+        const lockedLpTokenCollection =
+            await this.simpleLockGetter.getLpProxyTokenID(simpleLockAddress);
         const lockedLpTokenIdentifier = tokenIdentifier(
             lockedLpTokenCollection,
             tokenNonce,
         );
         const lockedLpToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.simpleLockAddress,
+            simpleLockAddress,
             lockedLpTokenIdentifier,
         );
 
@@ -96,7 +111,7 @@ export class SimpleLockService {
     decodeBatchLpTokenProxyAttributes(
         args: DecodeAttributesArgs,
     ): LpProxyTokenAttributesModel[] {
-        return args.batchAttributes.map(arg => {
+        return args.batchAttributes.map((arg) => {
             return this.decodeLpProxyTokenAttributes(arg);
         });
     }
@@ -111,13 +126,13 @@ export class SimpleLockService {
         });
     }
 
-    async decodeBatchFarmProxyTokenAttributes(
+    decodeBatchFarmProxyTokenAttributes(
         args: DecodeAttributesArgs,
-    ): Promise<FarmProxyTokenAttributesModel[]> {
+    ): FarmProxyTokenAttributesModel[] {
         const decodedBatchAttributes: FarmProxyTokenAttributesModel[] = [];
         for (const arg of args.batchAttributes) {
             decodedBatchAttributes.push(
-                await this.decodeFarmProxyTokenAttributes(arg),
+                this.decodeFarmProxyTokenAttributes(arg),
             );
         }
         return decodedBatchAttributes;
@@ -126,13 +141,12 @@ export class SimpleLockService {
     decodeFarmProxyTokenAttributes(
         args: DecodeAttributesModel,
     ): FarmProxyTokenAttributesModel {
-        const lockedFarmTokenAttributesModel = new FarmProxyTokenAttributesModel(
-            {
+        const lockedFarmTokenAttributesModel =
+            new FarmProxyTokenAttributesModel({
                 ...LockedFarmTokenAttributes.fromAttributes(args.attributes),
                 attributes: args.attributes,
                 identifier: args.identifier,
-            },
-        );
+            });
 
         return lockedFarmTokenAttributesModel;
     }
@@ -140,6 +154,7 @@ export class SimpleLockService {
     async getFarmTokenAttributes(
         farmTokenID: string,
         farmTokenNonce: number,
+        simpleLockAddress: string,
     ): Promise<FarmTokenAttributesModel> {
         const farmTokenIdentifier = tokenIdentifier(
             farmTokenID,
@@ -147,7 +162,7 @@ export class SimpleLockService {
         );
         const [farmToken, farmAddress] = await Promise.all([
             this.apiService.getNftByTokenIdentifier(
-                scAddress.simpleLockAddress,
+                simpleLockAddress,
                 farmTokenIdentifier,
             ),
             this.farmService.getFarmAddressByFarmTokenID(farmTokenID),
@@ -158,5 +173,49 @@ export class SimpleLockService {
             farmTokenIdentifier,
             farmToken.attributes,
         );
+    }
+
+    async getSimpleLockAddressByTokenID(tokenID: string): Promise<string> {
+        for (const address of scAddress.simpleLockAddress) {
+            const [lockedTokenID, lockedLpTokenID, lockedFarmTokenID] =
+                await Promise.all([
+                    this.simpleLockGetter.getLockedTokenID(address),
+                    this.simpleLockGetter.getLpProxyTokenID(address),
+                    this.simpleLockGetter.getFarmProxyTokenID(address),
+                ]);
+
+            if (
+                tokenID === lockedTokenID ||
+                tokenID === lockedLpTokenID ||
+                tokenID === lockedFarmTokenID
+            ) {
+                return address;
+            }
+        }
+    }
+
+    async getSimpleLockAddressFromInputTokens(
+        inputTokens: InputTokenModel[],
+    ): Promise<string> {
+        let simpleLockAddress: string;
+        for (const token of inputTokens) {
+            if (token.nonce === 0) {
+                continue;
+            }
+            const address = await this.getSimpleLockAddressByTokenID(
+                token.tokenID,
+            );
+            if (address && !simpleLockAddress) {
+                simpleLockAddress = address;
+            } else if (address && address !== simpleLockAddress) {
+                throw new UserInputError('Input tokens not from contract');
+            }
+        }
+
+        if (simpleLockAddress === undefined) {
+            throw new UserInputError('Invalid input tokens');
+        }
+
+        return simpleLockAddress;
     }
 }

@@ -19,19 +19,17 @@ export class StakingCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
     async cacheFarmsStaking(): Promise<void> {
-        const farmsStakingAddresses = await this.remoteConfigGetterService.getStakingAddresses();
+        const farmsStakingAddresses =
+            await this.remoteConfigGetterService.getStakingAddresses();
         for (const address of farmsStakingAddresses) {
-            const [
-                farmTokenID,
-                farmingTokenID,
-                rewardTokenID,
-            ] = await Promise.all([
-                this.abiStakeService.getFarmTokenID(address),
-                this.abiStakeService.getFarmingTokenID(address),
-                this.abiStakeService.getRewardTokenID(address),
-            ]);
+            const [farmTokenID, farmingTokenID, rewardTokenID] =
+                await Promise.all([
+                    this.abiStakeService.getFarmTokenID(address),
+                    this.abiStakeService.getFarmingTokenID(address),
+                    this.abiStakeService.getRewardTokenID(address),
+                ]);
 
             const [farmToken, farmingToken, rewardToken] = await Promise.all([
                 this.apiService.getNftCollection(farmTokenID),
@@ -63,7 +61,8 @@ export class StakingCacheWarmerService {
 
     @Cron(CronExpression.EVERY_MINUTE)
     async cacheStakingInfo(): Promise<void> {
-        const farmsStakingAddresses = await this.remoteConfigGetterService.getStakingAddresses();
+        const farmsStakingAddresses =
+            await this.remoteConfigGetterService.getStakingAddresses();
         for (const address of farmsStakingAddresses) {
             const [
                 annualPercentageRewards,
@@ -111,7 +110,8 @@ export class StakingCacheWarmerService {
 
     @Cron(CronExpression.EVERY_30_SECONDS)
     async cacheStakingRewards(): Promise<void> {
-        const farmsStakingAddresses = await this.remoteConfigGetterService.getStakingAddresses();
+        const farmsStakingAddresses =
+            await this.remoteConfigGetterService.getStakingAddresses();
         for (const address of farmsStakingAddresses) {
             const [
                 farmTokenSupply,

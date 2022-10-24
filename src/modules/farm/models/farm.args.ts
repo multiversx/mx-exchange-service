@@ -6,6 +6,8 @@ export class CalculateRewardsArgs {
     @Field()
     farmAddress: string;
     @Field()
+    user: string;
+    @Field()
     liquidity: string;
     @Field()
     identifier: string;
@@ -20,6 +22,7 @@ export class BatchFarmRewardsComputeArgs {
     @Field(() => [CalculateRewardsArgs])
     farmsPositions: Array<{
         farmAddress: string;
+        user: string;
         liquidity: string;
         identifier: string;
         attributes: string;

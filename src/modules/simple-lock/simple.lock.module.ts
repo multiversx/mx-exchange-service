@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
-import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { TokenModule } from '../tokens/token.module';
 import { WrappingModule } from '../wrapping/wrap.module';
@@ -23,6 +22,7 @@ import { CommonAppModule } from 'src/common.app.module';
 import { TransactionResolver } from './transaction.resolver';
 import { EnergyService } from './services/energy/energy.service';
 import { EnergyComputeService } from './services/energy/energy.compute.service';
+import { FarmBaseModule } from '../farm/base-module/farm.base.module';
 
 @Module({
     imports: [
@@ -31,7 +31,7 @@ import { EnergyComputeService } from './services/energy/energy.compute.service';
         ContextModule,
         CachingModule,
         PairModule,
-        FarmModule,
+        FarmBaseModule,
         WrappingModule,
         TokenModule,
     ],

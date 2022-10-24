@@ -14,7 +14,8 @@ import {
 import { PriceDiscoveryGetterService } from './services/price.discovery.getter.service';
 import { PriceDiscoveryService } from './services/price.discovery.service';
 import { PriceDiscoveryTransactionService } from './services/price.discovery.transactions.service';
-import { GenericResolver } from "../../services/generics/generic.resolver";
+import { GenericResolver } from '../../services/generics/generic.resolver';
+import { SimpleLockModel } from '../simple-lock/models/simple.lock.model';
 
 @Resolver(() => PriceDiscoveryModel)
 export class PriceDiscoveryResolver extends GenericResolver {
@@ -191,6 +192,15 @@ export class PriceDiscoveryResolver extends GenericResolver {
             this.priceDiscoveryGetter.getFixedPenaltyPhaseDurationBlocks(
                 parent.address,
             ),
+        );
+    }
+
+    @ResolveField(() => SimpleLockModel)
+    async lockingSC(
+        @Parent() parent: PriceDiscoveryModel,
+    ): Promise<SimpleLockModel> {
+        return await this.genericFieldResover(() =>
+            this.priceDiscoveryGetter.getLockingSC(parent.address),
         );
     }
 

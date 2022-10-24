@@ -1,14 +1,15 @@
-import { TransactionModel } from '../../../models/transaction.model';
+import { TransactionModel } from '../../../../models/transaction.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import {
     Address,
     AddressValue,
     BigUIntValue,
+    Interaction,
     TokenPayment,
     TypedValue,
 } from '@elrondnetwork/erdjs';
-import { elrondConfig, gasConfig } from '../../../config';
+import { elrondConfig, gasConfig } from '../../../../config';
 import { BigNumber } from 'bignumber.js';
 import {
     ClaimRewardsArgs,
@@ -16,41 +17,33 @@ import {
     EnterFarmArgs,
     ExitFarmArgs,
     FarmMigrationConfigArgs,
-} from '../models/farm.args';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+} from '../../models/farm.args';
+import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { FarmGetterService } from './farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import { FarmRewardType, FarmVersion } from '../models/farm.model';
+import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { farmType, farmVersion } from 'src/utils/farm.utils';
 
 @Injectable()
 export class TransactionsFarmService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
-        private readonly farmGetterService: FarmGetterService,
-        private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
-        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly farmGetterService: FarmGetterService,
+        protected readonly pairService: PairService,
+        protected readonly pairGetterService: PairGetterService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {}
 
     async enterFarm(
         sender: string,
         args: EnterFarmArgs,
+        interaction: Interaction,
+        gasLimit: number,
     ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
-            args.farmAddress,
-        );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
-
         try {
             await this.validateInputTokens(args.farmAddress, args.tokens);
         } catch (error) {
@@ -64,22 +57,7 @@ export class TransactionsFarmService {
             throw error;
         }
 
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
-            args.farmAddress,
-        );
-
-        const interaction =
-            version === FarmVersion.V1_2
-                ? args.lockRewards
-                    ? contract.methodsExplicit.enterFarmAndLockRewards([])
-                    : contract.methodsExplicit.enterFarm([])
-                : contract.methodsExplicit.enterFarm([]);
-        const gasLimit =
-            args.tokens.length > 1
-                ? gasConfig.farms[version].enterFarm.withTokenMerge
-                : gasConfig.farms[version].enterFarm.default;
-
-        const mappedPayments = args.tokens.map(tokenPayment =>
+        const mappedPayments = args.tokens.map((tokenPayment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,
@@ -101,22 +79,20 @@ export class TransactionsFarmService {
     async exitFarm(
         sender: string,
         args: ExitFarmArgs,
+        version: FarmVersion,
+        rewardType: FarmRewardType,
     ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
-            args.farmAddress,
+        const gasLimit = await this.getExitFarmGasLimit(
+            args,
+            version,
+            rewardType,
         );
-        const gasLimit = await this.getExitFarmGasLimit(args);
 
         return contract.methodsExplicit
-            .exitFarm([])
+            .exitFarm()
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     args.farmTokenID,
@@ -134,33 +110,14 @@ export class TransactionsFarmService {
     async claimRewards(
         sender: string,
         args: ClaimRewardsArgs,
+        gasLimit: number,
     ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
-            args.farmAddress,
-        );
-        const type =
-            version === FarmVersion.V1_2
-                ? args.lockRewards
-                    ? FarmRewardType.LOCKED_REWARDS
-                    : FarmRewardType.UNLOCKED_REWARDS
-                : farmType(args.farmAddress);
 
-        const lockedAssetCreateGas =
-            type === FarmRewardType.LOCKED_REWARDS
-                ? gasConfig.lockedAssetCreate
-                : 0;
-        const gasLimit =
-            gasConfig.farms[version][type].claimRewards + lockedAssetCreateGas;
         return contract.methodsExplicit
-            .claimRewards([])
+            .claimRewards()
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     args.farmTokenID,
@@ -178,16 +135,8 @@ export class TransactionsFarmService {
     async compoundRewards(
         sender: string,
         args: CompoundRewardsArgs,
+        gasLimit: number,
     ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
-            args.farmAddress,
-        );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
-
         const [farmedTokenID, farmingTokenID] = await Promise.all([
             this.farmGetterService.getFarmedTokenID(args.farmAddress),
             this.farmGetterService.getFarmingTokenID(args.farmAddress),
@@ -196,44 +145,12 @@ export class TransactionsFarmService {
         if (farmedTokenID !== farmingTokenID) {
             throw new Error('failed to compound different tokens');
         }
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.farmAddress,
         );
-        const gasLimit = gasConfig.farms[version].compoundRewards;
-        return contract.methodsExplicit
-            .compoundRewards([])
-            .withSingleESDTNFTTransfer(
-                TokenPayment.metaEsdtFromBigInteger(
-                    args.farmTokenID,
-                    args.farmTokenNonce,
-                    new BigNumber(args.amount),
-                ),
-                Address.fromString(sender),
-            )
-            .withGasLimit(gasLimit)
-            .withChainID(elrondConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
 
-    async migrateToNewFarm(
-        sender: string,
-        args: ExitFarmArgs,
-    ): Promise<TransactionModel> {
-        const whitelists = await this.farmGetterService.getWhitelist(
-            args.farmAddress,
-        );
-        if (whitelists && whitelists.length > 0) {
-            throw new Error(
-                `whitelisted addresses only for farm ${args.farmAddress}`,
-            );
-        }
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
-            args.farmAddress,
-        );
-        const gasLimit = gasConfig.farms[version].migrateToNewFarm;
         return contract.methodsExplicit
-            .migrateToNewFarm([new AddressValue(Address.fromString(sender))])
+            .compoundRewards()
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     args.farmTokenID,
@@ -251,7 +168,7 @@ export class TransactionsFarmService {
     async setFarmMigrationConfig(
         args: FarmMigrationConfigArgs,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             args.oldFarmAddress,
         );
         const transactionArgs = [
@@ -265,20 +182,6 @@ export class TransactionsFarmService {
         return contract.methodsExplicit
             .setFarmMigrationConfig(transactionArgs)
             .withGasLimit(gasConfig.farms.admin.setFarmMigrationConfig)
-            .withChainID(elrondConfig.chainID)
-            .buildTransaction()
-            .toPlainObject();
-    }
-
-    async stopRewardsAndMigrateRps(
-        farmAddress: string,
-    ): Promise<TransactionModel> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
-        return contract.methodsExplicit
-            .stopRewardsAndMigrateRps()
-            .withGasLimit(gasConfig.farms[version].stopRewards)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
@@ -304,14 +207,11 @@ export class TransactionsFarmService {
         }
     }
 
-    private async getExitFarmGasLimit(args: ExitFarmArgs): Promise<number> {
-        const version = farmVersion(args.farmAddress);
-        const type =
-            version === FarmVersion.V1_2
-                ? args.lockRewards
-                    ? FarmRewardType.LOCKED_REWARDS
-                    : FarmRewardType.UNLOCKED_REWARDS
-                : farmType(args.farmAddress);
+    protected async getExitFarmGasLimit(
+        args: ExitFarmArgs,
+        version: FarmVersion,
+        type: FarmRewardType,
+    ): Promise<number> {
         const lockedAssetCreateGas =
             type === FarmRewardType.LOCKED_REWARDS
                 ? gasConfig.lockedAssetCreate
@@ -333,9 +233,8 @@ export class TransactionsFarmService {
         );
 
         if (pairAddress) {
-            const trustedSwapPairs = await this.pairGetterService.getTrustedSwapPairs(
-                pairAddress,
-            );
+            const trustedSwapPairs =
+                await this.pairGetterService.getTrustedSwapPairs(pairAddress);
             const gasLimit = args.withPenalty
                 ? trustedSwapPairs.length > 0
                     ? gasConfig.farms[version][type].exitFarm.withPenalty
@@ -353,7 +252,7 @@ export class TransactionsFarmService {
     }
 
     async endProduceRewards(farmAddress: string): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -365,7 +264,7 @@ export class TransactionsFarmService {
     }
 
     async startProduceRewards(farmAddress: string): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -380,7 +279,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         amount: string,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -395,7 +294,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         percent: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -410,7 +309,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         epochs: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -427,7 +326,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -444,7 +343,7 @@ export class TransactionsFarmService {
         farmAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -456,7 +355,7 @@ export class TransactionsFarmService {
     }
 
     async pause(farmAddress: string): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -468,7 +367,7 @@ export class TransactionsFarmService {
     }
 
     async resume(farmAddress: string): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -485,7 +384,7 @@ export class TransactionsFarmService {
         tokenTicker: string,
         decimals: number,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         const transactionArgs: TypedValue[] = [
@@ -504,7 +403,7 @@ export class TransactionsFarmService {
     async setLocalRolesFarmToken(
         farmAddress: string,
     ): Promise<TransactionModel> {
-        const [contract] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
         return contract.methodsExplicit
@@ -520,10 +419,10 @@ export class TransactionsFarmService {
         farmAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        const [contract, version] = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        const mappedPayments = payments.map(tokenPayment =>
+        const mappedPayments = payments.map((tokenPayment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 tokenPayment.tokenID,
                 tokenPayment.nonce,

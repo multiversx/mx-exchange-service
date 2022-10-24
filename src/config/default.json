@@ -19,8 +19,8 @@
         "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z",
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqup60nzrkww5ukj7rxxud9txq9fakd36l0n4sthknw2",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n",
-        "simpleLockAddress": "erd1qqqqqqqqqqqqqpgq0agdv39w3s7cyn3cll3u93t3adektylz0n4sryxmaj",
         "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgq0agdv39w3s7cyn3cll3u93t3adektylz0n4sryxmaj",
+        "simpleLockAddress": ["erd1qqqqqqqqqqqqqpgq0agdv39w3s7cyn3cll3u93t3adektylz0n4sryxmaj"],
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
             "shardID-1": "erd1qqqqqqqqqqqqqpgqhjdqy6rqz3vdqsr3wydvyha9xvw5n75h0n4swc0wnt",
@@ -73,6 +73,7 @@
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
             "multiPairSwapMultiplier": 30000000,
+            "swapEnableByUser": 50000000,
             "admin": {
                 "setState": 200000000,
                 "setFee": 200000000,
@@ -377,12 +378,13 @@
         "simpleLock": "./src/abis/simple-lock.abi.json",
         "simpleLockEnergy": "./src/abis/simple-lock-energy.abi.json",
         "farm": {
-            "v1.2": "./src/abis/v1.2/farm.abi.json",
+            "v1.2": "./src/abis/farms/v1.2/farm.abi.json",
             "v1.3": {
-                "unlockedRewards": "./src/abis/v1.3/farm.abi.json",
-                "lockedRewards": "./src/abis/v1.3/farm_with_lock.abi.json",
-                "customRewards": "./src/abis/v1.3/farm_custom_rewards.abi.json"
-            }
+                "unlockedRewards": "./src/abis/farms/v1.3/farm.abi.json",
+                "lockedRewards": "./src/abis/farms/v1.3/farm_with_lock.abi.json",
+                "customRewards": "./src/abis/farms/v1.3/farm_custom_rewards.abi.json"
+            },
+            "v2": "./src/abis/farms/v2/farm.abi.json"
         },
         "staking": "./src/abis/farm-staking.abi.json",
         "stakingProxy": "./src/abis/farm-staking-proxy.abi.json",

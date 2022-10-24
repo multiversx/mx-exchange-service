@@ -4,11 +4,11 @@ import { oneHour } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { CachingService } from 'src/services/caching/cache.service';
-import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
 import { AbiStakingProxyService } from './staking.proxy.abi.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class StakingProxyGetterService extends GenericGetterService {
@@ -19,11 +19,12 @@ export class StakingProxyGetterService extends GenericGetterService {
         private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'stakeProxy';
     }
 
     async getLpFarmAddress(stakingProxyAddress: string): Promise<string> {
         return await this.getData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'lpFarmAddress'),
+            this.getCacheKey(stakingProxyAddress, 'lpFarmAddress'),
             () => this.abiService.getLpFarmAddress(stakingProxyAddress),
             oneHour(),
         );
@@ -31,7 +32,7 @@ export class StakingProxyGetterService extends GenericGetterService {
 
     async getStakingFarmAddress(stakingProxyAddress: string): Promise<string> {
         return await this.getData(
-            this.getStakeProxyCacheKey(
+            this.getCacheKey(
                 stakingProxyAddress,
                 'stakingFarmAddress',
             ),
@@ -42,7 +43,7 @@ export class StakingProxyGetterService extends GenericGetterService {
 
     async getPairAddress(stakingProxyAddress: string): Promise<string> {
         return await this.getData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'pairAddress'),
+            this.getCacheKey(stakingProxyAddress, 'pairAddress'),
             () => this.abiService.getPairAddress(stakingProxyAddress),
             oneHour(),
         );
@@ -50,33 +51,37 @@ export class StakingProxyGetterService extends GenericGetterService {
 
     async getStakingTokenID(stakingProxyAddress: string): Promise<string> {
         return await this.getData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'stakingTokenID'),
+            this.getCacheKey(stakingProxyAddress, 'stakingTokenID'),
             () => this.abiService.getStakingTokenID(stakingProxyAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getFarmTokenID(stakingProxyAddress: string): Promise<string> {
         return await this.getData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'farmTokenID'),
+            this.getCacheKey(stakingProxyAddress, 'farmTokenID'),
             () => this.abiService.getFarmTokenID(stakingProxyAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getDualYieldTokenID(stakingProxyAddress: string): Promise<string> {
         return await this.getData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'dualYieldTokenID'),
+            this.getCacheKey(stakingProxyAddress, 'dualYieldTokenID'),
             () => this.abiService.getDualYieldTokenID(stakingProxyAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
     async getLpFarmTokenID(stakingProxyAddress: string): Promise<string> {
         return await this.getData(
-            this.getStakeProxyCacheKey(stakingProxyAddress, 'lpFarmTokenID'),
+            this.getCacheKey(stakingProxyAddress, 'lpFarmTokenID'),
             () => this.abiService.getLpFarmTokenID(stakingProxyAddress),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -106,13 +111,5 @@ export class StakingProxyGetterService extends GenericGetterService {
     async getLpFarmToken(stakingProxyAddress: string): Promise<NftCollection> {
         const lpFarmTokenID = await this.getLpFarmTokenID(stakingProxyAddress);
         return await this.tokenGetter.getNftCollectionMetadata(lpFarmTokenID);
-    }
-
-    private getStakeProxyCacheKey(stakingProxyAddress: string, ...args: any) {
-        return generateCacheKeyFromParams(
-            'stakeProxy',
-            stakingProxyAddress,
-            ...args,
-        );
     }
 }

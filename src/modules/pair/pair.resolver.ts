@@ -11,7 +11,6 @@ import {
 import { TransactionModel } from '../../models/transaction.model';
 import {
     AddLiquidityArgs,
-    RemoveLiquidityAndBuyBackAndBurnArgs,
     RemoveLiquidityArgs,
     SwapTokensFixedInputArgs,
     SwapTokensFixedOutputArgs,
@@ -299,7 +298,7 @@ export class PairResolver {
     @ResolveField()
     async whitelistedManagedAddresses(
         @Parent() parent: PairModel,
-    ): Promise<String[]> {
+    ): Promise<string[]> {
         try {
             return await this.pairGetterService.getWhitelistedManagedAddresses(
                 parent.address,

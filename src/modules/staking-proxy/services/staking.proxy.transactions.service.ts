@@ -6,7 +6,7 @@ import { elrondConfig, gasConfig } from 'src/config';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { FarmService } from 'src/modules/farm/services/farm.service';
+import { FarmService } from 'src/modules/farm/base-module/services/farm.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
@@ -61,7 +61,7 @@ export class StakingProxyTransactionService {
             args.payments.length > 1
                 ? gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge
                 : gasConfig.stakeProxy.stakeFarmTokens.default;
-        const mappedPayments = args.payments.map(payment =>
+        const mappedPayments = args.payments.map((payment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
@@ -85,9 +85,10 @@ export class StakingProxyTransactionService {
         sender: string,
         args: ClaimDualYieldArgs,
     ): Promise<TransactionModel> {
-        const dualYieldTokenID = await this.stakeProxyGetter.getDualYieldTokenID(
-            args.proxyStakingAddress,
-        );
+        const dualYieldTokenID =
+            await this.stakeProxyGetter.getDualYieldTokenID(
+                args.proxyStakingAddress,
+            );
         for (const payment of args.payments) {
             if (payment.tokenID !== dualYieldTokenID) {
                 throw new Error('invalid dual yield token for claim');
@@ -97,7 +98,7 @@ export class StakingProxyTransactionService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             args.proxyStakingAddress,
         );
-        const mappedPayments = args.payments.map(payment =>
+        const mappedPayments = args.payments.map((payment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
@@ -121,16 +122,15 @@ export class StakingProxyTransactionService {
         sender: string,
         args: UnstakeFarmTokensArgs,
     ): Promise<TransactionModel> {
-        const decodedAttributes = this.stakeProxyService.decodeDualYieldTokenAttributes(
-            {
+        const decodedAttributes =
+            this.stakeProxyService.decodeDualYieldTokenAttributes({
                 batchAttributes: [
                     {
                         identifier: args.payment.tokenID,
                         attributes: args.attributes,
                     },
                 ],
-            },
-        );
+            });
         const [farmTokenID, farmAddress] = await Promise.all([
             this.stakeProxyGetter.getLpFarmTokenID(args.proxyStakingAddress),
             this.stakeProxyGetter.getLpFarmAddress(args.proxyStakingAddress),
@@ -157,6 +157,7 @@ export class StakingProxyTransactionService {
             attributes: farmToken.attributes,
             identifier: farmToken.identifier,
             farmAddress: farmAddress,
+            user: sender,
             liquidity: liquidityPositionAmount.toFixed(),
             vmQuery: false,
         });

@@ -11,8 +11,8 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { farmVersion } from 'src/utils/farm.utils';
 import { Logger } from 'winston';
 import { FarmVersion } from '../farm/models/farm.model';
-import { AbiFarmService } from '../farm/services/abi-farm.service';
-import { FarmSetterService } from '../farm/services/farm.setter.service';
+import { AbiFarmService } from '../farm/base-module/services/farm.abi.service';
+import { FarmSetterService } from '../farm/base-module/services/farm.setter.service';
 
 @Injectable()
 export class RabbitMQFarmHandlerService {
@@ -28,15 +28,8 @@ export class RabbitMQFarmHandlerService {
     async handleFarmEvent(
         event: EnterFarmEvent | ExitFarmEvent,
     ): Promise<void> {
-        const [
-            lastRewardBlockNonce,
-            undistributedFees,
-            currentBlockFee,
-            farmRewardPerShare,
-        ] = await Promise.all([
+        const [lastRewardBlockNonce, undistributedFees] = await Promise.all([
             this.abiFarmService.getLastRewardBlockNonce(event.getAddress()),
-            this.abiFarmService.getUndistributedFees(event.getAddress()),
-            this.abiFarmService.getCurrentBlockFee(event.getAddress()),
             this.abiFarmService.getRewardPerShare(event.getAddress()),
         ]);
         const version = farmVersion(event.getAddress());
@@ -52,14 +45,6 @@ export class RabbitMQFarmHandlerService {
             this.farmSetterService.setUndistributedFees(
                 event.getAddress(),
                 undistributedFees,
-            ),
-            this.farmSetterService.setCurrentBlockFee(
-                event.getAddress(),
-                currentBlockFee,
-            ),
-            this.farmSetterService.setRewardPerShare(
-                event.getAddress(),
-                farmRewardPerShare,
             ),
         ]);
         if (version === FarmVersion.V1_2) {
@@ -82,15 +67,8 @@ export class RabbitMQFarmHandlerService {
     }
 
     async handleRewardsEvent(event: RewardsEvent): Promise<void> {
-        const [
-            lastRewardBlockNonce,
-            undistributedFees,
-            currentBlockFee,
-            farmRewardPerShare,
-        ] = await Promise.all([
+        const [lastRewardBlockNonce, farmRewardPerShare] = await Promise.all([
             this.abiFarmService.getLastRewardBlockNonce(event.getAddress()),
-            this.abiFarmService.getUndistributedFees(event.getAddress()),
-            this.abiFarmService.getCurrentBlockFee(event.getAddress()),
             this.abiFarmService.getRewardPerShare(event.getAddress()),
         ]);
 
@@ -98,14 +76,6 @@ export class RabbitMQFarmHandlerService {
             this.farmSetterService.setLastRewardBlockNonce(
                 event.getAddress(),
                 lastRewardBlockNonce,
-            ),
-            this.farmSetterService.setUndistributedFees(
-                event.getAddress(),
-                undistributedFees,
-            ),
-            this.farmSetterService.setCurrentBlockFee(
-                event.getAddress(),
-                currentBlockFee,
             ),
             this.farmSetterService.setRewardPerShare(
                 event.getAddress(),

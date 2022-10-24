@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FarmService } from '../../farm/services/farm.service';
+import { FarmService } from '../../farm/base-module/services/farm.service';
 import { PairService } from '../../pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
@@ -20,7 +20,7 @@ import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModel } from '../../farm/models/farmTokenAttributes.model';
 import { UserComputeService } from '../services/metaEsdt.compute.service';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../../farm/services/farm.getter.service';
+import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
 import { FarmServiceMock } from '../../farm/mocks/farm.service.mock';
 import { PairGetterService } from '../../pair/services/pair.getter.service';

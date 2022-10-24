@@ -10,11 +10,18 @@ import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { EnergyGetterService } from './services/energy/energy.getter.service';
 import { EnergyTransactionService } from './services/energy/energy.transaction.service';
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
+import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
+import { EmterFarmProxyTokensValidationPipe } from './validators/enter.farm.tokens.validator';
+import { FarmProxyTokensValidationPipe } from './validators/farm.token.validator';
+import { LiquidityTokensValidationPipe } from './validators/liquidity.token.validator';
+import { LpProxyTokensValidationPipe } from './validators/lpProxy.token.validator';
+import { UnlockTokensValidationPipe } from './validators/unlock.tokens.validator';
 
 @Resolver()
 export class TransactionResolver extends GenericResolver {
     constructor(
+        private readonly simpleLockService: SimpleLockService,
         private readonly simpleLockGetter: SimpleLockGetterService,
         private readonly energyGetter: EnergyGetterService,
         private readonly simpleLockTransactions: SimpleLockTransactionService,
@@ -28,10 +35,14 @@ export class TransactionResolver extends GenericResolver {
     async lockTokens(
         @Args('inputTokens') inputTokens: InputTokenModel,
         @Args('lockEpochs') lockEpochs: number,
+        @Args('simpleLockAddress') simpleLockAddress: string,
     ): Promise<TransactionModel> {
         try {
-            const service = await this.getTransactionService(inputTokens);
-            return await service.lockTokens(inputTokens, lockEpochs);
+            return await this.simpleLockTransactions.lockTokens(
+                inputTokens,
+                lockEpochs,
+                simpleLockAddress,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -40,12 +51,20 @@ export class TransactionResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async unlockTokens(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', UnlockTokensValidationPipe)
+        inputTokens: InputTokenModel,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
-            const service = await this.getTransactionService(inputTokens);
-            return await service.unlockTokens(user.publicKey, inputTokens);
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    [inputTokens],
+                );
+            return await this.simpleLockTransactions.unlockTokens(
+                simpleLockAddress,
+                user.publicKey,
+                inputTokens,
+            );
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -54,15 +73,23 @@ export class TransactionResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
     async addLiquidityLockedTokenBatch(
-        @Args('inputTokens', { type: () => [InputTokenModel] })
+        @Args(
+            'inputTokens',
+            { type: () => [InputTokenModel] },
+            LiquidityTokensValidationPipe,
+        )
         inputTokens: InputTokenModel[],
         @Args('pairAddress') pairAddress: string,
         @Args('tolerance') tolerance: number,
         @User() user: any,
     ): Promise<TransactionModel[]> {
         try {
-            const service = await this.getTransactionService(inputTokens[0]);
-            return await service.addLiquidityLockedTokenBatch(
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    inputTokens,
+                );
+            return await this.simpleLockTransactions.addLiquidityLockedTokenBatch(
+                simpleLockAddress,
                 user.publicKey,
                 inputTokens,
                 pairAddress,
@@ -76,14 +103,19 @@ export class TransactionResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => [TransactionModel])
     async removeLiquidityLockedToken(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', LpProxyTokensValidationPipe)
+        inputTokens: InputTokenModel,
         @Args('attributes') attributes: string,
         @Args('tolerance') tolerance: number,
         @User() user: any,
     ): Promise<TransactionModel[]> {
         try {
-            const service = await this.getTransactionService(inputTokens);
-            return await service.removeLiquidityLockedToken(
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    [inputTokens],
+                );
+            return await this.simpleLockTransactions.removeLiquidityLockedToken(
+                simpleLockAddress,
                 user.publicKey,
                 inputTokens,
                 attributes,
@@ -97,14 +129,22 @@ export class TransactionResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async enterFarmLockedToken(
-        @Args('inputTokens', { type: () => [InputTokenModel] })
+        @Args(
+            'inputTokens',
+            { type: () => [InputTokenModel] },
+            EmterFarmProxyTokensValidationPipe,
+        )
         inputTokens: InputTokenModel[],
         @Args('farmAddress') farmAddress: string,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
-            const service = await this.getTransactionService(inputTokens[0]);
-            return await service.enterFarmLockedToken(
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    inputTokens,
+                );
+            return await this.simpleLockTransactions.enterFarmLockedToken(
+                simpleLockAddress,
                 user.publicKey,
                 inputTokens,
                 farmAddress,
@@ -117,12 +157,17 @@ export class TransactionResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async exitFarmLockedToken(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', FarmProxyTokensValidationPipe)
+        inputTokens: InputTokenModel,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
-            const service = await this.getTransactionService(inputTokens);
-            return await service.farmProxyTokenInteraction(
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    [inputTokens],
+                );
+            return await this.simpleLockTransactions.farmProxyTokenInteraction(
+                simpleLockAddress,
                 user.publicKey,
                 inputTokens,
                 this.exitFarmLockedToken.name,
@@ -136,12 +181,17 @@ export class TransactionResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async claimRewardsFarmLockedToken(
-        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('inputTokens', FarmProxyTokensValidationPipe)
+        inputTokens: InputTokenModel,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
-            const service = await this.getTransactionService(inputTokens);
-            return await service.farmProxyTokenInteraction(
+            const simpleLockAddress =
+                await this.simpleLockService.getSimpleLockAddressFromInputTokens(
+                    [inputTokens],
+                );
+            return await this.simpleLockTransactions.farmProxyTokenInteraction(
+                simpleLockAddress,
                 user.publicKey,
                 inputTokens,
                 'farmClaimRewardsLockedToken',
@@ -152,13 +202,16 @@ export class TransactionResolver extends GenericResolver {
 
     private async getTransactionService(
         inputTokens: InputTokenModel,
+        simpleLockAddress: string,
     ): Promise<EnergyTransactionService | SimpleLockTransactionService> {
         switch (inputTokens.tokenID) {
             case await this.energyGetter.getBaseAssetTokenID():
                 return this.energyTransactions;
-            case await this.simpleLockGetter.getLockedTokenID():
+            case await this.simpleLockGetter.getLockedTokenID(
+                simpleLockAddress,
+            ):
                 return this.simpleLockTransactions;
-            case await this.energyGetter.getLockedTokenID():
+            case await this.energyGetter.getLockedTokenID(simpleLockAddress):
                 return this.energyTransactions;
             default:
                 return this.simpleLockTransactions;

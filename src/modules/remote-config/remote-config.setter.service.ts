@@ -42,7 +42,7 @@ export class RemoteConfigSetterService extends GenericSetterService {
         ]);
         return await this.setSCAddresses(
             cacheKey,
-            addresses.map(a => a.address),
+            addresses.map((a) => a.address),
         );
     }
 

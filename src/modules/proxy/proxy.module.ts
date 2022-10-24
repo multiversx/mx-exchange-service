@@ -1,7 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { ContextModule } from '../../services/context/context.module';
 import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
-import { FarmModule } from '../farm/farm.module';
 import { AbiProxyService } from './services/proxy-abi.service';
 import { ProxyFarmModule } from './services/proxy-farm/proxy-farm.module';
 import { ProxyPairModule } from './services/proxy-pair/proxy-pair.module';
@@ -13,6 +12,7 @@ import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { WrappedLpTokenResolver } from './wrappedLpToken.resolver';
 import { WrappedFarmTokenResolver } from './wrappedFarmToken.resolver';
 import { TokenModule } from '../tokens/token.module';
+import { FarmBaseModule } from '../farm/base-module/farm.base.module';
 
 @Module({
     imports: [
@@ -23,7 +23,7 @@ import { TokenModule } from '../tokens/token.module';
         TokenModule,
         forwardRef(() => ProxyPairModule),
         forwardRef(() => ProxyFarmModule),
-        forwardRef(() => FarmModule),
+        FarmBaseModule,
     ],
     providers: [
         AbiProxyService,

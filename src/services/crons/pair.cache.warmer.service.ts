@@ -10,6 +10,7 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
 import { awsConfig } from 'src/config';
+import { delay } from 'src/helpers/helpers';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -24,7 +25,7 @@ export class PairCacheWarmerService {
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
-    @Cron(CronExpression.EVERY_30_MINUTES)
+    @Cron(CronExpression.EVERY_HOUR)
     async cachePairs(): Promise<void> {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
         for (const pairMetadata of pairsMetadata) {
@@ -32,16 +33,9 @@ export class PairCacheWarmerService {
                 pairMetadata.address,
             );
 
-            const [
-                firstToken,
-                secondToken,
-                totalFeePercent,
-                specialFeePercent,
-            ] = await Promise.all([
+            const [firstToken, secondToken] = await Promise.all([
                 this.apiService.getToken(pairMetadata.firstTokenID),
                 this.apiService.getToken(pairMetadata.secondTokenID),
-                this.abiPairService.getTotalFeePercent(pairMetadata.address),
-                this.abiPairService.getSpecialFeePercent(pairMetadata.address),
             ]);
 
             const cachedKeys = await Promise.all([
@@ -52,14 +46,6 @@ export class PairCacheWarmerService {
                 this.pairSetterService.setSecondTokenID(
                     pairMetadata.address,
                     pairMetadata.secondTokenID,
-                ),
-                this.pairSetterService.setTotalFeePercent(
-                    pairMetadata.address,
-                    totalFeePercent,
-                ),
-                this.pairSetterService.setSpecialFeePercent(
-                    pairMetadata.address,
-                    specialFeePercent,
                 ),
             ]);
             if (lpTokenID !== undefined) {
@@ -96,37 +82,36 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
-            const [
-                firstTokenVolume24h,
-                secondTokenVolume24h,
-                volumeUSD24h,
-                feesUSD24h,
-            ] = await Promise.all([
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'firstTokenVolume',
-                    time,
-                }),
-                this.awsQuery.getAggregatedValue({
+            const firstTokenVolume24h = await this.awsQuery.getAggregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'firstTokenVolume',
+                time,
+            });
+            delay(1000);
+            const secondTokenVolume24h = await this.awsQuery.getAggregatedValue(
+                {
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'secondTokenVolume',
                     time,
-                }),
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'volumeUSD',
-                    time,
-                }),
-                this.awsQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
-                    series: pairAddress,
-                    metric: 'feesUSD',
-                    time,
-                }),
-            ]);
+                },
+            );
+            delay(1000);
+            const volumeUSD24h = await this.awsQuery.getAggregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'volumeUSD',
+                time,
+            });
+            delay(1000);
+            const feesUSD24h = await this.awsQuery.getAggregatedValue({
+                table: awsConfig.timestream.tableName,
+                series: pairAddress,
+                metric: 'feesUSD',
+                time,
+            });
+            delay(1000);
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFirstTokenVolume(
@@ -154,19 +139,26 @@ export class PairCacheWarmerService {
         }
     }
 
-    @Cron(CronExpression.EVERY_30_SECONDS)
+    @Cron(CronExpression.EVERY_MINUTE)
     async cachePairsInfo(): Promise<void> {
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
 
         for (const pairAddress of pairsAddresses) {
-            const [feesAPR, state, type, feeState, totalFeePercent] =
-                await Promise.all([
-                    this.pairComputeService.computeFeesAPR(pairAddress),
-                    this.abiPairService.getState(pairAddress),
-                    this.pairComputeService.computeTypeFromTokens(pairAddress),
-                    this.abiPairService.getFeeState(pairAddress),
-                    this.abiPairService.getTotalFeePercent(pairAddress),
-                ]);
+            const [
+                feesAPR,
+                state,
+                type,
+                feeState,
+                totalFeePercent,
+                specialFeePercent,
+            ] = await Promise.all([
+                this.pairComputeService.computeFeesAPR(pairAddress),
+                this.abiPairService.getState(pairAddress),
+                this.pairComputeService.computeTypeFromTokens(pairAddress),
+                this.abiPairService.getFeeState(pairAddress),
+                this.abiPairService.getTotalFeePercent(pairAddress),
+                this.abiPairService.getSpecialFeePercent(pairAddress),
+            ]);
 
             const cachedKeys = await Promise.all([
                 this.pairSetterService.setFeesAPR(pairAddress, feesAPR),
@@ -177,12 +169,16 @@ export class PairCacheWarmerService {
                     pairAddress,
                     totalFeePercent,
                 ),
+                this.pairSetterService.setSpecialFeePercent(
+                    pairAddress,
+                    specialFeePercent,
+                ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
         }
     }
 
-    @Cron('*/6 * * * * *') // Update prices and reserves every 6 seconds
+    @Cron('*/12 * * * * *') // Update prices and reserves every 12 seconds
     async cacheTokenPrices(): Promise<void> {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
         const invalidatedKeys = [];
