@@ -11,10 +11,10 @@ import { FarmGetterServiceV1_2 } from './farm.v1.2.getter.service';
 import { FarmComputeServiceV1_2 } from './farm.v1.2.compute.service';
 import { FarmTokenAttributesV1_2 } from '@elrondnetwork/erdjs-dex';
 import { FarmTokenAttributesModelV1_2 } from '../../models/farmTokenAttributes.model';
-import { FarmService } from '../../base-module/services/farm.service';
+import { FarmServiceBase } from '../../base-module/services/farm.base.service';
 
 @Injectable()
-export class FarmServiceV1_2 extends FarmService {
+export class FarmServiceV1_2 extends FarmServiceBase {
     constructor(
         protected readonly abiService: FarmAbiServiceV1_2,
         @Inject(forwardRef(() => FarmGetterServiceV1_2))

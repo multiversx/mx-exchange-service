@@ -4,17 +4,16 @@ import { TokenModule } from 'src/modules/tokens/token.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
-import { FarmBaseModule } from '../base-module/farm.base.module';
 import { FarmAbiServiceV1_2 } from './services/farm.v1.2.abi.service';
 import { FarmComputeServiceV1_2 } from './services/farm.v1.2.compute.service';
 import { FarmGetterServiceV1_2 } from './services/farm.v1.2.getter.service';
 import { FarmResolverV1_2 } from './farm.v1.2.resolver';
 import { FarmTransactionServiceV1_2 } from './services/farm.v1.2.transaction.service';
 import { FarmServiceV1_2 } from './services/farm.v1.2.service';
+import { FarmGetterService } from '../base-module/services/farm.getter.service';
 
 @Module({
     imports: [
-        FarmBaseModule,
         CachingModule,
         ContextModule,
         ElrondCommunicationModule,
@@ -25,6 +24,10 @@ import { FarmServiceV1_2 } from './services/farm.v1.2.service';
         FarmServiceV1_2,
         FarmAbiServiceV1_2,
         FarmGetterServiceV1_2,
+        {
+            provide: FarmGetterService,
+            useClass: FarmGetterServiceV1_2,
+        },
         FarmComputeServiceV1_2,
         FarmTransactionServiceV1_2,
         FarmResolverV1_2,
@@ -32,6 +35,7 @@ import { FarmServiceV1_2 } from './services/farm.v1.2.service';
     exports: [
         FarmServiceV1_2,
         FarmAbiServiceV1_2,
+        FarmGetterServiceV1_2,
         FarmComputeServiceV1_2,
         FarmTransactionServiceV1_2,
     ],
