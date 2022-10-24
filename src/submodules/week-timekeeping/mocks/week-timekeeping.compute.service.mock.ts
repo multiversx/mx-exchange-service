@@ -2,34 +2,39 @@ import { IWeekTimekeepingComputeService } from '../interfaces';
 import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
 
+export class WeekTimekeepingComputeHandlers implements IWeekTimekeepingComputeService {
+    computeWeekForEpoch:(scAddress: string, epoch: number) => Promise<number>;
+    computeStartEpochForWeek:(scAddress: string, week: number) => Promise<number>;
+    computeEndEpochForWeek:(scAddress: string, week: number) => Promise<number>;
+    constructor(init: Partial<WeekTimekeepingComputeHandlers>) {
+        Object.assign(this, init);
+    }
+}
+
 export class WeekTimekeepingComputeServiceMock implements IWeekTimekeepingComputeService {
-    computeWeekForEpochCalled:(scAddress: string, epoch: number) => Promise<number>;
-    computeStartEpochForWeekCalled:(scAddress: string, week: number) => Promise<number>;
-    computeEndEpochForWeekCalled:(scAddress: string, week: number) => Promise<number>;
-
-
+    handlers: WeekTimekeepingComputeHandlers;
     computeEndEpochForWeek(scAddress: string, week: number): Promise<number> {
-        if (this.computeWeekForEpochCalled !== undefined) {
-            return this.computeWeekForEpochCalled(scAddress, week);
+        if (this.handlers.computeWeekForEpoch !== undefined) {
+            return this.handlers.computeWeekForEpoch(scAddress, week);
         }
         throw ErrorNotImplemented
     }
 
     computeStartEpochForWeek(scAddress: string, week: number): Promise<number> {
-        if (this.computeStartEpochForWeekCalled !== undefined) {
-            return this.computeStartEpochForWeekCalled(scAddress, week);
+        if (this.handlers.computeStartEpochForWeek !== undefined) {
+            return this.handlers.computeStartEpochForWeek(scAddress, week);
         }
         throw ErrorNotImplemented
     }
 
     computeWeekForEpoch(scAddress: string, epoch: number): Promise<number> {
-        if (this.computeEndEpochForWeekCalled !== undefined) {
-            return this.computeEndEpochForWeekCalled(scAddress, epoch);
+        if (this.handlers.computeEndEpochForWeek !== undefined) {
+            return this.handlers.computeEndEpochForWeek(scAddress, epoch);
         }
         throw ErrorNotImplemented
     }
 
-    constructor(init?: Partial<WeekTimekeepingComputeServiceMock>) {
-        Object.assign(this, init);
+    constructor(init: Partial<WeekTimekeepingComputeHandlers>) {
+        this.handlers = new WeekTimekeepingComputeHandlers(init);
     }
 }

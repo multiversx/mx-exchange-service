@@ -12,14 +12,14 @@ import { PairService } from '../services/pair.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
-import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/routerGetterServiceStub';
 
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
@@ -31,7 +31,7 @@ describe('TransactionPairService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const WrapServiceProvider = {

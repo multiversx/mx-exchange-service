@@ -6,7 +6,7 @@ import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
@@ -27,7 +27,7 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/routerGetterServiceStub';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -44,7 +44,7 @@ describe('AnalyticsService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const ProxyGetterServiceProvider = {

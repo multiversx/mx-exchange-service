@@ -12,18 +12,18 @@ import { ApiConfigService } from '../../../helpers/api.config.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
 import { WrapService } from '../../wrapping/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
-import { TransactionsFarmService } from '../../farm/services/transactions-farm.service';
+import { TransactionsFarmService } from '../services/transactions-farm.service';
 import { ElrondProxyServiceMock } from '../../../services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { encodeTransactionData } from '../../../helpers/helpers';
 import { elrondConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/routerGetterServiceStub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 
 describe('FarmService', () => {
@@ -46,7 +46,7 @@ describe('FarmService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const WrapServiceProvider = {

@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProgressComputeService } from "../services/progress.compute.service";
 import { EnergyComputeService } from "../../../modules/simple-lock/services/energy/energy.compute.service";
-import { EnergyComputeServiceMock } from "../../../modules/simple-lock/mocks/energy.compute.service.mock";
+import {
+    EnergyComputeHandlers,
+    EnergyComputeServiceMock
+} from "../../../modules/simple-lock/mocks/energy.compute.service.mock";
 import { EnergyType } from "@elrondnetwork/erdjs-dex";
 import { ClaimProgress } from "../models/weekly-rewards-splitting.model";
 import { EnergyModel } from "../../../modules/simple-lock/models/simple.lock.model";
@@ -17,7 +20,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         'depleteUserEnergy throws error should error', async () => {
 
         const service = await createService({
-            depleteUserEnergyCalled:(
+            depleteUserEnergy:(
                 energyEntry: EnergyType,
                 currentEpoch: number,
             ) => {
@@ -34,7 +37,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
     it('advanceWeek' +
         'undefined nextWeekEnergy', async () => {
         const service = await createService({
-            depleteUserEnergyCalled:(
+            depleteUserEnergy:(
                 energyEntry: EnergyType,
                 currentEpoch: number,
             ) => {
@@ -63,7 +66,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
         })
         const progress = createMockProgress()
         const service = await createService({
-            depleteUserEnergyCalled:(
+            depleteUserEnergy:(
                 energyEntry: EnergyType,
                 currentEpoch: number,
             ) => {
@@ -89,7 +92,8 @@ export function createMockProgress(currentWeek = 10, currentEpoch = 70): ClaimPr
         week: currentWeek
     })
 }
-async function createService(handlers: any) {
+
+async function createService(handlers: Partial<EnergyComputeHandlers>) {
     const compute = new EnergyComputeServiceMock(handlers);
     const module: TestingModule = await Test.createTestingModule({
         imports: [],
