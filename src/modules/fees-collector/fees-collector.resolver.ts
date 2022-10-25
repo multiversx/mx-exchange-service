@@ -1,5 +1,9 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { FeesCollectorModel, UserEntryFeesCollectorModel } from './models/fees-collector.model';
+import {
+    FeesCollectorModel,
+    FeesCollectorTransactionModel,
+    UserEntryFeesCollectorModel
+} from './models/fees-collector.model';
 import { FeesCollectorService } from './services/fees-collector.service';
 import { User } from '../../helpers/userDecorator';
 import { Injectable, UseGuards } from '@nestjs/common';
@@ -18,7 +22,6 @@ import { Mixin } from "ts-mixer";
 import {
     GlobalInfoByWeekSubResolver, UserInfoByWeekSubResolver
 } from "../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.resolver";
-import { TransactionModel } from "../../models/transaction.model";
 
 @Injectable()
 export class FeesCollectorWeekValidation extends AbstractWeekValidation {
@@ -85,10 +88,10 @@ export class UserEntryFeesCollectorResolver extends Mixin(GenericResolver, UserI
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => [TransactionModel])
+    @Query(() => FeesCollectorTransactionModel)
     async claimRewards(
         @User() user: any,
-    ): Promise<TransactionModel[]> {
+    ): Promise<FeesCollectorTransactionModel> {
         return await this.genericQuery(() =>
             this.feesCollectorService.claimRewardsBatch(scAddress.feesCollector, user.publicKey),
         );
