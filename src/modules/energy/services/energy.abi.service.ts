@@ -10,18 +10,16 @@ import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
-import { SimpleLockType } from '../../models/simple.lock.model';
-import { SimpleLockAbiService } from '../simple.lock.abi.service';
 
 @Injectable()
-export class EnergyAbiService extends SimpleLockAbiService {
+export class EnergyAbiService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(elrondProxy, logger);
-        this.lockType = SimpleLockType.ENERGY_TYPE;
     }
 
     async getBaseAssetTokenID(): Promise<string> {

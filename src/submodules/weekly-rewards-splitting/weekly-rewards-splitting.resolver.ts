@@ -3,17 +3,18 @@ import { WeeklyRewardsSplittingGetterService } from './services/weekly-rewards-s
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import {
     ClaimProgress,
-    GlobalInfoByWeekModel, GlobalInfoByWeekSubModel,
-    UserInfoByWeekModel, UserInfoByWeekSubModel,
+    GlobalInfoByWeekModel,
+    GlobalInfoByWeekSubModel,
+    UserInfoByWeekModel,
+    UserInfoByWeekSubModel,
 } from './models/weekly-rewards-splitting.model';
-import { EnergyModel } from '../../modules/simple-lock/models/simple.lock.model';
+import { EnergyModel } from '../../modules/energy/models/energy.model';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
-import { WeeklyRewardsSplittingComputeService } from "./services/weekly-rewards-splitting.compute.service";
+import { WeeklyRewardsSplittingComputeService } from './services/weekly-rewards-splitting.compute.service';
 import {
     FeesCollectorModel,
-    UserEntryFeesCollectorModel
-} from "../../modules/fees-collector/models/fees-collector.model";
-
+    UserEntryFeesCollectorModel,
+} from '../../modules/fees-collector/models/fees-collector.model';
 
 @Resolver(() => GlobalInfoByWeekModel)
 export class GlobalInfoByWeekResolver extends GenericResolver {
@@ -29,7 +30,10 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
         @Parent() parent: GlobalInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.totalRewardsForWeek(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingGetter.totalRewardsForWeek(
+                parent.scAddress,
+                parent.week,
+            ),
         );
     }
 
@@ -38,7 +42,10 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
         @Parent() parent: GlobalInfoByWeekModel,
     ): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.totalEnergyForWeek(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingGetter.totalEnergyForWeek(
+                parent.scAddress,
+                parent.week,
+            ),
         );
     }
 
@@ -47,14 +54,20 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
         @Parent() parent: GlobalInfoByWeekModel,
     ): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(
+                parent.scAddress,
+                parent.week,
+            ),
         );
     }
 
     @ResolveField()
     async apr(@Parent() parent: GlobalInfoByWeekModel): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingCompute.computeApr(parent.scAddress, parent.week),
+            this.weeklyRewardsSplittingCompute.computeApr(
+                parent.scAddress,
+                parent.week,
+            ),
         );
     }
 }
@@ -73,14 +86,22 @@ export class UserInfoByWeekResolver extends GenericResolver {
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<EnergyModel> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.userEnergyForWeek(parent.scAddress, parent.userAddress, parent.week),
+            this.weeklyRewardsSplittingGetter.userEnergyForWeek(
+                parent.scAddress,
+                parent.userAddress,
+                parent.week,
+            ),
         );
     }
 
     @ResolveField()
     async apr(@Parent() parent: UserInfoByWeekModel): Promise<string> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingCompute.computeUserApr(parent.scAddress, parent.userAddress, parent.week),
+            this.weeklyRewardsSplittingCompute.computeUserApr(
+                parent.scAddress,
+                parent.userAddress,
+                parent.week,
+            ),
         );
     }
 
@@ -89,7 +110,11 @@ export class UserInfoByWeekResolver extends GenericResolver {
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.userRewardsForWeek(parent.scAddress, parent.userAddress, parent.week),
+            this.weeklyRewardsSplittingGetter.userRewardsForWeek(
+                parent.scAddress,
+                parent.userAddress,
+                parent.week,
+            ),
         );
     }
 }
@@ -106,7 +131,9 @@ export class GlobalInfoByWeekSubResolver extends GenericResolver {
         @Parent() parent: FeesCollectorModel,
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(parent.address),
+            this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(
+                parent.address,
+            ),
         );
     }
 }
@@ -124,7 +151,10 @@ export class UserInfoByWeekSubResolver extends GenericResolver {
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<number> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(parent.address, parent.userAddress)
+            this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(
+                parent.address,
+                parent.userAddress,
+            ),
         );
     }
     @ResolveField(() => ClaimProgress)
@@ -132,7 +162,10 @@ export class UserInfoByWeekSubResolver extends GenericResolver {
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<ClaimProgress> {
         return await this.genericFieldResover(() =>
-            this.weeklyRewardsSplittingGetter.currentClaimProgress(parent.address, parent.userAddress),
+            this.weeklyRewardsSplittingGetter.currentClaimProgress(
+                parent.address,
+                parent.userAddress,
+            ),
         );
     }
 }

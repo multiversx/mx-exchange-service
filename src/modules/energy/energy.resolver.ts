@@ -5,26 +5,27 @@ import { scAddress } from 'src/config';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
+import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
-import { EnergyModel, UnlockType } from './models/simple.lock.model';
-import { SimpleLockEnergyModel } from './models/simple.lock.model';
-import { EnergyGetterService } from './services/energy/energy.getter.service';
-import { EnergyService } from './services/energy/energy.service';
-import { EnergyTransactionService } from './services/energy/energy.transaction.service';
-import { SimpleLockService } from './services/simple.lock.service';
-import { SimpleLockResolver } from './simple.lock.resolver';
+import {
+    EnergyModel,
+    SimpleLockEnergyModel,
+    UnlockType,
+} from './models/energy.model';
+import { EnergyGetterService } from './services/energy.getter.service';
+import { EnergyService } from './services/energy.service';
+import { EnergyTransactionService } from './services/energy.transaction.service';
 
 @Resolver(() => SimpleLockEnergyModel)
-export class EnergyResolver extends SimpleLockResolver {
+export class EnergyResolver extends GenericResolver {
     constructor(
-        protected readonly simpleLockService: SimpleLockService,
         protected readonly energyGetter: EnergyGetterService,
         protected readonly energyTransaction: EnergyTransactionService,
         private readonly energyService: EnergyService,
     ) {
-        super(simpleLockService, energyGetter);
+        super();
     }
 
     @ResolveField()
@@ -68,22 +69,30 @@ export class EnergyResolver extends SimpleLockResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async updateLockedTokens(
+    async lockTokensEnergy(
+        @Args('inputTokens') inputTokens: InputTokenModel,
+        @Args('lockEpochs') lockEpochs: number,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.energyTransaction.lockTokensEnergy(
+                inputTokens,
+                lockEpochs,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async updateLockedTokensEnergy(
         @Args('inputTokens') inputTokens: InputTokenModel,
         @Args('unlockType') unlockType: UnlockType,
         @Args('epochsToReduce', { nullable: true }) epochsToReduce: number,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const simpleLockAddress =
-            await this.simpleLockService.getSimpleLockAddressByTokenID(
-                inputTokens.tokenID,
-            );
-        if (simpleLockAddress === undefined) {
-            throw new ApolloError('invalid input token');
-        }
         return await this.genericQuery(() =>
-            this.energyTransaction.unlockTokens(
-                simpleLockAddress,
+            this.energyTransaction.unlockTokensEnergy(
                 user.publicKey,
                 inputTokens,
                 unlockType,

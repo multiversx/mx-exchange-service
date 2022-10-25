@@ -1,5 +1,5 @@
-import { EnergyType } from "@elrondnetwork/erdjs-dex";
-import { EsdtToken } from "../tokens/models/esdtToken.model";
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EsdtToken } from '../../tokens/models/esdtToken.model';
 
 export interface IEnergyComputeService {
     depleteUserEnergy(

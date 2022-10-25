@@ -7,15 +7,17 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
-import { SimpleLockType } from '../../models/simple.lock.model';
-import { SimpleLockGetterService } from '../simple.lock.getter.service';
 import { EnergyAbiService } from './energy.abi.service';
-import { IEnergyGetterService } from '../../interfaces';
+import { IEnergyGetterService } from './interfaces';
 
 @Injectable()
-export class EnergyGetterService extends SimpleLockGetterService implements IEnergyGetterService {
+export class EnergyGetterService
+    extends GenericGetterService
+    implements IEnergyGetterService
+{
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
@@ -23,8 +25,7 @@ export class EnergyGetterService extends SimpleLockGetterService implements IEne
         protected readonly abiService: EnergyAbiService,
         private readonly apiService: ElrondApiService,
     ) {
-        super(cachingService, logger, abiService, tokenGetter);
-        this.lockType = SimpleLockType.ENERGY_TYPE;
+        super(cachingService, logger);
     }
 
     async getBaseAssetTokenID(): Promise<string> {
