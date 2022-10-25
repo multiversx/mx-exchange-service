@@ -1,6 +1,5 @@
 import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { FeesCollectorModel } from 'src/modules/fees-collector/models/fees-collector.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
@@ -28,8 +27,6 @@ export class SimpleLockEnergyModel {
     lockOptions: number[];
     @Field()
     feesBurnPercentage: number;
-    @Field()
-    feesCollector: FeesCollectorModel;
     @Field()
     pauseState: boolean;
 
