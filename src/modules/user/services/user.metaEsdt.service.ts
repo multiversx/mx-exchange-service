@@ -253,7 +253,9 @@ export class UserService {
         let promises: Promise<string>[] = [];
         for (const farmAddress of farmsAddresses()) {
             promises.push(
-                this.farmGetter.getter(farmAddress).getFarmTokenID(farmAddress),
+                this.farmGetter
+                    .useGetter(farmAddress)
+                    .getFarmTokenID(farmAddress),
             );
         }
         const farmTokenIDs = await Promise.all(promises);

@@ -14,7 +14,7 @@ export class FarmTransactionFactory {
         private readonly transactionsV2: FarmTransactionServiceV2,
     ) {}
 
-    transaction(farmAddress: string): TransactionsFarmService {
+    useTransaction(farmAddress: string): TransactionsFarmService {
         switch (farmVersion(farmAddress)) {
             case FarmVersion.V1_2:
                 return this.transactionsV1_2;

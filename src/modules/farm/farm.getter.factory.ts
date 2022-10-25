@@ -17,7 +17,7 @@ export class FarmGetterFactory {
         private readonly cachingService: CachingService,
     ) {}
 
-    getter(farmAddress: string): FarmGetterService {
+    useGetter(farmAddress: string): FarmGetterService {
         switch (farmVersion(farmAddress)) {
             case FarmVersion.V1_2:
                 return this.farmGetterV1_2;
@@ -30,9 +30,9 @@ export class FarmGetterFactory {
 
     async isFarmToken(tokenID: string): Promise<boolean> {
         for (const farmAddress of farmsAddresses()) {
-            const farmTokenID = await this.getter(farmAddress).getFarmTokenID(
+            const farmTokenID = await this.useGetter(
                 farmAddress,
-            );
+            ).getFarmTokenID(farmAddress);
             if (tokenID === farmTokenID) {
                 return true;
             }
@@ -50,9 +50,9 @@ export class FarmGetterFactory {
             return cachedValue;
         }
         for (const farmAddress of farmsAddresses()) {
-            const farmTokenID = await this.getter(farmAddress).getFarmTokenID(
+            const farmTokenID = await this.useGetter(
                 farmAddress,
-            );
+            ).getFarmTokenID(farmAddress);
             if (farmTokenID === tokenID) {
                 await this.cachingService.setCache(
                     `${tokenID}.farmAddress`,

@@ -14,7 +14,7 @@ export class FarmComputeFactory {
         private readonly farmComputeV2: FarmComputeServiceV2,
     ) {}
 
-    compute(farmAddress: string): FarmComputeService {
+    useCompute(farmAddress: string): FarmComputeService {
         switch (farmVersion(farmAddress)) {
             case FarmVersion.V1_2:
                 return this.farmComputeV1_2;

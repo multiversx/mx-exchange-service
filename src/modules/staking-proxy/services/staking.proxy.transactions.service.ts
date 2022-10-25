@@ -154,7 +154,7 @@ export class StakingProxyTransactionService {
         );
 
         const exitFarmPosition = await this.farmFactory
-            .service(farmAddress)
+            .useService(farmAddress)
             .getTokensForExitFarm({
                 attributes: farmToken.attributes,
                 identifier: farmToken.identifier,

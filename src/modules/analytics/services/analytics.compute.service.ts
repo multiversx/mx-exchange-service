@@ -29,7 +29,7 @@ export class AnalyticsComputeService {
         for (const farmAddress of farmsAddresses()) {
             promises.push(
                 this.farmCompute
-                    .compute(farmAddress)
+                    .useCompute(farmAddress)
                     .computeFarmLockedValueUSD(farmAddress),
             );
         }
@@ -58,14 +58,14 @@ export class AnalyticsComputeService {
         if (farmsAddresses()[5] !== undefined) {
             promises.push(
                 this.farmCompute
-                    .compute(farmsAddresses()[5])
+                    .useCompute(farmsAddresses()[5])
                     .computeFarmLockedValueUSD(farmsAddresses()[5]),
             );
         }
         if (farmsAddresses()[12] !== undefined) {
             promises.push(
                 this.farmCompute
-                    .compute(farmsAddresses()[12])
+                    .useCompute(farmsAddresses()[12])
                     .computeFarmLockedValueUSD(farmsAddresses()[12]),
             );
         }
@@ -92,7 +92,7 @@ export class AnalyticsComputeService {
                 return '0';
             }
             return this.farmGetter
-                .getter(farmAddress)
+                .useGetter(farmAddress)
                 .getRewardsPerBlock(farmAddress);
         });
         const farmsRewardsPerBlock = await Promise.all(promises);

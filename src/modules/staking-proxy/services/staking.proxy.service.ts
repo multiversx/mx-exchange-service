@@ -140,7 +140,7 @@ export class StakingProxyService {
         );
 
         const [farmRewards, stakingRewards] = await Promise.all([
-            this.farmFactory.service(farmAddress).getRewardsForPosition({
+            this.farmFactory.useService(farmAddress).getRewardsForPosition({
                 attributes: farmToken.attributes,
                 identifier: farmToken.identifier,
                 farmAddress,

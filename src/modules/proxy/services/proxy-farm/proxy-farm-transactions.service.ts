@@ -319,10 +319,10 @@ export class TransactionsProxyFarmService {
                 : 0;
         const [farmedTokenID, farmingTokenID] = await Promise.all([
             this.farmGetter
-                .getter(args.farmAddress)
+                .useGetter(args.farmAddress)
                 .getFarmedTokenID(args.farmAddress),
             this.farmGetter
-                .getter(args.farmAddress)
+                .useGetter(args.farmAddress)
                 .getFarmingTokenID(args.farmAddress),
         ]);
 

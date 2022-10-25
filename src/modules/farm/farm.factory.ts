@@ -56,7 +56,7 @@ export class FarmFactoryService {
         return farms;
     }
 
-    service(farmAddress: string): FarmServiceBase {
+    useService(farmAddress: string): FarmServiceBase {
         switch (farmVersion(farmAddress)) {
             case FarmVersion.V1_2:
                 return this.farmServiceV1_2;

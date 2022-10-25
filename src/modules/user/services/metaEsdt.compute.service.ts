@@ -101,7 +101,7 @@ export class UserComputeService {
         farmAddress: string,
     ): Promise<UserFarmToken> {
         const farmingTokenID = await this.farmGetter
-            .getter(farmAddress)
+            .useGetter(farmAddress)
             .getFarmingTokenID(farmAddress);
 
         const version = farmVersion(farmAddress);
@@ -115,7 +115,7 @@ export class UserComputeService {
         switch (version) {
             case FarmVersion.V1_2:
                 decodedFarmAttributes = this.farmFactory
-                    .service(farmAddress)
+                    .useService(farmAddress)
                     .decodeFarmTokenAttributes(
                         nftToken.identifier,
                         nftToken.attributes,
@@ -150,7 +150,7 @@ export class UserComputeService {
                 });
             case FarmVersion.V1_3:
                 decodedFarmAttributes = this.farmFactory
-                    .service(farmAddress)
+                    .useService(farmAddress)
                     .decodeFarmTokenAttributes(
                         nftToken.identifier,
                         nftToken.attributes,

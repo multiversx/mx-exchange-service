@@ -30,7 +30,7 @@ export class FarmQueryResolver extends GenericResolver {
         @Args('attributes') attributes: string,
     ): Promise<typeof FarmTokenAttributesUnion> {
         return this.farmFactory
-            .service(farmAddress)
+            .useService(farmAddress)
             .decodeFarmTokenAttributes(identifier, attributes);
     }
 
@@ -41,7 +41,7 @@ export class FarmQueryResolver extends GenericResolver {
     ): Promise<RewardsModel[]> {
         return await this.genericQuery(() =>
             this.farmFactory
-                .service(args.farmsPositions[0].farmAddress)
+                .useService(args.farmsPositions[0].farmAddress)
                 .getBatchRewardsForPosition(args.farmsPositions),
         );
     }
@@ -53,7 +53,7 @@ export class FarmQueryResolver extends GenericResolver {
     ): Promise<ExitFarmTokensModel> {
         return await this.genericQuery(() =>
             this.farmFactory
-                .service(args.farmAddress)
+                .useService(args.farmAddress)
                 .getTokensForExitFarm(args),
         );
     }
