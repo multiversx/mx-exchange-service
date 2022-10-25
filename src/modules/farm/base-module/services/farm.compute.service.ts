@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
@@ -11,7 +11,6 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { FarmGetterService } from './farm.getter.service';
 
-@Injectable()
 export abstract class FarmComputeService {
     constructor(
         @Inject(forwardRef(() => FarmGetterService))

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { constantsConfig } from '../../../../config';
 import { ExitFarmTokensModel, RewardsModel } from '../../models/farm.model';
 import { AbiFarmService } from './farm.abi.service';
@@ -13,11 +13,9 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { FarmTokenAttributesModelV1_3 } from '../../models/farmTokenAttributes.model';
 import { CachingService } from 'src/services/caching/cache.service';
 
-@Injectable()
 export abstract class FarmServiceBase {
     constructor(
         protected readonly abiService: AbiFarmService,
-        @Inject(forwardRef(() => FarmGetterService))
         protected readonly farmGetter: FarmGetterService,
         protected readonly farmCompute: FarmComputeService,
         protected readonly contextGetter: ContextGetterService,

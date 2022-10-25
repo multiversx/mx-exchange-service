@@ -1,5 +1,5 @@
 import { TransactionModel } from '../../../../models/transaction.model';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/bytes';
 import {
     Address,
@@ -24,7 +24,6 @@ import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 
-@Injectable()
 export abstract class TransactionsFarmService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
