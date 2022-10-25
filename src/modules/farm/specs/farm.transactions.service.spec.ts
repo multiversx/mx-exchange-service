@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { FarmService } from '../base-module/services/farm.service';
 import { AbiFarmService } from '../base-module/services/farm.abi.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../base-module/services/farm.getter.service';
-import { FarmComputeService } from '../base-module/services/farm.compute.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { ApiConfigService } from '../../../helpers/api.config.service';
@@ -67,7 +65,6 @@ describe('FarmService', () => {
                 ApiConfigService,
                 ElrondApiService,
                 FarmGetterServiceProvider,
-                FarmComputeService,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
@@ -78,7 +75,6 @@ describe('FarmService', () => {
                 WrapServiceProvider,
                 ElrondProxyServiceProvider,
                 FarmTransactionServiceV1_2,
-                FarmService,
             ],
         }).compile();
 

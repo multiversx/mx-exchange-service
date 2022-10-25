@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FarmService } from '../../farm/base-module/services/farm.service';
 import { PairService } from '../../pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
@@ -22,7 +21,6 @@ import { UserComputeService } from '../services/metaEsdt.compute.service';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
-import { FarmServiceMock } from '../../farm/mocks/farm.service.mock';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
@@ -59,8 +57,22 @@ import { UserEsdtComputeService } from '../services/esdt.compute.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
 import { AssetsModel } from 'src/modules/tokens/models/assets.model';
-import { FarmServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.service';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { FarmGetterServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
+import { FarmGetterServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.getter.service.mock';
+import { FarmGetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.getter.service';
 import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
+import { FarmAbiServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.abi.service';
+import { AbiFarmServiceMock } from 'src/modules/farm/mocks/abi.farm.service.mock';
+import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
+import { FarmServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.service';
+import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
+import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
+import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
+import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserService;
@@ -69,26 +81,6 @@ describe('UserService', () => {
     const ElrondApiServiceProvider = {
         provide: ElrondApiService,
         useClass: ElrondApiServiceMock,
-    };
-
-    const FarmServiceProvider = {
-        provide: FarmService,
-        useClass: FarmServiceMock,
-    };
-
-    const FarmServiceProviderV1_2 = {
-        provide: FarmServiceV1_2,
-        useClass: FarmServiceMock,
-    };
-
-    const FarmServiceProviderV1_3 = {
-        provide: FarmServiceV1_3,
-        useClass: FarmServiceMock,
-    };
-
-    const FarmGetterServiceProvider = {
-        provide: FarmGetterService,
-        useClass: FarmGetterServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -184,14 +176,48 @@ describe('UserService', () => {
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
+                FarmFactoryService,
+                FarmGetterFactory,
+                {
+                    provide: FarmServiceV1_2,
+                    useClass: FarmServiceMock,
+                },
+                FarmComputeServiceV1_2,
+                {
+                    provide: FarmAbiServiceV1_2,
+                    useClass: AbiFarmServiceMock,
+                },
+                FarmGetterServiceProviderV1_2,
+                {
+                    provide: FarmAbiServiceV1_3,
+                    useClass: AbiFarmServiceMock,
+                },
+                FarmComputeServiceV1_3,
+                FarmGetterServiceProviderV1_3,
+                {
+                    provide: FarmGetterService,
+                    useClass: FarmGetterServiceMock,
+                },
+                {
+                    provide: FarmGetterServiceV2,
+                    useClass: FarmGetterServiceMock,
+                },
+                FarmServiceV1_3,
+                {
+                    provide: FarmAbiServiceV1_3,
+                    useClass: AbiFarmServiceMock,
+                },
+                FarmComputeServiceV1_3,
+                FarmServiceV2,
+                FarmComputeServiceV2,
+                {
+                    provide: FarmAbiServiceV2,
+                    useClass: AbiFarmServiceMock,
+                },
                 ProxyServiceProvider,
                 ProxyGetterServiceProvider,
                 ProxyPairGetterServiceProvider,
                 ProxyFarmGetterServiceProvider,
-                FarmServiceProvider,
-                FarmServiceProviderV1_2,
-                FarmServiceProviderV1_3,
-                FarmGetterServiceProvider,
                 LockedAssetProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,

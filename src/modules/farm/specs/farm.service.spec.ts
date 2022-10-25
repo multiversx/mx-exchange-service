@@ -31,8 +31,18 @@ import { FarmComputeServiceV1_3 } from '../v1.3/services/farm.v1.3.compute.servi
 import { FarmGetterServiceV1_3 } from '../v1.3/services/farm.v1.3.getter.service';
 import { FarmGetterServiceMockV1_3 } from '../mocks/farm.v1.3.getter.service.mock';
 import { FarmAbiServiceV1_3 } from '../v1.3/services/farm.v1.3.abi.service';
+import { FarmFactoryService } from '../farm.factory';
+import { FarmGetterFactory } from '../farm.getter.factory';
+import { FarmServiceV2 } from '../v2/services/farm.v2.service';
+import { FarmGetterServiceV2 } from '../v2/services/farm.v2.getter.service';
+import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
+import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
+import { FarmComputeServiceV2 } from '../v2/services/farm.v2.compute.service';
+import { FarmGetterService } from '../base-module/services/farm.getter.service';
 
 describe('FarmService', () => {
+    let factory: FarmFactoryService;
+    let getter: FarmGetterFactory;
     let serviceV1_2: FarmServiceV1_2;
     let serviceV1_3: FarmServiceV1_3;
 
@@ -80,12 +90,27 @@ describe('FarmService', () => {
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule],
             providers: [
+                FarmFactoryService,
+                FarmGetterFactory,
+                {
+                    provide: FarmGetterService,
+                    useClass: FarmGetterServiceMock,
+                },
                 AbiFarmServiceProviderV1_2,
                 FarmGetterServiceProviderV1_2,
                 FarmComputeServiceV1_2,
                 AbiFarmServiceProviderV1_3,
                 FarmGetterServiceProviderV1_3,
                 FarmComputeServiceV1_3,
+                {
+                    provide: FarmAbiServiceV2,
+                    useClass: AbiFarmServiceMock,
+                },
+                {
+                    provide: FarmGetterServiceV2,
+                    useClass: FarmGetterServiceMock,
+                },
+                FarmComputeServiceV2,
                 ElrondApiServiceProvider,
                 ContextGetterServiceProvider,
                 RouterGetterServiceProvider,
@@ -98,9 +123,12 @@ describe('FarmService', () => {
                 TokenComputeService,
                 FarmServiceV1_2,
                 FarmServiceV1_3,
+                FarmServiceV2,
             ],
         }).compile();
 
+        factory = module.get<FarmFactoryService>(FarmFactoryService);
+        getter = module.get<FarmGetterFactory>(FarmGetterFactory);
         serviceV1_2 = module.get<FarmServiceV1_2>(FarmServiceV1_2);
         serviceV1_3 = module.get<FarmServiceV1_3>(FarmServiceV1_3);
     });
@@ -146,7 +174,7 @@ describe('FarmService', () => {
     });
 
     it('should get farms', async () => {
-        const farms = await serviceV1_2.getFarms();
+        const farms = factory.getFarms();
         expect(farms).toEqual([
             {
                 address:
@@ -174,15 +202,15 @@ describe('FarmService', () => {
     });
 
     it('should check if farm token', async () => {
-        const isFarmToken_0 = await serviceV1_2.isFarmToken('TOK1TOK9LPStaked');
+        const isFarmToken_0 = await getter.isFarmToken('TOK1TOK9LPStaked');
         expect(isFarmToken_0).toEqual(false);
 
-        const isFarmToken_1 = await serviceV1_2.isFarmToken('TOK1TOK4LPStaked');
+        const isFarmToken_1 = await getter.isFarmToken('TOK1TOK4LPStaked');
         expect(isFarmToken_1).toEqual(true);
     });
 
     it('should get farm address by farm token ID', async () => {
-        const farmAddress = await serviceV1_2.getFarmAddressByFarmTokenID(
+        const farmAddress = await getter.getFarmAddressByFarmTokenID(
             'TOK1TOK4LPStaked',
         );
         expect(farmAddress).toEqual(
