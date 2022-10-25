@@ -9,13 +9,15 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
-import { FarmFactoryService } from 'src/modules/farm/farm.service';
+import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
         private readonly routerGetter: RouterGetterService,
-        private readonly farmFactory: FarmFactoryService,
+        private readonly farmGetter: FarmGetterFactory,
+        private readonly farmCompute: FarmComputeFactory,
         private readonly pairGetter: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
     ) {}
@@ -26,7 +28,7 @@ export class AnalyticsComputeService {
         const promises: Promise<string>[] = [];
         for (const farmAddress of farmsAddresses()) {
             promises.push(
-                this.farmFactory
+                this.farmCompute
                     .compute(farmAddress)
                     .computeFarmLockedValueUSD(farmAddress),
             );
@@ -55,14 +57,14 @@ export class AnalyticsComputeService {
 
         if (farmsAddresses()[5] !== undefined) {
             promises.push(
-                this.farmFactory
+                this.farmCompute
                     .compute(farmsAddresses()[5])
                     .computeFarmLockedValueUSD(farmsAddresses()[5]),
             );
         }
         if (farmsAddresses()[12] !== undefined) {
             promises.push(
-                this.farmFactory
+                this.farmCompute
                     .compute(farmsAddresses()[12])
                     .computeFarmLockedValueUSD(farmsAddresses()[12]),
             );
@@ -89,7 +91,7 @@ export class AnalyticsComputeService {
             ) {
                 return '0';
             }
-            return this.farmFactory
+            return this.farmGetter
                 .getter(farmAddress)
                 .getRewardsPerBlock(farmAddress);
         });

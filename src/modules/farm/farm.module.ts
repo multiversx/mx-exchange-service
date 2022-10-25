@@ -11,7 +11,10 @@ import { FarmModuleV1_2 } from './v1.2/farm.v1.2.module';
 import { FarmModuleV2 } from './v2/farm.v2.module';
 import { FarmCustomModule } from './custom/farm.custom.module';
 import { FarmModuleV1_3 } from './v1.3/farm.v1.3.module';
-import { FarmFactoryService } from './farm.service';
+import { FarmFactoryService } from './farm.factory';
+import { FarmGetterFactory } from './farm.getter.factory';
+import { FarmTransactionFactory } from './farm.transaction.factory';
+import { FarmComputeFactory } from './farm.compute.factory';
 
 @Module({
     imports: [
@@ -27,7 +30,14 @@ import { FarmFactoryService } from './farm.service';
         FarmModuleV2,
         FarmCustomModule,
     ],
-    providers: [FarmFactoryService, FarmQueryResolver, FarmTransactionResolver],
-    exports: [FarmFactoryService],
+    providers: [
+        FarmFactoryService,
+        FarmGetterFactory,
+        FarmComputeFactory,
+        FarmTransactionFactory,
+        FarmQueryResolver,
+        FarmTransactionResolver,
+    ],
+    exports: [FarmFactoryService, FarmGetterFactory, FarmComputeFactory],
 })
 export class FarmModule {}

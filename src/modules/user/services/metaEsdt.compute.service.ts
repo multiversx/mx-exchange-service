@@ -43,13 +43,15 @@ import { UserEsdtComputeService } from './esdt.compute.service';
 import { TokenComputeService } from '../../tokens/services/token.compute.service';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { FarmFactoryService } from 'src/modules/farm/farm.service';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 
 @Injectable()
 export class UserComputeService {
     constructor(
         private readonly apiService: ElrondApiService,
         private readonly farmFactory: FarmFactoryService,
+        private readonly farmGetter: FarmGetterFactory,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
         private readonly lockedAssetService: LockedAssetService,
@@ -98,7 +100,7 @@ export class UserComputeService {
         nftToken: NftToken,
         farmAddress: string,
     ): Promise<UserFarmToken> {
-        const farmingTokenID = await this.farmFactory
+        const farmingTokenID = await this.farmGetter
             .getter(farmAddress)
             .getFarmingTokenID(farmAddress);
 
@@ -257,7 +259,7 @@ export class UserComputeService {
                 ],
             });
         const [farmAddress, farmToken] = await Promise.all([
-            this.farmFactory.getFarmAddressByFarmTokenID(
+            this.farmGetter.getFarmAddressByFarmTokenID(
                 decodedWFMTAttributes[0].farmTokenID,
             ),
             this.apiService.getNftByTokenIdentifier(
@@ -361,7 +363,7 @@ export class UserComputeService {
                 stakingProxyAddress,
                 farmTokenIdentifier,
             ),
-            this.farmFactory.getFarmAddressByFarmTokenID(farmTokenID),
+            this.farmGetter.getFarmAddressByFarmTokenID(farmTokenID),
         ]);
 
         farmToken.balance = ruleOfThree(
@@ -507,7 +509,7 @@ export class UserComputeService {
             this.simpleLockService.getSimpleLockAddressByTokenID(
                 nftToken.collection,
             ),
-            this.farmFactory.getFarmAddressByFarmTokenID(
+            this.farmGetter.getFarmAddressByFarmTokenID(
                 decodedAttributes.farmTokenID,
             ),
         ]);

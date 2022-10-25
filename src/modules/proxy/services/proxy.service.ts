@@ -26,12 +26,12 @@ import {
 import { LockedAssetService } from 'src/modules/locked-asset-factory/services/locked-asset.service';
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { FarmFactoryService } from 'src/modules/farm/farm.service';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 
 @Injectable()
 export class ProxyService {
     constructor(
-        private readonly farmFactory: FarmFactoryService,
+        private readonly farmGetter: FarmGetterFactory,
         private readonly apiService: ElrondApiService,
         private readonly lockedAssetService: LockedAssetService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -121,7 +121,7 @@ export class ProxyService {
             scAddress.proxyDexAddress,
             tokenIdentifier(farmTokenCollection, farmTokenNonce),
         );
-        const farmAddress = await this.farmFactory.getFarmAddressByFarmTokenID(
+        const farmAddress = await this.farmGetter.getFarmAddressByFarmTokenID(
             farmToken.collection,
         );
         const version = farmVersion(farmAddress);

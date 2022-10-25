@@ -30,7 +30,7 @@ import { INFTToken } from '../../tokens/models/nft.interface';
 import { UserEsdtService } from './user.esdt.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { scAddress } from 'src/config';
-import { FarmFactoryService } from 'src/modules/farm/farm.service';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 
 enum NftTokenType {
     FarmToken,
@@ -55,7 +55,7 @@ export class UserService {
         private pairGetter: PairGetterService,
         private proxyPairGetter: ProxyPairGetterService,
         private proxyFarmGetter: ProxyFarmGetterService,
-        private farmFactory: FarmFactoryService,
+        private farmGetter: FarmGetterFactory,
         private lockedAssetGetter: LockedAssetGetterService,
         private stakeGetterService: StakingGetterService,
         private proxyStakeGetter: StakingProxyGetterService,
@@ -131,7 +131,7 @@ export class UserService {
             switch (userNftTokenType) {
                 case NftTokenType.FarmToken:
                     const farmAddress =
-                        await this.farmFactory.getFarmAddressByFarmTokenID(
+                        await this.farmGetter.getFarmAddressByFarmTokenID(
                             userNft.collection,
                         );
                     promises.push(
@@ -253,9 +253,7 @@ export class UserService {
         let promises: Promise<string>[] = [];
         for (const farmAddress of farmsAddresses()) {
             promises.push(
-                this.farmFactory
-                    .getter(farmAddress)
-                    .getFarmTokenID(farmAddress),
+                this.farmGetter.getter(farmAddress).getFarmTokenID(farmAddress),
             );
         }
         const farmTokenIDs = await Promise.all(promises);

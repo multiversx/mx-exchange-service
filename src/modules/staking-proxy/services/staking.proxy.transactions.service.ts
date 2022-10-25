@@ -6,7 +6,7 @@ import { elrondConfig, gasConfig } from 'src/config';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { FarmFactoryService } from 'src/modules/farm/farm.service';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';

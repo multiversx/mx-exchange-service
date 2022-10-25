@@ -2,7 +2,7 @@ import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { GqlAuthGuard } from 'src/modules/auth/gql.auth.guard';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
-import { FarmFactoryService } from './farm.service';
+import { FarmFactoryService } from './farm.factory';
 import {
     BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,

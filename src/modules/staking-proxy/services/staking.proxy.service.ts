@@ -19,7 +19,7 @@ import {
     UnstakeFarmTokensReceiveModel,
 } from '../models/staking.proxy.model';
 import { StakingProxyGetterService } from './staking.proxy.getter.service';
-import { FarmFactoryService } from 'src/modules/farm/farm.service';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 
 @Injectable()
 export class StakingProxyService {

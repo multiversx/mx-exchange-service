@@ -26,7 +26,7 @@ import {
 } from 'src/modules/farm/models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { FarmFactoryService } from 'src/modules/farm/farm.service';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 
 @Injectable()
 export class TransactionsProxyFarmService {
@@ -35,7 +35,7 @@ export class TransactionsProxyFarmService {
         private readonly proxyFarmGetter: ProxyFarmGetterService,
         private readonly proxyPairService: ProxyPairGetterService,
         private readonly proxyGetter: ProxyGetterService,
-        private readonly farmFactory: FarmFactoryService,
+        private readonly farmGetter: FarmGetterFactory,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -318,10 +318,10 @@ export class TransactionsProxyFarmService {
                 ? gasConfig.lockedAssetCreate
                 : 0;
         const [farmedTokenID, farmingTokenID] = await Promise.all([
-            this.farmFactory
+            this.farmGetter
                 .getter(args.farmAddress)
                 .getFarmedTokenID(args.farmAddress),
-            this.farmFactory
+            this.farmGetter
                 .getter(args.farmAddress)
                 .getFarmingTokenID(args.farmAddress),
         ]);

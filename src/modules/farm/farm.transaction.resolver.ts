@@ -14,15 +14,17 @@ import {
     FarmMigrationConfigArgs,
     MergeFarmTokensArgs,
 } from './models/farm.args';
-import { FarmFactoryService } from './farm.service';
+import { FarmFactoryService } from './farm.factory';
 import { FarmTransactionServiceV1_2 } from './v1.2/services/farm.v1.2.transaction.service';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from './models/farm.model';
+import { FarmTransactionFactory } from './farm.transaction.factory';
 
 @Resolver()
 export class FarmTransactionResolver extends GenericResolver {
     constructor(
         private readonly farmFactory: FarmFactoryService,
+        private readonly transactionFactory: FarmTransactionFactory,
         private readonly farmTransactionV1_2: FarmTransactionServiceV1_2,
     ) {
         super();
@@ -34,7 +36,7 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args() args: MergeFarmTokensArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        return await this.farmFactory
+        return await this.transactionFactory
             .transaction(args.farmAddress)
             .mergeFarmTokens(user.publicKey, args.farmAddress, args.payments);
     }
@@ -49,7 +51,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .endProduceRewards(farmAddress);
         } catch (error) {
@@ -68,7 +70,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .setPerBlockRewardAmount(farmAddress, amount);
         } catch (error) {
@@ -86,7 +88,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .startProduceRewards(farmAddress);
         } catch (error) {
@@ -105,7 +107,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .setPenaltyPercent(farmAddress, percent);
         } catch (error) {
@@ -124,7 +126,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .setMinimumFarmingEpochs(farmAddress, epochs);
         } catch (error) {
@@ -143,7 +145,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .setTransferExecGasLimit(farmAddress, gasLimit);
         } catch (error) {
@@ -162,7 +164,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .setBurnGasLimit(farmAddress, gasLimit);
         } catch (error) {
@@ -180,7 +182,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .pause(farmAddress);
         } catch (error) {
@@ -198,7 +200,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .resume(farmAddress);
         } catch (error) {
@@ -219,7 +221,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .registerFarmToken(
                     farmAddress,
@@ -242,7 +244,7 @@ export class FarmTransactionResolver extends GenericResolver {
             await this.farmFactory
                 .service(farmAddress)
                 .requireOwner(farmAddress, user.publicKey);
-            return await this.farmFactory
+            return await this.transactionFactory
                 .transaction(farmAddress)
                 .setLocalRolesFarmToken(farmAddress);
         } catch (error) {
@@ -257,7 +259,7 @@ export class FarmTransactionResolver extends GenericResolver {
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.farmFactory
+            this.transactionFactory
                 .transaction(args.farmAddress)
                 .enterFarm(user.publicKey, args),
         );
@@ -270,7 +272,7 @@ export class FarmTransactionResolver extends GenericResolver {
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.farmFactory
+            this.transactionFactory
                 .transaction(args.farmAddress)
                 .exitFarm(user.publicKey, args),
         );
@@ -283,7 +285,7 @@ export class FarmTransactionResolver extends GenericResolver {
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.farmFactory
+            this.transactionFactory
                 .transaction(args.farmAddress)
                 .claimRewards(user.publicKey, args),
         );
@@ -296,7 +298,7 @@ export class FarmTransactionResolver extends GenericResolver {
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.farmFactory
+            this.transactionFactory
                 .transaction(args.farmAddress)
                 .compoundRewards(user.publicKey, args),
         );
