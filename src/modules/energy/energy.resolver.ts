@@ -9,11 +9,8 @@ import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
-import {
-    EnergyModel,
-    SimpleLockEnergyModel,
-    UnlockType,
-} from './models/energy.model';
+import { EnergyModel, UnlockType } from './models/energy.model';
+import { SimpleLockEnergyModel } from './models/simple.lock.energy.model';
 import { EnergyGetterService } from './services/energy.getter.service';
 import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';

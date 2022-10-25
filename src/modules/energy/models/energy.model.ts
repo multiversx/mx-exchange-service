@@ -14,28 +14,6 @@ registerEnumType(UnlockType, {
 });
 
 @ObjectType()
-export class SimpleLockEnergyModel {
-    @Field()
-    address: string;
-    @Field()
-    baseAssetToken: EsdtToken;
-    @Field()
-    lockedToken: NftCollection;
-    @Field()
-    legacyLockedToken: NftCollection;
-    @Field(() => [Int])
-    lockOptions: number[];
-    @Field()
-    feesBurnPercentage: number;
-    @Field()
-    pauseState: boolean;
-
-    constructor(init?: Partial<SimpleLockEnergyModel>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
 export class EnergyModel {
     @Field()
     amount: string;
