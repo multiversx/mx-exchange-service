@@ -7,8 +7,9 @@ import { WeekTimekeepingAbiService } from './week-timekeeping.abi.service';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { oneMinute } from '../../../helpers/helpers';
 import { WeekTimekeepingComputeService } from './week-timekeeping.compute.service';
+import { IWeekTimekeepingGetterService } from '../interfaces';
 
-export class WeekTimekeepingGetterService extends GenericGetterService {
+export class WeekTimekeepingGetterService extends GenericGetterService implements IWeekTimekeepingGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

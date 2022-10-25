@@ -10,7 +10,9 @@ export class RouterComputeService {
     constructor(
         @Inject(forwardRef(() => RouterGetterService))
         private readonly routerGetterService: RouterGetterService,
+        @Inject(forwardRef(() => PairComputeService))
         private readonly pairComputeService: PairComputeService,
+        @Inject(forwardRef(() => PairGetterService))
         private readonly pairGetter: PairGetterService,
         private readonly metrics: MetricsService,
     ) {}

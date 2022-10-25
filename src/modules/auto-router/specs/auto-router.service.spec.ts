@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AutoRouterService } from '../services/auto-router.service';
-import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
@@ -16,7 +16,7 @@ import { AutoRouterComputeService } from '../services/auto-router.compute.servic
 import { AutoRouterTransactionService } from '../services/auto-router.transactions.service';
 import { PairTransactionService } from 'src/modules/pair/services/pair.transactions.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
@@ -46,12 +46,12 @@ describe('AutoRouterService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const RouterGetterServiceProvider = {
         provide: RouterGetterService,
-        useClass: RouterGetterServiceMock,
+        useClass: RouterGetterServiceStub,
     };
 
     const WrapServiceProvider = {

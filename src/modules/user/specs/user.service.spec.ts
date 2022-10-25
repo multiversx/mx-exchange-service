@@ -22,7 +22,7 @@ import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ProxyGetterServiceMock } from '../../proxy/mocks/proxy.getter.service.mock';
 import { LockedAssetServiceMock } from '../../locked-asset-factory/mocks/locked.asset.service.mock';
@@ -52,7 +52,7 @@ import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.serv
 import { UserEsdtService } from '../services/user.esdt.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RolesModel } from 'src/modules/tokens/models/roles.model';
@@ -90,12 +90,12 @@ describe('UserService', () => {
 
     const RouterGetterServiceProvider = {
         provide: RouterGetterService,
-        useClass: RouterGetterServiceMock,
+        useClass: RouterGetterServiceStub,
     };
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const ProxyServiceProvider = {
