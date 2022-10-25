@@ -13,7 +13,7 @@ import { FarmGetterService } from '../base-module/services/farm.getter.service';
 import { FarmComputeService } from '../base-module/services/farm.compute.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
@@ -21,7 +21,7 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { Address } from '@elrondnetwork/erdjs/out';
 
 describe('FarmService', () => {
@@ -49,7 +49,7 @@ describe('FarmService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const WrapServiceProvider = {

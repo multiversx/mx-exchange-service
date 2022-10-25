@@ -58,6 +58,7 @@ import { FarmBaseModule } from '../farm/base-module/farm.base.module';
         SimpleLockGetterService,
         EnergyGetterService,
         EnergySetterService,
+        EnergyComputeService,
     ],
 })
 export class SimpleLockModule {}

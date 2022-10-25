@@ -18,9 +18,10 @@ import { PairInfoModel } from '../models/pair-info.model';
 import { FeeDestination, LockedTokensInfo } from '../models/pair.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
+import { IPairGetterService } from "../interfaces";
 
 @Injectable()
-export class PairGetterService extends GenericGetterService {
+export class PairGetterService extends GenericGetterService implements IPairGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
