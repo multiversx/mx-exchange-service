@@ -3,7 +3,7 @@ import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
-import { FarmBaseModule } from '../farm/base-module/farm.base.module';
+import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { StakingModule } from '../staking/staking.module';
@@ -22,7 +22,7 @@ import { StakingProxyResolver } from './staking.proxy.resolver';
         CachingModule,
         ElrondCommunicationModule,
         PairModule,
-        FarmBaseModule,
+        FarmModule,
         StakingModule,
         TokenModule,
         RemoteConfigModule,

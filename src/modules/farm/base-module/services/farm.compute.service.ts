@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
@@ -9,11 +9,9 @@ import { TokenComputeService } from 'src/modules/tokens/services/token.compute.s
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
-import { FarmTokenAttributesModel } from '../../models/farmTokenAttributes.model';
 import { FarmGetterService } from './farm.getter.service';
 
-@Injectable()
-export class FarmComputeService {
+export abstract class FarmComputeService {
     constructor(
         @Inject(forwardRef(() => FarmGetterService))
         protected readonly farmGetter: FarmGetterService,
@@ -65,7 +63,7 @@ export class FarmComputeService {
     async computeFarmRewardsForPosition(
         farmAddress: string,
         liquidity: string,
-        decodedAttributes: FarmTokenAttributesModel,
+        rewardPerShare: string,
     ): Promise<BigNumber> {
         const [
             currentNonce,
@@ -92,9 +90,7 @@ export class FarmComputeService {
         const divisionSafetyConstantBig = new BigNumber(divisionSafetyConstant);
         const farmTokenSupplyBig = new BigNumber(farmTokenSupply);
         const farmRewardPerShareBig = new BigNumber(farmRewardPerShare);
-        const rewardPerShareBig = new BigNumber(
-            decodedAttributes.rewardPerShare,
-        );
+        const rewardPerShareBig = new BigNumber(rewardPerShare);
 
         let toBeMinted = new BigNumber(0);
 
@@ -111,9 +107,7 @@ export class FarmComputeService {
             rewardPerShareIncrease,
         );
 
-        if (
-            futureRewardPerShare.isGreaterThan(decodedAttributes.rewardPerShare)
-        ) {
+        if (futureRewardPerShare.isGreaterThan(rewardPerShare)) {
             const rewardPerShareDiff =
                 futureRewardPerShare.minus(rewardPerShareBig);
 

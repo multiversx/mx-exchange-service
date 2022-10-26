@@ -12,7 +12,7 @@ import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { WrappedLpTokenResolver } from './wrappedLpToken.resolver';
 import { WrappedFarmTokenResolver } from './wrappedFarmToken.resolver';
 import { TokenModule } from '../tokens/token.module';
-import { FarmBaseModule } from '../farm/base-module/farm.base.module';
+import { FarmModule } from '../farm/farm.module';
 
 @Module({
     imports: [
@@ -23,7 +23,7 @@ import { FarmBaseModule } from '../farm/base-module/farm.base.module';
         TokenModule,
         forwardRef(() => ProxyPairModule),
         forwardRef(() => ProxyFarmModule),
-        FarmBaseModule,
+        FarmModule,
     ],
     providers: [
         AbiProxyService,

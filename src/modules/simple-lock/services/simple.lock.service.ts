@@ -8,8 +8,7 @@ import { UserInputError } from 'apollo-server-express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
-import { FarmService } from 'src/modules/farm/base-module/services/farm.service';
+import { FarmTokenAttributesModelV1_3 } from 'src/modules/farm/models/farmTokenAttributes.model';
 import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
@@ -24,12 +23,13 @@ import {
     SimpleLockModel,
 } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
+import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
 
 @Injectable()
 export class SimpleLockService {
     constructor(
         private readonly simpleLockGetter: SimpleLockGetterService,
-        private readonly farmService: FarmService,
+        private readonly farmServiceV1_3: FarmServiceV1_3,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -155,21 +155,17 @@ export class SimpleLockService {
         farmTokenID: string,
         farmTokenNonce: number,
         simpleLockAddress: string,
-    ): Promise<FarmTokenAttributesModel> {
+    ): Promise<FarmTokenAttributesModelV1_3> {
         const farmTokenIdentifier = tokenIdentifier(
             farmTokenID,
             farmTokenNonce,
         );
-        const [farmToken, farmAddress] = await Promise.all([
-            this.apiService.getNftByTokenIdentifier(
-                simpleLockAddress,
-                farmTokenIdentifier,
-            ),
-            this.farmService.getFarmAddressByFarmTokenID(farmTokenID),
-        ]);
+        const farmToken = await this.apiService.getNftByTokenIdentifier(
+            simpleLockAddress,
+            farmTokenIdentifier,
+        );
 
-        return this.farmService.decodeFarmTokenAttributes(
-            farmAddress,
+        return this.farmServiceV1_3.decodeFarmTokenAttributes(
             farmTokenIdentifier,
             farmToken.attributes,
         );

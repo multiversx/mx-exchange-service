@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -12,8 +12,7 @@ import { Logger } from 'winston';
 import { AbiFarmService } from './farm.abi.service';
 import { FarmComputeService } from './farm.compute.service';
 
-@Injectable()
-export class FarmGetterService extends GenericGetterService {
+export abstract class FarmGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

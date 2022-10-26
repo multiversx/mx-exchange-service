@@ -4,7 +4,6 @@ import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, ruleOfThree } from 'src/helpers/helpers';
 import { CalculateRewardsArgs } from 'src/modules/farm/models/farm.args';
-import { FarmService } from 'src/modules/farm/base-module/services/farm.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
@@ -20,13 +19,14 @@ import {
     UnstakeFarmTokensReceiveModel,
 } from '../models/staking.proxy.model';
 import { StakingProxyGetterService } from './staking.proxy.getter.service';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 
 @Injectable()
 export class StakingProxyService {
     constructor(
         private readonly stakingProxyGetter: StakingProxyGetterService,
         private readonly stakingService: StakingService,
-        private readonly farmService: FarmService,
+        private readonly farmFactory: FarmFactoryService,
         private readonly pairService: PairService,
         private readonly apiService: ElrondApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
@@ -140,7 +140,7 @@ export class StakingProxyService {
         );
 
         const [farmRewards, stakingRewards] = await Promise.all([
-            this.farmService.getRewardsForPosition({
+            this.farmFactory.useService(farmAddress).getRewardsForPosition({
                 attributes: farmToken.attributes,
                 identifier: farmToken.identifier,
                 farmAddress,
