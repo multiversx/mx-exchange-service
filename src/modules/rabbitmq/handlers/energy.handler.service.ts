@@ -4,7 +4,7 @@ import {
 } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { EnergySetterService } from 'src/modules/simple-lock/services/energy/energy.setter.service';
+import { EnergySetterService } from 'src/modules/energy/services/energy.setter.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 
 @Injectable()

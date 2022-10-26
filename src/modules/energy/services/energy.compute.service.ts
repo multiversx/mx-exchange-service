@@ -1,7 +1,7 @@
 import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
-import { IEnergyComputeService } from "../../interfaces";
+import { IEnergyComputeService } from './interfaces';
 
 @Injectable()
 export class EnergyComputeService implements IEnergyComputeService {

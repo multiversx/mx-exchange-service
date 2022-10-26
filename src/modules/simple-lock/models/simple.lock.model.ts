@@ -5,8 +5,6 @@ import {
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { FarmTokenAttributesModelV1_3 } from 'src/modules/farm/models/farmTokenAttributes.model';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { EnergyType } from '@elrondnetwork/erdjs-dex';
 
 export enum FarmType {
     SIMPLE_FARM,
@@ -19,16 +17,6 @@ export const FarmTypeEnumType = new EnumType('FarmType', [
     new EnumVariantDefinition('SimpleFarm', 0),
     new EnumVariantDefinition('FarmWithLockedRewards', 1),
 ]);
-
-export enum UnlockType {
-    TERM_UNLOCK,
-    EARLY_UNLOCK,
-    REDUCE_PERIOD,
-}
-
-registerEnumType(UnlockType, {
-    name: 'UnlockType',
-});
 
 export enum SimpleLockType {
     BASE_TYPE,
@@ -121,35 +109,6 @@ export class SimpleLockModel {
     intermediatedFarms: string[];
 
     constructor(init?: Partial<SimpleLockModel>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
-export class SimpleLockEnergyModel extends SimpleLockModel {
-    @Field()
-    baseAssetToken: EsdtToken;
-    @Field(() => [Int])
-    lockOptions: number[];
-    @Field()
-    pauseState: boolean;
-
-    constructor(init?: Partial<SimpleLockEnergyModel>) {
-        super(init);
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
-export class EnergyModel {
-    @Field()
-    amount: string;
-    @Field(() => Int)
-    lastUpdateEpoch: number;
-    @Field()
-    totalLockedTokens: string;
-
-    constructor(init?: Partial<EnergyType>) {
         Object.assign(this, init);
     }
 }

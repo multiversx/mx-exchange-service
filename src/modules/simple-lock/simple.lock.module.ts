@@ -13,15 +13,8 @@ import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockSetterService } from './services/simple.lock.setter.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
 import { SimpleLockResolver } from './simple.lock.resolver';
-import { EnergyAbiService } from './services/energy/energy.abi.service';
-import { EnergyGetterService } from './services/energy/energy.getter.service';
-import { EnergySetterService } from './services/energy/energy.setter.service';
-import { EnergyTransactionService } from './services/energy/energy.transaction.service';
-import { EnergyResolver } from './energy.resolver';
 import { CommonAppModule } from 'src/common.app.module';
 import { TransactionResolver } from './transaction.resolver';
-import { EnergyService } from './services/energy/energy.service';
-import { EnergyComputeService } from './services/energy/energy.compute.service';
 import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
 
 @Module({
@@ -44,21 +37,8 @@ import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
         SimpleLockResolver,
         LockedLpTokenResolver,
         LockedFarmTokenResolver,
-        EnergyService,
-        EnergyAbiService,
-        EnergyGetterService,
-        EnergySetterService,
-        EnergyComputeService,
-        EnergyTransactionService,
-        EnergyResolver,
         TransactionResolver,
     ],
-    exports: [
-        SimpleLockService,
-        SimpleLockGetterService,
-        EnergyGetterService,
-        EnergySetterService,
-        EnergyComputeService,
-    ],
+    exports: [SimpleLockService, SimpleLockGetterService],
 })
 export class SimpleLockModule {}

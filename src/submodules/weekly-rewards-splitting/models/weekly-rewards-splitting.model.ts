@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { EnergyModel } from '../../../modules/simple-lock/models/simple.lock.model';
+import { EnergyModel } from '../../../modules/energy/models/energy.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
 @ObjectType()
@@ -41,10 +41,10 @@ export class UserInfoByWeekModel {
     @Field()
     apr: string;
 
-    @Field()
+    @Field(() => EnergyModel)
     energyForWeek: EnergyModel;
 
-    @Field( () => [EsdtTokenPayment])
+    @Field(() => [EsdtTokenPayment])
     rewardsForWeek: [EsdtTokenPayment];
 
     constructor(init?: Partial<UserInfoByWeekModel>) {
@@ -54,11 +54,11 @@ export class UserInfoByWeekModel {
 
 @ObjectType()
 export class ClaimProgress {
-    @Field()
+    @Field(() => EnergyModel)
     energy: EnergyModel;
 
     @Field()
-    week: number
+    week: number;
 
     constructor(init?: Partial<ClaimProgress>) {
         Object.assign(this, init);
@@ -90,11 +90,11 @@ export class UserInfoByWeekSubModel {
 
 @InputType()
 export class WeekFilterPeriodModel {
-    @Field( {nullable: true})
-    start: number
+    @Field({ nullable: true })
+    start: number;
 
-    @Field( {nullable: true})
-    end: number
+    @Field({ nullable: true })
+    end: number;
 
     constructor(init?: Partial<WeekFilterPeriodModel>) {
         Object.assign(this, init);
