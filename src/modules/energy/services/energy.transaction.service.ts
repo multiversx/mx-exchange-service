@@ -24,7 +24,7 @@ export class EnergyTransactionService {
         protected readonly elrondProxy: ElrondProxyService,
     ) {}
 
-    async lockTokensEnergy(
+    async lockTokens(
         inputTokens: InputTokenModel,
         lockEpochs: number,
     ): Promise<TransactionModel> {
@@ -45,7 +45,7 @@ export class EnergyTransactionService {
             .toPlainObject();
     }
 
-    async unlockTokensEnergy(
+    async unlockTokens(
         sender: string,
         inputTokens: InputTokenModel,
         unlockType: UnlockType,
@@ -78,6 +78,36 @@ export class EnergyTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasConfig.simpleLock.unlockTokens)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async mergeTokens(
+        sender: string,
+        inputTokens: InputTokenModel[],
+    ): Promise<TransactionModel> {
+        const contract =
+            await this.elrondProxy.getSimpleLockEnergySmartContract();
+
+        const mappedTokenPayments = inputTokens.map((inputToken) =>
+            TokenPayment.metaEsdtFromBigInteger(
+                inputToken.tokenID,
+                inputToken.nonce,
+                new BigNumber(inputToken.amount),
+            ),
+        );
+
+        return contract.methodsExplicit
+            .mergeTokens()
+            .withMultiESDTNFTTransfer(
+                mappedTokenPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(
+                gasConfig.simpleLockEnergy.defaultMergeTokens *
+                    inputTokens.length,
+            )
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();

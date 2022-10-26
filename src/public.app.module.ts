@@ -28,6 +28,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { FeesCollectorModule } from './modules/fees-collector/fees-collector.module';
 import { deprecationLoggerMiddleware } from './utils/deprecate.logger.middleware';
 import { GraphQLRequestContext, GraphQLResponse } from 'apollo-server-types';
+import { EnergyModule } from './modules/energy/energy.module';
 
 @Module({
     imports: [
@@ -130,6 +131,7 @@ import { GraphQLRequestContext, GraphQLResponse } from 'apollo-server-types';
         AnalyticsModule,
         SubscriptionsModule,
         FeesCollectorModule,
+        EnergyModule,
     ],
     providers: [CachingService],
 })

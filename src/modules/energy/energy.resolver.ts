@@ -18,6 +18,7 @@ import {
 import { EnergyGetterService } from './services/energy.getter.service';
 import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
+import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.validator';
 
 @Resolver(() => SimpleLockEnergyModel)
 export class EnergyResolver extends GenericResolver {
@@ -124,7 +125,7 @@ export class EnergyResolver extends GenericResolver {
         @Args('lockEpochs') lockEpochs: number,
     ): Promise<TransactionModel> {
         try {
-            return await this.energyTransaction.lockTokensEnergy(
+            return await this.energyTransaction.lockTokens(
                 inputTokens,
                 lockEpochs,
             );
@@ -133,21 +134,38 @@ export class EnergyResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    // @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async updateLockedTokensEnergy(
-        @Args('inputTokens') inputTokens: InputTokenModel,
-        @Args('unlockType') unlockType: UnlockType,
+        @Args('inputToken', LockedEnergyTokensValidationPipe)
+        inputToken: InputTokenModel,
+        @Args('unlockType', { type: () => UnlockType }) unlockType: UnlockType,
         @Args('epochsToReduce', { nullable: true }) epochsToReduce: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.energyTransaction.unlockTokensEnergy(
+            this.energyTransaction.unlockTokens(
                 user.publicKey,
-                inputTokens,
+                inputToken,
                 unlockType,
                 epochsToReduce,
             ),
+        );
+    }
+
+    // @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async mergeTokensEnergy(
+        @Args(
+            'inputTokens',
+            { type: () => [InputTokenModel] },
+            LockedEnergyTokensValidationPipe,
+        )
+        inputTokens: InputTokenModel[],
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        return await this.genericQuery(() =>
+            this.energyTransaction.mergeTokens(user.publicKey, inputTokens),
         );
     }
 
