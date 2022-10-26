@@ -1,7 +1,5 @@
 import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 export enum UnlockType {
     TERM_UNLOCK,

@@ -109,6 +109,15 @@ export class EnergyGetterService
         );
     }
 
+    async getFeesFromPenaltyUnlocking(): Promise<string> {
+        return await this.getData(
+            this.getCacheKey('feesFromPenaltyUnlocking'),
+            () => this.abiService.getFeesFromPenaltyUnlocking(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
+        );
+    }
+
     async getLockOptions(): Promise<number[]> {
         return await this.getData(
             this.getEnergyCacheKey('lockOptions'),
