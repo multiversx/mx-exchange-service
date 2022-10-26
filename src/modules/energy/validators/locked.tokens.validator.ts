@@ -11,7 +11,6 @@ export class LockedEnergyTokensValidationPipe implements PipeTransform {
         const lockedTokenID = await this.energyGetter.getLockedTokenID();
         const lockedTokens = [];
 
-        console.log(metadata.metatype[0] instanceof InputTokenModel);
         if (!Array.isArray(value)) {
             lockedTokens.push(value);
         } else {

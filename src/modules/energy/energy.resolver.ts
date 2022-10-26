@@ -134,7 +134,7 @@ export class EnergyResolver extends GenericResolver {
         }
     }
 
-    // @UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async updateLockedTokensEnergy(
         @Args('inputToken', LockedEnergyTokensValidationPipe)
@@ -153,7 +153,7 @@ export class EnergyResolver extends GenericResolver {
         );
     }
 
-    // @UseGuards(GqlAuthGuard)
+    @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async mergeTokensEnergy(
         @Args(
