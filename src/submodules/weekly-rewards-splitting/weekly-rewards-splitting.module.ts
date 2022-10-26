@@ -8,29 +8,30 @@ import { ApiConfigService } from '../../helpers/api.config.service';
 import { WeeklyRewardsSplittingComputeService } from './services/weekly-rewards-splitting.compute.service';
 import { WeekTimekeepingModule } from '../week-timekeeping/week-timekeeping.module';
 import { ProgressComputeService } from './services/progress.compute.service';
-import { GlobalInfoByWeekResolver, UserInfoByWeekResolver } from './weekly-rewards-splitting.resolver';
-import { SimpleLockModule } from "../../modules/simple-lock/simple.lock.module";
-import { RouterModule } from "../../modules/router/router.module";
-import { PairModule } from "../../modules/pair/pair.module";
-import { TokenModule } from "../../modules/tokens/token.module";
+import {
+    GlobalInfoByWeekResolver,
+    UserInfoByWeekResolver,
+} from './weekly-rewards-splitting.resolver';
+import { RouterModule } from '../../modules/router/router.module';
+import { PairModule } from '../../modules/pair/pair.module';
+import { TokenModule } from '../../modules/tokens/token.module';
+import { EnergyModule } from 'src/modules/energy/energy.module';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
         CachingModule,
-        SimpleLockModule,
+        EnergyModule,
         RouterModule,
         PairModule,
-        TokenModule
+        TokenModule,
     ],
 })
 export class WeeklyRewardsSplittingModule {
     static register(abiProvider: any): DynamicModule {
         return {
             module: WeeklyRewardsSplittingModule,
-            imports: [
-                WeekTimekeepingModule.register(abiProvider),
-            ],
+            imports: [WeekTimekeepingModule.register(abiProvider)],
             providers: [
                 ApiConfigService,
                 ProgressComputeService,
@@ -51,7 +52,6 @@ export class WeeklyRewardsSplittingModule {
                 WeeklyRewardsSplittingGetterService,
                 WeeklyRewardsSplittingAbiService,
             ],
-
-        }
+        };
     }
 }

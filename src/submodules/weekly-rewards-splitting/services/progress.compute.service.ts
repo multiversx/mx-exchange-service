@@ -1,17 +1,18 @@
-import { EnergyType } from "@elrondnetwork/erdjs-dex";
-import { EnergyComputeService } from "../../../modules/simple-lock/services/energy/energy.compute.service";
-import { ClaimProgress } from "../models/weekly-rewards-splitting.model"
-import { IProgressComputeService } from "../interfaces";
-import { Injectable } from "@nestjs/common";
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { EnergyComputeService } from '../../../modules/energy/services/energy.compute.service';
+import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
+import { IProgressComputeService } from '../interfaces';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ProgressComputeService implements IProgressComputeService {
-    constructor(
-        private readonly energyComputeService: EnergyComputeService,
-    ) {
-    }
+    constructor(private readonly energyComputeService: EnergyComputeService) {}
 
-    advanceWeek(progress: ClaimProgress, nextWeekEnergy: EnergyType|undefined, epochsInWeek: number): ClaimProgress {
+    advanceWeek(
+        progress: ClaimProgress,
+        nextWeekEnergy: EnergyType | undefined,
+        epochsInWeek: number,
+    ): ClaimProgress {
         progress.week++;
 
         if (nextWeekEnergy !== undefined) {
@@ -20,7 +21,10 @@ export class ProgressComputeService implements IProgressComputeService {
         }
 
         const nextWeekEpoch = progress.energy.lastUpdateEpoch + epochsInWeek;
-        progress.energy = this.energyComputeService.depleteUserEnergy(progress.energy, nextWeekEpoch);
+        progress.energy = this.energyComputeService.depleteUserEnergy(
+            progress.energy,
+            nextWeekEpoch,
+        );
         return progress;
     }
 }

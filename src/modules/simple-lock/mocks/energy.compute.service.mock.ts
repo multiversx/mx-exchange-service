@@ -1,9 +1,9 @@
 import { EnergyType } from '@elrondnetwork/erdjs-dex';
-import { IEnergyComputeService } from "../interfaces";
-import { ErrorNotImplemented } from "../../../utils/errors.constants";
+import { IEnergyComputeService } from '../../energy/services/interfaces';
+import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
 export class EnergyComputeHandlers implements IEnergyComputeService {
-    depleteUserEnergy:(
+    depleteUserEnergy: (
         energyEntry: EnergyType,
         currentEpoch: number,
     ) => EnergyType;
@@ -14,16 +14,19 @@ export class EnergyComputeHandlers implements IEnergyComputeService {
 
 export class EnergyComputeServiceMock implements IEnergyComputeService {
     handlers: EnergyComputeHandlers;
-    depleteUserEnergyCalled?:(
+    depleteUserEnergyCalled?: (
         energyEntry: EnergyType,
         currentEpoch: number,
     ) => EnergyType;
 
-    depleteUserEnergy(energyEntry: EnergyType, currentEpoch: number): EnergyType {
+    depleteUserEnergy(
+        energyEntry: EnergyType,
+        currentEpoch: number,
+    ): EnergyType {
         if (this.handlers.depleteUserEnergy !== undefined) {
             return this.handlers.depleteUserEnergy(energyEntry, currentEpoch);
         }
-        ErrorNotImplemented()
+        ErrorNotImplemented();
     }
 
     constructor(init?: Partial<EnergyComputeHandlers>) {
