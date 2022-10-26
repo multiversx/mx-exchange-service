@@ -62,6 +62,7 @@ export class DataApiWriteService {
                 error.message,
             );
             this.logger.error(logMessage);
+            this.logger.error(error);
         }
     }
 
@@ -77,6 +78,7 @@ export class DataApiWriteService {
                 error.message,
             );
             this.logger.error(logMessage);
+            this.logger.error(error);
         }
     }
 
@@ -92,6 +94,7 @@ export class DataApiWriteService {
                 error.message,
             );
             this.logger.error(logMessage);
+            this.logger.error(error);
         }
     }
 
@@ -102,6 +105,7 @@ export class DataApiWriteService {
             const response = await axios.post(this.url, data, config);
             return response.data;
         } catch (error) {
+            this.logger.error(error);
             throw error;
         } finally {
             profiler.stop();
@@ -127,7 +131,7 @@ export class DataApiWriteService {
                 }))
             });
         });
-
+        this.logger.debug(`createRecords: ${JSON.stringify(records)}`);
         return records;
     }
 
@@ -151,6 +155,7 @@ export class DataApiWriteService {
                 value: record.MeasureValue,
             });
         })
+        this.logger.debug(`convertAWSRecordsToDataAPIRecords: ${JSON.stringify(ingestRecords)}`);
         return ingestRecords;
     }
 
