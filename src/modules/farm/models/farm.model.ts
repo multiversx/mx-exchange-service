@@ -12,6 +12,7 @@ export enum FarmVersion {
     V1_2 = 'v1.2',
     V1_3 = 'v1.3',
     V2 = 'v2',
+    CUSTOM = 'custom',
 }
 
 export enum FarmRewardType {
