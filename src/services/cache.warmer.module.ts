@@ -32,6 +32,7 @@ import { TokenModule } from 'src/modules/tokens/token.module';
 import { AWSQueryCacheWarmerService } from './crons/aws.query.cache.warmer.service';
 import { FarmModuleV1_2 } from 'src/modules/farm/v1.2/farm.v1.2.module';
 import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
+import { FarmModule } from 'src/modules/farm/farm.module';
 
 @Module({
     imports: [
@@ -42,6 +43,7 @@ import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
         RouterModule,
         ElrondCommunicationModule,
         ContextModule,
+        FarmModule,
         FarmModuleV1_2,
         FarmModuleV1_3,
         StakingModule,
