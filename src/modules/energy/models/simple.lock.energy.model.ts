@@ -34,8 +34,10 @@ export class SimpleLockEnergyModel {
     feesBurnPercentage: number;
     @Field()
     feesCollectorAddress: string;
-    @Field()
+    @Field(() => Int)
     lastEpochFeeSentToCollector: number;
+    @Field()
+    getFeesFromPenaltyUnlocking: string;
     @Field()
     pauseState: boolean;
 

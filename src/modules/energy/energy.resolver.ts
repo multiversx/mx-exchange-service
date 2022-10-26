@@ -9,8 +9,12 @@ import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
+import { NftCollection } from '../tokens/models/nftCollection.model';
 import { EnergyModel, UnlockType } from './models/energy.model';
-import { SimpleLockEnergyModel } from './models/simple.lock.energy.model';
+import {
+    PenaltyPercentage,
+    SimpleLockEnergyModel,
+} from './models/simple.lock.energy.model';
 import { EnergyGetterService } from './services/energy.getter.service';
 import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
@@ -29,6 +33,55 @@ export class EnergyResolver extends GenericResolver {
     async baseAssetToken(): Promise<EsdtToken> {
         return await this.genericFieldResover<EsdtToken>(() =>
             this.energyGetter.getBaseAssetToken(),
+        );
+    }
+
+    @ResolveField()
+    async lockedToken(): Promise<NftCollection> {
+        return await this.genericFieldResover<NftCollection>(() =>
+            this.energyGetter.getLockedToken(),
+        );
+    }
+
+    @ResolveField()
+    async legacyLockedToken(): Promise<NftCollection> {
+        return await this.genericFieldResover<NftCollection>(() =>
+            this.energyGetter.getLegacyLockedToken(),
+        );
+    }
+
+    @ResolveField()
+    async penaltyPercentage(): Promise<PenaltyPercentage> {
+        return await this.genericFieldResover<PenaltyPercentage>(() =>
+            this.energyGetter.getPenaltyPercentage(),
+        );
+    }
+
+    @ResolveField()
+    async feesBurnPercentage(): Promise<number> {
+        return await this.genericFieldResover<number>(() =>
+            this.energyGetter.getFeesBurnPercentage(),
+        );
+    }
+
+    @ResolveField()
+    async feesCollectorAddress(): Promise<string> {
+        return await this.genericFieldResover<string>(() =>
+            this.energyGetter.getFeesCollectorAddress(),
+        );
+    }
+
+    @ResolveField()
+    async lastEpochFeeSentToCollector(): Promise<number> {
+        return await this.genericFieldResover<number>(() =>
+            this.energyGetter.getLastEpochFeeSentToCollector(),
+        );
+    }
+
+    @ResolveField()
+    async getFeesFromPenaltyUnlocking(): Promise<string> {
+        return await this.genericFieldResover<string>(() =>
+            this.energyGetter.getFeesFromPenaltyUnlocking(),
         );
     }
 
