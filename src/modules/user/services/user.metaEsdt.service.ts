@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { FarmService } from '../../farm/base-module/services/farm.service';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
@@ -17,7 +16,6 @@ import { oneHour, oneSecond } from '../../../helpers/helpers';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
@@ -32,6 +30,7 @@ import { INFTToken } from '../../tokens/models/nft.interface';
 import { UserEsdtService } from './user.esdt.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { scAddress } from 'src/config';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 
 enum NftTokenType {
     FarmToken,
@@ -56,8 +55,7 @@ export class UserService {
         private pairGetter: PairGetterService,
         private proxyPairGetter: ProxyPairGetterService,
         private proxyFarmGetter: ProxyFarmGetterService,
-        private farmService: FarmService,
-        private farmGetterService: FarmGetterService,
+        private farmGetter: FarmGetterFactory,
         private lockedAssetGetter: LockedAssetGetterService,
         private stakeGetterService: StakingGetterService,
         private proxyStakeGetter: StakingProxyGetterService,
@@ -133,7 +131,7 @@ export class UserService {
             switch (userNftTokenType) {
                 case NftTokenType.FarmToken:
                     const farmAddress =
-                        await this.farmService.getFarmAddressByFarmTokenID(
+                        await this.farmGetter.getFarmAddressByFarmTokenID(
                             userNft.collection,
                         );
                     promises.push(
@@ -254,7 +252,11 @@ export class UserService {
 
         let promises: Promise<string>[] = [];
         for (const farmAddress of farmsAddresses()) {
-            promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
+            promises.push(
+                this.farmGetter
+                    .useGetter(farmAddress)
+                    .getFarmTokenID(farmAddress),
+            );
         }
         const farmTokenIDs = await Promise.all(promises);
         if (farmTokenIDs.find((farmTokenID) => farmTokenID === tokenID)) {

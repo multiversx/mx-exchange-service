@@ -1,10 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { FarmService } from '../base-module/services/farm.service';
 import { AbiFarmServiceProvider } from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmComputeService } from '../base-module/services/farm.compute.service';
@@ -19,9 +17,12 @@ import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
 import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.service';
+import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service';
+import { FarmGetterServiceMockV1_2 } from '../mocks/farm.v1.2.getter.service.mock';
 
 describe('FarmService', () => {
-    let service: FarmComputeService;
+    let service: FarmComputeServiceV1_2;
 
     const ElrondApiServiceProvider = {
         provide: ElrondApiService,
@@ -48,8 +49,10 @@ describe('FarmService', () => {
             imports: [CommonAppModule, CachingModule],
             providers: [
                 AbiFarmServiceProvider,
-                FarmGetterServiceProvider,
-                FarmComputeService,
+                {
+                    provide: FarmGetterServiceV1_2,
+                    useClass: FarmGetterServiceMockV1_2,
+                },
                 ElrondApiServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
@@ -59,11 +62,11 @@ describe('FarmService', () => {
                 TokenComputeService,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
-                FarmService,
+                FarmComputeServiceV1_2,
             ],
         }).compile();
 
-        service = module.get<FarmComputeService>(FarmComputeService);
+        service = module.get<FarmComputeServiceV1_2>(FarmComputeServiceV1_2);
     });
 
     it('should be defined', () => {
@@ -89,18 +92,7 @@ describe('FarmService', () => {
             await service.computeFarmRewardsForPosition(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 '100000000000000000000000000000',
-                new FarmTokenAttributesModel({
-                    identifier: undefined,
-                    attributes: undefined,
-                    rewardPerShare: '100',
-                    originalEnteringEpoch: 0,
-                    enteringEpoch: 0,
-                    aprMultiplier: 25,
-                    initialFarmingAmount: '10000000000000000000',
-                    compoundedReward: '500000000000000',
-                    currentFarmAmount: '100000000000000',
-                    lockedRewards: true,
-                }),
+                '100',
             );
         expect(farmRewardsForPosition.toFixed()).toEqual(
             '18333333333333333333333000',

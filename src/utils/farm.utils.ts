@@ -1,6 +1,8 @@
-import { FarmVersion } from '@elrondnetwork/erdjs-dex';
 import { farmsConfig } from 'src/config';
-import { FarmRewardType } from 'src/modules/farm/models/farm.model';
+import {
+    FarmRewardType,
+    FarmVersion,
+} from 'src/modules/farm/models/farm.model';
 
 const toVersionEnum = (version: string): FarmVersion => {
     switch (version) {
@@ -8,6 +10,8 @@ const toVersionEnum = (version: string): FarmVersion => {
             return FarmVersion.V1_2;
         case 'v1.3':
             return FarmVersion.V1_3;
+        case 'v2':
+            return FarmVersion.V2;
         default:
             undefined;
     }

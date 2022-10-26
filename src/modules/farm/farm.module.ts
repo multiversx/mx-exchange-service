@@ -7,11 +7,14 @@ import { CommonAppModule } from 'src/common.app.module';
 import { TokenModule } from '../tokens/token.module';
 import { FarmQueryResolver } from './farm.query.resolver';
 import { FarmTransactionResolver } from './farm.transaction.resolver';
-import { FarmBaseModule } from './base-module/farm.base.module';
 import { FarmModuleV1_2 } from './v1.2/farm.v1.2.module';
 import { FarmModuleV2 } from './v2/farm.v2.module';
 import { FarmCustomModule } from './custom/farm.custom.module';
 import { FarmModuleV1_3 } from './v1.3/farm.v1.3.module';
+import { FarmFactoryService } from './farm.factory';
+import { FarmGetterFactory } from './farm.getter.factory';
+import { FarmTransactionFactory } from './farm.transaction.factory';
+import { FarmComputeFactory } from './farm.compute.factory';
 
 @Module({
     imports: [
@@ -21,14 +24,20 @@ import { FarmModuleV1_3 } from './v1.3/farm.v1.3.module';
         ContextModule,
         PairModule,
         TokenModule,
-        FarmBaseModule,
         FarmCustomModule,
         FarmModuleV1_2,
         FarmModuleV1_3,
         FarmModuleV2,
         FarmCustomModule,
     ],
-    providers: [FarmQueryResolver, FarmTransactionResolver],
-    exports: [],
+    providers: [
+        FarmFactoryService,
+        FarmGetterFactory,
+        FarmComputeFactory,
+        FarmTransactionFactory,
+        FarmQueryResolver,
+        FarmTransactionResolver,
+    ],
+    exports: [FarmFactoryService, FarmGetterFactory, FarmComputeFactory],
 })
 export class FarmModule {}

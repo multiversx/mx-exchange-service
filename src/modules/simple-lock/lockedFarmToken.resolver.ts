@@ -3,7 +3,7 @@ import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError, UserInputError } from 'apollo-server-express';
 import { tokenCollection } from 'src/utils/token.converters';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { FarmTokenAttributesModel } from '../farm/models/farmTokenAttributes.model';
+import { FarmTokenAttributesModelV1_3 } from '../farm/models/farmTokenAttributes.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import {
     FarmProxyTokenAttributesModel,
@@ -32,7 +32,7 @@ export class LockedFarmTokenResolver {
     @ResolveField()
     async farmTokenAttributes(
         @Parent() parent: FarmProxyTokenAttributesModel,
-    ): Promise<FarmTokenAttributesModel> {
+    ): Promise<FarmTokenAttributesModelV1_3> {
         const simpleLockAddress =
             await this.simpleLockService.getSimpleLockAddressByTokenID(
                 tokenCollection(parent.identifier),

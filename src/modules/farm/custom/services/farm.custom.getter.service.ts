@@ -5,9 +5,9 @@ import { TokenGetterService } from 'src/modules/tokens/services/token.getter.ser
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { Logger } from 'winston';
-import { FarmComputeService } from '../../base-module/services/farm.compute.service';
 import { FarmGetterService } from '../../base-module/services/farm.getter.service';
 import { FarmCustomAbiService } from './farm.custom.abi.service';
+import { FarmCustomComputeService } from './farm.custom.compute.service';
 
 @Injectable()
 export class FarmCustomGetterService extends FarmGetterService {
@@ -15,7 +15,7 @@ export class FarmCustomGetterService extends FarmGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly abiService: FarmCustomAbiService,
-        protected readonly computeService: FarmComputeService,
+        protected readonly computeService: FarmCustomComputeService,
         protected readonly tokenGetter: TokenGetterService,
         protected readonly apiService: ElrondApiService,
     ) {
