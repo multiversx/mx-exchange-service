@@ -17,10 +17,10 @@ import { farmVersion } from 'src/utils/farm.utils';
 import { Logger } from 'winston';
 import { FarmVersion } from '../farm/models/farm.model';
 import { AbiFarmService } from '../farm/base-module/services/farm.abi.service';
-import { FarmSetterService } from '../farm/base-module/services/farm.setter.service';
 import { BaseFarmEvent } from '@elrondnetwork/erdjs-dex/dist/event-decoder/farm/enter.farm.base.event';
 import { FarmAbiServiceV1_2 } from '../farm/v1.2/services/farm.v1.2.abi.service';
 import { FarmAbiServiceV1_3 } from '../farm/v1.3/services/farm.v1.3.abi.service';
+import { FarmSetterFactory } from '../farm/farm.setter.factory';
 
 @Injectable()
 export class RabbitMQFarmHandlerService {
@@ -29,7 +29,7 @@ export class RabbitMQFarmHandlerService {
     constructor(
         private readonly abiFarmV1_2: FarmAbiServiceV1_2,
         private readonly abiFarmV1_3: FarmAbiServiceV1_3,
-        private readonly farmSetterService: FarmSetterService,
+        private readonly farmSetterFactory: FarmSetterFactory,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -45,10 +45,9 @@ export class RabbitMQFarmHandlerService {
                 event = new EnterFarmEventV1_3(rawEvent);
                 break;
         }
-        const cacheKey = await this.farmSetterService.setFarmTokenSupply(
-            event.getAddress(),
-            event.farmSupply.toFixed(),
-        );
+        const cacheKey = await this.farmSetterFactory
+            .useSetter(event.address)
+            .setFarmTokenSupply(event.getAddress(), event.farmSupply.toFixed());
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
         await this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
@@ -67,10 +66,9 @@ export class RabbitMQFarmHandlerService {
                 event = new ExitFarmEventV1_3(rawEvent);
                 break;
         }
-        const cacheKey = await this.farmSetterService.setFarmTokenSupply(
-            event.getAddress(),
-            event.farmSupply.toFixed(),
-        );
+        const cacheKey = await this.farmSetterFactory
+            .useSetter(event.address)
+            .setFarmTokenSupply(event.getAddress(), event.farmSupply.toFixed());
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
         await this.pubSub.publish(FARM_EVENTS.EXIT_FARM, {
@@ -96,10 +94,9 @@ export class RabbitMQFarmHandlerService {
         const rewardPerShare = await abiService.getRewardPerShare(
             event.address,
         );
-        const cacheKey = await this.farmSetterService.setRewardPerShare(
-            event.getAddress(),
-            rewardPerShare,
-        );
+        const cacheKey = await this.farmSetterFactory
+            .useSetter(event.address)
+            .setRewardPerShare(event.getAddress(), rewardPerShare);
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
 
