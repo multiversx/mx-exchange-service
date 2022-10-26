@@ -12,6 +12,8 @@ import { FarmComputeService } from '../base-module/services/farm.compute.service
 import { FarmGetterService } from '../base-module/services/farm.getter.service';
 import { PairModule } from 'src/modules/pair/pair.module';
 import { FarmTransactionServiceV2 } from './services/farm.v2.transaction.service';
+import { FarmSetterService } from '../base-module/services/farm.setter.service';
+import { FarmSetterServiceV2 } from './services/farm.v2.setter.service';
 
 @Module({
     imports: [
@@ -30,6 +32,11 @@ import { FarmTransactionServiceV2 } from './services/farm.v2.transaction.service
         },
         FarmGetterServiceV2,
         {
+            provide: FarmSetterService,
+            useClass: FarmSetterServiceV2,
+        },
+        FarmSetterServiceV2,
+        {
             provide: FarmComputeService,
             useClass: FarmComputeServiceV2,
         },
@@ -39,7 +46,9 @@ import { FarmTransactionServiceV2 } from './services/farm.v2.transaction.service
     ],
     exports: [
         FarmServiceV2,
+        FarmAbiServiceV2,
         FarmGetterServiceV2,
+        FarmSetterServiceV2,
         FarmComputeServiceV2,
         FarmTransactionServiceV2,
     ],
