@@ -11,6 +11,7 @@ import { FarmServiceV1_2 } from './v1.2/services/farm.v1.2.service';
 import { FarmServiceV1_3 } from './v1.3/services/farm.v1.3.service';
 import { FarmServiceV2 } from './v2/services/farm.v2.service';
 import { FarmServiceBase } from './base-module/services/farm.base.service';
+import { FarmModelV2 } from './models/farm.v2.model';
 
 @Injectable()
 export class FarmFactoryService {
@@ -43,10 +44,20 @@ export class FarmFactoryService {
                         }),
                     );
                     break;
-                default:
+                case FarmVersion.V2:
+                    farms.push(
+                        new FarmModelV2({
+                            address,
+                            version,
+                        }),
+                    );
+                    break;
+
+                case FarmVersion.CUSTOM:
                     farms.push(
                         new FarmCustomModel({
                             address,
+                            version,
                         }),
                     );
                     break;

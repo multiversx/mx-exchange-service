@@ -12,6 +12,8 @@ const toVersionEnum = (version: string): FarmVersion => {
             return FarmVersion.V1_3;
         case 'v2':
             return FarmVersion.V2;
+        case 'custom':
+            return FarmVersion.CUSTOM;
         default:
             undefined;
     }
