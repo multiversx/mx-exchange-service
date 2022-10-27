@@ -52,7 +52,7 @@ export class DataApiWriteService {
 
     async ingest({ data, Time }) {
         try {
-            this.logger.debug(`Ingest data with Time '${Time}': ${JSON.stringify({ data, Time })}`);
+            this.logger.error(`Ingest data with Time '${Time}': ${JSON.stringify({ data, Time })}`);
             const records = this.createRecords({ data, Time });
             await this.writeRecords(records);
         } catch (error) {
