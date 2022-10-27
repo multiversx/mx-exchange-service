@@ -91,7 +91,7 @@ export class DataApiWriteService {
     private async writeRecords(records: IngestRecord[]): Promise<void> {
         try {
             const mutation = this.generateIngestMutation(records);
-            await this.doPost('ingestData', { query: mutation })
+            await this.doPost('ingestData', mutation)
         } catch (error) {
             const logMessage = generateLogMessage(
                 DataApiWriteService.name,
@@ -143,15 +143,19 @@ export class DataApiWriteService {
         return records;
     }
 
-    private generateIngestMutation(records: IngestRecord[]): string {
-        const mutation = `
-            mutation ingest {
+    private generateIngestMutation(records: IngestRecord[]): { query: string, variables: any } {
+        const query = `
+            mutation ingest($records: [GenericIngestInput!]!) {
                 ingestData(
                     table: ${this.TableName}
-                    input: ${JSON.stringify(records)}
+                    input: $records
                 )
             }`;
-        return mutation;
+        const variables = {
+            records
+        }
+
+        return { query, variables };
     }
 
     private convertAWSRecordsToDataAPIRecords(Records: TimestreamWrite.Records): IngestRecord[] {
