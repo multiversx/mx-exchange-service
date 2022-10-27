@@ -9,14 +9,16 @@ import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
+import { NftCollection } from '../tokens/models/nftCollection.model';
+import { EnergyModel, UnlockType } from './models/energy.model';
 import {
-    EnergyModel,
+    PenaltyPercentage,
     SimpleLockEnergyModel,
-    UnlockType,
-} from './models/energy.model';
+} from './models/simple.lock.energy.model';
 import { EnergyGetterService } from './services/energy.getter.service';
 import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
+import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.validator';
 
 @Resolver(() => SimpleLockEnergyModel)
 export class EnergyResolver extends GenericResolver {
@@ -32,6 +34,55 @@ export class EnergyResolver extends GenericResolver {
     async baseAssetToken(): Promise<EsdtToken> {
         return await this.genericFieldResover<EsdtToken>(() =>
             this.energyGetter.getBaseAssetToken(),
+        );
+    }
+
+    @ResolveField()
+    async lockedToken(): Promise<NftCollection> {
+        return await this.genericFieldResover<NftCollection>(() =>
+            this.energyGetter.getLockedToken(),
+        );
+    }
+
+    @ResolveField()
+    async legacyLockedToken(): Promise<NftCollection> {
+        return await this.genericFieldResover<NftCollection>(() =>
+            this.energyGetter.getLegacyLockedToken(),
+        );
+    }
+
+    @ResolveField()
+    async penaltyPercentage(): Promise<PenaltyPercentage> {
+        return await this.genericFieldResover<PenaltyPercentage>(() =>
+            this.energyGetter.getPenaltyPercentage(),
+        );
+    }
+
+    @ResolveField()
+    async feesBurnPercentage(): Promise<number> {
+        return await this.genericFieldResover<number>(() =>
+            this.energyGetter.getFeesBurnPercentage(),
+        );
+    }
+
+    @ResolveField()
+    async feesCollectorAddress(): Promise<string> {
+        return await this.genericFieldResover<string>(() =>
+            this.energyGetter.getFeesCollectorAddress(),
+        );
+    }
+
+    @ResolveField()
+    async lastEpochFeeSentToCollector(): Promise<number> {
+        return await this.genericFieldResover<number>(() =>
+            this.energyGetter.getLastEpochFeeSentToCollector(),
+        );
+    }
+
+    @ResolveField()
+    async getFeesFromPenaltyUnlocking(): Promise<string> {
+        return await this.genericFieldResover<string>(() =>
+            this.energyGetter.getFeesFromPenaltyUnlocking(),
         );
     }
 
@@ -74,7 +125,7 @@ export class EnergyResolver extends GenericResolver {
         @Args('lockEpochs') lockEpochs: number,
     ): Promise<TransactionModel> {
         try {
-            return await this.energyTransaction.lockTokensEnergy(
+            return await this.energyTransaction.lockTokens(
                 inputTokens,
                 lockEpochs,
             );
@@ -86,18 +137,35 @@ export class EnergyResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async updateLockedTokensEnergy(
-        @Args('inputTokens') inputTokens: InputTokenModel,
-        @Args('unlockType') unlockType: UnlockType,
+        @Args('inputToken', LockedEnergyTokensValidationPipe)
+        inputToken: InputTokenModel,
+        @Args('unlockType', { type: () => UnlockType }) unlockType: UnlockType,
         @Args('epochsToReduce', { nullable: true }) epochsToReduce: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.energyTransaction.unlockTokensEnergy(
+            this.energyTransaction.unlockTokens(
                 user.publicKey,
-                inputTokens,
+                inputToken,
                 unlockType,
                 epochsToReduce,
             ),
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async mergeTokensEnergy(
+        @Args(
+            'inputTokens',
+            { type: () => [InputTokenModel] },
+            LockedEnergyTokensValidationPipe,
+        )
+        inputTokens: InputTokenModel[],
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        return await this.genericQuery(() =>
+            this.energyTransaction.mergeTokens(user.publicKey, inputTokens),
         );
     }
 
