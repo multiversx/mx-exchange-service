@@ -3,11 +3,6 @@ import { PairService } from '../../pair/services/pair.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
-import { RewardsModelV1_2, RewardsModelV1_3 } from '../models/farm.model';
-import {
-    FarmTokenAttributesModelV1_2,
-    FarmTokenAttributesModelV1_3,
-} from '../models/farmTokenAttributes.model';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -39,6 +34,7 @@ import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { FarmAbiServiceV2 } from '../v2/services/farm.v2.abi.service';
 import { FarmComputeServiceV2 } from '../v2/services/farm.v2.compute.service';
 import { FarmGetterService } from '../base-module/services/farm.getter.service';
+import { RewardsModel } from '../models/farm.model';
 
 describe('FarmService', () => {
     let factory: FarmFactoryService;
@@ -153,20 +149,8 @@ describe('FarmService', () => {
         });
 
         expect(rewards).toEqual(
-            new RewardsModelV1_2({
-                decodedAttributes: new FarmTokenAttributesModelV1_2({
-                    identifier: 'MEXFARM-abcd-01',
-                    attributes:
-                        'AAAABwc+9Mqu1tkAAAAAAAAAAQAAAAAAAAABAgEAAAAIiscjBInoAAAAAAAAAAAACQEVjkYJE9AAAA==',
-                    rewardPerShare: '2039545930372825',
-                    originalEnteringEpoch: 1,
-                    enteringEpoch: 1,
-                    aprMultiplier: 2,
-                    lockedRewards: true,
-                    initialFarmingAmount: '10000000000000000000',
-                    compoundedReward: '0',
-                    currentFarmAmount: '20000000000000000000',
-                }),
+            new RewardsModel({
+                identifier: 'MEXFARM-abcd-01',
                 remainingFarmingEpochs: 3,
                 rewards: '1000000000000000000',
             }),
@@ -234,18 +218,8 @@ describe('FarmService', () => {
             ]);
 
         expect(batchRewardsForPosition).toEqual([
-            new RewardsModelV1_3({
-                decodedAttributes: new FarmTokenAttributesModelV1_3({
-                    attributes:
-                        'AAAAAAAAAAAAAAQVAAAAAAAABBUAAAAIEW8LcTY8qMwAAAAAAAAACBFvC3E2PKjM',
-                    compoundedReward: '0',
-                    currentFarmAmount: '1256235401928812748',
-                    enteringEpoch: 1045,
-                    identifier: 'EGLDMEXFL-a329b6-0b',
-                    initialFarmingAmount: '1256235401928812748',
-                    originalEnteringEpoch: 1045,
-                    rewardPerShare: '0',
-                }),
+            new RewardsModel({
+                identifier: 'EGLDMEXFL-a329b6-0b',
                 remainingFarmingEpochs: 1047,
                 rewards: '110000000000000000100000000000',
             }),
