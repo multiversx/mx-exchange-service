@@ -191,8 +191,11 @@ export class UserComputeService {
     async lockedAssetTokenUSD(
         nftToken: LockedAssetToken,
     ): Promise<UserLockedAssetToken> {
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            nftToken.collection,
+        );
         const [assetToken, decodedAttributes] = await Promise.all([
-            this.proxyGetter.getAssetToken(),
+            this.proxyGetter.getAssetToken(proxyAddress),
             this.lockedAssetService.decodeLockedAssetAttributes({
                 batchAttributes: [
                     {

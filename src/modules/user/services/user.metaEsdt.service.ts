@@ -214,20 +214,24 @@ export class UserService {
     }
 
     private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
-        const [lockedMEXTokenID, lockedLpTokenID, lockedFarmTokenID] =
-            await Promise.all([
-                this.lockedAssetGetter.getLockedTokenID(),
-                this.proxyPairGetter.getwrappedLpTokenID(),
-                this.proxyFarmGetter.getwrappedFarmTokenID(),
+        const lockedMEXTokenID =
+            await this.lockedAssetGetter.getLockedTokenID();
+        if (tokenID === lockedMEXTokenID) {
+            return NftTokenType.LockedAssetToken;
+        }
+
+        for (const proxyAddress of scAddress.proxyDexAddress) {
+            const [lockedLpTokenID, lockedFarmTokenID] = await Promise.all([
+                this.proxyPairGetter.getwrappedLpTokenID(proxyAddress),
+                this.proxyFarmGetter.getwrappedFarmTokenID(proxyAddress),
             ]);
 
-        switch (tokenID) {
-            case lockedMEXTokenID:
-                return NftTokenType.LockedAssetToken;
-            case lockedLpTokenID:
-                return NftTokenType.LockedLpToken;
-            case lockedFarmTokenID:
-                return NftTokenType.LockedFarmToken;
+            switch (tokenID) {
+                case lockedLpTokenID:
+                    return NftTokenType.LockedLpToken;
+                case lockedFarmTokenID:
+                    return NftTokenType.LockedFarmToken;
+            }
         }
 
         for (const simpleLockAddress of scAddress.simpleLockAddress) {
