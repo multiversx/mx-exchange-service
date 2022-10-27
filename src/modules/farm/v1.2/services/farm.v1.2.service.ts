@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { RewardsModelV1_2 } from '../../models/farm.model';
+import { RewardsModel } from '../../models/farm.model';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -36,7 +36,7 @@ export class FarmServiceV1_2 extends FarmServiceBase {
 
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
-    ): Promise<RewardsModelV1_2> {
+    ): Promise<RewardsModel> {
         const farmTokenAttributes = FarmTokenAttributesV1_2.fromAttributes(
             positon.attributes,
         );
@@ -53,14 +53,8 @@ export class FarmServiceV1_2 extends FarmServiceBase {
             );
         }
 
-        const decodedAttributes = new FarmTokenAttributesModelV1_2({
-            ...farmTokenAttributes,
-            attributes: positon.attributes,
+        return new RewardsModel({
             identifier: positon.identifier,
-        });
-
-        return new RewardsModelV1_2({
-            decodedAttributes,
             remainingFarmingEpochs: await this.getRemainingFarmingEpochs(
                 positon.farmAddress,
                 farmTokenAttributes.enteringEpoch,

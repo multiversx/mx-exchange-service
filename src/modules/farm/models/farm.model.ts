@@ -3,10 +3,6 @@ import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import {
-    FarmTokenAttributesModelV1_3,
-    FarmTokenAttributesModelV1_2,
-} from './farmTokenAttributes.model';
 
 export enum FarmVersion {
     V1_2 = 'v1.2',
@@ -27,33 +23,13 @@ registerEnumType(FarmRewardType, { name: 'FarmRewardType' });
 @ObjectType()
 export class RewardsModel {
     @Field()
+    identifier: string;
+    @Field()
     rewards: string;
     @Field(() => Int, { nullable: true })
     remainingFarmingEpochs?: number;
 
     constructor(init?: Partial<RewardsModel>) {
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
-export class RewardsModelV1_2 extends RewardsModel {
-    @Field(() => FarmTokenAttributesModelV1_2)
-    decodedAttributes: FarmTokenAttributesModelV1_2;
-
-    constructor(init?: Partial<RewardsModelV1_2>) {
-        super(init);
-        Object.assign(this, init);
-    }
-}
-
-@ObjectType()
-export class RewardsModelV1_3 extends RewardsModel {
-    @Field(() => FarmTokenAttributesModelV1_3)
-    decodedAttributes: FarmTokenAttributesModelV1_3;
-
-    constructor(init?: Partial<RewardsModelV1_3>) {
-        super(init);
         Object.assign(this, init);
     }
 }
