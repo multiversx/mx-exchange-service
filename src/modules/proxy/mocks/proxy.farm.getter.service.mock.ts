@@ -1,5 +1,5 @@
 export class ProxyFarmGetterServiceMock {
-    async getwrappedFarmTokenID(): Promise<string> {
+    async getwrappedFarmTokenID(proxyAddress: string): Promise<string> {
         return 'LKFARM-1234';
     }
 }

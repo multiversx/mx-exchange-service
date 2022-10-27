@@ -43,11 +43,15 @@ export class TransactionsProxyFarmService {
 
     async enterFarmProxy(
         sender: string,
+        proxyAddress: string,
         args: EnterFarmProxyArgs,
     ): Promise<TransactionModel> {
         try {
-            await this.validateInputTokens(args.tokens);
-            await this.validateWFMTInputTokens(args.tokens.slice(1));
+            await this.validateInputTokens(proxyAddress, args.tokens);
+            await this.validateWFMTInputTokens(
+                proxyAddress,
+                args.tokens.slice(1),
+            );
         } catch (error) {
             const logMessage = generateLogMessage(
                 TransactionsProxyFarmService.name,
@@ -59,7 +63,9 @@ export class TransactionsProxyFarmService {
             throw error;
         }
 
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
         const version = farmVersion(args.farmAddress);
 
         const endpointArgs = [
@@ -98,9 +104,12 @@ export class TransactionsProxyFarmService {
 
     async exitFarmProxy(
         sender: string,
+        proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -125,9 +134,12 @@ export class TransactionsProxyFarmService {
 
     async claimFarmRewardsProxy(
         sender: string,
+        proxyAddress: string,
         args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -166,9 +178,12 @@ export class TransactionsProxyFarmService {
 
     async compoundRewardsProxy(
         sender: string,
+        proxyAddress: string,
         args: CompoundRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -194,9 +209,12 @@ export class TransactionsProxyFarmService {
 
     async migrateToNewFarmProxy(
         sender: string,
+        proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -221,6 +239,7 @@ export class TransactionsProxyFarmService {
 
     async mergeWrappedFarmTokens(
         sender: string,
+        proxyAddress: string,
         farmAddress: string,
         tokens: InputTokenModel[],
     ): Promise<TransactionModel> {
@@ -232,7 +251,7 @@ export class TransactionsProxyFarmService {
         }
 
         try {
-            await this.validateWFMTInputTokens(tokens);
+            await this.validateWFMTInputTokens(proxyAddress, tokens);
         } catch (error) {
             const logMessage = generateLogMessage(
                 TransactionsProxyFarmService.name,
@@ -244,7 +263,9 @@ export class TransactionsProxyFarmService {
             throw error;
         }
 
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(farmAddress).hex()),
@@ -271,10 +292,11 @@ export class TransactionsProxyFarmService {
     }
 
     private async validateWFMTInputTokens(
+        proxyAddress: string,
         tokens: InputTokenModel[],
     ): Promise<void> {
         const wrappedFarmTokenID =
-            await this.proxyFarmGetter.getwrappedFarmTokenID();
+            await this.proxyFarmGetter.getwrappedFarmTokenID(proxyAddress);
 
         for (const wrappedFarmToken of tokens) {
             if (
@@ -287,11 +309,12 @@ export class TransactionsProxyFarmService {
     }
 
     private async validateInputTokens(
+        proxyAddress: string,
         tokens: InputTokenModel[],
     ): Promise<void> {
         const [lockedAssetTokenID, wrappedLPTokenID] = await Promise.all([
-            this.proxyGetter.getLockedAssetTokenID(),
-            this.proxyPairService.getwrappedLpTokenID(),
+            this.proxyGetter.getLockedAssetTokenID(proxyAddress),
+            this.proxyPairService.getwrappedLpTokenID(proxyAddress),
         ]);
 
         if (

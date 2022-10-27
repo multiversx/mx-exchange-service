@@ -20,7 +20,11 @@ export class WrappedLpTokenResolver {
         @Parent() parent: WrappedLpTokenAttributesModel,
     ): Promise<LockedAssetAttributesModel> {
         try {
-            const lockedAssetTokenCollection = await this.proxyGetter.getLockedAssetTokenID();
+            const proxyAddress = await this.proxyService.getProxyAddressByToken(
+                parent.identifier,
+            );
+            const lockedAssetTokenCollection =
+                await this.proxyGetter.getLockedAssetTokenID(proxyAddress);
             return await this.proxyService.getLockedAssetsAttributes(
                 lockedAssetTokenCollection,
                 parent.lockedAssetsNonce,

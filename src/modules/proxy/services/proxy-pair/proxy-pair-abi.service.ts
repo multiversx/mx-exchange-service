@@ -14,21 +14,27 @@ export class AbiProxyPairService extends GenericAbiService {
         super(elrondProxy, logger);
     }
 
-    async getWrappedLpTokenID(): Promise<string> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+    async getWrappedLpTokenID(proxyAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getWrappedLpTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
-    async getIntermediatedPairsAddress(): Promise<string[]> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+    async getIntermediatedPairsAddress(
+        proxyAddress: string,
+    ): Promise<string[]> {
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const interaction: Interaction =
             contract.methodsExplicit.getIntermediatedPairs();
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().map((pairAddress) => {
+        return response.firstValue.valueOf().map((pairAddress: string) => {
             return pairAddress.valueOf().toString();
         });
     }

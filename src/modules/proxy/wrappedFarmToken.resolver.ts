@@ -42,8 +42,11 @@ export class WrappedFarmTokenResolver {
         @Parent() parent: WrappedFarmTokenAttributesModel,
     ): Promise<LockedAssetAttributesModel> {
         try {
+            const proxyAddress = await this.proxyService.getProxyAddressByToken(
+                parent.identifier,
+            );
             const lockedAssetTokenCollection =
-                await this.proxyGetter.getLockedAssetTokenID();
+                await this.proxyGetter.getLockedAssetTokenID(proxyAddress);
             if (lockedAssetTokenCollection != parent.farmingTokenID) {
                 return null;
             }
@@ -61,8 +64,11 @@ export class WrappedFarmTokenResolver {
         @Parent() parent: WrappedFarmTokenAttributesModel,
     ): Promise<WrappedLpTokenAttributesModel> {
         try {
+            const proxyAddress = await this.proxyService.getProxyAddressByToken(
+                parent.identifier,
+            );
             const wrappedLpTokenCollection =
-                await this.proxyPairGetter.getwrappedLpTokenID();
+                await this.proxyPairGetter.getwrappedLpTokenID(proxyAddress);
             if (wrappedLpTokenCollection != parent.farmingTokenID) {
                 return null;
             }
@@ -78,7 +84,9 @@ export class WrappedFarmTokenResolver {
                 attributes: wrappedLpToken.attributes,
                 identifier: wrappedLpToken.identifier,
             });
-        } catch (error) {}
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 
     @UseGuards(GqlAuthGuard)
