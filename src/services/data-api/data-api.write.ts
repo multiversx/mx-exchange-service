@@ -35,8 +35,7 @@ export class DataApiWriteService {
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
-        // this.url = process.env.ELRONDDATAAPI_URL;
-        this.url = 'https://devnet-tools.elrond.com/data-api/graphql';
+        this.url = process.env.ELRONDDATAAPI_URL;
 
         this.config = {
             timeout: elrondConfig.proxyTimeout,
