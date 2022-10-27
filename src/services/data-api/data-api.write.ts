@@ -35,7 +35,8 @@ export class DataApiWriteService {
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
-        this.url = process.env.ELRONDDATAAPI_URL;
+        // this.url = process.env.ELRONDDATAAPI_URL;
+        this.url = 'https://devnet-tools.elrond.com/data-api/graphql';
 
         this.config = {
             timeout: elrondConfig.proxyTimeout,
@@ -59,10 +60,13 @@ export class DataApiWriteService {
                 DataApiWriteService.name,
                 this.ingest.name,
                 '',
-                error.message,
+                {
+                    message: error.message,
+                    response: error.response?.data,
+                    status: error.response?.status,
+                },
             );
             this.logger.error(logMessage);
-            this.logger.error(error);
         }
     }
 
@@ -75,10 +79,13 @@ export class DataApiWriteService {
                 DataApiWriteService.name,
                 this.multiRecordsIngest.name,
                 '',
-                error.message,
+                {
+                    message: error.message,
+                    response: error.response?.data,
+                    status: error.response?.status,
+                },
             );
             this.logger.error(logMessage);
-            this.logger.error(error);
         }
     }
 
@@ -91,10 +98,13 @@ export class DataApiWriteService {
                 DataApiWriteService.name,
                 this.writeRecords.name,
                 '',
-                error.message,
+                {
+                    message: error.message,
+                    response: error.response?.data,
+                    status: error.response?.status,
+                },
             );
             this.logger.error(logMessage);
-            this.logger.error(error);
         }
     }
 
@@ -131,7 +141,6 @@ export class DataApiWriteService {
                 }))
             });
         });
-        this.logger.debug(`createRecords: ${JSON.stringify(records)}`);
         return records;
     }
 
@@ -155,7 +164,6 @@ export class DataApiWriteService {
                 value: record.MeasureValue,
             });
         })
-        this.logger.debug(`convertAWSRecordsToDataAPIRecords: ${JSON.stringify(ingestRecords)}`);
         return ingestRecords;
     }
 
