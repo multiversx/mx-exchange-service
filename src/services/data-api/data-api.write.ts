@@ -73,6 +73,7 @@ export class DataApiWriteService {
     async multiRecordsIngest(Records: TimestreamWrite.Records) {
         try {
             const ingestRecords = this.convertAWSRecordsToDataAPIRecords(Records);
+            this.logger.error(`multiRecordsIngest: ${JSON.stringify(Records)}`);
             await this.writeRecords(ingestRecords);
         } catch (error) {
             const logMessage = generateLogMessage(
