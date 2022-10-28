@@ -12,13 +12,9 @@ import {
     ExitFarmProxyArgs,
 } from '../../models/proxy-farm.args';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { ProxyFarmGetterService } from './proxy-farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { generateLogMessage } from 'src/utils/generate-log-message';
-import { ProxyPairGetterService } from '../proxy-pair/proxy-pair.getter.service';
-import { ProxyGetterService } from '../proxy.getter.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import {
     FarmRewardType,
@@ -32,9 +28,6 @@ import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 export class TransactionsProxyFarmService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly proxyFarmGetter: ProxyFarmGetterService,
-        private readonly proxyPairService: ProxyPairGetterService,
-        private readonly proxyGetter: ProxyGetterService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
@@ -46,23 +39,6 @@ export class TransactionsProxyFarmService {
         proxyAddress: string,
         args: EnterFarmProxyArgs,
     ): Promise<TransactionModel> {
-        try {
-            await this.validateInputTokens(proxyAddress, args.tokens);
-            await this.validateWFMTInputTokens(
-                proxyAddress,
-                args.tokens.slice(1),
-            );
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                TransactionsProxyFarmService.name,
-                this.enterFarmProxy.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-
         const contract = await this.elrondProxy.getProxyDexSmartContract(
             proxyAddress,
         );
@@ -250,19 +226,6 @@ export class TransactionsProxyFarmService {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
         }
 
-        try {
-            await this.validateWFMTInputTokens(proxyAddress, tokens);
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                TransactionsProxyFarmService.name,
-                this.mergeWrappedFarmTokens.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-
         const contract = await this.elrondProxy.getProxyDexSmartContract(
             proxyAddress,
         );
@@ -289,41 +252,6 @@ export class TransactionsProxyFarmService {
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
-    }
-
-    private async validateWFMTInputTokens(
-        proxyAddress: string,
-        tokens: InputTokenModel[],
-    ): Promise<void> {
-        const wrappedFarmTokenID =
-            await this.proxyFarmGetter.getwrappedFarmTokenID(proxyAddress);
-
-        for (const wrappedFarmToken of tokens) {
-            if (
-                wrappedFarmToken.tokenID !== wrappedFarmTokenID ||
-                wrappedFarmToken.nonce < 1
-            ) {
-                throw new Error('Invalid tokens for merge!');
-            }
-        }
-    }
-
-    private async validateInputTokens(
-        proxyAddress: string,
-        tokens: InputTokenModel[],
-    ): Promise<void> {
-        const [lockedAssetTokenID, wrappedLPTokenID] = await Promise.all([
-            this.proxyGetter.getLockedAssetTokenID(proxyAddress),
-            this.proxyPairService.getwrappedLpTokenID(proxyAddress),
-        ]);
-
-        if (
-            (tokens[0].tokenID !== lockedAssetTokenID &&
-                tokens[0].tokenID !== wrappedLPTokenID) ||
-            tokens[0].nonce < 1
-        ) {
-            throw new Error('Invalid farming token received!');
-        }
     }
 
     private async getExitFarmProxyGasLimit(

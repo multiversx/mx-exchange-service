@@ -19,7 +19,6 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { ProxyGetterService } from '../proxy.getter.service';
-import { ProxyPairGetterService } from './proxy-pair.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -29,7 +28,6 @@ export class TransactionsProxyPairService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly proxyGetter: ProxyGetterService,
-        private readonly proxyPairGetter: ProxyPairGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,
@@ -77,19 +75,14 @@ export class TransactionsProxyPairService {
         proxyAddress: string,
         args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
-        let inputTokens: InputTokenModel[];
+        let liquidityTokens: InputTokenModel[];
         try {
-            inputTokens = await this.convertInputTokenstoESDTTokens(
+            liquidityTokens = await this.convertInputTokenstoESDTTokens(
                 args.tokens,
             );
-            inputTokens = await this.validateInputTokens(
+            liquidityTokens = await this.getLiquidityTokens(
                 args.pairAddress,
-                inputTokens,
-                proxyAddress,
-            );
-
-            await this.validateInputWrappedLpTokens(
-                inputTokens.slice(2),
+                liquidityTokens,
                 proxyAddress,
             );
         } catch (error) {
@@ -105,8 +98,8 @@ export class TransactionsProxyPairService {
         const contract = await this.elrondProxy.getProxyDexSmartContract(
             proxyAddress,
         );
-        const amount0 = new BigNumber(inputTokens[0].amount);
-        const amount1 = new BigNumber(inputTokens[1].amount);
+        const amount0 = new BigNumber(liquidityTokens[0].amount);
+        const amount1 = new BigNumber(liquidityTokens[1].amount);
 
         const amount0Min = amount0
             .multipliedBy(1 - args.tolerance)
@@ -122,15 +115,16 @@ export class TransactionsProxyPairService {
         ];
 
         const gasLimit =
-            inputTokens.length > 2
+            liquidityTokens.length > 2
                 ? gasConfig.proxy.pairs.addLiquidity.withTokenMerge
                 : gasConfig.proxy.pairs.addLiquidity.default;
-        const mappedPayments: TokenPayment[] = inputTokens.map((inputToken) =>
-            TokenPayment.metaEsdtFromBigInteger(
-                inputToken.tokenID,
-                inputToken.nonce,
-                new BigNumber(inputToken.amount),
-            ),
+        const mappedPayments: TokenPayment[] = liquidityTokens.map(
+            (inputToken) =>
+                TokenPayment.metaEsdtFromBigInteger(
+                    inputToken.tokenID,
+                    inputToken.nonce,
+                    new BigNumber(inputToken.amount),
+                ),
         );
 
         return contract.methodsExplicit
@@ -234,18 +228,6 @@ export class TransactionsProxyPairService {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
         }
 
-        try {
-            await this.validateInputWrappedLpTokens(tokens, proxyAddress);
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                TransactionsProxyPairService.name,
-                this.mergeWrappedLPTokens.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
         const contract = await this.elrondProxy.getProxyDexSmartContract(
             proxyAddress,
         );
@@ -306,25 +288,7 @@ export class TransactionsProxyPairService {
         }
     }
 
-    private async validateInputWrappedLpTokens(
-        tokens: InputTokenModel[],
-        proxyAddress: string,
-    ): Promise<void> {
-        const wrappedLpTokenID = await this.proxyPairGetter.getwrappedLpTokenID(
-            proxyAddress,
-        );
-
-        for (const wrappedLpToken of tokens.slice(2)) {
-            if (
-                wrappedLpToken.tokenID !== wrappedLpTokenID ||
-                wrappedLpToken.nonce < 1
-            ) {
-                throw new Error('Invalid wrapped LP Token to merge!');
-            }
-        }
-    }
-
-    private async validateInputTokens(
+    private async getLiquidityTokens(
         pairAddress: string,
         tokens: InputTokenModel[],
         proxyAddress: string,
