@@ -21,7 +21,7 @@ export class WrappedFarmValidationPipe implements PipeTransform {
         const intermediatedFarms =
             await this.proxyFarmGetter.getIntermediatedFarms(proxyAddress);
         if (!intermediatedFarms.includes(value.farmAddress)) {
-            throw new UserInputError('not an intermediated pair');
+            throw new UserInputError('not an intermediated farm');
         }
 
         return value;

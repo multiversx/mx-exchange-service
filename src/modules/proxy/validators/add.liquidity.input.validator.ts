@@ -41,7 +41,10 @@ export class LiquidityTokensValidationPipe implements PipeTransform {
         }
 
         for (const mergeTokens of value.tokens.slice(2)) {
-            if (mergeTokens.tokenID !== wrappedLpTokenID) {
+            if (
+                mergeTokens.tokenID !== wrappedLpTokenID ||
+                mergeTokens.nonce < 1
+            ) {
                 throw new UserInputError('invalid wrapped lp tokens');
             }
         }
