@@ -73,24 +73,20 @@ export class AutoRouterService {
             args.tokenOutID,
         ]);
 
-        const [
-            multiSwapStatus,
-            pairs,
-            tokenInMetadata,
-            tokenOutMetadata,
-        ] = await Promise.all([
-            this.remoteConfigGetterService.getMultiSwapStatus(),
-            this.getAllActivePairs(),
-            this.tokenGetter.getTokenMetadata(tokenInID),
-            this.tokenGetter.getTokenMetadata(tokenOutID),
-        ]);
+        const [multiSwapStatus, pairs, tokenInMetadata, tokenOutMetadata] =
+            await Promise.all([
+                this.remoteConfigGetterService.getMultiSwapStatus(),
+                this.getAllActivePairs(),
+                this.tokenGetter.getTokenMetadata(tokenInID),
+                this.tokenGetter.getTokenMetadata(tokenOutID),
+            ]);
 
         args.amountIn = this.setDefaultAmountInIfNeeded(args, tokenInMetadata);
         const swapType = this.getSwapType(args.amountIn, args.amountOut);
 
         if (!multiSwapStatus) {
             const directPair = pairs.find(
-                pair =>
+                (pair) =>
                     (pair.firstToken.identifier === tokenInID &&
                         pair.secondToken.identifier === tokenOutID) ||
                     (pair.firstToken.identifier === tokenOutID &&
@@ -152,15 +148,13 @@ export class AutoRouterService {
             ? [args.amountIn, result]
             : [result, args.amountOut];
 
-        const [
-            tokenInExchangeRate,
-            tokenOutExchangeRate,
-        ] = this.calculateExchangeRate(
-            tokenInMetadata.decimals,
-            tokenOutMetadata.decimals,
-            amountIn,
-            amountOut,
-        );
+        const [tokenInExchangeRate, tokenOutExchangeRate] =
+            this.calculateExchangeRate(
+                tokenInMetadata.decimals,
+                tokenOutMetadata.decimals,
+                amountIn,
+                amountOut,
+            );
 
         if (!this.isFixedInput(swapType))
             amountIn = this.addTolerance(amountIn, args.tolerance);
@@ -238,15 +232,28 @@ export class AutoRouterService {
             throw error;
         }
 
-        const [
-            tokenInExchangeRate,
-            tokenOutExchangeRate,
-        ] = this.calculateExchangeRate(
-            tokenInMetadata.decimals,
-            tokenOutMetadata.decimals,
-            this.isFixedInput(swapType) ? args.amountIn : swapRoute.bestResult,
-            this.isFixedInput(swapType) ? swapRoute.bestResult : args.amountOut,
-        );
+        for (const address of swapRoute.addressRoute) {
+            const lockedTokensInfo =
+                await this.pairGetterService.getLockedTokensInfo(address);
+            if (
+                lockedTokensInfo !== undefined &&
+                swapRoute.addressRoute.length > 1
+            ) {
+                throw new Error('No swap route found');
+            }
+        }
+
+        const [tokenInExchangeRate, tokenOutExchangeRate] =
+            this.calculateExchangeRate(
+                tokenInMetadata.decimals,
+                tokenOutMetadata.decimals,
+                this.isFixedInput(swapType)
+                    ? args.amountIn
+                    : swapRoute.bestResult,
+                this.isFixedInput(swapType)
+                    ? swapRoute.bestResult
+                    : args.amountOut,
+            );
 
         const priceDeviationPercent = await this.getTokenPriceDeviationPercent(
             swapRoute.tokenRoute,
@@ -320,7 +327,7 @@ export class AutoRouterService {
 
     private async getAllActivePairs() {
         const pairAddresses = await this.routerGetter.getAllPairsAddress();
-        const statesPromises = pairAddresses.map(address =>
+        const statesPromises = pairAddresses.map((address) =>
             this.pairGetterService.getState(address),
         );
         const states = await Promise.all(statesPromises);
@@ -329,23 +336,21 @@ export class AutoRouterService {
             if (value === 'Active') activePairs.push(pairAddresses[index]);
         });
 
-        const pairsPromises = activePairs.map(address => this.getPair(address));
+        const pairsPromises = activePairs.map((address) =>
+            this.getPair(address),
+        );
 
         return await Promise.all(pairsPromises);
     }
 
     private async getPair(pairAddress: string): Promise<PairModel> {
-        const [
-            info,
-            totalFeePercent,
-            firstToken,
-            secondToken,
-        ] = await Promise.all([
-            this.pairGetterService.getPairInfoMetadata(pairAddress),
-            this.pairGetterService.getTotalFeePercent(pairAddress),
-            this.pairGetterService.getFirstToken(pairAddress),
-            this.pairGetterService.getSecondToken(pairAddress),
-        ]);
+        const [info, totalFeePercent, firstToken, secondToken] =
+            await Promise.all([
+                this.pairGetterService.getPairInfoMetadata(pairAddress),
+                this.pairGetterService.getTotalFeePercent(pairAddress),
+                this.pairGetterService.getFirstToken(pairAddress),
+                this.pairGetterService.getSecondToken(pairAddress),
+            ]);
 
         return new PairModel({
             address: pairAddress,
@@ -357,9 +362,10 @@ export class AutoRouterService {
     }
 
     private async toWrappedIfEGLD(tokensIDs: string[]) {
-        const wrappedEgldTokenID = await this.wrapService.getWrappedEgldTokenID();
+        const wrappedEgldTokenID =
+            await this.wrapService.getWrappedEgldTokenID();
 
-        return tokensIDs.map(t => {
+        return tokensIDs.map((t) => {
             return elrondConfig.EGLDIdentifier === t ? wrappedEgldTokenID : t;
         });
     }
@@ -421,7 +427,7 @@ export class AutoRouterService {
     ): PairModel[] {
         const routePairs: PairModel[] = [];
         for (const address of addresses) {
-            const pair = pairs.find(pair => pair.address === address);
+            const pair = pairs.find((pair) => pair.address === address);
             if (pair !== undefined) {
                 routePairs.push(pair);
             }
@@ -467,7 +473,7 @@ export class AutoRouterService {
             swapType: parent.swapType,
             tokenInID: parent.tokenInID,
             tokenOutID: parent.tokenOutID,
-            addressRoute: parent.pairs.map(p => {
+            addressRoute: parent.pairs.map((p) => {
                 return p.address;
             }),
             intermediaryAmounts: parent.intermediaryAmounts,
