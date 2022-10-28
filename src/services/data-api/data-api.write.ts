@@ -52,7 +52,15 @@ export class DataApiWriteService {
 
     async ingest({ data, Time }) {
         try {
-            this.logger.info(`Data API ingested data: ${data}`);
+            Object.keys(data).forEach((series) => {
+                this.logger.info('DataAPI ingested series', { series });
+                Object.keys(data[series]).forEach((MeasureName) => {
+                    this.logger.info('DataAPI ingested measure', {
+                        MeasureName,
+                        MeasureValue: data[series][MeasureName],
+                    });
+                });
+            });
             const records = this.createRecords({ data, Time });
             await this.writeRecords(records);
         } catch (error) {
