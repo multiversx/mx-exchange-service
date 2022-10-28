@@ -52,15 +52,6 @@ export class DataApiWriteService {
 
     async ingest({ data, Time }) {
         try {
-            Object.keys(data).forEach((series) => {
-                this.logger.info('DataAPI ingested series', { series });
-                Object.keys(data[series]).forEach((MeasureName) => {
-                    this.logger.info('DataAPI ingested measure', {
-                        MeasureName,
-                        MeasureValue: data[series][MeasureName],
-                    });
-                });
-            });
             const records = this.createRecords({ data, Time });
             await this.writeRecords(records);
         } catch (error) {
@@ -125,7 +116,6 @@ export class DataApiWriteService {
             const response = await axios.post(this.url, data, config);
             return response.data;
         } catch (error) {
-            this.logger.error(error);
             throw error;
         } finally {
             profiler.stop();

@@ -108,7 +108,6 @@ export class AWSTimestreamWriteService {
     }
 
     async ingest({ TableName, data, Time }) {
-        this.logger.error(`AWS Ingest data with Time '${Time}': ${JSON.stringify({ data, Time })}`);
         if (!(await this.describeTable({ TableName }))) {
             await this.createTable({ TableName });
         }
