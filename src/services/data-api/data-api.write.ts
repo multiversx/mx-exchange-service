@@ -163,7 +163,7 @@ export class DataApiWriteService {
     private convertAWSRecordsToDataAPIRecords(Records: TimestreamWrite.Records): IngestRecord[] {
         const ingestRecords = Records.map(record => {
             return new IngestRecord({
-                timestamp: moment(record.Time).unix(),
+                timestamp: moment(parseInt(record.Time)).unix(),
                 series: record.Dimensions[0].Value,
                 key: record.MeasureName,
                 value: record.MeasureValue,
