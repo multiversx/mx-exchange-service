@@ -52,6 +52,7 @@ export class DataApiWriteService {
 
     async ingest({ data, Time }) {
         try {
+            this.logger.info(`Data API ingested data: ${data}`);
             const records = this.createRecords({ data, Time });
             await this.writeRecords(records);
         } catch (error) {
