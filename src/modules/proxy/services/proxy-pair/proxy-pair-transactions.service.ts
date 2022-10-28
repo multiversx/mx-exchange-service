@@ -19,7 +19,6 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { ProxyGetterService } from '../proxy.getter.service';
-import { ProxyPairGetterService } from './proxy-pair.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
@@ -29,7 +28,6 @@ export class TransactionsProxyPairService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
         private readonly proxyGetter: ProxyGetterService,
-        private readonly proxyPairGetter: ProxyPairGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,
