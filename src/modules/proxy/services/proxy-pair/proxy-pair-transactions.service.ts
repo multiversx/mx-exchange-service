@@ -39,6 +39,7 @@ export class TransactionsProxyPairService {
 
     async addLiquidityProxyBatch(
         sender: string,
+        proxyAddress: string,
         args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel[]> {
         const transactions: TransactionModel[] = [];
@@ -64,13 +65,16 @@ export class TransactionsProxyPairService {
                 throw new Error('No EGLD to wrap found!');
         }
 
-        transactions.push(await this.addLiquidityProxy(sender, args));
+        transactions.push(
+            await this.addLiquidityProxy(sender, proxyAddress, args),
+        );
 
         return transactions;
     }
 
     async addLiquidityProxy(
         sender: string,
+        proxyAddress: string,
         args: AddLiquidityProxyArgs,
     ): Promise<TransactionModel> {
         let inputTokens: InputTokenModel[];
@@ -81,9 +85,13 @@ export class TransactionsProxyPairService {
             inputTokens = await this.validateInputTokens(
                 args.pairAddress,
                 inputTokens,
+                proxyAddress,
             );
 
-            await this.validateInputWrappedLpTokens(inputTokens.slice(2));
+            await this.validateInputWrappedLpTokens(
+                inputTokens.slice(2),
+                proxyAddress,
+            );
         } catch (error) {
             const logMessage = generateLogMessage(
                 TransactionsProxyPairService.name,
@@ -94,7 +102,9 @@ export class TransactionsProxyPairService {
             this.logger.error(logMessage);
             throw error;
         }
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
         const amount0 = new BigNumber(inputTokens[0].amount);
         const amount1 = new BigNumber(inputTokens[1].amount);
 
@@ -115,7 +125,7 @@ export class TransactionsProxyPairService {
             inputTokens.length > 2
                 ? gasConfig.proxy.pairs.addLiquidity.withTokenMerge
                 : gasConfig.proxy.pairs.addLiquidity.default;
-        const mappedPayments: TokenPayment[] = inputTokens.map(inputToken =>
+        const mappedPayments: TokenPayment[] = inputTokens.map((inputToken) =>
             TokenPayment.metaEsdtFromBigInteger(
                 inputToken.tokenID,
                 inputToken.nonce,
@@ -137,6 +147,7 @@ export class TransactionsProxyPairService {
 
     async removeLiquidityProxy(
         sender: string,
+        proxyAddress: string,
         args: RemoveLiquidityProxyArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
@@ -154,7 +165,7 @@ export class TransactionsProxyPairService {
                 args.pairAddress,
                 args.liquidity,
             ),
-            this.elrondProxy.getProxyDexSmartContract(),
+            this.elrondProxy.getProxyDexSmartContract(proxyAddress),
         ]);
         const amount0Min = new BigNumber(
             liquidityPosition.firstTokenAmount.toString(),
@@ -213,6 +224,7 @@ export class TransactionsProxyPairService {
 
     async mergeWrappedLPTokens(
         sender: string,
+        proxyAddress: string,
         tokens: InputTokenModel[],
     ): Promise<TransactionModel> {
         if (
@@ -223,7 +235,7 @@ export class TransactionsProxyPairService {
         }
 
         try {
-            await this.validateInputWrappedLpTokens(tokens);
+            await this.validateInputWrappedLpTokens(tokens, proxyAddress);
         } catch (error) {
             const logMessage = generateLogMessage(
                 TransactionsProxyPairService.name,
@@ -234,9 +246,11 @@ export class TransactionsProxyPairService {
             this.logger.error(logMessage);
             throw error;
         }
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
         const gasLimit = gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length;
-        const mappedPayments = tokens.map(token =>
+        const mappedPayments = tokens.map((token) =>
             TokenPayment.metaEsdtFromBigInteger(
                 token.tokenID,
                 token.nonce,
@@ -294,8 +308,11 @@ export class TransactionsProxyPairService {
 
     private async validateInputWrappedLpTokens(
         tokens: InputTokenModel[],
+        proxyAddress: string,
     ): Promise<void> {
-        const wrappedLpTokenID = await this.proxyPairGetter.getwrappedLpTokenID();
+        const wrappedLpTokenID = await this.proxyPairGetter.getwrappedLpTokenID(
+            proxyAddress,
+        );
 
         for (const wrappedLpToken of tokens.slice(2)) {
             if (
@@ -310,10 +327,11 @@ export class TransactionsProxyPairService {
     private async validateInputTokens(
         pairAddress: string,
         tokens: InputTokenModel[],
+        proxyAddress: string,
     ): Promise<InputTokenModel[]> {
         const [firstTokenID, secondTokenID] = await Promise.all([
             this.pairGetterService.getFirstTokenID(pairAddress),
-            this.proxyGetter.getLockedAssetTokenID(),
+            this.proxyGetter.getLockedAssetTokenID(proxyAddress),
         ]);
 
         switch (firstTokenID) {

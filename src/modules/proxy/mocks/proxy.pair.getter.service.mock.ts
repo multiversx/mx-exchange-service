@@ -1,5 +1,5 @@
 export class ProxyPairGetterServiceMock {
-    async getwrappedLpTokenID(): Promise<string> {
+    async getwrappedLpTokenID(proxyAddress: string): Promise<string> {
         return 'LKLP-abcd';
     }
 }

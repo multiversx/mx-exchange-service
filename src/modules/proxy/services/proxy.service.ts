@@ -27,18 +27,28 @@ import { LockedAssetService } from 'src/modules/locked-asset-factory/services/lo
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { ProxyGetterService } from './proxy.getter.service';
+import { ProxyPairGetterService } from './proxy-pair/proxy-pair.getter.service';
+import { ProxyFarmGetterService } from './proxy-farm/proxy-farm.getter.service';
 
 @Injectable()
 export class ProxyService {
     constructor(
+        private readonly proxyGetter: ProxyGetterService,
+        private readonly proxyPairGetter: ProxyPairGetterService,
+        private readonly proxyFarmGetter: ProxyFarmGetterService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly apiService: ElrondApiService,
         private readonly lockedAssetService: LockedAssetService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getProxyInfo(): Promise<ProxyModel> {
-        return new ProxyModel({ address: scAddress.proxyDexAddress });
+    async getProxyInfo(): Promise<ProxyModel[]> {
+        const proxies: ProxyModel[] = [];
+        for (const address of scAddress.proxyDexAddress) {
+            proxies.push(new ProxyModel({ address }));
+        }
+        return proxies;
     }
 
     async getWrappedLpTokenAttributes(
@@ -144,5 +154,28 @@ export class ProxyService {
                     identifier: farmToken.identifier,
                 });
         }
+    }
+
+    async getProxyAddressByToken(tokenID: string): Promise<string> {
+        const proxyAddresses = scAddress.proxyDexAddress;
+
+        for (const address of proxyAddresses) {
+            const [lockedTokenID, proxyLpTokenID, proxyFarmTokenID] =
+                await Promise.all([
+                    this.proxyGetter.getLockedAssetTokenID(address),
+                    this.proxyPairGetter.getwrappedLpTokenID(address),
+                    this.proxyFarmGetter.getwrappedFarmTokenID(address),
+                ]);
+
+            if (
+                tokenID === lockedTokenID ||
+                tokenID === proxyLpTokenID ||
+                tokenID === proxyFarmTokenID
+            ) {
+                return address;
+            }
+        }
+
+        throw new Error('invalid locked token identifier');
     }
 }
