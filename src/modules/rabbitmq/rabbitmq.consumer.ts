@@ -235,7 +235,6 @@ export class RabbitMqConsumer {
         }
 
         if (Object.keys(this.data).length > 0) {
-            const cloneData = JSON.parse(JSON.stringify(this.data));
             await Promise.all([
                 this.awsTimestreamWrite.ingest({
                     TableName: awsConfig.timestream.tableName,
@@ -243,7 +242,7 @@ export class RabbitMqConsumer {
                     Time: timestamp,
                 }),
                 this.dataApiWrite.ingest({
-                    data: cloneData,
+                    data: this.data,
                     Time: timestamp,
                 }),
             ]);

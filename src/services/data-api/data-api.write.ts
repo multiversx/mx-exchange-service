@@ -52,7 +52,6 @@ export class DataApiWriteService {
 
     async ingest({ data, Time }) {
         try {
-            this.logger.error(`Ingest data with Time '${Time}': ${JSON.stringify({ data, Time })}`);
             const records = this.createRecords({ data, Time });
             await this.writeRecords(records);
         } catch (error) {
@@ -72,7 +71,8 @@ export class DataApiWriteService {
 
     async multiRecordsIngest(Records: TimestreamWrite.Records) {
         try {
-            const ingestRecords = this.convertAWSRecordsToDataAPIRecords(Records);
+            const ingestRecords =
+                this.convertAWSRecordsToDataAPIRecords(Records);
             this.logger.error(`multiRecordsIngest: ${JSON.stringify(Records)}`);
             await this.writeRecords(ingestRecords);
         } catch (error) {
@@ -93,7 +93,7 @@ export class DataApiWriteService {
     private async writeRecords(records: IngestRecord[]): Promise<void> {
         try {
             const mutation = this.generateIngestMutation(records);
-            await this.doPost('ingestData', mutation)
+            await this.doPost('ingestData', mutation);
         } catch (error) {
             const logMessage = generateLogMessage(
                 DataApiWriteService.name,
@@ -131,21 +131,26 @@ export class DataApiWriteService {
 
     createRecords({ data, Time }): IngestRecord[] {
         const records: IngestRecord[] = [];
-        Object.keys(data).forEach(series => {
-            Object.keys(data[series]).forEach(key => {
+        Object.keys(data).forEach((series) => {
+            Object.keys(data[series]).forEach((key) => {
                 const value = data[series][key].toString();
-                records.push(new IngestRecord({
-                    series,
-                    key,
-                    value,
-                    timestamp: Time
-                }))
+                records.push(
+                    new IngestRecord({
+                        series,
+                        key,
+                        value,
+                        timestamp: Time,
+                    }),
+                );
             });
         });
         return records;
     }
 
-    private generateIngestMutation(records: IngestRecord[]): { query: string, variables: any } {
+    private generateIngestMutation(records: IngestRecord[]): {
+        query: string;
+        variables: any;
+    } {
         const query = `
             mutation ingest($records: [GenericIngestInput!]!) {
                 ingestData(
@@ -154,21 +159,23 @@ export class DataApiWriteService {
                 )
             }`;
         const variables = {
-            records
-        }
+            records,
+        };
 
         return { query, variables };
     }
 
-    private convertAWSRecordsToDataAPIRecords(Records: TimestreamWrite.Records): IngestRecord[] {
-        const ingestRecords = Records.map(record => {
+    private convertAWSRecordsToDataAPIRecords(
+        Records: TimestreamWrite.Records,
+    ): IngestRecord[] {
+        const ingestRecords = Records.map((record) => {
             return new IngestRecord({
                 timestamp: moment(parseInt(record.Time)).unix(),
                 series: record.Dimensions[0].Value,
                 key: record.MeasureName,
                 value: record.MeasureValue,
             });
-        })
+        });
         return ingestRecords;
     }
 
