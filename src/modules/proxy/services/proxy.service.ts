@@ -125,11 +125,12 @@ export class ProxyService {
     }
 
     async getFarmTokenAttributes(
+        proxyAddress: string,
         farmTokenCollection: string,
         farmTokenNonce: number,
     ): Promise<typeof FarmTokenAttributesUnion> {
         const farmToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.proxyDexAddress,
+            proxyAddress,
             tokenIdentifier(farmTokenCollection, farmTokenNonce),
         );
         const farmAddress = await this.farmGetter.getFarmAddressByFarmTokenID(
