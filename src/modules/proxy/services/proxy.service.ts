@@ -75,11 +75,12 @@ export class ProxyService {
     }
 
     async getLockedAssetsAttributes(
+        proxyAddress: string,
         lockedAssetTokenCollection: string,
         lockedAssetNonce: number,
     ): Promise<LockedAssetAttributesModel> {
         const lockedAssetToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.proxyDexAddress,
+            proxyAddress,
             tokenIdentifier(lockedAssetTokenCollection, lockedAssetNonce),
         );
         const lockedAssetAttributes =

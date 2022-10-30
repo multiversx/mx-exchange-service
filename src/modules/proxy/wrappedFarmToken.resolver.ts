@@ -51,6 +51,7 @@ export class WrappedFarmTokenResolver {
                 return null;
             }
             return await this.proxyService.getLockedAssetsAttributes(
+                proxyAddress,
                 lockedAssetTokenCollection,
                 parent.farmingTokenNonce,
             );
