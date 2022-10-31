@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { BaseFarmModel } from './farm.model';
+import { BaseFarmModel, FarmRewardType } from './farm.model';
 
 @ObjectType()
 export class FarmModelV2 extends BaseFarmModel {
@@ -13,6 +13,8 @@ export class FarmModelV2 extends BaseFarmModel {
     undistributedBoostedRewards: string;
     @Field()
     energyFactoryAddress: string;
+    @Field()
+    rewardType: FarmRewardType;
 
     constructor(init?: Partial<FarmModelV2>) {
         super(init);
