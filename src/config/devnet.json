@@ -71,9 +71,11 @@
             "customRewards": []
         },
         "v2": {
-                "unlockedRewards": [],
-                "lockedRewards": [
+                "unlockedRewards": [
                     "erd1qqqqqqqqqqqqqpgqetwkcsv2x9qpryyu828wv942qd8juhp80n4sv0c9q9"
+                ],
+                "lockedRewards": [
+                    "erd1qqqqqqqqqqqqqpgqlct7zuf30senvglswfnqltaqzu2kalcj0n4s4s75su"
                 ]
         }
     },
