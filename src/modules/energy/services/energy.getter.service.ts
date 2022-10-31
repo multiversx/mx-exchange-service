@@ -12,10 +12,7 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
-import {
-    LockOption,
-    PenaltyPercentage,
-} from '../models/simple.lock.energy.model';
+import { LockOption } from '../models/simple.lock.energy.model';
 import { EnergyAbiService } from './energy.abi.service';
 import { IEnergyGetterService } from './interfaces';
 
@@ -74,15 +71,6 @@ export class EnergyGetterService
     async getLegacyLockedToken(): Promise<NftCollection> {
         const collection = await this.getLegacyLockedTokenID();
         return await this.tokenGetter.getNftCollectionMetadata(collection);
-    }
-
-    async getPenaltyPercentage(): Promise<PenaltyPercentage> {
-        return await this.getData(
-            this.getCacheKey('penaltyPercentage'),
-            () => this.abiService.getPenaltyPercentage(),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
     }
 
     async getFeesBurnPercentage(): Promise<number> {

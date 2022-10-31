@@ -13,7 +13,6 @@ import { NftCollection } from '../tokens/models/nftCollection.model';
 import { EnergyModel, UnlockType } from './models/energy.model';
 import {
     LockOption,
-    PenaltyPercentage,
     SimpleLockEnergyModel,
 } from './models/simple.lock.energy.model';
 import { EnergyGetterService } from './services/energy.getter.service';
@@ -49,13 +48,6 @@ export class EnergyResolver extends GenericResolver {
     async legacyLockedToken(): Promise<NftCollection> {
         return await this.genericFieldResover<NftCollection>(() =>
             this.energyGetter.getLegacyLockedToken(),
-        );
-    }
-
-    @ResolveField()
-    async penaltyPercentage(): Promise<PenaltyPercentage> {
-        return await this.genericFieldResover<PenaltyPercentage>(() =>
-            this.energyGetter.getPenaltyPercentage(),
         );
     }
 
