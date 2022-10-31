@@ -75,11 +75,12 @@ export class ProxyService {
     }
 
     async getLockedAssetsAttributes(
+        proxyAddress: string,
         lockedAssetTokenCollection: string,
         lockedAssetNonce: number,
     ): Promise<LockedAssetAttributesModel> {
         const lockedAssetToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.proxyDexAddress,
+            proxyAddress,
             tokenIdentifier(lockedAssetTokenCollection, lockedAssetNonce),
         );
         const lockedAssetAttributes =
@@ -124,11 +125,12 @@ export class ProxyService {
     }
 
     async getFarmTokenAttributes(
+        proxyAddress: string,
         farmTokenCollection: string,
         farmTokenNonce: number,
     ): Promise<typeof FarmTokenAttributesUnion> {
         const farmToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.proxyDexAddress,
+            proxyAddress,
             tokenIdentifier(farmTokenCollection, farmTokenNonce),
         );
         const farmAddress = await this.farmGetter.getFarmAddressByFarmTokenID(

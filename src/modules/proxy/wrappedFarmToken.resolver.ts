@@ -1,9 +1,8 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { scAddress } from 'src/config';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
-import { tokenIdentifier } from 'src/utils/token.converters';
+import { tokenCollection, tokenIdentifier } from 'src/utils/token.converters';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { FarmTokenAttributesUnion } from '../farm/models/farmTokenAttributes.model';
 import { LockedAssetAttributesModel } from '../locked-asset-factory/models/locked-asset.model';
@@ -28,7 +27,11 @@ export class WrappedFarmTokenResolver {
         @Parent() parent: WrappedFarmTokenAttributesModel,
     ): Promise<typeof FarmTokenAttributesUnion> {
         try {
+            const proxyAddress = await this.proxyService.getProxyAddressByToken(
+                tokenCollection(parent.identifier),
+            );
             return await this.proxyService.getFarmTokenAttributes(
+                proxyAddress,
                 parent.farmTokenID,
                 parent.farmTokenNonce,
             );
@@ -43,7 +46,7 @@ export class WrappedFarmTokenResolver {
     ): Promise<LockedAssetAttributesModel> {
         try {
             const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                parent.identifier,
+                tokenCollection(parent.identifier),
             );
             const lockedAssetTokenCollection =
                 await this.proxyGetter.getLockedAssetTokenID(proxyAddress);
@@ -51,6 +54,7 @@ export class WrappedFarmTokenResolver {
                 return null;
             }
             return await this.proxyService.getLockedAssetsAttributes(
+                proxyAddress,
                 lockedAssetTokenCollection,
                 parent.farmingTokenNonce,
             );
@@ -65,7 +69,7 @@ export class WrappedFarmTokenResolver {
     ): Promise<WrappedLpTokenAttributesModel> {
         try {
             const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                parent.identifier,
+                tokenCollection(parent.identifier),
             );
             const wrappedLpTokenCollection =
                 await this.proxyPairGetter.getwrappedLpTokenID(proxyAddress);
@@ -74,7 +78,7 @@ export class WrappedFarmTokenResolver {
             }
             const wrappedLpToken =
                 await this.apiService.getNftByTokenIdentifier(
-                    scAddress.proxyDexAddress,
+                    proxyAddress,
                     tokenIdentifier(
                         parent.farmingTokenID,
                         parent.farmingTokenNonce,
