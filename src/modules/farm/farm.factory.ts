@@ -49,10 +49,10 @@ export class FarmFactoryService {
                         new FarmModelV2({
                             address,
                             version,
+                            rewardType: farmType(address),
                         }),
                     );
                     break;
-
                 case FarmVersion.CUSTOM:
                     farms.push(
                         new FarmCustomModel({
