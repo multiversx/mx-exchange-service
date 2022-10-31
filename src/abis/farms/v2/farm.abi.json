@@ -599,6 +599,16 @@
             ]
         },
         {
+            "name": "getBoostedYieldsFactors",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BoostedYieldsFactors"
+                }
+            ]
+        },
+        {
             "docs": [
                 "Week starts from 1"
             ],
@@ -965,6 +975,31 @@
                 },
                 {
                     "name": "total_locked_tokens",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "BoostedYieldsFactors": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "user_rewards_base_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "user_rewards_energy_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "user_rewards_farm_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_energy_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_farm_amount",
                     "type": "BigUint"
                 }
             ]
