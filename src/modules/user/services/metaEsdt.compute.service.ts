@@ -261,12 +261,15 @@ export class UserComputeService {
                     },
                 ],
             });
+        const proxyAddress = await this.proxyService.getProxyAddressByToken(
+            nftToken.collection,
+        );
         const [farmAddress, farmToken] = await Promise.all([
             this.farmGetter.getFarmAddressByFarmTokenID(
                 decodedWFMTAttributes[0].farmTokenID,
             ),
             this.apiService.getNftByTokenIdentifier(
-                scAddress.proxyDexAddress,
+                proxyAddress,
                 decodedWFMTAttributes[0].farmTokenIdentifier,
             ),
         ]);
