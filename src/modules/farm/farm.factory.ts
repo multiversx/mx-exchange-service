@@ -53,7 +53,6 @@ export class FarmFactoryService {
                         }),
                     );
                     break;
-
                 case FarmVersion.CUSTOM:
                     farms.push(
                         new FarmCustomModel({

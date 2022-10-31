@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { oneMinute } from 'src/helpers/helpers';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { Logger } from 'winston';
 import { FarmGetterService } from '../../base-module/services/farm.getter.service';
+import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
 
@@ -37,7 +37,19 @@ export class FarmGetterServiceV2 extends FarmGetterService {
             this.getCacheKey(farmAddress, 'boostedYieldsRewardsPercenatage'),
             () =>
                 this.abiService.getBoostedYieldsRewardsPercenatage(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async getBoostedYieldsFactors(
+        farmAddress: string,
+    ): Promise<BoostedYieldsFactors> {
+        return await this.getData(
+            this.getCacheKey(farmAddress, 'boostedYieldsFactors'),
+            () => this.abiService.getBoostedYieldsFactors(farmAddress),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -92,7 +104,8 @@ export class FarmGetterServiceV2 extends FarmGetterService {
         return await this.getData(
             this.getCacheKey(farmAddress, 'energyFactoryAddress'),
             () => this.abiService.getEnergyFactoryAddress(farmAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 }

@@ -17,6 +17,9 @@ import BigNumber from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
 import { FarmTokenAttributesV1_3 } from '@elrondnetwork/erdjs-dex';
+import { FarmRewardType } from '../../models/farm.model';
+import { farmType } from 'src/utils/farm.utils';
+import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 
 @Injectable()
 export class FarmAbiServiceV2 extends AbiFarmService {
@@ -34,6 +37,10 @@ export class FarmAbiServiceV2 extends AbiFarmService {
     }
 
     async getLockingScAddress(farmAddress: string): Promise<string> {
+        if (farmType(farmAddress) === FarmRewardType.UNLOCKED_REWARDS) {
+            return undefined;
+        }
+
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
@@ -45,6 +52,10 @@ export class FarmAbiServiceV2 extends AbiFarmService {
     }
 
     async getLockEpochs(farmAddress: string): Promise<number> {
+        if (farmType(farmAddress) === FarmRewardType.UNLOCKED_REWARDS) {
+            return undefined;
+        }
+
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
@@ -80,6 +91,30 @@ export class FarmAbiServiceV2 extends AbiFarmService {
             contract.methodsExplicit.getUndistributedBoostedRewards();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
+    }
+
+    async getBoostedYieldsFactors(
+        farmAddress: string,
+    ): Promise<BoostedYieldsFactors> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getBoostedYieldsFactors();
+        const response = await this.getGenericData(interaction);
+        const rawBoostedYieldsFactors = response.firstValue.valueOf();
+        return new BoostedYieldsFactors({
+            userRewardsBase:
+                rawBoostedYieldsFactors.user_rewards_base_const.toFixed(),
+            userRewardsEnergy:
+                rawBoostedYieldsFactors.user_rewards_energy_const.toFixed(),
+            userRewardsFarm:
+                rawBoostedYieldsFactors.user_rewards_farm_const.toFixed(),
+            minEnergyAmount:
+                rawBoostedYieldsFactors.min_energy_amount.toFixed(),
+            minFarmAmount: rawBoostedYieldsFactors.min_farm_amount.toFixed(),
+        });
     }
 
     async getEnergyFactoryAddress(farmAddress: string): Promise<string> {
