@@ -14,6 +14,7 @@ import {
     UserLockedEsdtToken,
     UserLockedSimpleLpToken,
     UserLockedSimpleFarmToken,
+    UserLockedTokenEnergy,
 } from './user.model';
 
 export const UserNftTokens = createUnionType({
@@ -30,6 +31,7 @@ export const UserNftTokens = createUnionType({
         UserLockedEsdtToken,
         UserLockedSimpleLpToken,
         UserLockedSimpleFarmToken,
+        UserLockedTokenEnergy,
         UserNftToken,
     ],
     resolveType(value) {
@@ -42,6 +44,8 @@ export const UserNftTokens = createUnionType({
                 return UserLockedSimpleLpToken.name;
             case UserLockedSimpleFarmToken.name:
                 return UserLockedSimpleFarmToken.name;
+            case UserLockedTokenEnergy.name:
+                return UserLockedTokenEnergy.name;
             default:
                 break;
         }

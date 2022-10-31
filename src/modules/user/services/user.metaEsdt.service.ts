@@ -31,6 +31,7 @@ import { UserEsdtService } from './user.esdt.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { scAddress } from 'src/config';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
 
 enum NftTokenType {
     FarmToken,
@@ -43,6 +44,7 @@ enum NftTokenType {
     LockedEsdtToken,
     LockedSimpleLpToken,
     LockedSimpleFarmToken,
+    LockedTokenEnergy,
 }
 
 @Injectable()
@@ -61,6 +63,7 @@ export class UserService {
         private proxyStakeGetter: StakingProxyGetterService,
         private priceDiscoveryService: PriceDiscoveryService,
         private simpleLockGetter: SimpleLockGetterService,
+        private energyGetter: EnergyGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -205,6 +208,11 @@ export class UserService {
                         ),
                     );
                     break;
+                case NftTokenType.LockedTokenEnergy:
+                    promises.push(
+                        this.userComputeService.lockedTokenEnergyUSD(userNft),
+                    );
+                    break;
                 default:
                     break;
             }
@@ -218,6 +226,11 @@ export class UserService {
             await this.lockedAssetGetter.getLockedTokenID();
         if (tokenID === lockedMEXTokenID) {
             return NftTokenType.LockedAssetToken;
+        }
+
+        const lockedTokenEnergy = await this.energyGetter.getLockedTokenID();
+        if (tokenID === lockedTokenEnergy) {
+            return NftTokenType.LockedTokenEnergy;
         }
 
         for (const proxyAddress of scAddress.proxyDexAddress) {
