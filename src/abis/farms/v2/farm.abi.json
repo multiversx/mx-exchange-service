@@ -1,20 +1,20 @@
 {
     "buildInfo": {
         "rustc": {
-            "version": "1.62.0-nightly",
-            "commitHash": "a5ad0d29a401007b51715852cc702e441ac2248c",
-            "commitDate": "2022-05-12",
+            "version": "1.66.0-nightly",
+            "commitHash": "b8c35ca26b191bb9a9ac669a4b3f4d3d52d97fb1",
+            "commitDate": "2022-10-15",
             "channel": "Nightly",
-            "short": "rustc 1.62.0-nightly (a5ad0d29a 2022-05-12)"
+            "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
         },
         "contractCrate": {
             "name": "farm",
             "version": "0.0.0",
-            "git_version": "v1.6.0-357-gd12e6616-modified"
+            "git_version": "v1.6.0-657-g8d756848-modified"
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.34.1"
+            "version": "0.36.0"
         }
     },
     "name": "Farm",
@@ -55,8 +55,17 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
                 {
                     "type": "EsdtTokenPayment"
                 }
@@ -68,7 +77,13 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
@@ -84,7 +99,13 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
@@ -97,8 +118,21 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "exit_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
                 {
                     "type": "EsdtTokenPayment"
                 },
@@ -114,6 +148,10 @@
                 {
                     "name": "user",
                     "type": "Address"
+                },
+                {
+                    "name": "farm_token_nonce",
+                    "type": "u64"
                 },
                 {
                     "name": "farm_token_amount",
@@ -136,7 +174,13 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
@@ -150,7 +194,7 @@
             "outputs": []
         },
         {
-            "name": "end_produce_rewards",
+            "name": "endProduceRewards",
             "mutability": "mutable",
             "inputs": [],
             "outputs": []
@@ -355,7 +399,50 @@
                     "type": "Address"
                 }
             ],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "addSCAddressToWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
             "outputs": []
+        },
+        {
+            "name": "removeSCAddressFromWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "isSCAddressWhitelisted",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
         },
         {
             "name": "set_penalty_percent",
@@ -444,12 +531,70 @@
             "outputs": []
         },
         {
+            "name": "setBoostedYieldsFactors",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "user_rewards_base_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "user_rewards_energy_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "user_rewards_farm_const",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_energy_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "min_farm_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "collectUndistributedBoostedRewards",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
             "name": "getBoostedYieldsRewardsPercenatage",
             "mutability": "readonly",
             "inputs": [],
             "outputs": [
                 {
                     "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getRemainingBoostedRewardsToDistribute",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getUndistributedBoostedRewards",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },
@@ -463,6 +608,120 @@
             "outputs": [
                 {
                     "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getFirstWeekStartEpoch",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getCurrentClaimProgress",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "ClaimProgress"
+                }
+            ]
+        },
+        {
+            "name": "getUserEnergyForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                },
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "Energy"
+                }
+            ]
+        },
+        {
+            "name": "getLastActiveWeekForUser",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getLastGlobalUpdateWeek",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "getTotalRewardsForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "name": "getTotalEnergyForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "getTotalLockedTokensForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },
@@ -499,13 +758,23 @@
                     "indexed": true
                 },
                 {
-                    "name": "farming_token",
-                    "type": "TokenIdentifier",
+                    "name": "epoch",
+                    "type": "u64",
                     "indexed": true
                 },
                 {
-                    "name": "epoch",
+                    "name": "block",
                     "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "farming_token",
+                    "type": "TokenIdentifier",
                     "indexed": true
                 },
                 {
@@ -523,13 +792,23 @@
                     "indexed": true
                 },
                 {
-                    "name": "farm_token",
-                    "type": "TokenIdentifier",
+                    "name": "epoch",
+                    "type": "u64",
                     "indexed": true
                 },
                 {
-                    "name": "epoch",
+                    "name": "block",
                     "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "farm_token",
+                    "type": "TokenIdentifier",
                     "indexed": true
                 },
                 {
@@ -547,13 +826,23 @@
                     "indexed": true
                 },
                 {
-                    "name": "farm_token",
-                    "type": "TokenIdentifier",
+                    "name": "epoch",
+                    "type": "u64",
                     "indexed": true
                 },
                 {
-                    "name": "epoch",
+                    "name": "block",
                     "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "farm_token",
+                    "type": "TokenIdentifier",
                     "indexed": true
                 },
                 {
@@ -571,13 +860,23 @@
                     "indexed": true
                 },
                 {
-                    "name": "farm_token",
-                    "type": "TokenIdentifier",
+                    "name": "epoch",
+                    "type": "u64",
                     "indexed": true
                 },
                 {
-                    "name": "epoch",
+                    "name": "block",
                     "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "farm_token",
+                    "type": "TokenIdentifier",
                     "indexed": true
                 },
                 {
@@ -585,56 +884,122 @@
                     "type": "CompoundRewardsEvent"
                 }
             ]
+        },
+        {
+            "identifier": "claim_multi_event",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "current_week",
+                    "type": "u32",
+                    "indexed": true
+                },
+                {
+                    "name": "energy",
+                    "type": "Energy",
+                    "indexed": true
+                },
+                {
+                    "name": "all_payments",
+                    "type": "List<EsdtTokenPayment>"
+                }
+            ]
+        },
+        {
+            "identifier": "update_user_energy_event",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "current_week",
+                    "type": "u32",
+                    "indexed": true
+                },
+                {
+                    "name": "energy",
+                    "type": "Energy",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "identifier": "update_global_amounts_event",
+            "inputs": [
+                {
+                    "name": "current_week",
+                    "type": "u32",
+                    "indexed": true
+                },
+                {
+                    "name": "total_locked_tokens",
+                    "type": "BigUint",
+                    "indexed": true
+                },
+                {
+                    "name": "total_energy",
+                    "type": "BigUint",
+                    "indexed": true
+                }
+            ]
         }
     ],
     "hasCallback": true,
     "types": {
+        "Energy": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "amount",
+                    "type": "BigInt"
+                },
+                {
+                    "name": "last_update_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "total_locked_tokens",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "ClaimProgress": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "energy",
+                    "type": "Energy"
+                },
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ]
+        },
         "ClaimRewardsEvent": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "caller",
-                    "type": "Address"
+                    "name": "old_farm_token",
+                    "type": "EsdtTokenPayment"
                 },
                 {
-                    "name": "old_farm_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "old_farm_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "old_farm_token_amount",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "new_farm_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "new_farm_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "new_farm_token_amount",
-                    "type": "BigUint"
+                    "name": "new_farm_token",
+                    "type": "EsdtTokenPayment"
                 },
                 {
                     "name": "farm_supply",
                     "type": "BigUint"
                 },
                 {
-                    "name": "reward_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "reward_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "reward_token_amount",
-                    "type": "BigUint"
+                    "name": "reward_tokens",
+                    "type": "EsdtTokenPayment"
                 },
                 {
                     "name": "reward_reserve",
@@ -642,27 +1007,15 @@
                 },
                 {
                     "name": "old_farm_attributes",
-                    "type": "FarmTokenAttributes"
+                    "type": "bytes"
                 },
                 {
                     "name": "new_farm_attributes",
-                    "type": "FarmTokenAttributes"
+                    "type": "bytes"
                 },
                 {
                     "name": "created_with_merge",
                     "type": "bool"
-                },
-                {
-                    "name": "block",
-                    "type": "u64"
-                },
-                {
-                    "name": "epoch",
-                    "type": "u64"
-                },
-                {
-                    "name": "timestamp",
-                    "type": "u64"
                 }
             ]
         },
@@ -670,48 +1023,20 @@
             "type": "struct",
             "fields": [
                 {
-                    "name": "caller",
-                    "type": "Address"
+                    "name": "old_farm_token",
+                    "type": "EsdtTokenPayment"
                 },
                 {
-                    "name": "old_farm_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "old_farm_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "old_farm_token_amount",
-                    "type": "BigUint"
-                },
-                {
-                    "name": "new_farm_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "new_farm_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "new_farm_token_amount",
-                    "type": "BigUint"
+                    "name": "new_farm_token",
+                    "type": "EsdtTokenPayment"
                 },
                 {
                     "name": "farm_supply",
                     "type": "BigUint"
                 },
                 {
-                    "name": "reward_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "reward_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "reward_token_amount",
-                    "type": "BigUint"
+                    "name": "reward_tokens",
+                    "type": "EsdtTokenPayment"
                 },
                 {
                     "name": "reward_reserve",
@@ -719,37 +1044,21 @@
                 },
                 {
                     "name": "old_farm_attributes",
-                    "type": "FarmTokenAttributes"
+                    "type": "bytes"
                 },
                 {
                     "name": "new_farm_attributes",
-                    "type": "FarmTokenAttributes"
+                    "type": "bytes"
                 },
                 {
                     "name": "created_with_merge",
                     "type": "bool"
-                },
-                {
-                    "name": "block",
-                    "type": "u64"
-                },
-                {
-                    "name": "epoch",
-                    "type": "u64"
-                },
-                {
-                    "name": "timestamp",
-                    "type": "u64"
                 }
             ]
         },
         "EnterFarmEvent": {
             "type": "struct",
             "fields": [
-                {
-                    "name": "caller",
-                    "type": "Address"
-                },
                 {
                     "name": "farming_token_id",
                     "type": "TokenIdentifier"
@@ -759,16 +1068,8 @@
                     "type": "BigUint"
                 },
                 {
-                    "name": "farm_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "farm_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "farm_token_amount",
-                    "type": "BigUint"
+                    "name": "farm_token",
+                    "type": "EsdtTokenPayment"
                 },
                 {
                     "name": "farm_supply",
@@ -784,23 +1085,11 @@
                 },
                 {
                     "name": "farm_attributes",
-                    "type": "FarmTokenAttributes"
+                    "type": "bytes"
                 },
                 {
                     "name": "created_with_merge",
                     "type": "bool"
-                },
-                {
-                    "name": "block",
-                    "type": "u64"
-                },
-                {
-                    "name": "epoch",
-                    "type": "u64"
-                },
-                {
-                    "name": "timestamp",
-                    "type": "u64"
                 }
             ]
         },
@@ -825,10 +1114,6 @@
             "type": "struct",
             "fields": [
                 {
-                    "name": "caller",
-                    "type": "Address"
-                },
-                {
                     "name": "farming_token_id",
                     "type": "TokenIdentifier"
                 },
@@ -837,32 +1122,16 @@
                     "type": "BigUint"
                 },
                 {
-                    "name": "farm_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "farm_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "farm_token_amount",
-                    "type": "BigUint"
+                    "name": "farm_token",
+                    "type": "EsdtTokenPayment"
                 },
                 {
                     "name": "farm_supply",
                     "type": "BigUint"
                 },
                 {
-                    "name": "reward_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "reward_token_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "reward_token_amount",
-                    "type": "BigUint"
+                    "name": "reward_tokens",
+                    "type": "EsdtTokenPayment"
                 },
                 {
                     "name": "reward_reserve",
@@ -870,19 +1139,7 @@
                 },
                 {
                     "name": "farm_attributes",
-                    "type": "FarmTokenAttributes"
-                },
-                {
-                    "name": "block",
-                    "type": "u64"
-                },
-                {
-                    "name": "epoch",
-                    "type": "u64"
-                },
-                {
-                    "name": "timestamp",
-                    "type": "u64"
+                    "type": "bytes"
                 }
             ]
         },
