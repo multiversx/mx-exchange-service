@@ -12,7 +12,10 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
-import { PenaltyPercentage } from '../models/simple.lock.energy.model';
+import {
+    LockOption,
+    PenaltyPercentage,
+} from '../models/simple.lock.energy.model';
 
 @Injectable()
 export class EnergyAbiService extends GenericAbiService {
@@ -98,16 +101,21 @@ export class EnergyAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getLockOptions(): Promise<number[]> {
+    async getLockOptions(): Promise<LockOption[]> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLockOptions();
 
         const response = await this.getGenericData(interaction);
-        return response.firstValue
-            .valueOf()
-            .map((lockOption: BigNumber) => lockOption.toNumber());
+        return response.firstValue.valueOf().map(
+            (lockOption: any) =>
+                new LockOption({
+                    lockEpochs: lockOption.lock_epochs.toNumber(),
+                    penaltyStartPercentage:
+                        lockOption.penalty_start_percentage.toNumber(),
+                }),
+        );
     }
 
     async getEnergyEntryForUser(userAddress: string): Promise<EnergyType> {

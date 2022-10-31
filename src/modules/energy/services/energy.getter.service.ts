@@ -12,7 +12,10 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
-import { PenaltyPercentage } from '../models/simple.lock.energy.model';
+import {
+    LockOption,
+    PenaltyPercentage,
+} from '../models/simple.lock.energy.model';
 import { EnergyAbiService } from './energy.abi.service';
 import { IEnergyGetterService } from './interfaces';
 
@@ -118,11 +121,12 @@ export class EnergyGetterService
         );
     }
 
-    async getLockOptions(): Promise<number[]> {
+    async getLockOptions(): Promise<LockOption[]> {
         return await this.getData(
             this.getEnergyCacheKey('lockOptions'),
             () => this.abiService.getLockOptions(),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 

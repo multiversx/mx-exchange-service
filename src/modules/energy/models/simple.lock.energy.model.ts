@@ -17,6 +17,18 @@ export class PenaltyPercentage {
 }
 
 @ObjectType()
+export class LockOption {
+    @Field(() => Int)
+    lockEpochs: number;
+    @Field(() => Int)
+    penaltyStartPercentage: number;
+
+    constructor(init: LockOption) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class SimpleLockEnergyModel {
     @Field()
     address: string;
@@ -26,8 +38,8 @@ export class SimpleLockEnergyModel {
     lockedToken: NftCollection;
     @Field()
     legacyLockedToken: NftCollection;
-    @Field(() => [Int])
-    lockOptions: number[];
+    @Field(() => [LockOption])
+    lockOptions: LockOption[];
     @Field(() => PenaltyPercentage)
     penaltyPercentage: PenaltyPercentage;
     @Field(() => Int)

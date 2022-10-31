@@ -12,6 +12,7 @@ import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { NftCollection } from '../tokens/models/nftCollection.model';
 import { EnergyModel, UnlockType } from './models/energy.model';
 import {
+    LockOption,
     PenaltyPercentage,
     SimpleLockEnergyModel,
 } from './models/simple.lock.energy.model';
@@ -87,8 +88,8 @@ export class EnergyResolver extends GenericResolver {
     }
 
     @ResolveField()
-    async lockOptions(): Promise<number[]> {
-        return await this.genericFieldResover<number[]>(() =>
+    async lockOptions(): Promise<LockOption[]> {
+        return await this.genericFieldResover<LockOption[]>(() =>
             this.energyGetter.getLockOptions(),
         );
     }
