@@ -380,7 +380,7 @@
         "wrap": "./src/abis/egld-esdt-swap.abi.json",
         "priceDiscovery": "./src/abis/price-discovery.abi.json",
         "simpleLock": "./src/abis/simple-lock.abi.json",
-        "simpleLockEnergy": "./src/abis/simple-lock-energy.abi.json",
+        "simpleLockEnergy": "./src/abis/energy-factory.abi.json",
         "farm": {
             "v1.2": "./src/abis/farms/v1.2/farm.abi.json",
             "v1.3": {
