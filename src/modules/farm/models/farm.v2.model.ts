@@ -5,7 +5,12 @@ import { BaseFarmModel } from './farm.model';
 export class FarmModelV2 extends BaseFarmModel {
     @Field()
     boostedYieldsRewardsPercenatage: number;
-
+    @Field()
+    lockingScAddress: string;
+    @Field()
+    lockEpochs: string;
+    @Field()
+    undistributedBoostedRewards: string;
     @Field()
     energyFactoryAddress: string;
 

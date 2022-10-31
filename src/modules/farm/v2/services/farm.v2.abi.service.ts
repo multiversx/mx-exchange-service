@@ -8,6 +8,7 @@ import {
     Interaction,
     Struct,
     StructType,
+    U32Value,
     U64Type,
     U64Value,
 } from '@elrondnetwork/erdjs/out';
@@ -30,6 +31,55 @@ export class FarmAbiServiceV2 extends AbiFarmService {
             contract.methodsExplicit.getBoostedYieldsRewardsPercenatage();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toNumber();
+    }
+
+    async getLockingScAddress(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockingScAddress();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().bech32();
+    }
+
+    async getLockEpochs(farmAddress: string): Promise<number> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockEpochs();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    async getRemainingBoostedRewardsToDistribute(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getRemainingBoostedRewardsToDistribute([
+                new U32Value(new BigNumber(week)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getUndistributedBoostedRewards(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getUndistributedBoostedRewards();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async getEnergyFactoryAddress(farmAddress: string): Promise<string> {

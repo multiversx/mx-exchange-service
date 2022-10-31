@@ -19,6 +19,27 @@ export class FarmResolverV2 extends FarmResolver {
     }
 
     @ResolveField()
+    async lockingScAddress(@Parent() parent: FarmModelV2): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetter.getLockingScAddress(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async lockEpochs(@Parent() parent: FarmModelV2): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.farmGetter.getLockEpochs(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async undistributedBoostedRewards(farmAddress: string): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetter.getUndistributedBoostedRewards(farmAddress),
+        );
+    }
+
+    @ResolveField()
     async energyFactoryAddress(@Parent() parent: FarmModelV2): Promise<string> {
         return await this.genericFieldResover(() =>
             this.farmGetter.getEnergyFactoryAddress(parent.address),
