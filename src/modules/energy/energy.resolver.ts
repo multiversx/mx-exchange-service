@@ -127,10 +127,12 @@ export class EnergyResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async lockTokensEnergy(
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @Args('lockEpochs') lockEpochs: number,
+        @Args('lockEpochs', { type: () => Int }) lockEpochs: number,
+        @User() user: any,
     ): Promise<TransactionModel> {
         try {
             return await this.energyTransaction.lockTokens(
+                user.publicKey,
                 inputTokens,
                 lockEpochs,
             );
