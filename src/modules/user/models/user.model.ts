@@ -141,6 +141,16 @@ export class UserLockedSimpleFarmToken extends LockedSimpleFarmToken {
 }
 
 @ObjectType()
+export class UserLockedTokenEnergy extends LockedEsdtToken {
+    @Field() valueUSD: string;
+
+    constructor(init?: Partial<UserLockedTokenEnergy>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class UserModel {
     @Field() address: string;
 }
