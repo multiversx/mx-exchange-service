@@ -133,23 +133,17 @@ export class EnergyAbiService extends GenericAbiService {
     }
 
     async getPenaltyAmount(
-        inputToken: InputTokenModel,
+        tokenAmount: BigNumber,
+        prevLockEpochs: number,
         epochsToReduce: number,
     ): Promise<string> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
-        const decodedAttributes = LockedTokenAttributes.fromAttributes(
-            inputToken.attributes,
-        );
-        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+
         const interaction: Interaction =
             contract.methodsExplicit.getPenaltyAmount([
-                new BigUIntValue(new BigNumber(inputToken.amount)),
-                new U64Value(
-                    new BigNumber(decodedAttributes.unlockEpoch).minus(
-                        currentEpoch,
-                    ),
-                ),
+                new BigUIntValue(tokenAmount),
+                new U64Value(new BigNumber(prevLockEpochs)),
                 new U64Value(new BigNumber(epochsToReduce)),
             ]);
 

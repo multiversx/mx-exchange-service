@@ -15,7 +15,6 @@ import {
     LockOption,
     SimpleLockEnergyModel,
 } from './models/simple.lock.energy.model';
-import { EnergyAbiService } from './services/energy.abi.service';
 import { EnergyGetterService } from './services/energy.getter.service';
 import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
@@ -27,7 +26,6 @@ export class EnergyResolver extends GenericResolver {
         protected readonly energyGetter: EnergyGetterService,
         protected readonly energyTransaction: EnergyTransactionService,
         private readonly energyService: EnergyService,
-        private readonly energyAbi: EnergyAbiService,
     ) {
         super();
     }
@@ -117,9 +115,14 @@ export class EnergyResolver extends GenericResolver {
     async penaltyAmount(
         @Args('inputToken') inputToken: InputTokenModel,
         @Args('epochsToReduce') epochsToReduce: number,
+        @Args('vmQuery', { nullable: true }) vmQuery: boolean,
     ): Promise<string> {
         return await this.genericQuery(() =>
-            this.energyAbi.getPenaltyAmount(inputToken, epochsToReduce),
+            this.energyService.getPenaltyAmount(
+                inputToken,
+                epochsToReduce,
+                vmQuery,
+            ),
         );
     }
 
