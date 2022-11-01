@@ -1,4 +1,8 @@
-import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
+import {
+    Energy,
+    EnergyType,
+    LockedTokenAttributes,
+} from '@elrondnetwork/erdjs-dex';
 import {
     Address,
     AddressValue,
@@ -9,16 +13,19 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { InputTokenModel } from 'src/models/inputToken.model';
+import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
-import { PenaltyPercentage } from '../models/simple.lock.energy.model';
+import { LockOption } from '../models/simple.lock.energy.model';
 
 @Injectable()
 export class EnergyAbiService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly contextGetter: ContextGetterService,
     ) {
         super(elrondProxy, logger);
     }
@@ -53,21 +60,6 @@ export class EnergyAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getPenaltyPercentage(): Promise<PenaltyPercentage> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getPenaltyPercentage();
-
-        const response = await this.getGenericData(interaction);
-        const rawPenaltyPercentage = response.firstValue.valueOf();
-        return new PenaltyPercentage({
-            firstThreshold: rawPenaltyPercentage.first_threshold.toNumber(),
-            secondThreshold: rawPenaltyPercentage.second_threshold.toNumber(),
-            thirdThreshold: rawPenaltyPercentage.third_threshold.toNumber(),
-        });
-    }
-
     async getFeesBurnPercentage(): Promise<number> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
@@ -98,16 +90,21 @@ export class EnergyAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getLockOptions(): Promise<number[]> {
+    async getLockOptions(): Promise<LockOption[]> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLockOptions();
 
         const response = await this.getGenericData(interaction);
-        return response.firstValue
-            .valueOf()
-            .map((lockOption: BigNumber) => lockOption.toNumber());
+        return response.firstValue.valueOf().map(
+            (lockOption: any) =>
+                new LockOption({
+                    lockEpochs: lockOption.lock_epochs.toNumber(),
+                    penaltyStartPercentage:
+                        lockOption.penalty_start_percentage.toNumber(),
+                }),
+        );
     }
 
     async getEnergyEntryForUser(userAddress: string): Promise<EnergyType> {
@@ -136,21 +133,27 @@ export class EnergyAbiService extends GenericAbiService {
     }
 
     async getPenaltyAmount(
-        tokenAmount: string,
+        inputToken: InputTokenModel,
         epochsToReduce: number,
-        currentUnlockEpoch: number,
     ): Promise<string> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const decodedAttributes = LockedTokenAttributes.fromAttributes(
+            inputToken.attributes,
+        );
+        const currentEpoch = await this.contextGetter.getCurrentEpoch();
         const interaction: Interaction =
             contract.methodsExplicit.getPenaltyAmount([
-                new BigUIntValue(new BigNumber(tokenAmount)),
+                new BigUIntValue(new BigNumber(inputToken.amount)),
+                new U64Value(
+                    new BigNumber(decodedAttributes.unlockEpoch).minus(
+                        currentEpoch,
+                    ),
+                ),
                 new U64Value(new BigNumber(epochsToReduce)),
-                new U64Value(new BigNumber(currentUnlockEpoch)),
             ]);
 
         const response = await this.getGenericData(interaction);
-
         return response.firstValue.valueOf().toFixed();
     }
 
