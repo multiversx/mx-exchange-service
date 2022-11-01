@@ -1,29 +1,29 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { AbiFarmService } from 'src/modules/farm/base-module/services/farm.abi.service';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
-import { FarmComputeService } from 'src/modules/farm/base-module/services/farm.compute.service';
-import { FarmSetterService } from 'src/modules/farm/base-module/services/farm.setter.service';
 import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
 import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
 import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
+import { FarmAbiFactory } from 'src/modules/farm/farm.abi.factory';
+import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
+import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
+import { FarmSetterFactory } from 'src/modules/farm/farm.setter.factory';
 
 @Injectable()
 export class FarmCacheWarmerService {
     private invalidatedKeys = [];
 
     constructor(
-        private readonly abiFarm: AbiFarmService,
-        private readonly abiFarmV1_2: FarmAbiServiceV1_2,
+        private readonly farmAbiFactory: FarmAbiFactory,
+        private readonly farmAbiV1_2: FarmAbiServiceV1_2,
+        private readonly farmComputeFactory: FarmComputeFactory,
         private readonly farmComputeV1_2: FarmComputeServiceV1_2,
         private readonly farmComputeV1_3: FarmComputeServiceV1_3,
-        private readonly farmSetter: FarmSetterService,
-        private readonly farmCompute: FarmComputeService,
+        private readonly farmSetterFactory: FarmSetterFactory,
         private readonly apiService: ElrondApiService,
         private readonly tokenSetter: TokenSetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
@@ -35,9 +35,15 @@ export class FarmCacheWarmerService {
         const promises = farmsAddress.map(async (farmAddress) => {
             const [farmTokenID, farmingTokenID, farmedTokenID] =
                 await Promise.all([
-                    this.abiFarm.getFarmTokenID(farmAddress),
-                    this.abiFarm.getFarmingTokenID(farmAddress),
-                    this.abiFarm.getFarmedTokenID(farmAddress),
+                    this.farmAbiFactory
+                        .useAbi(farmAddress)
+                        .getFarmTokenID(farmAddress),
+                    this.farmAbiFactory
+                        .useAbi(farmAddress)
+                        .getFarmingTokenID(farmAddress),
+                    this.farmAbiFactory
+                        .useAbi(farmAddress)
+                        .getFarmedTokenID(farmAddress),
                 ]);
 
             const [farmToken, farmingToken, farmedToken] = await Promise.all([
@@ -47,9 +53,15 @@ export class FarmCacheWarmerService {
             ]);
 
             const cacheKeys = await Promise.all([
-                this.farmSetter.setFarmTokenID(farmAddress, farmTokenID),
-                this.farmSetter.setFarmingTokenID(farmAddress, farmingTokenID),
-                this.farmSetter.setFarmedTokenID(farmAddress, farmedTokenID),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setFarmTokenID(farmAddress, farmTokenID),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setFarmingTokenID(farmAddress, farmingTokenID),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setFarmedTokenID(farmAddress, farmedTokenID),
                 this.tokenSetter.setNftCollectionMetadata(
                     farmTokenID,
                     farmToken,
@@ -76,26 +88,25 @@ export class FarmCacheWarmerService {
                 unlockedRewardsAPR,
                 lockedRewardsAPR,
             ] = await Promise.all([
-                this.abiFarmV1_2.getLockedRewardAprMuliplier(address),
-                this.abiFarmV1_2.getFarmingTokenReserve(address),
+                this.farmAbiV1_2.getLockedRewardAprMuliplier(address),
+                this.farmAbiV1_2.getFarmingTokenReserve(address),
                 this.farmComputeV1_2.computeUnlockedRewardsAPR(address),
                 this.farmComputeV1_2.computeLockedRewardsAPR(address),
             ]);
 
             const cachedKeys = await Promise.all([
-                this.farmSetter.setLockedRewardAprMuliplier(
-                    address,
-                    aprMultiplier,
-                ),
-                this.farmSetter.setFarmingTokenReserve(
-                    address,
-                    farmingTokenReserve,
-                ),
-                this.farmSetter.setUnlockedRewardsAPR(
-                    address,
-                    unlockedRewardsAPR,
-                ),
-                this.farmSetter.setLockedRewardsAPR(address, lockedRewardsAPR),
+                this.farmSetterFactory
+                    .useSetter(address)
+                    .setLockedRewardAprMuliplier(address, aprMultiplier),
+                this.farmSetterFactory
+                    .useSetter(address)
+                    .setFarmingTokenReserve(address, farmingTokenReserve),
+                this.farmSetterFactory
+                    .useSetter(address)
+                    .setUnlockedRewardsAPR(address, unlockedRewardsAPR),
+                this.farmSetterFactory
+                    .useSetter(address)
+                    .setLockedRewardsAPR(address, lockedRewardsAPR),
             ]);
             this.invalidatedKeys.push(...cachedKeys);
             await this.deleteCacheKeys();
@@ -113,7 +124,9 @@ export class FarmCacheWarmerService {
                 this.farmComputeV1_3.computeFarmAPR(address),
             ]);
             const cachedKeys = await Promise.all([
-                this.farmSetter.setFarmAPR(address, apr),
+                this.farmSetterFactory
+                    .useSetter(address)
+                    .setFarmAPR(address, apr),
             ]);
             this.invalidatedKeys.push(...cachedKeys);
             await this.deleteCacheKeys();
@@ -130,28 +143,40 @@ export class FarmCacheWarmerService {
                 state,
                 produceRewardsEnabled,
             ] = await Promise.all([
-                this.abiFarm.getMinimumFarmingEpochs(farmAddress),
-                this.abiFarm.getPenaltyPercent(farmAddress),
-                this.abiFarm.getRewardsPerBlock(farmAddress),
-                this.abiFarm.getState(farmAddress),
-                this.abiFarm.getProduceRewardsEnabled(farmAddress),
+                this.farmAbiFactory
+                    .useAbi(farmAddress)
+                    .getMinimumFarmingEpochs(farmAddress),
+                this.farmAbiFactory
+                    .useAbi(farmAddress)
+                    .getPenaltyPercent(farmAddress),
+                this.farmAbiFactory
+                    .useAbi(farmAddress)
+                    .getRewardsPerBlock(farmAddress),
+                this.farmAbiFactory.useAbi(farmAddress).getState(farmAddress),
+                this.farmAbiFactory
+                    .useAbi(farmAddress)
+                    .getProduceRewardsEnabled(farmAddress),
             ]);
 
             const cacheKeys = await Promise.all([
-                this.farmSetter.setMinimumFarmingEpochs(
-                    farmAddress,
-                    minimumFarmingEpochs,
-                ),
-                this.farmSetter.setPenaltyPercent(farmAddress, penaltyPercent),
-                this.farmSetter.setRewardsPerBlock(
-                    farmAddress,
-                    rewardsPerBlock,
-                ),
-                this.farmSetter.setState(farmAddress, state),
-                this.farmSetter.setProduceRewardsEnabled(
-                    farmAddress,
-                    produceRewardsEnabled,
-                ),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setMinimumFarmingEpochs(farmAddress, minimumFarmingEpochs),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setPenaltyPercent(farmAddress, penaltyPercent),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setRewardsPerBlock(farmAddress, rewardsPerBlock),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setState(farmAddress, state),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setProduceRewardsEnabled(
+                        farmAddress,
+                        produceRewardsEnabled,
+                    ),
             ]);
             this.invalidatedKeys.push(cacheKeys);
             await this.deleteCacheKeys();
@@ -167,25 +192,32 @@ export class FarmCacheWarmerService {
                 farmRewardPerShare,
                 rewardReserve,
             ] = await Promise.all([
-                this.abiFarm.getFarmTokenSupply(farmAddress),
-                this.abiFarm.getLastRewardBlockNonce(farmAddress),
-                this.abiFarm.getRewardPerShare(farmAddress),
-                this.abiFarm.getRewardReserve(farmAddress),
+                this.farmAbiFactory
+                    .useAbi(farmAddress)
+                    .getFarmTokenSupply(farmAddress),
+                this.farmAbiFactory
+                    .useAbi(farmAddress)
+                    .getLastRewardBlockNonce(farmAddress),
+                this.farmAbiFactory
+                    .useAbi(farmAddress)
+                    .getRewardPerShare(farmAddress),
+                this.farmAbiFactory
+                    .useAbi(farmAddress)
+                    .getRewardReserve(farmAddress),
             ]);
             const cacheKeys = await Promise.all([
-                this.farmSetter.setFarmTokenSupply(
-                    farmAddress,
-                    farmTokenSupply,
-                ),
-                this.farmSetter.setLastRewardBlockNonce(
-                    farmAddress,
-                    lastRewardBlockNonce,
-                ),
-                this.farmSetter.setRewardPerShare(
-                    farmAddress,
-                    farmRewardPerShare,
-                ),
-                this.farmSetter.setRewardReserve(farmAddress, rewardReserve),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setFarmTokenSupply(farmAddress, farmTokenSupply),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setLastRewardBlockNonce(farmAddress, lastRewardBlockNonce),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setRewardPerShare(farmAddress, farmRewardPerShare),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setRewardReserve(farmAddress, rewardReserve),
             ]);
             this.invalidatedKeys.push(cacheKeys);
             await this.deleteCacheKeys();
@@ -200,23 +232,26 @@ export class FarmCacheWarmerService {
                 farmingTokenPriceUSD,
                 totalValueLockedUSD,
             ] = await Promise.all([
-                this.farmCompute.computeFarmedTokenPriceUSD(farmAddress),
-                this.farmCompute.computeFarmingTokenPriceUSD(farmAddress),
-                this.farmCompute.computeFarmLockedValueUSD(farmAddress),
+                this.farmComputeFactory
+                    .useCompute(farmAddress)
+                    .computeFarmedTokenPriceUSD(farmAddress),
+                this.farmComputeFactory
+                    .useCompute(farmAddress)
+                    .computeFarmingTokenPriceUSD(farmAddress),
+                this.farmComputeFactory
+                    .useCompute(farmAddress)
+                    .computeFarmLockedValueUSD(farmAddress),
             ]);
             const cacheKeys = await Promise.all([
-                this.farmSetter.setFarmedTokenPriceUSD(
-                    farmAddress,
-                    farmedTokenPriceUSD,
-                ),
-                this.farmSetter.setFarmingTokenPriceUSD(
-                    farmAddress,
-                    farmingTokenPriceUSD,
-                ),
-                this.farmSetter.setTotalValueLockedUSD(
-                    farmAddress,
-                    totalValueLockedUSD,
-                ),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setFarmedTokenPriceUSD(farmAddress, farmedTokenPriceUSD),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setFarmingTokenPriceUSD(farmAddress, farmingTokenPriceUSD),
+                this.farmSetterFactory
+                    .useSetter(farmAddress)
+                    .setTotalValueLockedUSD(farmAddress, totalValueLockedUSD),
             ]);
             this.invalidatedKeys.push(cacheKeys);
             await this.deleteCacheKeys();

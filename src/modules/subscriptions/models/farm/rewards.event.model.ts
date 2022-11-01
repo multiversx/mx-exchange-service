@@ -1,12 +1,19 @@
-import { RewardsEvent } from '@elrondnetwork/erdjs-dex';
+import {
+    BaseRewardsEvent,
+    RewardsEventV1_2,
+    RewardsEventV1_3,
+} from '@elrondnetwork/erdjs-dex';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';
-import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
+import {
+    FarmTokenAttributesModelV1_3,
+    FarmTokenAttributesModelV1_2,
+} from 'src/modules/farm/models/farmTokenAttributes.model';
 import { GenericEventModel } from '../generic.event.model';
 
 @ObjectType()
-export class RewardsEventModel extends GenericEventModel {
+export class RewardsFarmEventModel extends GenericEventModel {
     @Field(() => GenericToken)
     private oldFarmToken: GenericToken;
     @Field(() => GenericToken)
@@ -17,15 +24,37 @@ export class RewardsEventModel extends GenericEventModel {
     private rewardToken: GenericToken;
     @Field(() => String)
     private rewardTokenReserves: BigNumber;
-    @Field(() => FarmTokenAttributesModel)
-    private oldFarmAttributes: FarmTokenAttributesModel;
-    @Field(() => FarmTokenAttributesModel)
-    private newFarmAttributes: FarmTokenAttributesModel;
     @Field()
     private createdWithMerge: boolean;
 
-    constructor(init?: Partial<RewardsEvent>) {
+    constructor(init?: Partial<BaseRewardsEvent>) {
         super(init);
         Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class RewardsFarmEventModelV1_2 extends RewardsFarmEventModel {
+    @Field(() => FarmTokenAttributesModelV1_2)
+    private oldFarmAttributes: FarmTokenAttributesModelV1_2;
+    @Field(() => FarmTokenAttributesModelV1_2)
+    private newFarmAttributes: FarmTokenAttributesModelV1_2;
+
+    constructor(init?: Partial<RewardsEventV1_2>) {
+        super(init);
+        Object.assign(this);
+    }
+}
+
+@ObjectType()
+export class RewardsFarmEventModelV1_3 extends RewardsFarmEventModel {
+    @Field(() => FarmTokenAttributesModelV1_3)
+    private oldFarmAttributes: FarmTokenAttributesModelV1_3;
+    @Field(() => FarmTokenAttributesModelV1_3)
+    private newFarmAttributes: FarmTokenAttributesModelV1_3;
+
+    constructor(init?: Partial<RewardsEventV1_3>) {
+        super(init);
+        Object.assign(this);
     }
 }

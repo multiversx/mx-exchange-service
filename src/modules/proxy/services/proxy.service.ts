@@ -3,7 +3,6 @@ import { ProxyModel } from '../models/proxy.model';
 import { WrappedLpTokenAttributesModel } from '../models/wrappedLpTokenAttributes.model';
 import { WrappedFarmTokenAttributesModel } from '../models/wrappedFarmTokenAttributes.model';
 import { scAddress } from '../../../config';
-import { FarmService } from '../../farm/base-module/services/farm.service';
 import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
@@ -12,29 +11,44 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import {
-    FarmTokenAttributes,
+    FarmTokenAttributesV1_2,
+    FarmTokenAttributesV1_3,
     WrappedFarmTokenAttributes,
     WrappedLpTokenAttributes,
 } from '@elrondnetwork/erdjs-dex';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { farmVersion } from 'src/utils/farm.utils';
-import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
-import { ProxyGetterService } from './proxy.getter.service';
+import {
+    FarmTokenAttributesModelV1_2,
+    FarmTokenAttributesModelV1_3,
+    FarmTokenAttributesUnion,
+} from 'src/modules/farm/models/farmTokenAttributes.model';
 import { LockedAssetService } from 'src/modules/locked-asset-factory/services/locked-asset.service';
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { ProxyGetterService } from './proxy.getter.service';
+import { ProxyPairGetterService } from './proxy-pair/proxy-pair.getter.service';
+import { ProxyFarmGetterService } from './proxy-farm/proxy-farm.getter.service';
 
 @Injectable()
 export class ProxyService {
     constructor(
-        private readonly apiService: ElrondApiService,
         private readonly proxyGetter: ProxyGetterService,
+        private readonly proxyPairGetter: ProxyPairGetterService,
+        private readonly proxyFarmGetter: ProxyFarmGetterService,
+        private readonly farmGetter: FarmGetterFactory,
+        private readonly apiService: ElrondApiService,
         private readonly lockedAssetService: LockedAssetService,
-        private farmService: FarmService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getProxyInfo(): Promise<ProxyModel> {
-        return new ProxyModel({ address: scAddress.proxyDexAddress });
+    async getProxyInfo(): Promise<ProxyModel[]> {
+        const proxies: ProxyModel[] = [];
+        for (const address of scAddress.proxyDexAddress) {
+            proxies.push(new ProxyModel({ address }));
+        }
+        return proxies;
     }
 
     async getWrappedLpTokenAttributes(
@@ -61,11 +75,12 @@ export class ProxyService {
     }
 
     async getLockedAssetsAttributes(
+        proxyAddress: string,
         lockedAssetTokenCollection: string,
         lockedAssetNonce: number,
     ): Promise<LockedAssetAttributesModel> {
         const lockedAssetToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.proxyDexAddress,
+            proxyAddress,
             tokenIdentifier(lockedAssetTokenCollection, lockedAssetNonce),
         );
         const lockedAssetAttributes =
@@ -110,24 +125,59 @@ export class ProxyService {
     }
 
     async getFarmTokenAttributes(
+        proxyAddress: string,
         farmTokenCollection: string,
         farmTokenNonce: number,
-    ): Promise<FarmTokenAttributesModel> {
+    ): Promise<typeof FarmTokenAttributesUnion> {
         const farmToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.proxyDexAddress,
+            proxyAddress,
             tokenIdentifier(farmTokenCollection, farmTokenNonce),
         );
-        const farmAddress = await this.farmService.getFarmAddressByFarmTokenID(
+        const farmAddress = await this.farmGetter.getFarmAddressByFarmTokenID(
             farmToken.collection,
         );
+        const version = farmVersion(farmAddress);
 
-        return new FarmTokenAttributesModel({
-            ...FarmTokenAttributes.fromAttributes(
-                farmVersion(farmAddress),
-                farmToken.attributes,
-            ).toJSON(),
-            attributes: farmToken.attributes,
-            identifier: farmToken.identifier,
-        });
+        switch (version) {
+            case FarmVersion.V1_2:
+                return new FarmTokenAttributesModelV1_2({
+                    ...FarmTokenAttributesV1_2.fromAttributes(
+                        farmToken.attributes,
+                    ).toJSON(),
+                    attributes: farmToken.attributes,
+                    identifier: farmToken.identifier,
+                });
+            case FarmVersion.V1_3:
+                return new FarmTokenAttributesModelV1_3({
+                    ...FarmTokenAttributesV1_3.fromAttributes(
+                        farmToken.attributes,
+                    ).toJSON(),
+                    attributes: farmToken.attributes,
+                    identifier: farmToken.identifier,
+                });
+        }
+    }
+
+    async getProxyAddressByToken(tokenID: string): Promise<string> {
+        const proxyAddresses = scAddress.proxyDexAddress;
+
+        for (const address of proxyAddresses) {
+            const [lockedTokenID, proxyLpTokenID, proxyFarmTokenID] =
+                await Promise.all([
+                    this.proxyGetter.getLockedAssetTokenID(address),
+                    this.proxyPairGetter.getwrappedLpTokenID(address),
+                    this.proxyFarmGetter.getwrappedFarmTokenID(address),
+                ]);
+
+            if (
+                tokenID === lockedTokenID ||
+                tokenID === proxyLpTokenID ||
+                tokenID === proxyFarmTokenID
+            ) {
+                return address;
+            }
+        }
+
+        throw new Error('invalid locked token identifier');
     }
 }

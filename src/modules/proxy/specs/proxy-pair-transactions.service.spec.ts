@@ -105,6 +105,7 @@ describe('TransactionProxyPairService', () => {
         );
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
             {
                 pairAddress: Address.Zero().bech32(),
                 tokens: [
@@ -123,10 +124,8 @@ describe('TransactionProxyPairService', () => {
             },
         );
 
-        const [
-            wrapEgldTransaction,
-            addLiquidityProxy,
-        ] = liquidityBatchTransactions;
+        const [wrapEgldTransaction, addLiquidityProxy] =
+            liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(firstTokenAmount);
         expect(addLiquidityProxy.data).toEqual(
             'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAxZTJhMTQyOGRkMWUzYTUxNDZiMzk2MGQ5ZTBmNGE1MDM2OTkwNGVlNTQ4M0AwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDBhQDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDA5QDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOUAwOA==',
@@ -147,6 +146,7 @@ describe('TransactionProxyPairService', () => {
         );
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
             {
                 pairAddress: Address.Zero().bech32(),
                 tokens: [
@@ -165,10 +165,8 @@ describe('TransactionProxyPairService', () => {
             },
         );
 
-        const [
-            wrapEgldTransaction,
-            addLiquidityProxy,
-        ] = liquidityBatchTransactions;
+        const [wrapEgldTransaction, addLiquidityProxy] =
+            liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
         expect(addLiquidityProxy.data).toEqual(
             'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAxZTJhMTQyOGRkMWUzYTUxNDZiMzk2MGQ5ZTBmNGE1MDM2OTkwNGVlNTQ4M0AwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDBhQDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOEAwOQ==',

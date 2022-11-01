@@ -9,9 +9,8 @@ import { Resolver, Subscription } from '@nestjs/graphql';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { UpdatedEnergyEventModel } from './models/energy/updated.energy.event.model';
-import { EnterFarmEventModel } from './models/farm/enterFarm.event.model';
-import { ExitFarmEventModel } from './models/farm/exitFarm.event.model';
-import { RewardsEventModel } from './models/farm/rewards.event.model';
+import { FarmEventModelV1_3 } from './models/farm/enterFarm.event.model';
+import { RewardsFarmEventModelV1_3 } from './models/farm/rewards.event.model';
 import { AddLiquidityEventModel } from './models/pair/addLiquidity.event.model';
 import { RemoveLiquidityEventModel } from './models/pair/removeLiquidity.event.model';
 import { SwapFixedInputEventModel } from './models/pair/swapFixedInput.event.model';
@@ -66,29 +65,31 @@ export class SubscriptionsResolver {
         return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_NO_FEE);
     }
 
-    @Subscription(() => EnterFarmEventModel, {
-        resolve: (event) => new EnterFarmEventModel(event.enterFarmEvent),
+    @Subscription(() => FarmEventModelV1_3, {
+        resolve: (event) => new FarmEventModelV1_3(event.enterFarmEvent),
     })
     enterFarmEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.ENTER_FARM);
     }
 
-    @Subscription(() => ExitFarmEventModel, {
-        resolve: (event) => new ExitFarmEventModel(event.exitFarmEvent),
+    @Subscription(() => FarmEventModelV1_3, {
+        resolve: (event) => new FarmEventModelV1_3(event.exitFarmEvent),
     })
     exitFarmEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.EXIT_FARM);
     }
 
-    @Subscription(() => RewardsEventModel, {
-        resolve: (event) => new RewardsEventModel(event.claimRewardsEvent),
+    @Subscription(() => RewardsFarmEventModelV1_3, {
+        resolve: (event) =>
+            new RewardsFarmEventModelV1_3(event.claimRewardsEvent),
     })
     claimRewardsEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.CLAIM_REWARDS);
     }
 
-    @Subscription(() => RewardsEventModel, {
-        resolve: (event) => new RewardsEventModel(event.compoundRewardsEvent),
+    @Subscription(() => RewardsFarmEventModelV1_3, {
+        resolve: (event) =>
+            new RewardsFarmEventModelV1_3(event.compoundRewardsEvent),
     })
     compoundRewardsEvent() {
         return this.pubSub.asyncIterator(FARM_EVENTS.COMPOUND_REWARDS);

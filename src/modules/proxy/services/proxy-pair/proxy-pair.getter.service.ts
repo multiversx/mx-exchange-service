@@ -21,26 +21,26 @@ export class ProxyPairGetterService extends GenericGetterService {
         this.baseKey = 'proxyPair';
     }
 
-    async getwrappedLpTokenID(): Promise<string> {
+    async getwrappedLpTokenID(proxyAddress: string): Promise<string> {
         return await this.getData(
             this.getCacheKey('wrappedLpTokenID'),
-            () => this.abiService.getWrappedLpTokenID(),
+            () => this.abiService.getWrappedLpTokenID(proxyAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async getwrappedLpToken(): Promise<NftCollection> {
-        const wrappedLpTokenID = await this.getwrappedLpTokenID();
+    async getwrappedLpToken(proxyAddress: string): Promise<NftCollection> {
+        const wrappedLpTokenID = await this.getwrappedLpTokenID(proxyAddress);
         return await this.tokenGetter.getNftCollectionMetadata(
             wrappedLpTokenID,
         );
     }
 
-    async getIntermediatedPairs(): Promise<string[]> {
+    async getIntermediatedPairs(proxyAddress: string): Promise<string[]> {
         return await this.getData(
             this.getCacheKey('intermediatedPairs'),
-            () => this.abiService.getIntermediatedPairsAddress(),
+            () => this.abiService.getIntermediatedPairsAddress(proxyAddress),
             oneHour(),
         );
     }

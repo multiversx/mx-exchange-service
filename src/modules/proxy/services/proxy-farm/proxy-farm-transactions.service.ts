@@ -12,30 +12,23 @@ import {
     ExitFarmProxyArgs,
 } from '../../models/proxy-farm.args';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { ProxyFarmGetterService } from './proxy-farm.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { generateLogMessage } from 'src/utils/generate-log-message';
-import { ProxyPairGetterService } from '../proxy-pair/proxy-pair.getter.service';
-import { ProxyGetterService } from '../proxy.getter.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 
 @Injectable()
 export class TransactionsProxyFarmService {
     constructor(
         private readonly elrondProxy: ElrondProxyService,
-        private readonly proxyFarmGetter: ProxyFarmGetterService,
-        private readonly proxyPairService: ProxyPairGetterService,
-        private readonly proxyGetter: ProxyGetterService,
-        private readonly farmGetterService: FarmGetterService,
+        private readonly farmGetter: FarmGetterFactory,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -43,23 +36,12 @@ export class TransactionsProxyFarmService {
 
     async enterFarmProxy(
         sender: string,
+        proxyAddress: string,
         args: EnterFarmProxyArgs,
     ): Promise<TransactionModel> {
-        try {
-            await this.validateInputTokens(args.tokens);
-            await this.validateWFMTInputTokens(args.tokens.slice(1));
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                TransactionsProxyFarmService.name,
-                this.enterFarmProxy.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
         const version = farmVersion(args.farmAddress);
 
         const endpointArgs = [
@@ -98,9 +80,12 @@ export class TransactionsProxyFarmService {
 
     async exitFarmProxy(
         sender: string,
+        proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -125,9 +110,12 @@ export class TransactionsProxyFarmService {
 
     async claimFarmRewardsProxy(
         sender: string,
+        proxyAddress: string,
         args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -166,9 +154,12 @@ export class TransactionsProxyFarmService {
 
     async compoundRewardsProxy(
         sender: string,
+        proxyAddress: string,
         args: CompoundRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -194,9 +185,12 @@ export class TransactionsProxyFarmService {
 
     async migrateToNewFarmProxy(
         sender: string,
+        proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
@@ -221,6 +215,7 @@ export class TransactionsProxyFarmService {
 
     async mergeWrappedFarmTokens(
         sender: string,
+        proxyAddress: string,
         farmAddress: string,
         tokens: InputTokenModel[],
     ): Promise<TransactionModel> {
@@ -231,20 +226,9 @@ export class TransactionsProxyFarmService {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
         }
 
-        try {
-            await this.validateWFMTInputTokens(tokens);
-        } catch (error) {
-            const logMessage = generateLogMessage(
-                TransactionsProxyFarmService.name,
-                this.mergeWrappedFarmTokens.name,
-                '',
-                error.message,
-            );
-            this.logger.error(logMessage);
-            throw error;
-        }
-
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const endpointArgs = [
             BytesValue.fromHex(new Address(farmAddress).hex()),
@@ -270,39 +254,6 @@ export class TransactionsProxyFarmService {
             .toPlainObject();
     }
 
-    private async validateWFMTInputTokens(
-        tokens: InputTokenModel[],
-    ): Promise<void> {
-        const wrappedFarmTokenID =
-            await this.proxyFarmGetter.getwrappedFarmTokenID();
-
-        for (const wrappedFarmToken of tokens) {
-            if (
-                wrappedFarmToken.tokenID !== wrappedFarmTokenID ||
-                wrappedFarmToken.nonce < 1
-            ) {
-                throw new Error('Invalid tokens for merge!');
-            }
-        }
-    }
-
-    private async validateInputTokens(
-        tokens: InputTokenModel[],
-    ): Promise<void> {
-        const [lockedAssetTokenID, wrappedLPTokenID] = await Promise.all([
-            this.proxyGetter.getLockedAssetTokenID(),
-            this.proxyPairService.getwrappedLpTokenID(),
-        ]);
-
-        if (
-            (tokens[0].tokenID !== lockedAssetTokenID &&
-                tokens[0].tokenID !== wrappedLPTokenID) ||
-            tokens[0].nonce < 1
-        ) {
-            throw new Error('Invalid farming token received!');
-        }
-    }
-
     private async getExitFarmProxyGasLimit(
         args: ExitFarmProxyArgs,
     ): Promise<number> {
@@ -318,8 +269,12 @@ export class TransactionsProxyFarmService {
                 ? gasConfig.lockedAssetCreate
                 : 0;
         const [farmedTokenID, farmingTokenID] = await Promise.all([
-            this.farmGetterService.getFarmedTokenID(args.farmAddress),
-            this.farmGetterService.getFarmingTokenID(args.farmAddress),
+            this.farmGetter
+                .useGetter(args.farmAddress)
+                .getFarmedTokenID(args.farmAddress),
+            this.farmGetter
+                .useGetter(args.farmAddress)
+                .getFarmingTokenID(args.farmAddress),
         ]);
 
         if (farmedTokenID === farmingTokenID) {

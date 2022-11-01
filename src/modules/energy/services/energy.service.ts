@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { EnergyModel } from '../../models/simple.lock.model';
+import { EnergyModel } from '../models/energy.model';
 import { EnergyAbiService } from './energy.abi.service';
 import { EnergyComputeService } from './energy.compute.service';
 import { EnergyGetterService } from './energy.getter.service';

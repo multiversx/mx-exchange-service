@@ -6,7 +6,7 @@ import { RabbitMQProxyHandlerService } from './rabbitmq.proxy.handler.service';
 import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { awsConfig, scAddress } from 'src/config';
 import { RabbitMQEsdtTokenHandlerService } from './rabbitmq.esdtToken.handler.service';
-import { farmsAddresses, farmVersion } from 'src/utils/farm.utils';
+import { farmsAddresses } from 'src/utils/farm.utils';
 import { RabbitMQRouterHandlerService } from './rabbitmq.router.handler.service';
 import { RabbitMQMetabondingHandlerService } from './rabbitmq.metabonding.handler.service';
 import { PriceDiscoveryEventHandler } from './handlers/price.discovery.handler.service';
@@ -17,12 +17,10 @@ import {
     CompoundRewardsProxyEvent,
     CreatePairEvent,
     DepositEvent,
-    EnterFarmEvent,
     EnterFarmProxyEvent,
     EsdtLocalBurnEvent,
     EsdtLocalMintEvent,
     ESDT_EVENTS,
-    ExitFarmEvent,
     ExitFarmProxyEvent,
     FARM_EVENTS,
     MetabondingEvent,
@@ -32,14 +30,13 @@ import {
     PRICE_DISCOVERY_EVENTS,
     PROXY_EVENTS,
     RemoveLiquidityEvent,
-    RewardsEvent,
     ROUTER_EVENTS,
     SwapFixedInputEvent,
     SwapFixedOutputEvent,
     WithdrawEvent,
-    RawEvent,
     SIMPLE_LOCK_ENERGY_EVENTS,
     EnergyEvent,
+    RawEventType,
 } from '@elrondnetwork/erdjs-dex';
 import { RouterGetterService } from '../router/services/router.getter.service';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
@@ -76,7 +73,7 @@ export class RabbitMqConsumer {
         if (!rawEvents.events) {
             return;
         }
-        const events: RawEvent[] = rawEvents?.events?.filter(
+        const events: RawEventType[] = rawEvents?.events?.filter(
             (rawEvent: { address: string; identifier: string }) =>
                 this.filterAddresses.find(
                     (filterAddress) =>
@@ -127,36 +124,16 @@ export class RabbitMqConsumer {
                     this.updateIngestData(eventData);
                     break;
                 case FARM_EVENTS.ENTER_FARM:
-                    await this.wsFarmHandler.handleFarmEvent(
-                        new EnterFarmEvent(
-                            farmVersion(rawEvent.address),
-                            rawEvent,
-                        ),
-                    );
+                    await this.wsFarmHandler.handleEnterFarmEvent(rawEvent);
                     break;
                 case FARM_EVENTS.EXIT_FARM:
-                    await this.wsFarmHandler.handleFarmEvent(
-                        new ExitFarmEvent(
-                            farmVersion(rawEvent.address),
-                            rawEvent,
-                        ),
-                    );
+                    await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
-                    await this.wsFarmHandler.handleRewardsEvent(
-                        new RewardsEvent(
-                            farmVersion(rawEvent.address),
-                            rawEvent,
-                        ),
-                    );
+                    await this.wsFarmHandler.handleRewardsEvent(rawEvent);
                     break;
                 case FARM_EVENTS.COMPOUND_REWARDS:
-                    await this.wsFarmHandler.handleRewardsEvent(
-                        new RewardsEvent(
-                            farmVersion(rawEvent.address),
-                            rawEvent,
-                        ),
-                    );
+                    await this.wsFarmHandler.handleRewardsEvent(rawEvent);
                     break;
                 case PROXY_EVENTS.ADD_LIQUIDITY_PROXY:
                     await this.wsProxyHandler.handleLiquidityProxyEvent(

@@ -110,9 +110,11 @@ export class ElrondProxyService {
         );
     }
 
-    async getProxyDexSmartContract(): Promise<SmartContract> {
+    async getProxyDexSmartContract(
+        proxyAddress: string,
+    ): Promise<SmartContract> {
         return this.getSmartContract(
-            scAddress.proxyDexAddress,
+            proxyAddress,
             abiConfig.proxy,
             'ProxyDexImpl',
         );
@@ -175,7 +177,7 @@ export class ElrondProxyService {
             scAddress.feesCollector,
             abiConfig.feesCollector,
             'FeesCollector',
-        )
+        );
     }
 
     async getSmartContract(

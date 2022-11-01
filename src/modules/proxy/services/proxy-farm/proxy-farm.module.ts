@@ -9,7 +9,7 @@ import { ProxyPairModule } from '../proxy-pair/proxy-pair.module';
 import { ProxyModule } from '../../proxy.module';
 import { PairModule } from 'src/modules/pair/pair.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
-import { FarmBaseModule } from 'src/modules/farm/base-module/farm.base.module';
+import { FarmModule } from 'src/modules/farm/farm.module';
 
 @Module({
     imports: [
@@ -18,7 +18,7 @@ import { FarmBaseModule } from 'src/modules/farm/base-module/farm.base.module';
         ContextModule,
         ProxyPairModule,
         forwardRef(() => ProxyModule),
-        FarmBaseModule,
+        FarmModule,
         PairModule,
         TokenModule,
     ],

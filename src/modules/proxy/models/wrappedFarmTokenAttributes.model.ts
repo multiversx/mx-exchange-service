@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
-import { FarmTokenAttributesModel } from '../../farm/models/farmTokenAttributes.model';
+import { FarmTokenAttributesUnion } from '../../farm/models/farmTokenAttributes.model';
 import { WrappedLpTokenAttributesModel } from './wrappedLpTokenAttributes.model';
 
 @ObjectType()
@@ -17,8 +17,8 @@ export class WrappedFarmTokenAttributesModel {
     farmTokenAmount: string;
     @Field()
     farmTokenIdentifier: string;
-    @Field(() => FarmTokenAttributesModel)
-    farmTokenAttributes: FarmTokenAttributesModel;
+    @Field(() => FarmTokenAttributesUnion)
+    farmTokenAttributes: typeof FarmTokenAttributesUnion;
     @Field()
     farmingTokenID: string;
     @Field(() => Int)

@@ -1,5 +1,5 @@
 import { Field, ObjectType } from '@nestjs/graphql';
-import { EnergyModel } from 'src/modules/simple-lock/models/simple.lock.model';
+import { EnergyModel } from 'src/modules/energy/models/energy.model';
 
 @ObjectType()
 export class UpdatedEnergyEventModel {

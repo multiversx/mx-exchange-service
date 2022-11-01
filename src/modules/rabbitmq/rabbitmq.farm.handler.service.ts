@@ -1,8 +1,13 @@
 import {
-    EnterFarmEvent,
-    ExitFarmEvent,
+    BaseRewardsEvent,
+    EnterFarmEventV1_2,
+    EnterFarmEventV1_3,
+    ExitFarmEventV1_2,
+    ExitFarmEventV1_3,
     FARM_EVENTS,
-    RewardsEvent,
+    RawEventType,
+    RewardsEventV1_2,
+    RewardsEventV1_3,
 } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -12,77 +17,87 @@ import { farmVersion } from 'src/utils/farm.utils';
 import { Logger } from 'winston';
 import { FarmVersion } from '../farm/models/farm.model';
 import { AbiFarmService } from '../farm/base-module/services/farm.abi.service';
-import { FarmSetterService } from '../farm/base-module/services/farm.setter.service';
+import { BaseFarmEvent } from '@elrondnetwork/erdjs-dex/dist/event-decoder/farm/enter.farm.base.event';
+import { FarmAbiServiceV1_2 } from '../farm/v1.2/services/farm.v1.2.abi.service';
+import { FarmAbiServiceV1_3 } from '../farm/v1.3/services/farm.v1.3.abi.service';
+import { FarmSetterFactory } from '../farm/farm.setter.factory';
 
 @Injectable()
 export class RabbitMQFarmHandlerService {
     private invalidatedKeys = [];
 
     constructor(
-        private readonly abiFarmService: AbiFarmService,
-        private readonly farmSetterService: FarmSetterService,
+        private readonly abiFarmV1_2: FarmAbiServiceV1_2,
+        private readonly abiFarmV1_3: FarmAbiServiceV1_3,
+        private readonly farmSetterFactory: FarmSetterFactory,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async handleFarmEvent(
-        event: EnterFarmEvent | ExitFarmEvent,
-    ): Promise<void> {
-        const [lastRewardBlockNonce, undistributedFees] = await Promise.all([
-            this.abiFarmService.getLastRewardBlockNonce(event.getAddress()),
-            this.abiFarmService.getRewardPerShare(event.getAddress()),
-        ]);
-        const version = farmVersion(event.getAddress());
-        const cacheKeys = await Promise.all([
-            this.farmSetterService.setFarmTokenSupply(
-                event.getAddress(),
-                event.getFarmSupply().toFixed(),
-            ),
-            this.farmSetterService.setLastRewardBlockNonce(
-                event.getAddress(),
-                lastRewardBlockNonce,
-            ),
-            this.farmSetterService.setUndistributedFees(
-                event.getAddress(),
-                undistributedFees,
-            ),
-        ]);
-        if (version === FarmVersion.V1_2) {
-            cacheKeys.push(
-                await this.farmSetterService.setFarmingTokenReserve(
-                    event.getAddress(),
-                    event.getFarmingReserve().toFixed(),
-                ),
-            );
+    async handleEnterFarmEvent(rawEvent: RawEventType): Promise<void> {
+        const version = farmVersion(rawEvent.address);
+        let event: BaseFarmEvent;
+        switch (version) {
+            case FarmVersion.V1_2:
+                event = new EnterFarmEventV1_2(rawEvent);
+                break;
+            case FarmVersion.V1_3:
+                event = new EnterFarmEventV1_3(rawEvent);
+                break;
         }
-        this.invalidatedKeys.push(cacheKeys);
+        const cacheKey = await this.farmSetterFactory
+            .useSetter(event.address)
+            .setFarmTokenSupply(event.getAddress(), event.farmSupply.toFixed());
+        this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
-        event.getIdentifier() === FARM_EVENTS.ENTER_FARM
-            ? await this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
-                  enterFarmEvent: event,
-              })
-            : await this.pubSub.publish(FARM_EVENTS.EXIT_FARM, {
-                  exitFarmEvent: event,
-              });
+        await this.pubSub.publish(FARM_EVENTS.ENTER_FARM, {
+            enterFarmEvent: event,
+        });
     }
 
-    async handleRewardsEvent(event: RewardsEvent): Promise<void> {
-        const [lastRewardBlockNonce, farmRewardPerShare] = await Promise.all([
-            this.abiFarmService.getLastRewardBlockNonce(event.getAddress()),
-            this.abiFarmService.getRewardPerShare(event.getAddress()),
-        ]);
+    async handleExitFarmEvent(rawEvent: RawEventType): Promise<void> {
+        const version = farmVersion(rawEvent.address);
+        let event: BaseFarmEvent;
+        switch (version) {
+            case FarmVersion.V1_2:
+                event = new ExitFarmEventV1_2(rawEvent);
+                break;
+            case FarmVersion.V1_3:
+                event = new ExitFarmEventV1_3(rawEvent);
+                break;
+        }
+        const cacheKey = await this.farmSetterFactory
+            .useSetter(event.address)
+            .setFarmTokenSupply(event.getAddress(), event.farmSupply.toFixed());
+        this.invalidatedKeys.push(cacheKey);
+        await this.deleteCacheKeys();
+        await this.pubSub.publish(FARM_EVENTS.EXIT_FARM, {
+            exitFarmEvent: event,
+        });
+    }
 
-        const cacheKeys = await Promise.all([
-            this.farmSetterService.setLastRewardBlockNonce(
-                event.getAddress(),
-                lastRewardBlockNonce,
-            ),
-            this.farmSetterService.setRewardPerShare(
-                event.getAddress(),
-                farmRewardPerShare,
-            ),
-        ]);
-        this.invalidatedKeys.push(cacheKeys);
+    async handleRewardsEvent(rawEvent: RawEventType): Promise<void> {
+        const version = farmVersion(rawEvent.address);
+        let event: BaseRewardsEvent;
+        let abiService: AbiFarmService;
+        switch (version) {
+            case FarmVersion.V1_2:
+                event = new RewardsEventV1_2(rawEvent);
+                abiService = this.abiFarmV1_2;
+                break;
+            case FarmVersion.V1_3:
+                event = new RewardsEventV1_3(rawEvent);
+                abiService = this.abiFarmV1_3;
+                break;
+        }
+
+        const rewardPerShare = await abiService.getRewardPerShare(
+            event.address,
+        );
+        const cacheKey = await this.farmSetterFactory
+            .useSetter(event.address)
+            .setRewardPerShare(event.getAddress(), rewardPerShare);
+        this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
 
         await this.pubSub.publish(FARM_EVENTS.CLAIM_REWARDS, {

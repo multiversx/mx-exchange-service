@@ -7,7 +7,10 @@
         "MEX-dc289c": "erd1qqqqqqqqqqqqqpgquu5rsa4ee6l4azz6vdu4hjp8z4p6tt8m0n4suht3dy",
         "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
+        "proxyDexAddress": [
+            "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
+            "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5"
+        ],
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
         "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgq2anqkeemt2h5gzseusajuyxt2eaak3j50n4skqj5tz",
@@ -21,8 +24,10 @@
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
         "priceDiscovery": [
+            "erd1qqqqqqqqqqqqqpgqpzlhg54w5upaeweyc6kugqspunpywwvx0n4sa9spnk",
             "erd1qqqqqqqqqqqqqpgq5daxqzyl8hxug8zyplweugxsh62vyqaw0n4sc69ndf",
-            "erd1qqqqqqqqqqqqqpgqzczn45apvnacfl6qhqnydz4gwxmtxj8k0n4synvktu"
+            "erd1qqqqqqqqqqqqqpgqzczn45apvnacfl6qhqnydz4gwxmtxj8k0n4synvktu",
+            "erd1qqqqqqqqqqqqqpgq7ycg0y45frcxupcpyvqlpvnuclkuscj30n4sgla0tf"
         ],
         "staking": [
             "erd1qqqqqqqqqqqqqpgq8w0s682m88xae2ne3qkq7w2h26u5a5c00n4stt02d7",
@@ -65,7 +70,14 @@
             ],
             "customRewards": []
         },
-        "v2": ["erd1qqqqqqqqqqqqqpgqetwkcsv2x9qpryyu828wv942qd8juhp80n4sv0c9q9"]
+        "v2": {
+                "unlockedRewards": [
+                    "erd1qqqqqqqqqqqqqpgqetwkcsv2x9qpryyu828wv942qd8juhp80n4sv0c9q9"
+                ],
+                "lockedRewards": [
+                    "erd1qqqqqqqqqqqqqpgqlct7zuf30senvglswfnqltaqzu2kalcj0n4s4s75su"
+                ]
+        }
     },
     "tokenProviderUSD": "WEGLD-d7c6bb",
     "tokensSupply": ["MEX-dc289c"],

@@ -21,7 +21,8 @@ import { RemoteConfigModule } from '../remote-config/remote-config.module';
 import { RouterModule } from '../router/router.module';
 import { UserEsdtService } from './services/user.esdt.service';
 import { UserEsdtComputeService } from './services/esdt.compute.service';
-import { FarmBaseModule } from '../farm/base-module/farm.base.module';
+import { FarmModule } from '../farm/farm.module';
+import { EnergyModule } from '../energy/energy.module';
 
 @Module({
     imports: [
@@ -33,13 +34,14 @@ import { FarmBaseModule } from '../farm/base-module/farm.base.module';
         ProxyModule,
         ProxyPairModule,
         ProxyFarmModule,
-        FarmBaseModule,
+        FarmModule,
         LockedAssetModule,
         WrappingModule,
         StakingModule,
         StakingProxyModule,
         PriceDiscoveryModule,
         SimpleLockModule,
+        EnergyModule,
         TokenModule,
         RemoteConfigModule,
     ],

@@ -5,26 +5,31 @@ import { scAddress } from 'src/config';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
+import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
-import { EnergyModel, UnlockType } from './models/simple.lock.model';
-import { SimpleLockEnergyModel } from './models/simple.lock.model';
-import { EnergyGetterService } from './services/energy/energy.getter.service';
-import { EnergyService } from './services/energy/energy.service';
-import { EnergyTransactionService } from './services/energy/energy.transaction.service';
-import { SimpleLockService } from './services/simple.lock.service';
-import { SimpleLockResolver } from './simple.lock.resolver';
+import { NftCollection } from '../tokens/models/nftCollection.model';
+import { EnergyModel, UnlockType } from './models/energy.model';
+import {
+    LockOption,
+    SimpleLockEnergyModel,
+} from './models/simple.lock.energy.model';
+import { EnergyAbiService } from './services/energy.abi.service';
+import { EnergyGetterService } from './services/energy.getter.service';
+import { EnergyService } from './services/energy.service';
+import { EnergyTransactionService } from './services/energy.transaction.service';
+import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.validator';
 
 @Resolver(() => SimpleLockEnergyModel)
-export class EnergyResolver extends SimpleLockResolver {
+export class EnergyResolver extends GenericResolver {
     constructor(
-        protected readonly simpleLockService: SimpleLockService,
         protected readonly energyGetter: EnergyGetterService,
         protected readonly energyTransaction: EnergyTransactionService,
         private readonly energyService: EnergyService,
+        private readonly energyAbi: EnergyAbiService,
     ) {
-        super(simpleLockService, energyGetter);
+        super();
     }
 
     @ResolveField()
@@ -35,8 +40,50 @@ export class EnergyResolver extends SimpleLockResolver {
     }
 
     @ResolveField()
-    async lockOptions(): Promise<number[]> {
-        return await this.genericFieldResover<number[]>(() =>
+    async lockedToken(): Promise<NftCollection> {
+        return await this.genericFieldResover<NftCollection>(() =>
+            this.energyGetter.getLockedToken(),
+        );
+    }
+
+    @ResolveField()
+    async legacyLockedToken(): Promise<NftCollection> {
+        return await this.genericFieldResover<NftCollection>(() =>
+            this.energyGetter.getLegacyLockedToken(),
+        );
+    }
+
+    @ResolveField()
+    async feesBurnPercentage(): Promise<number> {
+        return await this.genericFieldResover<number>(() =>
+            this.energyGetter.getFeesBurnPercentage(),
+        );
+    }
+
+    @ResolveField()
+    async feesCollectorAddress(): Promise<string> {
+        return await this.genericFieldResover<string>(() =>
+            this.energyGetter.getFeesCollectorAddress(),
+        );
+    }
+
+    @ResolveField()
+    async lastEpochFeeSentToCollector(): Promise<number> {
+        return await this.genericFieldResover<number>(() =>
+            this.energyGetter.getLastEpochFeeSentToCollector(),
+        );
+    }
+
+    @ResolveField()
+    async getFeesFromPenaltyUnlocking(): Promise<string> {
+        return await this.genericFieldResover<string>(() =>
+            this.energyGetter.getFeesFromPenaltyUnlocking(),
+        );
+    }
+
+    @ResolveField()
+    async lockOptions(): Promise<LockOption[]> {
+        return await this.genericFieldResover<LockOption[]>(() =>
             this.energyGetter.getLockOptions(),
         );
     }
@@ -66,29 +113,66 @@ export class EnergyResolver extends SimpleLockResolver {
         );
     }
 
+    @Query(() => String)
+    async penaltyAmount(
+        @Args('inputToken') inputToken: InputTokenModel,
+        @Args('epochsToReduce') epochsToReduce: number,
+    ): Promise<string> {
+        return await this.genericQuery(() =>
+            this.energyAbi.getPenaltyAmount(inputToken, epochsToReduce),
+        );
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async updateLockedTokens(
+    async lockTokensEnergy(
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @Args('unlockType') unlockType: UnlockType,
+        @Args('lockEpochs', { type: () => Int }) lockEpochs: number,
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        try {
+            return await this.energyTransaction.lockTokens(
+                user.publicKey,
+                inputTokens,
+                lockEpochs,
+            );
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async updateLockedTokensEnergy(
+        @Args('inputToken', LockedEnergyTokensValidationPipe)
+        inputToken: InputTokenModel,
+        @Args('unlockType', { type: () => UnlockType }) unlockType: UnlockType,
         @Args('epochsToReduce', { nullable: true }) epochsToReduce: number,
         @User() user: any,
     ): Promise<TransactionModel> {
-        const simpleLockAddress =
-            await this.simpleLockService.getSimpleLockAddressByTokenID(
-                inputTokens.tokenID,
-            );
-        if (simpleLockAddress === undefined) {
-            throw new ApolloError('invalid input token');
-        }
         return await this.genericQuery(() =>
             this.energyTransaction.unlockTokens(
-                simpleLockAddress,
                 user.publicKey,
-                inputTokens,
+                inputToken,
                 unlockType,
                 epochsToReduce,
             ),
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async mergeTokensEnergy(
+        @Args(
+            'inputTokens',
+            { type: () => [InputTokenModel] },
+            LockedEnergyTokensValidationPipe,
+        )
+        inputTokens: InputTokenModel[],
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        return await this.genericQuery(() =>
+            this.energyTransaction.mergeTokens(user.publicKey, inputTokens),
         );
     }
 

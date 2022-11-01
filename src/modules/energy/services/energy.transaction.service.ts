@@ -1,6 +1,8 @@
 import {
     Address,
     AddressValue,
+    Interaction,
+    TokenPayment,
     U16Value,
     U64Type,
     U64Value,
@@ -9,41 +11,120 @@ import {
 import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { elrondConfig, gasConfig } from 'src/config';
+import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairService } from 'src/modules/pair/services/pair.service';
-import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
-import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { SimpleLockType } from '../../models/simple.lock.model';
-import { SimpleLockGetterService } from '../simple.lock.getter.service';
-import { SimpleLockService } from '../simple.lock.service';
-import { SimpleLockTransactionService } from '../simple.lock.transactions.service';
+import { UnlockType } from '../models/energy.model';
 
 @Injectable()
-export class EnergyTransactionService extends SimpleLockTransactionService {
+export class EnergyTransactionService {
     constructor(
-        protected readonly simpleLockService: SimpleLockService,
-        protected readonly simpleLockGetter: SimpleLockGetterService,
-        protected readonly pairService: PairService,
-        protected readonly pairGetterService: PairGetterService,
-        protected readonly wrapService: WrapService,
-        protected readonly wrapTransaction: TransactionsWrapService,
         protected readonly contextGetter: ContextGetterService,
         protected readonly elrondProxy: ElrondProxyService,
-    ) {
-        super(
-            simpleLockService,
-            simpleLockGetter,
-            pairService,
-            pairGetterService,
-            wrapService,
-            wrapTransaction,
-            contextGetter,
-            elrondProxy,
+    ) {}
+
+    async lockTokens(
+        sender: string,
+        inputTokens: InputTokenModel,
+        lockEpochs: number,
+    ): Promise<TransactionModel> {
+        const contract =
+            await this.elrondProxy.getSimpleLockEnergySmartContract();
+
+        const interaction =
+            inputTokens.nonce > 0
+                ? contract.methodsExplicit
+                      .lockTokens([new U64Value(new BigNumber(lockEpochs))])
+                      .withSingleESDTNFTTransfer(
+                          TokenPayment.metaEsdtFromBigInteger(
+                              inputTokens.tokenID,
+                              inputTokens.nonce,
+                              new BigNumber(inputTokens.amount),
+                          ),
+                          Address.fromString(sender),
+                      )
+                : contract.methodsExplicit
+                      .lockTokens([new U64Value(new BigNumber(lockEpochs))])
+                      .withSingleESDTTransfer(
+                          TokenPayment.fungibleFromBigInteger(
+                              inputTokens.tokenID,
+                              new BigNumber(inputTokens.amount),
+                          ),
+                      );
+        return interaction
+            .withGasLimit(gasConfig.simpleLock.lockTokens)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async unlockTokens(
+        sender: string,
+        inputTokens: InputTokenModel,
+        unlockType: UnlockType,
+        epochsToReduce?: number,
+    ): Promise<TransactionModel> {
+        const contract =
+            await this.elrondProxy.getSimpleLockEnergySmartContract();
+
+        let endpoint: Interaction;
+        switch (unlockType) {
+            case UnlockType.EARLY_UNLOCK:
+                endpoint = contract.methodsExplicit.unlockEarly();
+                break;
+            case UnlockType.REDUCE_PERIOD:
+                endpoint = contract.methodsExplicit.reduceLockPeriod([
+                    new U64Value(new BigNumber(epochsToReduce)),
+                ]);
+            default:
+                endpoint = contract.methodsExplicit.unlockTokens();
+                break;
+        }
+
+        return endpoint
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.simpleLock.unlockTokens)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async mergeTokens(
+        sender: string,
+        inputTokens: InputTokenModel[],
+    ): Promise<TransactionModel> {
+        const contract =
+            await this.elrondProxy.getSimpleLockEnergySmartContract();
+
+        const mappedTokenPayments = inputTokens.map((inputToken) =>
+            TokenPayment.metaEsdtFromBigInteger(
+                inputToken.tokenID,
+                inputToken.nonce,
+                new BigNumber(inputToken.amount),
+            ),
         );
-        this.lockType = SimpleLockType.ENERGY_TYPE;
+
+        return contract.methodsExplicit
+            .mergeTokens()
+            .withMultiESDTNFTTransfer(
+                mappedTokenPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(
+                gasConfig.simpleLockEnergy.defaultMergeTokens *
+                    inputTokens.length,
+            )
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     // Only owner transaction

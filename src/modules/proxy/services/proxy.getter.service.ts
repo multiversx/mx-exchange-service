@@ -21,31 +21,33 @@ export class ProxyGetterService extends GenericGetterService {
         this.baseKey = 'proxy';
     }
 
-    async getAssetTokenID(): Promise<string> {
+    async getAssetTokenID(proxyAddress: string): Promise<string> {
         return await this.getData(
             this.getCacheKey('assetTokenID'),
-            () => this.abiService.getAssetTokenID(),
+            () => this.abiService.getAssetTokenID(proxyAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async getLockedAssetTokenID(): Promise<string> {
+    async getLockedAssetTokenID(proxyAddress: string): Promise<string> {
         return this.getData(
             this.getCacheKey('lockedAssetTokenID'),
-            () => this.abiService.getLockedAssetTokenID(),
+            () => this.abiService.getLockedAssetTokenID(proxyAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async getAssetToken(): Promise<EsdtToken> {
-        const assetTokenID = await this.getAssetTokenID();
+    async getAssetToken(proxyAddress: string): Promise<EsdtToken> {
+        const assetTokenID = await this.getAssetTokenID(proxyAddress);
         return this.tokenGetter.getTokenMetadata(assetTokenID);
     }
 
-    async getlockedAssetToken(): Promise<NftCollection> {
-        const lockedAssetTokenID = await this.getLockedAssetTokenID();
+    async getlockedAssetToken(proxyAddress: string): Promise<NftCollection> {
+        const lockedAssetTokenID = await this.getLockedAssetTokenID(
+            proxyAddress,
+        );
         return this.tokenGetter.getNftCollectionMetadata(lockedAssetTokenID);
     }
 }

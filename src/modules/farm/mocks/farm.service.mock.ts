@@ -1,6 +1,6 @@
 import { Tokens } from 'src/modules/pair/mocks/pair.constants';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { FarmTokenAttributesModel } from '../models/farmTokenAttributes.model';
+import { FarmTokenAttributesModelV1_2 } from '../models/farmTokenAttributes.model';
 import { farms } from './farm.constants';
 
 export class FarmServiceMock {
@@ -30,11 +30,10 @@ export class FarmServiceMock {
     }
 
     decodeFarmTokenAttributes(
-        farmAddress: string,
         identifier: string,
         attributes: string,
-    ): FarmTokenAttributesModel {
-        return new FarmTokenAttributesModel({
+    ): FarmTokenAttributesModelV1_2 {
+        return new FarmTokenAttributesModelV1_2({
             identifier: identifier,
             attributes: attributes,
             originalEnteringEpoch: 1,

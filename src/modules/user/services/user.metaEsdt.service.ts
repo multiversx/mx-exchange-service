@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { FarmService } from '../../farm/base-module/services/farm.service';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
@@ -17,7 +16,6 @@ import { oneHour, oneSecond } from '../../../helpers/helpers';
 import { generateGetLogMessage } from '../../../utils/generate-log-message';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { PaginationArgs } from '../../dex.model';
 import { LockedAssetGetterService } from '../../locked-asset-factory/services/locked.asset.getter.service';
 import { farmsAddresses } from 'src/utils/farm.utils';
@@ -32,6 +30,8 @@ import { INFTToken } from '../../tokens/models/nft.interface';
 import { UserEsdtService } from './user.esdt.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { scAddress } from 'src/config';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
 
 enum NftTokenType {
     FarmToken,
@@ -44,6 +44,7 @@ enum NftTokenType {
     LockedEsdtToken,
     LockedSimpleLpToken,
     LockedSimpleFarmToken,
+    LockedTokenEnergy,
 }
 
 @Injectable()
@@ -56,13 +57,13 @@ export class UserService {
         private pairGetter: PairGetterService,
         private proxyPairGetter: ProxyPairGetterService,
         private proxyFarmGetter: ProxyFarmGetterService,
-        private farmService: FarmService,
-        private farmGetterService: FarmGetterService,
+        private farmGetter: FarmGetterFactory,
         private lockedAssetGetter: LockedAssetGetterService,
         private stakeGetterService: StakingGetterService,
         private proxyStakeGetter: StakingProxyGetterService,
         private priceDiscoveryService: PriceDiscoveryService,
         private simpleLockGetter: SimpleLockGetterService,
+        private energyGetter: EnergyGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -133,7 +134,7 @@ export class UserService {
             switch (userNftTokenType) {
                 case NftTokenType.FarmToken:
                     const farmAddress =
-                        await this.farmService.getFarmAddressByFarmTokenID(
+                        await this.farmGetter.getFarmAddressByFarmTokenID(
                             userNft.collection,
                         );
                     promises.push(
@@ -207,6 +208,11 @@ export class UserService {
                         ),
                     );
                     break;
+                case NftTokenType.LockedTokenEnergy:
+                    promises.push(
+                        this.userComputeService.lockedTokenEnergyUSD(userNft),
+                    );
+                    break;
                 default:
                     break;
             }
@@ -216,20 +222,29 @@ export class UserService {
     }
 
     private async getNftTokenType(tokenID: string): Promise<NftTokenType> {
-        const [lockedMEXTokenID, lockedLpTokenID, lockedFarmTokenID] =
-            await Promise.all([
-                this.lockedAssetGetter.getLockedTokenID(),
-                this.proxyPairGetter.getwrappedLpTokenID(),
-                this.proxyFarmGetter.getwrappedFarmTokenID(),
+        const lockedMEXTokenID =
+            await this.lockedAssetGetter.getLockedTokenID();
+        if (tokenID === lockedMEXTokenID) {
+            return NftTokenType.LockedAssetToken;
+        }
+
+        const lockedTokenEnergy = await this.energyGetter.getLockedTokenID();
+        if (tokenID === lockedTokenEnergy) {
+            return NftTokenType.LockedTokenEnergy;
+        }
+
+        for (const proxyAddress of scAddress.proxyDexAddress) {
+            const [lockedLpTokenID, lockedFarmTokenID] = await Promise.all([
+                this.proxyPairGetter.getwrappedLpTokenID(proxyAddress),
+                this.proxyFarmGetter.getwrappedFarmTokenID(proxyAddress),
             ]);
 
-        switch (tokenID) {
-            case lockedMEXTokenID:
-                return NftTokenType.LockedAssetToken;
-            case lockedLpTokenID:
-                return NftTokenType.LockedLpToken;
-            case lockedFarmTokenID:
-                return NftTokenType.LockedFarmToken;
+            switch (tokenID) {
+                case lockedLpTokenID:
+                    return NftTokenType.LockedLpToken;
+                case lockedFarmTokenID:
+                    return NftTokenType.LockedFarmToken;
+            }
         }
 
         for (const simpleLockAddress of scAddress.simpleLockAddress) {
@@ -254,7 +269,11 @@ export class UserService {
 
         let promises: Promise<string>[] = [];
         for (const farmAddress of farmsAddresses()) {
-            promises.push(this.farmGetterService.getFarmTokenID(farmAddress));
+            promises.push(
+                this.farmGetter
+                    .useGetter(farmAddress)
+                    .getFarmTokenID(farmAddress),
+            );
         }
         const farmTokenIDs = await Promise.all(promises);
         if (farmTokenIDs.find((farmTokenID) => farmTokenID === tokenID)) {
