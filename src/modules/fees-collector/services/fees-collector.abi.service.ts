@@ -10,6 +10,7 @@ import {
 import { Mixin } from 'ts-mixer';
 import BigNumber from 'bignumber.js';
 import { WeekTimekeepingAbiService } from '../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { EsdtTokenPayment, EsdtTokenType } from "../../../models/esdtTokenPayment.model";
 
 @Injectable()
 export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
@@ -36,6 +37,35 @@ export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewa
         );
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async accumulatedLockedFees(scAddress: string, week: number, token: string): Promise<EsdtTokenPayment[]> {
+        const contract = await this.getContractHandler(scAddress);
+        const interaction: Interaction = contract.methodsExplicit.getAccumulatedLockedFees(
+            [
+                new U32Value(new BigNumber(week)),
+                new TokenIdentifierValue(token),
+            ],
+        );
+        const response = await this.getGenericData(interaction);
+        const rewardsRaw = response.firstValue.valueOf()
+        const rewards: EsdtTokenPayment[] = []
+        for (const rewardRaw of rewardsRaw) {
+            console.log(rewardRaw);
+            rewards.push(new EsdtTokenPayment({
+                tokenType: EsdtTokenType.getEnum().getVariantByName(
+                    rewardRaw.token_type.name,
+                ).discriminant,
+                tokenID: rewardRaw.token_identifier.toString(),
+                nonce: new BigNumber(
+                    rewardRaw.token_nonce,
+                ).toNumber(),
+                amount: new BigNumber(
+                    rewardRaw.amount,
+                ).toFixed(),
+            }));
+        }
+        return rewards;
     }
 
     async allTokens(scAddress: string): Promise<string[]> {

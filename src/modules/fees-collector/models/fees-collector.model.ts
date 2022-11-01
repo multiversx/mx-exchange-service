@@ -28,6 +28,9 @@ export class FeesCollectorModel extends GlobalInfoByWeekSubModel {
     @Field(() => [EsdtTokenPayment])
     accumulatedFees: [EsdtTokenPayment]
 
+    @Field(() => [EsdtTokenPayment])
+    accumulatedLockedFees: [EsdtTokenPayment]
+
     constructor(init?: Partial<FeesCollectorModel>) {
         super(init);
         Object.assign(this, init);

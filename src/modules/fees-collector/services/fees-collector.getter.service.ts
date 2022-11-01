@@ -11,6 +11,7 @@ import {
 import { Mixin } from 'ts-mixer';
 import { oneMinute } from '../../../helpers/helpers';
 import { IFeesCollectorGetterService } from "../interfaces";
+import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
 
 @Injectable()
 export class FeesCollectorGetterService extends Mixin(GenericGetterService, WeeklyRewardsSplittingGetterService) implements IFeesCollectorGetterService{
@@ -26,6 +27,14 @@ export class FeesCollectorGetterService extends Mixin(GenericGetterService, Week
         return this.getData(
             this.getFeesCollectorCacheKey(scAddress, 'accumulatedFees', week, token),
             () => this.abiService.accumulatedFees(scAddress, week, token),
+            oneMinute(),
+        )
+    }
+
+    async getAccumulatedLockedFees(scAddress: string, week: number, token: string): Promise<EsdtTokenPayment[]> {
+        return this.getData(
+            this.getFeesCollectorCacheKey(scAddress, 'accumulatedLockedFees', week, token),
+            () => this.abiService.accumulatedLockedFees(scAddress, week, token),
             oneMinute(),
         )
     }

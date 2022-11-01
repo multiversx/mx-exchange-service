@@ -3,7 +3,7 @@ import { GenericAbiService } from '../../../services/generics/generic.abi.servic
 import BigNumber from 'bignumber.js';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { Injectable } from '@nestjs/common';
-import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
+import { EsdtTokenPayment, EsdtTokenType } from '../../../models/esdtTokenPayment.model';
 import { ErrorGetContractHandlerNotSet, VmQueryError } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
 import { ReturnCode } from '@elrondnetwork/erdjs/out/smartcontracts/returnCode';
@@ -88,11 +88,17 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         const rewards: EsdtTokenPayment[] = []
         for (const rewardRaw of rewardsRaw) {
             rewards.push(new EsdtTokenPayment({
-                tokenID: rewardRaw.token,
-                amount: rewardRaw.amount,
-                tokenType: 0,
-                nonce: 0
-            }))
+                tokenType: EsdtTokenType.getEnum().getVariantByName(
+                    rewardRaw.token_type.name,
+                ).discriminant,
+                tokenID: rewardRaw.token_identifier.toString(),
+                nonce: new BigNumber(
+                    rewardRaw.token_nonce,
+                ).toNumber(),
+                amount: new BigNumber(
+                    rewardRaw.amount,
+                ).toFixed(),
+            }));
         }
         return rewards;
     }
