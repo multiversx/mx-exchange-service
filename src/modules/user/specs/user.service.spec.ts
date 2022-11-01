@@ -73,6 +73,7 @@ import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2
 import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
+import { EnergyGetterServiceProvider } from 'src/modules/energy/mocks/energy.getter.service.mock';
 
 describe('UserService', () => {
     let userMetaEsdts: UserService;
@@ -230,6 +231,7 @@ describe('UserService', () => {
                 PriceDiscoveryGetterServiceProvider,
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
+                EnergyGetterServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 TokenService,
