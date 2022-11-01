@@ -9,9 +9,16 @@ import { FarmGetterService } from '../../base-module/services/farm.getter.servic
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
+import {
+    WeeklyRewardsSplittingGetterService
+} from "../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
+import { Mixin } from "ts-mixer";
+import {
+    WeekTimekeepingGetterService
+} from "../../../../submodules/week-timekeeping/services/week-timekeeping.getter.service";
 
 @Injectable()
-export class FarmGetterServiceV2 extends FarmGetterService {
+export class FarmGetterServiceV2 extends Mixin(FarmGetterService, WeekTimekeepingGetterService, WeeklyRewardsSplittingGetterService)  {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

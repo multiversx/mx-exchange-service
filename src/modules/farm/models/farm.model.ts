@@ -3,6 +3,9 @@ import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
+import {
+    UserInfoByWeekModel,
+} from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 
 export enum FarmVersion {
     V1_2 = 'v1.2',
@@ -28,7 +31,8 @@ export class RewardsModel {
     rewards: string;
     @Field(() => Int, { nullable: true })
     remainingFarmingEpochs?: number;
-
+    @Field(() => [UserInfoByWeekModel])
+    boostedRewardsWeeklyInfo: UserInfoByWeekModel[]
     constructor(init?: Partial<RewardsModel>) {
         Object.assign(this, init);
     }

@@ -12,11 +12,11 @@ import { Logger } from 'winston';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
-export abstract class AbiFarmService extends GenericAbiService {
+export class AbiFarmService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly gatewayService: ElrondGatewayService,
+        protected readonly gatewayService: ElrondGatewayService,
     ) {
         super(elrondProxy, logger);
     }
