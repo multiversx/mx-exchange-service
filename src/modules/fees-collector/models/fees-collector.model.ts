@@ -1,9 +1,10 @@
-import { Field, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import {
     GlobalInfoByWeekModel, GlobalInfoByWeekSubModel, UserInfoByWeekModel, UserInfoByWeekSubModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
+import { TransactionModel } from "../../../models/transaction.model";
 
 @ObjectType()
 export class FeesCollectorModel extends GlobalInfoByWeekSubModel {
@@ -56,6 +57,19 @@ export class UserEntryFeesCollectorModel extends UserInfoByWeekSubModel {
 
     constructor(init?: Partial<UserEntryFeesCollectorModel>) {
         super(init);
+        Object.assign(this, init);
+    }
+}
+
+
+@ObjectType()
+export class FeesCollectorTransactionModel {
+    @Field(() => TransactionModel, { nullable: true })
+    transaction: TransactionModel
+    @Field(() => Int)
+    count: number;
+
+    constructor(init?: Partial<FeesCollectorTransactionModel>) {
         Object.assign(this, init);
     }
 }
