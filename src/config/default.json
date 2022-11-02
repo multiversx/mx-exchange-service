@@ -376,7 +376,10 @@
         "distribution": "./src/abis/distribution.abi.json",
         "lockedAssetFactory": "./src/abis/factory.abi.json",
         "metabondingStaking": "./src/abis/metabonding-staking.abi.json",
-        "proxy": "./src/abis/proxy-dex.abi.json",
+        "proxy": {
+            "v1": "./src/abis/proxy-dex.abi.json",
+            "v2": "./src/abis/proxy-dex-v2.abi.json"
+        },
         "wrap": "./src/abis/egld-esdt-swap.abi.json",
         "priceDiscovery": "./src/abis/price-discovery.abi.json",
         "simpleLock": "./src/abis/simple-lock.abi.json",

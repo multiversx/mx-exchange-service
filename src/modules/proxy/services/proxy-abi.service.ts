@@ -24,13 +24,13 @@ export class AbiProxyService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getLockedAssetTokenID(proxyAddress: string): Promise<string> {
+    async getLockedAssetTokenID(proxyAddress: string): Promise<string[]> {
         const contract = await this.elrondProxy.getProxyDexSmartContract(
             proxyAddress,
         );
         const interaction: Interaction =
             contract.methodsExplicit.getLockedAssetTokenId();
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
+        return [response.firstValue.valueOf().toString()];
     }
 }

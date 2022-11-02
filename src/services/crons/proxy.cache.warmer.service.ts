@@ -32,44 +32,30 @@ export class ProxyCacheWarmerService {
         for (const address of scAddress.proxyDexAddress) {
             const [
                 assetTokenID,
-                lockedAssetTokenID,
                 wrappedLpTokenID,
                 intermediatedPairs,
                 wrappedFarmTokenID,
                 intermediatedFarms,
             ] = await Promise.all([
                 this.abiProxyService.getAssetTokenID(address),
-                this.abiProxyService.getLockedAssetTokenID(address),
                 this.abiProxyPairService.getWrappedLpTokenID(address),
                 this.abiProxyPairService.getIntermediatedPairsAddress(address),
                 this.abiProxyFarmService.getWrappedFarmTokenID(address),
                 this.abiProxyFarmService.getIntermediatedFarmsAddress(address),
             ]);
 
-            const [
-                assetToken,
-                lockedAssetToken,
-                wrappedLpToken,
-                wrappedFarmToken,
-            ] = await Promise.all([
-                this.apiService.getToken(assetTokenID),
-                this.apiService.getNftCollection(lockedAssetTokenID),
-                this.apiService.getNftCollection(wrappedLpTokenID),
-                this.apiService.getNftCollection(wrappedFarmTokenID),
-            ]);
+            const [assetToken, wrappedLpToken, wrappedFarmToken] =
+                await Promise.all([
+                    this.apiService.getToken(assetTokenID),
+                    this.apiService.getNftCollection(wrappedLpTokenID),
+                    this.apiService.getNftCollection(wrappedFarmTokenID),
+                ]);
 
             await Promise.all([
                 this.setProxyCache(
                     'proxy',
                     'assetTokenID',
                     assetTokenID,
-                    CacheTtlInfo.Token.remoteTtl,
-                    CacheTtlInfo.Token.localTtl,
-                ),
-                this.setProxyCache(
-                    'proxy',
-                    'lockedAssetTokenID',
-                    lockedAssetTokenID,
                     CacheTtlInfo.Token.remoteTtl,
                     CacheTtlInfo.Token.localTtl,
                 ),
@@ -100,10 +86,6 @@ export class ProxyCacheWarmerService {
                     oneHour(),
                 ),
                 this.tokenSetter.setTokenMetadata(assetTokenID, assetToken),
-                this.tokenSetter.setNftCollectionMetadata(
-                    lockedAssetTokenID,
-                    lockedAssetToken,
-                ),
                 this.tokenSetter.setNftCollectionMetadata(
                     wrappedLpTokenID,
                     wrappedLpToken,

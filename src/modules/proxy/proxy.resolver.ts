@@ -1,45 +1,45 @@
-import { Resolver, Query, ResolveField, Args, Parent } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
-import { TransactionModel } from '../../models/transaction.model';
-import {
-    AddLiquidityProxyArgs,
-    RemoveLiquidityProxyArgs,
-} from './models/proxy-pair.args';
-import {
-    ClaimFarmRewardsProxyArgs,
-    CompoundRewardsProxyArgs,
-    EnterFarmProxyArgs,
-    ExitFarmProxyArgs,
-} from './models/proxy-farm.args';
+import { Resolver, ResolveField, Parent } from '@nestjs/graphql';
 import { ProxyPairGetterService } from './services/proxy-pair/proxy-pair.getter.service';
 import { ProxyModel } from './models/proxy.model';
 import { ProxyFarmGetterService } from './services/proxy-farm/proxy-farm.getter.service';
-import { TransactionsProxyPairService } from './services/proxy-pair/proxy-pair-transactions.service';
-import { TransactionsProxyFarmService } from './services/proxy-farm/proxy-farm-transactions.service';
 import { ProxyService } from './services/proxy.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { ApolloError } from 'apollo-server-express';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { User } from 'src/helpers/userDecorator';
-import { InputTokenModel } from 'src/models/inputToken.model';
-import { ProxyGetterService } from './services/proxy.getter.service';
-import { LiquidityTokensValidationPipe } from './validators/add.liquidity.input.validator';
-import { WrappedLpValidationPipe } from './validators/wrapped.lp.validator';
-import { MergeWrappedTokenValidationPipe } from './validators/merge.wrapped.token.validator';
-import { EnterFarmProxyValidationPipe } from './validators/enter.farm.proxy.valodator';
-import { WrappedFarmValidationPipe } from './validators/wrapped.farm.token.validator';
+import { ProxyGetterServiceV1 } from './v1/services/proxy.v1.getter.service';
+import { ProxyGetterServiceV2 } from './v2/services/proxy.v2.getter.service';
+import { proxyVersion } from 'src/utils/proxy.utils';
 
 @Resolver(() => ProxyModel)
 export class ProxyResolver {
     constructor(
-        private readonly proxyService: ProxyService,
-        private readonly proxyGetter: ProxyGetterService,
-        private readonly proxyPairGetter: ProxyPairGetterService,
-        private readonly proxyFarmGetter: ProxyFarmGetterService,
-        private readonly transactionsProxyPairService: TransactionsProxyPairService,
-        private readonly transactionsProxyFarmService: TransactionsProxyFarmService,
+        protected readonly proxyGetter: ProxyGetterServiceV1,
+        protected readonly proxyGetterV2: ProxyGetterServiceV2,
+        protected readonly proxyService: ProxyService,
+        protected readonly proxyPairGetter: ProxyPairGetterService,
+        protected readonly proxyFarmGetter: ProxyFarmGetterService,
     ) {}
+
+    @ResolveField()
+    async lockedAssetTokens(
+        @Parent() parent: ProxyModel,
+    ): Promise<NftCollection[]> {
+        try {
+            const version = proxyVersion(parent.address);
+            switch (version) {
+                case 'v1':
+                    return await this.proxyGetter.getlockedAssetToken(
+                        parent.address,
+                    );
+                case 'v2':
+                    return await this.proxyGetterV2.getlockedAssetToken(
+                        parent.address,
+                    );
+            }
+        } catch (error) {
+            throw new ApolloError(error);
+        }
+    }
 
     @ResolveField()
     async wrappedLpToken(@Parent() parent: ProxyModel): Promise<NftCollection> {
@@ -73,17 +73,6 @@ export class ProxyResolver {
     }
 
     @ResolveField()
-    async lockedAssetToken(
-        @Parent() parent: ProxyModel,
-    ): Promise<NftCollection> {
-        try {
-            return await this.proxyGetter.getlockedAssetToken(parent.address);
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
     async intermediatedPairs(@Parent() parent: ProxyModel): Promise<string[]> {
         try {
             return await this.proxyPairGetter.getIntermediatedPairs(
@@ -103,215 +92,5 @@ export class ProxyResolver {
         } catch (error) {
             throw new ApolloError(error);
         }
-    }
-
-    @Query(() => [ProxyModel])
-    async proxy(): Promise<ProxyModel[]> {
-        return await this.proxyService.getProxyInfo();
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => [TransactionModel])
-    async addLiquidityProxyBatch(
-        @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel[]> {
-        let lockedToken: InputTokenModel;
-        for (const token of args.tokens) {
-            if (token.nonce > 0) {
-                lockedToken = token;
-            }
-        }
-
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                lockedToken.tokenID,
-            );
-            return await this.transactionsProxyPairService.addLiquidityProxyBatch(
-                user.publicKey,
-                proxyAddress,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async addLiquidityProxy(
-        @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        let lockedToken: InputTokenModel;
-        for (const token of args.tokens) {
-            if (token.nonce > 0) {
-                lockedToken = token;
-            }
-        }
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                lockedToken.tokenID,
-            );
-            return await this.transactionsProxyPairService.addLiquidityProxy(
-                user.publicKey,
-                proxyAddress,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => [TransactionModel])
-    async removeLiquidityProxy(
-        @Args(WrappedLpValidationPipe) args: RemoveLiquidityProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel[]> {
-        const proxyAddress = await this.proxyService.getProxyAddressByToken(
-            args.wrappedLpTokenID,
-        );
-        return await this.transactionsProxyPairService.removeLiquidityProxy(
-            user.publicKey,
-            proxyAddress,
-            args,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async enterFarmProxy(
-        @Args(EnterFarmProxyValidationPipe) args: EnterFarmProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                args.tokens[0].tokenID,
-            );
-            return await this.transactionsProxyFarmService.enterFarmProxy(
-                user.publicKey,
-                proxyAddress,
-                args,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async exitFarmProxy(
-        @Args(WrappedFarmValidationPipe) args: ExitFarmProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        const proxyAddress = await this.proxyService.getProxyAddressByToken(
-            args.wrappedFarmTokenID,
-        );
-        return await this.transactionsProxyFarmService.exitFarmProxy(
-            user.publicKey,
-            proxyAddress,
-            args,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async claimFarmRewardsProxy(
-        @Args(WrappedFarmValidationPipe) args: ClaimFarmRewardsProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        const proxyAddress = await this.proxyService.getProxyAddressByToken(
-            args.wrappedFarmTokenID,
-        );
-        return await this.transactionsProxyFarmService.claimFarmRewardsProxy(
-            user.publicKey,
-            proxyAddress,
-            args,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async mergeWrappedLpTokens(
-        @Args(
-            'tokens',
-            { type: () => [InputTokenModel] },
-            MergeWrappedTokenValidationPipe,
-        )
-        tokens: InputTokenModel[],
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokens[0].tokenID,
-            );
-            return await this.transactionsProxyPairService.mergeWrappedLPTokens(
-                user.publicKey,
-                proxyAddress,
-                tokens,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async mergeWrappedFarmTokens(
-        @Args('farmAddress') farmAddress: string,
-        @Args(
-            'tokens',
-            { type: () => [InputTokenModel] },
-            MergeWrappedTokenValidationPipe,
-        )
-        tokens: InputTokenModel[],
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokens[0].tokenID,
-            );
-            return await this.transactionsProxyFarmService.mergeWrappedFarmTokens(
-                user.publicKey,
-                proxyAddress,
-                farmAddress,
-                tokens,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async compoundRewardsProxy(
-        @Args(WrappedFarmValidationPipe) args: CompoundRewardsProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        const proxyAddress = await this.proxyService.getProxyAddressByToken(
-            args.tokenID,
-        );
-        return await this.transactionsProxyFarmService.compoundRewardsProxy(
-            user.publicKey,
-            proxyAddress,
-            args,
-        );
-    }
-
-    @UseGuards(GqlAuthGuard)
-    @Query(() => TransactionModel)
-    async migrateToNewFarmProxy(
-        @Args(WrappedFarmValidationPipe) args: ExitFarmProxyArgs,
-        @User() user: any,
-    ): Promise<TransactionModel> {
-        const proxyAddress = await this.proxyService.getProxyAddressByToken(
-            args.wrappedFarmTokenID,
-        );
-        return await this.transactionsProxyFarmService.migrateToNewFarmProxy(
-            user.publicKey,
-            proxyAddress,
-            args,
-        );
     }
 }
