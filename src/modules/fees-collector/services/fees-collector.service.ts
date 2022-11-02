@@ -76,12 +76,12 @@ export class FeesCollectorService {
     }
 
     async getAccumulatedLockedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
-        let accumulatedFees: EsdtTokenPayment[] = []
-
+        const promisesList = [];
         for (const token of allTokens) {
-            const lockedFees = await this.feesCollectorGetterService.getAccumulatedLockedFees(scAddress, week, token)
-            accumulatedFees = accumulatedFees.concat(lockedFees);
+            promisesList.push(this.feesCollectorGetterService.getAccumulatedLockedFees(scAddress, week, token));
         }
+
+        const accumulatedFees = (await Promise.all(promisesList)).flat();
         return accumulatedFees
     }
 

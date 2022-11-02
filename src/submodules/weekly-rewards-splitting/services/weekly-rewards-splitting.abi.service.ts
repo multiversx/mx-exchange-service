@@ -3,7 +3,7 @@ import { GenericAbiService } from '../../../services/generics/generic.abi.servic
 import BigNumber from 'bignumber.js';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { Injectable } from '@nestjs/common';
-import { EsdtTokenPayment, EsdtTokenType } from '../../../models/esdtTokenPayment.model';
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { ErrorGetContractHandlerNotSet, VmQueryError } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
 import { ReturnCode } from '@elrondnetwork/erdjs/out/smartcontracts/returnCode';
@@ -84,22 +84,16 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             [new U32Value(new BigNumber(week))],
         );
         const response = await this.getGenericData(interaction);
-        const rewardsRaw = response.firstValue.valueOf()
-        const rewards: EsdtTokenPayment[] = []
-        for (const rewardRaw of rewardsRaw) {
-            rewards.push(new EsdtTokenPayment({
-                tokenType: EsdtTokenType.getEnum().getVariantByName(
-                    rewardRaw.token_type.name,
-                ).discriminant,
-                tokenID: rewardRaw.token_identifier.toString(),
-                nonce: new BigNumber(
-                    rewardRaw.token_nonce,
-                ).toNumber(),
-                amount: new BigNumber(
-                    rewardRaw.amount,
-                ).toFixed(),
-            }));
-        }
+        const rewards = response.firstValue.valueOf().map( raw => {
+            const nonce = raw.token_nonce.toNumber()
+            const discriminant = nonce != 0 ? 3 : 1;
+            return new EsdtTokenPayment({
+                tokenType: discriminant,
+                tokenID: raw.token_identifier.toString(),
+                nonce: nonce,
+                amount: raw.amount.toFixed()
+            });
+        })
         return rewards;
     }
 

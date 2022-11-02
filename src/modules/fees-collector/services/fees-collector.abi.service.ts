@@ -48,18 +48,16 @@ export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewa
             ],
         );
         const response = await this.getGenericData(interaction);
-        const rewardsRaw = response.firstValue.valueOf()
-        const rewards: EsdtTokenPayment[] = []
-        for (const rewardRaw of rewardsRaw) {
-            const nonce = rewardRaw.token_nonce.toNumber()
+        const rewards = response.firstValue.valueOf().map( raw => {
+            const nonce = raw.token_nonce.toNumber()
             const discriminant = nonce != 0 ? 3 : 1;
-            rewards.push(new EsdtTokenPayment({
+            return new EsdtTokenPayment({
                 tokenType: discriminant,
-                tokenID: rewardRaw.token_identifier.toString(),
+                tokenID: raw.token_identifier.toString(),
                 nonce: nonce,
-                amount: rewardRaw.amount.toFixed()
-            }));
-        }
+                amount: raw.amount.toFixed()
+            });
+        })
         return rewards;
     }
 
