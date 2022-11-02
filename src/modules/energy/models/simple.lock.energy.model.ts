@@ -3,15 +3,13 @@ import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 
 @ObjectType()
-export class PenaltyPercentage {
+export class LockOption {
     @Field(() => Int)
-    firstThreshold: number;
+    lockEpochs: number;
     @Field(() => Int)
-    secondThreshold: number;
-    @Field(() => Int)
-    thirdThreshold: number;
+    penaltyStartPercentage: number;
 
-    constructor(init: PenaltyPercentage) {
+    constructor(init: LockOption) {
         Object.assign(this, init);
     }
 }
@@ -26,10 +24,8 @@ export class SimpleLockEnergyModel {
     lockedToken: NftCollection;
     @Field()
     legacyLockedToken: NftCollection;
-    @Field(() => [Int])
-    lockOptions: number[];
-    @Field(() => PenaltyPercentage)
-    penaltyPercentage: PenaltyPercentage;
+    @Field(() => [LockOption])
+    lockOptions: LockOption[];
     @Field(() => Int)
     feesBurnPercentage: number;
     @Field()

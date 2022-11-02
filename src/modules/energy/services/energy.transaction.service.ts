@@ -25,20 +25,34 @@ export class EnergyTransactionService {
     ) {}
 
     async lockTokens(
+        sender: string,
         inputTokens: InputTokenModel,
         lockEpochs: number,
     ): Promise<TransactionModel> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
 
-        return contract.methodsExplicit
-            .lockTokens([new U64Value(new BigNumber(lockEpochs))])
-            .withSingleESDTTransfer(
-                TokenPayment.fungibleFromBigInteger(
-                    inputTokens.tokenID,
-                    new BigNumber(inputTokens.amount),
-                ),
-            )
+        const interaction =
+            inputTokens.nonce > 0
+                ? contract.methodsExplicit
+                      .lockTokens([new U64Value(new BigNumber(lockEpochs))])
+                      .withSingleESDTNFTTransfer(
+                          TokenPayment.metaEsdtFromBigInteger(
+                              inputTokens.tokenID,
+                              inputTokens.nonce,
+                              new BigNumber(inputTokens.amount),
+                          ),
+                          Address.fromString(sender),
+                      )
+                : contract.methodsExplicit
+                      .lockTokens([new U64Value(new BigNumber(lockEpochs))])
+                      .withSingleESDTTransfer(
+                          TokenPayment.fungibleFromBigInteger(
+                              inputTokens.tokenID,
+                              new BigNumber(inputTokens.amount),
+                          ),
+                      );
+        return interaction
             .withGasLimit(gasConfig.simpleLock.lockTokens)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()

@@ -18,6 +18,7 @@ import {
     UserLockedLPToken,
     UserLockedSimpleFarmToken,
     UserLockedSimpleLpToken,
+    UserLockedTokenEnergy,
     UserRedeemToken,
     UserStakeFarmToken,
     UserToken,
@@ -540,6 +541,32 @@ export class UserComputeService {
             ...nftToken,
             decodedAttributes,
             valueUSD: userFarmToken.valueUSD,
+        });
+    }
+
+    async lockedTokenEnergyUSD(
+        nftToken: NftToken,
+    ): Promise<UserLockedTokenEnergy> {
+        const decodedAttributes =
+            this.simpleLockService.decodeLockedTokenAttributes({
+                identifier: nftToken.identifier,
+                attributes: nftToken.attributes,
+            });
+
+        const esdtToken = new EsdtToken({
+            identifier: decodedAttributes.originalTokenID,
+            balance: nftToken.balance,
+            decimals: nftToken.decimals,
+        });
+
+        const userEsdtToken = await this.userEsdtCompute.esdtTokenUSD(
+            esdtToken,
+        );
+
+        return new UserLockedTokenEnergy({
+            ...nftToken,
+            decodedAttributes,
+            valueUSD: userEsdtToken.valueUSD,
         });
     }
 }

@@ -8,9 +8,9 @@
             "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
         },
         "contractCrate": {
-            "name": "simple-lock-energy",
+            "name": "energy-factory",
             "version": "0.0.0",
-            "git_version": "v1.6.0-599-g1753118d-modified"
+            "git_version": "v1.6.0-659-gbc15fd5b-modified"
         },
         "framework": {
             "name": "elrond-wasm",
@@ -34,7 +34,7 @@
             "- fees_burn_percentage: The percentage of fees that are burned.",
             "    The rest are sent to the fees collector",
             "- fees_collector_address",
-            "- lock_options: List of epochs. Users may only choose from this list when calling lockTokens"
+            "- lock_options: See `addLockOptions` endpoint doc for details."
         ],
         "inputs": [
             {
@@ -44,18 +44,6 @@
             {
                 "name": "legacy_token_id",
                 "type": "TokenIdentifier"
-            },
-            {
-                "name": "first_threshold_penalty_percentage",
-                "type": "u16"
-            },
-            {
-                "name": "second_threshold_penalty_percentage",
-                "type": "u16"
-            },
-            {
-                "name": "third_threshold_penalty_percentage",
-                "type": "u16"
             },
             {
                 "name": "fees_burn_percentage",
@@ -71,7 +59,7 @@
             },
             {
                 "name": "lock_options",
-                "type": "variadic<u64>",
+                "type": "variadic<multi<u64,u64>>",
                 "multi_arg": true
             }
         ],
@@ -221,20 +209,25 @@
         },
         {
             "docs": [
-                "Add lock options, as a list of epochs. Options must be >= 360 epochs (1 year).",
+                "Add lock options, as pairs of epochs and penalty percentages.",
+                "lock epochs must be >= 360 epochs (1 year),",
+                "percentages must be between 0 and 10_000",
+                "Additionally, percentages must increase as lock period increases.",
                 "",
-                "For example, an option of \"360\" means the user can choose to lock their tokens",
-                "for 360 epochs.",
+                "For example, an option pair of \"360, 100\" means the user can choose to lock their tokens",
+                "for 360 epochs, and if they were to unlock the immediately,",
+                "they would incur a penalty of 1%.",
                 "",
-                "When calling lockTokens, users may only pick one of the whitelisted lock options."
+                "When calling lockTokens, or reducing lock periods,",
+                "users may only pick one of the whitelisted lock options."
             ],
             "name": "addLockOptions",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
-                    "name": "lock_options",
-                    "type": "variadic<u64>",
+                    "name": "new_lock_options",
+                    "type": "variadic<multi<u64,u64>>",
                     "multi_arg": true
                 }
             ],
@@ -246,7 +239,7 @@
             "mutability": "mutable",
             "inputs": [
                 {
-                    "name": "lock_options",
+                    "name": "options_to_remove",
                     "type": "variadic<u64>",
                     "multi_arg": true
                 }
@@ -259,38 +252,9 @@
             "inputs": [],
             "outputs": [
                 {
-                    "type": "variadic<u64>",
-                    "multi_result": true
+                    "type": "List<LockOption>"
                 }
             ]
-        },
-        {
-            "docs": [
-                "- min_penalty_percentage / max_penalty_percentage: The penalty for early unlock",
-                "    of a token. A token locked for the max period, will have max_penalty_percentage penalty,",
-                "    whereas one with 1 epoch left, will have min_penalty_percentage.",
-                "    Penalty decreases linearly from max to min, based on the remaining locking period.",
-                "    ",
-                "    Both are values between 0 and 10_000, where 10_000 is 100%."
-            ],
-            "name": "setPenaltyPercentage",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "first_threshold_penalty_percentage",
-                    "type": "u16"
-                },
-                {
-                    "name": "second_threshold_penalty_percentage",
-                    "type": "u16"
-                },
-                {
-                    "name": "third_threshold_penalty_percentage",
-                    "type": "u16"
-                }
-            ],
-            "outputs": []
         },
         {
             "docs": [
@@ -341,7 +305,7 @@
             "docs": [
                 "Reduce the locking period of a locked token. This incures a penalty.",
                 "The longer the reduction, the bigger the penalty.",
-                "epochs_to_reduce must be a multiple of 360 (i.e. 1 year)"
+                "new_lock_period must be one of the available lock options"
             ],
             "name": "reduceLockPeriod",
             "mutability": "mutable",
@@ -350,7 +314,7 @@
             ],
             "inputs": [
                 {
-                    "name": "target_epoch_to_reduce",
+                    "name": "new_lock_period",
                     "type": "u64"
                 }
             ],
@@ -363,8 +327,9 @@
         {
             "docs": [
                 "Calculates the penalty that would be incurred if token_amount tokens",
-                "were to have their locking period reduce by epochs_to_reduce.",
-                "target_epoch_to_reduce is one of 0, 360, 720, 1080 (0, 1, 2, 3 years)"
+                "were to have their locking period reduce to new_unlock_epoch",
+                "new_unlock_epoch must be either be current epoch (i.e. full unlock)",
+                "or one of the available lock options"
             ],
             "name": "getPenaltyAmount",
             "mutability": "readonly",
@@ -374,73 +339,17 @@
                     "type": "BigUint"
                 },
                 {
-                    "name": "target_epoch_to_reduce",
+                    "name": "prev_lock_epochs",
                     "type": "u64"
                 },
                 {
-                    "name": "current_unlock_epoch",
+                    "name": "new_lock_epochs",
                     "type": "u64"
                 }
             ],
             "outputs": [
                 {
                     "type": "BigUint"
-                }
-            ]
-        },
-        {
-            "name": "sendFeesToCollector",
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "getPenaltyPercentage",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "PenaltyPercentage"
-                }
-            ]
-        },
-        {
-            "name": "getFeesBurnPercentage",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u16"
-                }
-            ]
-        },
-        {
-            "name": "getFeesCollectorAddress",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
-            "name": "getFeesFromPenaltyUnlocking",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "NonceAmountPair"
-                }
-            ]
-        },
-        {
-            "name": "getLastEpochFeeSentToCollector",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
                 }
             ]
         },
@@ -535,6 +444,46 @@
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "getFeesBurnPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u16"
+                }
+            ]
+        },
+        {
+            "name": "getFeesCollectorAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getFeesFromPenaltyUnlocking",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "NonceAmountPair"
+                }
+            ]
+        },
+        {
+            "name": "getLastEpochFeeSentToCollector",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
                 }
             ]
         },
@@ -698,6 +647,19 @@
                 }
             ]
         },
+        "LockOption": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "lock_epochs",
+                    "type": "u64"
+                },
+                {
+                    "name": "penalty_start_percentage",
+                    "type": "u64"
+                }
+            ]
+        },
         "NonceAmountPair": {
             "type": "struct",
             "fields": [
@@ -708,23 +670,6 @@
                 {
                     "name": "amount",
                     "type": "BigUint"
-                }
-            ]
-        },
-        "PenaltyPercentage": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "first_threshold",
-                    "type": "u16"
-                },
-                {
-                    "name": "second_threshold",
-                    "type": "u16"
-                },
-                {
-                    "name": "third_threshold",
-                    "type": "u16"
                 }
             ]
         },

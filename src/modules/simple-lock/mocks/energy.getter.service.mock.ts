@@ -2,11 +2,12 @@ import { IEnergyGetterService } from '../../energy/services/interfaces';
 import { EsdtToken } from '../../tokens/models/esdtToken.model';
 import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { ErrorNotImplemented } from '../../../utils/errors.constants';
+import { LockOption } from 'src/modules/energy/models/simple.lock.energy.model';
 
 export class EnergyGetterHandlers implements IEnergyGetterService {
     getBaseAssetTokenID: () => Promise<string>;
     getBaseAssetToken: () => Promise<EsdtToken>;
-    getLockOptions: () => Promise<number[]>;
+    getLockOptions: () => Promise<LockOption[]>;
     getPauseState: () => Promise<boolean>;
     getOwnerAddress: () => Promise<string>;
     getEnergyEntryForUser: (userAddress: string) => Promise<EnergyType>;
@@ -38,7 +39,7 @@ export class EnergyGetterServiceMock implements IEnergyGetterService {
         ErrorNotImplemented();
     }
 
-    getLockOptions(): Promise<number[]> {
+    getLockOptions(): Promise<LockOption[]> {
         if (this.handlers.getLockOptions !== undefined) {
             return this.handlers.getLockOptions();
         }
