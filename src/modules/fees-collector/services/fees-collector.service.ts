@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { FeesCollectorModel, UserEntryFeesCollectorModel } from '../models/fees-collector.model';
+import {
+    FeesCollectorModel,
+    FeesCollectorTransactionModel,
+    UserEntryFeesCollectorModel
+} from '../models/fees-collector.model';
 import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { WeekTimekeepingService } from '../../../submodules/week-timekeeping/services/week-timekeeping.service';
@@ -36,15 +40,19 @@ export class FeesCollectorService {
     async claimRewardsBatch(
         scAddress: string,
         userAddress: string,
-    ): Promise<TransactionModel[]> {
-        const transactions: TransactionModel[] = [];
+    ): Promise<FeesCollectorTransactionModel> {
         const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
         const lastActiveWeekForUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress);
-        for (let week = lastActiveWeekForUser; week < currentWeek; week += 4) {
-            const claimTransaction = await this.claimRewards(userAddress, gasConfig.feesCollector.claimRewards);
-            transactions.push(claimTransaction);
-        }
-        return transactions;
+        const num_transactions = Math.ceil((currentWeek - lastActiveWeekForUser) / 4)
+        const claimTransaction = new FeesCollectorTransactionModel(
+            {
+                count: num_transactions
+            }
+        );
+        if (num_transactions == 0) return claimTransaction
+
+        claimTransaction.transaction = await this.claimRewards(userAddress, gasConfig.feesCollector.claimRewards)
+        return claimTransaction;
     }
 
     async claimRewards(

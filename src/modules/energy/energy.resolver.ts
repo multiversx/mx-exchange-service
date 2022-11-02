@@ -12,7 +12,7 @@ import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { NftCollection } from '../tokens/models/nftCollection.model';
 import { EnergyModel, UnlockType } from './models/energy.model';
 import {
-    PenaltyPercentage,
+    LockOption,
     SimpleLockEnergyModel,
 } from './models/simple.lock.energy.model';
 import { EnergyGetterService } from './services/energy.getter.service';
@@ -52,13 +52,6 @@ export class EnergyResolver extends GenericResolver {
     }
 
     @ResolveField()
-    async penaltyPercentage(): Promise<PenaltyPercentage> {
-        return await this.genericFieldResover<PenaltyPercentage>(() =>
-            this.energyGetter.getPenaltyPercentage(),
-        );
-    }
-
-    @ResolveField()
     async feesBurnPercentage(): Promise<number> {
         return await this.genericFieldResover<number>(() =>
             this.energyGetter.getFeesBurnPercentage(),
@@ -87,8 +80,8 @@ export class EnergyResolver extends GenericResolver {
     }
 
     @ResolveField()
-    async lockOptions(): Promise<number[]> {
-        return await this.genericFieldResover<number[]>(() =>
+    async lockOptions(): Promise<LockOption[]> {
+        return await this.genericFieldResover<LockOption[]>(() =>
             this.energyGetter.getLockOptions(),
         );
     }
@@ -118,14 +111,31 @@ export class EnergyResolver extends GenericResolver {
         );
     }
 
+    @Query(() => String)
+    async penaltyAmount(
+        @Args('inputToken') inputToken: InputTokenModel,
+        @Args('epochsToReduce') epochsToReduce: number,
+        @Args('vmQuery', { nullable: true }) vmQuery: boolean,
+    ): Promise<string> {
+        return await this.genericQuery(() =>
+            this.energyService.getPenaltyAmount(
+                inputToken,
+                epochsToReduce,
+                vmQuery,
+            ),
+        );
+    }
+
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async lockTokensEnergy(
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @Args('lockEpochs') lockEpochs: number,
+        @Args('lockEpochs', { type: () => Int }) lockEpochs: number,
+        @User() user: any,
     ): Promise<TransactionModel> {
         try {
             return await this.energyTransaction.lockTokens(
+                user.publicKey,
                 inputTokens,
                 lockEpochs,
             );

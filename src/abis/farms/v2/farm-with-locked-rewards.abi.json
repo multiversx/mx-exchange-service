@@ -8,7 +8,7 @@
             "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
         },
         "contractCrate": {
-            "name": "farm",
+            "name": "farm-with-locked-rewards",
             "version": "0.0.0",
             "git_version": "v1.6.0-657-g8d756848-modified"
         },
@@ -57,9 +57,8 @@
             ],
             "inputs": [
                 {
-                    "name": "opt_orig_caller",
-                    "type": "optional<Address>",
-                    "multi_arg": true
+                    "name": "original_caller",
+                    "type": "Address"
                 }
             ],
             "outputs": [
@@ -79,9 +78,8 @@
             ],
             "inputs": [
                 {
-                    "name": "opt_orig_caller",
-                    "type": "optional<Address>",
-                    "multi_arg": true
+                    "name": "original_caller",
+                    "type": "Address"
                 }
             ],
             "outputs": [
@@ -101,9 +99,8 @@
             ],
             "inputs": [
                 {
-                    "name": "opt_orig_caller",
-                    "type": "optional<Address>",
-                    "multi_arg": true
+                    "name": "original_caller",
+                    "type": "Address"
                 }
             ],
             "outputs": [
@@ -122,17 +119,9 @@
                 {
                     "name": "exit_amount",
                     "type": "BigUint"
-                },
-                {
-                    "name": "opt_orig_caller",
-                    "type": "optional<Address>",
-                    "multi_arg": true
                 }
             ],
             "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                },
                 {
                     "type": "EsdtTokenPayment"
                 },
@@ -174,13 +163,7 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [
-                {
-                    "name": "opt_orig_caller",
-                    "type": "optional<Address>",
-                    "multi_arg": true
-                }
-            ],
+            "inputs": [],
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
@@ -277,6 +260,50 @@
             "outputs": [
                 {
                     "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "setLockingScAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setLockEpochs",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "lock_epochs",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getLockingScAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getLockEpochs",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
                 }
             ]
         },

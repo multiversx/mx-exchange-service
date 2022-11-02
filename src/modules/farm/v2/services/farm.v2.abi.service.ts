@@ -6,19 +6,52 @@ import {
     Field,
     FieldDefinition,
     Interaction,
+    SmartContract,
     Struct,
     StructType,
+    U32Value,
     U64Type,
     U64Value,
 } from '@elrondnetwork/erdjs/out';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { AbiFarmService } from '../../base-module/services/farm.abi.service';
 import { FarmTokenAttributesV1_3 } from '@elrondnetwork/erdjs-dex';
+import { FarmRewardType } from '../../models/farm.model';
+import { farmType } from 'src/utils/farm.utils';
+import { BoostedYieldsFactors } from '../../models/farm.v2.model';
+import { Mixin } from "ts-mixer";
+import {
+    WeeklyRewardsSplittingAbiService
+} from "../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service";
+import {
+    WeekTimekeepingAbiService
+} from "../../../../submodules/week-timekeeping/services/week-timekeeping.abi.service";
+import { ElrondProxyService } from "../../../../services/elrond-communication/elrond-proxy.service";
+import { WINSTON_MODULE_PROVIDER } from "nest-winston";
+import { Logger } from "winston";
+import { ElrondGatewayService } from "../../../../services/elrond-communication/elrond-gateway.service";
 
 @Injectable()
-export class FarmAbiServiceV2 extends AbiFarmService {
+export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
+
+    constructor(
+        protected readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        protected readonly gatewayService: ElrondGatewayService,
+    ) {
+        super(elrondProxy, logger, gatewayService);
+        this.getContractHandler = this.getContract
+    }
+
+    async getContract(farmAddress: string): Promise<SmartContract> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+        return contract
+    }
+
     async getBoostedYieldsRewardsPercenatage(
         farmAddress: string,
     ): Promise<number> {
@@ -32,10 +65,81 @@ export class FarmAbiServiceV2 extends AbiFarmService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getEnergyFactoryAddress(farmAddress: string): Promise<string> {
+    async getLockingScAddress(farmAddress: string): Promise<string> {
+        if (farmType(farmAddress) === FarmRewardType.UNLOCKED_REWARDS) {
+            return undefined;
+        }
+
+        const contract = await this.getContract(farmAddress);
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockingScAddress();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().bech32();
+    }
+
+    async getLockEpochs(farmAddress: string): Promise<number> {
+        if (farmType(farmAddress) === FarmRewardType.UNLOCKED_REWARDS) {
+            return undefined;
+        }
+
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getLockEpochs();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toNumber();
+    }
+
+    async getRemainingBoostedRewardsToDistribute(
+        farmAddress: string,
+        week: number,
+    ): Promise<string> {
+        const contract = await this.getContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getRemainingBoostedRewardsToDistribute([
+                new U32Value(new BigNumber(week)),
+            ]);
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getUndistributedBoostedRewards(farmAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            farmAddress,
+        );
+
+        const interaction: Interaction =
+            contract.methodsExplicit.getUndistributedBoostedRewards();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
+    }
+
+    async getBoostedYieldsFactors(
+        farmAddress: string,
+    ): Promise<BoostedYieldsFactors> {
+        const contract = await this.getContract(farmAddress);
+        const interaction: Interaction =
+            contract.methodsExplicit.getBoostedYieldsFactors();
+        const response = await this.getGenericData(interaction);
+        const rawBoostedYieldsFactors = response.firstValue.valueOf();
+        return new BoostedYieldsFactors({
+            userRewardsBase:
+                rawBoostedYieldsFactors.user_rewards_base_const.toFixed(),
+            userRewardsEnergy:
+                rawBoostedYieldsFactors.user_rewards_energy_const.toFixed(),
+            userRewardsFarm:
+                rawBoostedYieldsFactors.user_rewards_farm_const.toFixed(),
+            minEnergyAmount:
+                rawBoostedYieldsFactors.min_energy_amount.toFixed(),
+            minFarmAmount: rawBoostedYieldsFactors.min_farm_amount.toFixed(),
+        });
+    }
+
+    async getEnergyFactoryAddress(farmAddress: string): Promise<string> {
+        const contract = await this.getContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getEnergyFactoryAddress();
@@ -50,9 +154,7 @@ export class FarmAbiServiceV2 extends AbiFarmService {
             service: FarmAbiServiceV2.name,
             method: this.calculateRewardsForGivenPosition.name,
         });
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            args.farmAddress,
-        );
+        const contract = await this.getContract(args.farmAddress);
         const decodedAttributes = FarmTokenAttributesV1_3.fromAttributes(
             args.attributes,
         );

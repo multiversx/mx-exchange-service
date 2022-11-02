@@ -55,6 +55,7 @@ import {
     TokenComputeServiceMock,
 } from '../../../modules/tokens/mocks/token.compute.service.mock';
 import { EnergyModel } from 'src/modules/energy/models/energy.model';
+import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 
 describe('WeeklyRewardsSplittingComputeService', () => {
     const dummyScAddress = 'erd';
@@ -999,13 +1000,16 @@ async function createService(handlers: {
                 provide: RouterGetterService,
                 useValue: routerGetter,
             },
-            WrapService,
+            TokenGetterServiceProvider,
+            {
+                provide: WrapService,
+                useClass: WrapServiceMock,
+            },
             ApiConfigService,
             {
                 provide: PairGetterService,
                 useValue: pairGetter,
             },
-            TokenGetterServiceProvider,
             RouterGetterServiceProvider,
             {
                 provide: EnergyGetterService,

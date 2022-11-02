@@ -24,8 +24,10 @@
             "shardID-2": "erd1qqqqqqqqqqqqqpgqfj3z3k4vlq7dc2928rxez0uhhlq46s6p4mtqerlxhc"
         },
         "priceDiscovery": [
+            "erd1qqqqqqqqqqqqqpgqpzlhg54w5upaeweyc6kugqspunpywwvx0n4sa9spnk",
             "erd1qqqqqqqqqqqqqpgq5daxqzyl8hxug8zyplweugxsh62vyqaw0n4sc69ndf",
-            "erd1qqqqqqqqqqqqqpgqzczn45apvnacfl6qhqnydz4gwxmtxj8k0n4synvktu"
+            "erd1qqqqqqqqqqqqqpgqzczn45apvnacfl6qhqnydz4gwxmtxj8k0n4synvktu",
+            "erd1qqqqqqqqqqqqqpgq7ycg0y45frcxupcpyvqlpvnuclkuscj30n4sgla0tf"
         ],
         "staking": [
             "erd1qqqqqqqqqqqqqpgq8w0s682m88xae2ne3qkq7w2h26u5a5c00n4stt02d7",
@@ -68,7 +70,14 @@
             ],
             "customRewards": []
         },
-        "v2": ["erd1qqqqqqqqqqqqqpgqetwkcsv2x9qpryyu828wv942qd8juhp80n4sv0c9q9"]
+        "v2": {
+                "unlockedRewards": [
+                    "erd1qqqqqqqqqqqqqpgqetwkcsv2x9qpryyu828wv942qd8juhp80n4sv0c9q9"
+                ],
+                "lockedRewards": [
+                    "erd1qqqqqqqqqqqqqpgqlct7zuf30senvglswfnqltaqzu2kalcj0n4s4s75su"
+                ]
+        }
     },
     "tokenProviderUSD": "WEGLD-d7c6bb",
     "tokensSupply": ["MEX-dc289c"],

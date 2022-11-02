@@ -22,6 +22,7 @@ import { RouterModule } from '../router/router.module';
 import { UserEsdtService } from './services/user.esdt.service';
 import { UserEsdtComputeService } from './services/esdt.compute.service';
 import { FarmModule } from '../farm/farm.module';
+import { EnergyModule } from '../energy/energy.module';
 
 @Module({
     imports: [
@@ -40,6 +41,7 @@ import { FarmModule } from '../farm/farm.module';
         StakingProxyModule,
         PriceDiscoveryModule,
         SimpleLockModule,
+        EnergyModule,
         TokenModule,
         RemoteConfigModule,
     ],

@@ -2,6 +2,7 @@ import { Address } from '@elrondnetwork/erdjs/out';
 import { Injectable } from '@nestjs/common';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { PairInfoModel } from '../models/pair-info.model';
+import { LockedTokensInfo } from '../models/pair.model';
 import { PairsData } from './pair.constants';
 
 @Injectable()
@@ -110,15 +111,12 @@ export class PairGetterServiceStub {
     }
 
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
-        const [
-            firstTokenReserve,
-            secondTokenReserve,
-            totalSupply,
-        ] = await Promise.all([
-            this.getFirstTokenReserve(pairAddress),
-            this.getSecondTokenReserve(pairAddress),
-            this.getTotalSupply(pairAddress),
-        ]);
+        const [firstTokenReserve, secondTokenReserve, totalSupply] =
+            await Promise.all([
+                this.getFirstTokenReserve(pairAddress),
+                this.getSecondTokenReserve(pairAddress),
+                this.getTotalSupply(pairAddress),
+            ]);
 
         return new PairInfoModel({
             reserves0: firstTokenReserve,
@@ -145,5 +143,9 @@ export class PairGetterServiceStub {
 
     async getInitialLiquidityAdder(pairAddress: string): Promise<string> {
         return Address.Zero().bech32();
+    }
+
+    async getLockedTokensInfo(pairAddress: string): Promise<LockedTokensInfo> {
+        return undefined;
     }
 }
