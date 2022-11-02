@@ -133,6 +133,13 @@ export class AWSQueryCacheWarmerService {
                     series: pairAddress,
                     metric: 'volumeUSD',
                 });
+            delay(1000);
+            const feesUSDCompleteValuesSum =
+                await this.awsQuery.getSumCompleteValues({
+                    table: awsConfig.timestream.tableName,
+                    series: pairAddress,
+                    metric: 'feesUSD',
+                });
 
             const cachedKeys = await Promise.all([
                 this.analyticsAWSSetter.setValues24h(
@@ -159,6 +166,11 @@ export class AWSQueryCacheWarmerService {
                     pairAddress,
                     'volumeUSD',
                     volumeUSDCompleteValuesSum,
+                ),
+                this.analyticsAWSSetter.setSumCompleteValues(
+                    pairAddress,
+                    'feesUSD',
+                    feesUSDCompleteValuesSum,
                 ),
             ]);
             await this.deleteCacheKeys(cachedKeys);
