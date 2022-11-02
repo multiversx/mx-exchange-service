@@ -31,7 +31,7 @@ export class RewardsModel {
     rewards: string;
     @Field(() => Int, { nullable: true })
     remainingFarmingEpochs?: number;
-    @Field(() => [UserInfoByWeekModel])
+    @Field(() => [UserInfoByWeekModel], { nullable: true })
     boostedRewardsWeeklyInfo: UserInfoByWeekModel[]
     constructor(init?: Partial<RewardsModel>) {
         Object.assign(this, init);
