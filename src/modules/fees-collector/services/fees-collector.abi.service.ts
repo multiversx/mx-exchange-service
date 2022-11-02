@@ -10,7 +10,7 @@ import {
 import { Mixin } from 'ts-mixer';
 import BigNumber from 'bignumber.js';
 import { WeekTimekeepingAbiService } from '../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { EsdtTokenPayment, EsdtTokenType } from "../../../models/esdtTokenPayment.model";
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
 @Injectable()
 export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
@@ -51,18 +51,13 @@ export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewa
         const rewardsRaw = response.firstValue.valueOf()
         const rewards: EsdtTokenPayment[] = []
         for (const rewardRaw of rewardsRaw) {
-            console.log(rewardRaw);
+            const nonce = rewardRaw.token_nonce.toNumber()
+            const discriminant = nonce != 0 ? 3 : 1;
             rewards.push(new EsdtTokenPayment({
-                tokenType: EsdtTokenType.getEnum().getVariantByName(
-                    rewardRaw.token_type.name,
-                ).discriminant,
+                tokenType: discriminant,
                 tokenID: rewardRaw.token_identifier.toString(),
-                nonce: new BigNumber(
-                    rewardRaw.token_nonce,
-                ).toNumber(),
-                amount: new BigNumber(
-                    rewardRaw.amount,
-                ).toFixed(),
+                nonce: nonce,
+                amount: rewardRaw.amount.toFixed()
             }));
         }
         return rewards;
