@@ -84,16 +84,16 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             [new U32Value(new BigNumber(week))],
         );
         const response = await this.getGenericData(interaction);
-        const rewardsRaw = response.firstValue.valueOf()
-        const rewards: EsdtTokenPayment[] = []
-        for (const rewardRaw of rewardsRaw) {
-            rewards.push(new EsdtTokenPayment({
-                tokenID: rewardRaw.token,
-                amount: rewardRaw.amount,
-                tokenType: 0,
-                nonce: 0
-            }))
-        }
+        const rewards = response.firstValue.valueOf().map( raw => {
+            const nonce = raw.token_nonce.toNumber()
+            const discriminant = nonce != 0 ? 3 : 1;
+            return new EsdtTokenPayment({
+                tokenType: discriminant,
+                tokenID: raw.token_identifier.toString(),
+                nonce: nonce,
+                amount: raw.amount.toFixed()
+            });
+        })
         return rewards;
     }
 
