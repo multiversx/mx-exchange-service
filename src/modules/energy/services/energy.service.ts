@@ -1,4 +1,7 @@
+import { LockedTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { Injectable } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
+import { InputTokenModel } from 'src/models/inputToken.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { EnergyModel } from '../models/energy.model';
 import { EnergyAbiService } from './energy.abi.service';
@@ -35,5 +38,32 @@ export class EnergyService {
         );
 
         return new EnergyModel(depletedEnergy);
+    }
+
+    async getPenaltyAmount(
+        inputToken: InputTokenModel,
+        epochsToReduce: number,
+        vmQuery = false,
+    ): Promise<string> {
+        const decodedAttributes = LockedTokenAttributes.fromAttributes(
+            inputToken.attributes,
+        );
+        const currentEpoch = await this.contextGetter.getCurrentEpoch();
+        const prevLockEpochs = decodedAttributes.unlockEpoch - currentEpoch;
+        if (vmQuery) {
+            return await this.energyAbi.getPenaltyAmount(
+                new BigNumber(inputToken.amount),
+                prevLockEpochs,
+                epochsToReduce,
+            );
+        }
+
+        return (
+            await this.energyCompute.computePenaltyAmount(
+                new BigNumber(inputToken.amount),
+                prevLockEpochs,
+                epochsToReduce,
+            )
+        ).toFixed();
     }
 }
