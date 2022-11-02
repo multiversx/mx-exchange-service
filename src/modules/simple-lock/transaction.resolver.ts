@@ -7,9 +7,6 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { EnergyGetterService } from './services/energy/energy.getter.service';
-import { EnergyTransactionService } from './services/energy/energy.transaction.service';
-import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
 import { EmterFarmProxyTokensValidationPipe } from './validators/enter.farm.tokens.validator';
@@ -22,10 +19,7 @@ import { UnlockTokensValidationPipe } from './validators/unlock.tokens.validator
 export class TransactionResolver extends GenericResolver {
     constructor(
         private readonly simpleLockService: SimpleLockService,
-        private readonly simpleLockGetter: SimpleLockGetterService,
-        private readonly energyGetter: EnergyGetterService,
         private readonly simpleLockTransactions: SimpleLockTransactionService,
-        private readonly energyTransactions: EnergyTransactionService,
     ) {
         super();
     }
@@ -198,23 +192,5 @@ export class TransactionResolver extends GenericResolver {
                 gasConfig.simpleLock.claimRewardsFarmLockedToken,
             );
         } catch (error) {}
-    }
-
-    private async getTransactionService(
-        inputTokens: InputTokenModel,
-        simpleLockAddress: string,
-    ): Promise<EnergyTransactionService | SimpleLockTransactionService> {
-        switch (inputTokens.tokenID) {
-            case await this.energyGetter.getBaseAssetTokenID():
-                return this.energyTransactions;
-            case await this.simpleLockGetter.getLockedTokenID(
-                simpleLockAddress,
-            ):
-                return this.simpleLockTransactions;
-            case await this.energyGetter.getLockedTokenID(simpleLockAddress):
-                return this.energyTransactions;
-            default:
-                return this.simpleLockTransactions;
-        }
     }
 }

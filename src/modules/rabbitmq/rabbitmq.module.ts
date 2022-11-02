@@ -23,7 +23,10 @@ import { AWSModule } from 'src/services/aws/aws.module';
 import { PairHandler } from './handlers/pair.handler.service';
 import { EnergyHandler } from './handlers/energy.handler.service';
 import { SimpleLockModule } from '../simple-lock/simple.lock.module';
-import { FeesCollectorModule } from "../fees-collector/fees-collector.module";
+import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
+import { FarmModuleV1_2 } from '../farm/v1.2/farm.v1.2.module';
+import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
+import { EnergyModule } from '../energy/energy.module';
 
 @Module({
     imports: [
@@ -34,12 +37,15 @@ import { FeesCollectorModule } from "../fees-collector/fees-collector.module";
         ContextModule,
         PairModule,
         FarmModule,
+        FarmModuleV1_2,
+        FarmModuleV1_3,
         RouterModule,
         MetabondingModule,
         PriceDiscoveryModule,
         TokenModule,
         SimpleLockModule,
-        FeesCollectorModule
+        FeesCollectorModule,
+        EnergyModule,
     ],
     providers: [
         RabbitMqConsumer,

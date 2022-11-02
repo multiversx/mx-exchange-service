@@ -3,7 +3,6 @@ import {
     BigUIntValue,
     EnumValue,
     Interaction,
-    SmartContract,
     TokenPayment,
     TypedValue,
     U64Value,
@@ -17,7 +16,6 @@ import { FarmRewardType } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
-import { UnlockType } from '../models/simple.lock.model';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
@@ -50,7 +48,7 @@ export class SimpleLockTransactionService {
         simpleLockAddress: string,
     ): Promise<TransactionModel> {
         const [contract, currentEpoch] = await Promise.all([
-            this.getContract(this.lockType, simpleLockAddress),
+            this.elrondProxy.getSimpleLockSmartContract(simpleLockAddress),
             this.contextGetter.getCurrentEpoch(),
         ]);
 
@@ -74,29 +72,13 @@ export class SimpleLockTransactionService {
         simpleLockAddress: string,
         sender: string,
         inputTokens: InputTokenModel,
-        unlockType?: UnlockType,
-        epochsToReduce?: number,
     ): Promise<TransactionModel> {
-        const contract = await this.getContract(
-            this.lockType,
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
-        let endpoint: Interaction;
-        switch (unlockType) {
-            case UnlockType.EARLY_UNLOCK:
-                endpoint = contract.methodsExplicit.unlockEarly();
-                break;
-            case UnlockType.REDUCE_PERIOD:
-                endpoint = contract.methodsExplicit.reduceLockPeriod([
-                    new U64Value(new BigNumber(epochsToReduce)),
-                ]);
-            default:
-                endpoint = contract.methodsExplicit.unlockTokens();
-                break;
-        }
-
-        return endpoint
+        return contract.methodsExplicit
+            .unlockTokens()
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     inputTokens.tokenID,
@@ -174,7 +156,7 @@ export class SimpleLockTransactionService {
             await Promise.all([
                 this.pairGetterService.getFirstTokenID(pairAddress),
                 this.pairGetterService.getSecondTokenID(pairAddress),
-                this.getContract(this.lockType, simpleLockAddress),
+                this.elrondProxy.getSimpleLockSmartContract(simpleLockAddress),
             ]);
 
         let [firstTokenID, secondTokenID] = [
@@ -325,8 +307,7 @@ export class SimpleLockTransactionService {
                 .name,
         );
 
-        const contract = await this.getContract(
-            this.lockType,
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -367,8 +348,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        const contract = await this.getContract(
-            this.lockType,
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -447,20 +427,6 @@ export class SimpleLockTransactionService {
 
         if (inputTokens.tokenID !== farmProxyTokenID || inputTokens.nonce < 1) {
             throw new Error('Invalid input token');
-        }
-    }
-
-    private async getContract(
-        simpleLockType: SimpleLockType,
-        simpleLockAddress: string,
-    ): Promise<SmartContract> {
-        switch (simpleLockType) {
-            case SimpleLockType.BASE_TYPE:
-                return await this.elrondProxy.getSimpleLockSmartContract(
-                    simpleLockAddress,
-                );
-            case SimpleLockType.ENERGY_TYPE:
-                return await this.elrondProxy.getSimpleLockEnergySmartContract();
         }
     }
 }

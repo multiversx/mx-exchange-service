@@ -1,59 +1,102 @@
-import { Field, ObjectType } from '@nestjs/graphql';
-import { EnergyModel } from '../../../modules/simple-lock/models/simple.lock.model';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { EnergyModel } from '../../../modules/energy/models/energy.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
 @ObjectType()
-export class ClaimProgress {
-    @Field()
-    energy: EnergyModel;
-
-    @Field()
-    week: number
-}
-
-@ObjectType()
-export class WeeklyRewardsSplittingModel {
+export class GlobalInfoByWeekModel {
     @Field()
     scAddress: string;
 
     @Field()
     week: number;
+
+    @Field()
+    apr: string;
 
     @Field(() => [EsdtTokenPayment])
     totalRewardsForWeek: [EsdtTokenPayment];
 
     @Field()
-    totalEnergyForWeek: number;
+    totalEnergyForWeek: string;
 
     @Field()
-    totalLockedTokensForWeek: number;
+    totalLockedTokensForWeek: string;
 
-    @Field()
-    lastGlobalUpdateWeek: number;
-
-    constructor(init?: Partial<WeeklyRewardsSplittingModel>) {
+    constructor(init?: Partial<GlobalInfoByWeekModel>) {
         Object.assign(this, init);
     }
 }
 
 @ObjectType()
-export class UserWeeklyRewardsSplittingModel {
+export class UserInfoByWeekModel {
     @Field()
     scAddress: string;
+
+    @Field()
+    userAddress: string;
 
     @Field()
     week: number;
 
     @Field()
-    claimProgress: ClaimProgress;
+    apr: string;
+
+    @Field(() => EnergyModel)
+    energyForWeek: EnergyModel;
+
+    @Field(() => [EsdtTokenPayment])
+    rewardsForWeek: [EsdtTokenPayment];
+
+    constructor(init?: Partial<UserInfoByWeekModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class ClaimProgress {
+    @Field(() => EnergyModel)
+    energy: EnergyModel;
 
     @Field()
-    energyForWeek: EnergyModel;
+    week: number;
+
+    constructor(init?: Partial<ClaimProgress>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class GlobalInfoByWeekSubModel {
+    @Field()
+    lastGlobalUpdateWeek: number;
+
+    constructor(init?: Partial<GlobalInfoByWeekSubModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserInfoByWeekSubModel {
+    @Field(() => ClaimProgress)
+    claimProgress: ClaimProgress;
 
     @Field()
     lastActiveWeekForUser: number;
 
-    constructor(init?: Partial<UserWeeklyRewardsSplittingModel>) {
+    constructor(init?: Partial<UserInfoByWeekSubModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@InputType()
+export class WeekFilterPeriodModel {
+    @Field({ nullable: true })
+    start: number;
+
+    @Field({ nullable: true })
+    end: number;
+
+    constructor(init?: Partial<WeekFilterPeriodModel>) {
         Object.assign(this, init);
     }
 }

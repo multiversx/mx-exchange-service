@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { gasConfig } from 'src/config';
+import { elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -16,6 +16,9 @@ import {
 import { FarmRewardType, FarmVersion } from '../../models/farm.model';
 import { FarmGetterService } from '../../base-module/services/farm.getter.service';
 import { TransactionsFarmService } from '../../base-module/services/farm.transaction.service';
+import { generateLogMessage } from 'src/utils/generate-log-message';
+import { Address, TokenPayment } from '@elrondnetwork/erdjs/out';
+import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
@@ -48,24 +51,66 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
                 ? gasConfig.farms[FarmVersion.V1_3].enterFarm.withTokenMerge
                 : gasConfig.farms[FarmVersion.V1_3].enterFarm.default;
 
-        return super.enterFarm(
-            sender,
-            args,
-            contract.methodsExplicit.enterFarm(),
-            gasLimit,
+        try {
+            await this.validateInputTokens(args.farmAddress, args.tokens);
+        } catch (error) {
+            const logMessage = generateLogMessage(
+                TransactionsFarmService.name,
+                this.enterFarm.name,
+                '',
+                error.message,
+            );
+            this.logger.error(logMessage);
+            throw error;
+        }
+
+        const mappedPayments = args.tokens.map((tokenPayment) =>
+            TokenPayment.metaEsdtFromBigInteger(
+                tokenPayment.tokenID,
+                tokenPayment.nonce,
+                new BigNumber(tokenPayment.amount),
+            ),
         );
+
+        return contract.methodsExplicit
+            .enterFarm()
+            .withMultiESDTNFTTransfer(
+                mappedPayments,
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async exitFarm(
         sender: string,
         args: ExitFarmArgs,
     ): Promise<TransactionModel> {
-        return super.exitFarm(
-            sender,
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
+        );
+        const gasLimit = await this.getExitFarmGasLimit(
             args,
             FarmVersion.V1_3,
             farmType(args.farmAddress),
         );
+
+        return contract.methodsExplicit
+            .exitFarm()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.farmTokenID,
+                    args.farmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async claimRewards(
@@ -82,7 +127,24 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
             gasConfig.farms[FarmVersion.V1_3][type].claimRewards +
             lockedAssetCreateGas;
 
-        return super.claimRewards(sender, args, gasLimit);
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
+        );
+
+        return contract.methodsExplicit
+            .claimRewards()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.farmTokenID,
+                    args.farmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async compoundRewards(
@@ -90,14 +152,31 @@ export class FarmTransactionServiceV1_3 extends TransactionsFarmService {
         args: CompoundRewardsArgs,
     ): Promise<TransactionModel> {
         const gasLimit = gasConfig.farms[FarmVersion.V1_3].compoundRewards;
-        return super.compoundRewards(sender, args, gasLimit);
-    }
+        const [farmedTokenID, farmingTokenID] = await Promise.all([
+            this.farmGetterService.getFarmedTokenID(args.farmAddress),
+            this.farmGetterService.getFarmingTokenID(args.farmAddress),
+        ]);
 
-    protected async getExitFarmGasLimit(args: ExitFarmArgs): Promise<number> {
-        return super.getExitFarmGasLimit(
-            args,
-            FarmVersion.V1_3,
-            farmType(args.farmAddress),
+        if (farmedTokenID !== farmingTokenID) {
+            throw new Error('failed to compound different tokens');
+        }
+        const contract = await this.elrondProxy.getFarmSmartContract(
+            args.farmAddress,
         );
+
+        return contract.methodsExplicit
+            .compoundRewards()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.farmTokenID,
+                    args.farmTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 }

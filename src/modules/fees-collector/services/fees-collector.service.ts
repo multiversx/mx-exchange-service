@@ -1,20 +1,71 @@
 import { Injectable } from '@nestjs/common';
-import { FeesCollectorModel, UserEntryFeesCollectorModel } from '../models/fees-collector.model';
+import {
+    FeesCollectorModel,
+    FeesCollectorTransactionModel,
+    UserEntryFeesCollectorModel
+} from '../models/fees-collector.model';
 import { FeesCollectorGetterService } from './fees-collector.getter.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { WeekTimekeepingService } from '../../../submodules/week-timekeeping/services/week-timekeeping.service';
 import {
     WeeklyRewardsSplittingService,
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
+import {
+    GlobalInfoByWeekModel, UserInfoByWeekModel,
+    WeekFilterPeriodModel,
+} from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { TransactionModel } from "../../../models/transaction.model";
+import {
+    WeekTimekeepingGetterService
+} from "../../../submodules/week-timekeeping/services/week-timekeeping.getter.service";
+import {
+    WeeklyRewardsSplittingGetterService
+} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
+import { elrondConfig, gasConfig } from "../../../config";
+import { ElrondProxyService } from "../../../services/elrond-communication/elrond-proxy.service";
 
 
 @Injectable()
 export class FeesCollectorService {
     constructor(
         private readonly feesCollectorGetterService: FeesCollectorGetterService,
+        private readonly elrondProxy: ElrondProxyService,
         private readonly weekTimekeepingService: WeekTimekeepingService,
         private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
+        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
+        private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
     ) {
+    }
+
+    async claimRewardsBatch(
+        scAddress: string,
+        userAddress: string,
+    ): Promise<FeesCollectorTransactionModel> {
+        const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
+        const lastActiveWeekForUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress);
+        const num_transactions = Math.ceil((currentWeek - lastActiveWeekForUser) / 4)
+        const claimTransaction = new FeesCollectorTransactionModel(
+            {
+                count: num_transactions
+            }
+        );
+        if (num_transactions == 0) return claimTransaction
+
+        claimTransaction.transaction = await this.claimRewards(userAddress, gasConfig.feesCollector.claimRewards)
+        return claimTransaction;
+    }
+
+    async claimRewards(
+        sender: string,
+        gasLimit: number,
+    ): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getFeesCollectorContract();
+        return contract.methodsExplicit
+            .claimRewards()
+            .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 
     async getAccumulatedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
@@ -31,7 +82,11 @@ export class FeesCollectorService {
         return accumulatedFees
     }
 
-    async feesCollector(scAddress: string): Promise<FeesCollectorModel> {
+    async feesCollector(
+        scAddress: string,
+        weekFilter: WeekFilterPeriodModel,
+    ): Promise<FeesCollectorModel> {
+
         const [
             time,
             allToken,
@@ -39,36 +94,43 @@ export class FeesCollectorService {
             this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
             this.feesCollectorGetterService.getAllTokens(scAddress),
         ])
-
         return new FeesCollectorModel({
             address: scAddress,
             time: time,
+            startWeek: weekFilter.start,
+            endWeek: weekFilter.end,
             allTokens: allToken,
         });
     }
 
-    async userFeesCollector(scAddress: string, userAddress: string): Promise<UserEntryFeesCollectorModel> {
+    async userFeesCollector(
+        scAddress: string,
+        userAddress: string,
+        weekFilter: WeekFilterPeriodModel
+    ): Promise<UserEntryFeesCollectorModel> {
         const time = await this.weekTimekeepingService.getWeeklyTimekeeping(scAddress);
         return new UserEntryFeesCollectorModel({
             address: scAddress,
             userAddress: userAddress,
+            startWeek: weekFilter.start,
+            endWeek: weekFilter.end,
             time: time,
         });
     }
 
-    getWeeklyRewardsSplitPromises(scAddress: string, currentWeek: number) {
-        const promisesList = []
-        for (let week = 1; week <= currentWeek; week++) {
-            promisesList.push(this.weeklyRewardsSplittingService.getWeeklyRewardsSplit(scAddress, week))
+    getWeeklyRewardsSplit(scAddress: string, startWeek: number, endWeek: number): GlobalInfoByWeekModel[] {
+        const modelsList = []
+        for (let week = startWeek; week <= endWeek; week++) {
+            modelsList.push(this.weeklyRewardsSplittingService.getGlobalInfoByWeek(scAddress, week))
         }
-        return promisesList;
+        return modelsList;
     }
 
-    getUserWeeklyRewardsSplitPromises(scAddress: string, userAddress: string, currentWeek: number) {
-        const promisesList = []
-        for (let week = 1; week <= currentWeek; week++) {
-            promisesList.push(this.weeklyRewardsSplittingService.getUserWeeklyRewardsSplit(scAddress, userAddress, week))
+    getUserWeeklyRewardsSplit(scAddress: string, userAddress: string, startWeek: number, endWeek: number): UserInfoByWeekModel[] {
+        const modelsList = []
+        for (let week = startWeek; week <= endWeek; week++) {
+            modelsList.push(this.weeklyRewardsSplittingService.getUserInfoByWeek(scAddress, userAddress, week))
         }
-        return promisesList;
+        return modelsList;
     }
 }

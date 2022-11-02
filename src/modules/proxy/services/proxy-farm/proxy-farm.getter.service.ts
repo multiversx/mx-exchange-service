@@ -21,24 +21,26 @@ export class ProxyFarmGetterService extends GenericGetterService {
         this.baseKey = 'proxyFarm';
     }
 
-    async getwrappedFarmTokenID(): Promise<string> {
+    async getwrappedFarmTokenID(proxyAddress: string): Promise<string> {
         return this.getData(
             this.getCacheKey('wrappedFarmTokenID'),
-            () => this.abiService.getWrappedFarmTokenID(),
+            () => this.abiService.getWrappedFarmTokenID(proxyAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async getwrappedFarmToken(): Promise<NftCollection> {
-        const wrappedFarmTokenID = await this.getwrappedFarmTokenID();
+    async getwrappedFarmToken(proxyAddress: string): Promise<NftCollection> {
+        const wrappedFarmTokenID = await this.getwrappedFarmTokenID(
+            proxyAddress,
+        );
         return this.tokenGetter.getNftCollectionMetadata(wrappedFarmTokenID);
     }
 
-    async getIntermediatedFarms(): Promise<string[]> {
+    async getIntermediatedFarms(proxyAddress: string): Promise<string[]> {
         return await this.getData(
             this.getCacheKey('intermediatedFarms'),
-            () => this.abiService.getIntermediatedFarmsAddress(),
+            () => this.abiService.getIntermediatedFarmsAddress(proxyAddress),
             oneHour(),
         );
     }

@@ -1,16 +1,16 @@
 {
   "buildInfo": {
     "rustc": {
-      "version": "1.62.0-nightly",
-      "commitHash": "082e4ca49770ebc9cb0ee616f3726a67471be8cb",
-      "commitDate": "2022-04-26",
+      "version": "1.66.0-nightly",
+      "commitHash": "f83e0266cf7aaa4b41505c49a5fd9c2363166522",
+      "commitDate": "2022-10-03",
       "channel": "Nightly",
-      "short": "rustc 1.62.0-nightly (082e4ca49 2022-04-26)"
+      "short": "rustc 1.66.0-nightly (f83e0266c 2022-10-03)"
     },
     "contractCrate": {
       "name": "fees-collector",
       "version": "0.0.0",
-      "git_version": "v1.6.0-377-gbf55c323-modified"
+      "git_version": "v1.6.0-437-g28554594-modified"
     },
     "framework": {
       "name": "elrond-wasm",
@@ -187,6 +187,26 @@
     },
     {
       "name": "getLastGlobalUpdateWeek",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getLastGlobalActiveWeek",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getCurrentGlobalActiveWeek",
       "mutability": "readonly",
       "inputs": [],
       "outputs": [

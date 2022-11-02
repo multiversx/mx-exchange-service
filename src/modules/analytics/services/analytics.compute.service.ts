@@ -5,23 +5,19 @@ import {
     FarmRewardType,
     FarmVersion,
 } from 'src/modules/farm/models/farm.model';
-import { FarmComputeService } from 'src/modules/farm/base-module/services/farm.compute.service';
-import { FarmGetterService } from 'src/modules/farm/base-module/services/farm.getter.service';
-import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
-import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
+import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
         private readonly routerGetter: RouterGetterService,
-        private readonly farmGetter: FarmGetterService,
-        private readonly farmCompute: FarmComputeService,
-        private readonly farmComputeV1_2: FarmComputeServiceV1_2,
-        private readonly farmComputeV1_3: FarmComputeServiceV1_3,
+        private readonly farmGetter: FarmGetterFactory,
+        private readonly farmCompute: FarmComputeFactory,
         private readonly pairGetter: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
     ) {}
@@ -31,22 +27,11 @@ export class AnalyticsComputeService {
 
         const promises: Promise<string>[] = [];
         for (const farmAddress of farmsAddresses()) {
-            switch (farmVersion(farmAddress)) {
-                case FarmVersion.V1_2:
-                    promises.push(
-                        this.farmComputeV1_2.computeFarmLockedValueUSD(
-                            farmAddress,
-                        ),
-                    );
-                    break;
-                case FarmVersion.V1_3:
-                    promises.push(
-                        this.farmComputeV1_3.computeFarmLockedValueUSD(
-                            farmAddress,
-                        ),
-                    );
-                    break;
-            }
+            promises.push(
+                this.farmCompute
+                    .useCompute(farmAddress)
+                    .computeFarmLockedValueUSD(farmAddress),
+            );
         }
         const farmsLockedValueUSD = await Promise.all(promises);
         for (const farmLockedValueUSD of farmsLockedValueUSD) {
@@ -72,14 +57,16 @@ export class AnalyticsComputeService {
 
         if (farmsAddresses()[5] !== undefined) {
             promises.push(
-                this.farmCompute.computeFarmLockedValueUSD(farmsAddresses()[5]),
+                this.farmCompute
+                    .useCompute(farmsAddresses()[5])
+                    .computeFarmLockedValueUSD(farmsAddresses()[5]),
             );
         }
         if (farmsAddresses()[13] !== undefined) {
             promises.push(
-                this.farmCompute.computeFarmLockedValueUSD(
-                    farmsAddresses()[13],
-                ),
+                this.farmCompute
+                    .useCompute(farmsAddresses()[13])
+                    .computeFarmLockedValueUSD(farmsAddresses()[13]),
             );
         }
 
@@ -104,7 +91,9 @@ export class AnalyticsComputeService {
             ) {
                 return '0';
             }
-            return this.farmGetter.getRewardsPerBlock(farmAddress);
+            return this.farmGetter
+                .useGetter(farmAddress)
+                .getRewardsPerBlock(farmAddress);
         });
         const farmsRewardsPerBlock = await Promise.all(promises);
         const blocksNumber = (days * 24 * 60 * 60) / 6;

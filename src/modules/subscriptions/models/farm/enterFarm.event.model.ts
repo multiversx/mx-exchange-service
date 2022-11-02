@@ -1,12 +1,19 @@
-import { EnterFarmEvent } from '@elrondnetwork/erdjs-dex';
+import {
+    BaseFarmEvent,
+    EnterFarmEventV1_2,
+    EnterFarmEventV1_3,
+} from '@elrondnetwork/erdjs-dex';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';
-import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
+import {
+    FarmTokenAttributesModelV1_3,
+    FarmTokenAttributesModelV1_2,
+} from 'src/modules/farm/models/farmTokenAttributes.model';
 import { GenericEventModel } from '../generic.event.model';
 
 @ObjectType()
-export class EnterFarmEventModel extends GenericEventModel {
+export class FarmEventModel extends GenericEventModel {
     @Field(() => GenericToken)
     private farmingToken: GenericToken;
     @Field(() => String)
@@ -19,12 +26,32 @@ export class EnterFarmEventModel extends GenericEventModel {
     private rewardToken: GenericToken;
     @Field(() => String)
     private rewardTokenReserves: BigNumber;
-    @Field(() => FarmTokenAttributesModel)
-    private farmAttributes: FarmTokenAttributesModel;
     @Field()
     private createdWithMerge: boolean;
 
-    constructor(init?: Partial<EnterFarmEvent>) {
+    constructor(init?: Partial<BaseFarmEvent>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class FarmEventModelV1_2 extends FarmEventModel {
+    @Field(() => FarmTokenAttributesModelV1_2)
+    private farmAttributes: FarmTokenAttributesModelV1_2;
+
+    constructor(init?: Partial<EnterFarmEventV1_2>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class FarmEventModelV1_3 extends FarmEventModel {
+    @Field(() => FarmTokenAttributesModelV1_3)
+    private farmAttributes: FarmTokenAttributesModelV1_3;
+
+    constructor(init?: Partial<EnterFarmEventV1_3>) {
         super(init);
         Object.assign(this, init);
     }

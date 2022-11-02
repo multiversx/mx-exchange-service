@@ -3,12 +3,12 @@ import { LockedAssetModel } from 'src/modules/locked-asset-factory/models/locked
 import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { FarmTokenAttributesModel } from './farmTokenAttributes.model';
 
 export enum FarmVersion {
     V1_2 = 'v1.2',
     V1_3 = 'v1.3',
     V2 = 'v2',
+    CUSTOM = 'custom',
 }
 
 export enum FarmRewardType {
@@ -22,8 +22,8 @@ registerEnumType(FarmRewardType, { name: 'FarmRewardType' });
 
 @ObjectType()
 export class RewardsModel {
-    @Field(() => FarmTokenAttributesModel)
-    decodedAttributes: FarmTokenAttributesModel;
+    @Field()
+    identifier: string;
     @Field()
     rewards: string;
     @Field(() => Int, { nullable: true })

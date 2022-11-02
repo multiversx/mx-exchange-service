@@ -1,5 +1,5 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { FarmModelV2 } from '../models/farm.v2.model';
+import { BoostedYieldsFactors, FarmModelV2 } from '../models/farm.v2.model';
 import { FarmGetterServiceV2 } from './services/farm.v2.getter.service';
 import { FarmResolver } from '../base-module/farm.resolver';
 
@@ -15,6 +15,38 @@ export class FarmResolverV2 extends FarmResolver {
     ): Promise<number> {
         return await this.genericFieldResover(() =>
             this.farmGetter.getBoostedYieldsRewardsPercenatage(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async boostedYieldsFactors(
+        @Parent() parent: FarmModelV2,
+    ): Promise<BoostedYieldsFactors> {
+        return await this.genericFieldResover(() =>
+            this.farmGetter.getBoostedYieldsFactors(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async lockingScAddress(@Parent() parent: FarmModelV2): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetter.getLockingScAddress(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async lockEpochs(@Parent() parent: FarmModelV2): Promise<number> {
+        return await this.genericFieldResover(() =>
+            this.farmGetter.getLockEpochs(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async undistributedBoostedRewards(
+        @Parent() parent: FarmModelV2,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmGetter.getUndistributedBoostedRewards(parent.address),
         );
     }
 

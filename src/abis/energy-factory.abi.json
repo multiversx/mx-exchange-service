@@ -1,0 +1,686 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.66.0-nightly",
+            "commitHash": "b8c35ca26b191bb9a9ac669a4b3f4d3d52d97fb1",
+            "commitDate": "2022-10-15",
+            "channel": "Nightly",
+            "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
+        },
+        "contractCrate": {
+            "name": "energy-factory",
+            "version": "0.0.0",
+            "git_version": "v1.6.0-659-gbc15fd5b-modified"
+        },
+        "framework": {
+            "name": "elrond-wasm",
+            "version": "0.36.0"
+        }
+    },
+    "name": "SimpleLockEnergy",
+    "constructor": {
+        "docs": [
+            "Args:",
+            "- base_asset_token_id: The only token that is accepted for the lockTokens endpoint.",
+            "    NOTE: The SC also needs the ESDTLocalMint and ESDTLocalBurn roles for this token.",
+            "- legacy_token_id: The token ID of the old locked asset.",
+            "    NOTE: The SC also needs the NFTBurn role for this token.",
+            "- min_penalty_percentage / max_penalty_percentage: The penalty for early unlock",
+            "    of a token. A token locked for the max period, will have max_penalty_percentage penalty,",
+            "    whereas one with 1 epoch left, will have min_penalty_percentage.",
+            "    Penalty decreases linearly from max to min, based on the remaining locking period.",
+            "    ",
+            "    Both are values between 0 and 10_000, where 10_000 is 100%.",
+            "- fees_burn_percentage: The percentage of fees that are burned.",
+            "    The rest are sent to the fees collector",
+            "- fees_collector_address",
+            "- lock_options: See `addLockOptions` endpoint doc for details."
+        ],
+        "inputs": [
+            {
+                "name": "base_asset_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "legacy_token_id",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "fees_burn_percentage",
+                "type": "u16"
+            },
+            {
+                "name": "fees_collector_address",
+                "type": "Address"
+            },
+            {
+                "name": "old_locked_asset_factory_address",
+                "type": "Address"
+            },
+            {
+                "name": "lock_options",
+                "type": "variadic<multi<u64,u64>>",
+                "multi_arg": true
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "docs": [
+                "Locks a whitelisted token until `unlock_epoch` and receive meta ESDT LOCKED tokens",
+                "on a 1:1 ratio. Accepted input tokens:",
+                "- base asset token",
+                "- old factory token -> extends all periods to the provided option",
+                "- previously locked token -> extends period to the provided option",
+                "",
+                "Arguments:",
+                "- lock_epochs - Number of epochs for which the tokens are locked for.",
+                "    Caller may only choose from the available options,",
+                "    which can be seen by querying getLockOptions",
+                "- opt_destination - OPTIONAL: destination address for the LOCKED tokens. Default is caller.",
+                "",
+                "Output payment: LOCKED tokens"
+            ],
+            "name": "lockTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "lock_epochs",
+                    "type": "u64"
+                },
+                {
+                    "name": "opt_destination",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Unlock tokens, previously locked with the `lockTokens` endpoint",
+                "",
+                "Expected payments: LOCKED tokens",
+                "",
+                "Output payments: the originally locked tokens"
+            ],
+            "name": "unlockTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "issueLockedToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "token_display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "token_ticker",
+                    "type": "bytes"
+                },
+                {
+                    "name": "num_decimals",
+                    "type": "u32"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getLockedTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getBaseAssetTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getLegacyLockedTokenId",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "TokenIdentifier"
+                }
+            ]
+        },
+        {
+            "name": "getEnergyEntryForUser",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "Energy"
+                }
+            ]
+        },
+        {
+            "name": "getEnergyAmountForUser",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Add lock options, as pairs of epochs and penalty percentages.",
+                "lock epochs must be >= 360 epochs (1 year),",
+                "percentages must be between 0 and 10_000",
+                "Additionally, percentages must increase as lock period increases.",
+                "",
+                "For example, an option pair of \"360, 100\" means the user can choose to lock their tokens",
+                "for 360 epochs, and if they were to unlock the immediately,",
+                "they would incur a penalty of 1%.",
+                "",
+                "When calling lockTokens, or reducing lock periods,",
+                "users may only pick one of the whitelisted lock options."
+            ],
+            "name": "addLockOptions",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "new_lock_options",
+                    "type": "variadic<multi<u64,u64>>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeLockOptions",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "options_to_remove",
+                    "type": "variadic<u64>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getLockOptions",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "List<LockOption>"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Sets the percentage of fees that are burned. The rest are sent to the fees collector.",
+                "Value between 0 and 10_000. 0 is also accepted."
+            ],
+            "name": "setFeesBurnPercentage",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "percentage",
+                    "type": "u16"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setFeesCollectorAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sc_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Unlock a locked token instantly. This incures a penalty.",
+                "The longer the remaining locking time, the bigger the penalty."
+            ],
+            "name": "unlockEarly",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Reduce the locking period of a locked token. This incures a penalty.",
+                "The longer the reduction, the bigger the penalty.",
+                "new_lock_period must be one of the available lock options"
+            ],
+            "name": "reduceLockPeriod",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "new_lock_period",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Calculates the penalty that would be incurred if token_amount tokens",
+                "were to have their locking period reduce to new_unlock_epoch",
+                "new_unlock_epoch must be either be current epoch (i.e. full unlock)",
+                "or one of the available lock options"
+            ],
+            "name": "getPenaltyAmount",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "token_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "prev_lock_epochs",
+                    "type": "u64"
+                },
+                {
+                    "name": "new_lock_epochs",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "updateEnergyForOldTokens",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                },
+                {
+                    "name": "total_locked_tokens",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "energy_amount",
+                    "type": "BigUint"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "updateEnergyAfterOldTokenUnlock",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "original_caller",
+                    "type": "Address"
+                },
+                {
+                    "name": "epoch_amount_pairs",
+                    "type": "UnlockEpochAmountPairs"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "pause",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "unpause",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "isPaused",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Sets the transfer role for the given address. Defaults to own address."
+            ],
+            "name": "setTransferRoleLockedToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "opt_address",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "mergeTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "opt_original_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "getFeesBurnPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u16"
+                }
+            ]
+        },
+        {
+            "name": "getFeesCollectorAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getFeesFromPenaltyUnlocking",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "NonceAmountPair"
+                }
+            ]
+        },
+        {
+            "name": "getLastEpochFeeSentToCollector",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "lockVirtual",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "lock_epochs",
+                    "type": "u64"
+                },
+                {
+                    "name": "dest_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "addSCAddressToWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeSCAddressFromWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "isSCAddressWhitelisted",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "bool"
+                }
+            ]
+        }
+    ],
+    "events": [
+        {
+            "identifier": "energyUpdated",
+            "inputs": [
+                {
+                    "name": "caller",
+                    "type": "Address",
+                    "indexed": true
+                },
+                {
+                    "name": "block",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "epoch",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "timestamp",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "data",
+                    "type": "EnergyUpdatedEvent"
+                }
+            ]
+        }
+    ],
+    "hasCallback": true,
+    "types": {
+        "Energy": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "amount",
+                    "type": "BigInt"
+                },
+                {
+                    "name": "last_update_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "total_locked_tokens",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "EnergyUpdatedEvent": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "old_energy_entry",
+                    "type": "Energy"
+                },
+                {
+                    "name": "new_energy_entry",
+                    "type": "Energy"
+                }
+            ]
+        },
+        "EpochAmountPair": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "EsdtTokenPayment": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_identifier",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "LockOption": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "lock_epochs",
+                    "type": "u64"
+                },
+                {
+                    "name": "penalty_start_percentage",
+                    "type": "u64"
+                }
+            ]
+        },
+        "NonceAmountPair": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "UnlockEpochAmountPairs": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "pairs",
+                    "type": "List<EpochAmountPair>"
+                }
+            ]
+        }
+    }
+}

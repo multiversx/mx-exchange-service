@@ -16,7 +16,7 @@
         "MEX-27f4cd": "erd1qqqqqqqqqqqqqpgqxv39e72dt57vcjdyfz6cztw86vuq7nx20n4srlnthr",
         "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgq29s98mhxwyknmxcpdtdx6nm0wkvnkvwe0n4sjpdhyq",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z",
+        "proxyDexAddress": ["erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z"],
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqup60nzrkww5ukj7rxxud9txq9fakd36l0n4sthknw2",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n",
         "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgq0agdv39w3s7cyn3cll3u93t3adektylz0n4sryxmaj",
@@ -353,6 +353,7 @@
         "simpleLockEnergy": {
             "lockTokens": 10000000,
             "updateTokens": 10000000,
+            "defaultMergeTokens": 12000000,
             "admin": {
                 "issueLockedToken": 60000000,
                 "updateLockOptions": 10000000,
@@ -361,6 +362,9 @@
                 "setFeesCollectorAddress": 10000000,
                 "setOldLockedAssetFactoryAddress": 10000000
             }
+        },
+        "feesCollector": {
+            "claimRewards": 10000000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
@@ -376,7 +380,7 @@
         "wrap": "./src/abis/egld-esdt-swap.abi.json",
         "priceDiscovery": "./src/abis/price-discovery.abi.json",
         "simpleLock": "./src/abis/simple-lock.abi.json",
-        "simpleLockEnergy": "./src/abis/simple-lock-energy.abi.json",
+        "simpleLockEnergy": "./src/abis/energy-factory.abi.json",
         "farm": {
             "v1.2": "./src/abis/farms/v1.2/farm.abi.json",
             "v1.3": {
@@ -384,7 +388,10 @@
                 "lockedRewards": "./src/abis/farms/v1.3/farm_with_lock.abi.json",
                 "customRewards": "./src/abis/farms/v1.3/farm_custom_rewards.abi.json"
             },
-            "v2": "./src/abis/farms/v2/farm.abi.json"
+            "v2": {
+                "unlockedRewards": "./src/abis/farms/v2/farm.abi.json",
+                "lockedRewards": "src/abis/farms/v2/farm-with-locked-rewards.abi.json"
+            }
         },
         "staking": "./src/abis/farm-staking.abi.json",
         "stakingProxy": "./src/abis/farm-staking-proxy.abi.json",

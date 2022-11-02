@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import {
     BigUIntValue,
     BytesValue,
@@ -12,8 +12,7 @@ import { Logger } from 'winston';
 import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 
-@Injectable()
-export class AbiFarmService extends GenericAbiService {
+export abstract class AbiFarmService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

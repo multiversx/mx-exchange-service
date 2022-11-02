@@ -1,18 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { FarmService } from '../base-module/services/farm.service';
 import { AbiFarmService } from '../base-module/services/farm.abi.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../base-module/services/farm.getter.service';
-import { FarmComputeService } from '../base-module/services/farm.compute.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
 import { WrapService } from '../../wrapping/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
@@ -22,7 +20,7 @@ import { ElrondApiService } from '../../../services/elrond-communication/elrond-
 import { encodeTransactionData } from '../../../helpers/helpers';
 import { elrondConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
 import { FarmTransactionServiceV1_2 } from '../v1.2/services/farm.v1.2.transaction.service';
 
@@ -46,7 +44,7 @@ describe('FarmService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const WrapServiceProvider = {
@@ -67,7 +65,6 @@ describe('FarmService', () => {
                 ApiConfigService,
                 ElrondApiService,
                 FarmGetterServiceProvider,
-                FarmComputeService,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
@@ -78,7 +75,6 @@ describe('FarmService', () => {
                 WrapServiceProvider,
                 ElrondProxyServiceProvider,
                 FarmTransactionServiceV1_2,
-                FarmService,
             ],
         }).compile();
 
