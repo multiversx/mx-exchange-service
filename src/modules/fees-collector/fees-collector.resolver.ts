@@ -49,6 +49,13 @@ export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWe
         );
     }
 
+    @ResolveField(() => [EsdtTokenPayment])
+    async accumulatedLockedFees(@Parent() parent: FeesCollectorModel): Promise<EsdtTokenPayment[]> {
+        return await this.genericFieldResover(() =>
+            this.feesCollectorService.getAccumulatedLockedFees(parent.address, parent.time.currentWeek, parent.allTokens),
+        );
+    }
+
     @Query(() => FeesCollectorModel)
     async feesCollector(
         @Args('weekFilter', { nullable: true }, FeesCollectorWeekValidation) weekFilter: WeekFilterPeriodModel,

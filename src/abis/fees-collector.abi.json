@@ -2,19 +2,19 @@
   "buildInfo": {
     "rustc": {
       "version": "1.66.0-nightly",
-      "commitHash": "f83e0266cf7aaa4b41505c49a5fd9c2363166522",
-      "commitDate": "2022-10-03",
+      "commitHash": "bed4ad65bf7a1cef39e3d66b3670189581b3b073",
+      "commitDate": "2022-10-25",
       "channel": "Nightly",
-      "short": "rustc 1.66.0-nightly (f83e0266c 2022-10-03)"
+      "short": "rustc 1.66.0-nightly (bed4ad65b 2022-10-25)"
     },
     "contractCrate": {
       "name": "fees-collector",
       "version": "0.0.0",
-      "git_version": "v1.6.0-437-g28554594-modified"
+      "git_version": "v1.6.0-659-gbc15fd5b"
     },
     "framework": {
       "name": "elrond-wasm",
-      "version": "0.34.1"
+      "version": "0.36.0"
     }
   },
   "name": "FeesCollector",
@@ -196,26 +196,6 @@
       ]
     },
     {
-      "name": "getLastGlobalActiveWeek",
-      "mutability": "readonly",
-      "inputs": [],
-      "outputs": [
-        {
-          "type": "u32"
-        }
-      ]
-    },
-    {
-      "name": "getCurrentGlobalActiveWeek",
-      "mutability": "readonly",
-      "inputs": [],
-      "outputs": [
-        {
-          "type": "u32"
-        }
-      ]
-    },
-    {
       "name": "getTotalRewardsForWeek",
       "mutability": "readonly",
       "inputs": [
@@ -226,7 +206,7 @@
       ],
       "outputs": [
         {
-          "type": "List<TokenAmountPair>"
+          "type": "List<EsdtTokenPayment>"
         }
       ]
     },
@@ -293,6 +273,25 @@
       ]
     },
     {
+      "name": "getAccumulatedLockedFees",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "week",
+          "type": "u32"
+        },
+        {
+          "name": "token",
+          "type": "TokenIdentifier"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "List<EsdtTokenPayment>"
+        }
+      ]
+    },
+    {
       "name": "setEnergyFactoryAddress",
       "onlyOwner": true,
       "mutability": "mutable",
@@ -338,16 +337,6 @@
       ]
     },
     {
-      "name": "isPaused",
-      "mutability": "readonly",
-      "inputs": [],
-      "outputs": [
-        {
-          "type": "bool"
-        }
-      ]
-    },
-    {
       "name": "pause",
       "onlyOwner": true,
       "mutability": "mutable",
@@ -360,6 +349,16 @@
       "mutability": "mutable",
       "inputs": [],
       "outputs": []
+    },
+    {
+      "name": "isPaused",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
     }
   ],
   "events": [

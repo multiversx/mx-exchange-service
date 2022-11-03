@@ -11,18 +11,19 @@ import {
     WeeklyRewardsSplittingService,
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
 import {
-    GlobalInfoByWeekModel, UserInfoByWeekModel,
+    GlobalInfoByWeekModel,
+    UserInfoByWeekModel,
     WeekFilterPeriodModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { TransactionModel } from "../../../models/transaction.model";
+import { TransactionModel } from '../../../models/transaction.model';
 import {
-    WeekTimekeepingGetterService
-} from "../../../submodules/week-timekeeping/services/week-timekeeping.getter.service";
+    WeekTimekeepingGetterService,
+} from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 import {
-    WeeklyRewardsSplittingGetterService
-} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
-import { elrondConfig, gasConfig } from "../../../config";
-import { ElrondProxyService } from "../../../services/elrond-communication/elrond-proxy.service";
+    WeeklyRewardsSplittingGetterService,
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
+import { elrondConfig, gasConfig } from '../../../config';
+import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 
 @Injectable()
@@ -79,6 +80,16 @@ export class FeesCollectorService {
                 nonce: 0,
             }))
         }
+        return accumulatedFees
+    }
+
+    async getAccumulatedLockedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
+        const promisesList = [];
+        for (const token of allTokens) {
+            promisesList.push(this.feesCollectorGetterService.getAccumulatedLockedFees(scAddress, week, token));
+        }
+
+        const accumulatedFees = (await Promise.all(promisesList)).flat();
         return accumulatedFees
     }
 

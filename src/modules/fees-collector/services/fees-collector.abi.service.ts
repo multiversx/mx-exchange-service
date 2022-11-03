@@ -10,6 +10,7 @@ import {
 import { Mixin } from 'ts-mixer';
 import BigNumber from 'bignumber.js';
 import { WeekTimekeepingAbiService } from '../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
 @Injectable()
 export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
@@ -36,6 +37,28 @@ export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewa
         );
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
+    }
+
+    async accumulatedLockedFees(scAddress: string, week: number, token: string): Promise<EsdtTokenPayment[]> {
+        const contract = await this.getContractHandler(scAddress);
+        const interaction: Interaction = contract.methodsExplicit.getAccumulatedLockedFees(
+            [
+                new U32Value(new BigNumber(week)),
+                new TokenIdentifierValue(token),
+            ],
+        );
+        const response = await this.getGenericData(interaction);
+        const rewards = response.firstValue.valueOf().map( raw => {
+            const nonce = raw.token_nonce.toNumber()
+            const discriminant = nonce != 0 ? 3 : 1;
+            return new EsdtTokenPayment({
+                tokenType: discriminant,
+                tokenID: raw.token_identifier.toString(),
+                nonce: nonce,
+                amount: raw.amount.toFixed()
+            });
+        })
+        return rewards;
     }
 
     async allTokens(scAddress: string): Promise<string[]> {
