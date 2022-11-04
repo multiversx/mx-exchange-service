@@ -233,10 +233,14 @@ export class UserService {
             return NftTokenType.LockedTokenEnergy;
         }
 
-        for (const proxyAddress of scAddress.proxyDexAddress) {
+        for (const proxyVersion of Object.keys(scAddress.proxyDexAddress)) {
             const [lockedLpTokenID, lockedFarmTokenID] = await Promise.all([
-                this.proxyPairGetter.getwrappedLpTokenID(proxyAddress),
-                this.proxyFarmGetter.getwrappedFarmTokenID(proxyAddress),
+                this.proxyPairGetter.getwrappedLpTokenID(
+                    scAddress.proxyDexAddress[proxyVersion],
+                ),
+                this.proxyFarmGetter.getwrappedFarmTokenID(
+                    scAddress.proxyDexAddress[proxyVersion],
+                ),
             ]);
 
             switch (tokenID) {

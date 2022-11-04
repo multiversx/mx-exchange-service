@@ -231,7 +231,8 @@ export class RabbitMqConsumer {
         this.filterAddresses = [];
         this.filterAddresses = await this.routerGetter.getAllPairsAddress();
         this.filterAddresses.push(...farmsAddresses());
-        this.filterAddresses.push(scAddress.proxyDexAddress);
+        this.filterAddresses.push(scAddress.proxyDexAddress.v1);
+        this.filterAddresses.push(scAddress.proxyDexAddress.v2);
         this.filterAddresses.push(scAddress.routerAddress);
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
         this.filterAddresses.push(...scAddress.priceDiscovery);
