@@ -15,6 +15,8 @@ import {
     UserLockedSimpleLpToken,
     UserLockedSimpleFarmToken,
     UserLockedTokenEnergy,
+    UserLockedLPTokenV2,
+    UserLockedFarmTokenV2,
 } from './user.model';
 
 export const UserNftTokens = createUnionType({
@@ -24,6 +26,8 @@ export const UserNftTokens = createUnionType({
         UserFarmToken,
         UserLockedLPToken,
         UserLockedFarmToken,
+        UserLockedLPTokenV2,
+        UserLockedFarmTokenV2,
         UserStakeFarmToken,
         UserUnbondFarmToken,
         UserDualYiledToken,
@@ -36,6 +40,14 @@ export const UserNftTokens = createUnionType({
     ],
     resolveType(value) {
         switch (value.constructor.name) {
+            case UserLockedLPToken.name:
+                return UserLockedLPToken.name;
+            case UserLockedFarmToken.name:
+                return UserLockedFarmToken.name;
+            case UserLockedLPTokenV2.name:
+                return UserLockedLPTokenV2.name;
+            case UserLockedFarmTokenV2.name:
+                return UserLockedFarmTokenV2.name;
             case UserRedeemToken.name:
                 return UserRedeemToken.name;
             case UserLockedEsdtToken.name:
@@ -51,12 +63,6 @@ export const UserNftTokens = createUnionType({
         }
         if (value.decodedAttributes.originalEnteringEpoch) {
             return UserFarmToken.name;
-        }
-        if (value.decodedAttributes.lpTokenID) {
-            return UserLockedLPToken.name;
-        }
-        if (value.decodedAttributes.farmTokenID) {
-            return UserLockedFarmToken.name;
         }
         if (value.decodedAttributes.unlockSchedule) {
             return UserLockedAssetToken.name;

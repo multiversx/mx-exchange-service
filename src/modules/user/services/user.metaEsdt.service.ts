@@ -8,8 +8,14 @@ import { ElrondApiService } from '../../../services/elrond-communication/elrond-
 import { UserNftTokens } from '../models/nfttokens.union';
 import { UserMetaEsdtComputeService } from './metaEsdt.compute.service';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
-import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
-import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
+import {
+    LockedLpToken,
+    LockedLpTokenV2,
+} from 'src/modules/tokens/models/lockedLpToken.model';
+import {
+    LockedFarmToken,
+    LockedFarmTokenV2,
+} from 'src/modules/tokens/models/lockedFarmToken.model';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { CachingService } from '../../../services/caching/cache.service';
 import { oneHour, oneSecond } from '../../../helpers/helpers';
@@ -38,6 +44,8 @@ enum NftTokenType {
     LockedAssetToken,
     LockedLpToken,
     LockedFarmToken,
+    LockedLpTokenV2,
+    LockedFarmTokenV2,
     StakeFarmToken,
     DualYieldToken,
     RedeemToken,
@@ -165,6 +173,20 @@ export class UserMetaEsdtService {
                         ),
                     );
                     break;
+                case NftTokenType.LockedLpTokenV2:
+                    promises.push(
+                        this.userComputeService.lockedLpTokenV2USD(
+                            new LockedLpTokenV2(userNft),
+                        ),
+                    );
+                    break;
+                case NftTokenType.LockedFarmTokenV2:
+                    promises.push(
+                        this.userComputeService.lockedFarmTokenV2USD(
+                            new LockedFarmTokenV2(userNft),
+                        ),
+                    );
+                    break;
                 case NftTokenType.StakeFarmToken:
                     promises.push(
                         this.userComputeService.stakeFarmUSD(
@@ -245,9 +267,13 @@ export class UserMetaEsdtService {
 
             switch (tokenID) {
                 case lockedLpTokenID:
-                    return NftTokenType.LockedLpToken;
+                    return proxyVersion === 'v1'
+                        ? NftTokenType.LockedLpToken
+                        : NftTokenType.LockedLpTokenV2;
                 case lockedFarmTokenID:
-                    return NftTokenType.LockedFarmToken;
+                    return proxyVersion === 'v1'
+                        ? NftTokenType.LockedFarmToken
+                        : NftTokenType.LockedFarmTokenV2;
             }
         }
 

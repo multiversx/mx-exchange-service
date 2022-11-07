@@ -2,8 +2,14 @@ import { ObjectType, Field } from '@nestjs/graphql';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { FarmToken } from 'src/modules/tokens/models/farmToken.model';
-import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
-import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
+import {
+    LockedLpToken,
+    LockedLpTokenV2,
+} from 'src/modules/tokens/models/lockedLpToken.model';
+import {
+    LockedFarmToken,
+    LockedFarmTokenV2,
+} from 'src/modules/tokens/models/lockedFarmToken.model';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
@@ -67,6 +73,26 @@ export class UserLockedFarmToken extends LockedFarmToken {
     @Field() valueUSD: string;
 
     constructor(init?: Partial<UserLockedFarmToken>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserLockedLPTokenV2 extends LockedLpTokenV2 {
+    @Field() valueUSD: string;
+
+    constructor(init?: Partial<UserLockedLPTokenV2>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserLockedFarmTokenV2 extends LockedFarmTokenV2 {
+    @Field() valueUSD: string;
+
+    constructor(init?: Partial<UserLockedFarmTokenV2>) {
         super(init);
         Object.assign(this, init);
     }
