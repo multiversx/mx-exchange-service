@@ -17,6 +17,8 @@ import { ProxyModuleV2 } from './v2/proxy.v2.module';
 import { ProxyTransactionResolver } from './proxy.transaction.resolver';
 import { ProxyQueryResolver } from './proxy.query.resolver';
 import { ProxyResolver } from './proxy.resolver';
+import { WrappedLpTokenAttributesResolverV2 } from './wrappedLp.token.v2.resolver';
+import { WrappedFarmTokenResolverV2 } from './wrappedFarm.token.v2.resolver';
 
 @Module({
     imports: [
@@ -40,6 +42,8 @@ import { ProxyResolver } from './proxy.resolver';
         ProxyTransactionResolver,
         WrappedLpTokenResolver,
         WrappedFarmTokenResolver,
+        WrappedLpTokenAttributesResolverV2,
+        WrappedFarmTokenResolverV2,
     ],
     exports: [ProxyService, AbiProxyService, ProxyGetterService],
 })
