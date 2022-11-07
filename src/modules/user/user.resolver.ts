@@ -1,8 +1,8 @@
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { Query, Args, Resolver } from '@nestjs/graphql';
 import { UserNftToken, UserToken } from './models/user.model';
 import { UserNftTokens } from './models/nfttokens.union';
-import { UserService } from './services/user.metaEsdt.service';
+import { UserMetaEsdtService } from './services/user.metaEsdt.service';
 import { PaginationArgs } from '../dex.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
@@ -16,7 +16,7 @@ import { UserEsdtService } from './services/user.esdt.service';
 export class UserResolver {
     constructor(
         private readonly userEsdt: UserEsdtService,
-        private readonly userMetaEsdt: UserService,
+        private readonly userMetaEsdt: UserMetaEsdtService,
     ) {}
 
     @UseGuards(GqlAuthGuard)

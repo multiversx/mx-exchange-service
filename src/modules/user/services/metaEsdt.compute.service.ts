@@ -48,7 +48,7 @@ import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 
 @Injectable()
-export class UserComputeService {
+export class UserMetaEsdtComputeService {
     constructor(
         private readonly apiService: ElrondApiService,
         private readonly farmFactory: FarmFactoryService,

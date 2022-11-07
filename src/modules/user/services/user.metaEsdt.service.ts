@@ -6,7 +6,7 @@ import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pa
 import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { UserNftTokens } from '../models/nfttokens.union';
-import { UserComputeService } from './metaEsdt.compute.service';
+import { UserMetaEsdtComputeService } from './metaEsdt.compute.service';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
 import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
 import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
@@ -48,10 +48,10 @@ enum NftTokenType {
 }
 
 @Injectable()
-export class UserService {
+export class UserMetaEsdtService {
     constructor(
         private userEsdt: UserEsdtService,
-        private userComputeService: UserComputeService,
+        private userComputeService: UserMetaEsdtComputeService,
         private apiService: ElrondApiService,
         private cachingService: CachingService,
         private pairGetter: PairGetterService,
