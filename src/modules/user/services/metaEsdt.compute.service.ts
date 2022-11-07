@@ -349,10 +349,6 @@ export class UserMetaEsdtComputeService {
                 ),
             ),
         ]);
-        console.log({
-            farmAddress,
-            farmToken,
-        });
         const userFarmToken = await this.farmTokenUSD(
             new NftToken({
                 ...farmToken,

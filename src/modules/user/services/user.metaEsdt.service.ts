@@ -235,8 +235,6 @@ export class UserMetaEsdtService {
                         this.userComputeService.lockedTokenEnergyUSD(userNft),
                     );
                     break;
-                default:
-                    break;
             }
         }
 
