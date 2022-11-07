@@ -1,4 +1,4 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { EnergyModel } from '../../../modules/energy/models/energy.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
@@ -57,7 +57,7 @@ export class ClaimProgress {
     @Field(() => EnergyModel)
     energy: EnergyModel;
 
-    @Field()
+    @Field( () => Int)
     week: number;
 
     constructor(init?: Partial<ClaimProgress>) {
