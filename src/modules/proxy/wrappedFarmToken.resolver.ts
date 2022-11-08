@@ -10,14 +10,14 @@ import { DecodeAttributesArgs } from './models/proxy.args';
 import { WrappedFarmTokenAttributesModel } from './models/wrappedFarmTokenAttributes.model';
 import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
 import { ProxyPairGetterService } from './services/proxy-pair/proxy-pair.getter.service';
-import { ProxyGetterService } from './services/proxy.getter.service';
 import { ProxyService } from './services/proxy.service';
+import { ProxyGetterServiceV1 } from './v1/services/proxy.v1.getter.service';
 
 @Resolver(() => WrappedFarmTokenAttributesModel)
 export class WrappedFarmTokenResolver {
     constructor(
         private readonly proxyService: ProxyService,
-        private readonly proxyGetter: ProxyGetterService,
+        private readonly proxyGetter: ProxyGetterServiceV1,
         private readonly proxyPairGetter: ProxyPairGetterService,
         private readonly apiService: ElrondApiService,
     ) {}
@@ -50,12 +50,12 @@ export class WrappedFarmTokenResolver {
             );
             const lockedAssetTokenCollection =
                 await this.proxyGetter.getLockedAssetTokenID(proxyAddress);
-            if (lockedAssetTokenCollection != parent.farmingTokenID) {
+            if (!lockedAssetTokenCollection.includes(parent.farmingTokenID)) {
                 return null;
             }
             return await this.proxyService.getLockedAssetsAttributes(
                 proxyAddress,
-                lockedAssetTokenCollection,
+                parent.farmingTokenID,
                 parent.farmingTokenNonce,
             );
         } catch (error) {

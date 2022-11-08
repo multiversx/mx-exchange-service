@@ -29,47 +29,43 @@ export class ProxyCacheWarmerService {
 
     @Cron(CronExpression.EVERY_HOUR)
     async cacheProxy(): Promise<void> {
-        for (const address of scAddress.proxyDexAddress) {
+        for (const version of Object.keys(scAddress.proxyDexAddress)) {
             const [
                 assetTokenID,
-                lockedAssetTokenID,
                 wrappedLpTokenID,
                 intermediatedPairs,
                 wrappedFarmTokenID,
                 intermediatedFarms,
             ] = await Promise.all([
-                this.abiProxyService.getAssetTokenID(address),
-                this.abiProxyService.getLockedAssetTokenID(address),
-                this.abiProxyPairService.getWrappedLpTokenID(address),
-                this.abiProxyPairService.getIntermediatedPairsAddress(address),
-                this.abiProxyFarmService.getWrappedFarmTokenID(address),
-                this.abiProxyFarmService.getIntermediatedFarmsAddress(address),
+                this.abiProxyService.getAssetTokenID(
+                    scAddress.proxyDexAddress[version],
+                ),
+                this.abiProxyPairService.getWrappedLpTokenID(
+                    scAddress.proxyDexAddress[version],
+                ),
+                this.abiProxyPairService.getIntermediatedPairsAddress(
+                    scAddress.proxyDexAddress[version],
+                ),
+                this.abiProxyFarmService.getWrappedFarmTokenID(
+                    scAddress.proxyDexAddress[version],
+                ),
+                this.abiProxyFarmService.getIntermediatedFarmsAddress(
+                    scAddress.proxyDexAddress[version],
+                ),
             ]);
 
-            const [
-                assetToken,
-                lockedAssetToken,
-                wrappedLpToken,
-                wrappedFarmToken,
-            ] = await Promise.all([
-                this.apiService.getToken(assetTokenID),
-                this.apiService.getNftCollection(lockedAssetTokenID),
-                this.apiService.getNftCollection(wrappedLpTokenID),
-                this.apiService.getNftCollection(wrappedFarmTokenID),
-            ]);
+            const [assetToken, wrappedLpToken, wrappedFarmToken] =
+                await Promise.all([
+                    this.apiService.getToken(assetTokenID),
+                    this.apiService.getNftCollection(wrappedLpTokenID),
+                    this.apiService.getNftCollection(wrappedFarmTokenID),
+                ]);
 
             await Promise.all([
                 this.setProxyCache(
                     'proxy',
                     'assetTokenID',
                     assetTokenID,
-                    CacheTtlInfo.Token.remoteTtl,
-                    CacheTtlInfo.Token.localTtl,
-                ),
-                this.setProxyCache(
-                    'proxy',
-                    'lockedAssetTokenID',
-                    lockedAssetTokenID,
                     CacheTtlInfo.Token.remoteTtl,
                     CacheTtlInfo.Token.localTtl,
                 ),
@@ -100,10 +96,6 @@ export class ProxyCacheWarmerService {
                     oneHour(),
                 ),
                 this.tokenSetter.setTokenMetadata(assetTokenID, assetToken),
-                this.tokenSetter.setNftCollectionMetadata(
-                    lockedAssetTokenID,
-                    lockedAssetToken,
-                ),
                 this.tokenSetter.setNftCollectionMetadata(
                     wrappedLpTokenID,
                     wrappedLpToken,

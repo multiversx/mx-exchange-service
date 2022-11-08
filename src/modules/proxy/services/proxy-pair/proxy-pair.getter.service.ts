@@ -23,7 +23,7 @@ export class ProxyPairGetterService extends GenericGetterService {
 
     async getwrappedLpTokenID(proxyAddress: string): Promise<string> {
         return await this.getData(
-            this.getCacheKey('wrappedLpTokenID'),
+            this.getCacheKey(proxyAddress, 'wrappedLpTokenID'),
             () => this.abiService.getWrappedLpTokenID(proxyAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -39,7 +39,7 @@ export class ProxyPairGetterService extends GenericGetterService {
 
     async getIntermediatedPairs(proxyAddress: string): Promise<string[]> {
         return await this.getData(
-            this.getCacheKey('intermediatedPairs'),
+            this.getCacheKey(proxyAddress, 'intermediatedPairs'),
             () => this.abiService.getIntermediatedPairsAddress(proxyAddress),
             oneHour(),
         );

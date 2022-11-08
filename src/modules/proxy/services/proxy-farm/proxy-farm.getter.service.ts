@@ -23,7 +23,7 @@ export class ProxyFarmGetterService extends GenericGetterService {
 
     async getwrappedFarmTokenID(proxyAddress: string): Promise<string> {
         return this.getData(
-            this.getCacheKey('wrappedFarmTokenID'),
+            this.getCacheKey(proxyAddress, 'wrappedFarmTokenID'),
             () => this.abiService.getWrappedFarmTokenID(proxyAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
@@ -39,7 +39,7 @@ export class ProxyFarmGetterService extends GenericGetterService {
 
     async getIntermediatedFarms(proxyAddress: string): Promise<string[]> {
         return await this.getData(
-            this.getCacheKey('intermediatedFarms'),
+            this.getCacheKey(proxyAddress, 'intermediatedFarms'),
             () => this.abiService.getIntermediatedFarmsAddress(proxyAddress),
             oneHour(),
         );
