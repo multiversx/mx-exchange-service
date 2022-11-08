@@ -405,7 +405,7 @@
             }
         },
         "feesCollector": {
-            "claimRewards": 10000000
+            "claimRewards": 20000000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
