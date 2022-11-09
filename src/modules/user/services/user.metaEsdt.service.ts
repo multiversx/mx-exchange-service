@@ -3,7 +3,6 @@ import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
-import BigNumber from 'bignumber.js';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { UserNftTokens } from '../models/nfttokens.union';
 import { UserMetaEsdtComputeService } from './metaEsdt.compute.service';
@@ -33,11 +32,10 @@ import { PriceDiscoveryService } from '../../price-discovery/services/price.disc
 import { SimpleLockGetterService } from '../../simple-lock/services/simple.lock.getter.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { INFTToken } from '../../tokens/models/nft.interface';
-import { UserEsdtService } from './user.esdt.service';
-import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { scAddress } from 'src/config';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
+import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
 
 enum NftTokenType {
     FarmToken,
@@ -58,11 +56,9 @@ enum NftTokenType {
 @Injectable()
 export class UserMetaEsdtService {
     constructor(
-        private userEsdt: UserEsdtService,
         private userComputeService: UserMetaEsdtComputeService,
         private apiService: ElrondApiService,
         private cachingService: CachingService,
-        private pairGetter: PairGetterService,
         private proxyPairGetter: ProxyPairGetterService,
         private proxyFarmGetter: ProxyFarmGetterService,
         private farmGetter: FarmGetterFactory,
@@ -70,6 +66,7 @@ export class UserMetaEsdtService {
         private stakeGetterService: StakingGetterService,
         private proxyStakeGetter: StakingProxyGetterService,
         private priceDiscoveryService: PriceDiscoveryService,
+        private priceDiscoveryGetter: PriceDiscoveryGetterService,
         private simpleLockGetter: SimpleLockGetterService,
         private energyGetter: EnergyGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
@@ -141,15 +138,8 @@ export class UserMetaEsdtService {
 
             switch (userNftTokenType) {
                 case NftTokenType.FarmToken:
-                    const farmAddress =
-                        await this.farmGetter.getFarmAddressByFarmTokenID(
-                            userNft.collection,
-                        );
                     promises.push(
-                        this.userComputeService.farmTokenUSD(
-                            userNft,
-                            farmAddress,
-                        ),
+                        this.userComputeService.farmTokenUSD(userNft),
                     );
                     break;
                 case NftTokenType.LockedAssetToken:
@@ -202,15 +192,8 @@ export class UserMetaEsdtService {
                     );
                     break;
                 case NftTokenType.RedeemToken:
-                    const priceDiscoveryAddress =
-                        await this.priceDiscoveryService.getPriceDiscoveryAddresByRedeemToken(
-                            userNft.collection,
-                        );
                     promises.push(
-                        this.userComputeService.redeemTokenUSD(
-                            userNft,
-                            priceDiscoveryAddress,
-                        ),
+                        this.userComputeService.redeemTokenUSD(userNft),
                     );
                     break;
                 case NftTokenType.LockedEsdtToken:
@@ -347,52 +330,6 @@ export class UserMetaEsdtService {
         }
 
         return undefined;
-    }
-
-    async computeUserWorth(address: string): Promise<number | undefined> {
-        let userBalanceWorth = new BigNumber(0);
-
-        const [userEsdtTokensCount, userNftTokensCount] = await Promise.all([
-            this.apiService.getTokensCountForUser(address),
-            this.apiService.getNftsCountForUser(address),
-        ]);
-
-        const [egldPrice, userStats, userEsdtTokens, userNftTokens] =
-            await Promise.all([
-                this.pairGetter.getFirstTokenPrice(scAddress.WEGLD_USDC),
-                this.apiService.getAccountStats(address),
-                this.userEsdt.getAllEsdtTokens(address, {
-                    offset: 0,
-                    limit: userEsdtTokensCount,
-                }),
-                this.getAllNftTokens(address, {
-                    offset: 0,
-                    limit: userNftTokensCount,
-                }),
-            ]);
-        if (!userStats) {
-            return undefined;
-        }
-        const userBalanceDenom = new BigNumber(userStats.balance).times(
-            '1e-18',
-        );
-
-        userBalanceWorth = userBalanceWorth.plus(
-            new BigNumber(userBalanceDenom).times(egldPrice),
-        );
-
-        for (const esdtToken of userEsdtTokens) {
-            userBalanceWorth = userBalanceWorth.plus(
-                new BigNumber(esdtToken.valueUSD),
-            );
-        }
-
-        for (const nftToken of userNftTokens) {
-            userBalanceWorth = userBalanceWorth.plus(
-                new BigNumber(nftToken.valueUSD),
-            );
-        }
-        return userBalanceWorth.toNumber();
     }
 
     private getUserCacheKey(address: string, nonce: string, ...args: any) {
