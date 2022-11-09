@@ -55,6 +55,7 @@ import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
+import { FarmTokenAttributesModelV1_2 } from 'src/modules/farm/models/farmTokenAttributes.model';
 
 @Injectable()
 export class UserMetaEsdtComputeService {
@@ -117,7 +118,7 @@ export class UserMetaEsdtComputeService {
             farmingTokenID,
         );
 
-        const decodedFarmAttributes: any = this.farmFactory
+        const decodedFarmAttributes = this.farmFactory
             .useService(farmAddress)
             .decodeFarmTokenAttributes(
                 nftToken.identifier,
@@ -128,7 +129,8 @@ export class UserMetaEsdtComputeService {
         switch (version) {
             case FarmVersion.V1_2:
                 farmTokenBalance = new BigNumber(nftToken.balance).dividedBy(
-                    decodedFarmAttributes.aprMultiplier,
+                    (<FarmTokenAttributesModelV1_2>decodedFarmAttributes)
+                        .aprMultiplier,
                 );
 
             default:

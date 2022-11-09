@@ -32,6 +32,7 @@ import { ElrondProxyService } from "../../../../services/elrond-communication/el
 import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { Logger } from "winston";
 import { ElrondGatewayService } from "../../../../services/elrond-communication/elrond-gateway.service";
+import { tokenNonce } from "../../../../utils/token.converters";
 
 @Injectable()
 export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
@@ -161,6 +162,7 @@ export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplitti
         const interaction: Interaction =
             contract.methodsExplicit.calculateRewardsForGivenPosition([
                 new AddressValue(Address.fromString(args.user)),
+                new U64Value(new BigNumber(tokenNonce(args.identifier))),
                 new BigUIntValue(new BigNumber(args.liquidity)),
                 new Struct(
                     new StructType('FarmTokenAttributes', [

@@ -1,7 +1,7 @@
 import { forwardRef, Inject } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { scAddress } from 'src/config';
+import { constantsConfig, scAddress } from 'src/config';
 import { PairComputeService } from 'src/modules/pair/services/pair.compute.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -10,6 +10,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { FarmGetterService } from './farm.getter.service';
+import { CalculateRewardsArgs } from "../../models/farm.args";
 
 export abstract class FarmComputeService {
     constructor(
@@ -61,8 +62,7 @@ export abstract class FarmComputeService {
     }
 
     async computeFarmRewardsForPosition(
-        farmAddress: string,
-        liquidity: string,
+        positon: CalculateRewardsArgs,
         rewardPerShare: string,
     ): Promise<BigNumber> {
         const [
@@ -75,15 +75,15 @@ export abstract class FarmComputeService {
             produceRewardsEnabled,
         ] = await Promise.all([
             this.contextGetter.getShardCurrentBlockNonce(1),
-            this.farmGetter.getLastRewardBlockNonce(farmAddress),
-            this.farmGetter.getRewardsPerBlock(farmAddress),
-            this.farmGetter.getDivisionSafetyConstant(farmAddress),
-            this.farmGetter.getFarmTokenSupply(farmAddress),
-            this.farmGetter.getRewardPerShare(farmAddress),
-            this.farmGetter.getProduceRewardsEnabled(farmAddress),
+            this.farmGetter.getLastRewardBlockNonce(positon.farmAddress),
+            this.farmGetter.getRewardsPerBlock(positon.farmAddress),
+            this.farmGetter.getDivisionSafetyConstant(positon.farmAddress),
+            this.farmGetter.getFarmTokenSupply(positon.farmAddress),
+            this.farmGetter.getRewardPerShare(positon.farmAddress),
+            this.farmGetter.getProduceRewardsEnabled(positon.farmAddress),
         ]);
 
-        const amountBig = new BigNumber(liquidity);
+        const amountBig = new BigNumber(positon.liquidity);
         const currentBlockBig = new BigNumber(currentNonce);
         const lastRewardBlockNonceBig = new BigNumber(lastRewardBlockNonce);
         const perBlockRewardAmountBig = new BigNumber(perBlockRewardAmount);
@@ -128,10 +128,8 @@ export abstract class FarmComputeService {
             this.farmGetter.getRewardsPerBlock(farmAddress),
         ]);
 
-        // blocksPerYear = NumberOfDaysInYear * HoursInDay * MinutesInHour * SecondsInMinute / BlockPeriod;
-        const blocksPerYear = (365 * 24 * 60 * 60) / 6;
         const totalRewardsPerYear = new BigNumber(rewardsPerBlock).multipliedBy(
-            blocksPerYear,
+            constantsConfig.BLOCKS_IN_YEAR,
         );
 
         return computeValueUSD(

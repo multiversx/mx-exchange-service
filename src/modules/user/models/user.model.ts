@@ -17,6 +17,7 @@ import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { LockedEsdtToken } from 'src/modules/tokens/models/lockedEsdtToken.model';
 import { LockedSimpleFarmToken } from 'src/modules/tokens/models/lockedSimpleFarmToken.model';
 import { LockedSimpleLpToken } from 'src/modules/tokens/models/lockedSimpleLpToken.model';
+import { PaginationArgs } from 'src/modules/dex.model';
 
 @ObjectType()
 export class UserToken extends EsdtToken {
@@ -178,6 +179,7 @@ export class UserLockedTokenEnergy extends LockedEsdtToken {
 
 @ObjectType()
 export class UserNftsModel {
+    pagination: PaginationArgs;
     @Field() address: string;
     @Field(() => [UserLockedAssetToken])
     userLockedAssetToken: UserLockedAssetToken[];
@@ -208,7 +210,8 @@ export class UserNftsModel {
     @Field(() => [UserLockedTokenEnergy])
     userLockedTokenEnergy: UserLockedTokenEnergy[];
 
-    constructor(address: string) {
+    constructor(address: string, pagination: PaginationArgs) {
         this.address = address;
+        this.pagination = pagination;
     }
 }

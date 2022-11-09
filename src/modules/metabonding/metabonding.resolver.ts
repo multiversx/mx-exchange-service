@@ -30,14 +30,14 @@ export class MetabondingResolver extends GenericResolver {
 
     @ResolveField()
     async lockedAssetToken(): Promise<NftCollection> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.metabondingGetter.getLockedAssetToken(),
         );
     }
 
     @ResolveField()
     async lockedAssetTokenSupply(): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.metabondingGetter.getTotalLockedAssetSupply(),
         );
     }

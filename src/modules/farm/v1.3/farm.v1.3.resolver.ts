@@ -11,7 +11,7 @@ export class FarmResolverV1_3 extends FarmResolver {
 
     @ResolveField()
     async apr(@Parent() parent: FarmModelV1_3): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getFarmAPR(parent.address),
         );
     }

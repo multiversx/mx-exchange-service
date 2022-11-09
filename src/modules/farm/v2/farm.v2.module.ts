@@ -18,6 +18,7 @@ import { WeekTimekeepingModule } from "../../../submodules/week-timekeeping/week
 import {
     WeeklyRewardsSplittingModule
 } from "../../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module";
+import { EnergyModule } from "../../energy/energy.module";
 
 @Module({
     imports: [
@@ -26,8 +27,9 @@ import {
         ElrondCommunicationModule,
         PairModule,
         TokenModule,
+        EnergyModule,
         WeekTimekeepingModule.register(FarmAbiServiceV2),
-        WeeklyRewardsSplittingModule.register(FarmAbiServiceV2)
+        WeeklyRewardsSplittingModule.register(FarmAbiServiceV2, FarmComputeServiceV2)
     ],
     providers: [
         FarmServiceV2,

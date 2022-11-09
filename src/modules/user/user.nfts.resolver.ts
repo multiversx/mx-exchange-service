@@ -1,8 +1,9 @@
 import { UseGuards } from '@nestjs/common';
-import { Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { User } from 'src/helpers/userDecorator';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { PaginationArgs } from '../dex.model';
 import {
     UserDualYiledToken,
     UserFarmToken,
@@ -33,10 +34,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedAssetToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserLockedAssetTokens(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserLockedAssetTokens(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -45,10 +46,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserFarmToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserFarmTokens(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserFarmTokens(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -57,10 +58,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedLPToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserLockedLpTokens(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserLockedLpTokens(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -69,10 +70,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedFarmToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserLockedFarmTokens(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserLockedFarmTokens(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -81,10 +82,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedLPTokenV2[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserLockedLpTokensV2(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserLockedLpTokensV2(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -93,10 +94,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedFarmTokenV2[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserLockedFarmTokensV2(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserLockedFarmTokensV2(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -105,10 +106,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserStakeFarmToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserStakeFarmTokens(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserStakeFarmTokens(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -117,10 +118,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserUnbondFarmToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserUnbondFarmTokens(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserUnbondFarmTokens(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -129,10 +130,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserDualYiledToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserDualYieldTokens(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserDualYieldTokens(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -141,10 +142,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserRedeemToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserRedeemToken(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserRedeemToken(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -153,10 +154,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedEsdtToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserLockedEsdtToken(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserLockedEsdtToken(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -165,10 +166,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedSimpleLpToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserLockedSimpleLpToken(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserLockedSimpleLpToken(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -177,10 +178,10 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedSimpleFarmToken[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserLockedSimpleFarmToken(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserLockedSimpleFarmToken(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
@@ -189,16 +190,19 @@ export class UserNftsResolver extends GenericResolver {
         @Parent() parent: UserNftsModel,
     ): Promise<UserLockedTokenEnergy[]> {
         return await this.genericFieldResover(() =>
-            this.userMetaEsdts.getUserLockedTokenEnergy(parent.address, {
-                offset: 0,
-                limit: 100,
-            }),
+            this.userMetaEsdts.getUserLockedTokenEnergy(
+                parent.address,
+                parent.pagination,
+            ),
         );
     }
 
     @UseGuards(GqlAuthGuard)
     @Query(() => UserNftsModel)
-    async userNfts(@User() user: any): Promise<UserNftsModel> {
-        return new UserNftsModel(user.publicKey);
+    async userNfts(
+        @Args() pagination: PaginationArgs,
+        @User() user: any,
+    ): Promise<UserNftsModel> {
+        return new UserNftsModel(user.publicKey, pagination);
     }
 }

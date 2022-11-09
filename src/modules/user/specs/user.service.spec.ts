@@ -74,6 +74,28 @@ import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compu
 import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
 import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
 import { EnergyGetterServiceProvider } from 'src/modules/energy/mocks/energy.getter.service.mock';
+import {
+    WeeklyRewardsSplittingGetterServiceMock
+} from "../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock";
+import {
+    WeeklyRewardsSplittingGetterService
+} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
+import {
+    WeekTimekeepingGetterService
+} from "../../../submodules/week-timekeeping/services/week-timekeeping.getter.service";
+import {
+    WeekTimekeepingGetterServiceMock
+} from "../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock";
+import {
+    WeekTimekeepingComputeService
+} from "../../../submodules/week-timekeeping/services/week-timekeeping.compute.service";
+import {
+    WeekTimekeepingComputeServiceMock
+} from "../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock";
+import { ProgressComputeService } from "../../../submodules/weekly-rewards-splitting/services/progress.compute.service";
+import {
+    ProgressComputeServiceMock
+} from "../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock";
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -182,6 +204,22 @@ describe('UserService', () => {
                 {
                     provide: FarmServiceV1_2,
                     useClass: FarmServiceMock,
+                },
+                {
+                    provide: WeeklyRewardsSplittingGetterService,
+                    useValue: new WeeklyRewardsSplittingGetterServiceMock({}),
+                },
+                {
+                    provide: WeekTimekeepingGetterService,
+                    useValue: new WeekTimekeepingGetterServiceMock({}),
+                },
+                {
+                    provide: WeekTimekeepingComputeService,
+                    useValue: new WeekTimekeepingComputeServiceMock({}),
+                },
+                {
+                    provide: ProgressComputeService,
+                    useValue: new ProgressComputeServiceMock({}),
                 },
                 FarmComputeServiceV1_2,
                 {

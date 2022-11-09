@@ -7,14 +7,25 @@ import {
     GlobalInfoByWeekModel,
 } from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 import { WeekTimekeepingModel } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
+import { FarmComputeServiceV2 } from "./services/farm.v2.compute.service";
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
     constructor(
         protected readonly farmGetter: FarmGetterServiceV2,
         protected readonly farmService: FarmServiceV2,
+        protected readonly farmCompute: FarmComputeServiceV2,
     ) {
         super(farmGetter);
+    }
+
+    @ResolveField()
+    async baseApr(
+        @Parent() parent: FarmModelV2,
+    ): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.farmCompute.computeFarmBaseAPR(parent.address),
+        );
     }
 
     @ResolveField()
@@ -33,7 +44,7 @@ export class FarmResolverV2 extends FarmResolver {
     async time(
         @Parent() parent: FarmModelV2,
     ): Promise<WeekTimekeepingModel> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmService.getWeeklyTimekeeping(parent.address),
         );
     }
@@ -42,7 +53,7 @@ export class FarmResolverV2 extends FarmResolver {
     async boostedYieldsRewardsPercenatage(
         @Parent() parent: FarmModelV2,
     ): Promise<number> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getBoostedYieldsRewardsPercenatage(parent.address),
         );
     }
@@ -51,21 +62,21 @@ export class FarmResolverV2 extends FarmResolver {
     async boostedYieldsFactors(
         @Parent() parent: FarmModelV2,
     ): Promise<BoostedYieldsFactors> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getBoostedYieldsFactors(parent.address),
         );
     }
 
     @ResolveField()
     async lockingScAddress(@Parent() parent: FarmModelV2): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getLockingScAddress(parent.address),
         );
     }
 
     @ResolveField()
     async lockEpochs(@Parent() parent: FarmModelV2): Promise<number> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getLockEpochs(parent.address),
         );
     }
@@ -74,14 +85,14 @@ export class FarmResolverV2 extends FarmResolver {
     async undistributedBoostedRewards(
         @Parent() parent: FarmModelV2,
     ): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getUndistributedBoostedRewards(parent.address),
         );
     }
 
     @ResolveField()
     async energyFactoryAddress(@Parent() parent: FarmModelV2): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getEnergyFactoryAddress(parent.address),
         );
     }

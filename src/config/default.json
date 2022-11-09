@@ -465,6 +465,7 @@
         "UNBOND_EPOCHS": 3,
         "MAINTENANCE": false,
         "EPOCHS_IN_WEEK": 7,
+        "BLOCKS_PER_WEEK": 100800,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",

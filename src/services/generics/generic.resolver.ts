@@ -1,7 +1,7 @@
 import { ApolloError } from 'apollo-server-express';
 
 export class GenericResolver {
-    protected async genericFieldResover<T>(
+    protected async genericFieldResolver<T>(
         fieldResolver: () => Promise<T>,
     ): Promise<T> {
         try {

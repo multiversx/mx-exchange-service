@@ -50,3 +50,11 @@ export class FarmTokenAttributesModelV1_2 extends FarmTokenAttributesModelV1_3 {
         Object.assign(this, init);
     }
 }
+
+@ObjectType()
+export class FarmTokenAttributesModelV2 extends FarmTokenAttributesModelV1_3 {
+    constructor(init?: Partial<FarmTokenAttributesModelV2>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}

@@ -25,7 +25,7 @@ export class SimpleLockResolver extends GenericResolver {
     async lockedToken(
         @Parent() parent: SimpleLockModel,
     ): Promise<NftCollection> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.simpleLockGetter.getLockedToken(parent.address),
         );
     }
@@ -34,7 +34,7 @@ export class SimpleLockResolver extends GenericResolver {
     async lpProxyToken(
         @Parent() parent: SimpleLockModel,
     ): Promise<NftCollection> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.simpleLockGetter.getLpProxyToken(parent.address),
         );
     }
@@ -43,7 +43,7 @@ export class SimpleLockResolver extends GenericResolver {
     async farmProxyToken(
         @Parent() parent: SimpleLockModel,
     ): Promise<NftCollection> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.simpleLockGetter.getFarmProxyToken(parent.address),
         );
     }
@@ -52,7 +52,7 @@ export class SimpleLockResolver extends GenericResolver {
     async intermediatedPairs(
         @Parent() parent: SimpleLockModel,
     ): Promise<string[]> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.simpleLockGetter.getIntermediatedPairs(parent.address),
         );
     }
@@ -61,7 +61,7 @@ export class SimpleLockResolver extends GenericResolver {
     async intermediatedFarms(
         @Parent() parent: SimpleLockModel,
     ): Promise<string[]> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.simpleLockGetter.getIntermediatedFarms(parent.address),
         );
     }

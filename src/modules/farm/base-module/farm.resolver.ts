@@ -17,21 +17,21 @@ export class FarmResolver extends GenericResolver {
 
     @ResolveField()
     async farmedToken(@Parent() parent: BaseFarmModel): Promise<EsdtToken> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getFarmedToken(parent.address),
         );
     }
 
     @ResolveField()
     async farmToken(@Parent() parent: BaseFarmModel): Promise<NftCollection> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getFarmToken(parent.address),
         );
     }
 
     @ResolveField()
     async farmingToken(@Parent() parent: BaseFarmModel): Promise<EsdtToken> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getFarmingToken(parent.address),
         );
     }
@@ -40,21 +40,21 @@ export class FarmResolver extends GenericResolver {
     async produceRewardsEnabled(
         @Parent() parent: BaseFarmModel,
     ): Promise<boolean> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getProduceRewardsEnabled(parent.address),
         );
     }
 
     @ResolveField()
     async perBlockRewards(@Parent() parent: BaseFarmModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getRewardsPerBlock(parent.address),
         );
     }
 
     @ResolveField()
     async farmTokenSupply(@Parent() parent: BaseFarmModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getFarmTokenSupply(parent.address),
         );
     }
@@ -63,14 +63,14 @@ export class FarmResolver extends GenericResolver {
     async farmedTokenPriceUSD(
         @Parent() parent: BaseFarmModel,
     ): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getFarmedTokenPriceUSD(parent.address),
         );
     }
 
     @ResolveField()
     async farmTokenPriceUSD(@Parent() parent: BaseFarmModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getFarmTokenPriceUSD(parent.address),
         );
     }
@@ -79,14 +79,14 @@ export class FarmResolver extends GenericResolver {
     async farmingTokenPriceUSD(
         @Parent() parent: BaseFarmModel,
     ): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getFarmingTokenPriceUSD(parent.address),
         );
     }
 
     @ResolveField()
     async penaltyPercent(@Parent() parent: BaseFarmModel): Promise<number> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getPenaltyPercent(parent.address),
         );
     }
@@ -95,21 +95,21 @@ export class FarmResolver extends GenericResolver {
     async minimumFarmingEpochs(
         @Parent() parent: BaseFarmModel,
     ): Promise<number> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getMinimumFarmingEpochs(parent.address),
         );
     }
 
     @ResolveField()
     async rewardPerShare(@Parent() parent: BaseFarmModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getRewardPerShare(parent.address),
         );
     }
 
     @ResolveField()
     async rewardReserve(@Parent() parent: BaseFarmModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getRewardReserve(parent.address),
         );
     }
@@ -118,7 +118,7 @@ export class FarmResolver extends GenericResolver {
     async lastRewardBlockNonce(
         @Parent() parent: BaseFarmModel,
     ): Promise<number> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getLastRewardBlockNonce(parent.address),
         );
     }
@@ -127,28 +127,28 @@ export class FarmResolver extends GenericResolver {
     async divisionSafetyConstant(
         @Parent() parent: BaseFarmModel,
     ): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getDivisionSafetyConstant(parent.address),
         );
     }
 
     @ResolveField()
     async totalValueLockedUSD(parent: BaseFarmModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getTotalValueLockedUSD(parent.address),
         );
     }
 
     @ResolveField()
     async state(@Parent() parent: BaseFarmModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getState(parent.address),
         );
     }
 
     @ResolveField()
     async burnGasLimit(@Parent() parent: BaseFarmModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getBurnGasLimit(parent.address),
         );
     }
@@ -186,14 +186,14 @@ export class FarmResolver extends GenericResolver {
     async transferExecGasLimit(
         @Parent() parent: BaseFarmModel,
     ): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getTransferExecGasLimit(parent.address),
         );
     }
 
     @ResolveField()
     async lastErrorMessage(@Parent() parent: BaseFarmModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmGetter.getLastErrorMessage(parent.address),
         );
     }

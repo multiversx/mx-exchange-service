@@ -18,14 +18,14 @@ export class WeeklyRewardsSplittingComputeService
     implements IWeeklyRewardsSplittingComputeService
 {
     constructor(
-        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
-        private readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
+        protected readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
+        protected readonly weekTimekeepingCompute: WeekTimekeepingComputeService,
         @Inject(forwardRef(() => WeeklyRewardsSplittingGetterService))
-        private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
-        private readonly progressCompute: ProgressComputeService,
-        private readonly pairCompute: PairComputeService,
-        private readonly energyGetter: EnergyGetterService,
-        private readonly tokenCompute: TokenComputeService,
+        protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
+        protected readonly progressCompute: ProgressComputeService,
+        protected readonly pairCompute: PairComputeService,
+        protected readonly energyGetter: EnergyGetterService,
+        protected readonly tokenCompute: TokenComputeService,
     ) {}
 
     async computeUserAllRewards(
@@ -98,6 +98,7 @@ export class WeeklyRewardsSplittingComputeService
         week: number,
         userAddress: string,
         energyAmount?: string,
+        liquidity?: string,
     ): Promise<EsdtTokenPayment[]> {
         const totalRewards =
             await this.weeklyRewardsSplittingGetter.totalRewardsForWeek(

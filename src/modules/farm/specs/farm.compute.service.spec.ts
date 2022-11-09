@@ -5,11 +5,9 @@ import { ElrondApiService } from '../../../services/elrond-communication/elrond-
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmComputeService } from '../base-module/services/farm.compute.service';
-import { FarmGetterServiceProvider } from '../mocks/farm.getter.service.mock';
-import { PairGetterService } from '../../../modules/pair/services/pair.getter.service';
+import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
-import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
+import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
 import { WrapService } from '../../wrapping/wrap.service';
@@ -20,6 +18,7 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.service';
 import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service';
 import { FarmGetterServiceMockV1_2 } from '../mocks/farm.v1.2.getter.service.mock';
+import { CalculateRewardsArgs } from "../models/farm.args";
 
 describe('FarmService', () => {
     let service: FarmComputeServiceV1_2;
@@ -88,10 +87,12 @@ describe('FarmService', () => {
     });
 
     it('should compute farm rewards for position', async () => {
+        const calculateRewardsArgs = new CalculateRewardsArgs()
+        calculateRewardsArgs.farmAddress = 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye'
+        calculateRewardsArgs.liquidity = '100000000000000000000000000000'
         const farmRewardsForPosition =
             await service.computeFarmRewardsForPosition(
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-                '100000000000000000000000000000',
+                calculateRewardsArgs,
                 '100',
             );
         expect(farmRewardsForPosition.toFixed()).toEqual(
