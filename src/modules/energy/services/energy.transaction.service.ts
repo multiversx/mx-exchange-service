@@ -1,6 +1,7 @@
 import {
     Address,
     AddressValue,
+    IGasLimit,
     Interaction,
     TokenPayment,
     U16Value,
@@ -69,17 +70,22 @@ export class EnergyTransactionService {
             await this.elrondProxy.getSimpleLockEnergySmartContract();
 
         let endpoint: Interaction;
+        let gasLimit: IGasLimit;
         switch (unlockType) {
             case UnlockType.EARLY_UNLOCK:
                 endpoint = contract.methodsExplicit.unlockEarly();
+                gasLimit = gasConfig.simpleLockEnergy.unlockTokens.unlockEarly;
                 break;
             case UnlockType.REDUCE_PERIOD:
                 endpoint = contract.methodsExplicit.reduceLockPeriod([
                     new U64Value(new BigNumber(epochsToReduce)),
                 ]);
+                gasLimit =
+                    gasConfig.simpleLockEnergy.unlockTokens.reduceLockPeriod;
                 break;
             default:
                 endpoint = contract.methodsExplicit.unlockTokens();
+                gasLimit = gasConfig.simpleLockEnergy.unlockTokens.default;
                 break;
         }
 
@@ -92,7 +98,7 @@ export class EnergyTransactionService {
                 ),
                 Address.fromString(sender),
             )
-            .withGasLimit(gasConfig.simpleLockEnergy.unlockTokens)
+            .withGasLimit(gasLimit)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();

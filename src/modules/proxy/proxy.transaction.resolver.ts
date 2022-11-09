@@ -23,6 +23,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { LiquidityTokensValidationPipe } from './validators/add.liquidity.input.validator';
 import { ApolloError } from 'apollo-server-express';
 import { ProxyService } from './services/proxy.service';
+import { scAddress } from 'src/config';
 
 @Resolver()
 export class ProxyTransactionResolver {
@@ -38,20 +39,10 @@ export class ProxyTransactionResolver {
         @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
         @User() user: any,
     ): Promise<TransactionModel[]> {
-        let lockedToken: InputTokenModel;
-        for (const token of args.tokens) {
-            if (token.nonce > 0) {
-                lockedToken = token;
-            }
-        }
-
         try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                lockedToken.tokenID,
-            );
             return await this.transactionsProxyPairService.addLiquidityProxyBatch(
                 user.publicKey,
-                proxyAddress,
+                scAddress.proxyDexAddress.v2,
                 args,
             );
         } catch (error) {
@@ -65,19 +56,10 @@ export class ProxyTransactionResolver {
         @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
-        let lockedToken: InputTokenModel;
-        for (const token of args.tokens) {
-            if (token.nonce > 0) {
-                lockedToken = token;
-            }
-        }
         try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                lockedToken.tokenID,
-            );
             return await this.transactionsProxyPairService.addLiquidityProxy(
                 user.publicKey,
-                proxyAddress,
+                scAddress.proxyDexAddress.v2,
                 args,
             );
         } catch (error) {
@@ -108,12 +90,9 @@ export class ProxyTransactionResolver {
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                args.tokens[0].tokenID,
-            );
             return await this.transactionsProxyFarmService.enterFarmProxy(
                 user.publicKey,
-                proxyAddress,
+                scAddress.proxyDexAddress.v2,
                 args,
             );
         } catch (error) {

@@ -392,7 +392,11 @@
         },
         "simpleLockEnergy": {
             "lockTokens": 10000000,
-            "unlockTokens": 10000000,
+            "unlockTokens": {
+                "unlockEarly": 20000000,
+                "reduceLockPeriod": 20000000,
+                "default": 10000000
+            },
             "updateTokens": 10000000,
             "defaultMergeTokens": 12000000,
             "admin": {
