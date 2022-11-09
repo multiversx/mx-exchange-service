@@ -2,8 +2,14 @@ import { ObjectType, Field } from '@nestjs/graphql';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftToken } from 'src/modules/tokens/models/nftToken.model';
 import { FarmToken } from 'src/modules/tokens/models/farmToken.model';
-import { LockedLpToken } from 'src/modules/tokens/models/lockedLpToken.model';
-import { LockedFarmToken } from 'src/modules/tokens/models/lockedFarmToken.model';
+import {
+    LockedLpToken,
+    LockedLpTokenV2,
+} from 'src/modules/tokens/models/lockedLpToken.model';
+import {
+    LockedFarmToken,
+    LockedFarmTokenV2,
+} from 'src/modules/tokens/models/lockedFarmToken.model';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
@@ -11,6 +17,7 @@ import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { LockedEsdtToken } from 'src/modules/tokens/models/lockedEsdtToken.model';
 import { LockedSimpleFarmToken } from 'src/modules/tokens/models/lockedSimpleFarmToken.model';
 import { LockedSimpleLpToken } from 'src/modules/tokens/models/lockedSimpleLpToken.model';
+import { PaginationArgs } from 'src/modules/dex.model';
 
 @ObjectType()
 export class UserToken extends EsdtToken {
@@ -67,6 +74,26 @@ export class UserLockedFarmToken extends LockedFarmToken {
     @Field() valueUSD: string;
 
     constructor(init?: Partial<UserLockedFarmToken>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserLockedLPTokenV2 extends LockedLpTokenV2 {
+    @Field() valueUSD: string;
+
+    constructor(init?: Partial<UserLockedLPTokenV2>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class UserLockedFarmTokenV2 extends LockedFarmTokenV2 {
+    @Field() valueUSD: string;
+
+    constructor(init?: Partial<UserLockedFarmTokenV2>) {
         super(init);
         Object.assign(this, init);
     }
@@ -151,6 +178,40 @@ export class UserLockedTokenEnergy extends LockedEsdtToken {
 }
 
 @ObjectType()
-export class UserModel {
+export class UserNftsModel {
+    pagination: PaginationArgs;
     @Field() address: string;
+    @Field(() => [UserLockedAssetToken])
+    userLockedAssetToken: UserLockedAssetToken[];
+    @Field(() => [UserFarmToken])
+    userFarmToken: UserFarmToken[];
+    @Field(() => [UserLockedLPToken])
+    userLockedLPToken: UserLockedLPToken[];
+    @Field(() => [UserLockedFarmToken])
+    userLockedFarmToken: UserLockedFarmToken[];
+    @Field(() => [UserLockedLPTokenV2])
+    userLockedLpTokenV2: UserLockedLPTokenV2[];
+    @Field(() => [UserLockedFarmTokenV2])
+    userLockedFarmTokenV2: UserLockedFarmTokenV2[];
+    @Field(() => [UserStakeFarmToken])
+    userStakeFarmToken: UserStakeFarmToken[];
+    @Field(() => [UserUnbondFarmToken])
+    userUnbondFarmToken: UserUnbondFarmToken[];
+    @Field(() => [UserDualYiledToken])
+    userDualYieldToken: UserDualYiledToken[];
+    @Field(() => [UserRedeemToken])
+    userRedeemToken: UserRedeemToken[];
+    @Field(() => [UserLockedEsdtToken])
+    userLockedEsdtToken: UserLockedEsdtToken[];
+    @Field(() => [UserLockedSimpleLpToken])
+    userLockedSimpleLpToken: UserLockedSimpleLpToken[];
+    @Field(() => [UserLockedSimpleFarmToken])
+    userLockedSimpleFarmToken: UserLockedSimpleFarmToken[];
+    @Field(() => [UserLockedTokenEnergy])
+    userLockedTokenEnergy: UserLockedTokenEnergy[];
+
+    constructor(address: string, pagination: PaginationArgs) {
+        this.address = address;
+        this.pagination = pagination;
+    }
 }

@@ -6,10 +6,10 @@ import { ProxyFarmModule } from '../proxy/services/proxy-farm/proxy-farm.module'
 import { ProxyPairModule } from '../proxy/services/proxy-pair/proxy-pair.module';
 import { ProxyModule } from '../proxy/proxy.module';
 import { UserResolver } from './user.resolver';
-import { UserService } from './services/user.metaEsdt.service';
+import { UserMetaEsdtService } from './services/user.metaEsdt.service';
 import { LockedAssetModule } from '../locked-asset-factory/locked-asset.module';
 import { WrappingModule } from '../wrapping/wrap.module';
-import { UserComputeService } from './services/metaEsdt.compute.service';
+import { UserMetaEsdtComputeService } from './services/metaEsdt.compute.service';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { StakingModule } from '../staking/staking.module';
 import { StakingProxyModule } from '../staking-proxy/staking.proxy.module';
@@ -23,6 +23,7 @@ import { UserEsdtService } from './services/user.esdt.service';
 import { UserEsdtComputeService } from './services/esdt.compute.service';
 import { FarmModule } from '../farm/farm.module';
 import { EnergyModule } from '../energy/energy.module';
+import { UserNftsResolver } from './user.nfts.resolver';
 
 @Module({
     imports: [
@@ -47,12 +48,13 @@ import { EnergyModule } from '../energy/energy.module';
     ],
     providers: [
         UserEsdtService,
-        UserService,
+        UserMetaEsdtService,
         UserEsdtComputeService,
-        UserComputeService,
+        UserMetaEsdtComputeService,
         UserResolver,
         UserTokenResolver,
+        UserNftsResolver,
     ],
-    exports: [UserService],
+    exports: [UserMetaEsdtService],
 })
 export class UserModule {}

@@ -77,6 +77,7 @@ export class EnergyTransactionService {
                 endpoint = contract.methodsExplicit.reduceLockPeriod([
                     new U64Value(new BigNumber(epochsToReduce)),
                 ]);
+                break;
             default:
                 endpoint = contract.methodsExplicit.unlockTokens();
                 break;

@@ -3,7 +3,7 @@ import { PairService } from '../../pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
-import { UserService } from '../services/user.metaEsdt.service';
+import { UserMetaEsdtService } from '../services/user.metaEsdt.service';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import {
@@ -17,7 +17,7 @@ import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { UserFarmToken, UserToken } from '../models/user.model';
 import { FarmTokenAttributesModelV1_2 } from '../../farm/models/farmTokenAttributes.model';
-import { UserComputeService } from '../services/metaEsdt.compute.service';
+import { UserMetaEsdtComputeService } from '../services/metaEsdt.compute.service';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
@@ -98,7 +98,7 @@ import {
 } from "../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock";
 
 describe('UserService', () => {
-    let userMetaEsdts: UserService;
+    let userMetaEsdts: UserMetaEsdtService;
     let userEsdts: UserEsdtService;
 
     const ElrondApiServiceProvider = {
@@ -274,8 +274,8 @@ describe('UserService', () => {
                 TokenComputeService,
                 TokenService,
                 UserEsdtService,
-                UserService,
-                UserComputeService,
+                UserMetaEsdtService,
+                UserMetaEsdtComputeService,
                 UserEsdtComputeService,
                 RemoteConfigGetterServiceProvider,
             ],
@@ -288,7 +288,7 @@ describe('UserService', () => {
         }).compile();
 
         userEsdts = module.get<UserEsdtService>(UserEsdtService);
-        userMetaEsdts = module.get<UserService>(UserService);
+        userMetaEsdts = module.get<UserMetaEsdtService>(UserMetaEsdtService);
     });
 
     it('should be defined', () => {
