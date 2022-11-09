@@ -76,6 +76,11 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
             modelsList.push(this.getUserInfoByWeek(positon.farmAddress, positon.user, week))
         }
 
+        const currentClaimProgress = await this.weeklyRewardsSplittingGetter.currentClaimProgress(
+            positon.farmAddress,
+            positon.user,
+        )
+
         return new RewardsModel({
             identifier: positon.identifier,
             remainingFarmingEpochs: await this.getRemainingFarmingEpochs(
@@ -84,6 +89,7 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
             ),
             rewards: rewards.integerValue().toFixed(),
             boostedRewardsWeeklyInfo: modelsList,
+            claimProgress: currentClaimProgress
         });
     }
 

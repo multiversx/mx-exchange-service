@@ -4,6 +4,7 @@ import { PairModel } from 'src/modules/pair/models/pair.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import {
+    ClaimProgress,
     UserInfoByWeekModel,
 } from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 
@@ -33,6 +34,8 @@ export class RewardsModel {
     remainingFarmingEpochs?: number;
     @Field(() => [UserInfoByWeekModel], { nullable: true })
     boostedRewardsWeeklyInfo: UserInfoByWeekModel[]
+    @Field(() => ClaimProgress, { nullable: true })
+    claimProgress: ClaimProgress;
     constructor(init?: Partial<RewardsModel>) {
         Object.assign(this, init);
     }
