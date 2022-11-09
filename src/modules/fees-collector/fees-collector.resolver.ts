@@ -44,14 +44,14 @@ export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWe
 
     @ResolveField(() => [EsdtTokenPayment])
     async accumulatedFees(@Parent() parent: FeesCollectorModel): Promise<EsdtTokenPayment[]> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.feesCollectorService.getAccumulatedFees(parent.address, parent.time.currentWeek, parent.allTokens),
         );
     }
 
     @ResolveField(() => [EsdtTokenPayment])
     async accumulatedLockedFees(@Parent() parent: FeesCollectorModel): Promise<EsdtTokenPayment[]> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.feesCollectorService.getAccumulatedLockedFees(parent.address, parent.time.currentWeek, parent.allTokens),
         );
     }

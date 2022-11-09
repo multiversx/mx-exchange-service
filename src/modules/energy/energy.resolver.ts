@@ -32,63 +32,63 @@ export class EnergyResolver extends GenericResolver {
 
     @ResolveField()
     async baseAssetToken(): Promise<EsdtToken> {
-        return await this.genericFieldResover<EsdtToken>(() =>
+        return await this.genericFieldResolver<EsdtToken>(() =>
             this.energyGetter.getBaseAssetToken(),
         );
     }
 
     @ResolveField()
     async lockedToken(): Promise<NftCollection> {
-        return await this.genericFieldResover<NftCollection>(() =>
+        return await this.genericFieldResolver<NftCollection>(() =>
             this.energyGetter.getLockedToken(),
         );
     }
 
     @ResolveField()
     async legacyLockedToken(): Promise<NftCollection> {
-        return await this.genericFieldResover<NftCollection>(() =>
+        return await this.genericFieldResolver<NftCollection>(() =>
             this.energyGetter.getLegacyLockedToken(),
         );
     }
 
     @ResolveField()
     async feesBurnPercentage(): Promise<number> {
-        return await this.genericFieldResover<number>(() =>
+        return await this.genericFieldResolver<number>(() =>
             this.energyGetter.getFeesBurnPercentage(),
         );
     }
 
     @ResolveField()
     async feesCollectorAddress(): Promise<string> {
-        return await this.genericFieldResover<string>(() =>
+        return await this.genericFieldResolver<string>(() =>
             this.energyGetter.getFeesCollectorAddress(),
         );
     }
 
     @ResolveField()
     async lastEpochFeeSentToCollector(): Promise<number> {
-        return await this.genericFieldResover<number>(() =>
+        return await this.genericFieldResolver<number>(() =>
             this.energyGetter.getLastEpochFeeSentToCollector(),
         );
     }
 
     @ResolveField()
     async getFeesFromPenaltyUnlocking(): Promise<string> {
-        return await this.genericFieldResover<string>(() =>
+        return await this.genericFieldResolver<string>(() =>
             this.energyGetter.getFeesFromPenaltyUnlocking(),
         );
     }
 
     @ResolveField()
     async lockOptions(): Promise<LockOption[]> {
-        return await this.genericFieldResover<LockOption[]>(() =>
+        return await this.genericFieldResolver<LockOption[]>(() =>
             this.energyGetter.getLockOptions(),
         );
     }
 
     @ResolveField()
     async pauseState(): Promise<boolean> {
-        return await this.genericFieldResover<boolean>(() =>
+        return await this.genericFieldResolver<boolean>(() =>
             this.energyGetter.getPauseState(),
         );
     }
