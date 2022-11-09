@@ -43,6 +43,8 @@ export class FarmModelV2 extends BaseFarmModel {
     time: WeekTimekeepingModel;
     @Field(() => [GlobalInfoByWeekModel])
     boosterRewards: [GlobalInfoByWeekModel];
+    @Field()
+    baseApr: string;
 
     constructor(init?: Partial<FarmModelV2>) {
         super(init);

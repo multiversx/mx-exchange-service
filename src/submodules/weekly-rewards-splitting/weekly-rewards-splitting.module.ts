@@ -1,4 +1,4 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, forwardRef, Module } from '@nestjs/common';
 import { WeeklyRewardsSplittingGetterService } from './services/weekly-rewards-splitting.getter.service';
 import { CachingModule } from '../../services/caching/cache.module';
 import { WeeklyRewardsSplittingAbiService } from './services/weekly-rewards-splitting.abi.service';
@@ -16,6 +16,7 @@ import { RouterModule } from '../../modules/router/router.module';
 import { PairModule } from '../../modules/pair/pair.module';
 import { TokenModule } from '../../modules/tokens/token.module';
 import { EnergyModule } from 'src/modules/energy/energy.module';
+import { FarmModuleV2 } from "../../modules/farm/v2/farm.v2.module";
 
 @Module({
     imports: [
@@ -25,10 +26,11 @@ import { EnergyModule } from 'src/modules/energy/energy.module';
         RouterModule,
         PairModule,
         TokenModule,
+        forwardRef( () => FarmModuleV2),
     ],
 })
 export class WeeklyRewardsSplittingModule {
-    static register(abiProvider: any): DynamicModule {
+    static register(abiProvider: any, computeProvider?: any): DynamicModule {
         return {
             module: WeeklyRewardsSplittingModule,
             imports: [WeekTimekeepingModule.register(abiProvider)],
@@ -41,11 +43,15 @@ export class WeeklyRewardsSplittingModule {
                     useClass: abiProvider,
                 },
                 WeeklyRewardsSplittingGetterService,
-                WeeklyRewardsSplittingComputeService,
+                {
+                    provide: WeeklyRewardsSplittingComputeService,
+                    useClass: computeProvider ?? WeeklyRewardsSplittingComputeService,
+                },
                 GlobalInfoByWeekResolver,
                 UserInfoByWeekResolver,
             ],
             exports: [
+                ProgressComputeService,
                 GlobalInfoByWeekResolver,
                 UserInfoByWeekResolver,
                 WeeklyRewardsSplittingService,

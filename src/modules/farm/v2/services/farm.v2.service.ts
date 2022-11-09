@@ -8,18 +8,21 @@ import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { FarmGetterServiceV2 } from './farm.v2.getter.service';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { RewardsModel } from '../../models/farm.model';
-import { FarmTokenAttributesModelV1_3 } from '../../models/farmTokenAttributes.model';
+import { FarmTokenAttributesModelV2 } from '../../models/farmTokenAttributes.model';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
 import {
     WeeklyRewardsSplittingService
 } from "../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service";
 import { WeekTimekeepingService } from "../../../../submodules/week-timekeeping/services/week-timekeeping.service";
 import { Mixin } from "ts-mixer";
-import { FarmTokenAttributesV1_3 } from "@elrondnetwork/erdjs-dex";
+import { FarmTokenAttributesV2 } from "@elrondnetwork/erdjs-dex";
 import BigNumber from "bignumber.js";
 import {
     UserInfoByWeekModel
 } from "../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
+import {
+    WeeklyRewardsSplittingGetterService
+} from "../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
 
 @Injectable()
 export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService, WeeklyRewardsSplittingService) {
@@ -30,6 +33,7 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
         protected readonly farmCompute: FarmComputeServiceV2,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
+        protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(
@@ -45,7 +49,7 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
     ): Promise<RewardsModel> {
-        const farmTokenAttributes = FarmTokenAttributesV1_3.fromAttributes(
+        const farmTokenAttributes = FarmTokenAttributesV2.fromAttributes(
             positon.attributes,
         );
         let rewards: BigNumber;
@@ -55,16 +59,23 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
             );
         } else {
             rewards = await this.farmCompute.computeFarmRewardsForPosition(
-                positon.farmAddress,
-                positon.liquidity,
+                positon,
                 farmTokenAttributes.rewardPerShare,
             );
         }
         const currentWeek = await this.farmGetter.getCurrentWeek(positon.farmAddress);
         const modelsList: UserInfoByWeekModel[] = []
-        for (let week = 1; week <= currentWeek; week++) {
+        const lastActiveWeekUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(positon.farmAddress, positon.user)
+        let startWeek = lastActiveWeekUser;
+        if (startWeek == 0) {
+            const lastGlobalUpdateWeek = await this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(positon.farmAddress);
+            startWeek = lastGlobalUpdateWeek;
+        }
+
+        for (let week = startWeek; week <= currentWeek; week++) {
             modelsList.push(this.getUserInfoByWeek(positon.farmAddress, positon.user, week))
         }
+
         return new RewardsModel({
             identifier: positon.identifier,
             remainingFarmingEpochs: await this.getRemainingFarmingEpochs(
@@ -79,9 +90,9 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
     decodeFarmTokenAttributes(
         identifier: string,
         attributes: string,
-    ): FarmTokenAttributesModelV1_3 {
-        return new FarmTokenAttributesModelV1_3({
-            ...FarmTokenAttributesV1_3.fromAttributes(attributes).toJSON(),
+    ): FarmTokenAttributesModelV2 {
+        return new FarmTokenAttributesModelV2({
+            ...FarmTokenAttributesV2.fromAttributes(attributes).toJSON(),
             attributes: attributes,
             identifier: identifier,
         });
