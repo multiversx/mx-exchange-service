@@ -20,7 +20,7 @@ export class TokensResolver extends GenericResolver {
 
     @ResolveField(() => String)
     async derivedEGLD(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.tokenGetter.getDerivedEGLD(parent.identifier),
         );
     }
@@ -30,14 +30,14 @@ export class TokensResolver extends GenericResolver {
         if (constantsConfig.USDC_TOKEN_ID === parent.identifier) {
             return '1';
         }
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.tokenGetter.getDerivedUSD(parent.identifier),
         );
     }
 
     @ResolveField(() => String)
     async type(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.tokenGetter.getEsdtTokenType(parent.identifier),
         );
     }

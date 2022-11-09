@@ -29,7 +29,7 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
     async totalRewardsForWeek(
         @Parent() parent: GlobalInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.totalRewardsForWeek(
                 parent.scAddress,
                 parent.week,
@@ -41,7 +41,7 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
     async totalEnergyForWeek(
         @Parent() parent: GlobalInfoByWeekModel,
     ): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.totalEnergyForWeek(
                 parent.scAddress,
                 parent.week,
@@ -53,7 +53,7 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
     async totalLockedTokensForWeek(
         @Parent() parent: GlobalInfoByWeekModel,
     ): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.totalLockedTokensForWeek(
                 parent.scAddress,
                 parent.week,
@@ -63,7 +63,7 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
 
     @ResolveField()
     async apr(@Parent() parent: GlobalInfoByWeekModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingCompute.computeApr(
                 parent.scAddress,
                 parent.week,
@@ -85,7 +85,7 @@ export class UserInfoByWeekResolver extends GenericResolver {
     async energyForWeek(
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<EnergyModel> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.userEnergyForWeek(
                 parent.scAddress,
                 parent.userAddress,
@@ -96,7 +96,7 @@ export class UserInfoByWeekResolver extends GenericResolver {
 
     @ResolveField()
     async apr(@Parent() parent: UserInfoByWeekModel): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingCompute.computeUserApr(
                 parent.scAddress,
                 parent.userAddress,
@@ -109,7 +109,7 @@ export class UserInfoByWeekResolver extends GenericResolver {
     async rewardsForWeek(
         @Parent() parent: UserInfoByWeekModel,
     ): Promise<EsdtTokenPayment[]> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.userRewardsForWeek(
                 parent.scAddress,
                 parent.userAddress,
@@ -130,7 +130,7 @@ export class GlobalInfoByWeekSubResolver extends GenericResolver {
     async lastGlobalUpdateWeek(
         @Parent() parent: FeesCollectorModel,
     ): Promise<number> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(
                 parent.address,
             ),
@@ -150,7 +150,7 @@ export class UserInfoByWeekSubResolver extends GenericResolver {
     async lastActiveWeekForUser(
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<number> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(
                 parent.address,
                 parent.userAddress,
@@ -161,7 +161,7 @@ export class UserInfoByWeekSubResolver extends GenericResolver {
     async claimProgress(
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<ClaimProgress> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.currentClaimProgress(
                 parent.address,
                 parent.userAddress,
