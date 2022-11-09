@@ -47,8 +47,7 @@ export class FarmServiceV1_3 extends FarmServiceBase {
             );
         } else {
             rewards = await this.farmCompute.computeFarmRewardsForPosition(
-                positon.farmAddress,
-                positon.liquidity,
+                positon,
                 farmTokenAttributes.rewardPerShare,
             );
         }

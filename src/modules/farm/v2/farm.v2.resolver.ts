@@ -7,14 +7,25 @@ import {
     GlobalInfoByWeekModel,
 } from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 import { WeekTimekeepingModel } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
+import { FarmComputeServiceV2 } from "./services/farm.v2.compute.service";
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
     constructor(
         protected readonly farmGetter: FarmGetterServiceV2,
         protected readonly farmService: FarmServiceV2,
+        protected readonly farmCompute: FarmComputeServiceV2,
     ) {
         super(farmGetter);
+    }
+
+    @ResolveField()
+    async baseApr(
+        @Parent() parent: FarmModelV2,
+    ): Promise<string> {
+        return await this.genericFieldResover(() =>
+            this.farmCompute.computeFarmBaseAPR(parent.address),
+        );
     }
 
     @ResolveField()

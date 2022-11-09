@@ -161,6 +161,7 @@ export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplitti
         const interaction: Interaction =
             contract.methodsExplicit.calculateRewardsForGivenPosition([
                 new AddressValue(Address.fromString(args.user)),
+                new U64Value(new BigNumber(args.identifier.split('-')[-1])),
                 new BigUIntValue(new BigNumber(args.liquidity)),
                 new Struct(
                     new StructType('FarmTokenAttributes', [
