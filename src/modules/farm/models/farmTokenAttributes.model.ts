@@ -3,13 +3,19 @@ import { createUnionType, Field, Int, ObjectType } from '@nestjs/graphql';
 export const FarmTokenAttributesUnion = createUnionType({
     name: 'FarmTokenAttributes',
     types: () =>
-        [FarmTokenAttributesModelV1_2, FarmTokenAttributesModelV1_3] as const,
-    resolveType(farm) {
-        switch (farm.constructor.name) {
+        [
+            FarmTokenAttributesModelV1_2,
+            FarmTokenAttributesModelV1_3,
+            FarmTokenAttributesModelV2,
+        ] as const,
+    resolveType(value) {
+        switch (value.constructor.name) {
             case FarmTokenAttributesModelV1_2.name:
                 return FarmTokenAttributesModelV1_2.name;
             case FarmTokenAttributesModelV1_3.name:
                 return FarmTokenAttributesModelV1_3.name;
+            case FarmTokenAttributesModelV2.name:
+                return FarmTokenAttributesModelV2.name;
         }
     },
 });
