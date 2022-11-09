@@ -57,8 +57,14 @@ export class ProxyService {
 
     getProxyInfo(): ProxyModel[] {
         return [
-            new ProxyModel({ address: scAddress.proxyDexAddress.v1 }),
-            new ProxyModel({ address: scAddress.proxyDexAddress.v2 }),
+            new ProxyModel({
+                address: scAddress.proxyDexAddress.v1,
+                version: 'v1',
+            }),
+            new ProxyModel({
+                address: scAddress.proxyDexAddress.v2,
+                version: 'v2',
+            }),
         ];
     }
 

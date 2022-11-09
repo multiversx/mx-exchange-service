@@ -34,6 +34,9 @@ export class ProxyModel {
     @Field(() => [String])
     intermediatedFarms: string[];
 
+    @Field()
+    version: string;
+
     constructor(init?: Partial<ProxyModel>) {
         Object.assign(this, init);
     }
