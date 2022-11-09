@@ -23,7 +23,7 @@ export class FarmResolverV2 extends FarmResolver {
     async baseApr(
         @Parent() parent: FarmModelV2,
     ): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.farmCompute.computeFarmBaseAPR(parent.address),
         );
     }
