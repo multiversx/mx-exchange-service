@@ -177,6 +177,38 @@ export class UserLockedTokenEnergy extends LockedEsdtToken {
 }
 
 @ObjectType()
-export class UserModel {
+export class UserNftsModel {
     @Field() address: string;
+    @Field(() => [UserLockedAssetToken])
+    userLockedAssetToken: UserLockedAssetToken[];
+    @Field(() => [UserFarmToken])
+    userFarmToken: UserFarmToken[];
+    @Field(() => [UserLockedLPToken])
+    userLockedLPToken: UserLockedLPToken[];
+    @Field(() => [UserLockedFarmToken])
+    userLockedFarmToken: UserLockedFarmToken[];
+    @Field(() => [UserLockedLPTokenV2])
+    userLockedLpTokenV2: UserLockedLPTokenV2[];
+    @Field(() => [UserLockedFarmTokenV2])
+    userLockedFarmTokenV2: UserLockedFarmTokenV2[];
+    @Field(() => [UserStakeFarmToken])
+    userStakeFarmToken: UserStakeFarmToken[];
+    @Field(() => [UserUnbondFarmToken])
+    userUnbondFarmToken: UserUnbondFarmToken[];
+    @Field(() => [UserDualYiledToken])
+    userDualYieldToken: UserDualYiledToken[];
+    @Field(() => [UserRedeemToken])
+    userRedeemToken: UserRedeemToken[];
+    @Field(() => [UserLockedEsdtToken])
+    userLockedEsdtToken: UserLockedEsdtToken[];
+    @Field(() => [UserLockedSimpleLpToken])
+    userLockedSimpleLpToken: UserLockedSimpleLpToken[];
+    @Field(() => [UserLockedSimpleFarmToken])
+    userLockedSimpleFarmToken: UserLockedSimpleFarmToken[];
+    @Field(() => [UserLockedTokenEnergy])
+    userLockedTokenEnergy: UserLockedTokenEnergy[];
+
+    constructor(address: string) {
+        this.address = address;
+    }
 }

@@ -23,6 +23,7 @@ import { UserEsdtService } from './services/user.esdt.service';
 import { UserEsdtComputeService } from './services/esdt.compute.service';
 import { FarmModule } from '../farm/farm.module';
 import { EnergyModule } from '../energy/energy.module';
+import { UserNftsResolver } from './user.nfts.resolver';
 
 @Module({
     imports: [
@@ -52,6 +53,7 @@ import { EnergyModule } from '../energy/energy.module';
         UserMetaEsdtComputeService,
         UserResolver,
         UserTokenResolver,
+        UserNftsResolver,
     ],
     exports: [UserMetaEsdtService],
 })

@@ -40,12 +40,6 @@ export class UserResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
-    @Query(() => Number)
-    async getUserWorth(@User() user: any): Promise<number> {
-        return this.userMetaEsdt.computeUserWorth(user.publicKey);
-    }
-
     @Query(() => [UserToken])
     async userCustomTokens(
         @Args() pagination: PaginationArgs,
