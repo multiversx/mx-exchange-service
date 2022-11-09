@@ -13,6 +13,7 @@ import { ProxyNetworkProviderProfiler } from '../../helpers/proxy.network.provid
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { promises } from 'fs';
+import { proxyVersion } from 'src/utils/proxy.utils';
 
 @Injectable()
 export class ElrondProxyService {
@@ -113,9 +114,10 @@ export class ElrondProxyService {
     async getProxyDexSmartContract(
         proxyAddress: string,
     ): Promise<SmartContract> {
+        const version = proxyVersion(proxyAddress);
         return this.getSmartContract(
             proxyAddress,
-            abiConfig.proxy,
+            abiConfig.proxy[version],
             'ProxyDexImpl',
         );
     }

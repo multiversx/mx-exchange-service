@@ -53,7 +53,7 @@ export class EnergyTransactionService {
                           ),
                       );
         return interaction
-            .withGasLimit(gasConfig.simpleLock.lockTokens)
+            .withGasLimit(gasConfig.simpleLockEnergy.lockTokens)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
@@ -91,7 +91,7 @@ export class EnergyTransactionService {
                 ),
                 Address.fromString(sender),
             )
-            .withGasLimit(gasConfig.simpleLock.unlockTokens)
+            .withGasLimit(gasConfig.simpleLockEnergy.unlockTokens)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();

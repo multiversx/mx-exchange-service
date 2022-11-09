@@ -1,7 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ProxyModel } from '../models/proxy.model';
-import { WrappedLpTokenAttributesModel } from '../models/wrappedLpTokenAttributes.model';
-import { WrappedFarmTokenAttributesModel } from '../models/wrappedFarmTokenAttributes.model';
+import {
+    WrappedLpTokenAttributesModel,
+    WrappedLpTokenAttributesModelV2,
+} from '../models/wrappedLpTokenAttributes.model';
+import {
+    WrappedFarmTokenAttributesModel,
+    WrappedFarmTokenAttributesModelV2,
+} from '../models/wrappedFarmTokenAttributes.model';
 import { scAddress } from '../../../config';
 import {
     DecodeAttributesArgs,
@@ -13,8 +19,11 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import {
     FarmTokenAttributesV1_2,
     FarmTokenAttributesV1_3,
+    LockedTokenAttributes,
     WrappedFarmTokenAttributes,
+    WrappedFarmTokenAttributesV2,
     WrappedLpTokenAttributes,
+    WrappedLpTokenAttributesV2,
 } from '@elrondnetwork/erdjs-dex';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { farmVersion } from 'src/utils/farm.utils';
@@ -27,14 +36,17 @@ import { LockedAssetService } from 'src/modules/locked-asset-factory/services/lo
 import { LockedAssetAttributesModel } from 'src/modules/locked-asset-factory/models/locked-asset.model';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
-import { ProxyGetterService } from './proxy.getter.service';
 import { ProxyPairGetterService } from './proxy-pair/proxy-pair.getter.service';
 import { ProxyFarmGetterService } from './proxy-farm/proxy-farm.getter.service';
+import { ProxyGetterService } from './proxy.getter.service';
+import { ProxyGetterServiceV2 } from '../v2/services/proxy.v2.getter.service';
+import { LockedTokenAttributesModel } from 'src/modules/simple-lock/models/simple.lock.model';
 
 @Injectable()
 export class ProxyService {
     constructor(
         private readonly proxyGetter: ProxyGetterService,
+        private readonly proxyGetterV2: ProxyGetterServiceV2,
         private readonly proxyPairGetter: ProxyPairGetterService,
         private readonly proxyFarmGetter: ProxyFarmGetterService,
         private readonly farmGetter: FarmGetterFactory,
@@ -43,12 +55,11 @@ export class ProxyService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
-    async getProxyInfo(): Promise<ProxyModel[]> {
-        const proxies: ProxyModel[] = [];
-        for (const address of scAddress.proxyDexAddress) {
-            proxies.push(new ProxyModel({ address }));
-        }
-        return proxies;
+    getProxyInfo(): ProxyModel[] {
+        return [
+            new ProxyModel({ address: scAddress.proxyDexAddress.v1 }),
+            new ProxyModel({ address: scAddress.proxyDexAddress.v2 }),
+        ];
     }
 
     async getWrappedLpTokenAttributes(
@@ -61,6 +72,16 @@ export class ProxyService {
         return await Promise.all(promises);
     }
 
+    async getWrappedLpTokenAttributesV2(
+        args: DecodeAttributesArgs,
+    ): Promise<WrappedLpTokenAttributesModelV2[]> {
+        const promises = args.batchAttributes.map((arg) =>
+            this.decodeWrappedLpTokenAttributesV2(arg),
+        );
+
+        return await Promise.all(promises);
+    }
+
     async decodeWrappedLpTokenAttributes(
         args: DecodeAttributesModel,
     ): Promise<WrappedLpTokenAttributesModel> {
@@ -68,6 +89,19 @@ export class ProxyService {
             WrappedLpTokenAttributes.fromAttributes(args.attributes);
 
         return new WrappedLpTokenAttributesModel({
+            ...wrappedLpTokenAttributes.toJSON(),
+            attributes: args.attributes,
+            identifier: args.identifier,
+        });
+    }
+
+    async decodeWrappedLpTokenAttributesV2(
+        args: DecodeAttributesModel,
+    ): Promise<WrappedLpTokenAttributesModelV2> {
+        const wrappedLpTokenAttributes =
+            WrappedLpTokenAttributesV2.fromAttributes(args.attributes);
+
+        return new WrappedLpTokenAttributesModelV2({
             ...wrappedLpTokenAttributes.toJSON(),
             attributes: args.attributes,
             identifier: args.identifier,
@@ -94,6 +128,23 @@ export class ProxyService {
             });
 
         return lockedAssetAttributes[0];
+    }
+
+    async getLockedTokenAttributes(
+        proxyAddress: string,
+        lockedTokenCollection: string,
+        lockedTokenNonce: number,
+    ): Promise<LockedTokenAttributesModel> {
+        const lockedToken = await this.apiService.getNftByTokenIdentifier(
+            proxyAddress,
+            tokenIdentifier(lockedTokenCollection, lockedTokenNonce),
+        );
+
+        return new LockedTokenAttributesModel({
+            ...LockedTokenAttributes.fromAttributes(lockedToken.attributes),
+            identifier: lockedToken.identifier,
+            attributes: lockedToken.attributes,
+        });
     }
 
     async getWrappedFarmTokenAttributes(
@@ -124,6 +175,28 @@ export class ProxyService {
         });
     }
 
+    async getWrappedFarmTokenAttributesV2(
+        args: DecodeAttributesArgs,
+    ): Promise<WrappedFarmTokenAttributesModelV2[]> {
+        const promises = args.batchAttributes.map((arg) =>
+            this.decodeWrappedFarmTokenAttributesV2(arg),
+        );
+
+        return await Promise.all(promises);
+    }
+
+    async decodeWrappedFarmTokenAttributesV2(
+        arg: DecodeAttributesModel,
+    ): Promise<WrappedFarmTokenAttributesModelV2> {
+        return new WrappedFarmTokenAttributesModelV2({
+            ...WrappedFarmTokenAttributesV2.fromAttributes(
+                arg.attributes,
+            ).toJSON(),
+            identifier: arg.identifier,
+            attributes: arg.attributes,
+        });
+    }
+
     async getFarmTokenAttributes(
         proxyAddress: string,
         farmTokenCollection: string,
@@ -147,7 +220,7 @@ export class ProxyService {
                     attributes: farmToken.attributes,
                     identifier: farmToken.identifier,
                 });
-            case FarmVersion.V1_3:
+            default:
                 return new FarmTokenAttributesModelV1_3({
                     ...FarmTokenAttributesV1_3.fromAttributes(
                         farmToken.attributes,
@@ -159,23 +232,45 @@ export class ProxyService {
     }
 
     async getProxyAddressByToken(tokenID: string): Promise<string> {
-        const proxyAddresses = scAddress.proxyDexAddress;
+        let [lockedTokenIDs, proxyLpTokenID, proxyFarmTokenID] =
+            await Promise.all([
+                this.proxyGetter.getLockedAssetTokenID(
+                    scAddress.proxyDexAddress.v1,
+                ),
+                this.proxyPairGetter.getwrappedLpTokenID(
+                    scAddress.proxyDexAddress.v1,
+                ),
+                this.proxyFarmGetter.getwrappedFarmTokenID(
+                    scAddress.proxyDexAddress.v1,
+                ),
+            ]);
 
-        for (const address of proxyAddresses) {
-            const [lockedTokenID, proxyLpTokenID, proxyFarmTokenID] =
-                await Promise.all([
-                    this.proxyGetter.getLockedAssetTokenID(address),
-                    this.proxyPairGetter.getwrappedLpTokenID(address),
-                    this.proxyFarmGetter.getwrappedFarmTokenID(address),
-                ]);
+        if (
+            lockedTokenIDs.includes(tokenID) ||
+            tokenID === proxyLpTokenID ||
+            tokenID === proxyFarmTokenID
+        ) {
+            return scAddress.proxyDexAddress.v1;
+        }
 
-            if (
-                tokenID === lockedTokenID ||
-                tokenID === proxyLpTokenID ||
-                tokenID === proxyFarmTokenID
-            ) {
-                return address;
-            }
+        [lockedTokenIDs, proxyLpTokenID, proxyFarmTokenID] = await Promise.all([
+            await this.proxyGetterV2.getLockedAssetTokenID(
+                scAddress.proxyDexAddress.v2,
+            ),
+            this.proxyPairGetter.getwrappedLpTokenID(
+                scAddress.proxyDexAddress.v2,
+            ),
+            this.proxyFarmGetter.getwrappedFarmTokenID(
+                scAddress.proxyDexAddress.v2,
+            ),
+        ]);
+
+        if (
+            lockedTokenIDs.includes(tokenID) ||
+            tokenID === proxyLpTokenID ||
+            tokenID === proxyFarmTokenID
+        ) {
+            return scAddress.proxyDexAddress.v2;
         }
 
         throw new Error('invalid locked token identifier');

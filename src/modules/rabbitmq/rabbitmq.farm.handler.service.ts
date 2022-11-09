@@ -44,9 +44,11 @@ export class RabbitMQFarmHandlerService {
             case FarmVersion.V1_3:
                 event = new EnterFarmEventV1_3(rawEvent);
                 break;
+            case FarmVersion.V2:
+                return;
         }
         const cacheKey = await this.farmSetterFactory
-            .useSetter(event.address)
+            .useSetter(event.getAddress())
             .setFarmTokenSupply(event.getAddress(), event.farmSupply.toFixed());
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
@@ -65,9 +67,11 @@ export class RabbitMQFarmHandlerService {
             case FarmVersion.V1_3:
                 event = new ExitFarmEventV1_3(rawEvent);
                 break;
+            case FarmVersion.V2:
+                return;
         }
         const cacheKey = await this.farmSetterFactory
-            .useSetter(event.address)
+            .useSetter(event.getAddress())
             .setFarmTokenSupply(event.getAddress(), event.farmSupply.toFixed());
         this.invalidatedKeys.push(cacheKey);
         await this.deleteCacheKeys();
@@ -89,6 +93,8 @@ export class RabbitMQFarmHandlerService {
                 event = new RewardsEventV1_3(rawEvent);
                 abiService = this.abiFarmV1_3;
                 break;
+            case FarmVersion.V2:
+                return;
         }
 
         const rewardPerShare = await abiService.getRewardPerShare(

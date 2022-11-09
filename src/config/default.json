@@ -282,6 +282,46 @@
                         "claimRewards": 20700000
                     }
                 },
+                "v2": {
+                    "enterFarm": {
+                        "default": 19000000,
+                        "withTokenMerge": 55000000
+                    },
+                    "compoundRewards": 21600000,
+                    "unlockedRewards": {
+                        "exitFarm": {
+                            "default": 17500000,
+                            "withPenalty": {
+                                "localBurn": 19000000,
+                                "pairBurn": 25500000,
+                                "buybackAndBurn": 39000000
+                            }
+                        },
+                        "claimRewards": 21000000
+                    },
+                    "lockedRewards": {
+                        "exitFarm": {
+                            "default": 24000000,
+                            "withPenalty": {
+                                "localBurn": 26000000,
+                                "pairBurn": 32000000,
+                                "buybackAndBurn": 48000000
+                            }
+                        },
+                        "claimRewards": 27500000
+                    },
+                    "customRewards": {
+                        "exitFarm": {
+                            "default": 17000000,
+                            "withPenalty": {
+                                "localBurn": 17500000,
+                                "pairBurn": 25500000,
+                                "buybackAndBurn": 39000000
+                            }
+                        },
+                        "claimRewards": 20700000
+                    }
+                },
                 "defaultMergeWFMT": 20000000
             }
         },
@@ -352,6 +392,7 @@
         },
         "simpleLockEnergy": {
             "lockTokens": 10000000,
+            "unlockTokens": 10000000,
             "updateTokens": 10000000,
             "defaultMergeTokens": 12000000,
             "admin": {
@@ -376,7 +417,10 @@
         "distribution": "./src/abis/distribution.abi.json",
         "lockedAssetFactory": "./src/abis/factory.abi.json",
         "metabondingStaking": "./src/abis/metabonding-staking.abi.json",
-        "proxy": "./src/abis/proxy-dex.abi.json",
+        "proxy": {
+            "v1": "./src/abis/proxy-dex.abi.json",
+            "v2": "./src/abis/proxy-dex-v2.abi.json"
+        },
         "wrap": "./src/abis/egld-esdt-swap.abi.json",
         "priceDiscovery": "./src/abis/price-discovery.abi.json",
         "simpleLock": "./src/abis/simple-lock.abi.json",

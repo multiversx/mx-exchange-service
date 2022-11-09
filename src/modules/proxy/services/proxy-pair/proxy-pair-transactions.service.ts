@@ -18,10 +18,10 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { ProxyGetterService } from '../proxy.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
+import { ProxyGetterService } from '../proxy.getter.service';
 
 @Injectable()
 export class TransactionsProxyPairService {
@@ -300,7 +300,7 @@ export class TransactionsProxyPairService {
 
         switch (firstTokenID) {
             case tokens[0].tokenID:
-                if (tokens[1].tokenID !== secondTokenID) {
+                if (!secondTokenID.includes(tokens[1].tokenID)) {
                     throw new Error('Invalid tokens received!');
                 }
                 if (tokens[0].nonce > 0 || tokens[1].nonce < 1) {
@@ -308,7 +308,7 @@ export class TransactionsProxyPairService {
                 }
                 return tokens;
             case tokens[1].tokenID:
-                if (tokens[0].tokenID !== secondTokenID) {
+                if (!secondTokenID.includes(tokens[0].tokenID)) {
                     throw new Error('Invalid tokens received!');
                 }
                 if (tokens[1].nonce > 0 || tokens[0].nonce < 1) {
