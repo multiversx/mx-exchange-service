@@ -139,8 +139,16 @@ describe('FeesCollectorService', () => {
                 }
             },
             weeklyRewards: {},
-            weekTimekeepingGetter: {},
-            weeklyRewardsGetter: {}
+            weekTimekeepingGetter: {
+                getCurrentWeek: (scAddress: string) => {
+                    return Promise.resolve(10);
+                }
+            },
+            weeklyRewardsGetter: {
+                lastGlobalUpdateWeek: (scAddress: string) => {
+                    return Promise.resolve(1);
+                }
+            }
         })
 
         const model = await service.feesCollector(dummyScAddress);
@@ -173,8 +181,16 @@ describe('FeesCollectorService', () => {
                 }
             },
             weeklyRewards: {},
-            weekTimekeepingGetter: {},
-            weeklyRewardsGetter: {}
+            weekTimekeepingGetter: {
+                getCurrentWeek: (scAddress: string) => {
+                    return Promise.resolve(10);
+                }
+            },
+            weeklyRewardsGetter: {
+                lastGlobalUpdateWeek: (scAddress: string) => {
+                    return Promise.resolve(1);
+                }
+            }
         })
         const model = await service.feesCollector(dummyScAddress)
         expect(model.time.currentWeek).toEqual(expectedCurrentWeek)
