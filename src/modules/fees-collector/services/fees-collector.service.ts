@@ -44,7 +44,7 @@ export class FeesCollectorService {
     ): Promise<FeesCollectorTransactionModel> {
         const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
         const lastActiveWeekForUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress);
-        const num_transactions = lastActiveWeekForUser == 0 ? 1 : Math.ceil((currentWeek - lastActiveWeekForUser) / 4)
+        const num_transactions = lastActiveWeekForUser === 0 ? 1 : Math.ceil((currentWeek - lastActiveWeekForUser) / 4)
         const claimTransaction = new FeesCollectorTransactionModel(
             {
                 count: num_transactions
