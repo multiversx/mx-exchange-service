@@ -1,4 +1,4 @@
-import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { EnergyModel } from '../../../modules/energy/models/energy.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
@@ -84,19 +84,6 @@ export class UserInfoByWeekSubModel {
     lastActiveWeekForUser: number;
 
     constructor(init?: Partial<UserInfoByWeekSubModel>) {
-        Object.assign(this, init);
-    }
-}
-
-@InputType()
-export class WeekFilterPeriodModel {
-    @Field({ nullable: true })
-    start: number;
-
-    @Field({ nullable: true })
-    end: number;
-
-    constructor(init?: Partial<WeekFilterPeriodModel>) {
         Object.assign(this, init);
     }
 }

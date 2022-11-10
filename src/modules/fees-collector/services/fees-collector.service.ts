@@ -13,7 +13,6 @@ import {
 import {
     GlobalInfoByWeekModel,
     UserInfoByWeekModel,
-    WeekFilterPeriodModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { TransactionModel } from '../../../models/transaction.model';
 import {
@@ -94,22 +93,26 @@ export class FeesCollectorService {
     }
 
     async feesCollector(
-        scAddress: string,
-        weekFilter: WeekFilterPeriodModel,
+        scAddress: string
     ): Promise<FeesCollectorModel> {
 
         const [
             time,
             allToken,
+            lastGlobalUpdateWeek,
+            currentWeek
         ] = await Promise.all([
             this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
             this.feesCollectorGetterService.getAllTokens(scAddress),
+            this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(scAddress),
+            this.weekTimekeepingGetter.getCurrentWeek(scAddress),
         ])
+        const lastWeek = currentWeek - 1;
         return new FeesCollectorModel({
             address: scAddress,
             time: time,
-            startWeek: weekFilter.start,
-            endWeek: weekFilter.end,
+            startWeek: lastGlobalUpdateWeek,
+            endWeek: lastWeek,
             allTokens: allToken,
         });
     }
@@ -117,14 +120,22 @@ export class FeesCollectorService {
     async userFeesCollector(
         scAddress: string,
         userAddress: string,
-        weekFilter: WeekFilterPeriodModel
     ): Promise<UserEntryFeesCollectorModel> {
-        const time = await this.weekTimekeepingService.getWeeklyTimekeeping(scAddress);
+        const [
+            time,
+            lastActiveWeekForUser,
+            currentWeek
+        ] = await Promise.all([
+            this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
+            this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress),
+            this.weekTimekeepingGetter.getCurrentWeek(scAddress),
+            ]);
+        const lastWeek = currentWeek - 1;
         return new UserEntryFeesCollectorModel({
             address: scAddress,
             userAddress: userAddress,
-            startWeek: weekFilter.start,
-            endWeek: weekFilter.end,
+            startWeek: lastActiveWeekForUser === 0 ? lastWeek : lastActiveWeekForUser,
+            endWeek: lastWeek,
             time: time,
         });
     }
