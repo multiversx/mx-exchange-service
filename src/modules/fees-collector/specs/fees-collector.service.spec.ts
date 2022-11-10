@@ -20,9 +20,6 @@ import {
 import {
     WeeklyRewardsSplittingService
 } from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service";
-import {
-    WeekFilterPeriodModel
-} from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 import { WeekTimekeepingModel } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
 import {
     WeekTimekeepingGetterHandlers, WeekTimekeepingGetterServiceMock
@@ -39,10 +36,6 @@ import {
 
 describe('FeesCollectorService', () => {
     const dummyScAddress = 'erd'
-    const dummyWeekFilter = new WeekFilterPeriodModel({
-        start: 1,
-        end: 10
-    })
     it('init service; should be defined', async () => {
         const service = await createService({
             getter: {}, weekTimekeeping: {}, weeklyRewards: {},
@@ -146,11 +139,19 @@ describe('FeesCollectorService', () => {
                 }
             },
             weeklyRewards: {},
-            weekTimekeepingGetter: {},
-            weeklyRewardsGetter: {}
+            weekTimekeepingGetter: {
+                getCurrentWeek: (scAddress: string) => {
+                    return Promise.resolve(10);
+                }
+            },
+            weeklyRewardsGetter: {
+                lastGlobalUpdateWeek: (scAddress: string) => {
+                    return Promise.resolve(1);
+                }
+            }
         })
 
-        const model = await service.feesCollector(dummyScAddress, dummyWeekFilter);
+        const model = await service.feesCollector(dummyScAddress);
         expect(model.allTokens).toEqual([])
         expect(model.time.currentWeek).toEqual(expectedCurrentWeek)
     });
@@ -180,10 +181,18 @@ describe('FeesCollectorService', () => {
                 }
             },
             weeklyRewards: {},
-            weekTimekeepingGetter: {},
-            weeklyRewardsGetter: {}
+            weekTimekeepingGetter: {
+                getCurrentWeek: (scAddress: string) => {
+                    return Promise.resolve(10);
+                }
+            },
+            weeklyRewardsGetter: {
+                lastGlobalUpdateWeek: (scAddress: string) => {
+                    return Promise.resolve(1);
+                }
+            }
         })
-        const model = await service.feesCollector(dummyScAddress, dummyWeekFilter)
+        const model = await service.feesCollector(dummyScAddress)
         expect(model.time.currentWeek).toEqual(expectedCurrentWeek)
         expect(model.allTokens.length).toEqual(expectedTokens.length)
         for (const i in expectedTokens) {
