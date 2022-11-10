@@ -66,6 +66,17 @@ export class WrappedFarmTokenResolverV2 {
                         attributes: wrappedLpToken.attributes,
                         identifier: wrappedLpToken.identifier,
                     });
+                if (
+                    wrappedLpTokenDecodedAttributes.lockedTokens
+                        .tokenIdentifier === oldLockedAssetID
+                ) {
+                    return this.proxyService.getLockedAssetsAttributes(
+                        proxyAddress,
+                        wrappedLpTokenDecodedAttributes.lockedTokens
+                            .tokenIdentifier,
+                        wrappedLpTokenDecodedAttributes.lockedTokens.tokenNonce,
+                    );
+                }
                 return this.proxyService.getLockedTokenAttributes(
                     proxyAddress,
                     wrappedLpTokenDecodedAttributes.lockedTokens
