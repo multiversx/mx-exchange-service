@@ -28,6 +28,7 @@ import { EnergyGetterService } from "../../../energy/services/energy.getter.serv
 import { CalculateRewardsArgs } from "../../models/farm.args";
 import { PairService } from "../../../pair/services/pair.service";
 import { PairGetterService } from "../../../pair/services/pair.getter.service";
+import { ContextGetterService } from "../../../../services/context/context.getter.service";
 
 @Injectable()
 export class FarmComputeServiceV2 extends Mixin(FarmComputeService, WeeklyRewardsSplittingComputeService) {
@@ -44,6 +45,7 @@ export class FarmComputeServiceV2 extends Mixin(FarmComputeService, WeeklyReward
         protected readonly tokenCompute: TokenComputeService,
         protected readonly pairService: PairService,
         protected readonly pairGetter: PairGetterService,
+        protected readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(weekTimekeepingGetter, weekTimekeepingCompute, weeklyRewardsSplittingGetter, progressCompute, pairCompute, energyGetter, tokenCompute);

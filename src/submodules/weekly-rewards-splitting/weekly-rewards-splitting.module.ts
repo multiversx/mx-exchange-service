@@ -17,6 +17,7 @@ import { PairModule } from '../../modules/pair/pair.module';
 import { TokenModule } from '../../modules/tokens/token.module';
 import { EnergyModule } from 'src/modules/energy/energy.module';
 import { FarmModuleV2 } from "../../modules/farm/v2/farm.v2.module";
+import { ContextModule } from "../../services/context/context.module";
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { FarmModuleV2 } from "../../modules/farm/v2/farm.v2.module";
         PairModule,
         TokenModule,
         forwardRef( () => FarmModuleV2),
+        forwardRef( () => ContextModule),
     ],
 })
 export class WeeklyRewardsSplittingModule {
