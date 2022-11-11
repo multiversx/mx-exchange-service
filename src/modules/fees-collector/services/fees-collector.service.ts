@@ -21,7 +21,7 @@ import {
 import {
     WeeklyRewardsSplittingGetterService,
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
-import { elrondConfig, gasConfig } from '../../../config';
+import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 
 
@@ -43,15 +43,16 @@ export class FeesCollectorService {
     ): Promise<FeesCollectorTransactionModel> {
         const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
         const lastActiveWeekForUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress);
-        const num_transactions = lastActiveWeekForUser === 0 ? 1 : Math.ceil((currentWeek - lastActiveWeekForUser) / 4)
         const claimTransaction = new FeesCollectorTransactionModel(
             {
-                count: num_transactions
+                count: 0
             }
         );
-        if (num_transactions == 0) return claimTransaction
+        if (lastActiveWeekForUser === 0) return claimTransaction;
+        if (lastActiveWeekForUser >= currentWeek - 1) return claimTransaction;
 
-        claimTransaction.transaction = await this.claimRewards(userAddress, gasConfig.feesCollector.claimRewards)
+        claimTransaction.count = 1;
+        claimTransaction.transaction = await this.claimRewards(userAddress, gasConfig.feesCollector.claimRewards);
         return claimTransaction;
     }
 
@@ -99,19 +100,17 @@ export class FeesCollectorService {
         const [
             time,
             allToken,
-            lastGlobalUpdateWeek,
             currentWeek
         ] = await Promise.all([
             this.weekTimekeepingService.getWeeklyTimekeeping(scAddress),
             this.feesCollectorGetterService.getAllTokens(scAddress),
-            this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(scAddress),
             this.weekTimekeepingGetter.getCurrentWeek(scAddress),
         ])
         const lastWeek = currentWeek - 1;
         return new FeesCollectorModel({
             address: scAddress,
             time: time,
-            startWeek: lastGlobalUpdateWeek,
+            startWeek: currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
             endWeek: lastWeek,
             allTokens: allToken,
         });
@@ -134,7 +133,7 @@ export class FeesCollectorService {
         return new UserEntryFeesCollectorModel({
             address: scAddress,
             userAddress: userAddress,
-            startWeek: lastActiveWeekForUser === 0 ? lastWeek : lastActiveWeekForUser,
+            startWeek: lastActiveWeekForUser === 0 ? currentWeek : Math.max(currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS, lastActiveWeekForUser),
             endWeek: lastWeek,
             time: time,
         });

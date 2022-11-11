@@ -23,6 +23,7 @@ import {
 import {
     WeeklyRewardsSplittingGetterService
 } from "../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
+import { constantsConfig } from "../../../../config";
 
 @Injectable()
 export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService, WeeklyRewardsSplittingService) {
@@ -65,12 +66,11 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
         }
         const currentWeek = await this.farmGetter.getCurrentWeek(positon.farmAddress);
         const modelsList: UserInfoByWeekModel[] = []
-        const lastActiveWeekUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(positon.farmAddress, positon.user)
-        let startWeek = lastActiveWeekUser;
-        if (startWeek == 0) {
-            const lastGlobalUpdateWeek = await this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(positon.farmAddress);
-            startWeek = lastGlobalUpdateWeek;
+        let lastActiveWeekUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(positon.farmAddress, positon.user)
+        if (lastActiveWeekUser === 0) {
+            lastActiveWeekUser = currentWeek
         }
+        const startWeek = Math.max(currentWeek-constantsConfig.USER_MAX_CLAIM_WEEKS, lastActiveWeekUser);
 
         for (let week = startWeek; week <= currentWeek; week++) {
             modelsList.push(this.getUserInfoByWeek(positon.farmAddress, positon.user, week))
