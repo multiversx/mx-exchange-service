@@ -59,7 +59,7 @@ export class ExitFarmArgs extends SftFarmInteractionArgs {
     @Field(() => Boolean, { nullable: true })
     withPenalty = false;
     @Field({ nullable: true })
-    exitAmount: string;
+    exitAmount?: string;
 }
 
 @ArgsType()
