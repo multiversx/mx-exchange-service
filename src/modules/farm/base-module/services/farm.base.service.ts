@@ -61,11 +61,7 @@ export abstract class FarmServiceBase {
             args.identifier,
             args.attributes,
         );
-        console.log({
-            farmTokenAttributesType:
-                farmTokenAttributes instanceof FarmTokenAttributesModel,
-            farmTokenAttributes,
-        });
+
         const farmingAmount =
             farmTokenAttributes instanceof FarmTokenAttributesModel
                 ? farmTokenAttributes.currentFarmAmount
