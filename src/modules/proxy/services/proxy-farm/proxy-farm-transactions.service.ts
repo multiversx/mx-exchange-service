@@ -23,6 +23,7 @@ import {
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { proxyVersion } from 'src/utils/proxy.utils';
 
 @Injectable()
 export class TransactionsProxyFarmService {
@@ -83,6 +84,14 @@ export class TransactionsProxyFarmService {
         proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
+        const version = proxyVersion(proxyAddress);
+        if (
+            version === 'v2' &&
+            !args.exitAmount &&
+            !new BigNumber(args.exitAmount).isPositive()
+        ) {
+            throw new Error('Invalid exit amount');
+        }
         const contract = await this.elrondProxy.getProxyDexSmartContract(
             proxyAddress,
         );
