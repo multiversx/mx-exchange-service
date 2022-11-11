@@ -21,7 +21,7 @@ export const FarmTokenAttributesUnion = createUnionType({
 });
 
 @ObjectType()
-export class FarmTokenAttributesModelV1_3 {
+export class FarmTokenAttributesModel {
     @Field({ nullable: true })
     identifier?: string;
     @Field({ nullable: true })
@@ -29,17 +29,26 @@ export class FarmTokenAttributesModelV1_3 {
     @Field()
     rewardPerShare: string;
     @Field(() => Int)
-    originalEnteringEpoch: number;
-    @Field(() => Int)
     enteringEpoch: number;
-    @Field()
-    initialFarmingAmount: string;
     @Field()
     compoundedReward: string;
     @Field()
     currentFarmAmount: string;
 
+    constructor(init?: Partial<FarmTokenAttributesModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class FarmTokenAttributesModelV1_3 extends FarmTokenAttributesModel {
+    @Field(() => Int)
+    originalEnteringEpoch: number;
+    @Field()
+    initialFarmingAmount: string;
+
     constructor(init?: Partial<FarmTokenAttributesModelV1_3>) {
+        super(init);
         Object.assign(this, init);
     }
 }
@@ -58,9 +67,4 @@ export class FarmTokenAttributesModelV1_2 extends FarmTokenAttributesModelV1_3 {
 }
 
 @ObjectType()
-export class FarmTokenAttributesModelV2 extends FarmTokenAttributesModelV1_3 {
-    constructor(init?: Partial<FarmTokenAttributesModelV2>) {
-        super(init);
-        Object.assign(this, init);
-    }
-}
+export class FarmTokenAttributesModelV2 extends FarmTokenAttributesModel {}

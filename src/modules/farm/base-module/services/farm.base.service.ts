@@ -10,7 +10,10 @@ import { ruleOfThree } from '../../../../helpers/helpers';
 import { FarmGetterService } from './farm.getter.service';
 import { FarmComputeService } from './farm.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { FarmTokenAttributesModelV1_3 } from '../../models/farmTokenAttributes.model';
+import {
+    FarmTokenAttributesModel,
+    FarmTokenAttributesModelV1_3,
+} from '../../models/farmTokenAttributes.model';
 import { CachingService } from 'src/services/caching/cache.service';
 
 export abstract class FarmServiceBase {
@@ -58,10 +61,20 @@ export abstract class FarmServiceBase {
             args.identifier,
             args.attributes,
         );
+
+        const farmingAmount =
+            farmTokenAttributes instanceof FarmTokenAttributesModel
+                ? farmTokenAttributes.currentFarmAmount
+                : (<FarmTokenAttributesModelV1_3>farmTokenAttributes)
+                      .initialFarmingAmount;
         let initialFarmingAmount = ruleOfThree(
             new BigNumber(args.liquidity),
-            new BigNumber(farmTokenAttributes.currentFarmAmount),
-            new BigNumber(farmTokenAttributes.initialFarmingAmount),
+            new BigNumber(
+                (<FarmTokenAttributesModelV1_3>(
+                    farmTokenAttributes
+                )).currentFarmAmount,
+            ),
+            new BigNumber(farmingAmount),
         );
         const rewardsForPosition = await this.getRewardsForPosition(args);
         let rewards = new BigNumber(rewardsForPosition.rewards);
@@ -94,7 +107,7 @@ export abstract class FarmServiceBase {
     abstract decodeFarmTokenAttributes(
         identifier: string,
         attributes: string,
-    ): FarmTokenAttributesModelV1_3;
+    ): FarmTokenAttributesModel;
 
     async requireOwner(farmAddress: string, sender: string) {
         const owner = await this.farmGetter.getOwnerAddress(farmAddress);

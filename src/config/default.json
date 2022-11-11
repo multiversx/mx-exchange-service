@@ -187,6 +187,34 @@
                     "claimRewards": 17000000
                 }
             },
+            "v2": {
+                "enterFarm": {
+                    "default": 10500000,
+                    "withTokenMerge": 11500000
+                },
+                "unlockedRewards": {
+                    "exitFarm": {
+                        "default": 9000000,
+                        "withPenalty": {
+                            "localBurn": 9500000,
+                            "pairBurn": 16000000,
+                            "buybackAndBurn": 32000000
+                        }
+                    },
+                    "claimRewards": 10500000
+                },
+                "lockedRewards": {
+                    "exitFarm": {
+                        "default": 15300000,
+                        "withPenalty": {
+                            "localBurn": 16000000,
+                            "pairBurn": 23000000,
+                            "buybackAndBurn": 37300000
+                        }
+                    },
+                    "claimRewards": 17000000
+                }
+            },
             "admin": {
                 "end_produce_rewards": 200000000,
                 "start_produce_rewards": 200000000,
