@@ -91,7 +91,7 @@
             "removeLiquidity": 8500000,
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
-                "default": 8700000,
+                "default": 11500000,
                 "withFeeSwap": 25500000
             },
             "swapTokensFixedOutput": {
