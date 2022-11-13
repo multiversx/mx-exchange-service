@@ -67,9 +67,9 @@ export class PairAbiService extends GenericAbiService {
 
         const response = await this.getGenericData(interaction);
         const lpTokenID = response.firstValue.valueOf().toString();
-        return lpTokenID !== elrondConfig.EGLDIdentifier
-            ? lpTokenID
-            : undefined;
+        return lpTokenID === elrondConfig.EGLDIdentifier || lpTokenID === ''
+            ? undefined
+            : lpTokenID;
     }
 
     async getTokenReserve(
