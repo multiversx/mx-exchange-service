@@ -534,11 +534,19 @@ export class UserMetaEsdtService {
                     );
                     break;
                 case NftTokenType.StakeFarmToken:
-                    promises.push(
-                        this.userComputeService.stakeFarmUSD(
-                            new StakeFarmToken(userNft),
-                        ),
-                    );
+                    if (userNft.attributes.length !== 12) {
+                        promises.push(
+                            this.userComputeService.stakeFarmUSD(
+                                new StakeFarmToken(userNft),
+                            ),
+                        );
+                    } else {
+                        promises.push(
+                            this.userComputeService.unbondFarmUSD(
+                                new UnbondFarmToken(userNft),
+                            ),
+                        );
+                    }
                     break;
                 case NftTokenType.DualYieldToken:
                     promises.push(
