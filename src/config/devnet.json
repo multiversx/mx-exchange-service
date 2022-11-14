@@ -9,11 +9,11 @@
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
         "proxyDexAddress": {
             "v1": "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
-            "v2": "erd1qqqqqqqqqqqqqpgqhg5tkz5hnq8k3hhdrrdlfvmprdd420ye0n4s2alu2w"
+            "v2": "erd1qqqqqqqqqqqqqpgqm2pk2ecvw3hc79flr0n4dfstyn48m9ku0n4s84d6u8"
         },
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
-        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgq2anqkeemt2h5gzseusajuyxt2eaak3j50n4skqj5tz",
+        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgq97pf6ntww6txw8lccpwszk0a5cfu56dc0n4sknj0p9",
         "simpleLockAddress": [
             "erd1qqqqqqqqqqqqqpgqvcw9cxy5xlssc4em9l97pvhnvgtn5z6l0n4sc9glts",
             "erd1qqqqqqqqqqqqqpgqxsyrdj38fclflak2mwtqdknqzqhuxy4s0n4sc3e0jy"
