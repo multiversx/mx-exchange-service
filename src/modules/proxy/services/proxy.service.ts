@@ -19,6 +19,7 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import {
     FarmTokenAttributesV1_2,
     FarmTokenAttributesV1_3,
+    FarmTokenAttributesV2,
     LockedTokenAttributes,
     WrappedFarmTokenAttributes,
     WrappedFarmTokenAttributesV2,
@@ -30,6 +31,7 @@ import { farmVersion } from 'src/utils/farm.utils';
 import {
     FarmTokenAttributesModelV1_2,
     FarmTokenAttributesModelV1_3,
+    FarmTokenAttributesModelV2,
     FarmTokenAttributesUnion,
 } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { LockedAssetService } from 'src/modules/locked-asset-factory/services/locked-asset.service';
@@ -226,9 +228,17 @@ export class ProxyService {
                     attributes: farmToken.attributes,
                     identifier: farmToken.identifier,
                 });
-            default:
+            case FarmVersion.V1_3:
                 return new FarmTokenAttributesModelV1_3({
                     ...FarmTokenAttributesV1_3.fromAttributes(
+                        farmToken.attributes,
+                    ).toJSON(),
+                    attributes: farmToken.attributes,
+                    identifier: farmToken.identifier,
+                });
+            case FarmVersion.V2:
+                return new FarmTokenAttributesModelV2({
+                    ...FarmTokenAttributesV2.fromAttributes(
                         farmToken.attributes,
                     ).toJSON(),
                     attributes: farmToken.attributes,
