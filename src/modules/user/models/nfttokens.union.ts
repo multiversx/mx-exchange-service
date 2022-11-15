@@ -41,28 +41,18 @@ export const UserNftTokens = createUnionType({
     resolveType(value) {
         switch (value.constructor.name) {
             case UserLockedLPToken.name:
-                return UserLockedLPToken.name;
             case UserLockedFarmToken.name:
-                return UserLockedFarmToken.name;
             case UserLockedLPTokenV2.name:
-                return UserLockedLPTokenV2.name;
             case UserLockedFarmTokenV2.name:
-                return UserLockedFarmTokenV2.name;
             case UserRedeemToken.name:
-                return UserRedeemToken.name;
             case UserLockedEsdtToken.name:
-                return UserLockedEsdtToken.name;
             case UserLockedSimpleLpToken.name:
-                return UserLockedSimpleLpToken.name;
             case UserLockedSimpleFarmToken.name:
-                return UserLockedSimpleFarmToken.name;
             case UserLockedTokenEnergy.name:
-                return UserLockedTokenEnergy.name;
+            case UserFarmToken.name:
+                return value.constructor.name
             default:
                 break;
-        }
-        if (value.decodedAttributes.originalEnteringEpoch) {
-            return UserFarmToken.name;
         }
         if (value.decodedAttributes.unlockSchedule) {
             return UserLockedAssetToken.name;
