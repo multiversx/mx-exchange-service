@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { oneHour, oneMinute } from '../../../helpers/helpers';
+import { oneMinute } from '../../../helpers/helpers';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WeeklyRewardsSplittingAbiService } from './weekly-rewards-splitting.abi.service';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
@@ -60,7 +60,7 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'lastGlobalUpdateWeek'),
             () => this.weeklyRewardsAbiService.lastGlobalUpdateWeek(scAddress),
-            oneHour(),
+            oneMinute(),
         )
     }
 
@@ -68,7 +68,7 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalRewardsForWeek', week),
             () => this.weeklyRewardsAbiService.totalRewardsForWeek(scAddress, week),
-            oneHour(),
+            oneMinute(),
         );
     }
 
@@ -76,7 +76,7 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalEnergyForWeek', week),
             () => this.weeklyRewardsAbiService.totalEnergyForWeek(scAddress, week),
-            oneHour(),
+            oneMinute(),
         );
     }
 
@@ -84,7 +84,7 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalLockedTokensForWeek', week),
             () => this.weeklyRewardsAbiService.totalLockedTokensForWeek(scAddress, week),
-            oneHour(),
+            oneMinute(),
         );
     }
 
