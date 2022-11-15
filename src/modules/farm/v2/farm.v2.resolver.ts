@@ -8,6 +8,7 @@ import {
 } from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 import { WeekTimekeepingModel } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
 import { FarmComputeServiceV2 } from "./services/farm.v2.compute.service";
+import { constantsConfig } from "../../../config";
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
@@ -34,7 +35,7 @@ export class FarmResolverV2 extends FarmResolver {
     ): Promise<GlobalInfoByWeekModel[]> {
         const modelsList = []
         const currentWeek = await this.farmGetter.getCurrentWeek(parent.address)
-        for (let week = 1; week <= currentWeek; week++) {
+        for (let week = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS; week <= currentWeek; week++) {
             modelsList.push(this.farmService.getGlobalInfoByWeek(parent.address, week))
         }
         return modelsList;
