@@ -43,16 +43,17 @@ export class FeesCollectorService {
     ): Promise<FeesCollectorTransactionModel> {
         const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
         const lastActiveWeekForUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress);
+        const transaction = await this.claimRewards(userAddress, gasConfig.feesCollector.claimRewards);
         const claimTransaction = new FeesCollectorTransactionModel(
             {
+                transaction: transaction,
                 count: 0
             }
         );
         if (lastActiveWeekForUser === 0) return claimTransaction;
-        if (lastActiveWeekForUser >= currentWeek - 1) return claimTransaction;
+        if (lastActiveWeekForUser >= currentWeek) return claimTransaction;
 
         claimTransaction.count = 1;
-        claimTransaction.transaction = await this.claimRewards(userAddress, gasConfig.feesCollector.claimRewards);
         return claimTransaction;
     }
 
