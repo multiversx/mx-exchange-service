@@ -17,6 +17,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { UnlockType } from '../models/energy.model';
+import { UnlockAssetsArgs } from "../../locked-asset-factory/models/locked-asset.args";
 
 @Injectable()
 export class EnergyTransactionService {
@@ -129,6 +130,29 @@ export class EnergyTransactionService {
                 gasConfig.simpleLockEnergy.defaultMergeTokens *
                     inputTokens.length,
             )
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async migrateOldTokens(
+        sender: string,
+        args: UnlockAssetsArgs
+    ): Promise<TransactionModel> {
+        const contract =
+            await this.elrondProxy.getSimpleLockEnergySmartContract();
+
+        return contract.methodsExplicit
+            .migrateOldTokens()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    args.lockedTokenID,
+                    args.lockedTokenNonce,
+                    new BigNumber(args.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.simpleLockEnergy.migrateOldTokens)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
