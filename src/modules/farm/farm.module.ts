@@ -17,6 +17,7 @@ import { FarmTransactionFactory } from './farm.transaction.factory';
 import { FarmComputeFactory } from './farm.compute.factory';
 import { FarmAbiFactory } from './farm.abi.factory';
 import { FarmSetterFactory } from './farm.setter.factory';
+import { FarmServiceV2 } from "./v2/services/farm.v2.service";
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import { FarmSetterFactory } from './farm.setter.factory';
         FarmCustomModule,
     ],
     providers: [
+        FarmServiceV2,
         FarmFactoryService,
         FarmAbiFactory,
         FarmGetterFactory,
@@ -43,6 +45,7 @@ import { FarmSetterFactory } from './farm.setter.factory';
         FarmTransactionResolver,
     ],
     exports: [
+        FarmServiceV2,
         FarmFactoryService,
         FarmAbiFactory,
         FarmGetterFactory,

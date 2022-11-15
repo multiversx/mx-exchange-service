@@ -24,7 +24,7 @@ import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-ti
         FeesCollectorResolver,
         UserEntryFeesCollectorResolver,
     ],
-    exports: [],
+    exports: [ FeesCollectorService ],
 })
 export class FeesCollectorModule {
 }

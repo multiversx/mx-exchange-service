@@ -24,6 +24,8 @@ import { UserEsdtComputeService } from './services/esdt.compute.service';
 import { FarmModule } from '../farm/farm.module';
 import { EnergyModule } from '../energy/energy.module';
 import { UserNftsResolver } from './user.nfts.resolver';
+import { FeesCollectorModule } from "../fees-collector/fees-collector.module";
+import { UserEnergyService } from "./services/user.energy.service";
 
 @Module({
     imports: [
@@ -45,10 +47,12 @@ import { UserNftsResolver } from './user.nfts.resolver';
         EnergyModule,
         TokenModule,
         RemoteConfigModule,
+        FeesCollectorModule
     ],
     providers: [
         UserEsdtService,
         UserMetaEsdtService,
+        UserEnergyService,
         UserEsdtComputeService,
         UserMetaEsdtComputeService,
         UserResolver,

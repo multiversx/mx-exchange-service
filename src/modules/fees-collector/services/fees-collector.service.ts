@@ -11,6 +11,7 @@ import {
     WeeklyRewardsSplittingService,
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
 import {
+    ClaimProgress,
     GlobalInfoByWeekModel,
     UserInfoByWeekModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
@@ -138,6 +139,10 @@ export class FeesCollectorService {
             endWeek: lastWeek,
             time: time,
         });
+    }
+
+    async getUserCurrentClaimProgress(scAddress: string, userAddress: string): Promise<ClaimProgress> {
+        return await this.weeklyRewardsSplittingGetter.currentClaimProgress(scAddress, userAddress);
     }
 
     getWeeklyRewardsSplit(scAddress: string, startWeek: number, endWeek: number): GlobalInfoByWeekModel[] {

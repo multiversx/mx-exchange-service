@@ -11,12 +11,14 @@ import { ApolloError } from 'apollo-server-express';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
 import { UserEsdtService } from './services/user.esdt.service';
+import { UserEnergyService } from "./services/user.energy.service";
 
 @Resolver()
 export class UserResolver {
     constructor(
         private readonly userEsdt: UserEsdtService,
         private readonly userMetaEsdt: UserMetaEsdtService,
+        private readonly userEnergy: UserEnergyService,
     ) {}
 
     @UseGuards(GqlAuthGuard)
@@ -38,6 +40,14 @@ export class UserResolver {
             user.publicKey,
             pagination,
         );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => [String])
+    async userEnergyOutdated(
+        @User() user: any,
+    ): Promise<string[]> {
+        return await this.userEnergy.getUserEnergyOutdatedAddresses(user.publicKey);
     }
 
     @Query(() => [UserToken])
