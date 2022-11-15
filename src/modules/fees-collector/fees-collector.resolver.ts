@@ -87,7 +87,7 @@ export class UserEntryFeesCollectorResolver extends Mixin(GenericResolver, UserI
 
     @UseGuards(GqlAuthGuard)
     @Query(() => FeesCollectorTransactionModel)
-    async claimRewards(
+    async claimFeesRewards(
         @User() user: any,
     ): Promise<FeesCollectorTransactionModel> {
         return await this.genericQuery(() =>

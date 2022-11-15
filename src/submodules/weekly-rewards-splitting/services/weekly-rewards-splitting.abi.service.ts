@@ -34,7 +34,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             };
         }
         const energy = response.firstValue.valueOf().energy
-        const week = response.firstValue.valueOf().week
+        const week = response.firstValue.valueOf().week.toNumber()
         return new ClaimProgress({ energy: Energy.fromDecodedAttributes(energy).toJSON(), week});
     }
 

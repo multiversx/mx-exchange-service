@@ -4,6 +4,8 @@ import { farmsAddresses } from "../../../utils/farm.utils";
 import { EnergyGetterService } from "../../energy/services/energy.getter.service";
 import { FarmServiceV2 } from "../../farm/v2/services/farm.v2.service";
 import { FeesCollectorService } from "../../fees-collector/services/fees-collector.service";
+import { EnergyType } from "@elrondnetwork/erdjs-dex";
+import { ClaimProgress } from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 
 @Injectable()
 export class UserEnergyService {
@@ -23,7 +25,7 @@ export class UserEnergyService {
                     userAddress,
                 )
 
-                if (currentClaimProgress !== undefined && currentUserEnergy.amount !== currentClaimProgress?.energy?.amount) {
+                if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {
                     return address
                 }
                 return ''
@@ -32,11 +34,13 @@ export class UserEnergyService {
 
         const outdatedAddresses = (await Promise.all(promisesList)).filter(address => address != '');
         const currentClaimProgress = await this.feesCollectorService.getUserCurrentClaimProgress(scAddress.feesCollector, userAddress);
-        if (currentUserEnergy.amount !== currentClaimProgress.energy.amount) {
+        if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {
             outdatedAddresses.push(scAddress.feesCollector);
         }
         return outdatedAddresses;
     }
 
-
+    isEnergyOutdated(currentUserEnergy: EnergyType, currentClaimProgress: ClaimProgress): boolean {
+        return currentClaimProgress.week > 0 && currentUserEnergy.amount !== currentClaimProgress.energy.amount
+    }
 }
