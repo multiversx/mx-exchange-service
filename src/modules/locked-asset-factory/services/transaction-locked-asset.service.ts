@@ -3,7 +3,7 @@ import { Address, TokenPayment } from '@elrondnetwork/erdjs';
 import { constantsConfig, elrondConfig, gasConfig } from 'src/config';
 import { TransactionModel } from 'src/models/transaction.model';
 import { BigNumber } from 'bignumber.js';
-import { UnlockAssetsArs } from '../models/locked-asset.args';
+import { UnlockAssetsArgs } from '../models/locked-asset.args';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -21,7 +21,7 @@ export class TransactionsLockedAssetService {
 
     async unlockAssets(
         sender: string,
-        args: UnlockAssetsArs,
+        args: UnlockAssetsArgs,
     ): Promise<TransactionModel> {
         const contract = await this.elrondProxy.getLockedAssetFactorySmartContract();
         return contract.methodsExplicit

@@ -19,7 +19,7 @@ import { EnergyGetterService } from './services/energy.getter.service';
 import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
 import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.validator';
-import { UnlockAssetsArs } from "../locked-asset-factory/models/locked-asset.args";
+import { UnlockAssetsArgs } from "../locked-asset-factory/models/locked-asset.args";
 
 @Resolver(() => SimpleLockEnergyModel)
 export class EnergyResolver extends GenericResolver {
@@ -183,7 +183,7 @@ export class EnergyResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async migrateOldTokens(
-        @Args() args: UnlockAssetsArs,
+        @Args() args: UnlockAssetsArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.energyTransaction.migrateOldTokens(

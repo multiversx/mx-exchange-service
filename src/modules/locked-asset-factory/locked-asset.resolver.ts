@@ -7,7 +7,7 @@ import {
     LockedAssetModel,
     UnlockMileStoneModel,
 } from './models/locked-asset.model';
-import { UnlockAssetsArs } from './models/locked-asset.args';
+import { UnlockAssetsArgs } from './models/locked-asset.args';
 import { TransactionsLockedAssetService } from './services/transaction-locked-asset.service';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
@@ -78,7 +78,7 @@ export class LockedAssetResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async unlockAssets(
-        @Args() args: UnlockAssetsArs,
+        @Args() args: UnlockAssetsArgs,
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.transactionsService.unlockAssets(

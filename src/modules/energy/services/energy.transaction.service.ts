@@ -17,7 +17,7 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { UnlockType } from '../models/energy.model';
-import { UnlockAssetsArs } from "../../locked-asset-factory/models/locked-asset.args";
+import { UnlockAssetsArgs } from "../../locked-asset-factory/models/locked-asset.args";
 
 @Injectable()
 export class EnergyTransactionService {
@@ -137,7 +137,7 @@ export class EnergyTransactionService {
 
     async migrateOldTokens(
         sender: string,
-        args: UnlockAssetsArs
+        args: UnlockAssetsArgs
     ): Promise<TransactionModel> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
