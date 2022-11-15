@@ -400,7 +400,8 @@
             "lockAssets": 20000000,
             "unlockAssets": 45000000,
             "defaultMergeLockedAssets": 12000000,
-            "lockedAssetMerge": 4000000
+            "lockedAssetMerge": 4000000,
+            "migrateOldTokens": 5000000
         },
         "priceDiscovery": {
             "deposit": 5000000,

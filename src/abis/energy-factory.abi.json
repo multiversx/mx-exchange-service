@@ -2,19 +2,19 @@
     "buildInfo": {
         "rustc": {
             "version": "1.66.0-nightly",
-            "commitHash": "b8c35ca26b191bb9a9ac669a4b3f4d3d52d97fb1",
-            "commitDate": "2022-10-15",
+            "commitHash": "bed4ad65bf7a1cef39e3d66b3670189581b3b073",
+            "commitDate": "2022-10-25",
             "channel": "Nightly",
-            "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
+            "short": "rustc 1.66.0-nightly (bed4ad65b 2022-10-25)"
         },
         "contractCrate": {
             "name": "energy-factory",
             "version": "0.0.0",
-            "git_version": "v1.6.0-659-gbc15fd5b-modified"
+            "git_version": "v1.6.0-728-g17ea1bba"
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.36.0"
+            "version": "0.36.1"
         }
     },
     "name": "SimpleLockEnergy",
@@ -389,6 +389,20 @@
             "outputs": []
         },
         {
+            "name": "migrateOldTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<EsdtTokenPayment>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
             "name": "pause",
             "onlyOwner": true,
             "mutability": "mutable",
@@ -552,6 +566,33 @@
                     "type": "bool"
                 }
             ]
+        },
+        {
+            "name": "setLockedTokenTransferScAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sc_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "setUserEnergyAfterLockedTokenTransfer",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                },
+                {
+                    "name": "energy",
+                    "type": "Energy"
+                }
+            ],
+            "outputs": []
         }
     ],
     "events": [
