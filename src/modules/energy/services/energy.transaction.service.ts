@@ -152,7 +152,7 @@ export class EnergyTransactionService {
                 ),
                 Address.fromString(sender),
             )
-            .withGasLimit(gasConfig.lockedAssetFactory.migrateOldTokens)
+            .withGasLimit(gasConfig.simpleLockEnergy.migrateOldTokens)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
