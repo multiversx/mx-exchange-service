@@ -18,11 +18,9 @@ import { Mixin } from "ts-mixer";
 import { FarmTokenAttributesV2 } from "@elrondnetwork/erdjs-dex";
 import BigNumber from "bignumber.js";
 import {
+    ClaimProgress,
     UserInfoByWeekModel
 } from "../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
-import {
-    WeeklyRewardsSplittingGetterService
-} from "../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
 import { constantsConfig } from "../../../../config";
 
 @Injectable()
@@ -34,7 +32,6 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
         protected readonly farmCompute: FarmComputeServiceV2,
         protected readonly contextGetter: ContextGetterService,
         protected readonly cachingService: CachingService,
-        protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         super(
@@ -45,6 +42,10 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
             cachingService,
             logger,
         );
+    }
+
+    async getUserCurrentClaimProgress(scAddress: string, userAddress: string): Promise<ClaimProgress> {
+        return await this.farmGetter.currentClaimProgress(scAddress, userAddress);
     }
 
     async getRewardsForPosition(
@@ -66,7 +67,7 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
         }
         const currentWeek = await this.farmGetter.getCurrentWeek(positon.farmAddress);
         const modelsList: UserInfoByWeekModel[] = []
-        let lastActiveWeekUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(positon.farmAddress, positon.user)
+        let lastActiveWeekUser = await this.farmGetter.lastActiveWeekForUser(positon.farmAddress, positon.user)
         if (lastActiveWeekUser === 0) {
             lastActiveWeekUser = currentWeek
         }
@@ -76,7 +77,7 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
             modelsList.push(this.getUserInfoByWeek(positon.farmAddress, positon.user, week))
         }
 
-        const currentClaimProgress = await this.weeklyRewardsSplittingGetter.currentClaimProgress(
+        const currentClaimProgress = await this.farmGetter.currentClaimProgress(
             positon.farmAddress,
             positon.user,
         )

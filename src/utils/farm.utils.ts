@@ -80,9 +80,11 @@ export const farmType = (farmAddress: string): FarmRewardType | undefined => {
     return undefined;
 };
 
-export const farmsAddresses = (): string[] => {
+export const farmsAddresses = (versions?: string[]): string[] => {
     const addresses = [];
-    const versions = Object.keys(farmsConfig);
+    if (versions === undefined || versions.length === 0) {
+        versions = Object.keys(farmsConfig)
+    }
     for (const version of versions) {
         if (Array.isArray(farmsConfig[version])) {
             addresses.push(...farmsConfig[version]);
