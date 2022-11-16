@@ -40,7 +40,8 @@
             "erd1qqqqqqqqqqqqqpgq7zcf9dhvv48dg80zscayy56y7hh4rfne0n4sf4m7zj",
             "erd1qqqqqqqqqqqqqpgq2x27wrtygh7ur6r0mazne44rreuhttcv0n4s6mv7kj"
         ],
-        "feesCollector": "erd1qqqqqqqqqqqqqpgqur83hqn9j4y6v93m09nn2q0yazuhk2rvpr9sarz5yj"
+        "feesCollector": "erd1qqqqqqqqqqqqqpgqur83hqn9j4y6v93m09nn2q0yazuhk2rvpr9sarz5yj",
+        "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja"
     },
     "farms": {
         "v1.2": [],
