@@ -24,6 +24,7 @@ import {
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { Address, AddressValue } from "@elrondnetwork/erdjs/out";
 
 
 @Injectable()
@@ -159,5 +160,17 @@ export class FeesCollectorService {
             modelsList.push(this.weeklyRewardsSplittingService.getUserInfoByWeek(scAddress, userAddress, week))
         }
         return modelsList;
+    }
+
+    async updateEnergyForUser(userAddress: string): Promise<TransactionModel> {
+        const contract = await this.elrondProxy.getFeesCollectorContract();
+        return contract.methodsExplicit
+            .updateEnergyForUser(
+                [new AddressValue(Address.fromString(userAddress))]
+            )
+            .withGasLimit(gasConfig.feesCollector.updateEnergyForUser)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
     }
 }

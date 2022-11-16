@@ -10,11 +10,11 @@
     "contractCrate": {
       "name": "fees-collector",
       "version": "0.0.0",
-      "git_version": "v1.6.0-659-gbc15fd5b"
+      "git_version": "v1.6.0-749-g0e44cfd8-modified"
     },
     "framework": {
       "name": "elrond-wasm",
-      "version": "0.36.0"
+      "version": "0.36.1"
     }
   },
   "name": "FeesCollector",
@@ -61,6 +61,17 @@
           "multi_result": true
         }
       ]
+    },
+    {
+      "name": "updateEnergyForUser",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
     },
     {
       "name": "addKnownContracts",

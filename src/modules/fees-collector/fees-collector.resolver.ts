@@ -21,6 +21,7 @@ import { Mixin } from "ts-mixer";
 import {
     GlobalInfoByWeekSubResolver, UserInfoByWeekSubResolver
 } from "../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.resolver";
+import { TransactionModel } from "../../models/transaction.model";
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWeekSubResolver) {
@@ -92,6 +93,16 @@ export class UserEntryFeesCollectorResolver extends Mixin(GenericResolver, UserI
     ): Promise<FeesCollectorTransactionModel> {
         return await this.genericQuery(() =>
             this.feesCollectorService.claimRewardsBatch(scAddress.feesCollector, user.publicKey),
+        );
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel)
+    async updateEnergyForUser(
+        @User() user: any,
+    ): Promise<TransactionModel> {
+        return await this.genericQuery(() =>
+            this.feesCollectorService.updateEnergyForUser(user.publicKey),
         );
     }
 }
