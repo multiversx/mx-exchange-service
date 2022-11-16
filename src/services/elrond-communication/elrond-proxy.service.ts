@@ -182,6 +182,14 @@ export class ElrondProxyService {
         );
     }
 
+    async getEnergyUpdateContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.energyUpdate,
+            abiConfig.energyUpdate,
+            'EnergyUpdate',
+        );
+    }
+
     async getSmartContract(
         contractAddress: string,
         contractAbiPath: string,

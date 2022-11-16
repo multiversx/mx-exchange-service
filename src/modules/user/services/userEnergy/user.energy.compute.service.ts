@@ -1,16 +1,16 @@
 import { Injectable } from "@nestjs/common";
-import { scAddress } from "../../../config";
-import { farmsAddresses } from "../../../utils/farm.utils";
-import { EnergyGetterService } from "../../energy/services/energy.getter.service";
-import { FeesCollectorService } from "../../fees-collector/services/fees-collector.service";
+import { scAddress } from "../../../../config";
+import { farmsAddresses } from "../../../../utils/farm.utils";
+import { EnergyGetterService } from "../../../energy/services/energy.getter.service";
+import { FeesCollectorService } from "../../../fees-collector/services/fees-collector.service";
 import { EnergyType } from "@elrondnetwork/erdjs-dex";
-import { ClaimProgress } from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
-import { FarmVersion } from "../../farm/models/farm.model";
-import { FarmFactoryService } from "../../farm/farm.factory";
-import { FarmServiceV2 } from "../../farm/v2/services/farm.v2.service";
+import { ClaimProgress } from "../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
+import { FarmVersion } from "../../../farm/models/farm.model";
+import { FarmFactoryService } from "../../../farm/farm.factory";
+import { FarmServiceV2 } from "../../../farm/v2/services/farm.v2.service";
 
 @Injectable()
-export class UserEnergyService {
+export class UserEnergyComputeService {
     constructor(
         private readonly energyGetter: EnergyGetterService,
         private readonly farmFactory: FarmFactoryService,
@@ -18,7 +18,7 @@ export class UserEnergyService {
     ) {
     }
 
-    async getUserEnergyOutdatedAddresses(userAddress: string) {
+    async computeUserEnergyOutdatedAddresses(userAddress: string): Promise<string[]> {
         const currentUserEnergy = await this.energyGetter.getEnergyEntryForUser(userAddress);
         const promisesList = farmsAddresses([FarmVersion.V2]).map(
             async address => {

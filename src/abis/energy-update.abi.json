@@ -1,0 +1,46 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.66.0-nightly",
+            "commitHash": "bed4ad65bf7a1cef39e3d66b3670189581b3b073",
+            "commitDate": "2022-10-25",
+            "channel": "Nightly",
+            "short": "rustc 1.66.0-nightly (bed4ad65b 2022-10-25)"
+        },
+        "contractCrate": {
+            "name": "energy-update",
+            "version": "0.0.0",
+            "git_version": "v1.6.0-749-g0e44cfd8"
+        },
+        "framework": {
+            "name": "elrond-wasm",
+            "version": "0.36.1"
+        }
+    },
+    "name": "EnergyUpdate",
+    "constructor": {
+        "inputs": [],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "updateFarmsEnergyForUser",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                },
+                {
+                    "name": "farm_addresses",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        }
+    ],
+    "events": [],
+    "hasCallback": false,
+    "types": {}
+}

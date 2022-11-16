@@ -25,7 +25,9 @@ import { FarmModule } from '../farm/farm.module';
 import { EnergyModule } from '../energy/energy.module';
 import { UserNftsResolver } from './user.nfts.resolver';
 import { FeesCollectorModule } from "../fees-collector/fees-collector.module";
-import { UserEnergyService } from "./services/user.energy.service";
+import { UserEnergyService } from "./services/userEnergy/user.energy.service";
+import { UserEnergyGetterService } from "./services/userEnergy/user.energy.getter.service";
+import { UserEnergyComputeService } from "./services/userEnergy/user.energy.compute.service";
 
 @Module({
     imports: [
@@ -53,6 +55,8 @@ import { UserEnergyService } from "./services/user.energy.service";
         UserEsdtService,
         UserMetaEsdtService,
         UserEnergyService,
+        UserEnergyGetterService,
+        UserEnergyComputeService,
         UserEsdtComputeService,
         UserMetaEsdtComputeService,
         UserResolver,
