@@ -126,24 +126,6 @@ export class StakingGetterService extends GenericGetterService {
         );
     }
 
-    async getPenaltyPercent(stakeAddress: string): Promise<number> {
-        return await this.getData(
-            this.getCacheKey(stakeAddress, 'penaltyPercent'),
-            () => this.abiService.getPenaltyPercent(stakeAddress),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getMinimumFarmingEpoch(stakeAddress: string): Promise<number> {
-        return await this.getData(
-            this.getCacheKey(stakeAddress, 'minimumFarmingEpochs'),
-            () => this.abiService.getMinimumFarmingEpoch(stakeAddress),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
     async getPerBlockRewardAmount(stakeAddress: string): Promise<string> {
         return await this.getData(
             this.getCacheKey(stakeAddress, 'perBlockRewards'),
@@ -209,10 +191,7 @@ export class StakingGetterService extends GenericGetterService {
         stakeAddress: string,
     ): Promise<string> {
         return await this.getData(
-            this.getCacheKey(
-                stakeAddress,
-                'lockedAssetFactoryManagedAddress',
-            ),
+            this.getCacheKey(stakeAddress, 'lockedAssetFactoryManagedAddress'),
             () =>
                 this.abiService.getLockedAssetFactoryManagedAddress(
                     stakeAddress,
