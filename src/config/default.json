@@ -497,7 +497,7 @@
         "PRECISION_EX_INCREASE": 1000,
         "UNBOND_EPOCHS": 3,
         "MAINTENANCE": false,
-        "EPOCHS_IN_WEEK": 7,
+        "EPOCHS_IN_WEEK": 1,
         "BLOCKS_PER_WEEK": 100800,
         "USER_MAX_CLAIM_WEEKS": 4,
         "endpoints": [
