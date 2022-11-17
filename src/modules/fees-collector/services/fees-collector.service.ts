@@ -146,6 +146,10 @@ export class FeesCollectorService {
         return await this.weeklyRewardsSplittingGetter.currentClaimProgress(scAddress, userAddress);
     }
 
+    async getCurrentWeek(scAddress: string): Promise<number> {
+        return await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
+    }
+
     getWeeklyRewardsSplit(scAddress: string, startWeek: number, endWeek: number): GlobalInfoByWeekModel[] {
         const modelsList = []
         for (let week = startWeek; week <= endWeek; week++) {

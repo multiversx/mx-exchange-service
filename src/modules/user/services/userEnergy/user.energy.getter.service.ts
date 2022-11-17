@@ -5,6 +5,7 @@ import { UserEnergyComputeService } from "./user.energy.compute.service";
 import { CachingService } from "../../../../services/caching/cache.service";
 import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { Logger } from "winston";
+import { OutdatedContract } from "../../models/user.model";
 
 @Injectable()
 export class UserEnergyGetterService extends GenericGetterService {
@@ -14,12 +15,13 @@ export class UserEnergyGetterService extends GenericGetterService {
         private readonly userEnergyCompute: UserEnergyComputeService,
     ) {
         super(cachingService, logger);
+        this.baseKey = 'userOutdatedContracts'
     }
 
-    async getUserEnergyOutdatedAddresses(userAddress: string): Promise<string[]> {
+    async getUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
         return this.getData(
-            this.getCacheKey('userEnergyOutdatedAddresses', userAddress),
-            () => this.userEnergyCompute.computeUserEnergyOutdatedAddresses(userAddress),
+            this.getCacheKey(userAddress),
+            () => this.userEnergyCompute.computeUserOutdatedContracts(userAddress),
             oneMinute(),
         )
     }

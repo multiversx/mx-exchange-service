@@ -8,6 +8,7 @@ import { ClaimProgress } from "../../../../submodules/weekly-rewards-splitting/m
 import { FarmVersion } from "../../../farm/models/farm.model";
 import { FarmFactoryService } from "../../../farm/farm.factory";
 import { FarmServiceV2 } from "../../../farm/v2/services/farm.v2.service";
+import { ContractType, OutdatedContract } from "../../models/user.model";
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -18,28 +19,59 @@ export class UserEnergyComputeService {
     ) {
     }
 
-    async computeUserEnergyOutdatedAddresses(userAddress: string): Promise<string[]> {
+    async computeUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
         const currentUserEnergy = await this.energyGetter.getEnergyEntryForUser(userAddress);
         const promisesList = farmsAddresses([FarmVersion.V2]).map(
             async address => {
-                const currentClaimProgress = await (this.farmFactory.useService(address) as FarmServiceV2).getUserCurrentClaimProgress(
-                    address,
-                    userAddress,
-                )
+                const farmService = (this.farmFactory.useService(address) as FarmServiceV2)
+                const [
+                    currentClaimProgress,
+                    currentWeek,
+                    farmToken
+                ] = await Promise.all([
+                    farmService.getUserCurrentClaimProgress(
+                        address,
+                        userAddress,
+                    ),
+                    farmService.getCurrentWeek(address),
+                    farmService.getFarmToken(address)
+                ]);
 
                 if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {
-                    return address
+                    return new OutdatedContract({
+                        address: address,
+                        type: ContractType.Farm,
+                        claimProgressOutdated: currentClaimProgress.week != currentWeek,
+                        farmToken: farmToken.collection
+                    })
                 }
-                return ''
+                return undefined
             }
         )
 
-        const outdatedAddresses = (await Promise.all(promisesList)).filter(address => address !== '');
-        const currentClaimProgress = await this.feesCollectorService.getUserCurrentClaimProgress(scAddress.feesCollector, userAddress);
+        const outdatedContracts = (await Promise.all(promisesList)).filter(contract => contract !== undefined);
+
+        const [
+            currentClaimProgress,
+            currentWeek,
+        ] = await Promise.all([
+            this.feesCollectorService.getUserCurrentClaimProgress(
+                scAddress.feesCollector,
+                userAddress,
+            ),
+            this.feesCollectorService.getCurrentWeek(scAddress.feesCollector),
+        ]);
+
         if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {
-            outdatedAddresses.push(scAddress.feesCollector);
+            outdatedContracts.push(
+                new OutdatedContract({
+                    address: scAddress.feesCollector,
+                    type: ContractType.FeesCollector,
+                    claimProgressOutdated: currentClaimProgress.week != currentWeek,
+                })
+            );
         }
-        return outdatedAddresses;
+        return outdatedContracts;
     }
 
     isEnergyOutdated(currentUserEnergy: EnergyType, currentClaimProgress: ClaimProgress): boolean {

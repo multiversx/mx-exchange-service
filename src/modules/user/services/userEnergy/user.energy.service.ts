@@ -4,6 +4,7 @@ import { TransactionModel } from "../../../../models/transaction.model";
 import { ElrondProxyService } from "../../../../services/elrond-communication/elrond-proxy.service";
 import { Address, AddressValue, TypedValue } from "@elrondnetwork/erdjs/out";
 import { UserEnergyGetterService } from "./user.energy.getter.service";
+import { OutdatedContract } from "../../models/user.model";
 
 @Injectable()
 export class UserEnergyService {
@@ -14,13 +15,15 @@ export class UserEnergyService {
     }
 
     async updateFarmsEnergyForUser(userAddress: string): Promise<TransactionModel | null> {
-        const addresses = await this.getUserEnergyOutdatedAddresses(userAddress);
-        if (addresses.length === 0) {
+        const outdatedContracts = await this.getUserOutdatedContracts(userAddress);
+        if (outdatedContracts.length === 0) {
             return null
         }
         const endpointArgs: TypedValue[] = [];
-        for (const address of addresses) {
-            endpointArgs.push(new AddressValue(Address.fromString(address)));
+        for (const contract of outdatedContracts) {
+            if (!contract.claimProgressOutdated) {
+                endpointArgs.push(new AddressValue(Address.fromString(contract.address)));
+            }
         }
         const contract = await this.elrondProxy.getEnergyUpdateContract();
         return contract.methodsExplicit
@@ -31,7 +34,7 @@ export class UserEnergyService {
             .toPlainObject();
     }
 
-    async getUserEnergyOutdatedAddresses(userAddress: string): Promise<string[]> {
-        return await this.userEnergyGetter.getUserEnergyOutdatedAddresses(userAddress);
+    async getUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
+        return await this.userEnergyGetter.getUserOutdatedContracts(userAddress);
     }
 }

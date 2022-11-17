@@ -19,6 +19,12 @@ import { LockedSimpleFarmToken } from 'src/modules/tokens/models/lockedSimpleFar
 import { LockedSimpleLpToken } from 'src/modules/tokens/models/lockedSimpleLpToken.model';
 import { PaginationArgs } from 'src/modules/dex.model';
 
+
+export enum ContractType {
+    Farm = 'Farm',
+    FeesCollector = 'FeesCollector'
+}
+
 @ObjectType()
 export class UserToken extends EsdtToken {
     @Field() valueUSD: string;
@@ -213,5 +219,17 @@ export class UserNftsModel {
     constructor(address: string, pagination: PaginationArgs) {
         this.address = address;
         this.pagination = pagination;
+    }
+}
+
+@ObjectType()
+export class OutdatedContract {
+    @Field() address: string;
+    @Field() type: ContractType;
+    @Field() claimProgressOutdated: boolean;
+    @Field({ nullable: true }) farmToken: string;
+
+    constructor(init?: Partial<OutdatedContract>) {
+        Object.assign(this, init);
     }
 }
