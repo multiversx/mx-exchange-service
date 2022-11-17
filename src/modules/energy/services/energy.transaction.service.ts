@@ -137,7 +137,7 @@ export class EnergyTransactionService {
 
     async migrateOldTokens(
         sender: string,
-        args: UnlockAssetsArgs[]
+        args: InputTokenModel[]
     ): Promise<TransactionModel> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
@@ -145,8 +145,8 @@ export class EnergyTransactionService {
             .migrateOldTokens()
             .withMultiESDTNFTTransfer(
                 args.map(token => TokenPayment.metaEsdtFromBigInteger(
-                    token.lockedTokenID,
-                    token.lockedTokenNonce,
+                    token.tokenID,
+                    token.nonce,
                     new BigNumber(token.amount),
                 )),
                 Address.fromString(sender),

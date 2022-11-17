@@ -6,40 +6,72 @@ import { FeesCollectorService } from "../../../fees-collector/services/fees-coll
 import { EnergyType } from "@elrondnetwork/erdjs-dex";
 import { ClaimProgress } from "../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 import { FarmVersion } from "../../../farm/models/farm.model";
-import { FarmFactoryService } from "../../../farm/farm.factory";
-import { FarmServiceV2 } from "../../../farm/v2/services/farm.v2.service";
+import { ContractType, OutdatedContract } from "../../models/user.model";
+import { FarmGetterFactory } from "../../../farm/farm.getter.factory";
+import { FarmGetterServiceV2 } from "../../../farm/v2/services/farm.v2.getter.service";
 
 @Injectable()
 export class UserEnergyComputeService {
     constructor(
         private readonly energyGetter: EnergyGetterService,
-        private readonly farmFactory: FarmFactoryService,
+        private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorService: FeesCollectorService,
     ) {
     }
 
-    async computeUserEnergyOutdatedAddresses(userAddress: string): Promise<string[]> {
+    async computeUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
         const currentUserEnergy = await this.energyGetter.getEnergyEntryForUser(userAddress);
         const promisesList = farmsAddresses([FarmVersion.V2]).map(
             async address => {
-                const currentClaimProgress = await (this.farmFactory.useService(address) as FarmServiceV2).getUserCurrentClaimProgress(
-                    address,
-                    userAddress,
-                )
+                const farmGetter = (this.farmGetter.useGetter(address) as FarmGetterServiceV2)
+                const [
+                    currentClaimProgress,
+                    currentWeek,
+                    farmToken
+                ] = await Promise.all([
+                    farmGetter.currentClaimProgress(
+                        address,
+                        userAddress,
+                    ),
+                    farmGetter.getCurrentWeek(address),
+                    farmGetter.getFarmToken(address)
+                ]);
 
                 if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {
-                    return address
+                    return new OutdatedContract({
+                        address: address,
+                        type: ContractType.Farm,
+                        claimProgressOutdated: currentClaimProgress.week != currentWeek,
+                        farmToken: farmToken.collection
+                    })
                 }
-                return ''
+                return undefined
             }
         )
 
-        const outdatedAddresses = (await Promise.all(promisesList)).filter(address => address !== '');
-        const currentClaimProgress = await this.feesCollectorService.getUserCurrentClaimProgress(scAddress.feesCollector, userAddress);
+        const outdatedContracts = (await Promise.all(promisesList)).filter(contract => contract !== undefined);
+
+        const [
+            currentClaimProgress,
+            currentWeek,
+        ] = await Promise.all([
+            this.feesCollectorService.getUserCurrentClaimProgress(
+                scAddress.feesCollector,
+                userAddress,
+            ),
+            this.feesCollectorService.getCurrentWeek(scAddress.feesCollector),
+        ]);
+
         if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {
-            outdatedAddresses.push(scAddress.feesCollector);
+            outdatedContracts.push(
+                new OutdatedContract({
+                    address: scAddress.feesCollector,
+                    type: ContractType.FeesCollector,
+                    claimProgressOutdated: currentClaimProgress.week != currentWeek,
+                })
+            );
         }
-        return outdatedAddresses;
+        return outdatedContracts;
     }
 
     isEnergyOutdated(currentUserEnergy: EnergyType, currentClaimProgress: ClaimProgress): boolean {

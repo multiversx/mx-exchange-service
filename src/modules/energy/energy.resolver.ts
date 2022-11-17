@@ -183,7 +183,7 @@ export class EnergyResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async migrateOldTokens(
-        @Args() args: UnlockAssetsArgs[],
+        @Args('tokens', { type: () => [InputTokenModel] }) args: InputTokenModel[],
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.energyTransaction.migrateOldTokens(

@@ -1,6 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { Query, Args, Resolver } from '@nestjs/graphql';
-import { UserNftToken, UserToken } from './models/user.model';
+import { OutdatedContract, UserNftToken, UserToken } from './models/user.model';
 import { UserNftTokens } from './models/nfttokens.union';
 import { UserMetaEsdtService } from './services/user.metaEsdt.service';
 import { PaginationArgs } from '../dex.model';
@@ -44,11 +44,11 @@ export class UserResolver {
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => [String])
-    async userEnergyOutdated(
+    @Query(() => [OutdatedContract])
+    async userOutdatedContracts(
         @User() user: any,
-    ): Promise<string[]> {
-        return await this.userEnergy.getUserEnergyOutdatedAddresses(user.publicKey);
+    ): Promise<OutdatedContract[]> {
+        return await this.userEnergy.getUserOutdatedContracts(user.publicKey);
     }
 
     @UseGuards(GqlAuthGuard)
