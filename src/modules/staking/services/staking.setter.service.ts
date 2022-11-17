@@ -132,30 +132,6 @@ export class StakingSetterService extends GenericSetterService {
         );
     }
 
-    async setPenaltyPercent(
-        stakeAddress: string,
-        value: number,
-    ): Promise<string> {
-        return await this.setData(
-            this.getStakeCacheKey(stakeAddress, 'penaltyPercent'),
-            value,
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async setMinimumFarmingEpoch(
-        stakeAddress: string,
-        value: number,
-    ): Promise<string> {
-        return await this.setData(
-            this.getStakeCacheKey(stakeAddress, 'minimumFarmingEpochs'),
-            value,
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
     async setPerBlockRewardAmount(
         stakeAddress: string,
         value: string,

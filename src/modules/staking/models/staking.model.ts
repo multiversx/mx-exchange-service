@@ -27,10 +27,6 @@ export class StakingModel {
     annualPercentageRewards: string;
     @Field(() => Int)
     minUnboundEpochs: number;
-    @Field(() => Int)
-    penaltyPercent: number;
-    @Field(() => Int)
-    minimumFarmingEpochs: number;
     @Field()
     perBlockRewards: string;
     @Field(() => Int)

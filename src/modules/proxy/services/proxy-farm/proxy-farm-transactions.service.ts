@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { constantsConfig, elrondConfig, gasConfig } from '../../../../config';
-import { BytesValue } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
+import {
+    BigUIntValue,
+    BytesValue,
+} from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs';
 import { TransactionModel } from '../../../../models/transaction.model';
 import BigNumber from 'bignumber.js';
@@ -97,6 +100,7 @@ export class TransactionsProxyFarmService {
         );
 
         const endpointArgs = [
+            new BigUIntValue(new BigNumber(args.exitAmount)),
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
         const gasLimit = await this.getExitFarmProxyGasLimit(args);
