@@ -109,13 +109,16 @@ export class UserMetaEsdtComputeService {
 
     async farmTokenUSD(nftToken: NftToken): Promise<UserFarmToken> {
         const farmAddress = nftToken.creator;
-        if (!farmAddress || farmAddress === undefined) {
+
+        let farmingTokenID: string;
+        try {
+            farmingTokenID = await this.farmGetter
+                .useGetter(farmAddress)
+                .getFarmingTokenID(farmAddress);
+        } catch (error) {
             console.log(nftToken);
-            return undefined;
+            throw new Error('Not a farming token id');
         }
-        const farmingTokenID = await this.farmGetter
-            .useGetter(farmAddress)
-            .getFarmingTokenID(farmAddress);
 
         const version = farmVersion(farmAddress);
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
