@@ -89,7 +89,8 @@
         "MAX_SWAP_SPREAD": 0.9,
         "MEX_TOKEN_ID": "MEX-dc289c",
         "USDC_TOKEN_ID": "USDC-8d4068",
-        "MAINTENANCE": false
+        "MAINTENANCE": false,
+        "EPOCHS_IN_WEEK": 1
     },
     "aws": {
         "region": "eu-central-1",

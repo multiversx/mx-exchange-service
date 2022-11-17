@@ -99,7 +99,7 @@ describe('WeekTimekeepingComputeService', () => {
         //week == 1 should return firstWeekStartEpoch
         expect(await service.computeStartEpochForWeek(dummyScAddress, 1)).toEqual(service.firstWeekStartEpoch);
         //should return good value
-        expect(await service.computeStartEpochForWeek(dummyScAddress, 2)).toEqual(257);
+        expect(await service.computeStartEpochForWeek(dummyScAddress, 2)).toEqual(250 + service.epochsInWeek);
     });
     it('computeEndEpochForWeek', async () => {
         const service = await createService({
