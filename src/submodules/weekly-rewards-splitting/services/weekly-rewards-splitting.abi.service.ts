@@ -22,7 +22,8 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         const response = await this.getGenericData(interaction);
         if (
             response.returnCode.equals(ReturnCode.UserError) &&
-            response.returnMessage === VmQueryError.INPUT_TOO_SHORT
+            response.returnMessage === VmQueryError.INPUT_TOO_SHORT ||
+            response.firstValue === undefined
         ) {
             return {
                 energy: {
@@ -53,7 +54,8 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         const response = await this.getGenericData(interaction);
         if (
             response.returnCode.equals(ReturnCode.UserError) &&
-            response.returnMessage === VmQueryError.INPUT_TOO_SHORT
+            response.returnMessage === VmQueryError.INPUT_TOO_SHORT ||
+            response.firstValue === undefined
         ) {
            return {
                 amount: '0',
