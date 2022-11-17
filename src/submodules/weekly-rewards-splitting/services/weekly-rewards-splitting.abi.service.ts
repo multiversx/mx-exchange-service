@@ -23,7 +23,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         if (
             response.returnCode.equals(ReturnCode.UserError) &&
             response.returnMessage === VmQueryError.INPUT_TOO_SHORT ||
-            response.firstValue === undefined
+            response.firstValue === null
         ) {
             return {
                 energy: {
@@ -55,7 +55,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
         if (
             response.returnCode.equals(ReturnCode.UserError) &&
             response.returnMessage === VmQueryError.INPUT_TOO_SHORT ||
-            response.firstValue === undefined
+            response.firstValue === null
         ) {
            return {
                 amount: '0',
