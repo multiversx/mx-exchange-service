@@ -6,15 +6,15 @@ import { FeesCollectorService } from "../../../fees-collector/services/fees-coll
 import { EnergyType } from "@elrondnetwork/erdjs-dex";
 import { ClaimProgress } from "../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 import { FarmVersion } from "../../../farm/models/farm.model";
-import { FarmFactoryService } from "../../../farm/farm.factory";
-import { FarmServiceV2 } from "../../../farm/v2/services/farm.v2.service";
 import { ContractType, OutdatedContract } from "../../models/user.model";
+import { FarmGetterFactory } from "../../../farm/farm.getter.factory";
+import { FarmGetterServiceV2 } from "../../../farm/v2/services/farm.v2.getter.service";
 
 @Injectable()
 export class UserEnergyComputeService {
     constructor(
         private readonly energyGetter: EnergyGetterService,
-        private readonly farmFactory: FarmFactoryService,
+        private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorService: FeesCollectorService,
     ) {
     }
@@ -23,18 +23,18 @@ export class UserEnergyComputeService {
         const currentUserEnergy = await this.energyGetter.getEnergyEntryForUser(userAddress);
         const promisesList = farmsAddresses([FarmVersion.V2]).map(
             async address => {
-                const farmService = (this.farmFactory.useService(address) as FarmServiceV2)
+                const farmGetter = (this.farmGetter.useGetter(address) as FarmGetterServiceV2)
                 const [
                     currentClaimProgress,
                     currentWeek,
                     farmToken
                 ] = await Promise.all([
-                    farmService.getUserCurrentClaimProgress(
+                    farmGetter.currentClaimProgress(
                         address,
                         userAddress,
                     ),
-                    farmService.getCurrentWeek(address),
-                    farmService.getFarmToken(address)
+                    farmGetter.getCurrentWeek(address),
+                    farmGetter.getFarmToken(address)
                 ]);
 
                 if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {

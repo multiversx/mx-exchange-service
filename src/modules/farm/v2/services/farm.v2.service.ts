@@ -18,11 +18,9 @@ import { Mixin } from "ts-mixer";
 import { FarmTokenAttributesV2 } from "@elrondnetwork/erdjs-dex";
 import BigNumber from "bignumber.js";
 import {
-    ClaimProgress,
     UserInfoByWeekModel
 } from "../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
 import { constantsConfig } from "../../../../config";
-import { NftCollection } from "../../../tokens/models/nftCollection.model";
 
 @Injectable()
 export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService, WeeklyRewardsSplittingService) {
@@ -43,18 +41,6 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
             cachingService,
             logger,
         );
-    }
-
-    async getUserCurrentClaimProgress(scAddress: string, userAddress: string): Promise<ClaimProgress> {
-        return await this.farmGetter.currentClaimProgress(scAddress, userAddress);
-    }
-
-    async getCurrentWeek(scAddress: string): Promise<number> {
-        return await this.farmGetter.getCurrentWeek(scAddress);
-    }
-
-    async getFarmToken(scAddress: string): Promise<NftCollection> {
-        return await this.farmGetter.getFarmToken(scAddress);
     }
 
     async getRewardsForPosition(
