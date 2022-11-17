@@ -87,9 +87,10 @@ describe('WeekTimekeepingComputeService', () => {
     });
 
     it('computeStartEpochForWeek', async () => {
+        const firstWeekStartEpoch = 250;
         const service = await createService({
             getFirstWeekStartEpoch: scAddress => {
-                return Promise.resolve(250);
+                return Promise.resolve(firstWeekStartEpoch);
             },
         })
         // week < 0 should error
@@ -97,7 +98,7 @@ describe('WeekTimekeepingComputeService', () => {
         //week = 0 should error
         await expect(service.computeStartEpochForWeek(dummyScAddress, 0)).rejects.toThrowError(ErrInvalidWeek);
         //week == 1 should return firstWeekStartEpoch
-        expect(await service.computeStartEpochForWeek(dummyScAddress, 1)).toEqual(service.firstWeekStartEpoch);
+        expect(await service.computeStartEpochForWeek(dummyScAddress, 1)).toEqual(firstWeekStartEpoch);
         //should return good value
         expect(await service.computeStartEpochForWeek(dummyScAddress, 2)).toEqual(250 + service.epochsInWeek);
     });
@@ -113,10 +114,10 @@ describe('WeekTimekeepingComputeService', () => {
         await expect(service.computeEndEpochForWeek(dummyScAddress, 0)).rejects.toThrowError(ErrInvalidWeek);
         // week == 1 should return firstWeekStartEpoch
         expect(await service.computeEndEpochForWeek(dummyScAddress, 1))
-                .toEqual(service.firstWeekStartEpoch + service.epochsInWeek - 1);
+                .toEqual(firstWeekStartEpoch + service.epochsInWeek - 1);
         // should return good value
         expect(await service.computeEndEpochForWeek(dummyScAddress, 2))
-                .toEqual(service.firstWeekStartEpoch + 2 * service.epochsInWeek - 1);
+                .toEqual(firstWeekStartEpoch + 2 * service.epochsInWeek - 1);
     });
 })
 ;
