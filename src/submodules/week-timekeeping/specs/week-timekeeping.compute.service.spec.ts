@@ -12,45 +12,9 @@ import { ErrInvalidEpochLowerThanFirstWeekStartEpoch, ErrInvalidWeek } from '../
 
 describe('WeekTimekeepingComputeService', () => {
     const dummyScAddress = 'erd'
-    const expectedErr = new Error('expected err')
     it('init service; should be defined', async () => {
         const service = await createService({});
         expect(service).toBeDefined();
-    });
-
-    it('checkAndSetFirstWeekStartEpoch' +
-        'getFirstWeekStartEpoch throws error should error', async () => {
-
-        const service = await createService({
-            getFirstWeekStartEpoch: scAddress => {
-                throw expectedErr;
-            },
-        })
-        await expect(service.computeWeekForEpoch(dummyScAddress, 10))
-            .rejects
-            .toThrowError(expectedErr);
-    });
-    it('checkAndSetFirstWeekStartEpoch' +
-        'checkAndSetFirstWeekStartEpoch should not call getFirstWeekStartEpoch twice', async () => {
-        const firstWeekStartEpoch = 50;
-        let increment = 0
-        const service = await createService({
-            getFirstWeekStartEpoch: scAddress => {
-                if (increment > 0) throw expectedErr
-                increment++
-                return Promise.resolve(firstWeekStartEpoch);
-            },
-        })
-        await expect(service.computeWeekForEpoch(
-            dummyScAddress,
-            firstWeekStartEpoch,
-        ))
-            .resolves.toEqual(1);
-        await expect(service.computeWeekForEpoch(
-            dummyScAddress,
-            firstWeekStartEpoch,
-        ))
-            .resolves.toEqual(1);
     });
     const firstWeekStartEpoch = 250;
     it('computeWeekForEpoch', async () => {
