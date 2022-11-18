@@ -10,7 +10,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { computeValueUSD } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { FarmGetterService } from './farm.getter.service';
-import { CalculateRewardsArgs } from "../../models/farm.args";
+import { CalculateRewardsArgs } from '../../models/farm.args';
 
 export abstract class FarmComputeService {
     constructor(

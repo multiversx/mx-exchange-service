@@ -174,7 +174,9 @@ export class ElrondProxyService {
         );
     }
 
-    async getFeesCollectorContract(contractAddress?: string): Promise<SmartContract> {
+    async getFeesCollectorContract(
+        contractAddress?: string,
+    ): Promise<SmartContract> {
         return this.getSmartContract(
             contractAddress ?? scAddress.feesCollector,
             abiConfig.feesCollector,
