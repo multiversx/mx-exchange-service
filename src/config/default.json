@@ -205,7 +205,7 @@
                 },
                 "lockedRewards": {
                     "exitFarm": {
-                        "default": 15300000,
+                        "default": 20300000,
                         "withPenalty": {
                             "localBurn": 16000000,
                             "pairBurn": 23000000,
