@@ -9,7 +9,6 @@ import { IWeekTimekeepingComputeService } from '../interfaces';
 
 @Injectable()
 export class WeekTimekeepingComputeService implements IWeekTimekeepingComputeService {
-    firstWeekStartEpoch: number|undefined;
     epochsInWeek: number;
 
     constructor(
@@ -22,21 +21,21 @@ export class WeekTimekeepingComputeService implements IWeekTimekeepingComputeSer
     }
 
     async computeWeekForEpoch(scAddress: string, epoch: number): Promise<number> {
-        await this.checkAndSetFirstWeekStartEpoch(scAddress);
-        if (epoch < this.firstWeekStartEpoch) {
+        const firstWeekStartEpoch = await this.weekTimekeepingGetter.getFirstWeekStartEpoch(scAddress);
+        if (epoch < firstWeekStartEpoch) {
             throw ErrInvalidEpochLowerThanFirstWeekStartEpoch
         }
 
-        return Math.floor((epoch - this.firstWeekStartEpoch) / this.epochsInWeek) + 1;
+        return Math.floor((epoch - firstWeekStartEpoch) / this.epochsInWeek) + 1;
     }
 
     async computeStartEpochForWeek(scAddress: string, week: number): Promise<number> {
-        await this.checkAndSetFirstWeekStartEpoch(scAddress);
+        const firstWeekStartEpoch = await this.weekTimekeepingGetter.getFirstWeekStartEpoch(scAddress);
         if (week <= 0) {
             throw ErrInvalidWeek
         }
 
-        return this.firstWeekStartEpoch + (week - 1) * this.epochsInWeek
+        return firstWeekStartEpoch + (week - 1) * this.epochsInWeek
     }
 
     async computeEndEpochForWeek(scAddress: string, week: number): Promise<number> {
@@ -46,16 +45,5 @@ export class WeekTimekeepingComputeService implements IWeekTimekeepingComputeSer
 
         const startEpochForWeek = await this.computeStartEpochForWeek(scAddress, week)
         return startEpochForWeek + this.epochsInWeek - 1;
-    }
-
-    private async setFirstWeekStartEpoch(scAddress: string) {
-        this.firstWeekStartEpoch = await this.weekTimekeepingGetter.getFirstWeekStartEpoch(scAddress);
-    }
-
-    private async checkAndSetFirstWeekStartEpoch(scAddress: string) {
-        if (this.firstWeekStartEpoch !== undefined) {
-            return
-        }
-        await this.setFirstWeekStartEpoch(scAddress);
     }
 }
