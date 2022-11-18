@@ -2,13 +2,12 @@ import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { BoostedYieldsFactors, FarmModelV2 } from '../models/farm.v2.model';
 import { FarmGetterServiceV2 } from './services/farm.v2.getter.service';
 import { FarmResolver } from '../base-module/farm.resolver';
-import { FarmServiceV2 } from "./services/farm.v2.service";
-import {
-    GlobalInfoByWeekModel,
-} from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
-import { WeekTimekeepingModel } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
-import { FarmComputeServiceV2 } from "./services/farm.v2.compute.service";
-import { constantsConfig } from "../../../config";
+import { FarmServiceV2 } from './services/farm.v2.service';
+import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
+import { FarmComputeServiceV2 } from './services/farm.v2.compute.service';
+import { constantsConfig } from '../../../config';
+import { WeeklyRewardsSplittingGetterService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 
 @Resolver(() => FarmModelV2)
 export class FarmResolverV2 extends FarmResolver {
@@ -16,14 +15,13 @@ export class FarmResolverV2 extends FarmResolver {
         protected readonly farmGetter: FarmGetterServiceV2,
         protected readonly farmService: FarmServiceV2,
         protected readonly farmCompute: FarmComputeServiceV2,
+        private readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
     ) {
         super(farmGetter);
     }
 
     @ResolveField()
-    async baseApr(
-        @Parent() parent: FarmModelV2,
-    ): Promise<string> {
+    async baseApr(@Parent() parent: FarmModelV2): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.farmCompute.computeFarmBaseAPR(parent.address),
         );
@@ -33,18 +31,27 @@ export class FarmResolverV2 extends FarmResolver {
     async boosterRewards(
         @Parent() parent: FarmModelV2,
     ): Promise<GlobalInfoByWeekModel[]> {
-        const modelsList = []
-        const currentWeek = await this.farmGetter.getCurrentWeek(parent.address)
-        for (let week = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS; week <= currentWeek; week++) {
-            modelsList.push(this.farmService.getGlobalInfoByWeek(parent.address, week))
+        const modelsList = [];
+        const currentWeek = await this.farmGetter.getCurrentWeek(
+            parent.address,
+        );
+        for (
+            let week = currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS;
+            week <= currentWeek;
+            week++
+        ) {
+            if (week < 1) {
+                continue;
+            }
+            modelsList.push(
+                this.farmService.getGlobalInfoByWeek(parent.address, week),
+            );
         }
         return modelsList;
     }
 
     @ResolveField()
-    async time(
-        @Parent() parent: FarmModelV2,
-    ): Promise<WeekTimekeepingModel> {
+    async time(@Parent() parent: FarmModelV2): Promise<WeekTimekeepingModel> {
         return await this.genericFieldResolver(() =>
             this.farmService.getWeeklyTimekeeping(parent.address),
         );
@@ -88,6 +95,15 @@ export class FarmResolverV2 extends FarmResolver {
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.farmGetter.getUndistributedBoostedRewards(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async lastGlobalUpdateWeek(@Parent() parent: FarmModelV2): Promise<number> {
+        return await this.genericFieldResolver(() =>
+            this.weeklyRewardsSplittingGetter.lastGlobalUpdateWeek(
+                parent.address,
+            ),
         );
     }
 
