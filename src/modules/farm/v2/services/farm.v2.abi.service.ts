@@ -139,6 +139,17 @@ export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplitti
         });
     }
 
+    async accumulatedRewardsForWeek(scAddress: string, week: number): Promise<string> {
+        const contract = await this.getContractHandler(scAddress);
+        const interaction: Interaction = contract.methodsExplicit.getAccumulatedFees(
+            [
+                new U32Value(new BigNumber(week)),
+            ],
+        );
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toString();
+    }
+
     async getEnergyFactoryAddress(farmAddress: string): Promise<string> {
         const contract = await this.getContract(farmAddress);
 
@@ -246,7 +257,6 @@ export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplitti
                 ),
             ]);
         const response = await this.getGenericData(interaction);
-        console.log(response);
         return response.firstValue.valueOf();
     }
 }

@@ -69,6 +69,9 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
         const startWeek = Math.max(currentWeek-constantsConfig.USER_MAX_CLAIM_WEEKS, lastActiveWeekUser);
 
         for (let week = startWeek; week <= currentWeek - 1; week++) {
+            if (week < 1) {
+                continue;
+            }
             modelsList.push(this.getUserInfoByWeek(positon.farmAddress, positon.user, week))
         }
 

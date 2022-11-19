@@ -78,10 +78,10 @@ describe('WeekTimekeepingComputeService', () => {
         await expect(service.computeEndEpochForWeek(dummyScAddress, 0)).rejects.toThrowError(ErrInvalidWeek);
         // week == 1 should return firstWeekStartEpoch
         expect(await service.computeEndEpochForWeek(dummyScAddress, 1))
-                .toEqual(firstWeekStartEpoch + service.epochsInWeek - 1);
+            .toEqual(firstWeekStartEpoch + service.epochsInWeek - 1);
         // should return good value
         expect(await service.computeEndEpochForWeek(dummyScAddress, 2))
-                .toEqual(firstWeekStartEpoch + 2 * service.epochsInWeek - 1);
+            .toEqual(firstWeekStartEpoch + 2 * service.epochsInWeek - 1);
     });
 })
 ;

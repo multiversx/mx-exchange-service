@@ -1,7 +1,9 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { BaseFarmModel, FarmRewardType } from './farm.model';
-import { GlobalInfoByWeekModel } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
+import {
+    GlobalInfoByWeekModel,
+} from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
+import { WeekTimekeepingModel } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
 
 @ObjectType()
 export class BoostedYieldsFactors {
@@ -39,6 +41,8 @@ export class FarmModelV2 extends BaseFarmModel {
     rewardType: FarmRewardType;
     @Field()
     time: WeekTimekeepingModel;
+    @Field()
+    accumulatedRewards: string
     @Field(() => [GlobalInfoByWeekModel])
     boosterRewards: [GlobalInfoByWeekModel];
     @Field()
