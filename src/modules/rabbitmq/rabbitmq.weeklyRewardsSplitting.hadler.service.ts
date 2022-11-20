@@ -1,5 +1,6 @@
 import {
     RawEventType,
+    WEEKLY_REWARDS_SPLITTING_EVENTS,
 } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -53,7 +54,7 @@ export class RabbitmqWeeklyRewardsSplittingHadlerService {
 
         this.invalidatedKeys.push(keys);
         await this.deleteCacheKeys();
-        await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS, {
+        await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS, {
             updateGlobalAmountsEvent: event,
         });
     }
@@ -74,7 +75,7 @@ export class RabbitmqWeeklyRewardsSplittingHadlerService {
 
         this.invalidatedKeys.push(keys);
         await this.deleteCacheKeys();
-        await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS, {
+        await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY, {
             updateUserEnergyEvent: event,
         });
     }
@@ -101,7 +102,7 @@ export class RabbitmqWeeklyRewardsSplittingHadlerService {
 
         this.invalidatedKeys.push(keys);
         await this.deleteCacheKeys();
-        await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS, {
+        await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS.CLAIM_MULTI, {
             claimMultiEvent: event,
         });
     }
