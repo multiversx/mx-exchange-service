@@ -9,7 +9,7 @@ import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { WeeklyRewardsSplittingComputeService } from './weekly-rewards-splitting.compute.service';
 import { IWeeklyRewardsSplittingGetterService } from '../interfaces';
 import { GenericGetterService } from '../../../services/generics/generic.getter.service';
-import { EnergyType } from '@elrondnetwork/erdjs-dex/dist/attributes-decoder/energy/energy.type';
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 
 @Injectable()

@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { oneMinute } from '../../../helpers/helpers';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import {
     GenericSetterService
@@ -10,6 +9,7 @@ import {
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
+import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 
 @Injectable()
 export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
@@ -24,7 +24,8 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         return this.setData(
             this.getWeeklyRewardsCacheKey(scAddress, 'currentClaimProgress', userAddress),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         )
     }
 
@@ -32,7 +33,8 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         return this.setData(
             this.getWeeklyRewardsCacheKey(scAddress, 'userEnergyForWeek', userAddress, week),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         )
     }
 
@@ -40,7 +42,8 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         return this.setData(
             this.getWeeklyRewardsCacheKey(scAddress, 'userRewardsForWeek', userAddress, week),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         )
     }
 
@@ -48,7 +51,8 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         return this.setData(
             this.getWeeklyRewardsCacheKey(scAddress, 'lastActiveWeekForUser', userAddress),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         )
     }
 
@@ -56,7 +60,8 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         return this.setData(
             this.getWeeklyRewardsCacheKey(scAddress, 'lastGlobalUpdateWeek'),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         )
     }
 
@@ -64,7 +69,8 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         return this.setData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalRewardsForWeek', week),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -72,7 +78,8 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         return this.setData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalEnergyForWeek', week),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -80,7 +87,8 @@ export class WeeklyRewardsSplittingSetterService extends GenericSetterService {
         return this.setData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalLockedTokensForWeek', week),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 

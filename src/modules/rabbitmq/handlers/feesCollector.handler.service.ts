@@ -15,9 +15,9 @@ import {
 import { scAddress } from '../../../config';
 import BigNumber from 'bignumber.js';
 import {
-    DepositSwapFeesEvent
-} from '@elrondnetwork/erdjs-dex/dist/event-decoder/fees-collector/depositSwapFees.event';
-import { FEES_COLLECTOR_EVENTS } from '@elrondnetwork/erdjs-dex';
+    DepositSwapFeesEvent,
+    FEES_COLLECTOR_EVENTS
+} from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
 export class FeesCollectorHandlerService {

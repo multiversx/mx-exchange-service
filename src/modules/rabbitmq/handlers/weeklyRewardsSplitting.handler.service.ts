@@ -17,15 +17,10 @@ import {
     ClaimProgress
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import {
-    UpdateGlobalAmountsEvent
-} from '@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/updateGlobalAmounts.event';
-import { WEEKLY_REWARDS_SPLITTING_EVENTS } from '@elrondnetwork/erdjs-dex';
-import {
-    UpdateUserEnergyEvent
-} from '@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/updateUserEnergy.event';
-import {
-    ClaimMultiEvent
-} from '@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/claimMulti.event';
+    ClaimMultiEvent,
+    UpdateGlobalAmountsEvent, UpdateUserEnergyEvent,
+    WEEKLY_REWARDS_SPLITTING_EVENTS
+} from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {

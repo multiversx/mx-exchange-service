@@ -36,7 +36,13 @@ import {
     WithdrawEvent,
     SIMPLE_LOCK_ENERGY_EVENTS,
     EnergyEvent,
-    RawEventType, FEES_COLLECTOR_EVENTS, WEEKLY_REWARDS_SPLITTING_EVENTS,
+    RawEventType,
+    FEES_COLLECTOR_EVENTS,
+    WEEKLY_REWARDS_SPLITTING_EVENTS,
+    DepositSwapFeesEvent,
+    UpdateGlobalAmountsEvent,
+    UpdateUserEnergyEvent,
+    ClaimMultiEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { RouterGetterService } from '../router/services/router.getter.service';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
@@ -50,18 +56,6 @@ import {
 import {
     WeeklyRewardsSplittingHandlerService
 } from './handlers/weeklyRewardsSplitting.handler.service';
-import {
-    DepositSwapFeesEvent
-} from '@elrondnetwork/erdjs-dex/dist/event-decoder/fees-collector/depositSwapFees.event';
-import {
-    UpdateGlobalAmountsEvent
-} from '@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/updateGlobalAmounts.event';
-import {
-    UpdateUserEnergyEvent
-} from '@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/updateUserEnergy.event';
-import {
-    ClaimMultiEvent
-} from '@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/claimMulti.event';
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
@@ -274,6 +268,8 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
         this.filterAddresses.push(...scAddress.priceDiscovery);
         this.filterAddresses.push(scAddress.simpleLockEnergy);
+        // this.filterAddresses.push(scAddress.feesCollector);
+        // TODO: uncomment after contract upgrade
     }
 
     private async updateIngestData(eventData: any[]): Promise<void> {
