@@ -1,14 +1,14 @@
-import { Injectable } from "@nestjs/common";
-import { scAddress } from "../../../../config";
-import { farmsAddresses } from "../../../../utils/farm.utils";
-import { EnergyGetterService } from "../../../energy/services/energy.getter.service";
-import { FeesCollectorService } from "../../../fees-collector/services/fees-collector.service";
-import { EnergyType } from "@elrondnetwork/erdjs-dex";
-import { ClaimProgress } from "../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
-import { FarmVersion } from "../../../farm/models/farm.model";
-import { ContractType, OutdatedContract } from "../../models/user.model";
-import { FarmGetterFactory } from "../../../farm/farm.getter.factory";
-import { FarmGetterServiceV2 } from "../../../farm/v2/services/farm.v2.getter.service";
+import { Injectable } from '@nestjs/common';
+import { scAddress } from '../../../../config';
+import { farmsAddresses } from '../../../../utils/farm.utils';
+import { EnergyGetterService } from '../../../energy/services/energy.getter.service';
+import { FeesCollectorService } from '../../../fees-collector/services/fees-collector.service';
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { FarmVersion } from '../../../farm/models/farm.model';
+import { ContractType, OutdatedContract } from '../../models/user.model';
+import { FarmGetterFactory } from '../../../farm/farm.getter.factory';
+import { FarmGetterServiceV2 } from '../../../farm/v2/services/farm.v2.getter.service';
 
 @Injectable()
 export class UserEnergyComputeService {

@@ -11,11 +11,11 @@ import { FarmAbiServiceV2 } from './farm.v2.abi.service';
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
 import {
     WeeklyRewardsSplittingGetterService
-} from "../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
-import { Mixin } from "ts-mixer";
+} from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
+import { Mixin } from 'ts-mixer';
 import {
     WeekTimekeepingGetterService
-} from "../../../../submodules/week-timekeeping/services/week-timekeeping.getter.service";
+} from '../../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 
 @Injectable()
 export class FarmGetterServiceV2 extends Mixin(FarmGetterService, WeekTimekeepingGetterService, WeeklyRewardsSplittingGetterService)  {

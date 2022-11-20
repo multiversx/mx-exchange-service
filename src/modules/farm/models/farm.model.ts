@@ -6,7 +6,7 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import {
     ClaimProgress,
     UserInfoByWeekModel,
-} from "../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
+} from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 
 export enum FarmVersion {
     V1_2 = 'v1.2',

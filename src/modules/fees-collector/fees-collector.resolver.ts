@@ -17,11 +17,11 @@ import {
 import {
     GlobalInfoByWeekModel, UserInfoByWeekModel,
 } from '../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
-import { Mixin } from "ts-mixer";
+import { Mixin } from 'ts-mixer';
 import {
     GlobalInfoByWeekSubResolver, UserInfoByWeekSubResolver
-} from "../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.resolver";
-import { TransactionModel } from "../../models/transaction.model";
+} from '../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.resolver';
+import { TransactionModel } from '../../models/transaction.model';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWeekSubResolver) {

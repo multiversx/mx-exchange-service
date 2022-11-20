@@ -1,4 +1,5 @@
 import {
+    BaseFarmEvent,
     BaseRewardsEvent,
     EnterFarmEventV1_2,
     EnterFarmEventV1_3,
@@ -17,7 +18,6 @@ import { farmVersion } from 'src/utils/farm.utils';
 import { Logger } from 'winston';
 import { FarmVersion } from '../farm/models/farm.model';
 import { AbiFarmService } from '../farm/base-module/services/farm.abi.service';
-import { BaseFarmEvent } from '@elrondnetwork/erdjs-dex/dist/event-decoder/farm/enter.farm.base.event';
 import { FarmAbiServiceV1_2 } from '../farm/v1.2/services/farm.v1.2.abi.service';
 import { FarmAbiServiceV1_3 } from '../farm/v1.3/services/farm.v1.3.abi.service';
 import { FarmSetterFactory } from '../farm/farm.setter.factory';

@@ -37,6 +37,12 @@ import {
     SIMPLE_LOCK_ENERGY_EVENTS,
     EnergyEvent,
     RawEventType,
+    FEES_COLLECTOR_EVENTS,
+    WEEKLY_REWARDS_SPLITTING_EVENTS,
+    DepositSwapFeesEvent,
+    UpdateGlobalAmountsEvent,
+    UpdateUserEnergyEvent,
+    ClaimMultiEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { RouterGetterService } from '../router/services/router.getter.service';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
@@ -44,7 +50,12 @@ import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
 import { EnergyHandler } from './handlers/energy.handler.service';
-
+import {
+    FeesCollectorHandlerService
+} from './handlers/feesCollector.handler.service';
+import {
+    WeeklyRewardsSplittingHandlerService
+} from './handlers/weeklyRewardsSplitting.handler.service';
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
@@ -61,6 +72,8 @@ export class RabbitMqConsumer {
         private readonly wsMetabondingHandler: RabbitMQMetabondingHandlerService,
         private readonly priceDiscoveryHandler: PriceDiscoveryEventHandler,
         private readonly energyHandler: EnergyHandler,
+        private readonly feesCollectorHandler: FeesCollectorHandlerService,
+        private readonly weeklyRewardsSplittingHandler: WeeklyRewardsSplittingHandlerService,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -215,6 +228,26 @@ export class RabbitMqConsumer {
                         new EnergyEvent(rawEvent),
                     );
                     break;
+                case FEES_COLLECTOR_EVENTS.DEPOSIT_SWAP_FEES:
+                    await this.feesCollectorHandler.handleDepositSwapFeesEvent(
+                        new DepositSwapFeesEvent(rawEvent),
+                    );
+                    break;
+                case WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS:
+                    await this.weeklyRewardsSplittingHandler.handleUpdateGlobalAmounts(
+                        new UpdateGlobalAmountsEvent(rawEvent),
+                    );
+                    break;
+                case WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY:
+                    await this.weeklyRewardsSplittingHandler.handleUpdateUserEnergy(
+                        new UpdateUserEnergyEvent(rawEvent),
+                    );
+                    break;
+                case WEEKLY_REWARDS_SPLITTING_EVENTS.CLAIM_MULTI:
+                    await this.weeklyRewardsSplittingHandler.handleClaimMulti(
+                        new ClaimMultiEvent(rawEvent),
+                    );
+                    break;
             }
         }
 
@@ -235,6 +268,8 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
         this.filterAddresses.push(...scAddress.priceDiscovery);
         this.filterAddresses.push(scAddress.simpleLockEnergy);
+        // this.filterAddresses.push(scAddress.feesCollector);
+        // TODO: uncomment after contract upgrade
     }
 
     private async updateIngestData(eventData: any[]): Promise<void> {

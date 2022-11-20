@@ -1,7 +1,7 @@
-import { EsdtToken } from "../tokens/models/esdtToken.model";
-import { PairInfoModel } from "./models/pair-info.model";
-import { FeeDestination, LockedTokensInfo } from "./models/pair.model";
-import { EsdtTokenPayment } from "../../models/esdtTokenPayment.model";
+import { EsdtToken } from '../tokens/models/esdtToken.model';
+import { PairInfoModel } from './models/pair-info.model';
+import { FeeDestination, LockedTokensInfo } from './models/pair.model';
+import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
 
 export interface IPairGetterService {
     getFirstTokenID(pairAddress: string): Promise<string>;

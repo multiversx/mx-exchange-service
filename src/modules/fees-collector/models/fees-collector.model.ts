@@ -4,7 +4,7 @@ import {
     GlobalInfoByWeekModel, GlobalInfoByWeekSubModel, UserInfoByWeekModel, UserInfoByWeekSubModel,
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
-import { TransactionModel } from "../../../models/transaction.model";
+import { TransactionModel } from '../../../models/transaction.model';
 
 @ObjectType()
 export class FeesCollectorModel extends GlobalInfoByWeekSubModel {

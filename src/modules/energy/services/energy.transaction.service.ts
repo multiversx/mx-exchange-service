@@ -17,7 +17,6 @@ import { TransactionModel } from 'src/models/transaction.model';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { UnlockType } from '../models/energy.model';
-import { UnlockAssetsArgs } from "../../locked-asset-factory/models/locked-asset.args";
 
 @Injectable()
 export class EnergyTransactionService {

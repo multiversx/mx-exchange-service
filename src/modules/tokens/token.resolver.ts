@@ -7,7 +7,7 @@ import { RolesModel } from './models/roles.model';
 import { TokensFiltersArgs } from './models/tokens.filter.args';
 import { TokenGetterService } from './services/token.getter.service';
 import { TokenService } from './services/token.service';
-import { GenericResolver } from "../../services/generics/generic.resolver";
+import { GenericResolver } from '../../services/generics/generic.resolver';
 
 @Resolver(() => EsdtToken)
 export class TokensResolver extends GenericResolver {

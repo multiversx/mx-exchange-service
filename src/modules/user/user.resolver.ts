@@ -11,8 +11,8 @@ import { ApolloError } from 'apollo-server-express';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
 import { UserEsdtService } from './services/user.esdt.service';
-import { UserEnergyService } from "./services/userEnergy/user.energy.service";
-import { TransactionModel } from "../../models/transaction.model";
+import { UserEnergyService } from './services/userEnergy/user.energy.service';
+import { TransactionModel } from '../../models/transaction.model';
 
 @Resolver()
 export class UserResolver {

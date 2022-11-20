@@ -1,7 +1,7 @@
-import { EnergyType } from "@elrondnetwork/erdjs-dex";
-import { ClaimProgress } from "../models/weekly-rewards-splitting.model"
-import { IProgressComputeService } from "../interfaces";
-import { ErrorNotImplemented } from "../../../utils/errors.constants";
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { IProgressComputeService } from '../interfaces';
+import { ErrorNotImplemented } from '../../../utils/errors.constants';
+import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 
 export class ProgressComputeHandlers implements IProgressComputeService {
     advanceWeek:(progress: ClaimProgress, nextWeekEnergy: EnergyType, epochsInWeek: number) => ClaimProgress;

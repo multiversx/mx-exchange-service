@@ -1,6 +1,6 @@
-import { PairMetadata } from "./models/pair.metadata.model";
-import { PairTokens } from "../pair/models/pair.model";
-import { EnableSwapByUserConfig } from "./models/factory.model";
+import { PairMetadata } from './models/pair.metadata.model';
+import { PairTokens } from '../pair/models/pair.model';
+import { EnableSwapByUserConfig } from './models/factory.model';
 
 export interface IRouterGetterService {
     getAllPairsAddress(): Promise<string[]>;
