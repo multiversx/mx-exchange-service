@@ -1,6 +1,6 @@
 import { IWeekTimekeepingService } from '../interfaces';
 import { ErrorNotImplemented } from '../../../utils/errors.constants';
-import { WeekForEpochModel, WeekTimekeepingModel } from "../models/week-timekeeping.model";
+import { WeekForEpochModel, WeekTimekeepingModel } from '../models/week-timekeeping.model';
 
 export class WeekTimekeepingHandlers implements IWeekTimekeepingService {
     getWeeklyTimekeeping:(scAddress: string) => Promise<WeekTimekeepingModel>;

@@ -21,18 +21,18 @@ import { FarmTokenAttributesV1_3 } from '@elrondnetwork/erdjs-dex';
 import { FarmRewardType } from '../../models/farm.model';
 import { farmType } from 'src/utils/farm.utils';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
-import { Mixin } from "ts-mixer";
+import { Mixin } from 'ts-mixer';
 import {
     WeeklyRewardsSplittingAbiService
-} from "../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service";
+} from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import {
     WeekTimekeepingAbiService
-} from "../../../../submodules/week-timekeeping/services/week-timekeeping.abi.service";
-import { ElrondProxyService } from "../../../../services/elrond-communication/elrond-proxy.service";
-import { WINSTON_MODULE_PROVIDER } from "nest-winston";
-import { Logger } from "winston";
-import { ElrondGatewayService } from "../../../../services/elrond-communication/elrond-gateway.service";
-import { tokenNonce } from "../../../../utils/token.converters";
+} from '../../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
+import { ElrondGatewayService } from '../../../../services/elrond-communication/elrond-gateway.service';
+import { tokenNonce } from '../../../../utils/token.converters';
 
 @Injectable()
 export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {

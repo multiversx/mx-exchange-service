@@ -1,8 +1,8 @@
-import { PairMetadata } from "../models/pair.metadata.model";
-import { EnableSwapByUserConfig } from "../models/factory.model";
-import { PairTokens } from "../../pair/models/pair.model";
-import { IRouterGetterService } from "../interfaces";
-import { ErrorNotImplemented } from "../../../utils/errors.constants";
+import { PairMetadata } from '../models/pair.metadata.model';
+import { EnableSwapByUserConfig } from '../models/factory.model';
+import { PairTokens } from '../../pair/models/pair.model';
+import { IRouterGetterService } from '../interfaces';
+import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
 
 export class RouterGetterHandlers implements IRouterGetterService {

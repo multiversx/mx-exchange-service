@@ -2,37 +2,37 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { ElrondCommunicationModule } from '../../../services/elrond-communication/elrond-communication.module';
 import { ApiConfigService } from '../../../helpers/api.config.service';
-import { FeesCollectorGetterService } from "../services/fees-collector.getter.service";
+import { FeesCollectorGetterService } from '../services/fees-collector.getter.service';
 import {
     FeesCollectorGetterHandlers,
     FeesCollectorGetterServiceMock
-} from "../mocks/fees-collector.getter.service.mock";
-import { FeesCollectorService } from "../services/fees-collector.service";
-import { WeekTimekeepingService } from "../../../submodules/week-timekeeping/services/week-timekeeping.service";
+} from '../mocks/fees-collector.getter.service.mock';
+import { FeesCollectorService } from '../services/fees-collector.service';
+import { WeekTimekeepingService } from '../../../submodules/week-timekeeping/services/week-timekeeping.service';
 import {
     WeeklyRewardsSplittingHandlers,
     WeeklyRewardsSplittingServiceMock
-} from "../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.service.mock";
+} from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.service.mock';
 import {
     WeekTimekeepingHandlers,
     WeekTimekeepingServiceMock
-} from "../../../submodules/week-timekeeping/mocks/week-timekeeping.service.mock";
+} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.service.mock';
 import {
     WeeklyRewardsSplittingService
-} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service";
-import { WeekTimekeepingModel } from "../../../submodules/week-timekeeping/models/week-timekeeping.model";
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
+import { WeekTimekeepingModel } from '../../../submodules/week-timekeeping/models/week-timekeeping.model';
 import {
     WeekTimekeepingGetterHandlers, WeekTimekeepingGetterServiceMock
-} from "../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock";
+} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
 import {
     WeeklyRewardsSplittingGetterHandlers, WeeklyRewardsSplittingGetterServiceMock
-} from "../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock";
+} from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
 import {
     WeekTimekeepingGetterService
-} from "../../../submodules/week-timekeeping/services/week-timekeeping.getter.service";
+} from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 import {
     WeeklyRewardsSplittingGetterService
-} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 
 describe('FeesCollectorService', () => {
     const dummyScAddress = 'erd'

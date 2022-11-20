@@ -1,6 +1,6 @@
 import { GlobalInfoByWeekModel, UserInfoByWeekModel, } from '../models/weekly-rewards-splitting.model';
-import { IWeeklyRewardsSplittingService } from "../interfaces";
-import { ErrorNotImplemented } from "../../../utils/errors.constants";
+import { IWeeklyRewardsSplittingService } from '../interfaces';
+import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
 export class WeeklyRewardsSplittingHandlers implements IWeeklyRewardsSplittingService{
     getGlobalInfoByWeek: (scAddress: string, week: number) => GlobalInfoByWeekModel;

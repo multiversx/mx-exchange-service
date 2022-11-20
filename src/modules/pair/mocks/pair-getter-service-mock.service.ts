@@ -1,9 +1,9 @@
-import { EsdtToken } from "../../tokens/models/esdtToken.model";
-import { PairInfoModel } from "../models/pair-info.model";
-import { FeeDestination, LockedTokensInfo } from "../models/pair.model";
-import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
-import { IPairGetterService } from "../interfaces";
-import { ErrorNotImplemented } from "../../../utils/errors.constants";
+import { EsdtToken } from '../../tokens/models/esdtToken.model';
+import { PairInfoModel } from '../models/pair-info.model';
+import { FeeDestination, LockedTokensInfo } from '../models/pair.model';
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
+import { IPairGetterService } from '../interfaces';
+import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
 export class PairGetterHandlers implements IPairGetterService {
     getFirstTokenID: (pairAddress: string) => Promise<string>;

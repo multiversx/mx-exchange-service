@@ -18,7 +18,7 @@ import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.gette
 import { FarmComputeServiceV1_2 } from '../v1.2/services/farm.v1.2.compute.service';
 import { FarmGetterServiceV1_2 } from '../v1.2/services/farm.v1.2.getter.service';
 import { FarmGetterServiceMockV1_2 } from '../mocks/farm.v1.2.getter.service.mock';
-import { CalculateRewardsArgs } from "../models/farm.args";
+import { CalculateRewardsArgs } from '../models/farm.args';
 
 describe('FarmService', () => {
     let service: FarmComputeServiceV1_2;

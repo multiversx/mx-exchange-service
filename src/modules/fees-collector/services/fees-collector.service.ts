@@ -24,7 +24,7 @@ import {
 } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
-import { Address, AddressValue } from "@elrondnetwork/erdjs/out";
+import { Address, AddressValue } from '@elrondnetwork/erdjs/out';
 
 
 @Injectable()

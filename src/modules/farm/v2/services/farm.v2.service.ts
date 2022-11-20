@@ -12,15 +12,15 @@ import { FarmTokenAttributesModelV2 } from '../../models/farmTokenAttributes.mod
 import { FarmComputeServiceV2 } from './farm.v2.compute.service';
 import {
     WeeklyRewardsSplittingService
-} from "../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service";
-import { WeekTimekeepingService } from "../../../../submodules/week-timekeeping/services/week-timekeeping.service";
-import { Mixin } from "ts-mixer";
-import { FarmTokenAttributesV2 } from "@elrondnetwork/erdjs-dex";
-import BigNumber from "bignumber.js";
+} from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.service';
+import { WeekTimekeepingService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.service';
+import { Mixin } from 'ts-mixer';
+import { FarmTokenAttributesV2 } from '@elrondnetwork/erdjs-dex';
+import BigNumber from 'bignumber.js';
 import {
     UserInfoByWeekModel
-} from "../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
-import { constantsConfig } from "../../../../config";
+} from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import { constantsConfig } from '../../../../config';
 
 @Injectable()
 export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService, WeeklyRewardsSplittingService) {

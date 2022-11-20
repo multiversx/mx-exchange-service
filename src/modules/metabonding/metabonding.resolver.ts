@@ -15,7 +15,7 @@ import {
 import { MetabondingGetterService } from './services/metabonding.getter.service';
 import { MetabondingService } from './services/metabonding.service';
 import { MetabondingTransactionService } from './services/metabonding.transactions.service';
-import { GenericResolver } from "../../services/generics/generic.resolver";
+import { GenericResolver } from '../../services/generics/generic.resolver';
 
 @Resolver(() => MetabondingStakingModel)
 export class MetabondingResolver extends GenericResolver {

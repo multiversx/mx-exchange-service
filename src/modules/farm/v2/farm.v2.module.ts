@@ -14,11 +14,11 @@ import { PairModule } from 'src/modules/pair/pair.module';
 import { FarmTransactionServiceV2 } from './services/farm.v2.transaction.service';
 import { FarmSetterService } from '../base-module/services/farm.setter.service';
 import { FarmSetterServiceV2 } from './services/farm.v2.setter.service';
-import { WeekTimekeepingModule } from "../../../submodules/week-timekeeping/week-timekeeping.module";
+import { WeekTimekeepingModule } from '../../../submodules/week-timekeeping/week-timekeeping.module';
 import {
     WeeklyRewardsSplittingModule
-} from "../../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module";
-import { EnergyModule } from "../../energy/energy.module";
+} from '../../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
+import { EnergyModule } from '../../energy/energy.module';
 
 @Module({
     imports: [

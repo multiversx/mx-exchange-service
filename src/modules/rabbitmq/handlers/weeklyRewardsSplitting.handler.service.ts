@@ -1,50 +1,46 @@
-import {
-    RawEventType,
-    WEEKLY_REWARDS_SPLITTING_EVENTS,
-} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
-import {
-    UpdateGlobalAmountsEvent
-} from "@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/updateGlobalAmounts.event";
+import BigNumber from 'bignumber.js';
 import {
     WeeklyRewardsSplittingAbiService
-} from "../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service";
-import {
-    WeeklyRewardsSplittingGetterService
-} from "../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service";
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import {
     WeeklyRewardsSplittingSetterService
-} from "../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.setter.service";
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.setter.service';
 import {
-    UpdateUserEnergyEvent
-} from "@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/updateUserEnergy.event";
+    WeeklyRewardsSplittingGetterService
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import {
     ClaimProgress
-} from "../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model";
+} from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
+import {
+    UpdateGlobalAmountsEvent
+} from '@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/updateGlobalAmounts.event';
+import { WEEKLY_REWARDS_SPLITTING_EVENTS } from '@elrondnetwork/erdjs-dex';
+import {
+    UpdateUserEnergyEvent
+} from '@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/updateUserEnergy.event';
 import {
     ClaimMultiEvent
-} from "@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/claimMulti.event";
-import BigNumber from "bignumber.js";
+} from '@elrondnetwork/erdjs-dex/dist/weekly-rewards-splitting/claimMulti.event';
 
 @Injectable()
-export class RabbitmqWeeklyRewardsSplittingHadlerService {
-    protected invalidatedKeys = [];
+export class WeeklyRewardsSplittingHandlerService {
+    private invalidatedKeys = [];
 
     constructor(
-        protected readonly abi: WeeklyRewardsSplittingAbiService,
-        protected readonly setter: WeeklyRewardsSplittingSetterService,
-        protected readonly getter: WeeklyRewardsSplittingGetterService,
-        @Inject(PUB_SUB) protected pubSub: RedisPubSub,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly abi: WeeklyRewardsSplittingAbiService,
+        private readonly setter: WeeklyRewardsSplittingSetterService,
+        private readonly getter: WeeklyRewardsSplittingGetterService,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
     }
 
-    async handleUpdateGlobalAmounts(rawEvent: RawEventType): Promise<void> {
-        const event = new UpdateGlobalAmountsEvent(rawEvent);
+    async handleUpdateGlobalAmounts(event: UpdateGlobalAmountsEvent): Promise<void> {
         const topics = event.getTopics();
 
         const keys = await Promise.all([
@@ -59,8 +55,7 @@ export class RabbitmqWeeklyRewardsSplittingHadlerService {
         });
     }
 
-    async handleUpdateUserEnergy(rawEvent: RawEventType): Promise<void> {
-        const event = new UpdateUserEnergyEvent(rawEvent);
+    async handleUpdateUserEnergy(event: UpdateUserEnergyEvent): Promise<void> {
         const topics = event.getTopics();
 
         const keys = await Promise.all([
@@ -80,8 +75,7 @@ export class RabbitmqWeeklyRewardsSplittingHadlerService {
         });
     }
 
-    async handleClaimMulti(rawEvent: RawEventType): Promise<void> {
-        const event = new ClaimMultiEvent(rawEvent);
+    async handleClaimMulti(event: ClaimMultiEvent): Promise<void> {
         const topics = event.getTopics();
 
         let totalRewardsForWeek = await this.getter.totalRewardsForWeek(event.address, topics.currentWeek);
@@ -107,7 +101,7 @@ export class RabbitmqWeeklyRewardsSplittingHadlerService {
         });
     }
 
-    protected async deleteCacheKeys() {
+    private async deleteCacheKeys() {
         await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
         this.invalidatedKeys = [];
     }

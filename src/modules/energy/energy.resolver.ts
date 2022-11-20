@@ -19,7 +19,6 @@ import { EnergyGetterService } from './services/energy.getter.service';
 import { EnergyService } from './services/energy.service';
 import { EnergyTransactionService } from './services/energy.transaction.service';
 import { LockedEnergyTokensValidationPipe } from './validators/locked.tokens.validator';
-import { UnlockAssetsArgs } from "../locked-asset-factory/models/locked-asset.args";
 
 @Resolver(() => SimpleLockEnergyModel)
 export class EnergyResolver extends GenericResolver {

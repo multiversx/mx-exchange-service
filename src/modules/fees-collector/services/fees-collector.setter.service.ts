@@ -4,14 +4,14 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { Mixin } from 'ts-mixer';
-import { oneMinute } from '../../../helpers/helpers';
-import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import {
     GenericSetterService
-} from "../../../services/generics/generic.setter.service";
+} from '../../../services/generics/generic.setter.service';
 import {
     WeeklyRewardsSplittingSetterService
-} from "../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.setter.service";
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.setter.service';
+import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 
 @Injectable()
 export class FeesCollectorSetterService extends Mixin(GenericSetterService, WeeklyRewardsSplittingSetterService) {
@@ -26,7 +26,8 @@ export class FeesCollectorSetterService extends Mixin(GenericSetterService, Week
         return this.setData(
             this.getFeesCollectorCacheKey(scAddress, 'accumulatedFees', week, token),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         )
     }
 
@@ -34,7 +35,8 @@ export class FeesCollectorSetterService extends Mixin(GenericSetterService, Week
         return this.setData(
             this.getFeesCollectorCacheKey(scAddress, 'accumulatedLockedFees', week, token),
             value,
-            oneMinute(),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         )
     }
 

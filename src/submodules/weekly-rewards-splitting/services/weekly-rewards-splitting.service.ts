@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GlobalInfoByWeekModel, UserInfoByWeekModel, } from '../models/weekly-rewards-splitting.model';
-import { IWeeklyRewardsSplittingService } from "../interfaces";
+import { IWeeklyRewardsSplittingService } from '../interfaces';
 
 @Injectable()
 export class WeeklyRewardsSplittingService implements IWeeklyRewardsSplittingService {

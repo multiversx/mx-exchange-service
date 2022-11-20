@@ -1,5 +1,5 @@
-import { IFeesCollectorGetterService } from "../interfaces";
-import { ErrorNotImplemented } from "../../../utils/errors.constants";
+import { IFeesCollectorGetterService } from '../interfaces';
+import { ErrorNotImplemented } from '../../../utils/errors.constants';
 
 export class FeesCollectorGetterHandlers implements IFeesCollectorGetterService {
     getAccumulatedFees:(scAddress: string, week: number, token: string) => Promise<string>;

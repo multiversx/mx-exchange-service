@@ -2,15 +2,15 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { oneMinute } from '../../../helpers/helpers';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WeeklyRewardsSplittingAbiService } from './weekly-rewards-splitting.abi.service';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { WeeklyRewardsSplittingComputeService } from './weekly-rewards-splitting.compute.service';
-import { IWeeklyRewardsSplittingGetterService } from "../interfaces";
-import { GenericGetterService } from "../../../services/generics/generic.getter.service";
-import { EnergyType } from "@elrondnetwork/erdjs-dex/dist/attributes-decoder/energy/energy.type";
+import { IWeeklyRewardsSplittingGetterService } from '../interfaces';
+import { GenericGetterService } from '../../../services/generics/generic.getter.service';
+import { EnergyType } from '@elrondnetwork/erdjs-dex/dist/attributes-decoder/energy/energy.type';
+import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 
 @Injectable()
 export class WeeklyRewardsSplittingGetterService extends GenericGetterService implements IWeeklyRewardsSplittingGetterService {
@@ -28,7 +28,8 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'currentClaimProgress', userAddress),
             () => this.weeklyRewardsAbiService.currentClaimProgress(scAddress, userAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         )
     }
 
@@ -36,7 +37,8 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'userEnergyForWeek', userAddress, week),
             () => this.weeklyRewardsAbiService.userEnergyForWeek(scAddress, userAddress, week),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         )
     }
 
@@ -44,7 +46,8 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'userRewardsForWeek', userAddress, week),
             () => this.weeklyRewardsSplittingCompute.computeUserRewardsForWeek(scAddress, week, userAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         )
     }
 
@@ -52,7 +55,8 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'lastActiveWeekForUser', userAddress),
             () => this.weeklyRewardsAbiService.lastActiveWeekForUser(scAddress, userAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         )
     }
 
@@ -60,7 +64,8 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'lastGlobalUpdateWeek'),
             () => this.weeklyRewardsAbiService.lastGlobalUpdateWeek(scAddress),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         )
     }
 
@@ -68,7 +73,8 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalRewardsForWeek', week),
             () => this.weeklyRewardsAbiService.totalRewardsForWeek(scAddress, week),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -76,7 +82,8 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalEnergyForWeek', week),
             () => this.weeklyRewardsAbiService.totalEnergyForWeek(scAddress, week),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -84,7 +91,8 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'totalLockedTokensForWeek', week),
             () => this.weeklyRewardsAbiService.totalLockedTokensForWeek(scAddress, week),
-            oneMinute(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 

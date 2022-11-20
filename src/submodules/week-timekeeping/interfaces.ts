@@ -1,4 +1,4 @@
-import { WeekForEpochModel, WeekTimekeepingModel } from "./models/week-timekeeping.model";
+import { WeekForEpochModel, WeekTimekeepingModel } from './models/week-timekeeping.model';
 
 export interface IWeekTimekeepingAbiService {
     getCurrentWeek(scAddress: string): Promise<number>

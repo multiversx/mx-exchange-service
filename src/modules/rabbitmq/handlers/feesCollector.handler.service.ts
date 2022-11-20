@@ -1,7 +1,3 @@
-import {
-    FEES_COLLECTOR_EVENTS,
-    RawEventType,
-} from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -9,38 +5,34 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import {
     FeesCollectorAbiService
-} from "../fees-collector/services/fees-collector.abi.service";
-import {
-    DepositSwapFeesEvent
-} from "@elrondnetwork/erdjs-dex/dist/event-decoder/fees-collector/depositSwapFees.event";
+} from '../../fees-collector/services/fees-collector.abi.service';
 import {
     FeesCollectorSetterService
-} from "../fees-collector/services/fees-collector.setter.service";
+} from '../../fees-collector/services/fees-collector.setter.service';
 import {
     FeesCollectorGetterService
-} from "../fees-collector/services/fees-collector.getter.service";
-import { scAddress } from "../../config";
-import BigNumber from "bignumber.js";
+} from '../../fees-collector/services/fees-collector.getter.service';
+import { scAddress } from '../../../config';
+import BigNumber from 'bignumber.js';
 import {
-    RabbitmqWeeklyRewardsSplittingHadlerService
-} from "./rabbitmq.weeklyRewardsSplitting.hadler.service";
+    DepositSwapFeesEvent
+} from '@elrondnetwork/erdjs-dex/dist/event-decoder/fees-collector/depositSwapFees.event';
+import { FEES_COLLECTOR_EVENTS } from '@elrondnetwork/erdjs-dex';
 
 @Injectable()
-export class RabbitmqFeesCollectorHadlerService extends RabbitmqWeeklyRewardsSplittingHadlerService {
-    protected invalidatedKeys = [];
+export class FeesCollectorHandlerService {
+    private invalidatedKeys = [];
 
     constructor(
-        protected readonly abi: FeesCollectorAbiService,
-        protected readonly setter: FeesCollectorSetterService,
-        protected readonly getter: FeesCollectorGetterService,
-        @Inject(PUB_SUB) protected pubSub: RedisPubSub,
-        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        private readonly abi: FeesCollectorAbiService,
+        private readonly setter: FeesCollectorSetterService,
+        private readonly getter: FeesCollectorGetterService,
+        @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        super(abi, setter, getter, pubSub, logger);
     }
 
-    async handleDepositSwapFeesEvent(rawEvent: RawEventType): Promise<void> {
-        const event = new DepositSwapFeesEvent(rawEvent);
+    async handleDepositSwapFeesEvent(event: DepositSwapFeesEvent): Promise<void> {
         const topics = event.getTopics();
         let cacheKey: string;
         if (topics.payment.tokenNonce) {
@@ -49,9 +41,9 @@ export class RabbitmqFeesCollectorHadlerService extends RabbitmqWeeklyRewardsSpl
                 topics.currentWeek,
                 topics.payment.tokenIdentifier
             );
-            const updatedAccumulatedLockedFees = accumulatedLockedFees.map( token => {
+            const updatedAccumulatedLockedFees = accumulatedLockedFees.map(token => {
                 if (token.nonce === topics.payment.tokenNonce) {
-                    token.amount  = new BigNumber(token.amount).plus(topics.payment.amount).toFixed()
+                    token.amount = new BigNumber(token.amount).plus(topics.payment.amount).toFixed()
                 }
                 return token
             });
@@ -80,5 +72,10 @@ export class RabbitmqFeesCollectorHadlerService extends RabbitmqWeeklyRewardsSpl
         await this.pubSub.publish(FEES_COLLECTOR_EVENTS.DEPOSIT_SWAP_FEES, {
             depositSwapFeesEvent: event,
         });
+    }
+
+    private async deleteCacheKeys() {
+        await this.pubSub.publish('deleteCacheKeys', this.invalidatedKeys);
+        this.invalidatedKeys = [];
     }
 }

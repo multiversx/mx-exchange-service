@@ -6,10 +6,10 @@ import { oneMinute } from '../../../helpers/helpers';
 import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import {
     GenericSetterService
-} from "../../../services/generics/generic.setter.service";
-import { EsdtTokenPayment } from "../../../models/esdtTokenPayment.model";
-import { EnergyType } from "@elrondnetwork/erdjs-dex";
-import { ClaimProgress } from "../models/weekly-rewards-splitting.model";
+} from '../../../services/generics/generic.setter.service';
+import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
+import { EnergyType } from '@elrondnetwork/erdjs-dex';
+import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 
 @Injectable()
 export class WeeklyRewardsSplittingSetterService extends GenericSetterService {

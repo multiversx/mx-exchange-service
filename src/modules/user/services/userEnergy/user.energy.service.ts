@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import { elrondConfig, gasConfig } from "../../../../config";
-import { TransactionModel } from "../../../../models/transaction.model";
-import { ElrondProxyService } from "../../../../services/elrond-communication/elrond-proxy.service";
-import { Address, AddressValue, TypedValue } from "@elrondnetwork/erdjs/out";
-import { UserEnergyGetterService } from "./user.energy.getter.service";
-import { OutdatedContract } from "../../models/user.model";
+import { Injectable } from '@nestjs/common';
+import { elrondConfig, gasConfig } from '../../../../config';
+import { TransactionModel } from '../../../../models/transaction.model';
+import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
+import { Address, AddressValue, TypedValue } from '@elrondnetwork/erdjs/out';
+import { UserEnergyGetterService } from './user.energy.getter.service';
+import { OutdatedContract } from '../../models/user.model';
 
 @Injectable()
 export class UserEnergyService {
