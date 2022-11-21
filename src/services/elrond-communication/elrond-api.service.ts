@@ -201,12 +201,14 @@ export class ElrondApiService {
     ): Promise<NftToken[]> {
         const nfts: NftToken[] = await this.genericGetExecutor.execute({
             methodName: this.getNftsForUser.name,
-            resourceUrl: `accounts/${address}/nfts?from=${from}&size=${size}&type=${type}`,
+            resourceUrl: `accounts/${address}/nfts?&type=${type}`,
         });
 
         return collections
-            ? nfts.filter((nft) => collections.includes(nft.collection))
-            : nfts;
+            ? nfts
+                  .filter((nft) => collections.includes(nft.collection))
+                  .slice(from, size)
+            : nfts.slice(from, size);
     }
 
     async getNftByTokenIdentifier(
