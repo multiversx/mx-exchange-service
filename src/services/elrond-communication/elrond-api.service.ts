@@ -197,17 +197,16 @@ export class ElrondApiService {
         from = 0,
         size = 100,
         type = 'MetaESDT',
-        collections: string[] = [],
+        collections?: string[],
     ): Promise<NftToken[]> {
-        console.log({
-            method: this.getNftsForUser,
-        });
-        return await this.genericGetExecutor.execute({
+        const nfts: NftToken[] = await this.genericGetExecutor.execute({
             methodName: this.getNftsForUser.name,
-            resourceUrl: `accounts/${address}/nfts?from=${from}&size=${size}&type=${type}&collections=${String(
-                collections,
-            )}`,
+            resourceUrl: `accounts/${address}/nfts?from=${from}&size=${size}&type=${type}`,
         });
+
+        return collections
+            ? nfts.filter((nft) => collections.includes(nft.collection))
+            : nfts;
     }
 
     async getNftByTokenIdentifier(

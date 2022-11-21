@@ -100,15 +100,15 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            [lockedMEXTokenID],
         );
         return await Promise.all(
-            nfts
-                .filter((nft) => nft.collection === lockedMEXTokenID)
-                .map((nft) =>
-                    this.userComputeService.lockedAssetTokenUSD(
-                        new LockedAssetToken(nft),
-                    ),
+            nfts.map((nft) =>
+                this.userComputeService.lockedAssetTokenUSD(
+                    new LockedAssetToken(nft),
                 ),
+            ),
         );
     }
 
@@ -125,11 +125,11 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            farmTokenIDs,
         );
         return await Promise.all(
-            nfts
-                .filter((nft) => farmTokenIDs.includes(nft.collection))
-                .map((nft) => this.userComputeService.farmTokenUSD(nft)),
+            nfts.map((nft) => this.userComputeService.farmTokenUSD(nft)),
         );
     }
 
@@ -144,16 +144,16 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            [lockedLpTokenID],
         );
 
         return await Promise.all(
-            nfts
-                .filter((nft) => nft.collection === lockedLpTokenID)
-                .map((nft) =>
-                    this.userComputeService.lockedLpTokenUSD(
-                        new LockedLpToken(nft),
-                    ),
+            nfts.map((nft) =>
+                this.userComputeService.lockedLpTokenUSD(
+                    new LockedLpToken(nft),
                 ),
+            ),
         );
     }
 
@@ -169,15 +169,15 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            [lockedFarmTokenID],
         );
         return await Promise.all(
-            nfts
-                .filter((nft) => nft.collection === lockedFarmTokenID)
-                .map((nft) =>
-                    this.userComputeService.lockedFarmTokenUSD(
-                        new LockedFarmToken(nft),
-                    ),
+            nfts.map((nft) =>
+                this.userComputeService.lockedFarmTokenUSD(
+                    new LockedFarmToken(nft),
                 ),
+            ),
         );
     }
 
@@ -192,15 +192,15 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            [lockedLpTokenID],
         );
         return await Promise.all(
-            nfts
-                .filter((nft) => nft.collection === lockedLpTokenID)
-                .map((nft) =>
-                    this.userComputeService.lockedLpTokenV2USD(
-                        new LockedLpTokenV2(nft),
-                    ),
+            nfts.map((nft) =>
+                this.userComputeService.lockedLpTokenV2USD(
+                    new LockedLpTokenV2(nft),
                 ),
+            ),
         );
     }
 
@@ -216,15 +216,15 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            [lockedFarmTokenID],
         );
         return await Promise.all(
-            nfts
-                .filter((nft) => nft.collection === lockedFarmTokenID)
-                .map((nft) =>
-                    this.userComputeService.lockedFarmTokenV2USD(
-                        new LockedFarmTokenV2(nft),
-                    ),
+            nfts.map((nft) =>
+                this.userComputeService.lockedFarmTokenV2USD(
+                    new LockedFarmTokenV2(nft),
                 ),
+            ),
         );
     }
 
@@ -243,23 +243,23 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            stakingTokenIDs,
         );
         const promises: Promise<UserStakeFarmToken>[] = [];
 
-        nfts.filter((nft) => stakingTokenIDs.includes(nft.collection)).forEach(
-            (nft) => {
-                if (
-                    nft.attributes.length !==
-                    constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
-                ) {
-                    promises.push(
-                        this.userComputeService.stakeFarmUSD(
-                            new StakeFarmToken(nft),
-                        ),
-                    );
-                }
-            },
-        );
+        nfts.forEach((nft) => {
+            if (
+                nft.attributes.length !==
+                constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
+            ) {
+                promises.push(
+                    this.userComputeService.stakeFarmUSD(
+                        new StakeFarmToken(nft),
+                    ),
+                );
+            }
+        });
         return await Promise.all(promises);
     }
 
@@ -278,22 +278,22 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            stakingTokenIDs,
         );
         const promises: Promise<UserUnbondFarmToken>[] = [];
-        nfts.filter((nft) => stakingTokenIDs.includes(nft.collection)).forEach(
-            (nft) => {
-                if (
-                    nft.attributes.length ===
-                    constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
-                ) {
-                    promises.push(
-                        this.userComputeService.unbondFarmUSD(
-                            new UnbondFarmToken(nft),
-                        ),
-                    );
-                }
-            },
-        );
+        nfts.forEach((nft) => {
+            if (
+                nft.attributes.length ===
+                constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
+            ) {
+                promises.push(
+                    this.userComputeService.unbondFarmUSD(
+                        new UnbondFarmToken(nft),
+                    ),
+                );
+            }
+        });
         return await Promise.all(promises);
     }
 
@@ -312,15 +312,15 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            dualYieldTokenIDs,
         );
         return await Promise.all(
-            nfts
-                .filter((nft) => dualYieldTokenIDs.includes(nft.collection))
-                .map((nft) =>
-                    this.userComputeService.dualYieldTokenUSD(
-                        new DualYieldToken(nft),
-                    ),
+            nfts.map((nft) =>
+                this.userComputeService.dualYieldTokenUSD(
+                    new DualYieldToken(nft),
                 ),
+            ),
         );
     }
 
@@ -337,11 +337,11 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            redeemTokenIDs,
         );
         return await Promise.all(
-            nfts
-                .filter((nft) => redeemTokenIDs.includes(nft.collection))
-                .map((nft) => this.userComputeService.redeemTokenUSD(nft)),
+            nfts.map((nft) => this.userComputeService.redeemTokenUSD(nft)),
         );
     }
 
@@ -358,11 +358,11 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            lockedEsdtTokenIDs,
         );
         return await Promise.all(
-            nfts
-                .filter((nft) => lockedEsdtTokenIDs.includes(nft.collection))
-                .map((nft) => this.userComputeService.lockedEsdtTokenUSD(nft)),
+            nfts.map((nft) => this.userComputeService.lockedEsdtTokenUSD(nft)),
         );
     }
 
@@ -379,15 +379,13 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            lockedSimpleLpTokenIDs,
         );
         return await Promise.all(
-            nfts
-                .filter((nft) =>
-                    lockedSimpleLpTokenIDs.includes(nft.collection),
-                )
-                .map((nft) =>
-                    this.userComputeService.lockedSimpleLpTokenUSD(nft),
-                ),
+            nfts.map((nft) =>
+                this.userComputeService.lockedSimpleLpTokenUSD(nft),
+            ),
         );
     }
 
@@ -404,15 +402,13 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            lockedSimpleFarmTokenIDs,
         );
         return await Promise.all(
-            nfts
-                .filter((nft) =>
-                    lockedSimpleFarmTokenIDs.includes(nft.collection),
-                )
-                .map((nft) =>
-                    this.userComputeService.lockedSimpleFarmTokenUSD(nft),
-                ),
+            nfts.map((nft) =>
+                this.userComputeService.lockedSimpleFarmTokenUSD(nft),
+            ),
         );
     }
 
@@ -425,13 +421,13 @@ export class UserMetaEsdtService {
             userAddress,
             pagination.offset,
             pagination.limit,
+            'MetaESDT',
+            [lockedTokenEnergyID],
         );
         return await Promise.all(
-            nfts
-                .filter((nft) => nft.collection === lockedTokenEnergyID)
-                .map((nft) =>
-                    this.userComputeService.lockedTokenEnergyUSD(nft),
-                ),
+            nfts.map((nft) =>
+                this.userComputeService.lockedTokenEnergyUSD(nft),
+            ),
         );
     }
 
