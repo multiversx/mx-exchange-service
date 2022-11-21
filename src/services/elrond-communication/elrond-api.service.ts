@@ -1,4 +1,4 @@
-import { elrondConfig } from '../../config';
+import { constantsConfig, elrondConfig } from '../../config';
 import { Inject, Injectable } from '@nestjs/common';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -12,10 +12,19 @@ import { Stats } from '../../models/stats.model';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@elrondnetwork/erdjs-network-providers/out';
 import { isEsdtToken, isNftCollection } from 'src/utils/token.type.compare';
+import { PendingExecutor } from 'src/utils/pending.executor';
+
+type GenericGetArgs = {
+    methodName: string;
+    resourceUrl: string;
+    retries?: number;
+};
 
 @Injectable()
 export class ElrondApiService {
     private readonly apiProvider: ApiNetworkProvider;
+    private genericGetExecutor: PendingExecutor<GenericGetArgs, any>;
+
     constructor(
         private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -38,6 +47,14 @@ export class ElrondApiService {
                 origin: 'MaiarExchangeService',
             },
         });
+        this.genericGetExecutor = new PendingExecutor(
+            async (getGenericArgs: GenericGetArgs) =>
+                await this.doGetGeneric(
+                    getGenericArgs.methodName,
+                    getGenericArgs.resourceUrl,
+                    getGenericArgs.retries,
+                ),
+        );
     }
 
     getService(): ApiNetworkProvider {
@@ -48,11 +65,11 @@ export class ElrondApiService {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
-    async doGetGeneric(
+    async doGetGeneric<T>(
         name: string,
         resourceUrl: string,
         retries = 1,
-    ): Promise<any> {
+    ): Promise<T> {
         const profiler = new PerformanceProfiler(`${name} ${resourceUrl}`);
         try {
             return await this.getService().doGetGeneric(resourceUrl);
@@ -82,7 +99,10 @@ export class ElrondApiService {
     }
 
     async getStats(): Promise<Stats> {
-        const stats = await this.doGetGeneric(this.getStats.name, 'stats');
+        const stats = await this.doGetGeneric<Stats>(
+            this.getStats.name,
+            'stats',
+        );
         return new Stats(stats);
     }
 
@@ -95,7 +115,7 @@ export class ElrondApiService {
 
     async getToken(tokenID: string): Promise<EsdtToken> {
         try {
-            const rawToken = await this.doGetGeneric(
+            const rawToken = await this.doGetGeneric<EsdtToken>(
                 this.getToken.name,
                 `tokens/${tokenID}`,
             );
@@ -126,14 +146,14 @@ export class ElrondApiService {
     }
 
     async getTokensCountForUser(address: string): Promise<number> {
-        return this.doGetGeneric(
+        return this.doGetGeneric<number>(
             this.getTokensCountForUser.name,
             `accounts/${address}/tokens/count`,
         );
     }
 
     async getNftsCountForUser(address: string): Promise<number> {
-        return this.doGetGeneric(
+        return this.doGetGeneric<number>(
             this.getNftsCountForUser.name,
             `accounts/${address}/nfts/count`,
         );
@@ -144,7 +164,7 @@ export class ElrondApiService {
         from = 0,
         size = 100,
     ): Promise<EsdtToken[]> {
-        return this.doGetGeneric(
+        return this.doGetGeneric<EsdtToken[]>(
             this.getTokensForUser.name,
             `accounts/${address}/tokens?from=${from}&size=${size}`,
         );
@@ -154,7 +174,7 @@ export class ElrondApiService {
         address: string,
         tokenID: string,
     ): Promise<EsdtToken> {
-        return this.doGetGeneric(
+        return this.doGetGeneric<EsdtToken>(
             this.getTokenForUser.name,
             `accounts/${address}/tokens/${tokenID}`,
         );
@@ -177,21 +197,25 @@ export class ElrondApiService {
         from = 0,
         size = 100,
         type = 'MetaESDT',
-        collections = [],
+        collections?: string[],
     ): Promise<NftToken[]> {
-        return this.doGetGeneric(
-            this.getNftsForUser.name,
-            `accounts/${address}/nfts?from=${from}&size=${size}&type=${type}&collections=${String(
-                collections,
-            )}`,
-        );
+        const nfts: NftToken[] = await this.genericGetExecutor.execute({
+            methodName: this.getNftsForUser.name,
+            resourceUrl: `accounts/${address}/nfts?type=${type}&size=${constantsConfig.MAX_USER_NFTS}`,
+        });
+
+        return collections
+            ? nfts
+                  .filter((nft) => collections.includes(nft.collection))
+                  .slice(from, size)
+            : nfts.slice(from, size);
     }
 
     async getNftByTokenIdentifier(
         address: string,
         nftIdentifier: string,
     ): Promise<NftToken> {
-        return await this.doGetGeneric(
+        return await this.doGetGeneric<NftToken>(
             this.getNftByTokenIdentifier.name,
             `accounts/${address}/nfts/${nftIdentifier}`,
         );
