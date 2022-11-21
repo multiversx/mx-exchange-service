@@ -500,6 +500,7 @@
         "EPOCHS_IN_WEEK": 7,
         "BLOCKS_PER_WEEK": 100800,
         "USER_MAX_CLAIM_WEEKS": 4,
+        "STAKING_UNBOND_ATTRIBUTES_LEN": 12,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",
