@@ -32,7 +32,7 @@ import { PriceDiscoveryService } from '../../price-discovery/services/price.disc
 import { SimpleLockGetterService } from '../../simple-lock/services/simple.lock.getter.service';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { INFTToken } from '../../tokens/models/nft.interface';
-import { scAddress } from 'src/config';
+import { constantsConfig, scAddress } from 'src/config';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
 import { EnergyGetterService } from 'src/modules/energy/services/energy.getter.service';
 import {
@@ -256,7 +256,10 @@ export class UserMetaEsdtService {
 
         nfts.filter((nft) => stakingTokenIDs.includes(nft.collection)).forEach(
             (nft) => {
-                if (nft.attributes.length !== 12) {
+                if (
+                    nft.attributes.length !==
+                    constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
+                ) {
                     promises.push(
                         this.userComputeService.stakeFarmUSD(
                             new StakeFarmToken(nft),
@@ -287,7 +290,10 @@ export class UserMetaEsdtService {
 
         nfts.filter((nft) => stakingTokenIDs.includes(nft.collection)).forEach(
             (nft) => {
-                if (nft.attributes.length === 12) {
+                if (
+                    nft.attributes.length ===
+                    constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
+                ) {
                     promises.push(
                         this.userComputeService.unbondFarmUSD(
                             new UnbondFarmToken(nft),
@@ -548,7 +554,10 @@ export class UserMetaEsdtService {
                     );
                     break;
                 case NftTokenType.StakeFarmToken:
-                    if (userNft.attributes.length !== 12) {
+                    if (
+                        userNft.attributes.length !==
+                        constantsConfig.STAKING_UNBOND_ATTRIBUTES_LEN
+                    ) {
                         promises.push(
                             this.userComputeService.stakeFarmUSD(
                                 new StakeFarmToken(userNft),
