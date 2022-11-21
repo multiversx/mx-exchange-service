@@ -8,7 +8,7 @@ import { WeekTimekeepingComputeService } from '../../week-timekeeping/services/w
 import { ProgressComputeService } from './progress.compute.service';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
 import { IWeeklyRewardsSplittingComputeService } from '../interfaces';
-import { scAddress } from '../../../config';
+import { constantsConfig, scAddress } from '../../../config';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
 import { EnergyGetterService } from '../../../modules/energy/services/energy.getter.service';
 import { TokenComputeService } from '../../../modules/tokens/services/token.compute.service';
@@ -45,7 +45,12 @@ export class WeeklyRewardsSplittingComputeService
             string,
             EsdtTokenPayment
         >();
-        for (let week = userProgress.week; week < currentWeek; week++) {
+
+        const startWeek = userProgress.week === 0 ? currentWeek : Math.max(currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS, userProgress.week)
+        for (let week = startWeek; week < currentWeek; week++) {
+            if (week < 1) {
+                continue;
+            }
             const rewardsForWeek = await this.computeUserRewardsForWeek(
                 scAddress,
                 week,
@@ -135,7 +140,7 @@ export class WeeklyRewardsSplittingComputeService
                 .dividedBy(new BigNumber(totalEnergy));
             if (paymentAmount.isGreaterThan(zero)) {
                 const payment = new EsdtTokenPayment();
-                payment.amount = paymentAmount.toFixed();
+                payment.amount = paymentAmount.integerValue().toFixed();
                 payment.nonce = 0;
                 payment.tokenID = weeklyRewards.tokenID;
                 payment.tokenType = weeklyRewards.tokenType;

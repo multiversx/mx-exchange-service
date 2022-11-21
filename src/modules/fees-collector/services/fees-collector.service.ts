@@ -153,6 +153,9 @@ export class FeesCollectorService {
     getWeeklyRewardsSplit(scAddress: string, startWeek: number, endWeek: number): GlobalInfoByWeekModel[] {
         const modelsList = []
         for (let week = startWeek; week <= endWeek; week++) {
+            if (week < 1) {
+                continue;
+            }
             modelsList.push(this.weeklyRewardsSplittingService.getGlobalInfoByWeek(scAddress, week))
         }
         return modelsList;
@@ -161,6 +164,9 @@ export class FeesCollectorService {
     getUserWeeklyRewardsSplit(scAddress: string, userAddress: string, startWeek: number, endWeek: number): UserInfoByWeekModel[] {
         const modelsList = []
         for (let week = startWeek; week <= endWeek; week++) {
+            if (week < 1) {
+                continue;
+            }
             modelsList.push(this.weeklyRewardsSplittingService.getUserInfoByWeek(scAddress, userAddress, week))
         }
         return modelsList;

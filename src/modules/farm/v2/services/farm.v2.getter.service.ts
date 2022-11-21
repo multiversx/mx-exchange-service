@@ -37,6 +37,15 @@ export class FarmGetterServiceV2 extends Mixin(FarmGetterService, WeekTimekeepin
         );
     }
 
+    async getAccumulatedRewardsForWeek(scAddress: string, week: number): Promise<string> {
+        return this.getData(
+            this.getCacheKey(scAddress, 'accumulatedRewardsForWeek', week),
+            () => this.abiService.accumulatedRewardsForWeek(scAddress, week),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        )
+    }
+
     async getBoostedYieldsRewardsPercenatage(
         farmAddress: string,
     ): Promise<number> {
