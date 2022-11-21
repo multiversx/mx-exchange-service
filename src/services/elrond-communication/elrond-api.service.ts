@@ -1,4 +1,4 @@
-import { elrondConfig } from '../../config';
+import { constantsConfig, elrondConfig } from '../../config';
 import { Inject, Injectable } from '@nestjs/common';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
@@ -201,7 +201,7 @@ export class ElrondApiService {
     ): Promise<NftToken[]> {
         const nfts: NftToken[] = await this.genericGetExecutor.execute({
             methodName: this.getNftsForUser.name,
-            resourceUrl: `accounts/${address}/nfts?&type=${type}`,
+            resourceUrl: `accounts/${address}/nfts?type=${type}&size=${constantsConfig.MAX_USER_NFTS}`,
         });
 
         return collections
