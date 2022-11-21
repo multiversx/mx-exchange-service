@@ -1,5 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { Query, ResolveField, Resolver } from '@nestjs/graphql';
+import { scAddress } from 'src/config';
 import { User } from 'src/helpers/userDecorator';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
@@ -53,6 +54,13 @@ export class TokenUnstakeResolver extends GenericResolver {
         return await this.genericFieldResolver(() =>
             this.tokenUnstakeGetter.getEnergyFactoryAddress(),
         );
+    }
+
+    @Query(() => TokenUnstakeModel)
+    async tokenUnstake(): Promise<TokenUnstakeModel> {
+        return new TokenUnstakeModel({
+            address: scAddress.tokenUnstakeAddress,
+        });
     }
 
     @UseGuards(GqlAuthGuard)
