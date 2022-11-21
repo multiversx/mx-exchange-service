@@ -443,6 +443,10 @@
         "energyUpdate": {
             "updateFarmsEnergyForUser": 15000000
         },
+        "tokenUnstake": {
+            "claimUnlockedTokens": 10000000,
+            "cancelUnbond": 10000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
