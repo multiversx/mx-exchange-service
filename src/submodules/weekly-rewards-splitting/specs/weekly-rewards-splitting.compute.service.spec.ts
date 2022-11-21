@@ -396,7 +396,7 @@ describe('WeeklyRewardsSplittingComputeService', () => {
                 dummyScAddress,
                 dummyUserAddress,
             );
-            expect(rewards[0].amount).toEqual('1728');
+            expect(rewards[0].amount).toEqual('788');
             expect(rewards[0].nonce).toEqual(expectedTokenNonce);
             expect(rewards[0].tokenID).toEqual(expectedTokenID);
             expect(rewards[0].tokenType).toEqual(expectedTokenType);
