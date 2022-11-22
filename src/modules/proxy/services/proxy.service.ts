@@ -183,19 +183,17 @@ export class ProxyService {
         });
     }
 
-    async getWrappedFarmTokenAttributesV2(
+    getWrappedFarmTokenAttributesV2(
         args: DecodeAttributesArgs,
-    ): Promise<WrappedFarmTokenAttributesModelV2[]> {
-        const promises = args.batchAttributes.map((arg) =>
+    ): WrappedFarmTokenAttributesModelV2[] {
+        return args.batchAttributes.map((arg) =>
             this.decodeWrappedFarmTokenAttributesV2(arg),
         );
-
-        return await Promise.all(promises);
     }
 
-    async decodeWrappedFarmTokenAttributesV2(
+    decodeWrappedFarmTokenAttributesV2(
         arg: DecodeAttributesModel,
-    ): Promise<WrappedFarmTokenAttributesModelV2> {
+    ): WrappedFarmTokenAttributesModelV2 {
         return new WrappedFarmTokenAttributesModelV2({
             ...WrappedFarmTokenAttributesV2.fromAttributes(
                 arg.attributes,

@@ -6,13 +6,13 @@ import { FeesCollectorService } from '../../../fees-collector/services/fees-coll
 import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { ClaimProgress } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { FarmVersion } from '../../../farm/models/farm.model';
-import { ContractType, OutdatedContract } from '../../models/user.model';
+import { ContractType, OutdatedContract, UserDualYiledToken, UserLockedFarmTokenV2 } from '../../models/user.model';
 import { FarmGetterFactory } from '../../../farm/farm.getter.factory';
 import { FarmGetterServiceV2 } from '../../../farm/v2/services/farm.v2.getter.service';
 import { UserMetaEsdtService } from '../user.metaEsdt.service';
 import { PaginationArgs } from '../../../dex.model';
 import { ProxyFarmGetterService } from '../../../proxy/services/proxy-farm/proxy-farm.getter.service';
-import { StakingProxyGetterService } from '../../../staking-proxy/services/staking.proxy.getter.service';
+import { ProxyService } from '../../../proxy/services/proxy.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -22,7 +22,7 @@ export class UserEnergyComputeService {
         private readonly feesCollectorService: FeesCollectorService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly proxyFarmGetter: ProxyFarmGetterService,
-        private readonly proxyStakeGetter: StakingProxyGetterService,
+        private readonly proxyService: ProxyService,
     ) {
     }
 
@@ -34,7 +34,7 @@ export class UserEnergyComputeService {
         const [
             farmTokens,
             farmLockedTokens,
-            dualYieldTokens
+            dualYieldTokens,
         ] = await Promise.all([
             this.userMetaEsdtService.getUserFarmTokens(
                 userAddress,
@@ -50,17 +50,16 @@ export class UserEnergyComputeService {
             ),
         ])
 
-        let userAddresses = farmTokens.map(token => token.creator);
-        const farmLockedAddresses = (await Promise.all(farmLockedTokens.map(async token => {
-            return await this.proxyFarmGetter.getIntermediatedFarms(token.creator);
-        }).flat())).flat()
-        userAddresses = userAddresses.concat(...farmLockedAddresses)
+        let userActiveFarmAddresses = farmTokens.map(token => token.creator);
+        const promises = [ ...farmLockedTokens, ...dualYieldTokens]
+            .map(token => {
+                return this.decodeAndGetFarmAddress(token);
+            })
+        userActiveFarmAddresses = userActiveFarmAddresses.concat(
+            await Promise.all(promises),
+        );
+        userActiveFarmAddresses = [...new Set(userActiveFarmAddresses)]
 
-        const dualYieldsAddresses = await Promise.all((dualYieldTokens.map(async token => {
-            return await this.proxyStakeGetter.getStakingFarmAddress(token.creator)
-        })))
-        userAddresses = userAddresses.concat(...dualYieldsAddresses)
-        userAddresses = [ ... new Set(userAddresses)]
         const currentUserEnergy = await this.energyGetter.getEnergyEntryForUser(userAddress);
         const promisesList = farmsAddresses([FarmVersion.V2]).map(
             async address => {
@@ -77,7 +76,7 @@ export class UserEnergyComputeService {
                     farmGetter.getCurrentWeek(address),
                     farmGetter.getFarmToken(address),
                 ]);
-                if (!userAddresses.includes(address)) {
+                if (!userActiveFarmAddresses.includes(address)) {
                     return undefined;
                 }
                 if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {
@@ -115,6 +114,20 @@ export class UserEnergyComputeService {
             );
         }
         return outdatedContracts;
+    }
+
+    decodeAndGetFarmAddress(token: UserLockedFarmTokenV2 | UserDualYiledToken) {
+        const decodedWFMTAttributes =
+            this.proxyService.getWrappedFarmTokenAttributesV2({
+                batchAttributes: [
+                    {
+                        identifier: token.identifier,
+                        attributes: token.attributes,
+                    },
+                ],
+            });
+
+        return this.farmGetter.getFarmAddressByFarmTokenID(decodedWFMTAttributes[0].farmToken.tokenIdentifier)
     }
 
     isEnergyOutdated(currentUserEnergy: EnergyType, currentClaimProgress: ClaimProgress): boolean {
