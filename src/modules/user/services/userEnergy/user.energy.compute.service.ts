@@ -9,6 +9,10 @@ import { FarmVersion } from '../../../farm/models/farm.model';
 import { ContractType, OutdatedContract } from '../../models/user.model';
 import { FarmGetterFactory } from '../../../farm/farm.getter.factory';
 import { FarmGetterServiceV2 } from '../../../farm/v2/services/farm.v2.getter.service';
+import { UserMetaEsdtService } from '../user.metaEsdt.service';
+import { PaginationArgs } from '../../../dex.model';
+import { ProxyFarmGetterService } from '../../../proxy/services/proxy-farm/proxy-farm.getter.service';
+import { StakingProxyGetterService } from '../../../staking-proxy/services/staking.proxy.getter.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -16,10 +20,47 @@ export class UserEnergyComputeService {
         private readonly energyGetter: EnergyGetterService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorService: FeesCollectorService,
+        private readonly userMetaEsdtService: UserMetaEsdtService,
+        private readonly proxyFarmGetter: ProxyFarmGetterService,
+        private readonly proxyStakeGetter: StakingProxyGetterService,
     ) {
     }
 
     async computeUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
+        const maxPagination = new PaginationArgs({
+            limit: 100,
+            offset: 0,
+        });
+        const [
+            farmTokens,
+            farmLockedTokens,
+            dualYieldTokens
+        ] = await Promise.all([
+            this.userMetaEsdtService.getUserFarmTokens(
+                userAddress,
+                maxPagination,
+            ),
+            this.userMetaEsdtService.getUserLockedFarmTokensV2(
+                userAddress,
+                maxPagination,
+            ),
+            this.userMetaEsdtService.getUserDualYieldTokens(
+                userAddress,
+                maxPagination,
+            ),
+        ])
+
+        let userAddresses = farmTokens.map(token => token.creator);
+        const farmLockedAddresses = (await Promise.all(farmLockedTokens.map(async token => {
+            return await this.proxyFarmGetter.getIntermediatedFarms(token.creator);
+        }).flat())).flat()
+        userAddresses = userAddresses.concat(...farmLockedAddresses)
+
+        const dualYieldsAddresses = await Promise.all((dualYieldTokens.map(async token => {
+            return await this.proxyStakeGetter.getStakingFarmAddress(token.creator)
+        })))
+        userAddresses = userAddresses.concat(...dualYieldsAddresses)
+        userAddresses = [ ... new Set(userAddresses)]
         const currentUserEnergy = await this.energyGetter.getEnergyEntryForUser(userAddress);
         const promisesList = farmsAddresses([FarmVersion.V2]).map(
             async address => {
@@ -27,26 +68,28 @@ export class UserEnergyComputeService {
                 const [
                     currentClaimProgress,
                     currentWeek,
-                    farmToken
+                    farmToken,
                 ] = await Promise.all([
                     farmGetter.currentClaimProgress(
                         address,
                         userAddress,
                     ),
                     farmGetter.getCurrentWeek(address),
-                    farmGetter.getFarmToken(address)
+                    farmGetter.getFarmToken(address),
                 ]);
-
+                if (!userAddresses.includes(address)) {
+                    return undefined;
+                }
                 if (this.isEnergyOutdated(currentUserEnergy, currentClaimProgress)) {
                     return new OutdatedContract({
                         address: address,
                         type: ContractType.Farm,
                         claimProgressOutdated: currentClaimProgress.week != currentWeek,
-                        farmToken: farmToken.collection
+                        farmToken: farmToken.collection,
                     })
                 }
                 return undefined
-            }
+            },
         )
 
         const outdatedContracts = (await Promise.all(promisesList)).filter(contract => contract !== undefined);
@@ -68,7 +111,7 @@ export class UserEnergyComputeService {
                     address: scAddress.feesCollector,
                     type: ContractType.FeesCollector,
                     claimProgressOutdated: currentClaimProgress.week != currentWeek,
-                })
+                }),
             );
         }
         return outdatedContracts;

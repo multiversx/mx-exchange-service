@@ -7,4 +7,8 @@ export class PaginationArgs {
 
     @Field(() => Int)
     limit = 10;
+
+    constructor(init: Partial<PaginationArgs>) {
+        Object.assign(this, init);
+    }
 }
