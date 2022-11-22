@@ -123,7 +123,7 @@ export class UserEnergyComputeService {
         return outdatedContracts;
     }
 
-    decodeAndGetFarmAddressFarmLockedTokens(token: UserLockedFarmTokenV2 | UserDualYiledToken) {
+    decodeAndGetFarmAddressFarmLockedTokens(token: UserLockedFarmTokenV2) {
         const decodedWFMTAttributes =
             this.proxyService.getWrappedFarmTokenAttributesV2({
                 batchAttributes: [
