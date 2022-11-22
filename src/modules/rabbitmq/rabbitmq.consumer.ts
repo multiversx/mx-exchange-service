@@ -268,8 +268,7 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(scAddress.metabondingStakingAddress);
         this.filterAddresses.push(...scAddress.priceDiscovery);
         this.filterAddresses.push(scAddress.simpleLockEnergy);
-        // this.filterAddresses.push(scAddress.feesCollector);
-        // TODO: uncomment after contract upgrade
+        this.filterAddresses.push(scAddress.feesCollector);
     }
 
     private async updateIngestData(eventData: any[]): Promise<void> {

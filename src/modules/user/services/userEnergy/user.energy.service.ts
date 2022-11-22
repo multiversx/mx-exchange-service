@@ -14,14 +14,14 @@ export class UserEnergyService {
     ) {
     }
 
-    async updateFarmsEnergyForUser(userAddress: string): Promise<TransactionModel | null> {
+    async updateFarmsEnergyForUser(userAddress: string, includeAllContracts = false): Promise<TransactionModel | null> {
         const outdatedContracts = await this.getUserOutdatedContracts(userAddress);
         if (outdatedContracts.length === 0) {
             return null
         }
         const endpointArgs: TypedValue[] = [new AddressValue(Address.fromString(userAddress))];
         for (const contract of outdatedContracts) {
-            if (!contract.claimProgressOutdated) {
+            if (includeAllContracts || !contract.claimProgressOutdated) {
                 endpointArgs.push(new AddressValue(Address.fromString(contract.address)));
             }
         }

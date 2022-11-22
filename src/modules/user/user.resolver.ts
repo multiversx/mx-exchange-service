@@ -55,8 +55,9 @@ export class UserResolver {
     @Query(() => TransactionModel, { nullable: true })
     async updateEnergy(
         @User() user: any,
+        @Args('includeAllContracts', { nullable: true }) includeAllContracts: boolean,
     ): Promise<TransactionModel | null> {
-        return await this.userEnergy.updateFarmsEnergyForUser(user.publicKey);
+        return await this.userEnergy.updateFarmsEnergyForUser(user.publicKey, includeAllContracts);
     }
 
     @Query(() => [UserToken])
