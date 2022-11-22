@@ -27,6 +27,12 @@ import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { FarmModuleV1_2 } from '../farm/v1.2/farm.v1.2.module';
 import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
 import { EnergyModule } from '../energy/energy.module';
+import {
+    FeesCollectorHandlerService
+} from './handlers/feesCollector.handler.service';
+import {
+    WeeklyRewardsSplittingHandlerService
+} from './handlers/weeklyRewardsSplitting.handler.service';
 
 @Module({
     imports: [
@@ -59,6 +65,8 @@ import { EnergyModule } from '../energy/energy.module';
         PairHandler,
         LiquidityHandler,
         SwapEventHandler,
+        FeesCollectorHandlerService,
+        WeeklyRewardsSplittingHandlerService,
     ],
 })
 export class RabbitMqModule {

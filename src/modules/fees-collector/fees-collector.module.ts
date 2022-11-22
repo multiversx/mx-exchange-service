@@ -9,6 +9,9 @@ import {
     WeeklyRewardsSplittingModule,
 } from '../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-timekeeping.module';
+import {
+    FeesCollectorSetterService
+} from './services/fees-collector.setter.service';
 
 @Module({
     imports: [
@@ -21,10 +24,15 @@ import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-ti
         FeesCollectorService,
         FeesCollectorAbiService,
         FeesCollectorGetterService,
+        FeesCollectorSetterService,
         FeesCollectorResolver,
         UserEntryFeesCollectorResolver,
     ],
-    exports: [ FeesCollectorService ],
+    exports: [
+        FeesCollectorSetterService,
+        FeesCollectorGetterService,
+        FeesCollectorService,
+    ],
 })
 export class FeesCollectorModule {
 }
