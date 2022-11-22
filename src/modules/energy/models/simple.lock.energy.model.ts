@@ -26,14 +26,8 @@ export class SimpleLockEnergyModel {
     legacyLockedToken: NftCollection;
     @Field(() => [LockOption])
     lockOptions: LockOption[];
-    @Field(() => Int)
-    feesBurnPercentage: number;
     @Field()
-    feesCollectorAddress: string;
-    @Field(() => Int)
-    lastEpochFeeSentToCollector: number;
-    @Field()
-    getFeesFromPenaltyUnlocking: string;
+    tokenUnstakeAddress: string;
     @Field()
     pauseState: boolean;
 

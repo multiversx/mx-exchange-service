@@ -1,8 +1,4 @@
-import {
-    Energy,
-    EnergyType,
-    LockedTokenAttributes,
-} from '@elrondnetwork/erdjs-dex';
+import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
 import {
     Address,
     AddressValue,
@@ -13,8 +9,6 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { InputTokenModel } from 'src/models/inputToken.model';
-import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
@@ -25,7 +19,6 @@ export class EnergyAbiService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly contextGetter: ContextGetterService,
     ) {
         super(elrondProxy, logger);
     }
@@ -60,36 +53,6 @@ export class EnergyAbiService extends GenericAbiService {
         return response.firstValue.valueOf().toString();
     }
 
-    async getFeesBurnPercentage(): Promise<number> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getFeesBurnPercentage();
-
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toNumber();
-    }
-
-    async getFeesCollectorAddress(): Promise<string> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getFeesCollectorAddress();
-
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().bech32();
-    }
-
-    async getLastEpochFeeSentToCollector(): Promise<number> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getLastEpochFeeSentToCollector();
-
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toNumber();
-    }
-
     async getLockOptions(): Promise<LockOption[]> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
@@ -105,6 +68,16 @@ export class EnergyAbiService extends GenericAbiService {
                         lockOption.penalty_start_percentage.toNumber(),
                 }),
         );
+    }
+
+    async getTokenUnstakeScAddress(): Promise<string> {
+        const contract =
+            await this.elrondProxy.getSimpleLockEnergySmartContract();
+        const interaction: Interaction =
+            contract.methodsExplicit.getTokenUnstakeScAddress();
+
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().bech32();
     }
 
     async getEnergyEntryForUser(userAddress: string): Promise<EnergyType> {
@@ -149,17 +122,6 @@ export class EnergyAbiService extends GenericAbiService {
 
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toFixed();
-    }
-
-    async getFeesFromPenaltyUnlocking(): Promise<number> {
-        const contract =
-            await this.elrondProxy.getSimpleLockEnergySmartContract();
-        const interaction: Interaction =
-            contract.methodsExplicit.getFeesFromPenaltyUnlocking([]);
-
-        const response = await this.getGenericData(interaction);
-
-        return response.firstValue.valueOf().amount.toFixed();
     }
 
     async isPaused(): Promise<boolean> {
