@@ -13,6 +13,7 @@ import { UserMetaEsdtService } from '../user.metaEsdt.service';
 import { PaginationArgs } from '../../../dex.model';
 import { ProxyFarmGetterService } from '../../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyService } from '../../../proxy/services/proxy.service';
+import { StakingProxyService } from '../../../staking-proxy/services/staking.proxy.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -22,6 +23,7 @@ export class UserEnergyComputeService {
         private readonly feesCollectorService: FeesCollectorService,
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly proxyFarmGetter: ProxyFarmGetterService,
+        private readonly stakeProxyService: StakingProxyService,
         private readonly proxyService: ProxyService,
     ) {
     }
@@ -51,12 +53,17 @@ export class UserEnergyComputeService {
         ])
 
         let userActiveFarmAddresses = farmTokens.map(token => token.creator);
-        const promises = [ ...farmLockedTokens, ...dualYieldTokens]
+        const promisesFarmLockedTokens = farmLockedTokens
             .map(token => {
-                return this.decodeAndGetFarmAddress(token);
+                return this.decodeAndGetFarmAddressFarmLockedTokens(token);
             })
+        const promisesDualYieldTokens = dualYieldTokens
+            .map(token => {
+                return this.decodeAndGetFarmAddressDualYieldTokens(token);
+            })
+
         userActiveFarmAddresses = userActiveFarmAddresses.concat(
-            await Promise.all(promises),
+            await Promise.all([...promisesFarmLockedTokens, ...promisesDualYieldTokens]),
         );
         userActiveFarmAddresses = [...new Set(userActiveFarmAddresses)]
 
@@ -116,7 +123,7 @@ export class UserEnergyComputeService {
         return outdatedContracts;
     }
 
-    decodeAndGetFarmAddress(token: UserLockedFarmTokenV2 | UserDualYiledToken) {
+    decodeAndGetFarmAddressFarmLockedTokens(token: UserLockedFarmTokenV2 | UserDualYiledToken) {
         const decodedWFMTAttributes =
             this.proxyService.getWrappedFarmTokenAttributesV2({
                 batchAttributes: [
@@ -128,6 +135,20 @@ export class UserEnergyComputeService {
             });
 
         return this.farmGetter.getFarmAddressByFarmTokenID(decodedWFMTAttributes[0].farmToken.tokenIdentifier)
+    }
+
+    decodeAndGetFarmAddressDualYieldTokens(token: UserDualYiledToken) {
+        const decodedAttributes =
+            this.stakeProxyService.decodeDualYieldTokenAttributes({
+                batchAttributes: [
+                    {
+                        identifier: token.identifier,
+                        attributes: token.attributes,
+                    },
+                ],
+            });
+
+        return this.farmGetter.getFarmAddressByFarmTokenID(decodedAttributes[0].identifier)
     }
 
     isEnergyOutdated(currentUserEnergy: EnergyType, currentClaimProgress: ClaimProgress): boolean {
