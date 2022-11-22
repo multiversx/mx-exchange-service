@@ -19,7 +19,7 @@ export class UserEnergyService {
         if (outdatedContracts.length === 0) {
             return null
         }
-        const endpointArgs: TypedValue[] = [];
+        const endpointArgs: TypedValue[] = [new AddressValue(Address.fromString(userAddress))];
         for (const contract of outdatedContracts) {
             if (!contract.claimProgressOutdated) {
                 endpointArgs.push(new AddressValue(Address.fromString(contract.address)));
