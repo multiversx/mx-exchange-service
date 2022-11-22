@@ -59,7 +59,7 @@ export class TokenUnstakeResolver extends GenericResolver {
     @Query(() => TokenUnstakeModel)
     async tokenUnstake(): Promise<TokenUnstakeModel> {
         return new TokenUnstakeModel({
-            address: scAddress.tokenUnstakeAddress,
+            address: scAddress.tokenUnstake,
         });
     }
 
