@@ -2,15 +2,15 @@
     "buildInfo": {
         "rustc": {
             "version": "1.66.0-nightly",
-            "commitHash": "bed4ad65bf7a1cef39e3d66b3670189581b3b073",
-            "commitDate": "2022-10-25",
+            "commitHash": "b8c35ca26b191bb9a9ac669a4b3f4d3d52d97fb1",
+            "commitDate": "2022-10-15",
             "channel": "Nightly",
-            "short": "rustc 1.66.0-nightly (bed4ad65b 2022-10-25)"
+            "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
         },
         "contractCrate": {
             "name": "energy-factory",
             "version": "0.0.0",
-            "git_version": "v1.6.0-728-g17ea1bba"
+            "git_version": "v1.6.0-815-g5be04987-modified"
         },
         "framework": {
             "name": "elrond-wasm",
@@ -25,15 +25,9 @@
             "    NOTE: The SC also needs the ESDTLocalMint and ESDTLocalBurn roles for this token.",
             "- legacy_token_id: The token ID of the old locked asset.",
             "    NOTE: The SC also needs the NFTBurn role for this token.",
-            "- min_penalty_percentage / max_penalty_percentage: The penalty for early unlock",
-            "    of a token. A token locked for the max period, will have max_penalty_percentage penalty,",
-            "    whereas one with 1 epoch left, will have min_penalty_percentage.",
-            "    Penalty decreases linearly from max to min, based on the remaining locking period.",
-            "    ",
-            "    Both are values between 0 and 10_000, where 10_000 is 100%.",
-            "- fees_burn_percentage: The percentage of fees that are burned.",
-            "    The rest are sent to the fees collector",
-            "- fees_collector_address",
+            "- old_locked_asset_factory_address",
+            "- min_migrated_token_locked_period - The minimum number of epochs that",
+            "    a migrated old LKMEX token will be locked for after the average is calculated",
             "- lock_options: See `addLockOptions` endpoint doc for details."
         ],
         "inputs": [
@@ -46,16 +40,12 @@
                 "type": "TokenIdentifier"
             },
             {
-                "name": "fees_burn_percentage",
-                "type": "u16"
-            },
-            {
-                "name": "fees_collector_address",
-                "type": "Address"
-            },
-            {
                 "name": "old_locked_asset_factory_address",
                 "type": "Address"
+            },
+            {
+                "name": "min_migrated_token_locked_period",
+                "type": "u64"
             },
             {
                 "name": "lock_options",
@@ -234,19 +224,6 @@
             "outputs": []
         },
         {
-            "name": "removeLockOptions",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "options_to_remove",
-                    "type": "variadic<u64>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
-        },
-        {
             "name": "getLockOptions",
             "mutability": "readonly",
             "inputs": [],
@@ -258,36 +235,9 @@
         },
         {
             "docs": [
-                "Sets the percentage of fees that are burned. The rest are sent to the fees collector.",
-                "Value between 0 and 10_000. 0 is also accepted."
-            ],
-            "name": "setFeesBurnPercentage",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "percentage",
-                    "type": "u16"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setFeesCollectorAddress",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "sc_address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "docs": [
                 "Unlock a locked token instantly. This incures a penalty.",
-                "The longer the remaining locking time, the bigger the penalty."
+                "The longer the remaining locking time, the bigger the penalty.",
+                "Tokens can be unlocked through another SC after the unbond period has passed."
             ],
             "name": "unlockEarly",
             "mutability": "mutable",
@@ -295,11 +245,7 @@
                 "*"
             ],
             "inputs": [],
-            "outputs": [
-                {
-                    "type": "EsdtTokenPayment"
-                }
-            ]
+            "outputs": []
         },
         {
             "docs": [
@@ -350,6 +296,69 @@
             "outputs": [
                 {
                     "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "- token_unstake_address - The address of the SC that will handle the unbond logic",
+                "    By default, all tokens go through an unbond period after unlock"
+            ],
+            "name": "setTokenUnstakeAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sc_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "createMergedLockedTokenForFees",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "unlock_epoch",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "name": "revertUnstake",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                },
+                {
+                    "name": "new_energy",
+                    "type": "Energy"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getTokenUnstakeScAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
                 }
             ]
         },
@@ -443,6 +452,21 @@
             "outputs": []
         },
         {
+            "docs": [
+                "Sets the burn role for the given address"
+            ],
+            "name": "setBurnRoleLockedToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
             "name": "mergeTokens",
             "mutability": "mutable",
             "payableInTokens": [
@@ -458,46 +482,6 @@
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
-                }
-            ]
-        },
-        {
-            "name": "getFeesBurnPercentage",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u16"
-                }
-            ]
-        },
-        {
-            "name": "getFeesCollectorAddress",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "Address"
-                }
-            ]
-        },
-        {
-            "name": "getFeesFromPenaltyUnlocking",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "NonceAmountPair"
-                }
-            ]
-        },
-        {
-            "name": "getLastEpochFeeSentToCollector",
-            "mutability": "readonly",
-            "inputs": [],
-            "outputs": [
-                {
-                    "type": "u64"
                 }
             ]
         },
@@ -519,6 +503,10 @@
                 },
                 {
                     "name": "dest_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "energy_address",
                     "type": "Address"
                 }
             ],
@@ -568,13 +556,27 @@
             ]
         },
         {
-            "name": "setLockedTokenTransferScAddress",
+            "name": "addToTokenTransferWhitelist",
             "onlyOwner": true,
             "mutability": "mutable",
             "inputs": [
                 {
-                    "name": "sc_address",
-                    "type": "Address"
+                    "name": "sc_addresses",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "removeFromTokenTransferWhitelist",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sc_addresses",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
                 }
             ],
             "outputs": []
@@ -698,19 +700,6 @@
                 {
                     "name": "penalty_start_percentage",
                     "type": "u64"
-                }
-            ]
-        },
-        "NonceAmountPair": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "amount",
-                    "type": "BigUint"
                 }
             ]
         },

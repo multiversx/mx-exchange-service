@@ -52,30 +52,9 @@ export class EnergyResolver extends GenericResolver {
     }
 
     @ResolveField()
-    async feesBurnPercentage(): Promise<number> {
-        return await this.genericFieldResolver<number>(() =>
-            this.energyGetter.getFeesBurnPercentage(),
-        );
-    }
-
-    @ResolveField()
-    async feesCollectorAddress(): Promise<string> {
+    async tokenUnstakeAddress(): Promise<string> {
         return await this.genericFieldResolver<string>(() =>
-            this.energyGetter.getFeesCollectorAddress(),
-        );
-    }
-
-    @ResolveField()
-    async lastEpochFeeSentToCollector(): Promise<number> {
-        return await this.genericFieldResolver<number>(() =>
-            this.energyGetter.getLastEpochFeeSentToCollector(),
-        );
-    }
-
-    @ResolveField()
-    async getFeesFromPenaltyUnlocking(): Promise<string> {
-        return await this.genericFieldResolver<string>(() =>
-            this.energyGetter.getFeesFromPenaltyUnlocking(),
+            this.energyGetter.getTokenUnstakeAddress(),
         );
     }
 
@@ -182,7 +161,8 @@ export class EnergyResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
     async migrateOldTokens(
-        @Args('tokens', { type: () => [InputTokenModel] }) args: InputTokenModel[],
+        @Args('tokens', { type: () => [InputTokenModel] })
+        args: InputTokenModel[],
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.energyTransaction.migrateOldTokens(

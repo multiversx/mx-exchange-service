@@ -2,7 +2,7 @@ import { EnergyType } from '@elrondnetwork/erdjs-dex';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
-import { oneHour, oneMinute, oneSecond } from 'src/helpers/helpers';
+import { oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
@@ -36,7 +36,8 @@ export class EnergyGetterService
         return await this.getData(
             this.getEnergyCacheKey('baseAssetTokenID'),
             () => this.abiService.getBaseAssetTokenID(),
-            oneHour(),
+            CacheTtlInfo.Token.remoteTtl,
+            CacheTtlInfo.Token.localTtl,
         );
     }
 
@@ -73,39 +74,12 @@ export class EnergyGetterService
         return await this.tokenGetter.getNftCollectionMetadata(collection);
     }
 
-    async getFeesBurnPercentage(): Promise<number> {
+    async getTokenUnstakeAddress(): Promise<string> {
         return await this.getData(
-            this.getCacheKey('feesBurnPercentage'),
-            () => this.abiService.getFeesBurnPercentage(),
+            this.getCacheKey('tokenUnstakeAddress'),
+            () => this.abiService.getTokenUnstakeScAddress(),
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getFeesCollectorAddress(): Promise<string> {
-        return await this.getData(
-            this.getCacheKey('feesCollectorAddress'),
-            () => this.abiService.getFeesCollectorAddress(),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getLastEpochFeeSentToCollector(): Promise<number> {
-        return await this.getData(
-            this.getCacheKey('lastEpochFeeSentToCollector'),
-            () => this.abiService.getLastEpochFeeSentToCollector(),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
-        );
-    }
-
-    async getFeesFromPenaltyUnlocking(): Promise<string> {
-        return await this.getData(
-            this.getCacheKey('feesFromPenaltyUnlocking'),
-            () => this.abiService.getFeesFromPenaltyUnlocking(),
-            CacheTtlInfo.ContractInfo.remoteTtl,
-            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
@@ -122,7 +96,8 @@ export class EnergyGetterService
         return await this.getData(
             this.getEnergyCacheKey('pauseState'),
             () => this.abiService.isPaused(),
-            oneHour(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
@@ -135,7 +110,8 @@ export class EnergyGetterService
                         scAddress.simpleLockEnergy,
                     )
                 ).ownerAddress,
-            oneSecond(),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
         );
     }
 
