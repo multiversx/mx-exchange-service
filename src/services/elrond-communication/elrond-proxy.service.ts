@@ -192,6 +192,14 @@ export class ElrondProxyService {
         );
     }
 
+    async getTokenUnstakeContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.tokenUnstake,
+            abiConfig.tokenUnstake,
+            'TokenUnstakeModule',
+        );
+    }
+
     async getSmartContract(
         contractAddress: string,
         contractAbiPath: string,

@@ -1,0 +1,212 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.66.0-nightly",
+            "commitHash": "b8c35ca26b191bb9a9ac669a4b3f4d3d52d97fb1",
+            "commitDate": "2022-10-15",
+            "channel": "Nightly",
+            "short": "rustc 1.66.0-nightly (b8c35ca26 2022-10-15)"
+        },
+        "contractCrate": {
+            "name": "token-unstake",
+            "version": "0.0.0",
+            "git_version": "v1.6.0-797-gc44c75ad-modified"
+        },
+        "framework": {
+            "name": "elrond-wasm",
+            "version": "0.36.1"
+        }
+    },
+    "name": "TokenUnstakeModule",
+    "constructor": {
+        "docs": [
+            "Needs burn role for both the unlocked and locked token"
+        ],
+        "inputs": [
+            {
+                "name": "unbond_epochs",
+                "type": "u64"
+            },
+            {
+                "name": "energy_factory_address",
+                "type": "Address"
+            },
+            {
+                "name": "fees_burn_percentage",
+                "type": "u64"
+            },
+            {
+                "name": "fees_collector_address",
+                "type": "Address"
+            },
+            {
+                "name": "lock_options",
+                "type": "variadic<multi<u64,u64>>",
+                "multi_arg": true
+            }
+        ],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "name": "getUnbondEpochs",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getUnlockedTokensForUser",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "List<UnstakePair>"
+                }
+            ]
+        },
+        {
+            "name": "claimUnlockedTokens",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<EsdtTokenPayment>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "cancelUnbond",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "variadic<EsdtTokenPayment>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "name": "depositUserTokens",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "depositFees",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "name": "getFeesBurnPercentage",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getFeesCollectorAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        },
+        {
+            "name": "getLastEpochFeeSentToCollector",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "setEnergyFactoryAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "sc_address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getEnergyFactoryAddress",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "Address"
+                }
+            ]
+        }
+    ],
+    "events": [],
+    "hasCallback": false,
+    "types": {
+        "EsdtTokenPayment": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_identifier",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "UnstakePair": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "unlock_epoch",
+                    "type": "u64"
+                },
+                {
+                    "name": "locked_tokens",
+                    "type": "EsdtTokenPayment"
+                },
+                {
+                    "name": "unlocked_tokens",
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        }
+    }
+}

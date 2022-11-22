@@ -443,6 +443,10 @@
         "energyUpdate": {
             "updateFarmsEnergyForUser": 15000000
         },
+        "tokenUnstake": {
+            "claimUnlockedTokens": 10000000,
+            "cancelUnbond": 10000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
@@ -476,7 +480,8 @@
         "staking": "./src/abis/farm-staking.abi.json",
         "stakingProxy": "./src/abis/farm-staking-proxy.abi.json",
         "feesCollector": "./src/abis/fees-collector.abi.json",
-        "energyUpdate": "./src/abis/energy-update.abi.json"
+        "energyUpdate": "./src/abis/energy-update.abi.json",
+        "tokenUnstake": "./src/abis/token-unstake.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,

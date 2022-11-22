@@ -29,6 +29,7 @@ import { FeesCollectorModule } from './modules/fees-collector/fees-collector.mod
 import { deprecationLoggerMiddleware } from './utils/deprecate.logger.middleware';
 import { GraphQLRequestContext, GraphQLResponse } from 'apollo-server-types';
 import { EnergyModule } from './modules/energy/energy.module';
+import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
 
 @Module({
     imports: [
@@ -132,6 +133,7 @@ import { EnergyModule } from './modules/energy/energy.module';
         SubscriptionsModule,
         FeesCollectorModule,
         EnergyModule,
+        TokenUnstakeModule,
     ],
     providers: [CachingService],
 })
