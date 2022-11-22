@@ -50,12 +50,8 @@ import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import BigNumber from 'bignumber.js';
 import { EnergyHandler } from './handlers/energy.handler.service';
-import {
-    FeesCollectorHandlerService
-} from './handlers/feesCollector.handler.service';
-import {
-    WeeklyRewardsSplittingHandlerService
-} from './handlers/weeklyRewardsSplitting.handler.service';
+import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
+import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
@@ -143,7 +139,13 @@ export class RabbitMqConsumer {
                     await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
-                    await this.wsFarmHandler.handleRewardsEvent(rawEvent);
+                    if (farmsAddresses().includes(rawEvent.address)) {
+                        await this.wsFarmHandler.handleRewardsEvent(rawEvent);
+                    } else {
+                        await this.weeklyRewardsSplittingHandler.handleClaimMulti(
+                            new ClaimMultiEvent(rawEvent),
+                        );
+                    }
                     break;
                 case FARM_EVENTS.COMPOUND_REWARDS:
                     await this.wsFarmHandler.handleRewardsEvent(rawEvent);
