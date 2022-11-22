@@ -4,9 +4,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { Logger } from 'winston';
 import {
-    FeesCollectorAbiService
-} from '../../fees-collector/services/fees-collector.abi.service';
-import {
     FeesCollectorSetterService
 } from '../../fees-collector/services/fees-collector.setter.service';
 import {
@@ -24,7 +21,6 @@ export class FeesCollectorHandlerService {
     private invalidatedKeys = [];
 
     constructor(
-        private readonly abi: FeesCollectorAbiService,
         private readonly setter: FeesCollectorSetterService,
         private readonly getter: FeesCollectorGetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
