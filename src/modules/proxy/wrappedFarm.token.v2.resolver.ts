@@ -135,10 +135,10 @@ export class WrappedFarmTokenResolverV2 {
     }
 
     @Query(() => [WrappedFarmTokenAttributesModelV2])
-    async wrappedFarmTokenAttributesV2(
+    wrappedFarmTokenAttributesV2(
         @Args('args')
         args: DecodeAttributesArgs,
-    ): Promise<WrappedFarmTokenAttributesModelV2[]> {
-        return await this.proxyService.getWrappedFarmTokenAttributesV2(args);
+    ): WrappedFarmTokenAttributesModelV2[] {
+        return this.proxyService.getWrappedFarmTokenAttributesV2(args);
     }
 }

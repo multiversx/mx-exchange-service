@@ -132,7 +132,7 @@ export class UserMetaEsdtComputeService {
                     (<FarmTokenAttributesModelV1_2>decodedFarmAttributes)
                         .aprMultiplier,
                 );
-
+                break;
             default:
                 farmTokenBalance = new BigNumber(nftToken.balance);
         }
@@ -283,7 +283,7 @@ export class UserMetaEsdtComputeService {
         nftToken: LockedFarmTokenV2,
     ): Promise<UserLockedFarmTokenV2> {
         const decodedWFMTAttributes =
-            await this.proxyService.getWrappedFarmTokenAttributesV2({
+            this.proxyService.getWrappedFarmTokenAttributesV2({
                 batchAttributes: [
                     {
                         identifier: nftToken.identifier,
