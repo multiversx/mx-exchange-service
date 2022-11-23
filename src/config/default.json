@@ -447,6 +447,10 @@
             "claimUnlockedTokens": 15000000,
             "cancelUnbond": 20000000
         },
+        "lockedTokenWrapper": {
+            "wrapLockedToken": 5000000,
+            "unwrapLockedToken": 5000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
@@ -481,7 +485,8 @@
         "stakingProxy": "./src/abis/farm-staking-proxy.abi.json",
         "feesCollector": "./src/abis/fees-collector.abi.json",
         "energyUpdate": "./src/abis/energy-update.abi.json",
-        "tokenUnstake": "./src/abis/token-unstake.abi.json"
+        "tokenUnstake": "./src/abis/token-unstake.abi.json",
+        "lockedTokenWrapper": "./src/abis/locked-token-wrapper.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,

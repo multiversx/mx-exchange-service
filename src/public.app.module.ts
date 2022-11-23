@@ -30,6 +30,9 @@ import { deprecationLoggerMiddleware } from './utils/deprecate.logger.middleware
 import { GraphQLRequestContext, GraphQLResponse } from 'apollo-server-types';
 import { EnergyModule } from './modules/energy/energy.module';
 import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module';
+import {
+    LockedTokenWrapperModule
+} from './modules/locked-token-wrapper/locked-token-wrapper.module';
 
 @Module({
     imports: [
@@ -134,6 +137,7 @@ import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module
         FeesCollectorModule,
         EnergyModule,
         TokenUnstakeModule,
+        LockedTokenWrapperModule,
     ],
     providers: [CachingService],
 })
