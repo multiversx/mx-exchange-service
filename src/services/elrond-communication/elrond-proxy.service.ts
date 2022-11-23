@@ -184,6 +184,14 @@ export class ElrondProxyService {
         );
     }
 
+    async getLockedTokenWrapperContract(address: string) {
+        return this.getSmartContract(
+            address,
+            abiConfig.lockedTokenWrapper,
+            'LockedTokenWrapper',
+        );
+    }
+
     async getEnergyUpdateContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.energyUpdate,
