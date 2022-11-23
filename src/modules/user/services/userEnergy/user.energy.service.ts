@@ -28,7 +28,10 @@ export class UserEnergyService {
         const contract = await this.elrondProxy.getEnergyUpdateContract();
         return contract.methodsExplicit
             .updateFarmsEnergyForUser(endpointArgs)
-            .withGasLimit(gasConfig.energyUpdate.updateFarmsEnergyForUser)
+            .withGasLimit(
+                gasConfig.energyUpdate.updateFarmsEnergyForUser *
+                endpointArgs.length,
+            )
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
