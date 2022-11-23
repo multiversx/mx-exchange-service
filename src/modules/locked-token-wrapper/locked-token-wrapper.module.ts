@@ -8,8 +8,8 @@ import {
     LockedTokenWrapperGetterService
 } from './services/locked-token-wrapper.getter.service';
 import {
-    LockedTokenWrapperService
-} from './services/locked-token-wrapper.service';
+    LockedTokenWrapperTransactionService
+} from './services/locked-token-wrapper.transaction.service';
 import { LockedTokenWrapperResolver } from './locked-token-wrapper.resolver';
 
 @Module({
@@ -20,7 +20,7 @@ import { LockedTokenWrapperResolver } from './locked-token-wrapper.resolver';
     providers: [
         LockedTokenWrapperAbiService,
         LockedTokenWrapperGetterService,
-        LockedTokenWrapperService,
+        LockedTokenWrapperTransactionService,
         LockedTokenWrapperResolver
     ],
     exports: [

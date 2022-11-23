@@ -1,7 +1,7 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import {
-    LockedTokenWrapperService
-} from './services/locked-token-wrapper.service';
+    LockedTokenWrapperTransactionService
+} from './services/locked-token-wrapper.transaction.service';
 import { LockedTokenWrapperModel } from './models/locked-token-wrapper.model';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import { scAddress } from '../../config';
@@ -18,7 +18,7 @@ import { ApolloError } from 'apollo-server-express';
 @Resolver(() => LockedTokenWrapperModel)
 export class LockedTokenWrapperResolver extends GenericResolver {
     constructor(
-        private readonly lockedTokenWrapperService: LockedTokenWrapperService,
+        private readonly lockedTokenWrapperTransactionService: LockedTokenWrapperTransactionService,
         private readonly lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
     ) {
         super();
@@ -39,10 +39,10 @@ export class LockedTokenWrapperResolver extends GenericResolver {
     }
 
     @Query(() => LockedTokenWrapperModel)
-    async lockedTokenWrapper(): Promise<LockedTokenWrapperModel> {
-        return await this.genericQuery(() =>
-            this.lockedTokenWrapperService.lockedTokenWrapper(scAddress.lockedTokenWrapper),
-        );
+    lockedTokenWrapper(): LockedTokenWrapperModel {
+        return new LockedTokenWrapperModel({
+            address: scAddress.lockedTokenWrapper,
+        });
     }
 
     @UseGuards(GqlAuthGuard)
@@ -52,7 +52,7 @@ export class LockedTokenWrapperResolver extends GenericResolver {
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
-            return await this.lockedTokenWrapperService.unwrapLockedToken(
+            return await this.lockedTokenWrapperTransactionService.unwrapLockedToken(
                 scAddress.lockedTokenWrapper,
                 user.publicKey,
                 inputTokens,
@@ -69,7 +69,7 @@ export class LockedTokenWrapperResolver extends GenericResolver {
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
-            return await this.lockedTokenWrapperService.wrapLockedToken(
+            return await this.lockedTokenWrapperTransactionService.wrapLockedToken(
                 scAddress.lockedTokenWrapper,
                 user.publicKey,
                 inputTokens,
