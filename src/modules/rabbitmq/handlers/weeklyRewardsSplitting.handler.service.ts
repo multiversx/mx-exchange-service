@@ -27,6 +27,13 @@ import {
 import { scAddress } from '../../../config';
 import { FarmSetterFactory } from '../../farm/farm.setter.factory';
 import { FarmGetterFactory } from '../../farm/farm.getter.factory';
+import {
+    UserEnergySetterService
+} from '../../user/services/userEnergy/user.energy.setter.service';
+import {
+    UserEnergyGetterService
+} from '../../user/services/userEnergy/user.energy.getter.service';
+import { OutdatedContract } from '../../user/models/user.model';
 
 @Injectable()
 export class WeeklyRewardsSplittingHandlerService {
@@ -37,6 +44,8 @@ export class WeeklyRewardsSplittingHandlerService {
         private readonly farmGetter: FarmGetterFactory,
         private readonly feesCollectorSetter: FeesCollectorSetterService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly userEnergyGetter: UserEnergyGetterService,
+        private readonly userEnergySetter: UserEnergySetterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
@@ -60,6 +69,8 @@ export class WeeklyRewardsSplittingHandlerService {
     async handleUpdateUserEnergy(event: UpdateUserEnergyEvent): Promise<void> {
         const topics = event.getTopics();
 
+        let userOutdatedContracts = await this.userEnergyGetter.getUserOutdatedContracts(topics.caller.bech32())
+        userOutdatedContracts = userOutdatedContracts.filter((item: OutdatedContract) => item.address != event.address)
         const keys = await Promise.all([
             this.getSetter(event.address).currentClaimProgress(event.address, topics.caller.bech32(), new ClaimProgress({
                     energy: topics.energy,
@@ -68,6 +79,7 @@ export class WeeklyRewardsSplittingHandlerService {
             )),
             this.getSetter(event.address).userEnergyForWeek(event.address, topics.caller.bech32(), topics.currentWeek, topics.energy),
             this.getSetter(event.address).lastActiveWeekForUser(event.address, topics.caller.bech32(), topics.currentWeek),
+            this.userEnergySetter.setUserOutdatedContracts(topics.caller.bech32(), userOutdatedContracts),
         ]);
 
         this.invalidatedKeys.push(keys);

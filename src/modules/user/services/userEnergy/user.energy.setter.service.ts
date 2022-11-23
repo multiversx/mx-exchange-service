@@ -1,27 +1,27 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { GenericGetterService } from '../../../../services/generics/generic.getter.service';
-import { UserEnergyComputeService } from './user.energy.compute.service';
 import { CachingService } from '../../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { OutdatedContract } from '../../models/user.model';
+import {
+    GenericSetterService
+} from '../../../../services/generics/generic.setter.service';
 import { CacheTtlInfo } from '../../../../services/caching/cache.ttl.info';
 
 @Injectable()
-export class UserEnergyGetterService extends GenericGetterService {
+export class UserEnergySetterService extends GenericSetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly userEnergyCompute: UserEnergyComputeService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'userOutdatedContracts'
     }
 
-    async getUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
-        return this.getData(
+    async setUserOutdatedContracts(userAddress: string, value: OutdatedContract[]): Promise<string> {
+        return this.setData(
             this.getCacheKey(userAddress),
-            () => this.userEnergyCompute.computeUserOutdatedContracts(userAddress),
+            () => value,
             CacheTtlInfo.ContractState.remoteTtl,
             CacheTtlInfo.ContractState.localTtl,
         )
