@@ -427,7 +427,7 @@
             },
             "updateTokens": 10000000,
             "defaultMergeTokens": 12000000,
-            "migrateOldTokens": 5000000,
+            "migrateOldTokens": 15000000,
             "admin": {
                 "issueLockedToken": 60000000,
                 "updateLockOptions": 10000000,
