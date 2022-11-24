@@ -17,6 +17,7 @@ import {
     UserLockedTokenEnergy,
     UserLockedLPTokenV2,
     UserLockedFarmTokenV2,
+    UserWrappedLockedToken,
 } from './user.model';
 
 export const UserNftTokens = createUnionType({
@@ -36,6 +37,7 @@ export const UserNftTokens = createUnionType({
         UserLockedSimpleLpToken,
         UserLockedSimpleFarmToken,
         UserLockedTokenEnergy,
+        UserWrappedLockedToken,
         UserNftToken,
     ],
     resolveType(value) {
@@ -49,6 +51,7 @@ export const UserNftTokens = createUnionType({
             case UserLockedSimpleLpToken.name:
             case UserLockedSimpleFarmToken.name:
             case UserLockedTokenEnergy.name:
+            case UserWrappedLockedToken.name:
             case UserFarmToken.name:
                 return value.constructor.name
             default:

@@ -50,10 +50,11 @@ import {
     UserRedeemToken,
     UserStakeFarmToken,
     UserUnbondFarmToken,
+    UserWrappedLockedToken,
 } from '../models/user.model';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
 import { PriceDiscoveryGetterService } from 'src/modules/price-discovery/services/price.discovery.getter.service';
-
+import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 enum NftTokenType {
     FarmToken,
     LockedAssetToken,
@@ -68,6 +69,7 @@ enum NftTokenType {
     LockedSimpleLpToken,
     LockedSimpleFarmToken,
     LockedTokenEnergy,
+    WrappedLockedToken,
 }
 
 @Injectable()
@@ -86,6 +88,7 @@ export class UserMetaEsdtService {
         private priceDiscoveryGetter: PriceDiscoveryGetterService,
         private simpleLockGetter: SimpleLockGetterService,
         private energyGetter: EnergyGetterService,
+        private lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
@@ -432,6 +435,25 @@ export class UserMetaEsdtService {
         );
     }
 
+    async getUserWrappedLockedTokenEnergy(
+        userAddress: string,
+        pagination: PaginationArgs,
+    ): Promise<UserWrappedLockedToken[]> {
+        const lockedTokenEnergyID = await this.lockedTokenWrapperGetter.getWrappedTokenId(scAddress.lockedTokenWrapper);
+        const nfts = await this.apiService.getNftsForUser(
+            userAddress,
+            pagination.offset,
+            pagination.limit,
+            'MetaESDT',
+            [lockedTokenEnergyID],
+        );
+        return await Promise.all(
+            nfts.map((nft) =>
+                this.userComputeService.wrappedLockedTokenEnergyUSD(nft),
+            ),
+        );
+    }
+
     async getAllNftTokens(
         userAddress: string,
         pagination: PaginationArgs,
@@ -587,6 +609,11 @@ export class UserMetaEsdtService {
                         this.userComputeService.lockedTokenEnergyUSD(userNft),
                     );
                     break;
+                case NftTokenType.WrappedLockedToken:
+                    promises.push(
+                        this.userComputeService.wrappedLockedTokenEnergyUSD(userNft),
+                    );
+                    break;
             }
         }
 
@@ -603,6 +630,11 @@ export class UserMetaEsdtService {
         const lockedTokenEnergy = await this.energyGetter.getLockedTokenID();
         if (tokenID === lockedTokenEnergy) {
             return NftTokenType.LockedTokenEnergy;
+        }
+
+        const wrappedlockedToken = await this.lockedTokenWrapperGetter.getWrappedTokenId(scAddress.lockedTokenWrapper);
+        if (tokenID === wrappedlockedToken) {
+            return NftTokenType.WrappedLockedToken;
         }
 
         for (const proxyVersion of Object.keys(scAddress.proxyDexAddress)) {

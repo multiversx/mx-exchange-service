@@ -31,6 +31,7 @@ import {
     UserStakeFarmToken,
     UserToken,
     UserUnbondFarmToken,
+    UserWrappedLockedToken,
 } from '../models/user.model';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import {
@@ -56,7 +57,8 @@ import { FarmFactoryService } from 'src/modules/farm/farm.factory';
 import { UnbondFarmToken } from 'src/modules/tokens/models/unbondFarmToken.model';
 import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/services/locked.asset.getter.service';
 import { FarmTokenAttributesModelV1_2 } from 'src/modules/farm/models/farmTokenAttributes.model';
-
+import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
+import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 @Injectable()
 export class UserMetaEsdtComputeService {
     constructor(
@@ -74,6 +76,8 @@ export class UserMetaEsdtComputeService {
         private readonly stakingProxyService: StakingProxyService,
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
         private readonly simpleLockService: SimpleLockService,
+        private readonly lockedTokenWrapperService: LockedTokenWrapperService,
+        private readonly lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
         private readonly userEsdtCompute: UserEsdtComputeService,
         private readonly tokenCompute: TokenComputeService,
     ) {}
@@ -577,6 +581,33 @@ export class UserMetaEsdtComputeService {
         );
 
         return new UserLockedTokenEnergy({
+            ...nftToken,
+            decodedAttributes,
+            valueUSD: userEsdtToken.valueUSD,
+        });
+    }
+
+    async wrappedLockedTokenEnergyUSD(
+        nftToken: NftToken,
+    ): Promise<UserWrappedLockedToken> {
+        const decodedAttributes =
+            this.lockedTokenWrapperService.decodeWrappedLockedTokenAttributes({
+                identifier: nftToken.identifier,
+                attributes: nftToken.attributes,
+            });
+
+        const originalTokenID = await this.lockedTokenWrapperGetter.getLockedTokenId(scAddress.lockedTokenWrapper);
+        const esdtToken = new EsdtToken({
+            identifier: originalTokenID,
+            balance: nftToken.balance,
+            decimals: nftToken.decimals,
+        });
+
+        const userEsdtToken = await this.userEsdtCompute.esdtTokenUSD(
+            esdtToken,
+        );
+
+        return new UserWrappedLockedToken({
             ...nftToken,
             decodedAttributes,
             valueUSD: userEsdtToken.valueUSD,

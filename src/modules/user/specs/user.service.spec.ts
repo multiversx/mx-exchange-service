@@ -96,6 +96,15 @@ import { ProgressComputeService } from '../../../submodules/weekly-rewards-split
 import {
     ProgressComputeServiceMock
 } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
+import {
+    LockedTokenWrapperGetterService
+} from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
+import {
+    LockedTokenWrapperGetterServiceMock
+} from '../../locked-token-wrapper/mocks/locked-token-wrapper.getter.service.mock';
+import {
+    LockedTokenWrapperService
+} from '../../locked-token-wrapper/services/locked-token-wrapper.service';
 
 describe('UserService', () => {
     let userMetaEsdts: UserMetaEsdtService;
@@ -191,6 +200,16 @@ describe('UserService', () => {
     ];
 
     beforeEach(async () => {
+
+        const getter = new LockedTokenWrapperGetterServiceMock({
+            getLockedTokenId(address: string): Promise<string> {
+                return Promise.resolve("ELKMEX-7e6873");
+            },
+            getWrappedTokenId(address: string): Promise<string> {
+                return Promise.resolve("WELKMEX-4b8419");
+            }
+        });
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 ElrondApiServiceProvider,
@@ -255,6 +274,12 @@ describe('UserService', () => {
                 },
                 ProxyServiceProvider,
                 ProxyGetterServiceProvider,
+                {
+                    provide: LockedTokenWrapperGetterService,
+                    useValue: getter,
+                },
+                UserMetaEsdtComputeService,
+                LockedTokenWrapperService,
                 ProxyPairGetterServiceProvider,
                 ProxyFarmGetterServiceProvider,
                 LockedAssetProvider,

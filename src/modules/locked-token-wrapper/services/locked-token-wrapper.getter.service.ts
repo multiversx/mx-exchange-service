@@ -7,9 +7,10 @@ import {
     LockedTokenWrapperAbiService
 } from './locked-token-wrapper.abi.service';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
+import { ILockedTokenWrapperGetterService } from '../interfaces';
 
 @Injectable()
-export class LockedTokenWrapperGetterService extends GenericGetterService{
+export class LockedTokenWrapperGetterService extends GenericGetterService implements ILockedTokenWrapperGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

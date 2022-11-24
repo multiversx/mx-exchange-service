@@ -20,6 +20,7 @@ import {
     UserRedeemToken,
     UserStakeFarmToken,
     UserUnbondFarmToken,
+    UserWrappedLockedToken,
 } from './models/user.model';
 import { UserMetaEsdtService } from './services/user.metaEsdt.service';
 
@@ -191,6 +192,18 @@ export class UserNftsResolver extends GenericResolver {
     ): Promise<UserLockedTokenEnergy[]> {
         return await this.genericFieldResolver(() =>
             this.userMetaEsdts.getUserLockedTokenEnergy(
+                parent.address,
+                parent.pagination,
+            ),
+        );
+    }
+
+    @ResolveField()
+    async userWrappedLockedToken(
+        @Parent() parent: UserNftsModel,
+    ): Promise<UserWrappedLockedToken[]> {
+        return await this.genericFieldResolver(() =>
+            this.userMetaEsdts.getUserWrappedLockedTokenEnergy(
                 parent.address,
                 parent.pagination,
             ),
