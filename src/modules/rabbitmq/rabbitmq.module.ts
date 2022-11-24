@@ -29,6 +29,7 @@ import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
 import { EnergyModule } from '../energy/energy.module';
 import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
+import { UserModule } from '../user/user.module';
 
 @Module({
     imports: [
@@ -48,6 +49,7 @@ import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSp
         SimpleLockModule,
         FeesCollectorModule,
         EnergyModule,
+        UserModule,
     ],
     providers: [
         RabbitMqConsumer,

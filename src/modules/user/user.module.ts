@@ -28,6 +28,12 @@ import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { UserEnergyService } from './services/userEnergy/user.energy.service';
 import { UserEnergyGetterService } from './services/userEnergy/user.energy.getter.service';
 import { UserEnergyComputeService } from './services/userEnergy/user.energy.compute.service';
+import {
+    LockedTokenWrapperModule
+} from '../locked-token-wrapper/locked-token-wrapper.module';
+import {
+    UserEnergySetterService
+} from './services/userEnergy/user.energy.setter.service';
 
 @Module({
     imports: [
@@ -49,13 +55,15 @@ import { UserEnergyComputeService } from './services/userEnergy/user.energy.comp
         EnergyModule,
         TokenModule,
         RemoteConfigModule,
-        FeesCollectorModule
+        FeesCollectorModule,
+        LockedTokenWrapperModule,
     ],
     providers: [
         UserEsdtService,
         UserMetaEsdtService,
         UserEnergyService,
         UserEnergyGetterService,
+        UserEnergySetterService,
         UserEnergyComputeService,
         UserEsdtComputeService,
         UserMetaEsdtComputeService,
@@ -63,6 +71,10 @@ import { UserEnergyComputeService } from './services/userEnergy/user.energy.comp
         UserTokenResolver,
         UserNftsResolver,
     ],
-    exports: [UserMetaEsdtService],
+    exports: [
+        UserMetaEsdtService,
+        UserEnergyGetterService,
+        UserEnergySetterService
+    ],
 })
 export class UserModule {}

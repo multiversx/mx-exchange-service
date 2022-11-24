@@ -42,6 +42,20 @@ export class LockedTokenAttributesModel {
 }
 
 @ObjectType()
+export class WrappedLockedTokenAttributesModel {
+    @Field()
+    identifier: string;
+    @Field()
+    attributes: string;
+    @Field(() => Int)
+    lockedTokenNonce: number;
+
+    constructor(init?: Partial<WrappedLockedTokenAttributesModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class LpProxyTokenAttributesModel {
     @Field()
     identifier: string;

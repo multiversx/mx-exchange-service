@@ -18,6 +18,7 @@ import { LockedEsdtToken } from 'src/modules/tokens/models/lockedEsdtToken.model
 import { LockedSimpleFarmToken } from 'src/modules/tokens/models/lockedSimpleFarmToken.model';
 import { LockedSimpleLpToken } from 'src/modules/tokens/models/lockedSimpleLpToken.model';
 import { PaginationArgs } from 'src/modules/dex.model';
+import { WrappedLockedTokenAttributesModel } from '../../simple-lock/models/simple.lock.model';
 
 
 export enum ContractType {
@@ -184,6 +185,18 @@ export class UserLockedTokenEnergy extends LockedEsdtToken {
 }
 
 @ObjectType()
+export class UserWrappedLockedToken extends UserNftToken {
+    @Field() lockedTokenNonce: number;
+    @Field(() => WrappedLockedTokenAttributesModel)
+    decodedAttributes: WrappedLockedTokenAttributesModel;
+
+    constructor(init?: Partial<UserWrappedLockedToken>) {
+        super(init);
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class UserNftsModel {
     pagination: PaginationArgs;
     @Field() address: string;
@@ -215,6 +228,8 @@ export class UserNftsModel {
     userLockedSimpleFarmToken: UserLockedSimpleFarmToken[];
     @Field(() => [UserLockedTokenEnergy])
     userLockedTokenEnergy: UserLockedTokenEnergy[];
+    @Field(() => [UserWrappedLockedToken])
+    userWrappedLockedToken: UserWrappedLockedToken[];
 
     constructor(address: string, pagination: PaginationArgs) {
         this.address = address;
