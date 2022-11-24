@@ -632,6 +632,11 @@ export class UserMetaEsdtService {
             return NftTokenType.LockedTokenEnergy;
         }
 
+        const wrappedlockedToken = await this.lockedTokenWrapperGetter.getWrappedTokenId(scAddress.lockedTokenWrapper);
+        if (tokenID === wrappedlockedToken) {
+            return NftTokenType.WrappedLockedToken;
+        }
+
         for (const proxyVersion of Object.keys(scAddress.proxyDexAddress)) {
             const [lockedLpTokenID, lockedFarmTokenID] = await Promise.all([
                 this.proxyPairGetter.getwrappedLpTokenID(
