@@ -6,7 +6,7 @@ import { OutdatedContract } from '../../models/user.model';
 import {
     GenericSetterService
 } from '../../../../services/generics/generic.setter.service';
-import { CacheTtlInfo } from '../../../../services/caching/cache.ttl.info';
+import { oneSecond } from '../../../../helpers/helpers';
 
 @Injectable()
 export class UserEnergySetterService extends GenericSetterService {
@@ -22,8 +22,8 @@ export class UserEnergySetterService extends GenericSetterService {
         return this.setData(
             this.getCacheKey(userAddress),
             () => value,
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
+            oneSecond(),
+            oneSecond(),
         )
     }
 }
