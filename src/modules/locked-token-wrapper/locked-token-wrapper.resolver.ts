@@ -14,11 +14,15 @@ import { TransactionModel } from '../../models/transaction.model';
 import { InputTokenModel } from '../../models/inputToken.model';
 import { User } from '../../helpers/userDecorator';
 import { ApolloError } from 'apollo-server-express';
+import {
+    LockedTokenWrapperService
+} from './services/locked-token-wrapper.service';
 
 @Resolver(() => LockedTokenWrapperModel)
 export class LockedTokenWrapperResolver extends GenericResolver {
     constructor(
         private readonly lockedTokenWrapperTransactionService: LockedTokenWrapperTransactionService,
+        private readonly lockedTokenWrapperService: LockedTokenWrapperService,
         private readonly lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
     ) {
         super();
@@ -40,9 +44,7 @@ export class LockedTokenWrapperResolver extends GenericResolver {
 
     @Query(() => LockedTokenWrapperModel)
     lockedTokenWrapper(): LockedTokenWrapperModel {
-        return new LockedTokenWrapperModel({
-            address: scAddress.lockedTokenWrapper,
-        });
+        return this.lockedTokenWrapperService.lockedTokenWrapper(scAddress.lockedTokenWrapper);
     }
 
     @UseGuards(GqlAuthGuard)

@@ -11,6 +11,9 @@ import {
     LockedTokenWrapperTransactionService
 } from './services/locked-token-wrapper.transaction.service';
 import { LockedTokenWrapperResolver } from './locked-token-wrapper.resolver';
+import {
+    LockedTokenWrapperService
+} from './services/locked-token-wrapper.service';
 
 @Module({
     imports: [
@@ -21,9 +24,12 @@ import { LockedTokenWrapperResolver } from './locked-token-wrapper.resolver';
         LockedTokenWrapperAbiService,
         LockedTokenWrapperGetterService,
         LockedTokenWrapperTransactionService,
+        LockedTokenWrapperService,
         LockedTokenWrapperResolver
     ],
     exports: [
+        LockedTokenWrapperGetterService,
+        LockedTokenWrapperService,
     ],
 })
 export class LockedTokenWrapperModule {
