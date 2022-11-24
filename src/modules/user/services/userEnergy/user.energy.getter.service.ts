@@ -5,7 +5,7 @@ import { CachingService } from '../../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { OutdatedContract } from '../../models/user.model';
-import { CacheTtlInfo } from '../../../../services/caching/cache.ttl.info';
+import { oneSecond } from '../../../../helpers/helpers';
 
 @Injectable()
 export class UserEnergyGetterService extends GenericGetterService {
@@ -22,8 +22,8 @@ export class UserEnergyGetterService extends GenericGetterService {
         return this.getData(
             this.getCacheKey(userAddress),
             () => this.userEnergyCompute.computeUserOutdatedContracts(userAddress),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
+            oneSecond(),
+            oneSecond(),
         )
     }
 }
