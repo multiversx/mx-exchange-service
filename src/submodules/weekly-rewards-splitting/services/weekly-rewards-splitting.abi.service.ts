@@ -2,14 +2,30 @@ import { Address, AddressValue, Interaction, SmartContract, U32Value } from '@el
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
 import BigNumber from 'bignumber.js';
 import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { ErrorGetContractHandlerNotSet, VmQueryError } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
 import { ReturnCode } from '@elrondnetwork/erdjs/out/smartcontracts/returnCode';
+import {
+    ContextGetterService
+} from '../../../services/context/context.getter.service';
+import {
+    ElrondProxyService
+} from '../../../services/elrond-communication/elrond-proxy.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
+
+    constructor(
+        protected readonly elrondProxy: ElrondProxyService,
+        @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
+        protected readonly contextGetter: ContextGetterService,
+    ) {
+        super(elrondProxy, logger);
+    }
     async currentClaimProgress(
         scAddress: string,
         user: string,
@@ -57,11 +73,27 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
             response.returnMessage === VmQueryError.INPUT_TOO_SHORT ||
             response.firstValue === null
         ) {
-           return {
-                amount: '0',
-                lastUpdateEpoch: 0,
-                totalLockedTokens: '0',
-            };
+            const claimProgress = await this.currentClaimProgress(scAddress, user);
+            if (claimProgress.week === 0) {
+                return {
+                    amount: '0',
+                    lastUpdateEpoch: 0,
+                    totalLockedTokens: '0',
+                };
+            }
+            const currentEpoch = await this.contextGetter.getCurrentEpoch()
+            if (currentEpoch > claimProgress.energy.lastUpdateEpoch) {
+                claimProgress.energy.amount = new BigNumber(claimProgress.energy.amount)
+                    .minus(
+                        new BigNumber(claimProgress.energy.totalLockedTokens)
+                            .multipliedBy(
+                                currentEpoch - claimProgress.energy.lastUpdateEpoch
+                            )
+                    ).toFixed();
+                claimProgress.energy.lastUpdateEpoch = currentEpoch
+            }
+
+            return claimProgress.energy;
         }
         return Energy.fromDecodedAttributes(response.firstValue.valueOf()).toJSON();
     }

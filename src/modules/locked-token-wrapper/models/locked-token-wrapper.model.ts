@@ -8,6 +8,9 @@ export class LockedTokenWrapperModel  {
     lockedTokenId: string
     @Field()
     wrappedTokenId: string
+    @Field()
+    energyFactoryAddress: string
+
 
     constructor(init?: Partial<LockedTokenWrapperModel>) {
         Object.assign(this, init);
