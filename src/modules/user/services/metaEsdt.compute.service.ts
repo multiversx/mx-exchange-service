@@ -34,10 +34,7 @@ import {
     UserWrappedLockedToken,
 } from '../models/user.model';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
-import {
-    computeValueUSD,
-    tokenIdentifier,
-} from '../../../utils/token.converters';
+import { computeValueUSD, tokenIdentifier } from '../../../utils/token.converters';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { StakingProxyGetterService } from '../../staking-proxy/services/staking.proxy.getter.service';
@@ -588,29 +585,27 @@ export class UserMetaEsdtComputeService {
     }
 
     async wrappedLockedTokenEnergyUSD(
-        nftToken: NftToken,
+        nftWrappedToken: NftToken,
     ): Promise<UserWrappedLockedToken> {
         const decodedAttributes =
             this.lockedTokenWrapperService.decodeWrappedLockedTokenAttributes({
-                identifier: nftToken.identifier,
-                attributes: nftToken.attributes,
+                identifier: nftWrappedToken.identifier,
+                attributes: nftWrappedToken.attributes,
             });
 
-        const originalTokenID = await this.lockedTokenWrapperGetter.getLockedTokenId(scAddress.lockedTokenWrapper);
-        const esdtToken = new EsdtToken({
-            identifier: originalTokenID,
-            balance: nftToken.balance,
-            decimals: nftToken.decimals,
-        });
-
-        const userEsdtToken = await this.userEsdtCompute.esdtTokenUSD(
-            esdtToken,
+        const originalTokenID = await this.lockedTokenWrapperGetter.getLockedTokenId();
+        const nftLockedToken = await this.apiService.getNftByTokenIdentifier(
+            scAddress.lockedTokenWrapper,
+            tokenIdentifier(originalTokenID, decodedAttributes.lockedTokenNonce)
         );
+        nftLockedToken.balance = nftWrappedToken.balance
+
+        const userNftLockedToken = await this.lockedTokenEnergyUSD(nftLockedToken);
 
         return new UserWrappedLockedToken({
-            ...nftToken,
+            ...nftWrappedToken,
             decodedAttributes,
-            valueUSD: userEsdtToken.valueUSD,
+            valueUSD: userNftLockedToken.valueUSD,
         });
     }
 }
