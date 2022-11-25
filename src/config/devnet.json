@@ -42,7 +42,7 @@
             "erd1qqqqqqqqqqqqqpgq7zcf9dhvv48dg80zscayy56y7hh4rfne0n4sf4m7zj",
             "erd1qqqqqqqqqqqqqpgq2x27wrtygh7ur6r0mazne44rreuhttcv0n4s6mv7kj"
         ],
-        "feesCollector": "erd1qqqqqqqqqqqqqpgqur83hqn9j4y6v93m09nn2q0yazuhk2rvpr9sarz5yj",
+        "feesCollector": "erd1qqqqqqqqqqqqqpgqrxnj8de34z9klzegydv535662cj6pwtl0n4syftggh",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgq4vukqq9sd040peulr2m0tlnyffgdee770n4se6gjv7",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu"
@@ -80,8 +80,8 @@
                 "unlockedRewards": [
                 ],
                 "lockedRewards": [
-                    "erd1qqqqqqqqqqqqqpgq7uwxfth05wayhg7su4y26awnmr8q70zs0n4s5axwdy",
-                    "erd1qqqqqqqqqqqqqpgqvaj73hev0562hrptxzxm57vanrly2dgh0n4sl4tsuk"
+                    "erd1qqqqqqqqqqqqqpgqy0uccas7zhwdrdc92adzvtlf70g6sred0n4sdncf5m",
+                    "erd1qqqqqqqqqqqqqpgqzlwukjh5a6fz4rvp48szkx5fux2c9un80n4s7qvu4t"
                 ]
         }
     },

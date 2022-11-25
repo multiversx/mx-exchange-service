@@ -166,7 +166,7 @@ export class FarmComputeServiceV2 extends Mixin(
             .multipliedBy(liquidity)
             .dividedBy(farmTokenSupply);
         const userRewardsForWeek = new BigNumber(
-            boostedYieldsFactors.userRewardsBase,
+            boostedYieldsFactors.maxRewardsFactor,
         )
             .multipliedBy(userBaseRewardsPerBlock)
             .multipliedBy(constantsConfig.BLOCKS_PER_WEEK);

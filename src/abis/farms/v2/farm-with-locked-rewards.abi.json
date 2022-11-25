@@ -10,11 +10,11 @@
         "contractCrate": {
             "name": "farm-with-locked-rewards",
             "version": "0.0.0",
-            "git_version": "v1.6.0-657-g8d756848-modified"
+            "git_version": "v1.6.0-884-g6d1883a4-modified"
         },
         "framework": {
             "name": "elrond-wasm",
-            "version": "0.36.0"
+            "version": "0.36.1"
         }
     },
     "name": "Farm",
@@ -57,8 +57,9 @@
             ],
             "inputs": [
                 {
-                    "name": "original_caller",
-                    "type": "Address"
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -78,8 +79,9 @@
             ],
             "inputs": [
                 {
-                    "name": "original_caller",
-                    "type": "Address"
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -99,8 +101,9 @@
             ],
             "inputs": [
                 {
-                    "name": "original_caller",
-                    "type": "Address"
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
@@ -119,9 +122,17 @@
                 {
                     "name": "exit_amount",
                     "type": "BigUint"
+                },
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
                 }
             ],
             "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                },
                 {
                     "type": "EsdtTokenPayment"
                 },
@@ -137,10 +148,6 @@
                 {
                     "name": "user",
                     "type": "Address"
-                },
-                {
-                    "name": "farm_token_nonce",
-                    "type": "u64"
                 },
                 {
                     "name": "farm_token_amount",
@@ -163,7 +170,13 @@
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "opt_orig_caller",
+                    "type": "optional<Address>",
+                    "multi_arg": true
+                }
+            ],
             "outputs": [
                 {
                     "type": "EsdtTokenPayment"
@@ -562,7 +575,7 @@
             "mutability": "mutable",
             "inputs": [
                 {
-                    "name": "user_rewards_base_const",
+                    "name": "max_rewards_factor",
                     "type": "BigUint"
                 },
                 {
@@ -597,6 +610,21 @@
             "outputs": [
                 {
                     "type": "u64"
+                }
+            ]
+        },
+        {
+            "name": "getFarmSupplyForWeek",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "week",
+                    "type": "u32"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BigUint"
                 }
             ]
         },
@@ -659,7 +687,7 @@
             ]
         },
         {
-            "name": "getCurrentClaimProgress",
+            "name": "getLastActiveWeekForUser",
             "mutability": "readonly",
             "inputs": [
                 {
@@ -669,7 +697,7 @@
             ],
             "outputs": [
                 {
-                    "type": "ClaimProgress"
+                    "type": "u32"
                 }
             ]
         },
@@ -688,22 +716,8 @@
             ],
             "outputs": [
                 {
-                    "type": "Energy"
-                }
-            ]
-        },
-        {
-            "name": "getLastActiveWeekForUser",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "user",
-                    "type": "Address"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "u32"
+                    "type": "optional<Energy>",
+                    "multi_result": true
                 }
             ]
         },
@@ -759,6 +773,32 @@
             "outputs": [
                 {
                     "type": "BigUint"
+                }
+            ]
+        },
+        {
+            "name": "updateEnergyForUser",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getCurrentClaimProgress",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "user",
+                    "type": "Address"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "ClaimProgress"
                 }
             ]
         },
@@ -1010,7 +1050,7 @@
             "type": "struct",
             "fields": [
                 {
-                    "name": "user_rewards_base_const",
+                    "name": "max_rewards_factor",
                     "type": "BigUint"
                 },
                 {
@@ -1213,16 +1253,8 @@
                     "type": "BigUint"
                 },
                 {
-                    "name": "original_entering_epoch",
-                    "type": "u64"
-                },
-                {
                     "name": "entering_epoch",
                     "type": "u64"
-                },
-                {
-                    "name": "initial_farming_amount",
-                    "type": "BigUint"
                 },
                 {
                     "name": "compounded_reward",
@@ -1231,6 +1263,10 @@
                 {
                     "name": "current_farm_amount",
                     "type": "BigUint"
+                },
+                {
+                    "name": "original_owner",
+                    "type": "Address"
                 }
             ]
         },
