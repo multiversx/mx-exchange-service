@@ -439,7 +439,7 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserWrappedLockedToken[]> {
-        const lockedTokenEnergyID = await this.lockedTokenWrapperGetter.getWrappedTokenId(scAddress.lockedTokenWrapper);
+        const lockedTokenEnergyID = await this.lockedTokenWrapperGetter.getWrappedTokenId();
         const nfts = await this.apiService.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -632,7 +632,7 @@ export class UserMetaEsdtService {
             return NftTokenType.LockedTokenEnergy;
         }
 
-        const wrappedlockedToken = await this.lockedTokenWrapperGetter.getWrappedTokenId(scAddress.lockedTokenWrapper);
+        const wrappedlockedToken = await this.lockedTokenWrapperGetter.getWrappedTokenId();
         if (tokenID === wrappedlockedToken) {
             return NftTokenType.WrappedLockedToken;
         }

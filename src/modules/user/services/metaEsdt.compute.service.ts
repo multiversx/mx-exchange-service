@@ -34,10 +34,7 @@ import {
     UserWrappedLockedToken,
 } from '../models/user.model';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
-import {
-    computeValueUSD,
-    tokenIdentifier,
-} from '../../../utils/token.converters';
+import { computeValueUSD, decimalToHex, tokenIdentifier } from '../../../utils/token.converters';
 import { StakeFarmToken } from 'src/modules/tokens/models/stakeFarmToken.model';
 import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { StakingProxyGetterService } from '../../staking-proxy/services/staking.proxy.getter.service';
@@ -596,16 +593,12 @@ export class UserMetaEsdtComputeService {
                 attributes: nftToken.attributes,
             });
 
-        const originalTokenID = await this.lockedTokenWrapperGetter.getLockedTokenId(scAddress.lockedTokenWrapper);
-        const esdtToken = new EsdtToken({
-            identifier: originalTokenID,
-            balance: nftToken.balance,
-            decimals: nftToken.decimals,
-        });
+        const originalTokenID = await this.lockedTokenWrapperGetter.getLockedTokenId();
+        const esdtToken = await this.apiService.getNftByTokenIdentifier(scAddress.lockedTokenWrapper,
+            `${originalTokenID}-${decimalToHex(decodedAttributes.lockedTokenNonce)}`)
+        esdtToken.balance = nftToken.balance
 
-        const userEsdtToken = await this.userEsdtCompute.esdtTokenUSD(
-            esdtToken,
-        );
+        const userEsdtToken = await this.lockedTokenEnergyUSD(esdtToken);
 
         return new UserWrappedLockedToken({
             ...nftToken,

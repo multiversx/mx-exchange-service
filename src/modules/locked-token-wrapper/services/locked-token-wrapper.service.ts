@@ -7,6 +7,7 @@ import {
     WrappedLockedTokenAttributesModel
 } from '../../simple-lock/models/simple.lock.model';
 import { LockedTokenWrapperModel } from '../models/locked-token-wrapper.model';
+import { scAddress } from '../../../config';
 
 
 @Injectable()
@@ -22,7 +23,7 @@ export class LockedTokenWrapperService {
         });
     }
 
-    lockedTokenWrapper(address: string): LockedTokenWrapperModel {
+    lockedTokenWrapper(address: string = scAddress.lockedTokenWrapper): LockedTokenWrapperModel {
         return new LockedTokenWrapperModel({
             address: address,
         });

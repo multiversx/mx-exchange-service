@@ -50,8 +50,10 @@ export class LockedTokenWrapperResolver extends GenericResolver {
     }
 
     @Query(() => LockedTokenWrapperModel)
-    lockedTokenWrapper(): LockedTokenWrapperModel {
-        return this.lockedTokenWrapperService.lockedTokenWrapper(scAddress.lockedTokenWrapper);
+    lockedTokenWrapper(
+        @Args('address', { nullable: true }) address: string,
+    ): LockedTokenWrapperModel {
+        return this.lockedTokenWrapperService.lockedTokenWrapper(address);
     }
 
     @UseGuards(GqlAuthGuard)

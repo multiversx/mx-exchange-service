@@ -8,6 +8,7 @@ import {
 } from './locked-token-wrapper.abi.service';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { ILockedTokenWrapperGetterService } from '../interfaces';
+import { scAddress } from '../../../config';
 
 @Injectable()
 export class LockedTokenWrapperGetterService extends GenericGetterService implements ILockedTokenWrapperGetterService {
@@ -20,7 +21,7 @@ export class LockedTokenWrapperGetterService extends GenericGetterService implem
         this.baseKey = 'lockedTokenWrapper'
     }
 
-    async getLockedTokenId(address: string): Promise<string> {
+    async getLockedTokenId(address: string = scAddress.lockedTokenWrapper): Promise<string> {
         return this.getData(
             this.getCacheKey('lockedTokenId', address),
             () => this.abiService.lockedTokenId(address),
@@ -29,7 +30,7 @@ export class LockedTokenWrapperGetterService extends GenericGetterService implem
         )
     }
 
-    async getWrappedTokenId(address: string): Promise<string> {
+    async getWrappedTokenId(address: string = scAddress.lockedTokenWrapper): Promise<string> {
         return this.getData(
             this.getCacheKey('lockedTokenId', address),
             () => this.abiService.wrappedTokenId(address),
