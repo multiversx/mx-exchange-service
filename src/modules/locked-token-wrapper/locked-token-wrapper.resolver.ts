@@ -42,6 +42,13 @@ export class LockedTokenWrapperResolver extends GenericResolver {
         );
     }
 
+    @ResolveField()
+    async energyFactoryAddress(@Parent() parent: LockedTokenWrapperModel): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.lockedTokenWrapperGetter.getEnergyFactoryAddress(parent.address),
+        );
+    }
+
     @Query(() => LockedTokenWrapperModel)
     lockedTokenWrapper(): LockedTokenWrapperModel {
         return this.lockedTokenWrapperService.lockedTokenWrapper(scAddress.lockedTokenWrapper);

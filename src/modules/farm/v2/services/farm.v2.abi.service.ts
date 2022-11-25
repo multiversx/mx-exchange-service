@@ -33,6 +33,9 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ElrondGatewayService } from '../../../../services/elrond-communication/elrond-gateway.service';
 import { tokenNonce } from '../../../../utils/token.converters';
+import {
+    ElrondApiService
+} from '../../../../services/elrond-communication/elrond-api.service';
 
 @Injectable()
 export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
@@ -41,6 +44,7 @@ export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplitti
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly gatewayService: ElrondGatewayService,
+        protected readonly apiService: ElrondApiService,
     ) {
         super(elrondProxy, logger, gatewayService);
         this.getContractHandler = this.getContract

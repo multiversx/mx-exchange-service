@@ -27,4 +27,12 @@ export class LockedTokenWrapperAbiService extends GenericAbiService {
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
+
+    async energyFactoryAddress(address: string): Promise<string> {
+        const contract = await this.elrondProxy.getLockedTokenWrapperContract(address);
+        const interaction: Interaction = contract.methodsExplicit.getEnergyFactoryAddress();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().bech32();
+    }
+
 }

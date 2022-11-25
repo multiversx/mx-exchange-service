@@ -448,8 +448,8 @@
             "cancelUnbond": 20000000
         },
         "lockedTokenWrapper": {
-            "wrapLockedToken": 5000000,
-            "unwrapLockedToken": 5000000
+            "wrapLockedToken": 15000000,
+            "unwrapLockedToken": 15000000
         },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,

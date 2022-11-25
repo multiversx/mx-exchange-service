@@ -37,4 +37,14 @@ export class LockedTokenWrapperGetterService extends GenericGetterService implem
             CacheTtlInfo.ContractInfo.localTtl,
         )
     }
+
+    async getEnergyFactoryAddress(address: string): Promise<string> {
+        return this.getData(
+            this.getCacheKey('energyFactoryAddress', address),
+            () => this.abiService.energyFactoryAddress(address),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
+        )
+    }
+
 }
