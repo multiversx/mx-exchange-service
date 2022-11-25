@@ -7,12 +7,14 @@ import { ElrondCommunicationModule } from '../../services/elrond-communication/e
 import { CachingModule } from '../../services/caching/cache.module';
 import { ApiConfigService } from '../../helpers/api.config.service';
 import { WeekTimekeepingResolver } from './week-timekeeping.resolver';
+import { ContextModule } from '../../services/context/context.module';
 
 
 @Module({
     imports: [
         ElrondCommunicationModule,
         CachingModule,
+        ContextModule,
     ],
 })
 export class WeekTimekeepingModule {

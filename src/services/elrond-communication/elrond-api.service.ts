@@ -13,7 +13,6 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ApiNetworkProvider } from '@elrondnetwork/erdjs-network-providers/out';
 import { isEsdtToken, isNftCollection } from 'src/utils/token.type.compare';
 import { PendingExecutor } from 'src/utils/pending.executor';
-import { NetworkStatus } from '../../models/network.status.model';
 
 type GenericGetArgs = {
     methodName: string;
@@ -227,15 +226,6 @@ export class ElrondApiService {
             this.getCurrentNonce.name,
             `network/status/${shardId}`,
         );
-    }
-
-    async getCurrentEpoch(shardId: number): Promise<number> {
-        const result = await this.doGetGeneric<NetworkStatus>(
-            this.getCurrentEpoch.name,
-            `network/status/${shardId}`,
-        );
-
-        return result.data.erd_epoch_number;
     }
 
     async getCurrentBlockNonce(shardId: number): Promise<number> {

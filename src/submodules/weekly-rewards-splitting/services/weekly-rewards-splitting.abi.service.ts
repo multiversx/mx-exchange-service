@@ -8,8 +8,8 @@ import { ErrorGetContractHandlerNotSet, VmQueryError } from '../../../utils/erro
 import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
 import { ReturnCode } from '@elrondnetwork/erdjs/out/smartcontracts/returnCode';
 import {
-    ElrondApiService
-} from '../../../services/elrond-communication/elrond-api.service';
+    ContextGetterService
+} from '../../../services/context/context.getter.service';
 import {
     ElrondProxyService
 } from '../../../services/elrond-communication/elrond-proxy.service';
@@ -22,7 +22,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly apiService: ElrondApiService,
+        protected readonly contextGetter: ContextGetterService,
     ) {
         super(elrondProxy, logger);
     }
@@ -81,7 +81,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
                     totalLockedTokens: '0',
                 };
             }
-            const currentEpoch = await this.apiService.getCurrentEpoch(0)
+            const currentEpoch = await this.contextGetter.getCurrentEpoch()
             if (currentEpoch > claimProgress.energy.lastUpdateEpoch) {
                 claimProgress.energy.amount = new BigNumber(claimProgress.energy.amount)
                     .minus(

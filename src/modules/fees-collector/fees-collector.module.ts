@@ -11,11 +11,13 @@ import { FeesCollectorService } from './services/fees-collector.service';
 import { WeeklyRewardsSplittingModule } from '../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.module';
 import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-timekeeping.module';
 import { FeesCollectorSetterService } from './services/fees-collector.setter.service';
+import { ContextModule } from '../../services/context/context.module';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
         CachingModule,
+        ContextModule,
         WeekTimekeepingModule.register(FeesCollectorAbiService),
         WeeklyRewardsSplittingModule.register(FeesCollectorAbiService),
     ],
