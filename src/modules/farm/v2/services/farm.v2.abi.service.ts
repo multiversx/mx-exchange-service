@@ -22,24 +22,21 @@ import { FarmRewardType } from '../../models/farm.model';
 import { farmType } from 'src/utils/farm.utils';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { Mixin } from 'ts-mixer';
-import {
-    WeeklyRewardsSplittingAbiService
-} from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
-import {
-    WeekTimekeepingAbiService
-} from '../../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
+import { WeeklyRewardsSplittingAbiService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
+import { WeekTimekeepingAbiService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { ElrondGatewayService } from '../../../../services/elrond-communication/elrond-gateway.service';
 import { tokenNonce } from '../../../../utils/token.converters';
-import {
-    WeekTimekeepingGetterService
-} from '../../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import { WeekTimekeepingGetterService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 
 @Injectable()
-export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
-
+export class FarmAbiServiceV2 extends Mixin(
+    AbiFarmService,
+    WeeklyRewardsSplittingAbiService,
+    WeekTimekeepingAbiService,
+) {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
@@ -47,14 +44,14 @@ export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplitti
         protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
         super(elrondProxy, logger, gatewayService);
-        this.getContractHandler = this.getContract
+        this.getContractHandler = this.getContract;
     }
 
     async getContract(farmAddress: string): Promise<SmartContract> {
         const contract = await this.elrondProxy.getFarmSmartContract(
             farmAddress,
         );
-        return contract
+        return contract;
     }
 
     async getBoostedYieldsRewardsPercenatage(
@@ -131,8 +128,8 @@ export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplitti
         const response = await this.getGenericData(interaction);
         const rawBoostedYieldsFactors = response.firstValue.valueOf();
         return new BoostedYieldsFactors({
-            userRewardsBase:
-                rawBoostedYieldsFactors.user_rewards_base_const.toFixed(),
+            maxRewardsFactor:
+                rawBoostedYieldsFactors.max_rewards_factor.toFixed(),
             userRewardsEnergy:
                 rawBoostedYieldsFactors.user_rewards_energy_const.toFixed(),
             userRewardsFarm:
@@ -143,13 +140,15 @@ export class FarmAbiServiceV2 extends Mixin(AbiFarmService, WeeklyRewardsSplitti
         });
     }
 
-    async accumulatedRewardsForWeek(scAddress: string, week: number): Promise<string> {
+    async accumulatedRewardsForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<string> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.getAccumulatedFees(
-            [
+        const interaction: Interaction =
+            contract.methodsExplicit.getAccumulatedFees([
                 new U32Value(new BigNumber(week)),
-            ],
-        );
+            ]);
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
