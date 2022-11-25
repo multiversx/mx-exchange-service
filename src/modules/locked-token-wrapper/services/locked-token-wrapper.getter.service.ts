@@ -32,7 +32,7 @@ export class LockedTokenWrapperGetterService extends GenericGetterService implem
 
     async getWrappedTokenId(address: string = scAddress.lockedTokenWrapper): Promise<string> {
         return this.getData(
-            this.getCacheKey('lockedTokenId', address),
+            this.getCacheKey('wrappedTokenId', address),
             () => this.abiService.wrappedTokenId(address),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
