@@ -38,11 +38,11 @@ import {
     EnergyEvent,
     RawEventType,
     FEES_COLLECTOR_EVENTS,
-    WEEKLY_REWARDS_SPLITTING_EVENTS,
     DepositSwapFeesEvent,
     UpdateGlobalAmountsEvent,
     UpdateUserEnergyEvent,
     ClaimMultiEvent,
+    CLAIM_REWARDS_EVENT_NAMES,
 } from '@elrondnetwork/erdjs-dex';
 import { RouterGetterService } from '../router/services/router.getter.service';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
@@ -98,7 +98,8 @@ export class RabbitMqConsumer {
         for (const rawEvent of events) {
             if (
                 rawEvent.data === '' &&
-                rawEvent.identifier !== METABONDING_EVENTS.UNBOND
+                rawEvent.identifier !== METABONDING_EVENTS.UNBOND &&
+                rawEvent.identifier !== FEES_COLLECTOR_EVENTS.CLAIM_REWARDS
             ) {
                 continue;
             }
@@ -139,12 +140,27 @@ export class RabbitMqConsumer {
                     await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
-                    if (farmsAddresses().includes(rawEvent.address)) {
-                        await this.wsFarmHandler.handleRewardsEvent(rawEvent);
-                    } else {
-                        await this.weeklyRewardsSplittingHandler.handleClaimMulti(
-                            new ClaimMultiEvent(rawEvent),
-                        );
+                case FEES_COLLECTOR_EVENTS.CLAIM_REWARDS:
+                    const eventName = Buffer.from(rawEvent.topics[0], 'base64').toString();
+                    switch (eventName) {
+                        case CLAIM_REWARDS_EVENT_NAMES.UPDATE_GLOBAL_AMOUNTS:
+                            await this.weeklyRewardsSplittingHandler.handleUpdateGlobalAmounts(
+                                new UpdateGlobalAmountsEvent(rawEvent),
+                            );
+                            break;
+                        case CLAIM_REWARDS_EVENT_NAMES.UPDATE_USER_ENERGY:
+                            await this.weeklyRewardsSplittingHandler.handleUpdateUserEnergy(
+                                new UpdateUserEnergyEvent(rawEvent),
+                            );
+                            break;
+                        case CLAIM_REWARDS_EVENT_NAMES.CLAIM_MULTI:
+                            await this.weeklyRewardsSplittingHandler.handleClaimMulti(
+                                new ClaimMultiEvent(rawEvent),
+                            );
+                            break;
+                        case CLAIM_REWARDS_EVENT_NAMES.CLAIM_REWARDS:
+                            await this.wsFarmHandler.handleRewardsEvent(rawEvent);
+                            break;
                     }
                     break;
                 case FARM_EVENTS.COMPOUND_REWARDS:
@@ -233,21 +249,6 @@ export class RabbitMqConsumer {
                 case FEES_COLLECTOR_EVENTS.DEPOSIT_SWAP_FEES:
                     await this.feesCollectorHandler.handleDepositSwapFeesEvent(
                         new DepositSwapFeesEvent(rawEvent),
-                    );
-                    break;
-                case WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS:
-                    await this.weeklyRewardsSplittingHandler.handleUpdateGlobalAmounts(
-                        new UpdateGlobalAmountsEvent(rawEvent),
-                    );
-                    break;
-                case WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY:
-                    await this.weeklyRewardsSplittingHandler.handleUpdateUserEnergy(
-                        new UpdateUserEnergyEvent(rawEvent),
-                    );
-                    break;
-                case WEEKLY_REWARDS_SPLITTING_EVENTS.CLAIM_MULTI:
-                    await this.weeklyRewardsSplittingHandler.handleClaimMulti(
-                        new ClaimMultiEvent(rawEvent),
                     );
                     break;
             }
