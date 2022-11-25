@@ -8,13 +8,13 @@ import { ErrorGetContractHandlerNotSet, VmQueryError } from '../../../utils/erro
 import { Energy, EnergyType } from '@elrondnetwork/erdjs-dex';
 import { ReturnCode } from '@elrondnetwork/erdjs/out/smartcontracts/returnCode';
 import {
-    ContextGetterService
-} from '../../../services/context/context.getter.service';
-import {
     ElrondProxyService
 } from '../../../services/elrond-communication/elrond-proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import {
+    WeekTimekeepingGetterService
+} from '../../week-timekeeping/services/week-timekeeping.getter.service';
 
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
@@ -22,7 +22,7 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly contextGetter: ContextGetterService,
+        protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
         super(elrondProxy, logger);
     }
@@ -81,16 +81,16 @@ export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
                     totalLockedTokens: '0',
                 };
             }
-            const currentEpoch = await this.contextGetter.getCurrentEpoch()
-            if (currentEpoch > claimProgress.energy.lastUpdateEpoch) {
+            const endEpochForWeek = await this.timekeepingGetter.getEndEpochForWeek(scAddress, week);
+            if (endEpochForWeek > claimProgress.energy.lastUpdateEpoch) {
                 claimProgress.energy.amount = new BigNumber(claimProgress.energy.amount)
                     .minus(
                         new BigNumber(claimProgress.energy.totalLockedTokens)
                             .multipliedBy(
-                                currentEpoch - claimProgress.energy.lastUpdateEpoch
+                                endEpochForWeek - claimProgress.energy.lastUpdateEpoch
                             )
                     ).toFixed();
-                claimProgress.energy.lastUpdateEpoch = currentEpoch
+                claimProgress.energy.lastUpdateEpoch = endEpochForWeek
             }
 
             return claimProgress.energy;

@@ -12,15 +12,15 @@ import BigNumber from 'bignumber.js';
 import { WeekTimekeepingAbiService } from '../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import {
-    ContextGetterService
-} from '../../../services/context/context.getter.service';
+    WeekTimekeepingGetterService
+} from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 
 @Injectable()
 export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewardsSplittingAbiService, WeekTimekeepingAbiService) {
     constructor(
         protected readonly elrondProxy: ElrondProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly contextGetter: ContextGetterService,
+        protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
         super(elrondProxy, logger);
         this.getContractHandler = this.getContract
