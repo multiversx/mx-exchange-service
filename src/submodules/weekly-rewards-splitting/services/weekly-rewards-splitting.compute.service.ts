@@ -130,7 +130,7 @@ export class WeeklyRewardsSplittingComputeService
             energyAmount = userEnergyModel.amount;
         }
 
-        if (!new BigNumber(energyAmount).isPositive()) {
+        if (!new BigNumber(energyAmount).isGreaterThan(0)) {
             return payments;
         }
 
@@ -139,16 +139,18 @@ export class WeeklyRewardsSplittingComputeService
                 scAddress,
                 week,
             );
+
         for (const weeklyRewards of totalRewards) {
             const paymentAmount = new BigNumber(weeklyRewards.amount)
                 .multipliedBy(new BigNumber(energyAmount))
                 .dividedBy(new BigNumber(totalEnergy));
-            if (paymentAmount.isPositive()) {
+            if (paymentAmount.isGreaterThan(0)) {
                 payments.push(
                     new EsdtTokenPayment({
                         tokenID: weeklyRewards.tokenID,
                         nonce: 0,
                         amount: paymentAmount.integerValue().toFixed(),
+                        tokenType: weeklyRewards.tokenType,
                     }),
                 );
             }
