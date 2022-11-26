@@ -20,7 +20,7 @@ import {
     EnterFarmProxyEvent,
     EsdtLocalBurnEvent,
     EsdtLocalMintEvent,
-    ESDT_EVENTS,
+    TRANSACTION_EVENTS,
     ExitFarmProxyEvent,
     FARM_EVENTS,
     MetabondingEvent,
@@ -83,8 +83,8 @@ export class RabbitMqConsumer {
         }
         const events: RawEventType[] = rawEvents?.events?.filter(
             (rawEvent: { address: string; identifier: string }) =>
-                rawEvent.identifier === ESDT_EVENTS.ESDT_LOCAL_BURN ||
-                rawEvent.identifier === ESDT_EVENTS.ESDT_LOCAL_MINT ||
+                rawEvent.identifier === TRANSACTION_EVENTS.ESDT_LOCAL_BURN ||
+                rawEvent.identifier === TRANSACTION_EVENTS.ESDT_LOCAL_MINT ||
                 this.isFilteredAddress(rawEvent.address)
         );
 
@@ -101,7 +101,7 @@ export class RabbitMqConsumer {
                 continue;
             }
             let eventData: any[];
-            switch (rawEvent.identifier) {
+            switch (rawEvent.name) {
                 case PAIR_EVENTS.SWAP:
                     [eventData, timestamp] =
                         await this.swapHandler.handleSwapEvents(
@@ -165,12 +165,12 @@ export class RabbitMqConsumer {
                         new CompoundRewardsProxyEvent(rawEvent),
                     );
                     break;
-                case ESDT_EVENTS.ESDT_LOCAL_MINT:
+                case TRANSACTION_EVENTS.ESDT_LOCAL_MINT:
                     await this.wsEsdtTokenHandler.handleEsdtTokenEvent(
                         new EsdtLocalMintEvent(rawEvent),
                     );
                     break;
-                case ESDT_EVENTS.ESDT_LOCAL_BURN:
+                case TRANSACTION_EVENTS.ESDT_LOCAL_BURN:
                     await this.wsEsdtTokenHandler.handleEsdtTokenEvent(
                         new EsdtLocalBurnEvent(rawEvent),
                     );
