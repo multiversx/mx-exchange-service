@@ -11,7 +11,7 @@ import { PairSetterService } from '../../pair/services/pair.setter.service';
 import {
     PAIR_EVENTS,
     SwapEvent,
-    SwapNoFeeEvent
+    SwapNoFeeEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { PairHandler } from './pair.handler.service';
 import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
