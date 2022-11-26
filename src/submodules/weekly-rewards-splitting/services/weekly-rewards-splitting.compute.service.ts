@@ -46,7 +46,13 @@ export class WeeklyRewardsSplittingComputeService
             EsdtTokenPayment
         >();
 
-        const startWeek = userProgress.week === 0 ? currentWeek : Math.max(currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS, userProgress.week)
+        const startWeek =
+            userProgress.week === 0
+                ? currentWeek
+                : Math.max(
+                      currentWeek - constantsConfig.USER_MAX_CLAIM_WEEKS,
+                      userProgress.week,
+                  );
         for (let week = startWeek; week < currentWeek; week++) {
             if (week < 1) {
                 continue;
@@ -123,9 +129,8 @@ export class WeeklyRewardsSplittingComputeService
                 );
             energyAmount = userEnergyModel.amount;
         }
-        const zero = new BigNumber(0);
-        const userHasEnergy = new BigNumber(energyAmount).isGreaterThan(zero);
-        if (!userHasEnergy) {
+
+        if (!new BigNumber(energyAmount).isPositive()) {
             return payments;
         }
 
@@ -138,13 +143,14 @@ export class WeeklyRewardsSplittingComputeService
             const paymentAmount = new BigNumber(weeklyRewards.amount)
                 .multipliedBy(new BigNumber(energyAmount))
                 .dividedBy(new BigNumber(totalEnergy));
-            if (paymentAmount.isGreaterThan(zero)) {
-                const payment = new EsdtTokenPayment();
-                payment.amount = paymentAmount.integerValue().toFixed();
-                payment.nonce = 0;
-                payment.tokenID = weeklyRewards.tokenID;
-                payment.tokenType = weeklyRewards.tokenType;
-                payments.push(payment);
+            if (paymentAmount.isPositive()) {
+                payments.push(
+                    new EsdtTokenPayment({
+                        tokenID: weeklyRewards.tokenID,
+                        nonce: 0,
+                        amount: paymentAmount.integerValue().toFixed(),
+                    }),
+                );
             }
         }
 
