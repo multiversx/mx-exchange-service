@@ -98,8 +98,10 @@ export class RabbitMqConsumer {
                 rawEvent.name !== WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS &&
                 rawEvent.name !== WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY
             ) {
+                this.logger.info('Event skipped', [rawEvent]);
                 continue;
             }
+            this.logger.info('Processing event', [rawEvent]);
             let eventData: any[];
             switch (rawEvent.name) {
                 case PAIR_EVENTS.SWAP:
