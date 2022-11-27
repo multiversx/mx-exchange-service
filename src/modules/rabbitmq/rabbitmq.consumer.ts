@@ -42,6 +42,8 @@ import {
     UpdateUserEnergyEvent,
     ClaimMultiEvent,
     WEEKLY_REWARDS_SPLITTING_EVENTS,
+    TOKEN_UNSTAKE_EVENTS,
+    UserUnlockedTokensEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { RouterGetterService } from '../router/services/router.getter.service';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
@@ -51,6 +53,7 @@ import BigNumber from 'bignumber.js';
 import { EnergyHandler } from './handlers/energy.handler.service';
 import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
+import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
@@ -69,6 +72,7 @@ export class RabbitMqConsumer {
         private readonly energyHandler: EnergyHandler,
         private readonly feesCollectorHandler: FeesCollectorHandlerService,
         private readonly weeklyRewardsSplittingHandler: WeeklyRewardsSplittingHandlerService,
+        private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -81,12 +85,16 @@ export class RabbitMqConsumer {
         if (!rawEvents.events) {
             return;
         }
-        const events: RawEvent[] = rawEvents?.events?.filter(
-            (rawEvent: { address: string; identifier: string }) =>
-                rawEvent.identifier === TRANSACTION_EVENTS.ESDT_LOCAL_BURN ||
-                rawEvent.identifier === TRANSACTION_EVENTS.ESDT_LOCAL_MINT ||
-                this.isFilteredAddress(rawEvent.address)
-        ).map(rawEventType => new RawEvent(rawEventType));
+        const events: RawEvent[] = rawEvents?.events
+            ?.filter(
+                (rawEvent: { address: string; identifier: string }) =>
+                    rawEvent.identifier ===
+                        TRANSACTION_EVENTS.ESDT_LOCAL_BURN ||
+                    rawEvent.identifier ===
+                        TRANSACTION_EVENTS.ESDT_LOCAL_MINT ||
+                    this.isFilteredAddress(rawEvent.address),
+            )
+            .map((rawEventType) => new RawEvent(rawEventType));
 
         this.data = [];
         let timestamp: number;
@@ -95,8 +103,10 @@ export class RabbitMqConsumer {
             if (
                 rawEvent.data === '' &&
                 rawEvent.name !== METABONDING_EVENTS.UNBOND &&
-                rawEvent.name !== WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS &&
-                rawEvent.name !== WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY
+                rawEvent.name !==
+                    WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS &&
+                rawEvent.name !==
+                    WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY
             ) {
                 this.logger.info('Event skipped', [rawEvent]);
                 continue;
@@ -237,6 +247,11 @@ export class RabbitMqConsumer {
                         new ClaimMultiEvent(rawEvent),
                     );
                     break;
+                case TOKEN_UNSTAKE_EVENTS.USER_UNLOCKED_TOKENS:
+                    await this.tokenUnstakeHandler.handleUnlockedTokens(
+                        new UserUnlockedTokensEvent(rawEvent),
+                    );
+                    break;
             }
         }
 
@@ -261,9 +276,11 @@ export class RabbitMqConsumer {
     }
 
     private isFilteredAddress(address: string): boolean {
-        return this.filterAddresses.find(
-            (filterAddress) => address === filterAddress,
-        ) !== undefined
+        return (
+            this.filterAddresses.find(
+                (filterAddress) => address === filterAddress,
+            ) !== undefined
+        );
     }
 
     private async updateIngestData(eventData: any[]): Promise<void> {
