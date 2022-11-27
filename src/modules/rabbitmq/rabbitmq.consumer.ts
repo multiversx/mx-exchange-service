@@ -35,7 +35,7 @@ import {
     WithdrawEvent,
     SIMPLE_LOCK_ENERGY_EVENTS,
     EnergyEvent,
-    RawEventType,
+    RawEvent,
     FEES_COLLECTOR_EVENTS,
     DepositSwapFeesEvent,
     UpdateGlobalAmountsEvent,
@@ -81,12 +81,12 @@ export class RabbitMqConsumer {
         if (!rawEvents.events) {
             return;
         }
-        const events: RawEventType[] = rawEvents?.events?.filter(
+        const events: RawEvent[] = rawEvents?.events?.filter(
             (rawEvent: { address: string; identifier: string }) =>
                 rawEvent.identifier === TRANSACTION_EVENTS.ESDT_LOCAL_BURN ||
                 rawEvent.identifier === TRANSACTION_EVENTS.ESDT_LOCAL_MINT ||
                 this.isFilteredAddress(rawEvent.address)
-        );
+        ).map(rawEventType => new RawEvent(rawEventType));
 
         this.data = [];
         let timestamp: number;
