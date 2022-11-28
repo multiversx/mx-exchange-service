@@ -21,6 +21,7 @@ export class UserEnergyService {
             outdatedContracts = [...farms, scAddress.feesCollector];
         } else {
             outdatedContracts = await this.getUserOutdatedContracts(userAddress);
+            outdatedContracts = outdatedContracts.map((contract) => contract.address);
         }
         if (outdatedContracts.length === 0) {
             return null
@@ -28,7 +29,7 @@ export class UserEnergyService {
         const endpointArgs: TypedValue[] = [new AddressValue(Address.fromString(userAddress))];
         for (const contract of outdatedContracts) {
             if (includeAllContracts || !contract.claimProgressOutdated) {
-                endpointArgs.push(new AddressValue(Address.fromString(contract.address)));
+                endpointArgs.push(new AddressValue(Address.fromString(contract)));
             }
         }
         const contract = await this.elrondProxy.getEnergyUpdateContract();
