@@ -124,7 +124,7 @@ export class UserEnergyComputeService {
         userActiveFarmAddresses = userActiveFarmAddresses.concat(
             await Promise.all([...promisesFarmLockedTokens, ...promisesDualYieldTokens]),
         );
-        return [...new Set(userActiveFarmAddresses)]
+        return [...new Set(userActiveFarmAddresses), scAddress.feesCollector]
     }
 
     decodeAndGetFarmAddressFarmLockedTokens(token: UserLockedFarmTokenV2) {
