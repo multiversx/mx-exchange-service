@@ -15,7 +15,9 @@ export class UserEnergyService {
     }
 
     async updateFarmsEnergyForUser(userAddress: string, includeAllContracts = false): Promise<TransactionModel | null> {
-        const outdatedContracts = await this.getUserOutdatedContracts(userAddress);
+        const outdatedContracts = includeAllContracts ?
+            await this.userEnergyGetter.getUserActiveFarms(userAddress) :
+            await this.getUserOutdatedContracts(userAddress);
         if (outdatedContracts.length === 0) {
             return null
         }
