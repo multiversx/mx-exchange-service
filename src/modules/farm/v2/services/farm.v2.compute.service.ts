@@ -52,6 +52,19 @@ export class FarmComputeServiceV2 extends Mixin(
         );
     }
 
+    async computeFarmLockedValueUSD(farmAddress: string): Promise<string> {
+        const [farmTokenSupply, pairAddress] = await Promise.all([
+            this.farmGetter.getFarmTokenSupply(farmAddress),
+            this.farmGetter.getPairContractManagedAddress(farmAddress),
+        ]);
+
+        const lockedValuesUSD = await this.pairService.getLiquidityPositionUSD(
+            pairAddress,
+            farmTokenSupply,
+        );
+        return lockedValuesUSD;
+    }
+
     async computeFarmBaseAPR(farmAddress: string): Promise<string> {
         const [
             farmedTokenID,
@@ -110,6 +123,7 @@ export class FarmComputeServiceV2 extends Mixin(
                 .dividedBy(constantsConfig.MAX_PERCENT);
             return totalFarmRewards.minus(boosterFarmRewardsCut);
         }
+        return totalFarmRewards;
     }
 
     async computeUserRewardsForWeek(
