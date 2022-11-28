@@ -106,7 +106,8 @@ export class RabbitMqConsumer {
                 rawEvent.name !==
                     WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS &&
                 rawEvent.name !==
-                    WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY
+                    WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY &&
+                rawEvent.name !== TOKEN_UNSTAKE_EVENTS.USER_UNLOCKED_TOKENS
             ) {
                 this.logger.info('Event skipped', [rawEvent]);
                 continue;
