@@ -20,7 +20,7 @@ import {
     EnterFarmProxyEvent,
     EsdtLocalBurnEvent,
     EsdtLocalMintEvent,
-    ESDT_EVENTS,
+    TRANSACTION_EVENTS,
     ExitFarmProxyEvent,
     FARM_EVENTS,
     MetabondingEvent,
@@ -31,18 +31,19 @@ import {
     PROXY_EVENTS,
     RemoveLiquidityEvent,
     ROUTER_EVENTS,
-    SwapFixedInputEvent,
-    SwapFixedOutputEvent,
+    SwapEvent,
     WithdrawEvent,
     SIMPLE_LOCK_ENERGY_EVENTS,
     EnergyEvent,
-    RawEventType,
+    RawEvent,
     FEES_COLLECTOR_EVENTS,
     DepositSwapFeesEvent,
     UpdateGlobalAmountsEvent,
     UpdateUserEnergyEvent,
     ClaimMultiEvent,
-    CLAIM_REWARDS_EVENT_NAMES,
+    WEEKLY_REWARDS_SPLITTING_EVENTS,
+    TOKEN_UNSTAKE_EVENTS,
+    UserUnlockedTokensEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { RouterGetterService } from '../router/services/router.getter.service';
 import { AWSTimestreamWriteService } from 'src/services/aws/aws.timestream.write';
@@ -52,6 +53,7 @@ import BigNumber from 'bignumber.js';
 import { EnergyHandler } from './handlers/energy.handler.service';
 import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
+import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
@@ -70,6 +72,7 @@ export class RabbitMqConsumer {
         private readonly energyHandler: EnergyHandler,
         private readonly feesCollectorHandler: FeesCollectorHandlerService,
         private readonly weeklyRewardsSplittingHandler: WeeklyRewardsSplittingHandlerService,
+        private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -82,15 +85,16 @@ export class RabbitMqConsumer {
         if (!rawEvents.events) {
             return;
         }
-        const events: RawEventType[] = rawEvents?.events?.filter(
-            (rawEvent: { address: string; identifier: string }) =>
-                this.filterAddresses.find(
-                    (filterAddress) =>
-                        rawEvent.address === filterAddress ||
-                        rawEvent.identifier === ESDT_EVENTS.ESDT_LOCAL_BURN ||
-                        rawEvent.identifier === ESDT_EVENTS.ESDT_LOCAL_MINT,
-                ) !== undefined,
-        );
+        const events: RawEvent[] = rawEvents?.events
+            ?.filter(
+                (rawEvent: { address: string; identifier: string }) =>
+                    rawEvent.identifier ===
+                        TRANSACTION_EVENTS.ESDT_LOCAL_BURN ||
+                    rawEvent.identifier ===
+                        TRANSACTION_EVENTS.ESDT_LOCAL_MINT ||
+                    this.isFilteredAddress(rawEvent.address),
+            )
+            .map((rawEventType) => new RawEvent(rawEventType));
 
         this.data = [];
         let timestamp: number;
@@ -98,24 +102,22 @@ export class RabbitMqConsumer {
         for (const rawEvent of events) {
             if (
                 rawEvent.data === '' &&
-                rawEvent.identifier !== METABONDING_EVENTS.UNBOND &&
-                rawEvent.identifier !== FEES_COLLECTOR_EVENTS.CLAIM_REWARDS
+                rawEvent.name !== METABONDING_EVENTS.UNBOND &&
+                rawEvent.name !==
+                    WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS &&
+                rawEvent.name !==
+                    WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY
             ) {
+                this.logger.info('Event skipped', [rawEvent]);
                 continue;
             }
+            this.logger.info('Processing event', [rawEvent]);
             let eventData: any[];
-            switch (rawEvent.identifier) {
-                case PAIR_EVENTS.SWAP_FIXED_INPUT:
+            switch (rawEvent.name) {
+                case PAIR_EVENTS.SWAP:
                     [eventData, timestamp] =
                         await this.swapHandler.handleSwapEvents(
-                            new SwapFixedInputEvent(rawEvent),
-                        );
-                    this.updateIngestData(eventData);
-                    break;
-                case PAIR_EVENTS.SWAP_FIXED_OUTPUT:
-                    [eventData, timestamp] =
-                        await this.swapHandler.handleSwapEvents(
-                            new SwapFixedOutputEvent(rawEvent),
+                            new SwapEvent(rawEvent),
                         );
                     this.updateIngestData(eventData);
                     break;
@@ -140,28 +142,7 @@ export class RabbitMqConsumer {
                     await this.wsFarmHandler.handleExitFarmEvent(rawEvent);
                     break;
                 case FARM_EVENTS.CLAIM_REWARDS:
-                case FEES_COLLECTOR_EVENTS.CLAIM_REWARDS:
-                    const eventName = Buffer.from(rawEvent.topics[0], 'base64').toString();
-                    switch (eventName) {
-                        case CLAIM_REWARDS_EVENT_NAMES.UPDATE_GLOBAL_AMOUNTS:
-                            await this.weeklyRewardsSplittingHandler.handleUpdateGlobalAmounts(
-                                new UpdateGlobalAmountsEvent(rawEvent),
-                            );
-                            break;
-                        case CLAIM_REWARDS_EVENT_NAMES.UPDATE_USER_ENERGY:
-                            await this.weeklyRewardsSplittingHandler.handleUpdateUserEnergy(
-                                new UpdateUserEnergyEvent(rawEvent),
-                            );
-                            break;
-                        case CLAIM_REWARDS_EVENT_NAMES.CLAIM_MULTI:
-                            await this.weeklyRewardsSplittingHandler.handleClaimMulti(
-                                new ClaimMultiEvent(rawEvent),
-                            );
-                            break;
-                        case CLAIM_REWARDS_EVENT_NAMES.CLAIM_REWARDS:
-                            await this.wsFarmHandler.handleRewardsEvent(rawEvent);
-                            break;
-                    }
+                    await this.wsFarmHandler.handleRewardsEvent(rawEvent);
                     break;
                 case FARM_EVENTS.COMPOUND_REWARDS:
                     await this.wsFarmHandler.handleRewardsEvent(rawEvent);
@@ -196,12 +177,12 @@ export class RabbitMqConsumer {
                         new CompoundRewardsProxyEvent(rawEvent),
                     );
                     break;
-                case ESDT_EVENTS.ESDT_LOCAL_MINT:
+                case TRANSACTION_EVENTS.ESDT_LOCAL_MINT:
                     await this.wsEsdtTokenHandler.handleEsdtTokenEvent(
                         new EsdtLocalMintEvent(rawEvent),
                     );
                     break;
-                case ESDT_EVENTS.ESDT_LOCAL_BURN:
+                case TRANSACTION_EVENTS.ESDT_LOCAL_BURN:
                     await this.wsEsdtTokenHandler.handleEsdtTokenEvent(
                         new EsdtLocalBurnEvent(rawEvent),
                     );
@@ -251,6 +232,26 @@ export class RabbitMqConsumer {
                         new DepositSwapFeesEvent(rawEvent),
                     );
                     break;
+                case WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS:
+                    await this.weeklyRewardsSplittingHandler.handleUpdateGlobalAmounts(
+                        new UpdateGlobalAmountsEvent(rawEvent),
+                    );
+                    break;
+                case WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY:
+                    await this.weeklyRewardsSplittingHandler.handleUpdateUserEnergy(
+                        new UpdateUserEnergyEvent(rawEvent),
+                    );
+                    break;
+                case WEEKLY_REWARDS_SPLITTING_EVENTS.CLAIM_MULTI:
+                    await this.weeklyRewardsSplittingHandler.handleClaimMulti(
+                        new ClaimMultiEvent(rawEvent),
+                    );
+                    break;
+                case TOKEN_UNSTAKE_EVENTS.USER_UNLOCKED_TOKENS:
+                    await this.tokenUnstakeHandler.handleUnlockedTokens(
+                        new UserUnlockedTokensEvent(rawEvent),
+                    );
+                    break;
             }
         }
 
@@ -272,6 +273,15 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(...scAddress.priceDiscovery);
         this.filterAddresses.push(scAddress.simpleLockEnergy);
         this.filterAddresses.push(scAddress.feesCollector);
+        this.filterAddresses.push(scAddress.tokenUnstake);
+    }
+
+    private isFilteredAddress(address: string): boolean {
+        return (
+            this.filterAddresses.find(
+                (filterAddress) => address === filterAddress,
+            ) !== undefined
+        );
     }
 
     private async updateIngestData(eventData: any[]): Promise<void> {

@@ -1,4 +1,4 @@
-import { SwapFixedInputEvent } from '@elrondnetwork/erdjs-dex';
+import { SwapEvent } from '@elrondnetwork/erdjs-dex';
 import { Field, ObjectType } from '@nestjs/graphql';
 import BigNumber from 'bignumber.js';
 import { GenericToken } from 'src/models/genericToken.model';
@@ -17,7 +17,7 @@ export class SwapFixedInputEventModel extends GenericEventModel {
     @Field(() => String)
     tokenOutReserves: BigNumber;
 
-    constructor(init?: Partial<SwapFixedInputEvent>) {
+    constructor(init?: Partial<SwapEvent>) {
         super(init);
         Object.assign(this, init);
     }

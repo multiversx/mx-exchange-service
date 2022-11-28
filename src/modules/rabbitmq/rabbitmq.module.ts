@@ -30,6 +30,8 @@ import { EnergyModule } from '../energy/energy.module';
 import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
 import { UserModule } from '../user/user.module';
+import { TokenUnstakeModule } from '../token-unstake/token.unstake.module';
+import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
 
 @Module({
     imports: [
@@ -49,6 +51,7 @@ import { UserModule } from '../user/user.module';
         SimpleLockModule,
         FeesCollectorModule,
         EnergyModule,
+        TokenUnstakeModule,
         UserModule,
     ],
     providers: [
@@ -64,6 +67,7 @@ import { UserModule } from '../user/user.module';
         LiquidityHandler,
         SwapEventHandler,
         FeesCollectorHandlerService,
+        TokenUnstakeHandlerService,
         WeeklyRewardsSplittingHandlerService,
     ],
 })

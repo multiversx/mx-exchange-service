@@ -10,12 +10,16 @@ import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairSetterService } from '../../pair/services/pair.setter.service';
 import {
     PAIR_EVENTS,
-    SwapFixedInputEvent,
-    SwapFixedOutputEvent,
+    SwapEvent,
     SwapNoFeeEvent,
 } from '@elrondnetwork/erdjs-dex';
 import { PairHandler } from './pair.handler.service';
 import { RouterComputeService } from 'src/modules/router/services/router.compute.service';
+
+export enum SWAP_IDENTIFIER {
+    SWAP_FIXED_INPUT = 'swapTokensFixedInput',
+    SWAP_FIXED_OUTPUT = 'swapTokensFixedOutput',
+}
 
 @Injectable()
 export class SwapEventHandler {
@@ -30,7 +34,7 @@ export class SwapEventHandler {
     ) {}
 
     async handleSwapEvents(
-        event: SwapFixedInputEvent | SwapFixedOutputEvent,
+        event: SwapEvent,
     ): Promise<[any[], number]> {
         const [firstToken, secondToken] = await Promise.all([
             this.pairGetter.getFirstToken(event.address),
@@ -189,11 +193,11 @@ export class SwapEventHandler {
             secondTokenPriceUSD,
         );
 
-        event.getIdentifier() === PAIR_EVENTS.SWAP_FIXED_INPUT
-            ? await this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_INPUT, {
+        event.getIdentifier() === SWAP_IDENTIFIER.SWAP_FIXED_INPUT
+            ? await this.pubSub.publish(SWAP_IDENTIFIER.SWAP_FIXED_INPUT, {
                   swapFixedInputEvent: event,
               })
-            : await this.pubSub.publish(PAIR_EVENTS.SWAP_FIXED_OUTPUT, {
+            : await this.pubSub.publish(SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT, {
                   swapFixedOutputEvent: event,
               });
 
