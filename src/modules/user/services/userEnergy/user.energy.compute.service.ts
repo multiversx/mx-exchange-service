@@ -12,6 +12,8 @@ import { PaginationArgs } from '../../../dex.model';
 import { ProxyFarmGetterService } from '../../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyService } from '../../../proxy/services/proxy.service';
 import { StakingProxyService } from '../../../staking-proxy/services/staking.proxy.service';
+import { FarmVersion } from '../../../farm/models/farm.model';
+import { farmVersion } from '../../../../utils/farm.utils';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -31,7 +33,7 @@ export class UserEnergyComputeService {
             activeFarms,
             currentUserEnergy
         ] = await Promise.all([
-            this.computeActiveFarmForUser(userAddress),
+            this.computeActiveFarmsV2ForUser(userAddress),
             this.energyGetter.getEnergyEntryForUser(userAddress),
         ])
 
@@ -87,7 +89,7 @@ export class UserEnergyComputeService {
         return outdatedContracts;
     }
 
-    async computeActiveFarmForUser(userAddress: string): Promise<string[]> {
+    async computeActiveFarmsV2ForUser(userAddress: string): Promise<string[]> {
         const maxPagination = new PaginationArgs({
             limit: 100,
             offset: 0,
@@ -124,7 +126,8 @@ export class UserEnergyComputeService {
         userActiveFarmAddresses = userActiveFarmAddresses.concat(
             await Promise.all([...promisesFarmLockedTokens, ...promisesDualYieldTokens]),
         );
-        return [...new Set(userActiveFarmAddresses), scAddress.feesCollector]
+        return [...new Set(userActiveFarmAddresses)]
+            .filter((address) => farmVersion(address) === FarmVersion.V2)
     }
 
     decodeAndGetFarmAddressFarmLockedTokens(token: UserLockedFarmTokenV2) {

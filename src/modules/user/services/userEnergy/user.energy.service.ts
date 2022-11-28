@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { elrondConfig, gasConfig } from '../../../../config';
+import { elrondConfig, gasConfig, scAddress } from '../../../../config';
 import { TransactionModel } from '../../../../models/transaction.model';
 import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
 import { Address, AddressValue, TypedValue } from '@elrondnetwork/erdjs/out';
@@ -15,9 +15,13 @@ export class UserEnergyService {
     }
 
     async updateFarmsEnergyForUser(userAddress: string, includeAllContracts = false): Promise<TransactionModel | null> {
-        const outdatedContracts = includeAllContracts ?
-            await this.userEnergyGetter.getUserActiveFarms(userAddress) :
-            await this.getUserOutdatedContracts(userAddress);
+        let outdatedContracts;
+        if (includeAllContracts) {
+            const farms = await this.userEnergyGetter.getUserActiveFarmsV2(userAddress);
+            outdatedContracts = [...farms, scAddress.feesCollector];
+        } else {
+            outdatedContracts = await this.getUserOutdatedContracts(userAddress);
+        }
         if (outdatedContracts.length === 0) {
             return null
         }

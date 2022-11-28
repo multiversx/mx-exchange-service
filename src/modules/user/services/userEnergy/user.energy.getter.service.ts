@@ -27,10 +27,10 @@ export class UserEnergyGetterService extends GenericGetterService {
         )
     }
 
-    async getUserActiveFarms(userAddress: string): Promise<OutdatedContract[]> {
+    async getUserActiveFarmsV2(userAddress: string): Promise<OutdatedContract[]> {
         return this.getData(
             this.getCacheKey('userActiveFarms', userAddress),
-            () => this.userEnergyCompute.computeActiveFarmForUser(userAddress),
+            () => this.userEnergyCompute.computeActiveFarmsV2ForUser(userAddress),
             oneSecond(),
             oneSecond(),
         )
