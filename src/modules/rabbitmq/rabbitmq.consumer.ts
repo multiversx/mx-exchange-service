@@ -273,6 +273,7 @@ export class RabbitMqConsumer {
         this.filterAddresses.push(...scAddress.priceDiscovery);
         this.filterAddresses.push(scAddress.simpleLockEnergy);
         this.filterAddresses.push(scAddress.feesCollector);
+        this.filterAddresses.push(scAddress.tokenUnstake);
     }
 
     private isFilteredAddress(address: string): boolean {
