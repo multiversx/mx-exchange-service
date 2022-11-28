@@ -15,13 +15,22 @@ export class UserEnergyGetterService extends GenericGetterService {
         private readonly userEnergyCompute: UserEnergyComputeService,
     ) {
         super(cachingService, logger);
-        this.baseKey = 'userOutdatedContracts'
+        this.baseKey = 'userEnergyGetter'
     }
 
     async getUserOutdatedContracts(userAddress: string): Promise<OutdatedContract[]> {
         return this.getData(
-            this.getCacheKey(userAddress),
+            this.getCacheKey('userOutdatedContracts', userAddress),
             () => this.userEnergyCompute.computeUserOutdatedContracts(userAddress),
+            oneSecond(),
+            oneSecond(),
+        )
+    }
+
+    async getUserActiveFarms(userAddress: string): Promise<OutdatedContract[]> {
+        return this.getData(
+            this.getCacheKey('userActiveFarms', userAddress),
+            () => this.userEnergyCompute.computeActiveFarmForUser(userAddress),
             oneSecond(),
             oneSecond(),
         )
