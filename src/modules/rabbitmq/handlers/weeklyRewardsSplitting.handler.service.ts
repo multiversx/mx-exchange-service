@@ -9,8 +9,9 @@ import {
 } from '../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import {
     ClaimMultiEvent,
-    UpdateGlobalAmountsEvent, UpdateUserEnergyEvent,
-    CLAIM_REWARDS_EVENT_NAMES
+    UpdateGlobalAmountsEvent,
+    UpdateUserEnergyEvent,
+    WEEKLY_REWARDS_SPLITTING_EVENTS,
 } from '@elrondnetwork/erdjs-dex';
 import {
     FarmSetterServiceV2
@@ -61,7 +62,7 @@ export class WeeklyRewardsSplittingHandlerService {
 
         this.invalidatedKeys.push(keys);
         await this.deleteCacheKeys();
-        await this.pubSub.publish(CLAIM_REWARDS_EVENT_NAMES.UPDATE_GLOBAL_AMOUNTS, {
+        await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_GLOBAL_AMOUNTS, {
             updateGlobalAmountsEvent: event,
         });
     }
@@ -84,7 +85,7 @@ export class WeeklyRewardsSplittingHandlerService {
 
         this.invalidatedKeys.push(keys);
         await this.deleteCacheKeys();
-        await this.pubSub.publish(CLAIM_REWARDS_EVENT_NAMES.UPDATE_USER_ENERGY, {
+        await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY, {
             updateUserEnergyEvent: event,
         });
     }
@@ -110,7 +111,7 @@ export class WeeklyRewardsSplittingHandlerService {
 
         this.invalidatedKeys.push(keys);
         await this.deleteCacheKeys();
-        await this.pubSub.publish(CLAIM_REWARDS_EVENT_NAMES.CLAIM_MULTI, {
+        await this.pubSub.publish(WEEKLY_REWARDS_SPLITTING_EVENTS.CLAIM_MULTI, {
             claimMultiEvent: event,
         });
     }

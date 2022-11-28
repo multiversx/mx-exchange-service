@@ -22,6 +22,7 @@ import { EnterFarmProxyEventModel } from './models/proxy/enterFarmProxy.event.mo
 import { ExitFarmProxyEventModel } from './models/proxy/exitFarmProxy.event.model';
 import { PairProxyEventModel } from './models/proxy/pairProxy.event.model';
 import { RewardsProxyEventModel } from './models/proxy/rewardsProxy.event.model';
+import { SWAP_IDENTIFIER } from '../rabbitmq/handlers/pair.swap.handler.service';
 
 @Resolver()
 export class SubscriptionsResolver {
@@ -32,7 +33,7 @@ export class SubscriptionsResolver {
             new SwapFixedInputEventModel(event.swapFixedInputEvent),
     })
     swapFixedInputEvent() {
-        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_FIXED_INPUT);
+        return this.pubSub.asyncIterator(SWAP_IDENTIFIER.SWAP_FIXED_INPUT);
     }
 
     @Subscription(() => SwapFixedOutputEventModel, {
@@ -40,7 +41,7 @@ export class SubscriptionsResolver {
             new SwapFixedOutputEventModel(event.swapFixedOutputEvent),
     })
     swapFixedOutputEvent() {
-        return this.pubSub.asyncIterator(PAIR_EVENTS.SWAP_FIXED_OUTPUT);
+        return this.pubSub.asyncIterator(SWAP_IDENTIFIER.SWAP_FIXED_OUTPUT);
     }
 
     @Subscription(() => AddLiquidityEventModel, {
