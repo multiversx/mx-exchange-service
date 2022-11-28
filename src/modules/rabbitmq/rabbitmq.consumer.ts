@@ -109,10 +109,20 @@ export class RabbitMqConsumer {
                     WEEKLY_REWARDS_SPLITTING_EVENTS.UPDATE_USER_ENERGY &&
                 rawEvent.name !== TOKEN_UNSTAKE_EVENTS.USER_UNLOCKED_TOKENS
             ) {
-                this.logger.info('Event skipped', [rawEvent]);
+                this.logger.info('Event skipped', {
+                    address: rawEvent.address,
+                    identifier: rawEvent.identifier,
+                    name: rawEvent.name,
+                    topics: rawEvent.topics,
+                });
                 continue;
             }
-            this.logger.info('Processing event', [rawEvent]);
+            this.logger.info('Processing event', {
+                address: rawEvent.address,
+                identifier: rawEvent.identifier,
+                name: rawEvent.name,
+                topics: rawEvent.topics,
+            });
             let eventData: any[];
             switch (rawEvent.name) {
                 case PAIR_EVENTS.SWAP:
