@@ -176,7 +176,7 @@ export class UserMetaEsdtComputeService {
                 decodedAttributes: decodedFarmAttributes,
             });
         } catch (e) {
-            this.logger.error(`Cannot compute farm token for nft ${nftToken}, error = ${e}`)
+            this.logger.error(`Cannot compute farm token for nft ${JSON.stringify(nftToken)}, error = ${e}`)
         }
 
     }
@@ -337,7 +337,7 @@ export class UserMetaEsdtComputeService {
                 decodedAttributes: decodedWFMTAttributes[0],
             });
         } catch (e) {
-            this.logger.error(`Cannot compute locked farm token for nft ${nftToken}, error = ${e}`);
+            this.logger.error(`Cannot compute locked farm token for nft ${JSON.stringify(nftToken)}, error = ${e}`);
         }
 
     }
