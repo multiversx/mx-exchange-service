@@ -108,7 +108,10 @@ export class UserMetaEsdtComputeService {
         });
     }
 
-    async farmTokenUSD(nftToken: NftToken): Promise<UserFarmToken> {
+    async farmTokenUSD(
+        nftToken: NftToken,
+        calculateUSD = true,
+    ): Promise<UserFarmToken> {
         const farmAddress = nftToken.creator;
         const farmingTokenID = await this.farmGetter
             .useGetter(farmAddress)
@@ -138,6 +141,12 @@ export class UserMetaEsdtComputeService {
                 farmTokenBalance = new BigNumber(nftToken.balance);
         }
 
+        if (!calculateUSD) {
+            return new UserFarmToken({
+                ...nftToken,
+                decodedAttributes: decodedFarmAttributes,
+            })
+        }
         if (scAddress.has(farmingTokenID)) {
             const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
                 farmingTokenID,
@@ -282,6 +291,7 @@ export class UserMetaEsdtComputeService {
 
     async lockedFarmTokenV2USD(
         nftToken: LockedFarmTokenV2,
+        calculateUSD = true,
     ): Promise<UserLockedFarmTokenV2> {
         const decodedWFMTAttributes =
             this.proxyService.getWrappedFarmTokenAttributesV2({
@@ -300,6 +310,12 @@ export class UserMetaEsdtComputeService {
                 decodedWFMTAttributes[0].farmToken.tokenNonce,
             ),
         );
+        if (!calculateUSD) {
+            return new UserLockedFarmTokenV2({
+                ...nftToken,
+                decodedAttributes: decodedWFMTAttributes[0],
+            })
+        }
         const userFarmToken = await this.farmTokenUSD(
             new NftToken({
                 ...farmToken,
@@ -373,6 +389,7 @@ export class UserMetaEsdtComputeService {
 
     async dualYieldTokenUSD(
         nftToken: DualYieldToken,
+        calculateUSD = true,
     ): Promise<UserDualYiledToken> {
         const decodedAttributes =
             this.stakingProxyService.decodeDualYieldTokenAttributes({
@@ -398,6 +415,12 @@ export class UserMetaEsdtComputeService {
             farmTokenIdentifier,
         );
 
+        if (!calculateUSD) {
+            return new UserDualYiledToken({
+                ...nftToken,
+                decodedAttributes: decodedAttributes[0],
+            })
+        }
         farmToken.balance = ruleOfThree(
             new BigNumber(nftToken.balance),
             new BigNumber(decodedAttributes[0].stakingFarmTokenAmount),
@@ -596,7 +619,7 @@ export class UserMetaEsdtComputeService {
         const originalTokenID = await this.lockedTokenWrapperGetter.getLockedTokenId();
         const nftLockedToken = await this.apiService.getNftByTokenIdentifier(
             scAddress.lockedTokenWrapper,
-            tokenIdentifier(originalTokenID, decodedAttributes.lockedTokenNonce)
+            tokenIdentifier(originalTokenID, decodedAttributes.lockedTokenNonce),
         );
         nftLockedToken.balance = nftWrappedToken.balance
 

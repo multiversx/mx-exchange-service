@@ -119,6 +119,7 @@ export class UserMetaEsdtService {
     async getUserFarmTokens(
         userAddress: string,
         pagination: PaginationArgs,
+        calculateUSD = true,
     ): Promise<UserFarmToken[]> {
         const farmTokenIDs = await Promise.all(
             farmsAddresses().map((address) =>
@@ -133,7 +134,7 @@ export class UserMetaEsdtService {
             farmTokenIDs,
         );
         return await Promise.all(
-            nfts.map((nft) => this.userComputeService.farmTokenUSD(nft)),
+            nfts.map((nft) => this.userComputeService.farmTokenUSD(nft, calculateUSD)),
         );
     }
 
@@ -211,6 +212,7 @@ export class UserMetaEsdtService {
     async getUserLockedFarmTokensV2(
         userAddress: string,
         pagination: PaginationArgs,
+        calculateUSD = true,
     ): Promise<UserLockedFarmTokenV2[]> {
         const lockedFarmTokenID =
             await this.proxyFarmGetter.getwrappedFarmTokenID(
@@ -227,6 +229,7 @@ export class UserMetaEsdtService {
             nfts.map((nft) =>
                 this.userComputeService.lockedFarmTokenV2USD(
                     new LockedFarmTokenV2(nft),
+                    calculateUSD,
                 ),
             ),
         );
@@ -304,6 +307,7 @@ export class UserMetaEsdtService {
     async getUserDualYieldTokens(
         userAddress: string,
         pagination: PaginationArgs,
+        calculateUSD = true,
     ): Promise<UserDualYiledToken[]> {
         const stakingProxyAddresses =
             await this.remoteConfigGetterService.getStakingProxyAddresses();
@@ -323,6 +327,7 @@ export class UserMetaEsdtService {
             nfts.map((nft) =>
                 this.userComputeService.dualYieldTokenUSD(
                     new DualYieldToken(nft),
+                    calculateUSD,
                 ),
             ),
         );
