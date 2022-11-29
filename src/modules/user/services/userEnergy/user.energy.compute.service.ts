@@ -102,14 +102,17 @@ export class UserEnergyComputeService {
             this.userMetaEsdtService.getUserFarmTokens(
                 userAddress,
                 maxPagination,
+                false,
             ),
             this.userMetaEsdtService.getUserLockedFarmTokensV2(
                 userAddress,
                 maxPagination,
+                false,
             ),
             this.userMetaEsdtService.getUserDualYieldTokens(
                 userAddress,
                 maxPagination,
+                false,
             ),
         ])
 
