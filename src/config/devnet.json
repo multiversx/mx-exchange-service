@@ -9,7 +9,7 @@
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
         "proxyDexAddress": {
             "v1": "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
-            "v2": "erd1qqqqqqqqqqqqqpgqm2pk2ecvw3hc79flr0n4dfstyn48m9ku0n4s84d6u8"
+            "v2": "erd1qqqqqqqqqqqqqpgqy7893xv68kanz7p5swtcm74kj6ehvhp30n4s9pzaqm"
         },
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
@@ -42,7 +42,7 @@
             "erd1qqqqqqqqqqqqqpgq7zcf9dhvv48dg80zscayy56y7hh4rfne0n4sf4m7zj",
             "erd1qqqqqqqqqqqqqpgq2x27wrtygh7ur6r0mazne44rreuhttcv0n4s6mv7kj"
         ],
-        "feesCollector": "erd1qqqqqqqqqqqqqpgqrxnj8de34z9klzegydv535662cj6pwtl0n4syftggh",
+        "feesCollector": "erd1qqqqqqqqqqqqqpgqq9nxvdcpfwx84zwfe77epzy4x05z4cf70n4sw0dpn7",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
         "tokenUnstake": "erd1qqqqqqqqqqqqqpgq4vukqq9sd040peulr2m0tlnyffgdee770n4se6gjv7",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu"
@@ -80,8 +80,8 @@
                 "unlockedRewards": [
                 ],
                 "lockedRewards": [
-                    "erd1qqqqqqqqqqqqqpgqy0uccas7zhwdrdc92adzvtlf70g6sred0n4sdncf5m",
-                    "erd1qqqqqqqqqqqqqpgqzlwukjh5a6fz4rvp48szkx5fux2c9un80n4s7qvu4t"
+                    "erd1qqqqqqqqqqqqqpgqc8yp7r5emk8vn554m97d5nmzjjxwgjp80n4s5zd0rk",
+                    "erd1qqqqqqqqqqqqqpgq73l79acwc8lz2djfwlzmz6yq02x079p90n4sscluhn"
                 ]
         }
     },
