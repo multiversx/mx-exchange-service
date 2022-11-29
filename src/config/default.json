@@ -438,7 +438,8 @@
             }
         },
         "feesCollector": {
-            "claimRewards": 20000000
+            "baseClaimRewards": 10000000,
+            "claimRewardsPerWeek": 5000000
         },
         "energyUpdate": {
             "updateFarmsEnergyForUser": 15000000
