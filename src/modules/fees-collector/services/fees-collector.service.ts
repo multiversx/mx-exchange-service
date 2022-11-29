@@ -45,7 +45,7 @@ export class FeesCollectorService {
     ): Promise<FeesCollectorTransactionModel> {
         const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress);
         const lastActiveWeekForUser = await this.weeklyRewardsSplittingGetter.lastActiveWeekForUser(scAddress, userAddress);
-        const weekToClaim = Math.max(4, currentWeek - lastActiveWeekForUser)
+        const weekToClaim = Math.max(constantsConfig.USER_MAX_CLAIM_WEEKS, currentWeek - lastActiveWeekForUser)
         const transaction = await this.claimRewards(userAddress, weekToClaim *
             gasConfig.feesCollector.claimRewardsPerWeek + gasConfig.feesCollector.baseClaimRewards);
         const claimTransaction = new FeesCollectorTransactionModel(
