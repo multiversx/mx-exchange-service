@@ -214,25 +214,30 @@ export class UserMetaEsdtService {
         pagination: PaginationArgs,
         calculateUSD = true,
     ): Promise<UserLockedFarmTokenV2[]> {
-        const lockedFarmTokenID =
-            await this.proxyFarmGetter.getwrappedFarmTokenID(
-                scAddress.proxyDexAddress.v2,
+        try {
+            const lockedFarmTokenID =
+                await this.proxyFarmGetter.getwrappedFarmTokenID(
+                    scAddress.proxyDexAddress.v2,
+                );
+            const nfts = await this.apiService.getNftsForUser(
+                userAddress,
+                pagination.offset,
+                pagination.limit,
+                'MetaESDT',
+                [lockedFarmTokenID],
             );
-        const nfts = await this.apiService.getNftsForUser(
-            userAddress,
-            pagination.offset,
-            pagination.limit,
-            'MetaESDT',
-            [lockedFarmTokenID],
-        );
-        return await Promise.all(
-            nfts.map((nft) =>
-                this.userComputeService.lockedFarmTokenV2USD(
-                    new LockedFarmTokenV2(nft),
-                    calculateUSD,
+            return await Promise.all(
+                nfts.map((nft) =>
+                    this.userComputeService.lockedFarmTokenV2USD(
+                        new LockedFarmTokenV2(nft),
+                        calculateUSD,
+                    ),
                 ),
-            ),
-        );
+            );
+        } catch (e) {
+            this.logger.error(`Cannot get locked farm tokens v2 for user ${userAddress}, error = ${e}`);
+        }
+
     }
 
     async getUserStakeFarmTokens(

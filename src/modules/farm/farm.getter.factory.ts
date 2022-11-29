@@ -25,6 +25,8 @@ export class FarmGetterFactory {
                 return this.farmGetterV1_3;
             case FarmVersion.V2:
                 return this.farmGetterV2;
+            default:
+                throw new Error(`${farmAddress} is not a known farm address`);
         }
     }
 

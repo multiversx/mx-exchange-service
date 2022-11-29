@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { scAddress } from '../../../config';
 import { LockedAssetToken } from 'src/modules/tokens/models/lockedAssetToken.model';
@@ -56,6 +56,8 @@ import { LockedAssetGetterService } from 'src/modules/locked-asset-factory/servi
 import { FarmTokenAttributesModelV1_2 } from 'src/modules/farm/models/farmTokenAttributes.model';
 import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/locked-token-wrapper.service';
 import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 @Injectable()
 export class UserMetaEsdtComputeService {
     constructor(
@@ -77,6 +79,7 @@ export class UserMetaEsdtComputeService {
         private readonly lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
         private readonly userEsdtCompute: UserEsdtComputeService,
         private readonly tokenCompute: TokenComputeService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
@@ -112,65 +115,70 @@ export class UserMetaEsdtComputeService {
         nftToken: NftToken,
         calculateUSD = true,
     ): Promise<UserFarmToken> {
-        const farmAddress = nftToken.creator;
-        const farmingTokenID = await this.farmGetter
-            .useGetter(farmAddress)
-            .getFarmingTokenID(farmAddress);
+        try {
+            const farmAddress = nftToken.creator;
+            const farmingTokenID = await this.farmGetter
+                .useGetter(farmAddress)
+                .getFarmingTokenID(farmAddress);
 
-        const version = farmVersion(farmAddress);
-        const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            farmingTokenID,
-        );
-
-        const decodedFarmAttributes = this.farmFactory
-            .useService(farmAddress)
-            .decodeFarmTokenAttributes(
-                nftToken.identifier,
-                nftToken.attributes,
-            );
-
-        let farmTokenBalance: BigNumber;
-        switch (version) {
-            case FarmVersion.V1_2:
-                farmTokenBalance = new BigNumber(nftToken.balance).dividedBy(
-                    (<FarmTokenAttributesModelV1_2>decodedFarmAttributes)
-                        .aprMultiplier,
-                );
-                break;
-            default:
-                farmTokenBalance = new BigNumber(nftToken.balance);
-        }
-
-        if (!calculateUSD) {
-            return new UserFarmToken({
-                ...nftToken,
-                decodedAttributes: decodedFarmAttributes,
-            })
-        }
-        if (scAddress.has(farmingTokenID)) {
-            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+            const version = farmVersion(farmAddress);
+            const pairAddress = await this.pairService.getPairAddressByLpTokenID(
                 farmingTokenID,
             );
+
+            const decodedFarmAttributes = this.farmFactory
+                .useService(farmAddress)
+                .decodeFarmTokenAttributes(
+                    nftToken.identifier,
+                    nftToken.attributes,
+                );
+
+            let farmTokenBalance: BigNumber;
+            switch (version) {
+                case FarmVersion.V1_2:
+                    farmTokenBalance = new BigNumber(nftToken.balance).dividedBy(
+                        (<FarmTokenAttributesModelV1_2>decodedFarmAttributes)
+                            .aprMultiplier,
+                    );
+                    break;
+                default:
+                    farmTokenBalance = new BigNumber(nftToken.balance);
+            }
+
+            if (!calculateUSD) {
+                return new UserFarmToken({
+                    ...nftToken,
+                    decodedAttributes: decodedFarmAttributes,
+                })
+            }
+            if (scAddress.has(farmingTokenID)) {
+                const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+                    farmingTokenID,
+                );
+                return new UserFarmToken({
+                    ...nftToken,
+                    valueUSD: computeValueUSD(
+                        farmTokenBalance.toFixed(),
+                        nftToken.decimals,
+                        tokenPriceUSD,
+                    ).toFixed(),
+                    decodedAttributes: decodedFarmAttributes,
+                });
+            }
+            const farmTokenBalanceUSD =
+                await this.pairService.getLiquidityPositionUSD(
+                    pairAddress,
+                    farmTokenBalance.toFixed(),
+                );
             return new UserFarmToken({
                 ...nftToken,
-                valueUSD: computeValueUSD(
-                    farmTokenBalance.toFixed(),
-                    nftToken.decimals,
-                    tokenPriceUSD,
-                ).toFixed(),
+                valueUSD: farmTokenBalanceUSD,
                 decodedAttributes: decodedFarmAttributes,
             });
+        } catch (e) {
+            this.logger.error(`Cannot compute farm token for nft ${nftToken}, error = ${e}`)
         }
-        const farmTokenBalanceUSD =
-            await this.pairService.getLiquidityPositionUSD(
-                pairAddress,
-                farmTokenBalance.toFixed(),
-            );
-        return new UserFarmToken({
-            ...nftToken,
-            valueUSD: farmTokenBalanceUSD,
-            decodedAttributes: decodedFarmAttributes,
-        });
+
     }
 
     async lockedAssetTokenUSD(
@@ -293,40 +301,45 @@ export class UserMetaEsdtComputeService {
         nftToken: LockedFarmTokenV2,
         calculateUSD = true,
     ): Promise<UserLockedFarmTokenV2> {
-        const decodedWFMTAttributes =
-            this.proxyService.getWrappedFarmTokenAttributesV2({
-                batchAttributes: [
-                    {
-                        identifier: nftToken.identifier,
-                        attributes: nftToken.attributes,
-                    },
-                ],
-            });
+        try {
+            const decodedWFMTAttributes =
+                this.proxyService.getWrappedFarmTokenAttributesV2({
+                    batchAttributes: [
+                        {
+                            identifier: nftToken.identifier,
+                            attributes: nftToken.attributes,
+                        },
+                    ],
+                });
 
-        const farmToken = await this.apiService.getNftByTokenIdentifier(
-            nftToken.creator,
-            tokenIdentifier(
-                decodedWFMTAttributes[0].farmToken.tokenIdentifier,
-                decodedWFMTAttributes[0].farmToken.tokenNonce,
-            ),
-        );
-        if (!calculateUSD) {
+            const farmToken = await this.apiService.getNftByTokenIdentifier(
+                nftToken.creator,
+                tokenIdentifier(
+                    decodedWFMTAttributes[0].farmToken.tokenIdentifier,
+                    decodedWFMTAttributes[0].farmToken.tokenNonce,
+                ),
+            );
+            if (!calculateUSD) {
+                return new UserLockedFarmTokenV2({
+                    ...nftToken,
+                    decodedAttributes: decodedWFMTAttributes[0],
+                })
+            }
+            const userFarmToken = await this.farmTokenUSD(
+                new NftToken({
+                    ...farmToken,
+                    balance: nftToken.balance,
+                }),
+            );
             return new UserLockedFarmTokenV2({
                 ...nftToken,
+                valueUSD: userFarmToken.valueUSD,
                 decodedAttributes: decodedWFMTAttributes[0],
-            })
+            });
+        } catch (e) {
+            this.logger.error(`Cannot compute locked farm token for nft ${nftToken}, error = ${e}`);
         }
-        const userFarmToken = await this.farmTokenUSD(
-            new NftToken({
-                ...farmToken,
-                balance: nftToken.balance,
-            }),
-        );
-        return new UserLockedFarmTokenV2({
-            ...nftToken,
-            valueUSD: userFarmToken.valueUSD,
-            decodedAttributes: decodedWFMTAttributes[0],
-        });
+
     }
 
     async stakeFarmUSD(nftToken: StakeFarmToken): Promise<UserStakeFarmToken> {
