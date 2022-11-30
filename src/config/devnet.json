@@ -93,7 +93,7 @@
         "MEX_TOKEN_ID": "MEX-dc289c",
         "USDC_TOKEN_ID": "USDC-8d4068",
         "MAINTENANCE": false,
-        "EPOCHS_IN_WEEK": 1
+        "EPOCHS_IN_WEEK": 7
     },
     "aws": {
         "region": "eu-central-1",
