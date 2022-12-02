@@ -29,7 +29,7 @@ export class GlobalInfoByWeekModel {
     totalRewardsForWeek: [EsdtTokenPayment];
 
     @Field(() => [TokenDistributionModel])
-    totalRewardsDistributionForWeek: TokenDistributionModel[];
+    rewardsDistributionForWeek: TokenDistributionModel[];
 
     @Field()
     totalEnergyForWeek: string;

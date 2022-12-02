@@ -185,7 +185,7 @@ export class FeesCollectorService {
             currentClaimProgress,
         ] = await Promise.all([
             this.getAccumulatedFees(scAddress, currentWeek, allTokens),
-            this.feesCollectorGetterService.totalEnergyForWeek(scAddress, currentWeek),
+            this.weeklyRewardsSplittingGetter.totalEnergyForWeek(scAddress, currentWeek),
             this.weeklyRewardsSplittingGetter.currentClaimProgress(scAddress, userAddress)
         ]);
 
@@ -205,6 +205,6 @@ export class FeesCollectorService {
                 tokenType: payment.tokenType
             }))
         }
-        return [];
+        return accumulatedRewards;
     }
 }
