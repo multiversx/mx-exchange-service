@@ -35,4 +35,9 @@ export class CacheTtlInfo {
         oneMinute() * 30,
         oneMinute() * 10,
     );
+
+    static Attributes: CacheTtlInfo = new CacheTtlInfo(
+        oneHour(),
+        oneMinute() * 45,
+    );
 }
