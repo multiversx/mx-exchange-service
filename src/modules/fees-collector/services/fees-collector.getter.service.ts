@@ -56,7 +56,7 @@ export class FeesCollectorGetterService
         );
     }
 
-    async getLockedTokensPerBlock(scAddress: string): Promise<EsdtTokenPayment[]> {
+    async getLockedTokensPerBlock(scAddress: string): Promise<string> {
         return this.getData(
             this.getFeesCollectorCacheKey(
                 scAddress,

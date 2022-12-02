@@ -53,7 +53,7 @@ export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewa
         const contract = await this.getContractHandler(scAddress);
         const interaction: Interaction = contract.methodsExplicit.getLockedTokensPerBlock();
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
+        return response.firstValue.valueOf().toFixed();
     }
 
     async allTokens(scAddress: string): Promise<string[]> {
