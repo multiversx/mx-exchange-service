@@ -3,6 +3,7 @@ import { register, Histogram, collectDefaultMetrics, Gauge } from 'prom-client';
 export class MetricsCollector {
     private static fieldDurationHistogram: Histogram<string>;
     private static queryDurationHistogram: Histogram<string>;
+    private static queryCpuHistogram: Histogram<string>;
     private static redisDurationHistogram: Histogram<string>;
     private static externalCallsHistogram: Histogram<string>;
     private static awsQueryDurationHistogram: Histogram<string>;
@@ -25,6 +26,15 @@ export class MetricsCollector {
             MetricsCollector.queryDurationHistogram = new Histogram({
                 name: 'query_duration',
                 help: 'The time it takes to resolve a query',
+                labelNames: ['query', 'origin'],
+                buckets: [],
+            });
+        }
+
+        if (!MetricsCollector.queryCpuHistogram) {
+            MetricsCollector.queryCpuHistogram = new Histogram({
+                name: 'query_cpu',
+                help: 'The CPU time it takes to resolve a query',
                 labelNames: ['query', 'origin'],
                 buckets: [],
             });
@@ -98,6 +108,13 @@ export class MetricsCollector {
     static setQueryDuration(query: string, origin: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
         MetricsCollector.queryDurationHistogram
+            .labels(query, origin)
+            .observe(duration);
+    }
+
+    static setQueryCpu(query: string, origin: string, duration: number) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.queryCpuHistogram
             .labels(query, origin)
             .observe(duration);
     }
