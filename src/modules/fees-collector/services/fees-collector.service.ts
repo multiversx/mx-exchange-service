@@ -189,11 +189,12 @@ export class FeesCollectorService {
             this.weeklyRewardsSplittingGetter.currentClaimProgress(scAddress, userAddress)
         ]);
 
-        const accumulatedRewards = []
         if (currentClaimProgress.week === 0 ||
             new BigNumber(currentClaimProgress.energy.amount).isZero()) {
-            return accumulatedRewards;
+            return [];
         }
+
+        const accumulatedRewards = [];
         const percentage = new BigNumber(currentClaimProgress.energy.amount)
             .dividedBy(totalEnergyForWeek);
 
