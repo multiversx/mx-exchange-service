@@ -32,6 +32,9 @@ export class FeesCollectorModel extends GlobalInfoByWeekSubModel {
     @Field()
     lockedTokenId: string
 
+    @Field()
+    lockedTokensPerBlock: string
+
     constructor(init?: Partial<FeesCollectorModel>) {
         super(init);
         Object.assign(this, init);

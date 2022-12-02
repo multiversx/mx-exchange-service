@@ -46,10 +46,17 @@ export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWe
         );
     }
 
-    @ResolveField(() => [EsdtTokenPayment])
-    async lockedTokenId(@Parent() parent: FeesCollectorModel): Promise<EsdtTokenPayment[]> {
+    @ResolveField()
+    async lockedTokenId(@Parent() parent: FeesCollectorModel): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.feesCollectorGetter.getLockedTokenId(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async lockedTokensPerBlock(@Parent() parent: FeesCollectorModel): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.feesCollectorGetter.getLockedTokensPerBlock(parent.address),
         );
     }
 

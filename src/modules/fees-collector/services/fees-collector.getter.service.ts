@@ -8,7 +8,6 @@ import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import { Mixin } from 'ts-mixer';
 import { IFeesCollectorGetterService } from '../interfaces';
-import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 
@@ -44,7 +43,7 @@ export class FeesCollectorGetterService
         );
     }
 
-    async getLockedTokenId(scAddress: string): Promise<EsdtTokenPayment[]> {
+    async getLockedTokenId(scAddress: string): Promise<string> {
         return this.getData(
             this.getFeesCollectorCacheKey(
                 scAddress,
