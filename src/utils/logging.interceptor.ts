@@ -1,3 +1,4 @@
+import { appendFile } from 'fs';
 import {
     Injectable,
     NestInterceptor,
@@ -13,6 +14,7 @@ import { PerformanceProfiler } from './performance.profiler';
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+
         if (context.getType<GqlContextType>() === 'graphql') {
             const gqlContext = GqlExecutionContext.create(context);
             const info = gqlContext.getInfo();
@@ -26,6 +28,10 @@ export class LoggingInterceptor implements NestInterceptor {
                 origin = req?.headers?.['origin'] ?? 'Unknown';
             }
 
+            const { url, method, headers, body } = req;
+
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            appendFile('httpLogs.txt', `${JSON.stringify({ url, method, headers, body })}\n`, () => { });
             const profiler = new PerformanceProfiler();
             return next.handle().pipe(
                 tap(() => {
@@ -40,6 +46,7 @@ export class LoggingInterceptor implements NestInterceptor {
                 }),
             );
         }
+
         return next.handle();
     }
 }
