@@ -1,16 +1,16 @@
 {
   "buildInfo": {
     "rustc": {
-      "version": "1.66.0-nightly",
-      "commitHash": "bed4ad65bf7a1cef39e3d66b3670189581b3b073",
-      "commitDate": "2022-10-25",
+      "version": "1.67.0-nightly",
+      "commitHash": "c090c6880c0183ba248bde4a16e29ba29ac4fbba",
+      "commitDate": "2022-12-01",
       "channel": "Nightly",
-      "short": "rustc 1.66.0-nightly (bed4ad65b 2022-10-25)"
+      "short": "rustc 1.67.0-nightly (c090c6880 2022-12-01)"
     },
     "contractCrate": {
       "name": "fees-collector",
       "version": "0.0.0",
-      "git_version": "v1.6.0-749-g0e44cfd8-modified"
+      "git_version": "v1.6.0-926-ga827631d"
     },
     "framework": {
       "name": "elrond-wasm",
@@ -19,7 +19,16 @@
   },
   "name": "FeesCollector",
   "constructor": {
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "locked_token_id",
+        "type": "TokenIdentifier"
+      },
+      {
+        "name": "energy_factory_address",
+        "type": "Address"
+      }
+    ],
     "outputs": []
   },
   "endpoints": [
@@ -32,46 +41,6 @@
           "type": "List<EsdtTokenPayment>"
         }
       ]
-    },
-    {
-      "docs": [
-        "Accepts pairs of (user address, energy amount, total locked tokens).",
-        "Sets the given amounts for the user's positions,",
-        "and recomputes the global amounts.",
-        "",
-        "Returns whether the operation was fully completed.",
-        "If not, it also returns the last processed index."
-      ],
-      "name": "recomputeEnergy",
-      "onlyOwner": true,
-      "mutability": "mutable",
-      "inputs": [
-        {
-          "name": "arg_pairs",
-          "type": "variadic<multi<Address,BigUint,BigUint>>",
-          "multi_arg": true
-        }
-      ],
-      "outputs": [
-        {
-          "type": "OperationCompletionStatus"
-        },
-        {
-          "type": "optional<u32>",
-          "multi_result": true
-        }
-      ]
-    },
-    {
-      "name": "updateEnergyForUser",
-      "mutability": "mutable",
-      "inputs": [
-        {
-          "name": "user",
-          "type": "Address"
-        }
-      ],
-      "outputs": []
     },
     {
       "name": "addKnownContracts",
@@ -126,6 +95,16 @@
       "outputs": []
     },
     {
+      "name": "getLockedTokenId",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "TokenIdentifier"
+        }
+      ]
+    },
+    {
       "name": "getAllTokens",
       "mutability": "readonly",
       "inputs": [],
@@ -148,7 +127,7 @@
       ]
     },
     {
-      "name": "getCurrentClaimProgress",
+      "name": "getLastActiveWeekForUser",
       "mutability": "readonly",
       "inputs": [
         {
@@ -158,7 +137,7 @@
       ],
       "outputs": [
         {
-          "type": "ClaimProgress"
+          "type": "u32"
         }
       ]
     },
@@ -177,22 +156,8 @@
       ],
       "outputs": [
         {
-          "type": "Energy"
-        }
-      ]
-    },
-    {
-      "name": "getLastActiveWeekForUser",
-      "mutability": "readonly",
-      "inputs": [
-        {
-          "name": "user",
-          "type": "Address"
-        }
-      ],
-      "outputs": [
-        {
-          "type": "u32"
+          "type": "optional<Energy>",
+          "multi_result": true
         }
       ]
     },
@@ -252,6 +217,32 @@
       ]
     },
     {
+      "name": "updateEnergyForUser",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getCurrentClaimProgress",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "ClaimProgress"
+        }
+      ]
+    },
+    {
       "docs": [
         "Pair SC will deposit the fees through this endpoint",
         "Deposits for current week are accessible starting next week"
@@ -284,21 +275,78 @@
       ]
     },
     {
-      "name": "getAccumulatedLockedFees",
-      "mutability": "readonly",
+      "name": "setLockedTokensPerBlock",
+      "onlyOwner": true,
+      "mutability": "mutable",
       "inputs": [
         {
-          "name": "week",
-          "type": "u32"
-        },
-        {
-          "name": "token",
-          "type": "TokenIdentifier"
+          "name": "locked_tokens_per_block",
+          "type": "BigUint"
         }
       ],
+      "outputs": []
+    },
+    {
+      "name": "getLastLockedTokensAddWeek",
+      "mutability": "readonly",
+      "inputs": [],
       "outputs": [
         {
-          "type": "List<EsdtTokenPayment>"
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getLockedTokensPerBlock",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "setLockingScAddress",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "new_address",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "setLockEpochs",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "lock_epochs",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getLockingScAddress",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "Address"
+        }
+      ]
+    },
+    {
+      "name": "getLockEpochs",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u64"
         }
       ]
     },
@@ -387,13 +435,9 @@
           "indexed": true
         },
         {
-          "name": "payment_token",
-          "type": "TokenIdentifier",
+          "name": "payment",
+          "type": "EsdtTokenPayment",
           "indexed": true
-        },
-        {
-          "name": "payment_amount",
-          "type": "BigUint"
         }
       ]
     },

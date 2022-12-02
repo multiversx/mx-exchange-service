@@ -4,7 +4,7 @@ import { GenericResolver } from '../../services/generics/generic.resolver';
 import {
     ClaimProgress,
     GlobalInfoByWeekModel,
-    GlobalInfoByWeekSubModel,
+    GlobalInfoByWeekSubModel, TokenDistributionModel,
     UserInfoByWeekModel,
     UserInfoByWeekSubModel,
 } from './models/weekly-rewards-splitting.model';
@@ -43,6 +43,18 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
     ): Promise<string> {
         return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.totalEnergyForWeek(
+                parent.scAddress,
+                parent.week,
+            ),
+        );
+    }
+
+    @ResolveField(() => [TokenDistributionModel])
+    async rewardsDistributionForWeek(
+        @Parent() parent: UserInfoByWeekModel,
+    ): Promise<TokenDistributionModel[]> {
+        return await this.genericFieldResolver(() =>
+            this.weeklyRewardsSplittingGetter.totalRewardsDistributionForWeek(
                 parent.scAddress,
                 parent.week,
             ),
@@ -111,6 +123,19 @@ export class UserInfoByWeekResolver extends GenericResolver {
     ): Promise<EsdtTokenPayment[]> {
         return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingGetter.userRewardsForWeek(
+                parent.scAddress,
+                parent.userAddress,
+                parent.week,
+            ),
+        );
+    }
+
+    @ResolveField(() => [String])
+    async rewardsDistributionForWeek(
+        @Parent() parent: UserInfoByWeekModel,
+    ): Promise<string[]> {
+        return await this.genericFieldResolver(() =>
+            this.weeklyRewardsSplittingGetter.userRewardsDistributionForWeek(
                 parent.scAddress,
                 parent.userAddress,
                 parent.week,

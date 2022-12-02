@@ -8,7 +8,6 @@ import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import { Mixin } from 'ts-mixer';
 import { IFeesCollectorGetterService } from '../interfaces';
-import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
 
@@ -44,19 +43,25 @@ export class FeesCollectorGetterService
         );
     }
 
-    async getAccumulatedLockedFees(
-        scAddress: string,
-        week: number,
-        token: string,
-    ): Promise<EsdtTokenPayment[]> {
+    async getLockedTokenId(scAddress: string): Promise<string> {
         return this.getData(
             this.getFeesCollectorCacheKey(
                 scAddress,
-                'accumulatedLockedFees',
-                week,
-                token,
+                'lockedTokenId',
             ),
-            () => this.abiService.accumulatedLockedFees(scAddress, week, token),
+            () => this.abiService.lockedTokenId(scAddress),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
+        );
+    }
+
+    async getLockedTokensPerBlock(scAddress: string): Promise<string> {
+        return this.getData(
+            this.getFeesCollectorCacheKey(
+                scAddress,
+                'lockedTokensPerBlock',
+            ),
+            () => this.abiService.lockedTokensPerBlock(scAddress),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );

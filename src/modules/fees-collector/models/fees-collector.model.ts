@@ -29,8 +29,11 @@ export class FeesCollectorModel extends GlobalInfoByWeekSubModel {
     @Field(() => [EsdtTokenPayment])
     accumulatedFees: [EsdtTokenPayment]
 
-    @Field(() => [EsdtTokenPayment])
-    accumulatedLockedFees: [EsdtTokenPayment]
+    @Field()
+    lockedTokenId: string
+
+    @Field()
+    lockedTokensPerBlock: string
 
     constructor(init?: Partial<FeesCollectorModel>) {
         super(init);
@@ -57,6 +60,9 @@ export class UserEntryFeesCollectorModel extends UserInfoByWeekSubModel {
 
     @Field(() => [UserInfoByWeekModel])
     undistributedRewards: [UserInfoByWeekModel];
+
+    @Field(() => [EsdtTokenPayment])
+    accumulatedRewards: [EsdtTokenPayment]
 
     constructor(init?: Partial<UserEntryFeesCollectorModel>) {
         super(init);
