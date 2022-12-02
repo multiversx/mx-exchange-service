@@ -58,6 +58,8 @@ import { LockedTokenWrapperService } from '../../locked-token-wrapper/services/l
 import { LockedTokenWrapperGetterService } from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
+import { CachingService } from 'src/services/caching/cache.service';
+
 @Injectable()
 export class UserMetaEsdtComputeService {
     constructor(
@@ -79,8 +81,9 @@ export class UserMetaEsdtComputeService {
         private readonly lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
         private readonly userEsdtCompute: UserEsdtComputeService,
         private readonly tokenCompute: TokenComputeService,
+        private readonly cacheService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
         const tokenPriceUSD =
@@ -111,9 +114,63 @@ export class UserMetaEsdtComputeService {
         });
     }
 
+    async computeUSDValue(
+        farmAddress,
+        nftToken,
+        farmingTokenID,
+        pairAddress,
+    ): Promise<UserFarmToken> {
+        const version = farmVersion(farmAddress);
+        const decodedFarmAttributes = this.farmFactory
+            .useService(farmAddress)
+            .decodeFarmTokenAttributes(
+                nftToken.identifier,
+                nftToken.attributes,
+            );
+
+        let farmTokenBalance: BigNumber;
+        switch (version) {
+            case FarmVersion.V1_2:
+                farmTokenBalance = new BigNumber(nftToken.balance).dividedBy(
+                    (<FarmTokenAttributesModelV1_2>decodedFarmAttributes)
+                        .aprMultiplier,
+                );
+                break;
+            default:
+                farmTokenBalance = new BigNumber(nftToken.balance);
+        }
+
+
+        if (scAddress.has(farmingTokenID)) {
+            const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+                farmingTokenID,
+            );
+            return new UserFarmToken({
+                ...nftToken,
+                valueUSD: computeValueUSD(
+                    farmTokenBalance.toFixed(),
+                    nftToken.decimals,
+                    tokenPriceUSD,
+                ).toFixed(),
+                decodedAttributes: decodedFarmAttributes,
+            });
+        }
+        const farmTokenBalanceUSD =
+            await this.pairService.getLiquidityPositionUSD(
+                pairAddress,
+                farmTokenBalance.toFixed(),
+            );
+        return new UserFarmToken({
+            ...nftToken,
+            valueUSD: farmTokenBalanceUSD,
+            decodedAttributes: decodedFarmAttributes,
+        });
+    }
+
     async farmTokenUSD(
         nftToken: NftToken,
-        calculateUSD = true,
+        parentIdentifier?: string,
+        _calculateUSD = true,
     ): Promise<UserFarmToken> {
         try {
             const farmAddress = nftToken.creator;
@@ -121,62 +178,23 @@ export class UserMetaEsdtComputeService {
                 .useGetter(farmAddress)
                 .getFarmingTokenID(farmAddress);
 
-            const version = farmVersion(farmAddress);
             const pairAddress = await this.pairService.getPairAddressByLpTokenID(
                 farmingTokenID,
             );
 
-            const decodedFarmAttributes = this.farmFactory
-                .useService(farmAddress)
-                .decodeFarmTokenAttributes(
-                    nftToken.identifier,
-                    nftToken.attributes,
-                );
-
-            let farmTokenBalance: BigNumber;
-            switch (version) {
-                case FarmVersion.V1_2:
-                    farmTokenBalance = new BigNumber(nftToken.balance).dividedBy(
-                        (<FarmTokenAttributesModelV1_2>decodedFarmAttributes)
-                            .aprMultiplier,
-                    );
-                    break;
-                default:
-                    farmTokenBalance = new BigNumber(nftToken.balance);
-            }
-
-            if (!calculateUSD) {
-                return new UserFarmToken({
-                    ...nftToken,
-                    decodedAttributes: decodedFarmAttributes,
-                })
-            }
-            if (scAddress.has(farmingTokenID)) {
-                const tokenPriceUSD = await this.pairGetterService.getTokenPriceUSD(
+            await this.cacheService.setCache(
+                parentIdentifier ?? nftToken.identifier,
+                JSON.stringify({
+                    farmAddress,
+                    nftTokenIdentifier: nftToken.identifier,
                     farmingTokenID,
-                );
-                return new UserFarmToken({
-                    ...nftToken,
-                    valueUSD: computeValueUSD(
-                        farmTokenBalance.toFixed(),
-                        nftToken.decimals,
-                        tokenPriceUSD,
-                    ).toFixed(),
-                    decodedAttributes: decodedFarmAttributes,
-                });
-            }
-            const farmTokenBalanceUSD =
-                await this.pairService.getLiquidityPositionUSD(
-                    pairAddress,
-                    farmTokenBalance.toFixed(),
-                );
-            return new UserFarmToken({
-                ...nftToken,
-                valueUSD: farmTokenBalanceUSD,
-                decodedAttributes: decodedFarmAttributes,
-            });
+                    pairAddress
+                })
+            );
+
+            return await this.computeUSDValue(farmAddress, nftToken, farmingTokenID, pairAddress);
         } catch (e) {
-            this.logger.error(`Cannot compute farm token for nft ${JSON.stringify(nftToken)}, error = ${e}`)
+            this.logger.error(`Cannot compute farm token for nft ${JSON.stringify(nftToken)}, error = ${e}`);
         }
 
     }
@@ -319,17 +337,45 @@ export class UserMetaEsdtComputeService {
                     decodedWFMTAttributes[0].farmToken.tokenNonce,
                 ),
             );
+
             if (!calculateUSD) {
                 return new UserLockedFarmTokenV2({
                     ...nftToken,
                     decodedAttributes: decodedWFMTAttributes[0],
-                })
+                });
             }
+
+            const resultFromCache = await this.cacheService.getCache(nftToken.identifier);
+            if (resultFromCache) {
+                try {
+                    const cachedValue = JSON.parse(resultFromCache as string);
+
+                    const computedUSDValue = await this.computeUSDValue(
+                        cachedValue.farmAddress,
+                        new NftToken({
+                            ...farmToken,
+                            balance: nftToken.balance,
+                        }),
+                        cachedValue.farmingTokenID,
+                        cachedValue.pairAddress,
+                    );
+
+                    return new UserLockedFarmTokenV2({
+                        ...nftToken,
+                        valueUSD: computedUSDValue.valueUSD,
+                        decodedAttributes: decodedWFMTAttributes[0],
+                    });
+                } catch (e) {
+                    this.logger.log('Error when parsing cache JSON', e);
+                }
+            }
+
             const userFarmToken = await this.farmTokenUSD(
                 new NftToken({
                     ...farmToken,
                     balance: nftToken.balance,
                 }),
+                nftToken.identifier,
             );
             return new UserLockedFarmTokenV2({
                 ...nftToken,
@@ -432,7 +478,7 @@ export class UserMetaEsdtComputeService {
             return new UserDualYiledToken({
                 ...nftToken,
                 decodedAttributes: decodedAttributes[0],
-            })
+            });
         }
         farmToken.balance = ruleOfThree(
             new BigNumber(nftToken.balance),
@@ -634,7 +680,7 @@ export class UserMetaEsdtComputeService {
             scAddress.lockedTokenWrapper,
             tokenIdentifier(originalTokenID, decodedAttributes.lockedTokenNonce),
         );
-        nftLockedToken.balance = nftWrappedToken.balance
+        nftLockedToken.balance = nftWrappedToken.balance;
 
         const userNftLockedToken = await this.lockedTokenEnergyUSD(nftLockedToken);
 

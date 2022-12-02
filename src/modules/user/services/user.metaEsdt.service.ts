@@ -134,7 +134,7 @@ export class UserMetaEsdtService {
             farmTokenIDs,
         );
         return await Promise.all(
-            nfts.map((nft) => this.userComputeService.farmTokenUSD(nft, calculateUSD)),
+            nfts.map((nft) => this.userComputeService.farmTokenUSD(nft, nft.identifier, calculateUSD)),
         );
     }
 
