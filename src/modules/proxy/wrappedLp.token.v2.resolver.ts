@@ -1,6 +1,6 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { tokenCollection } from 'src/utils/token.converters';
+import { scAddress } from 'src/config';
 import { LockedAssetGetterService } from '../locked-asset-factory/services/locked.asset.getter.service';
 import { LockedAssetAttributesUnion } from './models/locked.assets.attributes.union';
 import { DecodeAttributesArgs } from './models/proxy.args';
@@ -19,22 +19,18 @@ export class WrappedLpTokenAttributesResolverV2 {
         @Parent() parent: WrappedLpTokenAttributesModelV2,
     ): Promise<typeof LockedAssetAttributesUnion> {
         try {
-            const [proxyAddress, oldLockedAssetID] = await Promise.all([
-                this.proxyService.getProxyAddressByToken(
-                    tokenCollection(parent.identifier),
-                ),
-                this.lockedAssetsGetter.getLockedTokenID(),
-            ]);
+            const oldLockedAssetID =
+                await this.lockedAssetsGetter.getLockedTokenID();
 
             if (parent.lockedTokens.tokenIdentifier === oldLockedAssetID) {
                 return await this.proxyService.getLockedAssetsAttributes(
-                    proxyAddress,
+                    scAddress.proxyDexAddress.v2,
                     parent.lockedTokens.tokenIdentifier,
                     parent.lockedTokens.tokenNonce,
                 );
             }
             return await this.proxyService.getLockedTokenAttributes(
-                proxyAddress,
+                scAddress.proxyDexAddress.v2,
                 parent.lockedTokens.tokenIdentifier,
                 parent.lockedTokens.tokenNonce,
             );

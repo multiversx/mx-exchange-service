@@ -9,6 +9,7 @@ import { ApiConfigService } from '../../helpers/api.config.service';
 import { oneMinute } from 'src/helpers/helpers';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PendingExecutor } from 'src/utils/pending.executor';
+import { setClient } from 'src/utils/redisClient';
 import Redis, { RedisOptions } from 'ioredis';
 
 @Injectable()
@@ -40,7 +41,8 @@ export class CachingService {
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         CachingService.cache = this.cache;
-        this.client = new Redis(this.options);
+
+        this.client = setClient(this.options);
 
         this.remoteGetExecutor = new PendingExecutor(
             async (key: string) => await this.client.get(key),
