@@ -75,6 +75,8 @@ export class FarmFactoryService {
                 return this.farmServiceV1_3;
             case FarmVersion.V2:
                 return this.farmServiceV2;
+            default:
+                throw new Error(`${farmAddress} is not a known farm address`);
         }
     }
 }

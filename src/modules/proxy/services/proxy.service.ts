@@ -43,6 +43,8 @@ import { ProxyFarmGetterService } from './proxy-farm/proxy-farm.getter.service';
 import { ProxyGetterService } from './proxy.getter.service';
 import { ProxyGetterServiceV2 } from '../v2/services/proxy.v2.getter.service';
 import { LockedTokenAttributesModel } from 'src/modules/simple-lock/models/simple.lock.model';
+import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class ProxyService {
@@ -54,6 +56,7 @@ export class ProxyService {
         private readonly farmGetter: FarmGetterFactory,
         private readonly apiService: ElrondApiService,
         private readonly lockedAssetService: LockedAssetService,
+        private readonly cacheService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -103,9 +106,9 @@ export class ProxyService {
         });
     }
 
-    async decodeWrappedLpTokenAttributesV2(
+    decodeWrappedLpTokenAttributesV2(
         args: DecodeAttributesModel,
-    ): Promise<WrappedLpTokenAttributesModelV2> {
+    ): WrappedLpTokenAttributesModelV2 {
         const wrappedLpTokenAttributes =
             WrappedLpTokenAttributesV2.fromAttributes(args.attributes);
 
@@ -121,6 +124,16 @@ export class ProxyService {
         lockedAssetTokenCollection: string,
         lockedAssetNonce: number,
     ): Promise<LockedAssetAttributesModel> {
+        const cachedValue: LockedAssetAttributesModel =
+            await this.cacheService.getCache(
+                `${tokenIdentifier(
+                    lockedAssetTokenCollection,
+                    lockedAssetNonce,
+                )}.decodedAttributes`,
+            );
+        if (cachedValue && cachedValue !== undefined) {
+            return new LockedAssetAttributesModel(cachedValue);
+        }
         const lockedAssetToken = await this.apiService.getNftByTokenIdentifier(
             proxyAddress,
             tokenIdentifier(lockedAssetTokenCollection, lockedAssetNonce),
@@ -135,7 +148,15 @@ export class ProxyService {
                 ],
             });
 
-        return lockedAssetAttributes[0];
+        return await this.cacheService.setCache(
+            `${tokenIdentifier(
+                lockedAssetTokenCollection,
+                lockedAssetNonce,
+            )}.decodedAttributes`,
+            lockedAssetAttributes[0],
+            CacheTtlInfo.Attributes.remoteTtl,
+            CacheTtlInfo.Attributes.localTtl,
+        );
     }
 
     async getLockedTokenAttributes(
@@ -143,16 +164,34 @@ export class ProxyService {
         lockedTokenCollection: string,
         lockedTokenNonce: number,
     ): Promise<LockedTokenAttributesModel> {
+        const cachedValue: LockedTokenAttributesModel =
+            await this.cacheService.getCache(
+                `${tokenIdentifier(
+                    lockedTokenCollection,
+                    lockedTokenNonce,
+                )}.decodedAttributes`,
+            );
+        if (cachedValue && cachedValue !== undefined) {
+            return new LockedTokenAttributesModel(cachedValue);
+        }
         const lockedToken = await this.apiService.getNftByTokenIdentifier(
             proxyAddress,
             tokenIdentifier(lockedTokenCollection, lockedTokenNonce),
         );
 
-        return new LockedTokenAttributesModel({
-            ...LockedTokenAttributes.fromAttributes(lockedToken.attributes),
-            identifier: lockedToken.identifier,
-            attributes: lockedToken.attributes,
-        });
+        return await this.cacheService.setCache(
+            `${tokenIdentifier(
+                lockedTokenCollection,
+                lockedTokenNonce,
+            )}.decodedAttributes`,
+            new LockedTokenAttributesModel({
+                ...LockedTokenAttributes.fromAttributes(lockedToken.attributes),
+                identifier: lockedToken.identifier,
+                attributes: lockedToken.attributes,
+            }),
+            CacheTtlInfo.Attributes.remoteTtl,
+            CacheTtlInfo.Attributes.localTtl,
+        );
     }
 
     async getWrappedFarmTokenAttributes(
