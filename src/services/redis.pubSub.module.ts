@@ -2,6 +2,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { Global, Module } from '@nestjs/common';
 import { ApiConfigService } from '../helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
+import { setClient } from '../utils/redisClient';
 import * as Redis from 'ioredis';
 
 export const PUB_SUB = 'PUB_SUB';
@@ -20,14 +21,14 @@ export const PUB_SUB = 'PUB_SUB';
                 const options: Redis.RedisOptions = {
                     host: configService.getRedisUrl(),
                     port: configService.getRedisPort(),
-                    retryStrategy: function() {
+                    retryStrategy: function () {
                         return 1000;
                     },
                 };
 
                 return new RedisPubSub({
-                    publisher: new Redis.default(options),
-                    subscriber: new Redis.default(options),
+                    publisher: setClient(options),
+                    subscriber: setClient(options),
                 });
             },
             inject: [ApiConfigService],
@@ -36,4 +37,4 @@ export const PUB_SUB = 'PUB_SUB';
     ],
     exports: [PUB_SUB],
 })
-export class RedisPubSubModule {}
+export class RedisPubSubModule { }
