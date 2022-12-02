@@ -11,7 +11,7 @@ export class AnalyticsPairService {
         private readonly pairGetterService: PairGetterService,
         private readonly routerGetter: RouterGetterService,
         private readonly analyticsAWSGetter: AnalyticsAWSGetterService,
-    ) {}
+    ) { }
 
     async getClosingLockedValueUSD(
         pairAddress: string,
@@ -110,10 +110,11 @@ export class AnalyticsPairService {
     async getPairsDayDatas(): Promise<PairDayDataModel[]> {
         const pairAddresses = await this.routerGetter.getAllPairsAddress();
         const pairsDayDatas: PairDayDataModel[] = [];
-        for (const pairAddress of pairAddresses) {
+
+        await Promise.all(pairAddresses.map(async pairAddress => {
             const pairDayDatas = await this.getPairDayDatas(pairAddress);
             pairsDayDatas.push(...pairDayDatas);
-        }
+        }));
 
         return pairsDayDatas;
     }

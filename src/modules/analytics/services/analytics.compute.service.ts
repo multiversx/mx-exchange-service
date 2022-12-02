@@ -20,7 +20,7 @@ export class AnalyticsComputeService {
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairGetter: PairGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-    ) {}
+    ) { }
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
@@ -125,14 +125,16 @@ export class AnalyticsComputeService {
     private async fiterPairsByIssuedLpToken(
         pairsAddress: string[],
     ): Promise<string[]> {
-        const filteredPairs = [];
-        for (const pairAddress of pairsAddress) {
-            const lpTokenID = await this.pairGetter.getLpTokenID(pairAddress);
-            if (lpTokenID !== undefined) {
-                filteredPairs.push(pairAddress);
-            }
-        }
 
-        return filteredPairs;
+        const unfilteredPairAddresses = await Promise.all(pairsAddress.map(async pairAddress => {
+            return {
+                lpTokenId: await this.pairGetter.getLpTokenID(pairAddress),
+                pairAddress
+            };
+        }));
+
+        return unfilteredPairAddresses
+            .filter(pair => pair.lpTokenId !== undefined)
+            .map(pair => pair.pairAddress);
     }
 }
