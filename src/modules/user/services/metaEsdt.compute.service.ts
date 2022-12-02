@@ -47,7 +47,7 @@ import { DualYieldToken } from 'src/modules/tokens/models/dualYieldToken.model';
 import { PriceDiscoveryGetterService } from '../../price-discovery/services/price.discovery.getter.service';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
-import { oneMinute, ruleOfThree } from 'src/helpers/helpers';
+import { ruleOfThree } from 'src/helpers/helpers';
 import { UserEsdtComputeService } from './esdt.compute.service';
 import { TokenComputeService } from '../../tokens/services/token.compute.service';
 import { farmVersion } from 'src/utils/farm.utils';
@@ -325,6 +325,7 @@ export class UserMetaEsdtComputeService {
                 ...farmToken,
                 balance: nftToken.balance,
             }),
+            nftToken.identifier,
         );
         return new UserLockedFarmToken({
             ...nftToken,
@@ -482,7 +483,11 @@ export class UserMetaEsdtComputeService {
             new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
         ).toFixed();
 
-        const farmTokenUSD = await this.farmTokenUSD(farmToken);
+        const farmTokenUSD = await this.farmTokenUSD(
+            farmToken,
+            nftToken.identifier,
+            calculateUSD,
+        );
 
         return new UserDualYiledToken({
             ...nftToken,
@@ -627,6 +632,7 @@ export class UserMetaEsdtComputeService {
                 ...farmToken,
                 balance: nftToken.balance,
             }),
+            nftToken.identifier,
         );
 
         return new UserLockedSimpleFarmToken({
