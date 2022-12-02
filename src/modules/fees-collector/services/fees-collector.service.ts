@@ -25,6 +25,7 @@ import {
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { Address, AddressValue } from '@elrondnetwork/erdjs/out';
+import BigNumber from 'bignumber.js';
 
 
 @Injectable()
@@ -85,16 +86,6 @@ export class FeesCollectorService {
                 nonce: 0,
             }))
         }
-        return accumulatedFees
-    }
-
-    async getAccumulatedLockedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
-        const promisesList = [];
-        for (const token of allTokens) {
-            promisesList.push(this.feesCollectorGetterService.getAccumulatedLockedFees(scAddress, week, token));
-        }
-
-        const accumulatedFees = (await Promise.all(promisesList)).flat();
         return accumulatedFees
     }
 
@@ -184,5 +175,36 @@ export class FeesCollectorService {
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+    }
+
+    async getUserAccumulatedRewards(scAddress: string, userAddress: string, currentWeek: number): Promise<EsdtTokenPayment[]> {
+        const allTokens = await this.feesCollectorGetterService.getAllTokens(scAddress);
+        const [
+            accumulatedFees,
+            totalEnergyForWeek,
+            currentClaimProgress,
+        ] = await Promise.all([
+            this.getAccumulatedFees(scAddress, currentWeek, allTokens),
+            this.feesCollectorGetterService.totalEnergyForWeek(scAddress, currentWeek),
+            this.weeklyRewardsSplittingGetter.currentClaimProgress(scAddress, userAddress)
+        ]);
+
+        const accumulatedRewards = []
+        if (currentClaimProgress.week === 0 ||
+            new BigNumber(currentClaimProgress.energy.amount).isZero()) {
+            return accumulatedRewards;
+        }
+        const percentage = new BigNumber(currentClaimProgress.energy.amount)
+            .dividedBy(totalEnergyForWeek);
+
+        for (const payment of accumulatedFees) {
+            accumulatedRewards.push(new EsdtTokenPayment({
+                amount: new BigNumber(payment.amount).multipliedBy(percentage).toNumber().toString(),
+                nonce: payment.nonce,
+                tokenID: payment.tokenID,
+                tokenType: payment.tokenType
+            }))
+        }
+        return [];
     }
 }

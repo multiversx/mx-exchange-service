@@ -51,6 +51,25 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         )
     }
 
+    async userRewardsDistributionForWeek(scAddress: string, userAddress: string, week: number) {
+        return this.getData(
+            this.getWeeklyRewardsCacheKey(scAddress, 'userRewardsDistributionForWeek', userAddress, week),
+            () => this.weeklyRewardsSplittingCompute.computeUserRewardsDistributionForWeek(scAddress, week, userAddress),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+    async totalRewardsDistributionForWeek(scAddress: string, week: number) {
+        return this.getData(
+            this.getWeeklyRewardsCacheKey(scAddress, 'totalRewardsDistributionForWeek', week),
+            () => this.weeklyRewardsSplittingCompute.computeTotalRewardsDistributionForWeek(scAddress, week),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        );
+    }
+
+
     async lastActiveWeekForUser(scAddress: string, userAddress: string): Promise<number> {
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'lastActiveWeekForUser', userAddress),

@@ -44,19 +44,25 @@ export class FeesCollectorGetterService
         );
     }
 
-    async getAccumulatedLockedFees(
-        scAddress: string,
-        week: number,
-        token: string,
-    ): Promise<EsdtTokenPayment[]> {
+    async getLockedTokenId(scAddress: string): Promise<EsdtTokenPayment[]> {
         return this.getData(
             this.getFeesCollectorCacheKey(
                 scAddress,
-                'accumulatedLockedFees',
-                week,
-                token,
+                'lockedTokenId',
             ),
-            () => this.abiService.accumulatedLockedFees(scAddress, week, token),
+            () => this.abiService.lockedTokenId(scAddress),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
+        );
+    }
+
+    async getLockedTokensPerBlock(scAddress: string): Promise<EsdtTokenPayment[]> {
+        return this.getData(
+            this.getFeesCollectorCacheKey(
+                scAddress,
+                'lockedTokensPerBlock',
+            ),
+            () => this.abiService.lockedTokensPerBlock(scAddress),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );
