@@ -52,8 +52,6 @@ export class WrappedFarmTokenAttributesModelV2 {
     proxyFarmingToken: EsdtTokenPaymentModel;
     @Field(() => FarmTokenAttributesUnion)
     farmTokenAttributes: typeof FarmTokenAttributesUnion;
-    @Field(() => LockedAssetAttributesUnion, { nullable: true })
-    lockedAssetsAttributes: typeof LockedAssetAttributesUnion;
     @Field(() => WrappedLpTokenAttributesModelV2, { nullable: true })
     lockedLpProxyTokenAttributes: WrappedLpTokenAttributesModelV2;
 
