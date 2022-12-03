@@ -105,7 +105,6 @@ export class AnalyticsComputeService {
         const lockedValuesUSD = await Promise.all([...promises]);
 
         for (const lockedValueUSD of lockedValuesUSD) {
-            console.log(lockedValueUSD);
             const lockedValuesUSDBig = new BigNumber(lockedValueUSD);
             totalValueLockedUSD = !lockedValuesUSDBig.isNaN()
                 ? totalValueLockedUSD.plus(lockedValuesUSDBig)
