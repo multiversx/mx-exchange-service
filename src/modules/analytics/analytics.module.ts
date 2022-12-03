@@ -16,6 +16,11 @@ import { PairDayDataResolver } from './analytics.pair.resolver';
 import { TokenModule } from '../tokens/token.module';
 import { AnalyticsAWSSetterService } from './services/analytics.aws.setter.service';
 import { FarmModule } from '../farm/farm.module';
+import { EnergyModule } from '../energy/energy.module';
+import { StakingModule } from '../staking/staking.module';
+import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-timekeeping.module';
+import { FeesCollectorAbiService } from '../fees-collector/services/fees-collector.abi.service';
+import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 
 @Module({
     imports: [
@@ -29,6 +34,10 @@ import { FarmModule } from '../farm/farm.module';
         ProxyModule,
         LockedAssetModule,
         TokenModule,
+        EnergyModule,
+        StakingModule,
+        FeesCollectorModule,
+        WeekTimekeepingModule.register(FeesCollectorAbiService),
     ],
     providers: [
         AnalyticsResolver,

@@ -37,6 +37,13 @@ export class AnalyticsResolver {
     }
 
     @Query(() => String)
+    async totalValueStakedUSD(): Promise<string> {
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getTotalValueStakedUSD(),
+        );
+    }
+
+    @Query(() => String)
     async totalLockedValueUSDFarms(): Promise<string> {
         return await this.genericQuery(() =>
             this.analyticsGetter.getLockedValueUSDFarms(),
