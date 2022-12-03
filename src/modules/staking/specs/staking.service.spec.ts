@@ -21,6 +21,7 @@ import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.s
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { Address } from '@elrondnetwork/erdjs/out';
+import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
 
 describe('StakingService', () => {
     let service: StakingService;
@@ -73,6 +74,7 @@ describe('StakingService', () => {
                 ElrondApiServiceProvider,
                 ElrondGatewayService,
                 ApiConfigService,
+                TokenGetterServiceProvider,
             ],
         }).compile();
 
