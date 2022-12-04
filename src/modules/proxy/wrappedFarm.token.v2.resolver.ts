@@ -2,7 +2,7 @@ import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { scAddress } from 'src/config';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
-import { tokenCollection, tokenIdentifier } from 'src/utils/token.converters';
+import { tokenIdentifier } from 'src/utils/token.converters';
 import { FarmTokenAttributesUnion } from '../farm/models/farmTokenAttributes.model';
 import { DecodeAttributesArgs } from './models/proxy.args';
 import { WrappedFarmTokenAttributesModelV2 } from './models/wrappedFarmTokenAttributes.model';
@@ -21,12 +21,8 @@ export class WrappedFarmTokenResolverV2 {
         @Parent() parent: WrappedFarmTokenAttributesModelV2,
     ): Promise<typeof FarmTokenAttributesUnion> {
         try {
-            const proxyAddress = await this.proxyService.getProxyAddressByToken(
-                tokenCollection(parent.identifier),
-            );
-
             return await this.proxyService.getFarmTokenAttributes(
-                proxyAddress,
+                scAddress.proxyDexAddress.v2,
                 parent.farmToken.tokenIdentifier,
                 parent.farmToken.tokenNonce,
             );

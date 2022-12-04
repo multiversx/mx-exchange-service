@@ -73,29 +73,25 @@ export class ProxyService {
         ];
     }
 
-    async getWrappedLpTokenAttributes(
+    getWrappedLpTokenAttributes(
         args: DecodeAttributesArgs,
-    ): Promise<WrappedLpTokenAttributesModel[]> {
-        const promises = args.batchAttributes.map((arg) =>
+    ): WrappedLpTokenAttributesModel[] {
+        return args.batchAttributes.map((arg) =>
             this.decodeWrappedLpTokenAttributes(arg),
         );
-
-        return await Promise.all(promises);
     }
 
-    async getWrappedLpTokenAttributesV2(
+    getWrappedLpTokenAttributesV2(
         args: DecodeAttributesArgs,
-    ): Promise<WrappedLpTokenAttributesModelV2[]> {
-        const promises = args.batchAttributes.map((arg) =>
+    ): WrappedLpTokenAttributesModelV2[] {
+        return args.batchAttributes.map((arg) =>
             this.decodeWrappedLpTokenAttributesV2(arg),
         );
-
-        return await Promise.all(promises);
     }
 
-    async decodeWrappedLpTokenAttributes(
+    decodeWrappedLpTokenAttributes(
         args: DecodeAttributesModel,
-    ): Promise<WrappedLpTokenAttributesModel> {
+    ): WrappedLpTokenAttributesModel {
         const wrappedLpTokenAttributes =
             WrappedLpTokenAttributes.fromAttributes(args.attributes);
 
@@ -124,39 +120,26 @@ export class ProxyService {
         lockedAssetTokenCollection: string,
         lockedAssetNonce: number,
     ): Promise<LockedAssetAttributesModel> {
-        const cachedValue: LockedAssetAttributesModel =
-            await this.cacheService.getCache(
-                `${tokenIdentifier(
-                    lockedAssetTokenCollection,
-                    lockedAssetNonce,
-                )}.decodedAttributes`,
-            );
-        if (cachedValue && cachedValue !== undefined) {
-            return new LockedAssetAttributesModel(cachedValue);
-        }
-        const lockedAssetToken = await this.apiService.getNftByTokenIdentifier(
-            proxyAddress,
-            tokenIdentifier(lockedAssetTokenCollection, lockedAssetNonce),
+        const nftIdentifier = tokenIdentifier(
+            lockedAssetTokenCollection,
+            lockedAssetNonce,
         );
+        const nftAttributes =
+            await this.apiService.getNftAttributesByTokenIdentifier(
+                proxyAddress,
+                nftIdentifier,
+            );
         const lockedAssetAttributes =
             await this.lockedAssetService.decodeLockedAssetAttributes({
                 batchAttributes: [
                     {
-                        attributes: lockedAssetToken.attributes,
-                        identifier: lockedAssetToken.identifier,
+                        attributes: nftAttributes,
+                        identifier: nftIdentifier,
                     },
                 ],
             });
 
-        return await this.cacheService.setCache(
-            `${tokenIdentifier(
-                lockedAssetTokenCollection,
-                lockedAssetNonce,
-            )}.decodedAttributes`,
-            lockedAssetAttributes[0],
-            CacheTtlInfo.Attributes.remoteTtl,
-            CacheTtlInfo.Attributes.localTtl,
-        );
+        return lockedAssetAttributes[0];
     }
 
     async getLockedTokenAttributes(
@@ -174,10 +157,16 @@ export class ProxyService {
         if (cachedValue && cachedValue !== undefined) {
             return new LockedTokenAttributesModel(cachedValue);
         }
-        const lockedToken = await this.apiService.getNftByTokenIdentifier(
-            proxyAddress,
-            tokenIdentifier(lockedTokenCollection, lockedTokenNonce),
+
+        const nftIdentifier = tokenIdentifier(
+            lockedTokenCollection,
+            lockedTokenNonce,
         );
+        const nftAttributes =
+            await this.apiService.getNftAttributesByTokenIdentifier(
+                proxyAddress,
+                nftIdentifier,
+            );
 
         return await this.cacheService.setCache(
             `${tokenIdentifier(
@@ -185,28 +174,26 @@ export class ProxyService {
                 lockedTokenNonce,
             )}.decodedAttributes`,
             new LockedTokenAttributesModel({
-                ...LockedTokenAttributes.fromAttributes(lockedToken.attributes),
-                identifier: lockedToken.identifier,
-                attributes: lockedToken.attributes,
+                ...LockedTokenAttributes.fromAttributes(nftAttributes),
+                identifier: nftIdentifier,
+                attributes: nftAttributes,
             }),
             CacheTtlInfo.Attributes.remoteTtl,
             CacheTtlInfo.Attributes.localTtl,
         );
     }
 
-    async getWrappedFarmTokenAttributes(
+    getWrappedFarmTokenAttributes(
         args: DecodeAttributesArgs,
-    ): Promise<WrappedFarmTokenAttributesModel[]> {
-        const promises = args.batchAttributes.map((arg) =>
+    ): WrappedFarmTokenAttributesModel[] {
+        return args.batchAttributes.map((arg) =>
             this.decodeWrappedFarmTokenAttributes(arg),
         );
-
-        return await Promise.all(promises);
     }
 
-    async decodeWrappedFarmTokenAttributes(
+    decodeWrappedFarmTokenAttributes(
         arg: DecodeAttributesModel,
-    ): Promise<WrappedFarmTokenAttributesModel> {
+    ): WrappedFarmTokenAttributesModel {
         const wrappedFarmTokenAttributes =
             WrappedFarmTokenAttributes.fromAttributes(arg.attributes);
         const farmTokenIdentifier = tokenIdentifier(
@@ -247,41 +234,72 @@ export class ProxyService {
         farmTokenCollection: string,
         farmTokenNonce: number,
     ): Promise<typeof FarmTokenAttributesUnion> {
-        const farmToken = await this.apiService.getNftByTokenIdentifier(
-            proxyAddress,
-            tokenIdentifier(farmTokenCollection, farmTokenNonce),
-        );
         const farmAddress = await this.farmGetter.getFarmAddressByFarmTokenID(
-            farmToken.collection,
+            farmTokenCollection,
         );
         const version = farmVersion(farmAddress);
 
+        const nftIdentifier = tokenIdentifier(
+            farmTokenCollection,
+            farmTokenNonce,
+        );
+        const cachedValue: LockedTokenAttributesModel =
+            await this.cacheService.getCache(
+                `${nftIdentifier}.decodedAttributes`,
+            );
+        if (cachedValue && cachedValue !== undefined) {
+            switch (version) {
+                case FarmVersion.V1_2:
+                    return new FarmTokenAttributesModelV1_2(cachedValue);
+                case FarmVersion.V1_3:
+                    return new FarmTokenAttributesModelV1_3(cachedValue);
+                case FarmVersion.V2:
+                    return new FarmTokenAttributesModelV2(cachedValue);
+            }
+        }
+
+        const nftAttributes =
+            await this.apiService.getNftAttributesByTokenIdentifier(
+                proxyAddress,
+                nftIdentifier,
+            );
+
+        let decodedAttributes: typeof FarmTokenAttributesUnion;
         switch (version) {
             case FarmVersion.V1_2:
-                return new FarmTokenAttributesModelV1_2({
+                decodedAttributes = new FarmTokenAttributesModelV1_2({
                     ...FarmTokenAttributesV1_2.fromAttributes(
-                        farmToken.attributes,
+                        nftAttributes,
                     ).toJSON(),
-                    attributes: farmToken.attributes,
-                    identifier: farmToken.identifier,
+                    attributes: nftAttributes,
+                    identifier: nftIdentifier,
                 });
+                break;
             case FarmVersion.V1_3:
-                return new FarmTokenAttributesModelV1_3({
+                decodedAttributes = new FarmTokenAttributesModelV1_3({
                     ...FarmTokenAttributesV1_3.fromAttributes(
-                        farmToken.attributes,
+                        nftAttributes,
                     ).toJSON(),
-                    attributes: farmToken.attributes,
-                    identifier: farmToken.identifier,
+                    attributes: nftAttributes,
+                    identifier: nftIdentifier,
                 });
+                break;
             case FarmVersion.V2:
-                return new FarmTokenAttributesModelV2({
+                decodedAttributes = new FarmTokenAttributesModelV2({
                     ...FarmTokenAttributesV2.fromAttributes(
-                        farmToken.attributes,
+                        nftAttributes,
                     ).toJSON(),
-                    attributes: farmToken.attributes,
-                    identifier: farmToken.identifier,
+                    attributes: nftAttributes,
+                    identifier: nftIdentifier,
                 });
+                break;
         }
+        return await this.cacheService.setCache(
+            `${nftIdentifier}.decodedAttributes`,
+            decodedAttributes,
+            CacheTtlInfo.Attributes.remoteTtl,
+            CacheTtlInfo.Attributes.localTtl,
+        );
     }
 
     async getProxyAddressByToken(tokenID: string): Promise<string> {

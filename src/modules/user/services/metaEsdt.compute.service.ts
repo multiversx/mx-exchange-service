@@ -49,7 +49,6 @@ import { SimpleLockService } from '../../simple-lock/services/simple.lock.servic
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { UserEsdtComputeService } from './esdt.compute.service';
-import { TokenComputeService } from '../../tokens/services/token.compute.service';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
@@ -63,6 +62,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 
 @Injectable()
 export class UserMetaEsdtComputeService {
@@ -84,16 +84,15 @@ export class UserMetaEsdtComputeService {
         private readonly lockedTokenWrapperService: LockedTokenWrapperService,
         private readonly lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
         private readonly userEsdtCompute: UserEsdtComputeService,
-        private readonly tokenCompute: TokenComputeService,
+        private readonly tokenGetter: TokenGetterService,
         private readonly cacheService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
     async esdtTokenUSD(esdtToken: EsdtToken): Promise<UserToken> {
-        const tokenPriceUSD =
-            await this.tokenCompute.computeTokenPriceDerivedUSD(
-                esdtToken.identifier,
-            );
+        const tokenPriceUSD = await this.tokenGetter.getDerivedUSD(
+            esdtToken.identifier,
+        );
         return new UserToken({
             ...esdtToken,
             valueUSD: computeValueUSD(
@@ -220,8 +219,8 @@ export class UserMetaEsdtComputeService {
     async lockedAssetTokenUSD(
         nftToken: LockedAssetToken,
     ): Promise<UserLockedAssetToken> {
-        const [assetToken, decodedAttributes] = await Promise.all([
-            this.lockedAssetGetter.getAssetToken(),
+        const [assetTokenID, decodedAttributes] = await Promise.all([
+            this.lockedAssetGetter.getAssetTokenID(),
             this.lockedAssetService.decodeLockedAssetAttributes({
                 batchAttributes: [
                     {
@@ -232,10 +231,9 @@ export class UserMetaEsdtComputeService {
             }),
         ]);
 
-        const tokenPriceUSD =
-            await this.pairGetterService.getSecondTokenPriceUSD(
-                scAddress.get(assetToken.identifier),
-            );
+        const tokenPriceUSD = await this.tokenGetter.getDerivedUSD(
+            assetTokenID,
+        );
         return new UserLockedAssetToken({
             ...nftToken,
             valueUSD: computeValueUSD(
@@ -251,16 +249,12 @@ export class UserMetaEsdtComputeService {
         nftToken: LockedLpToken,
     ): Promise<UserLockedLPToken> {
         const decodedWLPTAttributes =
-            await this.proxyService.getWrappedLpTokenAttributes({
-                batchAttributes: [
-                    {
-                        identifier: nftToken.identifier,
-                        attributes: nftToken.attributes,
-                    },
-                ],
+            this.proxyService.decodeWrappedLpTokenAttributes({
+                identifier: nftToken.identifier,
+                attributes: nftToken.attributes,
             });
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            decodedWLPTAttributes[0].lpTokenID,
+            decodedWLPTAttributes.lpTokenID,
         );
         if (pairAddress) {
             const valueUSD = await this.pairService.getLiquidityPositionUSD(
@@ -270,7 +264,7 @@ export class UserMetaEsdtComputeService {
             return new UserLockedLPToken({
                 ...nftToken,
                 valueUSD: valueUSD,
-                decodedAttributes: decodedWLPTAttributes[0],
+                decodedAttributes: decodedWLPTAttributes,
             });
         }
     }
@@ -279,16 +273,12 @@ export class UserMetaEsdtComputeService {
         nftToken: LockedLpTokenV2,
     ): Promise<UserLockedLPTokenV2> {
         const decodedWLPTAttributes =
-            await this.proxyService.getWrappedLpTokenAttributesV2({
-                batchAttributes: [
-                    {
-                        identifier: nftToken.identifier,
-                        attributes: nftToken.attributes,
-                    },
-                ],
+            this.proxyService.decodeWrappedLpTokenAttributesV2({
+                identifier: nftToken.identifier,
+                attributes: nftToken.attributes,
             });
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
-            decodedWLPTAttributes[0].lpTokenID,
+            decodedWLPTAttributes.lpTokenID,
         );
         if (pairAddress) {
             const valueUSD = await this.pairService.getLiquidityPositionUSD(
@@ -298,7 +288,7 @@ export class UserMetaEsdtComputeService {
             return new UserLockedLPTokenV2({
                 ...nftToken,
                 valueUSD: valueUSD,
-                decodedAttributes: decodedWLPTAttributes[0],
+                decodedAttributes: decodedWLPTAttributes,
             });
         }
     }
@@ -307,19 +297,16 @@ export class UserMetaEsdtComputeService {
         nftToken: LockedFarmToken,
     ): Promise<UserLockedFarmToken> {
         const decodedWFMTAttributes =
-            await this.proxyService.getWrappedFarmTokenAttributes({
-                batchAttributes: [
-                    {
-                        identifier: nftToken.identifier,
-                        attributes: nftToken.attributes,
-                    },
-                ],
+            this.proxyService.decodeWrappedFarmTokenAttributes({
+                identifier: nftToken.identifier,
+                attributes: nftToken.attributes,
             });
 
         const farmToken = await this.apiService.getNftByTokenIdentifier(
             nftToken.creator,
-            decodedWFMTAttributes[0].farmTokenIdentifier,
+            decodedWFMTAttributes.farmTokenIdentifier,
         );
+
         const userFarmToken = await this.farmTokenUSD(
             new NftToken({
                 ...farmToken,
@@ -330,7 +317,7 @@ export class UserMetaEsdtComputeService {
         return new UserLockedFarmToken({
             ...nftToken,
             valueUSD: userFarmToken.valueUSD,
-            decodedAttributes: decodedWFMTAttributes[0],
+            decodedAttributes: decodedWFMTAttributes,
         });
     }
 
@@ -340,27 +327,23 @@ export class UserMetaEsdtComputeService {
     ): Promise<UserLockedFarmTokenV2> {
         try {
             const decodedWFMTAttributes =
-                this.proxyService.getWrappedFarmTokenAttributesV2({
-                    batchAttributes: [
-                        {
-                            identifier: nftToken.identifier,
-                            attributes: nftToken.attributes,
-                        },
-                    ],
+                this.proxyService.decodeWrappedFarmTokenAttributesV2({
+                    identifier: nftToken.identifier,
+                    attributes: nftToken.attributes,
                 });
 
             if (!calculateUSD) {
                 return new UserLockedFarmTokenV2({
                     ...nftToken,
-                    decodedAttributes: decodedWFMTAttributes[0],
+                    decodedAttributes: decodedWFMTAttributes,
                 });
             }
 
             const farmToken = await this.apiService.getNftByTokenIdentifier(
                 nftToken.creator,
                 tokenIdentifier(
-                    decodedWFMTAttributes[0].farmToken.tokenIdentifier,
-                    decodedWFMTAttributes[0].farmToken.tokenNonce,
+                    decodedWFMTAttributes.farmToken.tokenIdentifier,
+                    decodedWFMTAttributes.farmToken.tokenNonce,
                 ),
             );
 
@@ -386,6 +369,15 @@ export class UserMetaEsdtComputeService {
     }
 
     async stakeFarmUSD(nftToken: StakeFarmToken): Promise<UserStakeFarmToken> {
+        const stakeDecodedAttributes =
+            this.stakingService.decodeStakingTokenAttributes({
+                batchAttributes: [
+                    {
+                        attributes: nftToken.attributes,
+                        identifier: nftToken.identifier,
+                    },
+                ],
+            });
         const farmingToken = await this.stakingGetter.getFarmingToken(
             nftToken.creator,
         );
@@ -397,15 +389,6 @@ export class UserMetaEsdtComputeService {
             farmingToken.decimals,
             priceUSD,
         ).toFixed();
-        const stakeDecodedAttributes =
-            this.stakingService.decodeStakingTokenAttributes({
-                batchAttributes: [
-                    {
-                        attributes: nftToken.attributes,
-                        identifier: nftToken.identifier,
-                    },
-                ],
-            });
         return new UserStakeFarmToken({
             ...nftToken,
             valueUSD,
