@@ -99,7 +99,9 @@ export class FeesCollectorService {
         ])
         accumulatedFees.push(new EsdtTokenPayment({
             tokenID: `Minted${lockedTokenId}`,
+            tokenType: 0,
             amount: accumulatedTokenForInflation,
+            nonce: 0,
         }));
 
         return accumulatedFees
