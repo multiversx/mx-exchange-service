@@ -15,6 +15,7 @@ import { Address } from '@elrondnetwork/erdjs/out';
 import { StakingTokenAttributesModel } from '../models/stakingTokenAttributes.model';
 import BigNumber from 'bignumber.js';
 import { StakingFarmTokenType } from '@elrondnetwork/erdjs-dex';
+import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
 
 describe('StakingComputeService', () => {
     let service: StakingComputeService;
@@ -50,6 +51,7 @@ describe('StakingComputeService', () => {
                 StakingComputeService,
                 StakingGetterServiceProvider,
                 ContextGetterServiceProvider,
+                TokenGetterServiceProvider,
             ],
         }).compile();
 

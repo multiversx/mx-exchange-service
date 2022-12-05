@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour, oneMinute } from 'src/helpers/helpers';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -9,6 +9,7 @@ import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
 import { AbiStakingService } from './staking.abi.service';
+import { StakingComputeService } from './staking.compute.service';
 
 @Injectable()
 export class StakingGetterService extends GenericGetterService {
@@ -16,6 +17,8 @@ export class StakingGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly abiService: AbiStakingService,
+        @Inject(forwardRef(() => StakingComputeService))
+        private readonly computeService: StakingComputeService,
         private readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
@@ -205,6 +208,15 @@ export class StakingGetterService extends GenericGetterService {
             this.getCacheKey(stakeAddress, 'lastErrorMessage'),
             () => this.abiService.getLastErrorMessage(stakeAddress),
             oneMinute(),
+        );
+    }
+
+    async getStakedValueUSD(stakeAddress: string): Promise<string> {
+        return await this.getData(
+            this.getCacheKey(stakeAddress, 'stakedValueUSD'),
+            () => this.computeService.computeStakedValueUSD(stakeAddress),
+            CacheTtlInfo.ContractInfo.remoteTtl,
+            CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 }
