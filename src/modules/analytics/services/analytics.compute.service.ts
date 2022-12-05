@@ -16,6 +16,9 @@ import { FeesCollectorGetterService } from '../../fees-collector/services/fees-c
 import {
     WeekTimekeepingGetterService
 } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import {
+    RemoteConfigGetterService
+} from '../../remote-config/remote-config.getter.service';
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
@@ -30,6 +33,7 @@ export class AnalyticsComputeService {
         private readonly analyticsGetter: AnalyticsGetterService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
     ) { }
 
@@ -81,7 +85,8 @@ export class AnalyticsComputeService {
     async computeTotalValueStakedUSD(): Promise<string> {
         let totalValueLockedUSD = new BigNumber(0);
 
-        const promises = scAddress['staking'].map((stakingAddress) =>
+        const stakingAddresses = await this.remoteConfigGetterService.getStakingAddresses()
+        const promises = stakingAddresses.map((stakingAddress) =>
             this.stakingGetter.getStakedValueUSD(stakingAddress)
         );
 

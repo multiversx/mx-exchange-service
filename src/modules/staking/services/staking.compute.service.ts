@@ -144,18 +144,17 @@ export class StakingComputeService {
     async computeStakedValueUSD(stakeAddress: string): Promise<string> {
         const [
             farmTokenSupply,
-            farmingTokenMetadata,
-            farmingTokenID
+            farmingToken
         ] = await Promise.all([
             this.stakingGetterService.getFarmTokenSupply(stakeAddress),
             this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
-            this.stakingGetterService.getFarmingTokenID(stakeAddress),
+            this.stakingGetterService.getFarmingToken(stakeAddress),
         ])
 
-        const farmingTokenPrice = await this.tokenGetter.getDerivedUSD(farmingTokenID);
+        const farmingTokenPrice = await this.tokenGetter.getDerivedUSD(farmingToken.identifier);
         return new BigNumber(farmTokenSupply)
             .multipliedBy(farmingTokenPrice)
-            .multipliedBy(`1e-${farmingTokenMetadata.decimals}`)
+            .multipliedBy(`1e-${farmingToken.decimals}`)
             .toFixed()
     }
 }

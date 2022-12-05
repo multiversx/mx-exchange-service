@@ -21,6 +21,7 @@ import { StakingModule } from '../staking/staking.module';
 import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-timekeeping.module';
 import { FeesCollectorAbiService } from '../fees-collector/services/fees-collector.abi.service';
 import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
 
 @Module({
     imports: [
@@ -37,6 +38,7 @@ import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
         EnergyModule,
         StakingModule,
         FeesCollectorModule,
+        RemoteConfigModule,
         WeekTimekeepingModule.register(FeesCollectorAbiService),
     ],
     providers: [

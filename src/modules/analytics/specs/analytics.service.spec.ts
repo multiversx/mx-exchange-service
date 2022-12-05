@@ -62,6 +62,9 @@ import {
 import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
 import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
+import {
+    RemoteConfigGetterServiceProvider
+} from '../../remote-config/mocks/remote-config.getter.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -157,7 +160,8 @@ describe('AnalyticsService', () => {
                 {
                     provide: FeesCollectorGetterService,
                     useValue: feesCollectorGetter,
-                }
+                },
+                RemoteConfigGetterServiceProvider,
             ],
         }).compile();
 
