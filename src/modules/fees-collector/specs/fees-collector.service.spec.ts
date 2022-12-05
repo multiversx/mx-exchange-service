@@ -46,9 +46,18 @@ describe('FeesCollectorService', () => {
     });
     it('getAccumulatedFees' +
         'no rewards for tokens', async () => {
+        const energyToken = "ELKMEX-123456"
         const service = await createService({
             getter: {
                 getAccumulatedFees: (scAddress: string, week: number, token: string) => {
+                    expect(scAddress).toEqual(dummyScAddress)
+                    return Promise.resolve("0")
+                },
+                getLockedTokenId: scAddress => {
+                    expect(scAddress).toEqual(dummyScAddress)
+                    return Promise.resolve(energyToken)
+                },
+                getAccumulatedTokenForInflation: scAddress => {
                     expect(scAddress).toEqual(dummyScAddress)
                     return Promise.resolve("0")
                 }
@@ -60,24 +69,30 @@ describe('FeesCollectorService', () => {
         const firstToken = "WEGLD-abcabc"
         tokens.push(firstToken)
         let rewards = await service.getAccumulatedFees(dummyScAddress, 10, tokens);
-        expect(rewards.length).toEqual(1)
+        expect(rewards.length).toEqual(2)
         expect(rewards[0].tokenID).toEqual(firstToken)
         expect(rewards[0].amount).toEqual("0")
+        expect(rewards[1].tokenID).toEqual('Minted' + energyToken)
+        expect(rewards[1].amount).toEqual("0")
         const secondToken = "MEX-abcabc"
         tokens.push(secondToken)
         rewards = await service.getAccumulatedFees(dummyScAddress, 10, tokens)
-        expect(rewards.length).toEqual(2)
+        expect(rewards.length).toEqual(3)
         expect(rewards[0].tokenID).toEqual(firstToken)
         expect(rewards[0].amount).toEqual("0")
         expect(rewards[1].tokenID).toEqual(secondToken)
         expect(rewards[1].amount).toEqual("0")
+        expect(rewards[2].tokenID).toEqual('Minted' + energyToken)
+        expect(rewards[2].amount).toEqual("0")
     });
     it('getAccumulatedFees' +
         'should work', async () => {
         const firstToken = "WEGLD-abcabc"
         const secondToken = "MEX-abcabc"
+        const energyToken = "ELKMEX-123456"
         const rewardsFirstToken = "100"
         const rewardsSecondToken = "300"
+        const rewardsMinted = "1000"
         const service = await createService({
             getter: {
                 getAccumulatedFees: (scAddress: string, week: number, token: string) => {
@@ -91,6 +106,14 @@ describe('FeesCollectorService', () => {
                             break
                     }
                     return Promise.resolve(rewards)
+                },
+                getLockedTokenId: scAddress => {
+                    expect(scAddress).toEqual(dummyScAddress)
+                    return Promise.resolve(energyToken)
+                },
+                getAccumulatedTokenForInflation: scAddress => {
+                    expect(scAddress).toEqual(dummyScAddress)
+                    return Promise.resolve(rewardsMinted)
                 }
             },
             weekTimekeeping: {},
@@ -102,17 +125,20 @@ describe('FeesCollectorService', () => {
 
         tokens.push(firstToken)
         let rewards = await service.getAccumulatedFees(dummyScAddress, 10, tokens);
-        expect(rewards.length).toEqual(1)
+        expect(rewards.length).toEqual(2)
         expect(rewards[0].tokenID).toEqual(firstToken)
         expect(rewards[0].amount).toEqual(rewardsFirstToken)
-
+        expect(rewards[1].tokenID).toEqual('Minted' + energyToken)
+        expect(rewards[1].amount).toEqual(rewardsMinted)
         tokens.push(secondToken)
         rewards = await service.getAccumulatedFees(dummyScAddress, 10, tokens)
-        expect(rewards.length).toEqual(2)
+        expect(rewards.length).toEqual(3)
         expect(rewards[0].tokenID).toEqual(firstToken)
         expect(rewards[0].amount).toEqual(rewardsFirstToken)
         expect(rewards[1].tokenID).toEqual(secondToken)
         expect(rewards[1].amount).toEqual(rewardsSecondToken)
+        expect(rewards[2].tokenID).toEqual('Minted' + energyToken)
+        expect(rewards[2].amount).toEqual(rewardsMinted)
     });
     it('feesCollector' +
         'empty tokens should return []', async () => {
