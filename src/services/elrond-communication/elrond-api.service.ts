@@ -82,7 +82,6 @@ export class ElrondApiService {
                 await this.delay(500 * retries);
                 return await this.doGetGeneric(name, resourceUrl, retries + 1);
             }
-
             this.logger.error(`${error.message} after ${retries} retries`, {
                 path: `${ElrondApiService.name}.${name}`,
             });
@@ -232,10 +231,11 @@ export class ElrondApiService {
         address: string,
         nftIdentifier: string,
     ): Promise<string> {
-        return await this.doGetGeneric<string>(
+        const response = await this.doGetGeneric<NftToken>(
             this.getNftAttributesByTokenIdentifier.name,
-            `accounts/${address}/tokens/${nftIdentifier}?extract=attributes`,
+            `accounts/${address}/tokens/${nftIdentifier}`,
         );
+        return response.attributes;
     }
 
     async getCurrentNonce(shardId: number): Promise<any> {
