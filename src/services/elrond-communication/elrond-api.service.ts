@@ -228,6 +228,16 @@ export class ElrondApiService {
         );
     }
 
+    async getNftAttributesByTokenIdentifier(
+        address: string,
+        nftIdentifier: string,
+    ): Promise<string> {
+        return await this.doGetGeneric<string>(
+            this.getNftAttributesByTokenIdentifier.name,
+            `accounts/${address}/tokens/${nftIdentifier}?extract=attributes`,
+        );
+    }
+
     async getCurrentNonce(shardId: number): Promise<any> {
         return this.doGetGeneric(
             this.getCurrentNonce.name,
