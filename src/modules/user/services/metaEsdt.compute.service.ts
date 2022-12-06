@@ -357,7 +357,7 @@ export class UserMetaEsdtComputeService {
             return new UserLockedFarmTokenV2({
                 ...nftToken,
                 valueUSD: userFarmToken.valueUSD,
-                decodedAttributes: decodedWFMTAttributes[0],
+                decodedAttributes: decodedWFMTAttributes,
             });
         } catch (e) {
             this.logger.error(
