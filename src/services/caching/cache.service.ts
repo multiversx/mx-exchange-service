@@ -58,6 +58,7 @@ export class CachingService {
         );
     }
 
+
     private async setCacheRemote<T>(
         key: string,
         value: T,
@@ -94,6 +95,16 @@ export class CachingService {
         }
 
         return JSON.parse(response);
+    }
+
+    async executeRemoteRaw<T>(
+        method,
+        ...args
+    ): Promise<T> {
+        if (!this.client[method])
+            throw new Error(`Redis client method ${method} not defined`);
+
+        return this.client[method](...args);
     }
 
     async setCacheLocal<T>(
