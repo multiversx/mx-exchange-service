@@ -6,7 +6,7 @@ import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { WeeklyRewardsSplittingGetterService } from './weekly-rewards-splitting.getter.service';
 import { WeekTimekeepingComputeService } from '../../week-timekeeping/services/week-timekeeping.compute.service';
 import { ProgressComputeService } from './progress.compute.service';
-import { ClaimProgress } from '../models/weekly-rewards-splitting.model';
+import { ClaimProgress, TokenDistributionModel } from '../models/weekly-rewards-splitting.model';
 import { IWeeklyRewardsSplittingComputeService } from '../interfaces';
 import { constantsConfig, scAddress } from '../../../config';
 import { PairComputeService } from '../../../modules/pair/services/pair.compute.service';
@@ -157,6 +157,56 @@ export class WeeklyRewardsSplittingComputeService
         }
 
         return payments;
+    }
+
+    async computeDistribution(payments: EsdtTokenPayment[]): Promise<TokenDistributionModel[]> {
+        let totalPriceUSD = new BigNumber('0');
+        const tokenDistributionModels = [];
+        for (const token of payments) {
+            const tokenPriceUSD =
+                await this.tokenCompute.computeTokenPriceDerivedUSD(
+                    token.tokenID,
+                );
+            const rewardsPriceUSD = new BigNumber(tokenPriceUSD).multipliedBy(
+                new BigNumber(token.amount),
+            );
+            tokenDistributionModels.push(new TokenDistributionModel({
+                tokenId: token.tokenID,
+                percentage: rewardsPriceUSD.toFixed(),
+            }));
+            totalPriceUSD = totalPriceUSD.plus(rewardsPriceUSD);
+        }
+        return tokenDistributionModels.map((model: TokenDistributionModel) => {
+            model.percentage = new BigNumber(model.percentage).dividedBy(totalPriceUSD)
+                            .multipliedBy(100).toFixed(4)
+            return model
+        })
+    }
+
+    async computeUserRewardsDistributionForWeek(
+        scAddress: string,
+        week: number,
+        userAddress: string,
+    ): Promise<TokenDistributionModel[]> {
+        const userRewardsForWeek =
+            await this.weeklyRewardsSplittingGetter.userRewardsForWeek(
+                scAddress,
+                userAddress,
+                week,
+            );
+        return await this.computeDistribution(userRewardsForWeek);
+    }
+
+    async computeTotalRewardsDistributionForWeek(
+        scAddress: string,
+        week: number,
+    ): Promise<TokenDistributionModel[]> {
+        const totalRewardsForWeek =
+            await this.weeklyRewardsSplittingGetter.totalRewardsForWeek(
+                scAddress,
+                week,
+            );
+        return await this.computeDistribution(totalRewardsForWeek);
     }
 
     async computeTotalRewardsForWeekPriceUSD(

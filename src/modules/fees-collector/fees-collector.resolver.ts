@@ -22,11 +22,13 @@ import {
     GlobalInfoByWeekSubResolver, UserInfoByWeekSubResolver
 } from '../../submodules/weekly-rewards-splitting/weekly-rewards-splitting.resolver';
 import { TransactionModel } from '../../models/transaction.model';
+import { FeesCollectorGetterService } from './services/fees-collector.getter.service';
 
 @Resolver(() => FeesCollectorModel)
 export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWeekSubResolver) {
     constructor(
         private readonly feesCollectorService: FeesCollectorService,
+        private readonly feesCollectorGetter: FeesCollectorGetterService,
         protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
     ) {
         super(weeklyRewardsSplittingGetter);
@@ -44,10 +46,17 @@ export class FeesCollectorResolver extends Mixin(GenericResolver, GlobalInfoByWe
         );
     }
 
-    @ResolveField(() => [EsdtTokenPayment])
-    async accumulatedLockedFees(@Parent() parent: FeesCollectorModel): Promise<EsdtTokenPayment[]> {
+    @ResolveField()
+    async lockedTokenId(@Parent() parent: FeesCollectorModel): Promise<string> {
         return await this.genericFieldResolver(() =>
-            this.feesCollectorService.getAccumulatedLockedFees(parent.address, parent.time.currentWeek, parent.allTokens),
+            this.feesCollectorGetter.getLockedTokenId(parent.address),
+        );
+    }
+
+    @ResolveField()
+    async lockedTokensPerBlock(@Parent() parent: FeesCollectorModel): Promise<string> {
+        return await this.genericFieldResolver(() =>
+            this.feesCollectorGetter.getLockedTokensPerBlock(parent.address),
         );
     }
 
@@ -74,6 +83,13 @@ export class UserEntryFeesCollectorResolver extends Mixin(GenericResolver, UserI
         @Parent() parent: UserEntryFeesCollectorModel,
     ): Promise<UserInfoByWeekModel[]> {
         return this.feesCollectorService.getUserWeeklyRewardsSplit(parent.address, parent.userAddress, parent.startWeek, parent.endWeek);
+    }
+
+    @ResolveField(() => [EsdtTokenPayment])
+    async accumulatedRewards(
+        @Parent() parent: UserEntryFeesCollectorModel,
+    ): Promise<EsdtTokenPayment[]> {
+        return this.feesCollectorService.getUserAccumulatedRewards(parent.address, parent.userAddress, parent.time.currentWeek);
     }
 
     @UseGuards(GqlAuthGuard)

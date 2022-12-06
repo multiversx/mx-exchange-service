@@ -4,6 +4,9 @@ import { ErrorNotImplemented } from '../../../utils/errors.constants';
 export class FeesCollectorGetterHandlers implements IFeesCollectorGetterService {
     getAccumulatedFees:(scAddress: string, week: number, token: string) => Promise<string>;
     getAllTokens:(scAddress: string) => Promise<string[]>;
+    getAccumulatedTokenForInflation:(scAddress: string, week: number) => Promise<string>;
+    getLockedTokenId:(scAddress: string) => Promise<string>;
+    getLockedTokensPerBlock:(scAddress: string) => Promise<string>;
     constructor(init?: Partial<FeesCollectorGetterServiceMock>) {
         Object.assign(this, init);
     }
@@ -21,6 +24,27 @@ export class FeesCollectorGetterServiceMock implements IFeesCollectorGetterServi
     getAllTokens(scAddress: string): Promise<string[]> {
         if (this.handlers.getAllTokens !== undefined) {
             return this.handlers.getAllTokens(scAddress);
+        }
+        ErrorNotImplemented()
+    }
+
+    getAccumulatedTokenForInflation(scAddress: string, week: number): Promise<string> {
+        if (this.handlers.getAccumulatedTokenForInflation !== undefined) {
+            return this.handlers.getAccumulatedTokenForInflation(scAddress, week);
+        }
+        ErrorNotImplemented()
+    }
+
+    getLockedTokenId(scAddress: string): Promise<string> {
+        if (this.handlers.getLockedTokenId !== undefined) {
+            return this.handlers.getLockedTokenId(scAddress);
+        }
+        ErrorNotImplemented()
+    }
+
+    getLockedTokensPerBlock(scAddress: string): Promise<string> {
+        if (this.handlers.getLockedTokensPerBlock !== undefined) {
+            return this.handlers.getLockedTokensPerBlock(scAddress);
         }
         ErrorNotImplemented()
     }

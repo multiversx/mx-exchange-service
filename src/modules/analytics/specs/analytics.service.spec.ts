@@ -56,6 +56,15 @@ import {
     ProgressComputeServiceMock
 } from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
 import { EnergyGetterServiceProvider } from '../../energy/mocks/energy.getter.service.mock';
+import {
+    StakingGetterServiceProvider,
+} from '../../staking/mocks/staking.getter.service.mock';
+import { AnalyticsGetterServiceProvider } from '../mocks/analytics.getter.service.mock';
+import { FeesCollectorGetterServiceMock } from '../../fees-collector/mocks/fees-collector.getter.service.mock';
+import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
+import {
+    RemoteConfigGetterServiceProvider
+} from '../../remote-config/mocks/remote-config.getter.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -96,6 +105,7 @@ describe('AnalyticsService', () => {
     };
 
     beforeEach(async () => {
+        const feesCollectorGetter = new FeesCollectorGetterServiceMock({});
         const module: TestingModule = await Test.createTestingModule({
             imports: [CommonAppModule, CachingModule, AWSModule],
             providers: [
@@ -144,7 +154,14 @@ describe('AnalyticsService', () => {
                     provide: ProgressComputeService,
                     useValue: new ProgressComputeServiceMock({}),
                 },
-                EnergyGetterServiceProvider
+                EnergyGetterServiceProvider,
+                StakingGetterServiceProvider,
+                AnalyticsGetterServiceProvider,
+                {
+                    provide: FeesCollectorGetterService,
+                    useValue: feesCollectorGetter,
+                },
+                RemoteConfigGetterServiceProvider,
             ],
         }).compile();
 

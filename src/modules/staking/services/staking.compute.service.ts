@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { constantsConfig } from 'src/config';
@@ -6,12 +6,15 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import { Logger } from 'winston';
 import { StakingTokenAttributesModel } from '../models/stakingTokenAttributes.model';
 import { StakingGetterService } from './staking.getter.service';
+import { TokenGetterService } from '../../tokens/services/token.getter.service';
 
 @Injectable()
 export class StakingComputeService {
     constructor(
+        @Inject(forwardRef(() => StakingGetterService))
         private readonly stakingGetterService: StakingGetterService,
         private readonly contextGetter: ContextGetterService,
+        private readonly tokenGetter: TokenGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -136,5 +139,22 @@ export class StakingComputeService {
             .dividedBy(constantsConfig.BLOCKS_IN_YEAR);
 
         return extraRewardsAPRBoundedPerBlock.multipliedBy(blockDifferenceBig);
+    }
+
+    async computeStakedValueUSD(stakeAddress: string): Promise<string> {
+        const [
+            farmTokenSupply,
+            farmingToken
+        ] = await Promise.all([
+            this.stakingGetterService.getFarmTokenSupply(stakeAddress),
+            this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
+            this.stakingGetterService.getFarmingToken(stakeAddress),
+        ])
+
+        const farmingTokenPrice = await this.tokenGetter.getDerivedUSD(farmingToken.identifier);
+        return new BigNumber(farmTokenSupply)
+            .multipliedBy(farmingTokenPrice)
+            .multipliedBy(`1e-${farmingToken.decimals}`)
+            .toFixed()
     }
 }

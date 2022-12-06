@@ -3,6 +3,18 @@ import { EnergyModel } from '../../../modules/energy/models/energy.model';
 import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 
 @ObjectType()
+export class TokenDistributionModel {
+    @Field()
+    tokenId: string
+    @Field()
+    percentage: string
+
+    constructor(init?: Partial<TokenDistributionModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
 export class GlobalInfoByWeekModel {
     @Field()
     scAddress: string;
@@ -15,6 +27,9 @@ export class GlobalInfoByWeekModel {
 
     @Field(() => [EsdtTokenPayment])
     totalRewardsForWeek: [EsdtTokenPayment];
+
+    @Field(() => [TokenDistributionModel])
+    rewardsDistributionForWeek: TokenDistributionModel[];
 
     @Field()
     totalEnergyForWeek: string;
@@ -46,6 +61,9 @@ export class UserInfoByWeekModel {
 
     @Field(() => [EsdtTokenPayment])
     rewardsForWeek: [EsdtTokenPayment];
+
+    @Field(() => [TokenDistributionModel])
+    rewardsDistributionForWeek: TokenDistributionModel[];
 
     constructor(init?: Partial<UserInfoByWeekModel>) {
         Object.assign(this, init);

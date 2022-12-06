@@ -14,7 +14,7 @@ export class TokenService {
         private readonly routerGetter: RouterGetterService,
         private readonly pairGetter: PairGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     async getTokens(filters: TokensFiltersArgs): Promise<EsdtToken[]> {
         let tokenIDs = await this.getUniqueTokenIDs(filters.enabledSwaps);
@@ -44,7 +44,7 @@ export class TokenService {
     async getUniqueTokenIDs(activePool: boolean): Promise<string[]> {
         const pairsMetadata = await this.routerGetter.getPairsMetadata();
         const tokenIDs: string[] = [];
-        for (const iterator of pairsMetadata) {
+        await Promise.all(pairsMetadata.map(async iterator => {
             if (activePool) {
                 const state = await this.pairGetter.getState(iterator.address);
                 if (state === 'Active') {
@@ -57,8 +57,7 @@ export class TokenService {
                     ...[iterator.firstTokenID, iterator.secondTokenID],
                 );
             }
-        }
-
+        }));
         return [...new Set(tokenIDs)];
     }
 }

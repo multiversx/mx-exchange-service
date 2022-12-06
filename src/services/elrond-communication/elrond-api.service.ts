@@ -106,6 +106,13 @@ export class ElrondApiService {
         return new Stats(stats);
     }
 
+    async getBlockCountInEpoch(epoch: number): Promise<Stats> {
+        return await this.doGetGeneric<Stats>(
+            this.getStats.name,
+            `blocks/count?epoch=${epoch}`,
+        );
+    }
+
     async getAccountStats(address: string): Promise<any | undefined> {
         return await this.doGetGeneric(
             this.getAccountStats.name,

@@ -10,7 +10,6 @@ import {
 import { Mixin } from 'ts-mixer';
 import BigNumber from 'bignumber.js';
 import { WeekTimekeepingAbiService } from '../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import {
     WeekTimekeepingGetterService
 } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
@@ -43,26 +42,18 @@ export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewa
         return response.firstValue.valueOf().toString();
     }
 
-    async accumulatedLockedFees(scAddress: string, week: number, token: string): Promise<EsdtTokenPayment[]> {
+    async lockedTokenId(scAddress: string): Promise<string> {
         const contract = await this.getContractHandler(scAddress);
-        const interaction: Interaction = contract.methodsExplicit.getAccumulatedLockedFees(
-            [
-                new U32Value(new BigNumber(week)),
-                new TokenIdentifierValue(token),
-            ],
-        );
+        const interaction: Interaction = contract.methodsExplicit.getLockedTokenId();
         const response = await this.getGenericData(interaction);
-        const rewards = response.firstValue.valueOf().map( raw => {
-            const nonce = raw.token_nonce.toNumber()
-            const discriminant = nonce != 0 ? 3 : 1;
-            return new EsdtTokenPayment({
-                tokenType: discriminant,
-                tokenID: raw.token_identifier.toString(),
-                nonce: nonce,
-                amount: raw.amount.toFixed()
-            });
-        })
-        return rewards;
+        return response.firstValue.valueOf();
+    }
+
+    async lockedTokensPerBlock(scAddress: string): Promise<string> {
+        const contract = await this.getContractHandler(scAddress);
+        const interaction: Interaction = contract.methodsExplicit.getLockedTokensPerBlock();
+        const response = await this.getGenericData(interaction);
+        return response.firstValue.valueOf().toFixed();
     }
 
     async allTokens(scAddress: string): Promise<string[]> {

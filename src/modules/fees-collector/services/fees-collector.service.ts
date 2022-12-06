@@ -25,6 +25,7 @@ import {
 import { constantsConfig, elrondConfig, gasConfig } from '../../../config';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { Address, AddressValue } from '@elrondnetwork/erdjs/out';
+import BigNumber from 'bignumber.js';
 
 
 @Injectable()
@@ -77,24 +78,32 @@ export class FeesCollectorService {
     async getAccumulatedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
         const accumulatedFees: EsdtTokenPayment[] = []
 
-        for (const token of allTokens) {
+        const promises = allTokens.map( (token) => this.feesCollectorGetterService.getAccumulatedFees(scAddress, week, token))
+
+        const accumulatedFeesByToken = await Promise.all(promises);
+        for (const index in accumulatedFeesByToken) {
             accumulatedFees.push(new EsdtTokenPayment({
-                tokenID: token,
+                tokenID: allTokens[index],
                 tokenType: 0,
-                amount: await this.feesCollectorGetterService.getAccumulatedFees(scAddress, week, token),
+                amount: accumulatedFeesByToken[index],
                 nonce: 0,
             }))
         }
-        return accumulatedFees
-    }
 
-    async getAccumulatedLockedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
-        const promisesList = [];
-        for (const token of allTokens) {
-            promisesList.push(this.feesCollectorGetterService.getAccumulatedLockedFees(scAddress, week, token));
-        }
+        const [
+            lockedTokenId,
+            accumulatedTokenForInflation,
+        ] = await Promise.all([
+            this.feesCollectorGetterService.getLockedTokenId(scAddress),
+            this.feesCollectorGetterService.getAccumulatedTokenForInflation(scAddress, week)
+        ])
+        accumulatedFees.push(new EsdtTokenPayment({
+            tokenID: `Minted${lockedTokenId}`,
+            tokenType: 0,
+            amount: accumulatedTokenForInflation,
+            nonce: 0,
+        }));
 
-        const accumulatedFees = (await Promise.all(promisesList)).flat();
         return accumulatedFees
     }
 
@@ -184,5 +193,37 @@ export class FeesCollectorService {
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();
+    }
+
+    async getUserAccumulatedRewards(scAddress: string, userAddress: string, currentWeek: number): Promise<EsdtTokenPayment[]> {
+        const allTokens = await this.feesCollectorGetterService.getAllTokens(scAddress);
+        const [
+            accumulatedFees,
+            totalEnergyForWeek,
+            currentClaimProgress,
+        ] = await Promise.all([
+            this.getAccumulatedFees(scAddress, currentWeek, allTokens),
+            this.weeklyRewardsSplittingGetter.totalEnergyForWeek(scAddress, currentWeek),
+            this.weeklyRewardsSplittingGetter.currentClaimProgress(scAddress, userAddress)
+        ]);
+
+        if (currentClaimProgress.week === 0 ||
+            new BigNumber(currentClaimProgress.energy.amount).isZero()) {
+            return [];
+        }
+
+        const accumulatedRewards = [];
+        const percentage = new BigNumber(currentClaimProgress.energy.amount)
+            .dividedBy(totalEnergyForWeek);
+
+        for (const payment of accumulatedFees) {
+            accumulatedRewards.push(new EsdtTokenPayment({
+                amount: new BigNumber(payment.amount).multipliedBy(percentage).toNumber().toString(),
+                nonce: payment.nonce,
+                tokenID: payment.tokenID,
+                tokenType: payment.tokenType
+            }))
+        }
+        return accumulatedRewards;
     }
 }

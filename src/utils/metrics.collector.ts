@@ -3,10 +3,13 @@ import { register, Histogram, collectDefaultMetrics, Gauge } from 'prom-client';
 export class MetricsCollector {
     private static fieldDurationHistogram: Histogram<string>;
     private static queryDurationHistogram: Histogram<string>;
+    private static queryCpuHistogram: Histogram<string>;
     private static redisDurationHistogram: Histogram<string>;
     private static externalCallsHistogram: Histogram<string>;
     private static awsQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
+    private static guestHitsGauge: Gauge<string>;
+    private static guestNoCacheHitsGauge: Gauge<string>;
     private static currentNonceGauge: Gauge<string>;
     private static lastProcessedNonceGauge: Gauge<string>;
     private static isDefaultMetricsRegistered = false;
@@ -25,6 +28,15 @@ export class MetricsCollector {
             MetricsCollector.queryDurationHistogram = new Histogram({
                 name: 'query_duration',
                 help: 'The time it takes to resolve a query',
+                labelNames: ['query', 'origin'],
+                buckets: [],
+            });
+        }
+
+        if (!MetricsCollector.queryCpuHistogram) {
+            MetricsCollector.queryCpuHistogram = new Histogram({
+                name: 'query_cpu',
+                help: 'The CPU time it takes to resolve a query',
                 labelNames: ['query', 'origin'],
                 buckets: [],
             });
@@ -82,6 +94,22 @@ export class MetricsCollector {
             });
         }
 
+        if (!MetricsCollector.guestNoCacheHitsGauge) {
+            MetricsCollector.guestNoCacheHitsGauge = new Gauge({
+                name: 'guest_no_cache_hits',
+                help: 'Request no-cache hits for guest users',
+                labelNames: [],
+            });
+        }
+
+        if (!MetricsCollector.guestHitsGauge) {
+            MetricsCollector.guestHitsGauge = new Gauge({
+                name: 'guest_hits',
+                help: 'Request hits for guest users',
+                labelNames: [],
+            });
+        }
+
         if (!MetricsCollector.isDefaultMetricsRegistered) {
             MetricsCollector.isDefaultMetricsRegistered = true;
             collectDefaultMetrics();
@@ -98,6 +126,13 @@ export class MetricsCollector {
     static setQueryDuration(query: string, origin: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
         MetricsCollector.queryDurationHistogram
+            .labels(query, origin)
+            .observe(duration);
+    }
+
+    static setQueryCpu(query: string, origin: string, duration: number) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.queryCpuHistogram
             .labels(query, origin)
             .observe(duration);
     }
@@ -143,6 +178,14 @@ export class MetricsCollector {
 
     static setLastProcessedNonce(shardId: number, nonce: number) {
         MetricsCollector.lastProcessedNonceGauge.set({ shardId }, nonce);
+    }
+
+    static incrementGuestHits() {
+        MetricsCollector.guestHitsGauge.inc();
+    }
+
+    static incrementGuestNoCacheHits() {
+        MetricsCollector.guestNoCacheHitsGauge.inc();
     }
 
     static async getMetrics(): Promise<string> {

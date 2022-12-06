@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { GenericGetterService } from '../../../services/generics/generic.getter.service';
 import { CachingService } from '../../../services/caching/cache.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -8,9 +8,9 @@ import { generateCacheKeyFromParams } from '../../../utils/generate-cache-key';
 import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import { Mixin } from 'ts-mixer';
 import { IFeesCollectorGetterService } from '../interfaces';
-import { EsdtTokenPayment } from '../../../models/esdtTokenPayment.model';
 import { CacheTtlInfo } from '../../../services/caching/cache.ttl.info';
 import { WeeklyRewardsSplittingComputeService } from 'src/submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.compute.service';
+import { FeesCollectorComputeService } from './fees-collector.compute.service';
 
 @Injectable()
 export class FeesCollectorGetterService
@@ -21,9 +21,11 @@ export class FeesCollectorGetterService
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly abiService: FeesCollectorAbiService,
-        protected readonly computeService: WeeklyRewardsSplittingComputeService,
+        protected readonly weeklyRewardsSplittingComputeService: WeeklyRewardsSplittingComputeService,
+        @Inject(forwardRef(() => FeesCollectorComputeService))
+        private readonly computeService: FeesCollectorComputeService,
     ) {
-        super(cachingService, logger, abiService, computeService);
+        super(cachingService, logger, abiService, weeklyRewardsSplittingComputeService);
     }
 
     async getAccumulatedFees(
@@ -39,24 +41,43 @@ export class FeesCollectorGetterService
                 token,
             ),
             () => this.abiService.accumulatedFees(scAddress, week, token),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        );
+    }
+
+    getAccumulatedTokenForInflation(scAddress: string, week: number): Promise<string> {
+        return this.getData(
+            this.getFeesCollectorCacheKey(
+                scAddress,
+                'accumulatedFeesForInflation',
+                week,
+            ),
+            () => this.computeService.computeAccumulatedFeesUntilNow(scAddress, week),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        );
+    }
+
+    async getLockedTokenId(scAddress: string): Promise<string> {
+        return this.getData(
+            this.getFeesCollectorCacheKey(
+                scAddress,
+                'lockedTokenId',
+            ),
+            () => this.abiService.lockedTokenId(scAddress),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );
     }
 
-    async getAccumulatedLockedFees(
-        scAddress: string,
-        week: number,
-        token: string,
-    ): Promise<EsdtTokenPayment[]> {
+    async getLockedTokensPerBlock(scAddress: string): Promise<string> {
         return this.getData(
             this.getFeesCollectorCacheKey(
                 scAddress,
-                'accumulatedLockedFees',
-                week,
-                token,
+                'lockedTokensPerBlock',
             ),
-            () => this.abiService.accumulatedLockedFees(scAddress, week, token),
+            () => this.abiService.lockedTokensPerBlock(scAddress),
             CacheTtlInfo.ContractInfo.remoteTtl,
             CacheTtlInfo.ContractInfo.localTtl,
         );
