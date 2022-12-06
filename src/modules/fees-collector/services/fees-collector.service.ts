@@ -78,14 +78,32 @@ export class FeesCollectorService {
     async getAccumulatedFees(scAddress: string, week: number, allTokens: string[]): Promise<EsdtTokenPayment[]> {
         const accumulatedFees: EsdtTokenPayment[] = []
 
-        for (const token of allTokens) {
+        const promises = allTokens.map( (token) => this.feesCollectorGetterService.getAccumulatedFees(scAddress, week, token))
+
+        const accumulatedFeesByToken = await Promise.all(promises);
+        for (const index in accumulatedFeesByToken) {
             accumulatedFees.push(new EsdtTokenPayment({
-                tokenID: token,
+                tokenID: allTokens[index],
                 tokenType: 0,
-                amount: await this.feesCollectorGetterService.getAccumulatedFees(scAddress, week, token),
+                amount: accumulatedFeesByToken[index],
                 nonce: 0,
             }))
         }
+
+        const [
+            lockedTokenId,
+            accumulatedTokenForInflation,
+        ] = await Promise.all([
+            this.feesCollectorGetterService.getLockedTokenId(scAddress),
+            this.feesCollectorGetterService.getAccumulatedTokenForInflation(scAddress, week)
+        ])
+        accumulatedFees.push(new EsdtTokenPayment({
+            tokenID: `Minted${lockedTokenId}`,
+            tokenType: 0,
+            amount: accumulatedTokenForInflation,
+            nonce: 0,
+        }));
+
         return accumulatedFees
     }
 
