@@ -39,6 +39,9 @@ export class FarmQueryResolver extends GenericResolver {
     async getRewardsForPosition(
         @Args('farmsPositions') args: BatchFarmRewardsComputeArgs,
     ): Promise<RewardsModel[]> {
+        if (args.farmsPositions.length === 0) {
+            return [];
+        }
         return await this.genericQuery(() =>
             this.farmFactory
                 .useService(args.farmsPositions[0].farmAddress)
