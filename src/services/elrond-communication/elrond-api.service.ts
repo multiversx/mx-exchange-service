@@ -72,11 +72,7 @@ export class ElrondApiService {
     ): Promise<T> {
         const profiler = new PerformanceProfiler(`${name} ${resourceUrl}`);
         try {
-            const response = await this.getService().doGetGeneric(resourceUrl);
-            console.log({
-                response,
-            });
-            return response;
+            return await this.getService().doGetGeneric(resourceUrl);
         } catch (error) {
             if (
                 error.inner.isAxiosError &&
@@ -86,7 +82,6 @@ export class ElrondApiService {
                 await this.delay(500 * retries);
                 return await this.doGetGeneric(name, resourceUrl, retries + 1);
             }
-            console.log(error);
             this.logger.error(`${error.message} after ${retries} retries`, {
                 path: `${ElrondApiService.name}.${name}`,
             });
