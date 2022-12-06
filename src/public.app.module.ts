@@ -1,4 +1,4 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RouterModule } from './modules/router/router.module';
 import { PairModule } from './modules/pair/pair.module';
@@ -33,6 +33,7 @@ import { TokenUnstakeModule } from './modules/token-unstake/token.unstake.module
 import {
     LockedTokenWrapperModule
 } from './modules/locked-token-wrapper/locked-token-wrapper.module';
+import { GuestCachingMiddleware } from './utils/guestCaching.middleware';
 
 @Module({
     imports: [
@@ -54,10 +55,10 @@ import {
                 const { req } = context;
                 const extensionResponse = req?.deprecationWarning
                     ? {
-                          extensions: {
-                              deprecationWarning: req?.deprecationWarning,
-                          },
-                      }
+                        extensions: {
+                            deprecationWarning: req?.deprecationWarning,
+                        },
+                    }
                     : {};
                 return {
                     ...response,
@@ -141,4 +142,10 @@ import {
     ],
     providers: [CachingService],
 })
-export class PublicAppModule {}
+export class PublicAppModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer
+            .apply(GuestCachingMiddleware)
+            .forRoutes({ path: 'graphql', method: RequestMethod.POST });
+    }
+}
