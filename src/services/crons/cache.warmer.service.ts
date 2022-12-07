@@ -8,6 +8,8 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { oneMinute, oneSecond } from 'src/helpers/helpers';
 import axios from 'axios';
 import moment from 'moment';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class CacheWarmerService {
@@ -15,6 +17,7 @@ export class CacheWarmerService {
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) { }
 
     @Cron('*/6 * * * * *')
@@ -34,15 +37,15 @@ export class CacheWarmerService {
         const threshold = Number(process.env.ENABLE_CACHE_GUEST_RATE_THRESHOLD || 100);
         const keysToCompute: string[] = await this.cachingService.executeRemoteRaw('zrange', `${prefix}.${currentDate}`, threshold, '+inf', 'BYSCORE');
 
-        console.log(`Executed redis query: zrange ${prefix}.${currentDate} ${threshold} +inf BYSCORE`);
-        console.log(`Resulted keys: ${keysToCompute.join(',')}`);
+        this.logger.info(`Executed redis query: zrange ${prefix}.${currentDate} ${threshold} +inf BYSCORE`);
+        this.logger.info(`Resulted keys: ${keysToCompute.join(',')}`);
         await Promise.all(keysToCompute.map(async key => {
             const parsedKey = `${prefix}.${key}.body`;
             const keyValue: object = await this.cachingService.getCache(parsedKey);
             if (!keyValue) return Promise.resolve();
 
             // Get new data without cache and update it
-            console.log(`Refresh cache for key ${parsedKey}`);
+            this.logger.info(`Refresh cache for key ${parsedKey}`);
             const { data } = await axios.post(`${process.env.ELRONDDEX_URL}/graphql`, keyValue, {
                 headers: {
                     'no-cache': true
