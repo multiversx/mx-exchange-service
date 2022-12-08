@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { FactoryModel } from '../models/factory.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { scAddress } from '../../../config';
@@ -32,7 +33,25 @@ export class RouterService {
         offset: number,
         limit: number,
         pairFilter: PairFilterArgs,
+        skipCache?: boolean
     ): Promise<PairModel[]> {
+
+        if (!skipCache) {
+            // generate md5 key
+            const params = JSON.stringify({
+                offset,
+                limit,
+                pairFilter
+            });
+            const md5Key = crypto.createHash('md5').update(params).digest('hex');
+
+            const cachedValue: PairModel[] = await this.cachingService.getCache(`allPairs.${md5Key}.response`);
+            if (cachedValue) return Promise.resolve(cachedValue);
+
+            // only if was not previously cached send body
+            await this.cachingService.setCache(`allPairs.${md5Key}.body`, JSON.parse(params), 12 * oneSecond());
+        }
+
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
         if (pairFilter.issuedLpToken) {
             pairsMetadata = await this.filterPairsByIssuedLpToken(
@@ -47,7 +66,7 @@ export class RouterService {
             pairsMetadata,
         );
 
-        const res = pairsMetadata
+        return pairsMetadata
             .map(
                 (pairMetadata) =>
                     new PairModel({
@@ -55,8 +74,6 @@ export class RouterService {
                     }),
             )
             .slice(offset, limit);
-
-        return res;
     }
 
     private filterPairsByAddress(

@@ -9,12 +9,14 @@ import { oneMinute, oneSecond } from 'src/helpers/helpers';
 import axios from 'axios';
 import moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { RouterService } from 'src/modules/router/services/router.service';
 
 @Injectable()
 export class CacheWarmerService {
     constructor(
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
+        private readonly routerService: RouterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) { }
@@ -29,6 +31,29 @@ export class CacheWarmerService {
     }
 
     @Cron('*/6 * * * * *')
+    async cachePairs(): Promise<void> {
+        const keysToProcess: string[] = await this.cachingService.executeRemoteRaw('keys', 'allPairs.*.body');
+        await Promise.allSettled(keysToProcess.map(async key => {
+            // get value of key 
+
+            const paramsRaw: any = await this.cachingService.getCache(key);
+            if (!paramsRaw) return null;
+
+            const { offset, limit, pairFilter } = paramsRaw;
+
+            const md5 = key.split('.')[1];
+            const updateCache = await this.routerService.getAllPairs(
+                offset,
+                limit,
+                pairFilter,
+                true
+            );
+
+            return await this.cachingService.setCache(`allPairs.${md5}.response`, updateCache, 12 * oneSecond());
+        }));
+    }
+
+    @Cron('*/6 * * * * *')
     async cacheGuest(): Promise<void> {
         // recompute cache
         const currentDate = moment().format('YYYY-MM-DD_HH:mm');
@@ -36,7 +61,7 @@ export class CacheWarmerService {
         const threshold = Number(process.env.ENABLE_CACHE_GUEST_RATE_THRESHOLD || 100);
         const keysToCompute: string[] = await this.cachingService.executeRemoteRaw('zrange', `${prefix}.${currentDate}`, threshold, '+inf', 'BYSCORE');
 
-        await Promise.all(keysToCompute.map(async key => {
+        await Promise.allSettled(keysToCompute.map(async key => {
             const parsedKey = `${prefix}.${key}.body`;
             const keyValue: object = await this.cachingService.getCache(parsedKey);
             if (!keyValue) {
