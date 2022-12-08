@@ -9,6 +9,7 @@ import { RouterGetterService } from '../services/router.getter.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
+import { CpuProfiler } from 'src/utils/cpu.profiler';
 
 @Injectable()
 export class RouterService {
@@ -29,19 +30,30 @@ export class RouterService {
         limit: number,
         pairFilter: PairFilterArgs,
     ): Promise<PairModel[]> {
+        const totalProfiler = new CpuProfiler();
+        const profiler = new CpuProfiler();
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
+        profiler.stop('pairsMetadata');
+        const profiler2 = new CpuProfiler();
         pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
+        profiler2.stop('filterPairsByAddress');
+        const profier3 = new CpuProfiler();
         pairsMetadata = this.filterPairsByTokens(pairFilter, pairsMetadata);
+        profier3.stop('filterPairsByTokens');
+        const profiler4 = new CpuProfiler();
         pairsMetadata = await this.filterPairsByIssuedLpToken(
             pairFilter,
             pairsMetadata,
         );
+        profiler4.stop('filterPairsByIssuedLpToken');
+        const profiler5 = new CpuProfiler();
         pairsMetadata = await this.filterPairsByState(
             pairFilter,
             pairsMetadata,
         );
+        profiler5.stop('filterPairsByState');
 
-        return pairsMetadata
+        const res = pairsMetadata
             .map(
                 (pairMetadata) =>
                     new PairModel({
@@ -49,6 +61,8 @@ export class RouterService {
                     }),
             )
             .slice(offset, limit);
+        totalProfiler.stop(`getAllPairs offset: ${offset} limit: ${limit} pairFilter: ${JSON.stringify(pairFilter)}`);
+        return res;
     }
 
     private filterPairsByAddress(
