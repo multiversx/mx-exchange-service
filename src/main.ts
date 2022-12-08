@@ -18,6 +18,7 @@ async function bootstrap() {
     const httpAdapterHostService = app.get<HttpAdapterHost>(HttpAdapterHost);
 
     app.useGlobalInterceptors(new LoggingInterceptor());
+
     app.use(cookieParser());
     const apiConfigService = app.get<ApiConfigService>(ApiConfigService);
     const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
