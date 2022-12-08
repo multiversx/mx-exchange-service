@@ -12,7 +12,6 @@ import {
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
-import { CpuProfiler } from 'src/utils/cpu.profiler';
 import { UserToken } from '../models/user.model';
 import { UserEsdtComputeService } from './esdt.compute.service';
 
@@ -59,8 +58,6 @@ export class UserEsdtService {
         pagination: PaginationArgs,
         inputTokens?: IEsdtToken[],
     ): Promise<UserToken[]> {
-        const profiler = new CpuProfiler();
-
         let userTokens: IEsdtToken[];
         if (inputTokens) {
             userTokens = inputTokens;
@@ -71,13 +68,7 @@ export class UserEsdtService {
                 pagination.limit,
             );
         }
-        profiler.stop('getTokensForUser');
-
-        const profiler2 = new CpuProfiler();
         const uniquePairTokens = await this.getUniquePairTokens();
-        profiler2.stop('getUniquePairTokens');
-
-        const profier3 = new CpuProfiler();
         const userPairEsdtTokens = userTokens.filter(token =>
             uniquePairTokens.includes(token.identifier),
         );
@@ -86,9 +77,7 @@ export class UserEsdtService {
             return this.getEsdtTokenDetails(new EsdtToken(token));
         });
 
-        const res = await Promise.all(promises);
-        profier3.stop('getEsdtTokenDetails');
-        return res;
+        return await Promise.all(promises);
     }
 
     private async getEsdtTokenDetails(token: EsdtToken): Promise<UserToken> {
