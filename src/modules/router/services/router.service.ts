@@ -36,6 +36,7 @@ export class RouterService {
         const totalProfiler = new CpuProfiler();
         const profiler = new CpuProfiler();
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
+        profiler.stop('pairsMetadata');
 
         const profiler4 = new CpuProfiler();
         if (pairFilter.issuedLpToken) {
@@ -45,7 +46,6 @@ export class RouterService {
         }
         profiler4.stop('filterPairsByIssuedLpToken');
 
-        profiler.stop('pairsMetadata');
         const profiler2 = new CpuProfiler();
         pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
         profiler2.stop('filterPairsByAddress');
