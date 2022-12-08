@@ -50,7 +50,7 @@ export class UserEsdtService {
         const lpTokensIDs = await Promise.all(promises);
         uniquePairTokens.push(...lpTokensIDs);
 
-        return await Promise.all(promises);
+        return uniquePairTokens;
     }
 
     async getAllEsdtTokens(
@@ -58,6 +58,7 @@ export class UserEsdtService {
         pagination: PaginationArgs,
         inputTokens?: IEsdtToken[],
     ): Promise<UserToken[]> {
+
         let userTokens: IEsdtToken[];
         if (inputTokens) {
             userTokens = inputTokens;
@@ -68,11 +69,11 @@ export class UserEsdtService {
                 pagination.limit,
             );
         }
+
         const uniquePairTokens = await this.getUniquePairTokens();
         const userPairEsdtTokens = userTokens.filter(token =>
             uniquePairTokens.includes(token.identifier),
         );
-
         const promises = userPairEsdtTokens.map(token => {
             return this.getEsdtTokenDetails(new EsdtToken(token));
         });
@@ -84,15 +85,18 @@ export class UserEsdtService {
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             token.identifier,
         );
+
         if (pairAddress) {
             const userToken = await this.userEsdtCompute.lpTokenUSD(
                 token,
                 pairAddress,
             );
             userToken.type = EsdtTokenType.FungibleLpToken;
+
             return userToken;
         }
         const userToken = await this.userEsdtCompute.esdtTokenUSD(token);
+
         return userToken;
     }
 }
