@@ -11,6 +11,7 @@ import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneSecond } from 'src/helpers/helpers';
+import { CpuProfiler } from 'src/utils/cpu.profiler';
 
 @Injectable()
 export class RouterService {
@@ -19,7 +20,7 @@ export class RouterService {
         private readonly pairGetterService: PairGetterService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     async getFactory(): Promise<FactoryModel> {
         return new FactoryModel({
@@ -32,20 +33,25 @@ export class RouterService {
         limit: number,
         pairFilter: PairFilterArgs,
     ): Promise<PairModel[]> {
+        const totalProfiler = new CpuProfiler();
+
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
         if (pairFilter.issuedLpToken) {
             pairsMetadata = await this.filterPairsByIssuedLpToken(
                 pairsMetadata,
             );
         }
+
         pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
+
         pairsMetadata = this.filterPairsByTokens(pairFilter, pairsMetadata);
         pairsMetadata = await this.filterPairsByState(
             pairFilter,
             pairsMetadata,
         );
 
-        return pairsMetadata
+
+        const res = pairsMetadata
             .map(
                 (pairMetadata) =>
                     new PairModel({
@@ -53,6 +59,8 @@ export class RouterService {
                     }),
             )
             .slice(offset, limit);
+        totalProfiler.stop(`getAllPairs offset: ${offset} limit: ${limit} pairFilter: ${JSON.stringify(pairFilter)}`);
+        return res;
     }
 
     private filterPairsByAddress(
@@ -101,7 +109,7 @@ export class RouterService {
             async () => await this.filterPairsByIssuedLpTokenRaw(pairsMetadata),
             oneSecond() * 30,
             oneSecond() * 6,
-        )
+        );
     }
 
     private async filterPairsByIssuedLpTokenRaw(
