@@ -48,6 +48,10 @@ async function bootstrap() {
     if (apiConfigService.isPublicApiActive()) {
         pubSubApp.listen();
 
+        app.enableCors({
+            origin: '*'
+        });
+
         await app.listen(
             apiConfigService.getPublicAppPort(),
             apiConfigService.getPublicAppListenAddress(),
