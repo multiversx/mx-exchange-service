@@ -39,6 +39,8 @@ export class GuestCachingMiddleware implements NestMiddleware {
             await this.cacheService.executeRemoteRaw('expire', redisCounterKey, oneMinute());
         }
 
+        res.setHeader('X-Guest-Cache-Hit', !!cacheResponse);
+
         if (cacheResponse) {
             return res.json(cacheResponse);
         } else {
