@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
@@ -8,6 +8,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { oneMinute, oneSecond } from 'src/helpers/helpers';
 import axios from 'axios';
 import moment from 'moment';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class CacheWarmerService {
@@ -15,6 +16,7 @@ export class CacheWarmerService {
         private readonly apiService: ElrondApiService,
         private readonly cachingService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) { }
 
     @Cron('*/6 * * * * *')
@@ -37,7 +39,11 @@ export class CacheWarmerService {
         await Promise.all(keysToCompute.map(async key => {
             const parsedKey = `${prefix}.${key}.body`;
             const keyValue: object = await this.cachingService.getCache(parsedKey);
-            if (!keyValue) return Promise.resolve();
+            if (!keyValue) {
+                return Promise.resolve();
+            }
+
+            this.logger.log(`Using guestCache to warm up query '${JSON.stringify(keyValue)}'`);
 
             // Get new data without cache and update it
             const { data } = await axios.post(`${process.env.ELRONDDEX_URL}/graphql`, keyValue, {
