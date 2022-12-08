@@ -10,12 +10,15 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
 import { CpuProfiler } from 'src/utils/cpu.profiler';
+import { CachingService } from 'src/services/caching/cache.service';
+import { oneSecond } from 'src/helpers/helpers';
 
 @Injectable()
 export class RouterService {
     constructor(
         private readonly routerGetterService: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
+        private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -33,6 +36,15 @@ export class RouterService {
         const totalProfiler = new CpuProfiler();
         const profiler = new CpuProfiler();
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
+
+        const profiler4 = new CpuProfiler();
+        if (pairFilter.issuedLpToken) {
+            pairsMetadata = await this.filterPairsByIssuedLpToken(
+                pairsMetadata,
+            );
+        }
+        profiler4.stop('filterPairsByIssuedLpToken');
+
         profiler.stop('pairsMetadata');
         const profiler2 = new CpuProfiler();
         pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
@@ -40,12 +52,6 @@ export class RouterService {
         const profier3 = new CpuProfiler();
         pairsMetadata = this.filterPairsByTokens(pairFilter, pairsMetadata);
         profier3.stop('filterPairsByTokens');
-        const profiler4 = new CpuProfiler();
-        pairsMetadata = await this.filterPairsByIssuedLpToken(
-            pairFilter,
-            pairsMetadata,
-        );
-        profiler4.stop('filterPairsByIssuedLpToken');
         const profiler5 = new CpuProfiler();
         pairsMetadata = await this.filterPairsByState(
             pairFilter,
@@ -104,13 +110,19 @@ export class RouterService {
     }
 
     private async filterPairsByIssuedLpToken(
-        pairFilter: PairFilterArgs,
         pairsMetadata: PairMetadata[],
     ): Promise<PairMetadata[]> {
-        if (!pairFilter.issuedLpToken) {
-            return pairsMetadata;
-        }
+        return await this.cachingService.getOrSet(
+            'getPairsByIssuedLpToken',
+            async () => await this.filterPairsByIssuedLpTokenRaw(pairsMetadata),
+            oneSecond() * 30,
+            oneSecond() * 6,
+        )
+    }
 
+    private async filterPairsByIssuedLpTokenRaw(
+        pairsMetadata: PairMetadata[],
+    ): Promise<PairMetadata[]> {
         const promises = pairsMetadata.map((pairMetadata) =>
             this.pairGetterService.getLpTokenID(pairMetadata.address),
         );
