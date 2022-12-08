@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { oneSecond } from 'src/helpers/helpers';
 import { PaginationArgs } from 'src/modules/dex.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
@@ -9,6 +10,7 @@ import {
     EsdtTokenType,
 } from 'src/modules/tokens/models/esdtToken.model';
 import { TokenService } from 'src/modules/tokens/services/token.service';
+import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { UserToken } from '../models/user.model';
 import { UserEsdtComputeService } from './esdt.compute.service';
@@ -22,7 +24,34 @@ export class UserEsdtService {
         private readonly pairGetter: PairGetterService,
         private readonly routerGetter: RouterGetterService,
         private readonly userEsdtCompute: UserEsdtComputeService,
+        private readonly cachingService: CachingService,
     ) {}
+
+    private async getUniquePairTokens(): Promise<string[]> {
+        return await this.cachingService.getOrSet(
+            'uniquePairTokens',
+            async () => await this.getUniquePairTokensRaw(),
+            oneSecond() * 6,
+            oneSecond() * 3,
+        );
+    }
+
+    private async getUniquePairTokensRaw(): Promise<string[]> {
+        const promises = [];
+        const [pairsAddresses, uniquePairTokens] = await Promise.all([
+            this.routerGetter.getAllPairsAddress(),
+            this.tokenService.getUniqueTokenIDs(false),
+        ]);
+
+        for (const address of pairsAddresses) {
+            promises.push(this.pairGetter.getLpTokenID(address));
+        }
+
+        const lpTokensIDs = await Promise.all(promises);
+        uniquePairTokens.push(...lpTokensIDs);
+
+        return await Promise.all(promises);
+    }
 
     async getAllEsdtTokens(
         userAddress: string,
@@ -40,24 +69,13 @@ export class UserEsdtService {
             );
         }
 
-        let promises = [];
-        const [pairsAddresses, uniquePairTokens] = await Promise.all([
-            this.routerGetter.getAllPairsAddress(),
-            this.tokenService.getUniqueTokenIDs(false),
-        ]);
-
-        for (const address of pairsAddresses) {
-            promises.push(this.pairGetter.getLpTokenID(address));
-        }
-
-        const lpTokensIDs = await Promise.all(promises);
-        uniquePairTokens.push(...lpTokensIDs);
+        const uniquePairTokens = await this.getUniquePairTokens();
 
         const userPairEsdtTokens = userTokens.filter(token =>
             uniquePairTokens.includes(token.identifier),
         );
 
-        promises = userPairEsdtTokens.map(token => {
+        const promises = userPairEsdtTokens.map(token => {
             return this.getEsdtTokenDetails(new EsdtToken(token));
         });
         return await Promise.all(promises);
