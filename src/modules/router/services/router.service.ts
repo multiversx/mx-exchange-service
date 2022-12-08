@@ -33,8 +33,6 @@ export class RouterService {
         limit: number,
         pairFilter: PairFilterArgs,
     ): Promise<PairModel[]> {
-        const totalProfiler = new CpuProfiler();
-
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
         if (pairFilter.issuedLpToken) {
             pairsMetadata = await this.filterPairsByIssuedLpToken(
@@ -43,13 +41,11 @@ export class RouterService {
         }
 
         pairsMetadata = this.filterPairsByAddress(pairFilter, pairsMetadata);
-
         pairsMetadata = this.filterPairsByTokens(pairFilter, pairsMetadata);
         pairsMetadata = await this.filterPairsByState(
             pairFilter,
             pairsMetadata,
         );
-
 
         const res = pairsMetadata
             .map(
@@ -59,7 +55,7 @@ export class RouterService {
                     }),
             )
             .slice(offset, limit);
-        totalProfiler.stop(`getAllPairs offset: ${offset} limit: ${limit} pairFilter: ${JSON.stringify(pairFilter)}`);
+
         return res;
     }
 
