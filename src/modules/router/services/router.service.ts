@@ -11,7 +11,7 @@ import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneSecond } from 'src/helpers/helpers';
-import { CpuProfiler } from 'src/utils/cpu.profiler';
+
 
 @Injectable()
 export class RouterService {
