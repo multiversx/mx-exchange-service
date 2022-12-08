@@ -11,7 +11,7 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
 import { CachingService } from 'src/services/caching/cache.service';
-import { oneSecond } from 'src/helpers/helpers';
+import { oneHour, oneSecond } from 'src/helpers/helpers';
 
 
 @Injectable()
@@ -37,19 +37,25 @@ export class RouterService {
     ): Promise<PairModel[]> {
 
         if (!skipCache) {
-            // generate md5 key
             const params = JSON.stringify({
                 offset,
                 limit,
                 pairFilter
             });
             const md5Key = crypto.createHash('md5').update(params).digest('hex');
+            const bodyKey = `allPairs.${md5Key}.body`;
+            const responseKey = `allPairs.${md5Key}.response`;
 
-            const cachedValue: PairModel[] = await this.cachingService.getCache(`allPairs.${md5Key}.response`);
-            if (cachedValue) return Promise.resolve(cachedValue);
+            const cachedValue: PairModel[] = await this.cachingService.getCache(responseKey);
+            if (cachedValue) {
+                return Promise.resolve(cachedValue);
+            }
 
-            // only if was not previously cached send body
-            await this.cachingService.setCache(`allPairs.${md5Key}.body`, JSON.parse(params), 12 * oneSecond());
+            // we set the body only if it wasn't already cached locally
+            const localBody = await this.cachingService.getCacheLocal(bodyKey);
+            if (!localBody) {
+                await this.cachingService.setCache(bodyKey, JSON.parse(params), oneHour());
+            }
         }
 
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
