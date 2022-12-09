@@ -3,7 +3,7 @@ import {
     BigUIntValue,
     BytesValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
-import { Interaction } from '@elrondnetwork/erdjs';
+import { Address, Interaction, ReturnCode } from '@elrondnetwork/erdjs';
 import { BigNumber } from 'bignumber.js';
 import { CalculateRewardsArgs } from '../../models/farm.args';
 import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
@@ -194,6 +194,9 @@ export class AbiFarmService extends GenericAbiService {
             const interaction: Interaction =
                 contract.methodsExplicit.getPairContractManagedAddress();
             const response = await this.getGenericData(interaction);
+            if (response.returnCode.equals(ReturnCode.FunctionNotFound)) {
+                return Address.Zero().bech32();
+            }
             return response.firstValue.valueOf().bech32();
         } catch {
             return undefined;
