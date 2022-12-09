@@ -1,4 +1,3 @@
-import * as crypto from 'crypto';
 import { FactoryModel } from '../models/factory.model';
 import { Inject, Injectable } from '@nestjs/common';
 import { scAddress } from '../../../config';
@@ -11,7 +10,7 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { PairMetadata } from '../models/pair.metadata.model';
 import { PairFilterArgs } from '../models/filter.args';
 import { CachingService } from 'src/services/caching/cache.service';
-import { oneHour, oneSecond } from 'src/helpers/helpers';
+import { oneSecond } from 'src/helpers/helpers';
 
 
 @Injectable()
@@ -32,32 +31,8 @@ export class RouterService {
     async getAllPairs(
         offset: number,
         limit: number,
-        pairFilter: PairFilterArgs,
-        skipCache?: boolean
+        pairFilter: PairFilterArgs
     ): Promise<PairModel[]> {
-
-        if (!skipCache) {
-            const params = JSON.stringify({
-                offset,
-                limit,
-                pairFilter
-            });
-            const md5Key = crypto.createHash('md5').update(params).digest('hex');
-            const bodyKey = `allPairs.${md5Key}.body`;
-            const responseKey = `allPairs.${md5Key}.response`;
-
-            const cachedValue: PairModel[] = await this.cachingService.getCache(responseKey);
-            if (cachedValue) {
-                return Promise.resolve(cachedValue);
-            }
-
-            // we set the body only if it wasn't already cached locally
-            const localBody = await this.cachingService.getCacheLocal(bodyKey);
-            if (!localBody) {
-                await this.cachingService.setCache(bodyKey, JSON.parse(params), oneHour());
-            }
-        }
-
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
         if (pairFilter.issuedLpToken) {
             pairsMetadata = await this.filterPairsByIssuedLpToken(

@@ -31,29 +31,6 @@ export class CacheWarmerService {
     }
 
     @Cron('*/6 * * * * *')
-    async cachePairs(): Promise<void> {
-        const keysToProcess: string[] = await this.cachingService.executeRemoteRaw('keys', 'allPairs.*.body');
-        await Promise.allSettled(keysToProcess.map(async key => {
-            // get value of key 
-
-            const paramsRaw: any = await this.cachingService.getCache(key);
-            if (!paramsRaw) return null;
-
-            const { offset, limit, pairFilter } = paramsRaw;
-
-            const md5 = key.split('.')[1];
-            const updateCache = await this.routerService.getAllPairs(
-                offset,
-                limit,
-                pairFilter,
-                true
-            );
-
-            return await this.cachingService.setCache(`allPairs.${md5}.response`, updateCache, 12 * oneSecond());
-        }));
-    }
-
-    @Cron('*/6 * * * * *')
     async cacheGuest(): Promise<void> {
         // recompute cache
         const currentDate = moment().format('YYYY-MM-DD_HH:mm');
@@ -64,11 +41,12 @@ export class CacheWarmerService {
         await Promise.allSettled(keysToCompute.map(async key => {
             const parsedKey = `${prefix}.${key}.body`;
             const keyValue: object = await this.cachingService.getCache(parsedKey);
+
             if (!keyValue) {
                 return Promise.resolve();
             }
 
-            this.logger.log(`Using guestCache to warm up query '${JSON.stringify(keyValue)}'`);
+            console.log(`Using guestCache to warm up query '${JSON.stringify(keyValue)}'`);
 
             // Get new data without cache and update it
             const { data } = await axios.post(`${process.env.ELRONDDEX_URL}/graphql`, keyValue, {

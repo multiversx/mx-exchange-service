@@ -24,7 +24,7 @@ export class GuestCachingMiddleware implements NestMiddleware {
 
         const prefix = 'guestCache';
 
-        const gqlQueryMd5 = crypto.createHash('md5').update(req.body['query']).digest('hex');
+        const gqlQueryMd5 = crypto.createHash('md5').update(JSON.stringify(req.body)).digest('hex');
         const redisQueryKey = `${prefix}.${gqlQueryMd5}.body`;
         const redisQueryResponse = `${prefix}.${gqlQueryMd5}.response`;
 
