@@ -213,6 +213,7 @@ export class UserMetaEsdtComputeService {
                     nftToken,
                 )}, error = ${e}`,
             );
+            return undefined;
         }
     }
 
@@ -314,6 +315,9 @@ export class UserMetaEsdtComputeService {
             }),
             nftToken.identifier,
         );
+        if (!userFarmToken) {
+            return undefined;
+        }
         return new UserLockedFarmToken({
             ...nftToken,
             valueUSD: userFarmToken.valueUSD,
@@ -354,6 +358,9 @@ export class UserMetaEsdtComputeService {
                 }),
                 nftToken.identifier,
             );
+            if (!userFarmToken) {
+                return undefined;
+            }
             return new UserLockedFarmTokenV2({
                 ...nftToken,
                 valueUSD: userFarmToken.valueUSD,
@@ -471,6 +478,10 @@ export class UserMetaEsdtComputeService {
             nftToken.identifier,
             calculateUSD,
         );
+
+        if (!farmTokenUSD) {
+            return undefined;
+        }
 
         return new UserDualYiledToken({
             ...nftToken,
@@ -617,6 +628,10 @@ export class UserMetaEsdtComputeService {
             }),
             nftToken.identifier,
         );
+
+        if (!userFarmToken) {
+            return undefined;
+        }
 
         return new UserLockedSimpleFarmToken({
             ...nftToken,

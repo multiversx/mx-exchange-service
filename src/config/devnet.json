@@ -9,11 +9,10 @@
         "distributionAddress": "erd1qqqqqqqqqqqqqpgqyg62a3tswuzun2wzp8a83sjkc709wwjt2jpssphddm",
         "proxyDexAddress": {
             "v1": "erd1qqqqqqqqqqqqqpgqte2prd032ffa43nyhzae4pdsws62hcnv0n4s242vf5",
-            "v2": "erd1qqqqqqqqqqqqqpgqy7893xv68kanz7p5swtcm74kj6ehvhp30n4s9pzaqm"
+            "v2": "erd1qqqqqqqqqqqqqpgqp33v9y29x384573f8pucemynempfa5uu0n4sg5sfad"
         },
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqnqf6qpnd7y3m6wpkur9u8hg37rvhn5ae0n4se7lw39",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jpq0azcwlmcdluzv5ra8ev4vts8ht090n4suseqfa",
-        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgq97pf6ntww6txw8lccpwszk0a5cfu56dc0n4sknj0p9",
         "simpleLockAddress": [
             "erd1qqqqqqqqqqqqqpgqvcw9cxy5xlssc4em9l97pvhnvgtn5z6l0n4sc9glts",
             "erd1qqqqqqqqqqqqqpgqxsyrdj38fclflak2mwtqdknqzqhuxy4s0n4sc3e0jy",
@@ -42,9 +41,10 @@
             "erd1qqqqqqqqqqqqqpgq7zcf9dhvv48dg80zscayy56y7hh4rfne0n4sf4m7zj",
             "erd1qqqqqqqqqqqqqpgq2x27wrtygh7ur6r0mazne44rreuhttcv0n4s6mv7kj"
         ],
-        "feesCollector": "erd1qqqqqqqqqqqqqpgqq9nxvdcpfwx84zwfe77epzy4x05z4cf70n4sw0dpn7",
+        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgqp6qrf7yp4l25c08384vgdghz7wz0f60h0n4s0m88l4",
+        "feesCollector": "erd1qqqqqqqqqqqqqpgq82pd37ra5vqnsaq5cc50ll073gzm4ahx0n4s793d9d",
         "energyUpdate": "erd1qqqqqqqqqqqqqpgqqns0u3hw0e3j0km9h77emuear4xq7k7fd8ss0cwgja",
-        "tokenUnstake": "erd1qqqqqqqqqqqqqpgq4vukqq9sd040peulr2m0tlnyffgdee770n4se6gjv7",
+        "tokenUnstake": "erd1qqqqqqqqqqqqqpgqnysvq99c2t4a9pvvv22elnl6p73el8vw0n4spyfv7p",
         "lockedTokenWrapper": "erd1qqqqqqqqqqqqqpgq9ej9vcnr38l69rgkc735kgv0qlu2ptrsd8ssu9rwtu"
     },
     "farms": {
@@ -80,8 +80,8 @@
                 "unlockedRewards": [
                 ],
                 "lockedRewards": [
-                    "erd1qqqqqqqqqqqqqpgqc8yp7r5emk8vn554m97d5nmzjjxwgjp80n4s5zd0rk",
-                    "erd1qqqqqqqqqqqqqpgq73l79acwc8lz2djfwlzmz6yq02x079p90n4sscluhn"
+                    "erd1qqqqqqqqqqqqqpgq59hlx9lmclzngxfnxwjpzru3ukm3hfvj0n4sh8pkmp",
+                    "erd1qqqqqqqqqqqqqpgq835vpevjysz042t3wnp6q5a7skxaerm90n4sg85ekq"
                 ]
         }
     },

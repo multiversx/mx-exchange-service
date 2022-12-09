@@ -37,10 +37,11 @@ export class UserResolver {
         @Args() pagination: PaginationArgs,
         @User() user: any,
     ): Promise<Array<typeof UserNftTokens>> {
-        return await this.userMetaEsdt.getAllNftTokens(
+        const nfts = await this.userMetaEsdt.getAllNftTokens(
             user.publicKey,
             pagination,
         );
+        return nfts.filter((nft) => nft !== undefined);
     }
 
     @UseGuards(GqlAuthGuard)
@@ -55,9 +56,13 @@ export class UserResolver {
     @Query(() => TransactionModel, { nullable: true })
     async updateEnergy(
         @User() user: any,
-        @Args('includeAllContracts', { nullable: true }) includeAllContracts: boolean,
+        @Args('includeAllContracts', { nullable: true })
+        includeAllContracts: boolean,
     ): Promise<TransactionModel | null> {
-        return await this.userEnergy.updateFarmsEnergyForUser(user.publicKey, includeAllContracts);
+        return await this.userEnergy.updateFarmsEnergyForUser(
+            user.publicKey,
+            includeAllContracts,
+        );
     }
 
     @Query(() => [UserToken])
