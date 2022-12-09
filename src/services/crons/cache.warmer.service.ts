@@ -33,12 +33,19 @@ export class CacheWarmerService {
     @Cron('*/6 * * * * *')
     async cacheGuest(): Promise<void> {
         // recompute cache
-        const currentDate = moment().format('YYYY-MM-DD_HH:mm');
+        const dateFormat = 'YYYY-MM-DD_HH:mm';
+        const currentDate = moment().format(dateFormat);
+        const previousMinute = moment().subtract(1, 'minute').format(dateFormat);
+
         const prefix = 'guestCache';
         const threshold = Number(process.env.ENABLE_CACHE_GUEST_RATE_THRESHOLD || 100);
-        const keysToCompute: string[] = await this.cachingService.executeRemoteRaw('zrange', `${prefix}.${currentDate}`, threshold, '+inf', 'BYSCORE');
+        const keysToComputeCurrentMinute: string[] = await this.cachingService.executeRemoteRaw('zrange', `${prefix}.${currentDate}`, threshold, '+inf', 'BYSCORE');
+        const keysToComputePreviousMinute: string[] = await this.cachingService.executeRemoteRaw('zrange', `${prefix}.${previousMinute}`, threshold, '+inf', 'BYSCORE');
+
+        const keysToCompute = [...new Set([...keysToComputeCurrentMinute, ...keysToComputePreviousMinute])];
 
         await Promise.allSettled(keysToCompute.map(async key => {
+
             const parsedKey = `${prefix}.${key}.body`;
             const keyValue: object = await this.cachingService.getCache(parsedKey);
 
