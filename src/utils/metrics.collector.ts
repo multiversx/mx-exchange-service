@@ -10,6 +10,7 @@ export class MetricsCollector {
     private static gasDifferenceHistogram: Histogram<string>;
     private static guestHitsGauge: Gauge<string>;
     private static guestNoCacheHitsGauge: Gauge<string>;
+    private static guestHitQueriesGauge: Gauge<string>;
     private static currentNonceGauge: Gauge<string>;
     private static lastProcessedNonceGauge: Gauge<string>;
     private static isDefaultMetricsRegistered = false;
@@ -110,6 +111,14 @@ export class MetricsCollector {
             });
         }
 
+        if (!MetricsCollector.guestHitQueriesGauge) {
+            MetricsCollector.guestHitQueriesGauge = new Gauge({
+                name: 'guest_hit_queries',
+                help: 'Distinct queries for guest hit caching',
+                labelNames: [],
+            });
+        }
+
         if (!MetricsCollector.isDefaultMetricsRegistered) {
             MetricsCollector.isDefaultMetricsRegistered = true;
             collectDefaultMetrics();
@@ -186,6 +195,10 @@ export class MetricsCollector {
 
     static incrementGuestNoCacheHits() {
         MetricsCollector.guestNoCacheHitsGauge.inc();
+    }
+
+    static setGuestHitQueries(count: number) {
+        MetricsCollector.guestHitQueriesGauge.set(count);
     }
 
     static async getMetrics(): Promise<string> {
