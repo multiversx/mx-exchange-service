@@ -9,14 +9,14 @@ import { NextFunction } from 'express';
 import { oneMinute } from 'src/helpers/helpers';
 import { MetricsCollector } from '../utils/metrics.collector';
 
-const cacheHitsCounter = {};
 
 @Injectable()
 export class GuestCachingMiddleware implements NestMiddleware {
+    private cacheHitsCounter = {};
+
     constructor(private cacheService: CachingService) { }
 
     async use(req: Request, res: any, next: NextFunction) {
-
         if (req.headers['authorization'] || req.headers['no-cache'] === 'true') {
             // If user is logged in or no-cache header present -> skip cache
             return next();
@@ -38,12 +38,12 @@ export class GuestCachingMiddleware implements NestMiddleware {
 
         let isFirstEntryForThisKey = false;
 
-        if (!cacheHitsCounter[currentMinute]) {
+        if (!this.cacheHitsCounter[currentMinute]) {
             isFirstEntryForThisKey = true;
-            cacheHitsCounter[currentMinute] = {};
+            this.cacheHitsCounter[currentMinute] = {};
         }
 
-        const cacheHitsCurrentMinute = cacheHitsCounter[currentMinute];
+        const cacheHitsCurrentMinute = this.cacheHitsCounter[currentMinute];
 
         if (!cacheHitsCurrentMinute[gqlQueryMd5]) {
             cacheHitsCurrentMinute[gqlQueryMd5] = 0;
@@ -73,8 +73,8 @@ export class GuestCachingMiddleware implements NestMiddleware {
         res.setHeader('X-Guest-Cache-Hit', !!cacheResponse);
 
         // Delete data for previous minute
-        if (cacheHitsCounter[previousMinute]) {
-            delete cacheHitsCounter[previousMinute];
+        if (this.cacheHitsCounter[previousMinute]) {
+            delete this.cacheHitsCounter[previousMinute];
         }
 
         if (cacheResponse) {
