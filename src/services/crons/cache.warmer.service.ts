@@ -10,6 +10,7 @@ import axios from 'axios';
 import moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { RouterService } from 'src/modules/router/services/router.service';
+import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
 export class CacheWarmerService {
@@ -45,7 +46,6 @@ export class CacheWarmerService {
         const keysToCompute = [...new Set([...keysToComputeCurrentMinute, ...keysToComputePreviousMinute])];
 
         await Promise.allSettled(keysToCompute.map(async key => {
-
             const parsedKey = `${prefix}.${key}.body`;
             const keyValue: object = await this.cachingService.getCache(parsedKey);
 
@@ -64,6 +64,8 @@ export class CacheWarmerService {
 
             return this.cachingService.setCache(`${prefix}.${key}.response`, data, 12 * oneSecond());
         }));
+
+        MetricsCollector.setGuestHitQueries(keysToCompute.length);
     }
 
     @Cron('*/6 * * * * *')
