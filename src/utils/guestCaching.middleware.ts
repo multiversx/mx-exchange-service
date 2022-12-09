@@ -37,24 +37,28 @@ export class GuestCachingMiddleware implements NestMiddleware {
 
 
         let isFirstEntryForThisKey = false;
-        // Check if you already have an entry for this minute
-        if (!cacheHitsCounter[currentMinute] || !cacheHitsCounter[currentMinute][gqlQueryMd5]) {
-            // If not, create the object
-            if (!cacheHitsCounter[currentMinute]) cacheHitsCounter[currentMinute] = {};
-            if (!cacheHitsCounter[currentMinute][gqlQueryMd5]) cacheHitsCounter[currentMinute][gqlQueryMd5] = 1;
+
+        if (!cacheHitsCounter[currentMinute]) {
             isFirstEntryForThisKey = true;
+            cacheHitsCounter[currentMinute] = {};
+        }
+
+        const cacheHitsCurrentMinute = cacheHitsCounter[currentMinute];
+
+        if (!cacheHitsCurrentMinute[gqlQueryMd5]) {
+            cacheHitsCurrentMinute[gqlQueryMd5] = 0;
+        }
+
+        if (cacheHitsCurrentMinute[gqlQueryMd5] < batchSize) {
+            cacheHitsCurrentMinute[gqlQueryMd5]++;
         } else {
-            // If the entry already exists, increment hits
-            if (cacheHitsCounter[currentMinute][gqlQueryMd5] < batchSize)
-                cacheHitsCounter[currentMinute][gqlQueryMd5]++;
-            else
-                cacheHitsCounter[currentMinute][gqlQueryMd5] = 1;
+            cacheHitsCurrentMinute[gqlQueryMd5] = 1;
         }
 
         const redisCounterKey = `${prefix}.${currentMinute}`;
-        if (cacheHitsCounter[currentMinute][gqlQueryMd5] >= batchSize) {
+        if (cacheHitsCurrentMinute[gqlQueryMd5] >= batchSize) {
             await this.cacheService.getOrSet(redisQueryKey, () => Promise.resolve(req.body));
-            await this.cacheService.executeRemoteRaw('zincrby', redisCounterKey, cacheHitsCounter[currentMinute][gqlQueryMd5], gqlQueryMd5);
+            await this.cacheService.executeRemoteRaw('zincrby', redisCounterKey, cacheHitsCurrentMinute[gqlQueryMd5], gqlQueryMd5);
         }
 
         if (isFirstEntryForThisKey) {
@@ -63,15 +67,15 @@ export class GuestCachingMiddleware implements NestMiddleware {
             await this.cacheService.executeRemoteRaw('expire', redisCounterKey, 2 * oneMinute());
         }
 
-
         // If the value for this is already computed
         const cacheResponse: any = await this.cacheService.getCache(redisQueryResponse);
 
         res.setHeader('X-Guest-Cache-Hit', !!cacheResponse);
 
         // Delete data for previous minute
-        if (cacheHitsCounter[previousMinute])
+        if (cacheHitsCounter[previousMinute]) {
             delete cacheHitsCounter[previousMinute];
+        }
 
         if (cacheResponse) {
             return res.json(cacheResponse);
