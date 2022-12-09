@@ -207,7 +207,7 @@ export class ElrondApiService {
     ): Promise<NftToken[]> {
         const nfts: NftToken[] = await this.genericGetExecutor.execute({
             methodName: this.getNftsForUser.name,
-            resourceUrl: `accounts/${address}/nfts?type=${type}&size=${constantsConfig.MAX_USER_NFTS}`,
+            resourceUrl: `accounts/${address}/nfts?type=${type}&size=${constantsConfig.MAX_USER_NFTS}&fields=identifier,collection,ticker,decimals,timestamp,attributes,nonce,type,name,creator,royalties,uris,url,tags,balance,assets`,
         });
 
         return collections
@@ -223,7 +223,7 @@ export class ElrondApiService {
     ): Promise<NftToken> {
         return await this.doGetGeneric<NftToken>(
             this.getNftByTokenIdentifier.name,
-            `accounts/${address}/nfts/${nftIdentifier}`,
+            `accounts/${address}/nfts/${nftIdentifier}?fields=identifier,collection,ticker,decimals,timestamp,attributes,nonce,type,name,creator,royalties,uris,url,tags,balance,assets`,
         );
     }
 
@@ -233,7 +233,7 @@ export class ElrondApiService {
     ): Promise<string> {
         const response = await this.doGetGeneric<NftToken>(
             this.getNftAttributesByTokenIdentifier.name,
-            `accounts/${address}/tokens/${nftIdentifier}`,
+            `accounts/${address}/nfts/${nftIdentifier}?fields=attributes`,
         );
         return response.attributes;
     }
