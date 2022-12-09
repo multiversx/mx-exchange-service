@@ -182,22 +182,27 @@ export class MetricsCollector {
     }
 
     static setCurrentNonce(shardId: number, nonce: number) {
+        MetricsCollector.ensureIsInitialized();
         MetricsCollector.currentNonceGauge.set({ shardId }, nonce);
     }
 
     static setLastProcessedNonce(shardId: number, nonce: number) {
+        MetricsCollector.ensureIsInitialized();
         MetricsCollector.lastProcessedNonceGauge.set({ shardId }, nonce);
     }
 
     static incrementGuestHits() {
+        MetricsCollector.ensureIsInitialized();
         MetricsCollector.guestHitsGauge.inc();
     }
 
     static incrementGuestNoCacheHits() {
+        MetricsCollector.ensureIsInitialized();
         MetricsCollector.guestNoCacheHitsGauge.inc();
     }
 
     static setGuestHitQueries(count: number) {
+        MetricsCollector.ensureIsInitialized();
         MetricsCollector.guestHitQueriesGauge.set(count);
     }
 
