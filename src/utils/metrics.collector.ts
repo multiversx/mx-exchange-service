@@ -8,6 +8,7 @@ export class MetricsCollector {
     private static externalCallsHistogram: Histogram<string>;
     private static awsQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
+    private static guestQueriesGauge: Gauge<string>;
     private static guestHitsGauge: Gauge<string>;
     private static guestNoCacheHitsGauge: Gauge<string>;
     private static guestHitQueriesGauge: Gauge<string>;
@@ -103,6 +104,14 @@ export class MetricsCollector {
             });
         }
 
+        if (!MetricsCollector.guestQueriesGauge) {
+            MetricsCollector.guestQueriesGauge = new Gauge({
+                name: 'guest_queries',
+                help: 'Guest queries by operation',
+                labelNames: ['operation'],
+            });
+        }
+
         if (!MetricsCollector.guestHitsGauge) {
             MetricsCollector.guestHitsGauge = new Gauge({
                 name: 'guest_hits',
@@ -189,6 +198,11 @@ export class MetricsCollector {
     static setLastProcessedNonce(shardId: number, nonce: number) {
         MetricsCollector.ensureIsInitialized();
         MetricsCollector.lastProcessedNonceGauge.set({ shardId }, nonce);
+    }
+
+    static incrementGuestQueries(operation: string, count: number) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.guestQueriesGauge.inc({ operation }, count);
     }
 
     static incrementGuestHits() {
