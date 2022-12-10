@@ -236,7 +236,7 @@
                     "default": 19500000,
                     "withTokenMerge": 40000000
                 },
-                "removeLiquidity": 21000000,
+                "removeLiquidity": 25000000,
                 "defaultMergeWLPT": 20000000
             },
             "farms": {
