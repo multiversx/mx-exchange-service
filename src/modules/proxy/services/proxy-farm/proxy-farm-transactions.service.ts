@@ -3,6 +3,7 @@ import { constantsConfig, elrondConfig, gasConfig } from '../../../../config';
 import {
     BigUIntValue,
     BytesValue,
+    TypedValue,
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem';
 import { Address, Interaction, TokenPayment } from '@elrondnetwork/erdjs';
 import { TransactionModel } from '../../../../models/transaction.model';
@@ -99,10 +100,16 @@ export class TransactionsProxyFarmService {
             proxyAddress,
         );
 
-        const endpointArgs = [
+        let endpointArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
-            new BigUIntValue(new BigNumber(args.exitAmount)),
         ];
+        if (version === 'v2') {
+            endpointArgs = [
+                new BigUIntValue(new BigNumber(args.exitAmount)),
+                BytesValue.fromHex(new Address(args.farmAddress).hex()),
+            ];
+        }
+
         const gasLimit = await this.getExitFarmProxyGasLimit(args);
 
         return contract.methodsExplicit
