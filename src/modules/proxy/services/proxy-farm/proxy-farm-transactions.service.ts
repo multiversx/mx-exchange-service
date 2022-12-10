@@ -100,14 +100,11 @@ export class TransactionsProxyFarmService {
             proxyAddress,
         );
 
-        let endpointArgs: TypedValue[] = [
+        const endpointArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(args.farmAddress).hex()),
         ];
         if (version === 'v2') {
-            endpointArgs = [
-                new BigUIntValue(new BigNumber(args.exitAmount)),
-                BytesValue.fromHex(new Address(args.farmAddress).hex()),
-            ];
+            endpointArgs.push(new BigUIntValue(new BigNumber(args.exitAmount)));
         }
 
         const gasLimit = await this.getExitFarmProxyGasLimit(args);
