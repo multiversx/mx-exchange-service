@@ -22,8 +22,6 @@ export class GuestCachingMiddleware implements NestMiddleware {
             return next();
         }
 
-        MetricsCollector.incrementGuestHits();
-
         const prefix = 'guestCache';
         const dateFormat = 'YYYY-MM-DD_HH:mm';
 
@@ -80,6 +78,7 @@ export class GuestCachingMiddleware implements NestMiddleware {
         }
 
         if (cacheResponse) {
+            MetricsCollector.incrementGuestHits();
             return res.json(cacheResponse);
         } else {
             MetricsCollector.incrementGuestNoCacheHits();
