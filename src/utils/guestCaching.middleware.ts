@@ -35,7 +35,6 @@ export class GuestCachingMiddleware implements NestMiddleware {
         const redisQueryResponse = `${prefix}.${gqlQueryMd5}.response`;
         const batchSize = Number(process.env.GUEST_CACHE_REDIS_BATCH_SIZE) || 3;
 
-
         let isFirstEntryForThisKey = false;
 
         if (!this.cacheHitsCounter[currentMinute]) {
@@ -59,6 +58,9 @@ export class GuestCachingMiddleware implements NestMiddleware {
         if (cacheHitsCurrentMinute[gqlQueryMd5] >= batchSize) {
             await this.cacheService.getOrSet(redisQueryKey, () => Promise.resolve(req.body));
             await this.cacheService.executeRemoteRaw('zincrby', redisCounterKey, cacheHitsCurrentMinute[gqlQueryMd5], gqlQueryMd5);
+
+            const operation = req.body['operationName'];
+            MetricsCollector.incrementGuestQueries(operation, cacheHitsCurrentMinute[gqlQueryMd5]);
         }
 
         if (isFirstEntryForThisKey) {
