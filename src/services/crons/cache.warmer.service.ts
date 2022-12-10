@@ -11,6 +11,8 @@ import moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { RouterService } from 'src/modules/router/services/router.service';
 import { MetricsCollector } from 'src/utils/metrics.collector';
+import { Locker } from 'src/utils/locker';
+import { PerformanceProfiler } from 'src/utils/performance.profiler';
 
 @Injectable()
 export class CacheWarmerService {
@@ -45,24 +47,41 @@ export class CacheWarmerService {
 
         const keysToCompute = [...new Set([...keysToComputeCurrentMinute, ...keysToComputePreviousMinute])];
 
+
+
         await Promise.allSettled(keysToCompute.map(async key => {
-            const parsedKey = `${prefix}.${key}.body`;
-            const keyValue: object = await this.cachingService.getCache(parsedKey);
-
-            if (!keyValue) {
-                return Promise.resolve();
-            }
-
-            console.log(`Using guestCache to warm up query '${JSON.stringify(keyValue)}'`);
-
-            // Get new data without cache and update it
-            const { data } = await axios.post(`${process.env.ELRONDDEX_URL}/graphql`, keyValue, {
-                headers: {
-                    'no-cache': true
+            await Locker.lock(key, async () => {
+                const parsedKey = `${prefix}.${key}.body`;
+                const keyValue: object = await this.cachingService.getCache(parsedKey);
+    
+                if (!keyValue) {
+                    return Promise.resolve();
                 }
-            });
+    
+                console.log(`Started warming up query '${JSON.stringify(keyValue)}' for url '${process.env.ELRONDDEX_URL}'`);
+                const profiler = new PerformanceProfiler();
 
-            return this.cachingService.setCache(`${prefix}.${key}.response`, data, 12 * oneSecond());
+                let data;
+                try {
+                    // Get new data without cache and update it
+                    const response = await axios.post(`${process.env.ELRONDDEX_URL ?? 'https://staging-graph.xexchange.com'}/graphql`, keyValue, {
+                        headers: {
+                            'no-cache': true
+                        }
+                    });
+
+                    data = response.data;
+                } catch (error) {
+                    console.error(`An error occurred while warming up query '${JSON.stringify(keyValue)}' for url '${process.env.ELRONDDEX_URL}'`);
+                    console.error(error);
+                }
+
+                profiler.stop();
+
+                console.log(`Finished warming up query '${JSON.stringify(keyValue)}' for url '${process.env.ELRONDDEX_URL}'. Response size: ${JSON.stringify(data).length}. Duration: ${profiler.duration}`);
+    
+                return this.cachingService.setCache(`${prefix}.${key}.response`, data, 30 * oneSecond());
+            })
         }));
 
         MetricsCollector.setGuestHitQueries(keysToCompute.length);
