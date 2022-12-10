@@ -12,7 +12,6 @@ import { PairFilterArgs } from '../models/filter.args';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneSecond } from 'src/helpers/helpers';
 
-
 @Injectable()
 export class RouterService {
     constructor(
@@ -20,7 +19,7 @@ export class RouterService {
         private readonly pairGetterService: PairGetterService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) { }
+    ) {}
 
     async getFactory(): Promise<FactoryModel> {
         return new FactoryModel({
@@ -31,7 +30,7 @@ export class RouterService {
     async getAllPairs(
         offset: number,
         limit: number,
-        pairFilter: PairFilterArgs
+        pairFilter: PairFilterArgs,
     ): Promise<PairModel[]> {
         let pairsMetadata = await this.routerGetterService.getPairsMetadata();
         if (pairFilter.issuedLpToken) {
@@ -118,7 +117,8 @@ export class RouterService {
         for (let index = 0; index < lpTokensIDs.length; index++) {
             if (
                 lpTokensIDs[index] === undefined ||
-                lpTokensIDs[index] === 'undefined'
+                lpTokensIDs[index] === 'undefined' ||
+                lpTokensIDs[index] === ''
             ) {
                 continue;
             }
