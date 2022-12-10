@@ -303,10 +303,15 @@ export class UserMetaEsdtComputeService {
                 attributes: nftToken.attributes,
             });
 
-        const farmToken = await this.apiService.getNftByTokenIdentifier(
-            nftToken.creator,
-            decodedWFMTAttributes.farmTokenIdentifier,
-        );
+        let farmToken: NftToken;
+        try {
+            farmToken = await this.apiService.getNftByTokenIdentifier(
+                nftToken.creator,
+                decodedWFMTAttributes.farmTokenIdentifier,
+            );
+        } catch (error) {
+            return undefined;
+        }
 
         const userFarmToken = await this.farmTokenUSD(
             new NftToken({
@@ -343,13 +348,18 @@ export class UserMetaEsdtComputeService {
                 });
             }
 
-            const farmToken = await this.apiService.getNftByTokenIdentifier(
-                nftToken.creator,
-                tokenIdentifier(
-                    decodedWFMTAttributes.farmToken.tokenIdentifier,
-                    decodedWFMTAttributes.farmToken.tokenNonce,
-                ),
-            );
+            let farmToken: NftToken;
+            try {
+                farmToken = await this.apiService.getNftByTokenIdentifier(
+                    nftToken.creator,
+                    tokenIdentifier(
+                        decodedWFMTAttributes.farmToken.tokenIdentifier,
+                        decodedWFMTAttributes.farmToken.tokenNonce,
+                    ),
+                );
+            } catch (error) {
+                return undefined;
+            }
 
             const userFarmToken = await this.farmTokenUSD(
                 new NftToken({
@@ -456,10 +466,15 @@ export class UserMetaEsdtComputeService {
             decodedAttributes[0].lpFarmTokenNonce,
         );
 
-        const farmToken = await this.apiService.getNftByTokenIdentifier(
-            nftToken.creator,
-            farmTokenIdentifier,
-        );
+        let farmToken: NftToken;
+        try {
+            farmToken = await this.apiService.getNftByTokenIdentifier(
+                nftToken.creator,
+                farmTokenIdentifier,
+            );
+        } catch (error) {
+            return undefined;
+        }
 
         if (!calculateUSD) {
             return new UserDualYiledToken({
@@ -617,10 +632,16 @@ export class UserMetaEsdtComputeService {
             decodedAttributes.farmTokenID,
             decodedAttributes.farmTokenNonce,
         );
-        const farmToken = await this.apiService.getNftByTokenIdentifier(
-            nftToken.creator,
-            farmTokenIdentifier,
-        );
+        let farmToken: NftToken;
+        try {
+            farmToken = await this.apiService.getNftByTokenIdentifier(
+                nftToken.creator,
+                farmTokenIdentifier,
+            );
+        } catch (error) {
+            return undefined;
+        }
+
         const userFarmToken = await this.farmTokenUSD(
             new NftToken({
                 ...farmToken,
@@ -677,13 +698,20 @@ export class UserMetaEsdtComputeService {
 
         const originalTokenID =
             await this.lockedTokenWrapperGetter.getLockedTokenId();
-        const nftLockedToken = await this.apiService.getNftByTokenIdentifier(
-            scAddress.lockedTokenWrapper,
-            tokenIdentifier(
-                originalTokenID,
-                decodedAttributes.lockedTokenNonce,
-            ),
-        );
+
+        let nftLockedToken: NftToken;
+        try {
+            nftLockedToken = await this.apiService.getNftByTokenIdentifier(
+                scAddress.lockedTokenWrapper,
+                tokenIdentifier(
+                    originalTokenID,
+                    decodedAttributes.lockedTokenNonce,
+                ),
+            );
+        } catch (error) {
+            return undefined;
+        }
+
         nftLockedToken.balance = nftWrappedToken.balance;
 
         const userNftLockedToken = await this.lockedTokenEnergyUSD(
