@@ -91,8 +91,7 @@ export class UserMetaEsdtService {
         private lockedTokenWrapperGetter: LockedTokenWrapperGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {
-    }
+    ) {}
 
     async getUserLockedAssetTokens(
         userAddress: string,
@@ -134,7 +133,13 @@ export class UserMetaEsdtService {
             farmTokenIDs,
         );
         return await Promise.all(
-            nfts.map((nft) => this.userComputeService.farmTokenUSD(nft, nft.identifier, calculateUSD)),
+            nfts.map((nft) =>
+                this.userComputeService.farmTokenUSD(
+                    nft,
+                    nft.identifier,
+                    calculateUSD,
+                ),
+            ),
         );
     }
 
@@ -235,9 +240,10 @@ export class UserMetaEsdtService {
                 ),
             );
         } catch (e) {
-            this.logger.error(`Cannot get locked farm tokens v2 for user ${userAddress}, error = ${e}`);
+            this.logger.error(
+                `Cannot get locked farm tokens v2 for user ${userAddress}, error = ${e}`,
+            );
         }
-
     }
 
     async getUserStakeFarmTokens(
@@ -449,7 +455,8 @@ export class UserMetaEsdtService {
         userAddress: string,
         pagination: PaginationArgs,
     ): Promise<UserWrappedLockedToken[]> {
-        const lockedTokenEnergyID = await this.lockedTokenWrapperGetter.getWrappedTokenId();
+        const lockedTokenEnergyID =
+            await this.lockedTokenWrapperGetter.getWrappedTokenId();
         const nfts = await this.apiService.getNftsForUser(
             userAddress,
             pagination.offset,
@@ -473,36 +480,11 @@ export class UserMetaEsdtService {
         if (nfts) {
             userNFTs = nfts;
         } else {
-            const userStats = await this.apiService.getAccountStats(
+            userNFTs = await this.apiService.getNftsForUser(
                 userAddress,
+                pagination.offset,
+                pagination.limit,
             );
-            const cacheKey = this.getUserCacheKey(
-                userAddress,
-                userStats.nonce,
-                'nfts',
-            );
-
-            try {
-                userNFTs = await this.cachingService.getOrSet(
-                    cacheKey,
-                    () =>
-                        this.apiService.getNftsForUser(
-                            userAddress,
-                            pagination.offset,
-                            pagination.limit,
-                        ),
-                    oneSecond() * 6,
-                );
-            } catch (error) {
-                const logMessage = generateGetLogMessage(
-                    PairService.name,
-                    this.getAllNftTokens.name,
-                    cacheKey,
-                    error,
-                );
-                this.logger.error(logMessage);
-                throw error;
-            }
         }
 
         const promises: Promise<typeof UserNftTokens>[] = [];
@@ -621,7 +603,9 @@ export class UserMetaEsdtService {
                     break;
                 case NftTokenType.WrappedLockedToken:
                     promises.push(
-                        this.userComputeService.wrappedLockedTokenEnergyUSD(userNft),
+                        this.userComputeService.wrappedLockedTokenEnergyUSD(
+                            userNft,
+                        ),
                     );
                     break;
             }
@@ -642,7 +626,8 @@ export class UserMetaEsdtService {
             return NftTokenType.LockedTokenEnergy;
         }
 
-        const wrappedlockedToken = await this.lockedTokenWrapperGetter.getWrappedTokenId();
+        const wrappedlockedToken =
+            await this.lockedTokenWrapperGetter.getWrappedTokenId();
         if (tokenID === wrappedlockedToken) {
             return NftTokenType.WrappedLockedToken;
         }
