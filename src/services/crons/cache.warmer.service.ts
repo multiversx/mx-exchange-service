@@ -64,7 +64,7 @@ export class CacheWarmerService {
                 let data;
                 try {
                     // Get new data without cache and update it
-                    const response = await axios.post(`${process.env.ELRONDDEX_URL ?? 'https://staging-graph.xexchange.com'}/graphql`, keyValue, {
+                    const response = await axios.post(`${process.env.ELRONDDEX_URL}/graphql`, keyValue, {
                         headers: {
                             'no-cache': true
                         }
