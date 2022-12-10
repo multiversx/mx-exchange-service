@@ -506,7 +506,7 @@
         "MEX_TOKEN_ID": "MEX-27f4cd",
         "USDC_TOKEN_ID": "USDC-a63f36",
         "PRECISION_EX_INCREASE": 1000,
-        "UNBOND_EPOCHS": 3,
+        "UNBOND_EPOCHS": 0,
         "MAINTENANCE": false,
         "EPOCHS_IN_WEEK": 7,
         "BLOCKS_PER_WEEK": 100800,
