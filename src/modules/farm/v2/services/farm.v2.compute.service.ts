@@ -229,7 +229,7 @@ export class FarmComputeServiceV2 extends Mixin(
         ] = await Promise.all([
             this.farmGetter.getBoostedYieldsFactors(scAddress),
             this.farmGetter.getFarmTokenSupply(scAddress),
-            this.farmGetter.totalEnergyForWeek(scAddress, week - 1),
+            this.farmGetter.totalEnergyForWeek(scAddress, week),
         ]);
 
         return new BigNumber(farmSupply)
