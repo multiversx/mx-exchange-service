@@ -46,6 +46,15 @@ export class FarmGetterServiceV2 extends Mixin(FarmGetterService, WeekTimekeepin
         )
     }
 
+    async getOptimalRatio(scAddress: string, week: number): Promise<string> {
+        return this.getData(
+            this.getCacheKey(scAddress, 'optimalRatio', week),
+            () => this.computeService.computeOptimalRatio(scAddress, week),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        )
+    }
+
     async getBoostedYieldsRewardsPercenatage(
         farmAddress: string,
     ): Promise<number> {

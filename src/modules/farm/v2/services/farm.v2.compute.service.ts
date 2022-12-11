@@ -220,4 +220,29 @@ export class FarmComputeServiceV2 extends Mixin(
 
         return payments;
     }
+
+    async computeOptimalRatio(scAddress: string, week: number): Promise<string> {
+        const [
+            factors,
+            farmSupply,
+            energySupply,
+        ] = await Promise.all([
+            this.farmGetter.getBoostedYieldsFactors(scAddress),
+            this.farmGetter.getFarmTokenSupply(scAddress),
+            this.farmGetter.totalEnergyForWeek(scAddress, week - 1),
+        ]);
+
+        return new BigNumber(farmSupply)
+            .multipliedBy(factors.userRewardsEnergy)
+            .dividedBy(energySupply)
+            .dividedBy(
+                new BigNumber(factors.maxRewardsFactor)
+                    .multipliedBy(
+                        new BigNumber(factors.userRewardsEnergy)
+                            .plus(factors.userRewardsFarm)
+                    )
+                    .minus(factors.userRewardsFarm)
+            )
+            .toFixed()
+    }
 }

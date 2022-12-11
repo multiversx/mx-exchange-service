@@ -218,7 +218,7 @@ export class FeesCollectorService {
 
         for (const payment of accumulatedFees) {
             accumulatedRewards.push(new EsdtTokenPayment({
-                amount: new BigNumber(payment.amount).multipliedBy(percentage).toNumber().toString(),
+                amount: new BigNumber(payment.amount).multipliedBy(percentage).integerValue().toFixed(),
                 nonce: payment.nonce,
                 tokenID: payment.tokenID,
                 tokenType: payment.tokenType

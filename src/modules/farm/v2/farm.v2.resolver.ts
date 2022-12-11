@@ -28,8 +28,23 @@ export class FarmResolverV2 extends FarmResolver {
     async accumulatedRewards(
         @Parent() parent: FarmModelV2
     ): Promise<string> {
+        const currentWeek = await this.farmGetter.getCurrentWeek(
+            parent.address,
+        );
         return await this.genericFieldResolver(() =>
-            this.farmGetter.getAccumulatedRewardsForWeek(parent.address, parent.time.currentWeek),
+            this.farmGetter.getAccumulatedRewardsForWeek(parent.address, currentWeek),
+        );
+    }
+
+    @ResolveField()
+    async boostedOptimalRatio(
+        @Parent() parent: FarmModelV2
+    ): Promise<string> {
+        const currentWeek = await this.farmGetter.getCurrentWeek(
+            parent.address,
+        );
+        return await this.genericFieldResolver(() =>
+            this.farmGetter.getOptimalRatio(parent.address, currentWeek),
         );
     }
 

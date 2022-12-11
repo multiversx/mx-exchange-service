@@ -18,7 +18,7 @@ export class FeesCollectorComputeService {
 
     async computeAccumulatedFeesUntilNow(scAddress: string, week: number): Promise<string> {
         const [
-            startWeekForCurrentWeek,
+            startEpochForCurrentWeek,
             currentEpoch,
             lockedTokensPerBlock
         ] = await Promise.all([
@@ -27,7 +27,7 @@ export class FeesCollectorComputeService {
             this.feesCollectorGetter.getLockedTokensPerBlock(scAddress),
         ]);
         const promises = []
-        for (let epoch = startWeekForCurrentWeek; epoch <= currentEpoch; epoch++) {
+        for (let epoch = startEpochForCurrentWeek; epoch <= currentEpoch; epoch++) {
             promises.push(this.contextGetter.getBlocksCountInEpoch(epoch));
         }
         const blocksInEpoch = await Promise.all(promises);

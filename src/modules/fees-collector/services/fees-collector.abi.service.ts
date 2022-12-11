@@ -39,7 +39,7 @@ export class FeesCollectorAbiService extends Mixin(GenericAbiService, WeeklyRewa
             ],
         );
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
+        return response.firstValue.valueOf().integerValue().toFixed();
     }
 
     async lockedTokenId(scAddress: string): Promise<string> {
