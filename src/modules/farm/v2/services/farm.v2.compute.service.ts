@@ -220,4 +220,40 @@ export class FarmComputeServiceV2 extends Mixin(
 
         return payments;
     }
+
+    // The boosted rewards is min(MAX_REWARDS, COMPUTED_REWARDS)
+    // MAX_REWARDS = MAX_REWARDS_FACTOR * WEEKLY_REWARDS * USER_FARM_AMOUNT / FARM_SUPPLY
+    //
+    // COMPUTED_REWARDS =  WEEKLY_REWARDS *
+    //    (USER_ENERGY_CONS * USER_ENERGY / TOTAL_ENERGY + USER_FARM_CONST * USER_FARM_AMOUNT / FARM_SUPPLY)
+    //    / (USER_ENERGY_CONST + USER_FARM_CONST)
+    //
+    // the optimal ratio is the ration when MAX_REWARDS = COMPUTED_REWARDS
+    // USER_FARM_AMOUNT / USER_ENERGY =
+    // = FARM_SUPPLY * USER_ENERGY_CONST /
+    // ( ENERGY_SUPPLY * (MAX_REWARDS_FACTOR * (USER_ENERGY_CONST + USER_FARM_CONST) - USER_FARM_CONST)
+    async computeOptimalRatio(scAddress: string, week: number): Promise<string> {
+        const [
+            factors,
+            farmSupply,
+            energySupply,
+        ] = await Promise.all([
+            this.farmGetter.getBoostedYieldsFactors(scAddress),
+            this.farmGetter.getFarmTokenSupply(scAddress),
+            this.farmGetter.totalEnergyForWeek(scAddress, week),
+        ]);
+
+        return new BigNumber(farmSupply)
+            .multipliedBy(factors.userRewardsEnergy)
+            .dividedBy(energySupply)
+            .dividedBy(
+                new BigNumber(factors.maxRewardsFactor)
+                    .multipliedBy(
+                        new BigNumber(factors.userRewardsEnergy)
+                            .plus(factors.userRewardsFarm)
+                    )
+                    .minus(factors.userRewardsFarm)
+            )
+            .toFixed()
+    }
 }

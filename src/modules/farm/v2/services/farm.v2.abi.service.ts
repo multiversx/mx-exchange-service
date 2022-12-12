@@ -150,7 +150,7 @@ export class FarmAbiServiceV2 extends Mixin(
                 new U32Value(new BigNumber(week)),
             ]);
         const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toString();
+        return response.firstValue.valueOf().integerValue().toFixed();
     }
 
     async getEnergyFactoryAddress(farmAddress: string): Promise<string> {

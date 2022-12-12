@@ -47,6 +47,8 @@ export class FarmModelV2 extends BaseFarmModel {
     lastGlobalUpdateWeek: number;
     @Field()
     baseApr: string;
+    @Field()
+    boostedOptimalRatio: string;
 
     constructor(init?: Partial<FarmModelV2>) {
         super(init);
