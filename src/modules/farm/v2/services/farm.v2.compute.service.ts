@@ -77,7 +77,7 @@ export class FarmComputeServiceV2 extends Mixin(
             this.farmGetter.getFarmingTokenID(farmAddress),
             this.farmGetter.getBoostedYieldsRewardsPercenatage(farmAddress),
             this.computeAnualRewardsUSD(farmAddress),
-            this.computeFarmedTokenPriceUSD(farmAddress),
+            this.farmGetter.getTotalValueLockedUSD(farmAddress),
         ]);
 
         const apr = this.computeBaseRewards(
