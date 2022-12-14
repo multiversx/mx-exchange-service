@@ -170,7 +170,7 @@
                         "withPenalty": {
                             "localBurn": 9500000,
                             "pairBurn": 16000000,
-                            "buybackAndBurn": 32000000
+                            "buybackAndBurn": 35000000
                         }
                     },
                     "claimRewards": 10500000
@@ -181,7 +181,7 @@
                         "withPenalty": {
                             "localBurn": 16000000,
                             "pairBurn": 23000000,
-                            "buybackAndBurn": 37300000
+                            "buybackAndBurn": 40000000
                         }
                     },
                     "claimRewards": 17000000
@@ -332,7 +332,7 @@
                             "default": 24000000,
                             "withPenalty": {
                                 "localBurn": 26000000,
-                                "pairBurn": 32000000,
+                                "pairBurn": 45000000,
                                 "buybackAndBurn": 48000000
                             }
                         },
