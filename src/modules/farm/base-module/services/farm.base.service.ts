@@ -13,6 +13,7 @@ import { ContextGetterService } from 'src/services/context/context.getter.servic
 import {
     FarmTokenAttributesModel,
     FarmTokenAttributesModelV1_3,
+    FarmTokenAttributesModelV2,
 } from '../../models/farmTokenAttributes.model';
 import { CachingService } from 'src/services/caching/cache.service';
 
@@ -63,7 +64,7 @@ export abstract class FarmServiceBase {
         );
 
         const farmingAmount =
-            farmTokenAttributes instanceof FarmTokenAttributesModel
+            farmTokenAttributes instanceof FarmTokenAttributesModelV2
                 ? farmTokenAttributes.currentFarmAmount
                 : (<FarmTokenAttributesModelV1_3>farmTokenAttributes)
                       .initialFarmingAmount;
