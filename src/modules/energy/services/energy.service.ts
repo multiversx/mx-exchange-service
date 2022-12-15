@@ -50,6 +50,8 @@ export class EnergyService {
         );
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
         const prevLockEpochs = decodedAttributes.unlockEpoch - currentEpoch;
+
+        epochsToReduce = epochsToReduce + (currentEpoch + prevLockEpochs - epochsToReduce) % 30
         if (vmQuery) {
             return await this.energyAbi.getPenaltyAmount(
                 new BigNumber(inputToken.amount),
