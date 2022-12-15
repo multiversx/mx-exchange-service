@@ -43,24 +43,7 @@ export class EnergyComputeService implements IEnergyComputeService {
         prevLockEpochs: number,
         newLockEpochs: number,
     ): Promise<BigNumber> {
-        if (prevLockEpochs === 0) {
-            throw new Error('Token can be unlocked already');
-        }
-        if (newLockEpochs > prevLockEpochs) {
-            throw new Error('Invalid new lock epoch');
-        }
-
         const isFullUnlock = newLockEpochs === 0;
-        if (!isFullUnlock) {
-            const lockOptions = await this.energyGetter.getLockOptions();
-            if (
-                lockOptions.find(
-                    (lockOption) => lockOption.lockEpochs === newLockEpochs,
-                ) === undefined
-            ) {
-                throw new Error('Invalid new lock epochs');
-            }
-        }
 
         const penaltyPercentageUnlock = isFullUnlock
             ? await this.computePenaltyPercentageFullUnlock(prevLockEpochs)
