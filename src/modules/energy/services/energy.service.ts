@@ -7,6 +7,7 @@ import { EnergyModel } from '../models/energy.model';
 import { EnergyAbiService } from './energy.abi.service';
 import { EnergyComputeService } from './energy.compute.service';
 import { EnergyGetterService } from './energy.getter.service';
+import { constantsConfig } from '../../../config';
 
 @Injectable()
 export class EnergyService {
@@ -51,7 +52,7 @@ export class EnergyService {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
         const prevLockEpochs = decodedAttributes.unlockEpoch - currentEpoch;
 
-        epochsToReduce = epochsToReduce + (currentEpoch + prevLockEpochs - epochsToReduce) % 30
+        epochsToReduce = epochsToReduce + (decodedAttributes.unlockEpoch - epochsToReduce) % constantsConfig.EPOCHS_IN_MONTH
         if (vmQuery) {
             return await this.energyAbi.getPenaltyAmount(
                 new BigNumber(inputToken.amount),

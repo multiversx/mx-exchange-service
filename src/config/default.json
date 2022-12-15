@@ -509,6 +509,7 @@
         "UNBOND_EPOCHS": 0,
         "MAINTENANCE": false,
         "EPOCHS_IN_WEEK": 7,
+        "EPOCHS_IN_MONTH": 30,
         "BLOCKS_PER_WEEK": 100800,
         "USER_MAX_CLAIM_WEEKS": 4,
         "STAKING_UNBOND_ATTRIBUTES_LEN": 12,
