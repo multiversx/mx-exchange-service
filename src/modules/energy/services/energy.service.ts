@@ -43,7 +43,7 @@ export class EnergyService {
 
     async getPenaltyAmount(
         inputToken: InputTokenModel,
-        epochsToReduce: number,
+        newLockPeriod: number,
         vmQuery = false,
     ): Promise<string> {
         const decodedAttributes = LockedTokenAttributes.fromAttributes(
@@ -52,12 +52,15 @@ export class EnergyService {
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
         const prevLockEpochs = decodedAttributes.unlockEpoch - currentEpoch;
 
-        epochsToReduce = epochsToReduce + (decodedAttributes.unlockEpoch - epochsToReduce) % constantsConfig.EPOCHS_IN_MONTH
+        const tentativeNewUnlockEpoch = currentEpoch + newLockPeriod;
+        const startOfMonthEpoch = this.unlockEpochToStartOfMonth(tentativeNewUnlockEpoch)
+        const epochsDiffFromMonthStart = tentativeNewUnlockEpoch - startOfMonthEpoch
+        newLockPeriod = newLockPeriod - epochsDiffFromMonthStart
         if (vmQuery) {
             return await this.energyAbi.getPenaltyAmount(
                 new BigNumber(inputToken.amount),
                 prevLockEpochs,
-                epochsToReduce,
+                newLockPeriod,
             );
         }
 
@@ -65,8 +68,13 @@ export class EnergyService {
             await this.energyCompute.computePenaltyAmount(
                 new BigNumber(inputToken.amount),
                 prevLockEpochs,
-                epochsToReduce,
+                newLockPeriod,
             )
         ).toFixed();
+    }
+
+    private unlockEpochToStartOfMonth(unlockEpoch: number): number {
+        const extraDays = unlockEpoch % constantsConfig.EPOCHS_IN_MONTH
+        return unlockEpoch - extraDays
     }
 }

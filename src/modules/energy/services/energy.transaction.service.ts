@@ -64,7 +64,7 @@ export class EnergyTransactionService {
         sender: string,
         inputTokens: InputTokenModel,
         unlockType: UnlockType,
-        epochsToReduce?: number,
+        newLockPeriod?: number,
     ): Promise<TransactionModel> {
         const contract =
             await this.elrondProxy.getSimpleLockEnergySmartContract();
@@ -78,7 +78,7 @@ export class EnergyTransactionService {
                 break;
             case UnlockType.REDUCE_PERIOD:
                 endpoint = contract.methodsExplicit.reduceLockPeriod([
-                    new U64Value(new BigNumber(epochsToReduce)),
+                    new U64Value(new BigNumber(newLockPeriod)),
                 ]);
                 gasLimit =
                     gasConfig.simpleLockEnergy.unlockTokens.reduceLockPeriod;
