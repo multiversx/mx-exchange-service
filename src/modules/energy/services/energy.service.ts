@@ -50,12 +50,33 @@ export class EnergyService {
             inputToken.attributes,
         );
         const currentEpoch = await this.contextGetter.getCurrentEpoch();
-        const prevLockEpochs = decodedAttributes.unlockEpoch - currentEpoch;
+        const isFullUnlock = newLockPeriod === 0;
+        if (!isFullUnlock) {
+            const lockOptions = await this.energyGetter.getLockOptions();
+            if (
+                lockOptions.find(
+                    (lockOption) => lockOption.lockEpochs === newLockPeriod,
+                ) === undefined
+            ) {
+                throw new Error('Invalid new lock epochs');
+            }
 
-        const tentativeNewUnlockEpoch = currentEpoch + newLockPeriod;
-        const startOfMonthEpoch = this.unlockEpochToStartOfMonth(tentativeNewUnlockEpoch)
-        const epochsDiffFromMonthStart = tentativeNewUnlockEpoch - startOfMonthEpoch
-        newLockPeriod = newLockPeriod - epochsDiffFromMonthStart
+            const tentativeNewUnlockEpoch = currentEpoch + newLockPeriod;
+            const startOfMonthEpoch = this.unlockEpochToStartOfMonth(tentativeNewUnlockEpoch)
+            const epochsDiffFromMonthStart = tentativeNewUnlockEpoch - startOfMonthEpoch
+            newLockPeriod = newLockPeriod - epochsDiffFromMonthStart
+        }
+
+
+        const prevLockEpochs = decodedAttributes.unlockEpoch - currentEpoch;
+        if (prevLockEpochs <= 0) {
+            throw new Error('Token can be unlocked already');
+        }
+
+        if (newLockPeriod > prevLockEpochs) {
+            throw new Error('Invalid new lock epoch');
+        }
+
         if (vmQuery) {
             return await this.energyAbi.getPenaltyAmount(
                 new BigNumber(inputToken.amount),
