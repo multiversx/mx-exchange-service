@@ -93,13 +93,13 @@ export class EnergyResolver extends GenericResolver {
     @Query(() => String)
     async penaltyAmount(
         @Args('inputToken') inputToken: InputTokenModel,
-        @Args('epochsToReduce') epochsToReduce: number,
+        @Args('newLockPeriod') newLockPeriod: number,
         @Args('vmQuery', { nullable: true }) vmQuery: boolean,
     ): Promise<string> {
         return await this.genericQuery(() =>
             this.energyService.getPenaltyAmount(
                 inputToken,
-                epochsToReduce,
+                newLockPeriod,
                 vmQuery,
             ),
         );
@@ -129,7 +129,7 @@ export class EnergyResolver extends GenericResolver {
         @Args('inputToken', LockedEnergyTokensValidationPipe)
         inputToken: InputTokenModel,
         @Args('unlockType', { type: () => UnlockType }) unlockType: UnlockType,
-        @Args('epochsToReduce', { nullable: true }) epochsToReduce: number,
+        @Args('newLockPeriod', { nullable: true }) newLockPeriod: number,
         @User() user: any,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
@@ -137,7 +137,7 @@ export class EnergyResolver extends GenericResolver {
                 user.publicKey,
                 inputToken,
                 unlockType,
-                epochsToReduce,
+                newLockPeriod,
             ),
         );
     }
