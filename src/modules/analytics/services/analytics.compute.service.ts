@@ -90,7 +90,7 @@ export class AnalyticsComputeService {
             this.stakingGetter.getStakedValueUSD(stakingAddress)
         );
 
-        promises.push(this.computeELKMEXTotalSupplyUSD())
+        promises.push(this.computeTotalLockedMexStakedUSD())
 
         if (farmsAddresses()[5] !== undefined) {
             promises.push(
@@ -146,7 +146,7 @@ export class AnalyticsComputeService {
         return totalAggregatedRewards.toFixed();
     }
 
-    async computeELKMEXTotalSupplyUSD(): Promise<string> {
+    async computeTotalLockedMexStakedUSD(): Promise<string> {
         const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress.feesCollector);
         const [
             mexTokenPrice,
