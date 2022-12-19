@@ -72,7 +72,7 @@
             "createPair": 30000000,
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
-            "multiPairSwapMultiplier": 30000000,
+            "multiPairSwapMultiplier": 35000000,
             "swapEnableByUser": 50000000,
             "admin": {
                 "setState": 200000000,
