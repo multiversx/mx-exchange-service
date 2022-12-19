@@ -28,7 +28,7 @@ export class FeesCollectorComputeService {
         ]);
         const promises = []
         for (let epoch = startEpochForCurrentWeek; epoch <= currentEpoch; epoch++) {
-            promises.push(this.contextGetter.getBlocksCountInEpoch(epoch));
+            promises.push(this.contextGetter.getBlocksCountInEpoch(epoch, 1));
         }
         const blocksInEpoch = await Promise.all(promises);
 
