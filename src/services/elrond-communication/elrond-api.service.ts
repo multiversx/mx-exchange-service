@@ -105,10 +105,10 @@ export class ElrondApiService {
         return new Stats(stats);
     }
 
-    async getBlockCountInEpoch(epoch: number): Promise<Stats> {
+    async getShardBlockCountInEpoch(epoch: number, shardId: number): Promise<Stats> {
         return await this.doGetGeneric<Stats>(
             this.getStats.name,
-            `blocks/count?epoch=${epoch}`,
+            `blocks/count?epoch=${epoch}&shard=${shardId}`,
         );
     }
 
