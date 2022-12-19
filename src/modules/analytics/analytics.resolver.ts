@@ -51,6 +51,13 @@ export class AnalyticsResolver {
     }
 
     @Query(() => String)
+    async totalLockedMexStakedUSD(): Promise<string> {
+        return await this.genericQuery(() =>
+            this.analyticsGetter.getTotalLockedMexStakedUSD(),
+        );
+    }
+
+    @Query(() => String)
     async totalTokenSupply(@Args('tokenID') tokenID: string): Promise<string> {
         return await this.genericQuery(() =>
             this.analyticsGetter.getTotalTokenSupply(tokenID),

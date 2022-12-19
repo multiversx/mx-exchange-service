@@ -48,6 +48,16 @@ export class AnalyticsGetterService extends GenericGetterService {
         );
     }
 
+    async getTotalLockedMexStakedUSD(): Promise<string> {
+        const cacheKey = this.getCacheKey('totalLockedMexStakedUSD');
+        return await this.getData(
+            cacheKey,
+            () => this.analyticsCompute.computeTotalLockedMexStakedUSD(),
+            oneMinute() * 10,
+            oneMinute() * 5,
+        );
+    }
+
     async getTotalValueStakedUSD(): Promise<string> {
         const cacheKey = this.getCacheKey('totalValueStakedUSD');
         return await this.getData(
