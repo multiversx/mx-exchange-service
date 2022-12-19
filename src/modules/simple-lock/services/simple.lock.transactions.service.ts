@@ -21,20 +21,26 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
 import { farmType } from 'src/utils/farm.utils';
-import { FarmTypeEnumType } from '../models/simple.lock.model';
+import { FarmTypeEnumType, SimpleLockType } from '../models/simple.lock.model';
+import { SimpleLockGetterService } from './simple.lock.getter.service';
 import { SimpleLockService } from './simple.lock.service';
 
 @Injectable()
 export class SimpleLockTransactionService {
+    protected lockType: SimpleLockType;
+
     constructor(
-        private readonly simpleLockService: SimpleLockService,
-        private readonly pairService: PairService,
-        private readonly pairGetterService: PairGetterService,
-        private readonly wrapService: WrapService,
-        private readonly wrapTransaction: TransactionsWrapService,
-        private readonly contextGetter: ContextGetterService,
-        private readonly elrondProxy: ElrondProxyService,
-    ) {}
+        protected readonly simpleLockService: SimpleLockService,
+        protected readonly simpleLockGetter: SimpleLockGetterService,
+        protected readonly pairService: PairService,
+        protected readonly pairGetterService: PairGetterService,
+        protected readonly wrapService: WrapService,
+        protected readonly wrapTransaction: TransactionsWrapService,
+        protected readonly contextGetter: ContextGetterService,
+        protected readonly elrondProxy: ElrondProxyService,
+    ) {
+        this.lockType = SimpleLockType.BASE_TYPE;
+    }
 
     async lockTokens(
         inputTokens: InputTokenModel,
@@ -340,6 +346,8 @@ export class SimpleLockTransactionService {
         endpointName: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
+        await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
+
         const contract = await this.elrondProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
@@ -407,6 +415,18 @@ export class SimpleLockTransactionService {
             if (!(sameFarmingToken && sameFarmingTokenNonce && sameFarmType)) {
                 throw new Error('Invalid farm proxy token');
             }
+        }
+    }
+
+    private async validateInputFarmProxyToken(
+        inputTokens: InputTokenModel,
+        simpleLockAddress: string,
+    ): Promise<void> {
+        const farmProxyTokenID =
+            await this.simpleLockGetter.getFarmProxyTokenID(simpleLockAddress);
+
+        if (inputTokens.tokenID !== farmProxyTokenID || inputTokens.nonce < 1) {
+            throw new Error('Invalid input token');
         }
     }
 }

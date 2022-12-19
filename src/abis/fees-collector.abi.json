@@ -1,0 +1,585 @@
+{
+  "buildInfo": {
+    "rustc": {
+      "version": "1.67.0-nightly",
+      "commitHash": "c090c6880c0183ba248bde4a16e29ba29ac4fbba",
+      "commitDate": "2022-12-01",
+      "channel": "Nightly",
+      "short": "rustc 1.67.0-nightly (c090c6880 2022-12-01)"
+    },
+    "contractCrate": {
+      "name": "fees-collector",
+      "version": "0.0.0",
+      "git_version": "v1.6.0-926-ga827631d"
+    },
+    "framework": {
+      "name": "elrond-wasm",
+      "version": "0.36.1"
+    }
+  },
+  "name": "FeesCollector",
+  "constructor": {
+    "inputs": [
+      {
+        "name": "locked_token_id",
+        "type": "TokenIdentifier"
+      },
+      {
+        "name": "energy_factory_address",
+        "type": "Address"
+      }
+    ],
+    "outputs": []
+  },
+  "endpoints": [
+    {
+      "name": "claimRewards",
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "List<EsdtTokenPayment>"
+        }
+      ]
+    },
+    {
+      "name": "addKnownContracts",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "contracts",
+          "type": "variadic<Address>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeKnownContracts",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "contracts",
+          "type": "variadic<Address>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "addKnownTokens",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tokens",
+          "type": "variadic<TokenIdentifier>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "removeKnownTokens",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "tokens",
+          "type": "variadic<TokenIdentifier>",
+          "multi_arg": true
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getLockedTokenId",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "TokenIdentifier"
+        }
+      ]
+    },
+    {
+      "name": "getAllTokens",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<TokenIdentifier>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getAllKnownContracts",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "variadic<Address>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getLastActiveWeekForUser",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getUserEnergyForWeek",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        },
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "optional<Energy>",
+          "multi_result": true
+        }
+      ]
+    },
+    {
+      "name": "getLastGlobalUpdateWeek",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getTotalRewardsForWeek",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "List<EsdtTokenPayment>"
+        }
+      ]
+    },
+    {
+      "name": "getTotalEnergyForWeek",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "getTotalLockedTokensForWeek",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "updateEnergyForUser",
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getCurrentClaimProgress",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "ClaimProgress"
+        }
+      ]
+    },
+    {
+      "docs": [
+        "Pair SC will deposit the fees through this endpoint",
+        "Deposits for current week are accessible starting next week"
+      ],
+      "name": "depositSwapFees",
+      "mutability": "mutable",
+      "payableInTokens": [
+        "*"
+      ],
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "getAccumulatedFees",
+      "mutability": "readonly",
+      "inputs": [
+        {
+          "name": "week",
+          "type": "u32"
+        },
+        {
+          "name": "token",
+          "type": "TokenIdentifier"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "setLockedTokensPerBlock",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "locked_tokens_per_block",
+          "type": "BigUint"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getLastLockedTokensAddWeek",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getLockedTokensPerBlock",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "BigUint"
+        }
+      ]
+    },
+    {
+      "name": "setLockingScAddress",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "new_address",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "setLockEpochs",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "lock_epochs",
+          "type": "u64"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getLockingScAddress",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "Address"
+        }
+      ]
+    },
+    {
+      "name": "getLockEpochs",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "setEnergyFactoryAddress",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [
+        {
+          "name": "sc_address",
+          "type": "Address"
+        }
+      ],
+      "outputs": []
+    },
+    {
+      "name": "getEnergyFactoryAddress",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "Address"
+        }
+      ]
+    },
+    {
+      "docs": [
+        "Week starts from 1"
+      ],
+      "name": "getCurrentWeek",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "getFirstWeekStartEpoch",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "pause",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "unpause",
+      "onlyOwner": true,
+      "mutability": "mutable",
+      "inputs": [],
+      "outputs": []
+    },
+    {
+      "name": "isPaused",
+      "mutability": "readonly",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "bool"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "identifier": "deposit_swap_fees_event",
+      "inputs": [
+        {
+          "name": "caller",
+          "type": "Address",
+          "indexed": true
+        },
+        {
+          "name": "current_week",
+          "type": "u32",
+          "indexed": true
+        },
+        {
+          "name": "payment",
+          "type": "EsdtTokenPayment",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "identifier": "claim_multi_event",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address",
+          "indexed": true
+        },
+        {
+          "name": "current_week",
+          "type": "u32",
+          "indexed": true
+        },
+        {
+          "name": "energy",
+          "type": "Energy",
+          "indexed": true
+        },
+        {
+          "name": "all_payments",
+          "type": "List<EsdtTokenPayment>"
+        }
+      ]
+    },
+    {
+      "identifier": "update_user_energy_event",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "Address",
+          "indexed": true
+        },
+        {
+          "name": "current_week",
+          "type": "u32",
+          "indexed": true
+        },
+        {
+          "name": "energy",
+          "type": "Energy",
+          "indexed": true
+        }
+      ]
+    },
+    {
+      "identifier": "update_global_amounts_event",
+      "inputs": [
+        {
+          "name": "current_week",
+          "type": "u32",
+          "indexed": true
+        },
+        {
+          "name": "total_locked_tokens",
+          "type": "BigUint",
+          "indexed": true
+        },
+        {
+          "name": "total_energy",
+          "type": "BigUint",
+          "indexed": true
+        }
+      ]
+    }
+  ],
+  "hasCallback": false,
+  "types": {
+    "ClaimProgress": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "energy",
+          "type": "Energy"
+        },
+        {
+          "name": "week",
+          "type": "u32"
+        }
+      ]
+    },
+    "Energy": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "BigInt"
+        },
+        {
+          "name": "last_update_epoch",
+          "type": "u64"
+        },
+        {
+          "name": "total_locked_tokens",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "EsdtTokenPayment": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token_identifier",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "token_nonce",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "TokenAmountPair": {
+      "type": "struct",
+      "fields": [
+        {
+          "name": "token",
+          "type": "TokenIdentifier"
+        },
+        {
+          "name": "amount",
+          "type": "BigUint"
+        }
+      ]
+    },
+    "OperationCompletionStatus": {
+      "type": "enum",
+      "variants": [
+        {
+          "name": "Completed",
+          "discriminant": 0
+        },
+        {
+          "name": "InterruptedBeforeOutOfGas",
+          "discriminant": 1
+        }
+      ]
+    }
+  }
+}

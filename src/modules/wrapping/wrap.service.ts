@@ -14,7 +14,7 @@ import { oneHour } from 'src/helpers/helpers';
 @Injectable()
 export class WrapService {
     constructor(
-        private abiService: AbiWrapService,
+        // private abiService: AbiWrapService,
         private readonly tokenGetter: TokenGetterService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,

@@ -5,7 +5,7 @@ import { AbiProxyPairService } from 'src/modules/proxy/services/proxy-pair/proxy
 import { AbiProxyFarmService } from 'src/modules/proxy/services/proxy-farm/proxy-farm-abi.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { CachingService } from '../caching/cache.service';
-import { cacheConfig } from 'src/config';
+import { cacheConfig, scAddress } from 'src/config';
 import { ElrondApiService } from '../elrond-communication/elrond-api.service';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { PUB_SUB } from '../redis.pubSub.module';
@@ -29,86 +29,84 @@ export class ProxyCacheWarmerService {
 
     @Cron(CronExpression.EVERY_HOUR)
     async cacheProxy(): Promise<void> {
-        const [
-            assetTokenID,
-            lockedAssetTokenID,
-            wrappedLpTokenID,
-            intermediatedPairs,
-            wrappedFarmTokenID,
-            intermediatedFarms,
-        ] = await Promise.all([
-            this.abiProxyService.getAssetTokenID(),
-            this.abiProxyService.getLockedAssetTokenID(),
-            this.abiProxyPairService.getWrappedLpTokenID(),
-            this.abiProxyPairService.getIntermediatedPairsAddress(),
-            this.abiProxyFarmService.getWrappedFarmTokenID(),
-            this.abiProxyFarmService.getIntermediatedFarmsAddress(),
-        ]);
-
-        const [assetToken, lockedAssetToken, wrappedLpToken, wrappedFarmToken] =
-            await Promise.all([
-                this.apiService.getToken(assetTokenID),
-                this.apiService.getNftCollection(lockedAssetTokenID),
-                this.apiService.getNftCollection(wrappedLpTokenID),
-                this.apiService.getNftCollection(wrappedFarmTokenID),
+        for (const version of Object.keys(scAddress.proxyDexAddress)) {
+            const [
+                assetTokenID,
+                wrappedLpTokenID,
+                intermediatedPairs,
+                wrappedFarmTokenID,
+                intermediatedFarms,
+            ] = await Promise.all([
+                this.abiProxyService.getAssetTokenID(
+                    scAddress.proxyDexAddress[version],
+                ),
+                this.abiProxyPairService.getWrappedLpTokenID(
+                    scAddress.proxyDexAddress[version],
+                ),
+                this.abiProxyPairService.getIntermediatedPairsAddress(
+                    scAddress.proxyDexAddress[version],
+                ),
+                this.abiProxyFarmService.getWrappedFarmTokenID(
+                    scAddress.proxyDexAddress[version],
+                ),
+                this.abiProxyFarmService.getIntermediatedFarmsAddress(
+                    scAddress.proxyDexAddress[version],
+                ),
             ]);
 
-        await Promise.all([
-            this.setProxyCache(
-                'proxy',
-                'assetTokenID',
-                assetTokenID,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            ),
-            this.setProxyCache(
-                'proxy',
-                'lockedAssetTokenID',
-                lockedAssetTokenID,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            ),
-            this.setProxyCache(
-                'proxyPair',
-                'wrappedLpTokenID',
-                wrappedLpTokenID,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            ),
-            this.setProxyCache(
-                'proxyPair',
-                'intermediatedPairs',
-                intermediatedPairs,
-                oneHour(),
-            ),
-            this.setProxyCache(
-                'proxyFarm',
-                'wrappedFarmTokenID',
-                wrappedFarmTokenID,
-                CacheTtlInfo.Token.remoteTtl,
-                CacheTtlInfo.Token.localTtl,
-            ),
-            this.setProxyCache(
-                'proxyFarm',
-                'intermediatedFarms',
-                intermediatedFarms,
-                oneHour(),
-            ),
-            this.tokenSetter.setTokenMetadata(assetTokenID, assetToken),
-            this.tokenSetter.setNftCollectionMetadata(
-                lockedAssetTokenID,
-                lockedAssetToken,
-            ),
-            this.tokenSetter.setNftCollectionMetadata(
-                wrappedLpTokenID,
-                wrappedLpToken,
-            ),
-            this.tokenSetter.setNftCollectionMetadata(
-                wrappedFarmTokenID,
-                wrappedFarmToken,
-            ),
-        ]);
-        await this.deleteCacheKeys();
+            const [assetToken, wrappedLpToken, wrappedFarmToken] =
+                await Promise.all([
+                    this.apiService.getToken(assetTokenID),
+                    this.apiService.getNftCollection(wrappedLpTokenID),
+                    this.apiService.getNftCollection(wrappedFarmTokenID),
+                ]);
+
+            await Promise.all([
+                this.setProxyCache(
+                    'proxy',
+                    'assetTokenID',
+                    assetTokenID,
+                    CacheTtlInfo.Token.remoteTtl,
+                    CacheTtlInfo.Token.localTtl,
+                ),
+                this.setProxyCache(
+                    'proxyPair',
+                    'wrappedLpTokenID',
+                    wrappedLpTokenID,
+                    CacheTtlInfo.Token.remoteTtl,
+                    CacheTtlInfo.Token.localTtl,
+                ),
+                this.setProxyCache(
+                    'proxyPair',
+                    'intermediatedPairs',
+                    intermediatedPairs,
+                    oneHour(),
+                ),
+                this.setProxyCache(
+                    'proxyFarm',
+                    'wrappedFarmTokenID',
+                    wrappedFarmTokenID,
+                    CacheTtlInfo.Token.remoteTtl,
+                    CacheTtlInfo.Token.localTtl,
+                ),
+                this.setProxyCache(
+                    'proxyFarm',
+                    'intermediatedFarms',
+                    intermediatedFarms,
+                    oneHour(),
+                ),
+                this.tokenSetter.setTokenMetadata(assetTokenID, assetToken),
+                this.tokenSetter.setNftCollectionMetadata(
+                    wrappedLpTokenID,
+                    wrappedLpToken,
+                ),
+                this.tokenSetter.setNftCollectionMetadata(
+                    wrappedFarmTokenID,
+                    wrappedFarmToken,
+                ),
+            ]);
+            await this.deleteCacheKeys();
+        }
     }
 
     private async setProxyCache(

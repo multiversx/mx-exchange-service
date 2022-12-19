@@ -30,7 +30,7 @@ export class StakingService {
         private readonly apiService: ElrondApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     async getFarmsStaking(): Promise<StakingModel[]> {
         const farmsStakingAddresses =
@@ -65,24 +65,20 @@ export class StakingService {
     async decodeUnboundTokenAttributes(
         args: DecodeAttributesArgs,
     ): Promise<UnbondTokenAttributesModel[]> {
-        const decodedAttributesBatch = [];
-        for (const arg of args.batchAttributes) {
+        return Promise.all(args.batchAttributes.map(async arg => {
             const unboundFarmTokenAttributes =
                 UnbondFarmTokenAttributes.fromAttributes(arg.attributes);
             const remainingEpochs = await this.getUnbondigRemaingEpochs(
                 unboundFarmTokenAttributes.unlockEpoch,
             );
-            decodedAttributesBatch.push(
-                new UnbondTokenAttributesModel({
-                    ...unboundFarmTokenAttributes.toJSON(),
-                    remainingEpochs,
-                    attributes: arg.attributes,
-                    identifier: arg.identifier,
-                }),
-            );
-        }
 
-        return decodedAttributesBatch;
+            return new UnbondTokenAttributesModel({
+                ...unboundFarmTokenAttributes.toJSON(),
+                remainingEpochs,
+                attributes: arg.attributes,
+                identifier: arg.identifier,
+            });
+        }));
     }
 
     async getBatchRewardsForPosition(

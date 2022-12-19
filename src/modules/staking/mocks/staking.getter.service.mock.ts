@@ -1,5 +1,6 @@
 import { Address } from '@elrondnetwork/erdjs/out';
 import BigNumber from 'bignumber.js';
+import { StakingGetterService } from '../services/staking.getter.service';
 
 export class StakingGetterServiceMock {
     async getPairContractManagedAddress(stakeAddress: string): Promise<string> {
@@ -60,3 +61,8 @@ export class StakingGetterServiceMock {
         return new BigNumber(1000).toFixed();
     }
 }
+
+export const StakingGetterServiceProvider = {
+    provide: StakingGetterService,
+    useClass: StakingGetterServiceMock,
+};

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneMinute } from 'src/helpers/helpers';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -14,6 +14,7 @@ export class AnalyticsGetterService extends GenericGetterService {
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         private readonly tokenGetter: TokenGetterService,
+        @Inject(forwardRef(() => AnalyticsComputeService))
         private readonly analyticsCompute: AnalyticsComputeService,
         private readonly pairGetterService: PairGetterService,
     ) {
@@ -42,6 +43,26 @@ export class AnalyticsGetterService extends GenericGetterService {
         return await this.getData(
             cacheKey,
             () => this.analyticsCompute.computeTotalValueLockedUSD(),
+            oneMinute() * 10,
+            oneMinute() * 5,
+        );
+    }
+
+    async getTotalLockedMexStakedUSD(): Promise<string> {
+        const cacheKey = this.getCacheKey('totalLockedMexStakedUSD');
+        return await this.getData(
+            cacheKey,
+            () => this.analyticsCompute.computeTotalLockedMexStakedUSD(),
+            oneMinute() * 10,
+            oneMinute() * 5,
+        );
+    }
+
+    async getTotalValueStakedUSD(): Promise<string> {
+        const cacheKey = this.getCacheKey('totalValueStakedUSD');
+        return await this.getData(
+            cacheKey,
+            () => this.analyticsCompute.computeTotalValueStakedUSD(),
             oneMinute() * 10,
             oneMinute() * 5,
         );

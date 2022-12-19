@@ -1,34 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
-import { awsConfig } from 'src/config';
-import {
-    FarmRewardType,
-    FarmVersion,
-} from 'src/modules/farm/models/farm.model';
-import { FarmComputeService } from 'src/modules/farm/services/farm.compute.service';
-import { FarmGetterService } from 'src/modules/farm/services/farm.getter.service';
+import { awsConfig, constantsConfig, scAddress } from 'src/config';
+import { FarmRewardType, FarmVersion } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
-
+import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { EnergyGetterService } from '../../energy/services/energy.getter.service';
+import { StakingGetterService } from '../../staking/services/staking.getter.service';
+import { TokenGetterService } from '../../tokens/services/token.getter.service';
+import { AnalyticsGetterService } from './analytics.getter.service';
+import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
+import {
+    WeekTimekeepingGetterService
+} from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import {
+    RemoteConfigGetterService
+} from '../../remote-config/remote-config.getter.service';
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
         private readonly routerGetter: RouterGetterService,
-        private readonly farmGetterService: FarmGetterService,
-        private readonly farmComputeService: FarmComputeService,
-        private readonly pairGetterService: PairGetterService,
+        private readonly farmGetter: FarmGetterFactory,
+        private readonly farmCompute: FarmComputeFactory,
+        private readonly pairGetter: PairGetterService,
+        private readonly energyGetter: EnergyGetterService,
+        private readonly stakingGetter: StakingGetterService,
+        private readonly tokenGetter: TokenGetterService,
+        @Inject(forwardRef(() => AnalyticsGetterService))
+        private readonly analyticsGetter: AnalyticsGetterService,
+        private readonly feesCollectorGetter: FeesCollectorGetterService,
+        private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
+        private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
-    ) {}
+    ) { }
 
     async computeLockedValueUSDFarms(): Promise<string> {
         let totalLockedValue = new BigNumber(0);
 
-        const promises: Promise<string>[] = farmsAddresses().map(
-            (farmAddress) =>
-                this.farmComputeService.computeFarmLockedValueUSD(farmAddress),
-        );
+        const promises: Promise<string>[] = [];
+        for (const farmAddress of farmsAddresses()) {
+            promises.push(
+                this.farmCompute
+                    .useCompute(farmAddress)
+                    .computeFarmLockedValueUSD(farmAddress),
+            );
+        }
         const farmsLockedValueUSD = await Promise.all(promises);
         for (const farmLockedValueUSD of farmsLockedValueUSD) {
             const farmLockedValueUSDBig = new BigNumber(farmLockedValueUSD);
@@ -48,21 +67,43 @@ export class AnalyticsComputeService {
 
         let totalValueLockedUSD = new BigNumber(0);
         const promises = filteredPairs.map((pairAddress) =>
-            this.pairGetterService.getLockedValueUSD(pairAddress),
+            this.pairGetter.getLockedValueUSD(pairAddress),
         );
+
+        const lockedValuesUSD = await Promise.all([...promises]);
+
+        for (const lockedValueUSD of lockedValuesUSD) {
+            const lockedValuesUSDBig = new BigNumber(lockedValueUSD);
+            totalValueLockedUSD = !lockedValuesUSDBig.isNaN()
+                ? totalValueLockedUSD.plus(lockedValuesUSDBig)
+                : totalValueLockedUSD;
+        }
+
+        return totalValueLockedUSD.toFixed();
+    }
+
+    async computeTotalValueStakedUSD(): Promise<string> {
+        let totalValueLockedUSD = new BigNumber(0);
+
+        const stakingAddresses = await this.remoteConfigGetterService.getStakingAddresses()
+        const promises = stakingAddresses.map((stakingAddress) =>
+            this.stakingGetter.getStakedValueUSD(stakingAddress)
+        );
+
+        promises.push(this.computeTotalLockedMexStakedUSD())
 
         if (farmsAddresses()[5] !== undefined) {
             promises.push(
-                this.farmComputeService.computeFarmLockedValueUSD(
-                    farmsAddresses()[5],
-                ),
+                this.farmCompute
+                    .useCompute(farmsAddresses()[5])
+                    .computeFarmLockedValueUSD(farmsAddresses()[5]),
             );
         }
         if (farmsAddresses()[13] !== undefined) {
             promises.push(
-                this.farmComputeService.computeFarmLockedValueUSD(
-                    farmsAddresses()[13],
-                ),
+                this.farmCompute
+                    .useCompute(farmsAddresses()[13])
+                    .computeFarmLockedValueUSD(farmsAddresses()[13]),
             );
         }
 
@@ -87,7 +128,9 @@ export class AnalyticsComputeService {
             ) {
                 return '0';
             }
-            return this.farmGetterService.getRewardsPerBlock(farmAddress);
+            return this.farmGetter
+                .useGetter(farmAddress)
+                .getRewardsPerBlock(farmAddress);
         });
         const farmsRewardsPerBlock = await Promise.all(promises);
         const blocksNumber = (days * 24 * 60 * 60) / 6;
@@ -103,6 +146,23 @@ export class AnalyticsComputeService {
         return totalAggregatedRewards.toFixed();
     }
 
+    async computeTotalLockedMexStakedUSD(): Promise<string> {
+        const currentWeek = await this.weekTimekeepingGetter.getCurrentWeek(scAddress.feesCollector);
+        const [
+            mexTokenPrice,
+            tokenMetadata,
+            totalLockedTokens,
+        ] = await Promise.all([
+            this.tokenGetter.getDerivedUSD(constantsConfig.MEX_TOKEN_ID),
+            this.tokenGetter.getTokenMetadata(constantsConfig.MEX_TOKEN_ID),
+            this.feesCollectorGetter.totalLockedTokensForWeek(scAddress.feesCollector, currentWeek)
+        ]);
+
+        return new BigNumber(mexTokenPrice)
+            .multipliedBy(totalLockedTokens)
+            .multipliedBy(`1e-${tokenMetadata.decimals}`)
+            .toFixed();
+    }
     async computeTokenBurned(
         tokenID: string,
         time: string,
@@ -119,16 +179,16 @@ export class AnalyticsComputeService {
     private async fiterPairsByIssuedLpToken(
         pairsAddress: string[],
     ): Promise<string[]> {
-        const filteredPairs = [];
-        for (const pairAddress of pairsAddress) {
-            const lpTokenID = await this.pairGetterService.getLpTokenID(
-                pairAddress,
-            );
-            if (lpTokenID !== undefined) {
-                filteredPairs.push(pairAddress);
-            }
-        }
 
-        return filteredPairs;
+        const unfilteredPairAddresses = await Promise.all(pairsAddress.map(async pairAddress => {
+            return {
+                lpTokenId: await this.pairGetter.getLpTokenID(pairAddress),
+                pairAddress
+            };
+        }));
+
+        return unfilteredPairAddresses
+            .filter(pair => pair.lpTokenId !== undefined)
+            .map(pair => pair.pairAddress);
     }
 }

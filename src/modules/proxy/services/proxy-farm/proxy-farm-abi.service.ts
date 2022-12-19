@@ -14,16 +14,22 @@ export class AbiProxyFarmService extends GenericAbiService {
         super(elrondProxy, logger);
     }
 
-    async getWrappedFarmTokenID(): Promise<string> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+    async getWrappedFarmTokenID(proxyAddress: string): Promise<string> {
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
         const interaction: Interaction =
             contract.methodsExplicit.getWrappedFarmTokenId();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().toString();
     }
 
-    async getIntermediatedFarmsAddress(): Promise<string[]> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract();
+    async getIntermediatedFarmsAddress(
+        proxyAddress: string,
+    ): Promise<string[]> {
+        const contract = await this.elrondProxy.getProxyDexSmartContract(
+            proxyAddress,
+        );
 
         const interaction: Interaction =
             contract.methodsExplicit.getIntermediatedFarms();

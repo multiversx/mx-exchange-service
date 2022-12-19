@@ -8,8 +8,7 @@ import { UserInputError } from 'apollo-server-express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
-import { FarmService } from 'src/modules/farm/services/farm.service';
+import { FarmTokenAttributesModelV1_3 } from 'src/modules/farm/models/farmTokenAttributes.model';
 import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
@@ -24,13 +23,17 @@ import {
     SimpleLockModel,
 } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
+import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
+import { CachingService } from 'src/services/caching/cache.service';
+import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 
 @Injectable()
 export class SimpleLockService {
     constructor(
         private readonly simpleLockGetter: SimpleLockGetterService,
-        private readonly farmService: FarmService,
+        private readonly farmServiceV1_3: FarmServiceV1_3,
         private readonly apiService: ElrondApiService,
+        private readonly cacheService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -56,14 +59,27 @@ export class SimpleLockService {
             lockedEsdtCollection,
             tokenNonce,
         );
-        const lockedToken = await this.apiService.getNftByTokenIdentifier(
-            simpleLockAddress,
-            lockedTokenIdentifier,
+        const cachedValue = await this.cacheService.getCache(
+            `${lockedTokenIdentifier}.decodedAttributes`,
         );
-        return this.decodeLockedTokenAttributes({
+        if (cachedValue && cachedValue !== undefined) {
+            return new LockedTokenAttributesModel(cachedValue);
+        }
+        const lockedTokenAttributes =
+            await this.apiService.getNftAttributesByTokenIdentifier(
+                simpleLockAddress,
+                lockedTokenIdentifier,
+            );
+        const decodedAttributes = this.decodeLockedTokenAttributes({
             identifier: lockedTokenIdentifier,
-            attributes: lockedToken.attributes,
+            attributes: lockedTokenAttributes,
         });
+        return await this.cacheService.setCache(
+            `${tokenID}.decodedAttributes`,
+            decodedAttributes,
+            CacheTtlInfo.Attributes.remoteTtl,
+            CacheTtlInfo.Attributes.localTtl,
+        );
     }
 
     decodeBatchLockedTokenAttributes(
@@ -97,15 +113,30 @@ export class SimpleLockService {
             lockedLpTokenCollection,
             tokenNonce,
         );
-        const lockedLpToken = await this.apiService.getNftByTokenIdentifier(
-            simpleLockAddress,
-            lockedLpTokenIdentifier,
-        );
 
-        return this.decodeLpProxyTokenAttributes({
+        const cachedValue = await this.cacheService.getCache(
+            `${lockedLpTokenIdentifier}.decodedAttributes`,
+        );
+        if (cachedValue && cachedValue !== undefined) {
+            return new LpProxyTokenAttributesModel(cachedValue);
+        }
+
+        const lockedLpTokenAttributes =
+            await this.apiService.getNftAttributesByTokenIdentifier(
+                simpleLockAddress,
+                lockedLpTokenIdentifier,
+            );
+
+        const decodedAttributes = this.decodeLpProxyTokenAttributes({
             identifier: lockedLpTokenIdentifier,
-            attributes: lockedLpToken.attributes,
+            attributes: lockedLpTokenAttributes,
         });
+        return await this.cacheService.setCache(
+            `${lockedLpTokenIdentifier}.decodedAttributes`,
+            decodedAttributes,
+            CacheTtlInfo.Attributes.remoteTtl,
+            CacheTtlInfo.Attributes.localTtl,
+        );
     }
 
     decodeBatchLpTokenProxyAttributes(
@@ -155,23 +186,34 @@ export class SimpleLockService {
         farmTokenID: string,
         farmTokenNonce: number,
         simpleLockAddress: string,
-    ): Promise<FarmTokenAttributesModel> {
+    ): Promise<FarmTokenAttributesModelV1_3> {
         const farmTokenIdentifier = tokenIdentifier(
             farmTokenID,
             farmTokenNonce,
         );
-        const [farmToken, farmAddress] = await Promise.all([
-            this.apiService.getNftByTokenIdentifier(
+        const cachedValue = await this.cacheService.getCache(
+            `${farmTokenIdentifier}.decodedAttributes`,
+        );
+        if (cachedValue && cachedValue !== undefined) {
+            return new FarmTokenAttributesModelV1_3(cachedValue);
+        }
+
+        const farmTokenAttributes =
+            await this.apiService.getNftAttributesByTokenIdentifier(
                 simpleLockAddress,
                 farmTokenIdentifier,
-            ),
-            this.farmService.getFarmAddressByFarmTokenID(farmTokenID),
-        ]);
+            );
 
-        return this.farmService.decodeFarmTokenAttributes(
-            farmAddress,
-            farmTokenIdentifier,
-            farmToken.attributes,
+        const decodedAttributes =
+            this.farmServiceV1_3.decodeFarmTokenAttributes(
+                farmTokenIdentifier,
+                farmTokenAttributes,
+            );
+        return await this.cacheService.setCache(
+            `${farmTokenIdentifier}.decodedAttributes`,
+            decodedAttributes,
+            CacheTtlInfo.Attributes.remoteTtl,
+            CacheTtlInfo.Attributes.localTtl,
         );
     }
 

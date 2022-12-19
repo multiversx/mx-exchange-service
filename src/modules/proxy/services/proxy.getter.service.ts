@@ -14,38 +14,44 @@ export class ProxyGetterService extends GenericGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly abiService: AbiProxyService,
-        private readonly tokenGetter: TokenGetterService,
+        protected readonly abiService: AbiProxyService,
+        protected readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'proxy';
     }
 
-    async getAssetTokenID(): Promise<string> {
+    async getAssetTokenID(proxyAddress: string): Promise<string> {
         return await this.getData(
-            this.getCacheKey('assetTokenID'),
-            () => this.abiService.getAssetTokenID(),
+            this.getCacheKey(proxyAddress, 'assetTokenID'),
+            () => this.abiService.getAssetTokenID(proxyAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async getLockedAssetTokenID(): Promise<string> {
+    async getLockedAssetTokenID(proxyAddress: string): Promise<string[]> {
         return this.getData(
-            this.getCacheKey('lockedAssetTokenID'),
-            () => this.abiService.getLockedAssetTokenID(),
+            this.getCacheKey(proxyAddress, 'lockedAssetTokenID'),
+            () => this.abiService.getLockedAssetTokenID(proxyAddress),
             CacheTtlInfo.Token.remoteTtl,
             CacheTtlInfo.Token.localTtl,
         );
     }
 
-    async getAssetToken(): Promise<EsdtToken> {
-        const assetTokenID = await this.getAssetTokenID();
+    async getAssetToken(proxyAddress: string): Promise<EsdtToken> {
+        const assetTokenID = await this.getAssetTokenID(proxyAddress);
         return this.tokenGetter.getTokenMetadata(assetTokenID);
     }
 
-    async getlockedAssetToken(): Promise<NftCollection> {
-        const lockedAssetTokenID = await this.getLockedAssetTokenID();
-        return this.tokenGetter.getNftCollectionMetadata(lockedAssetTokenID);
+    async getlockedAssetToken(proxyAddress: string): Promise<NftCollection[]> {
+        const lockedAssetTokenIDs = await this.getLockedAssetTokenID(
+            proxyAddress,
+        );
+        return await Promise.all(
+            lockedAssetTokenIDs.map((tokenID: string) =>
+                this.tokenGetter.getNftCollectionMetadata(tokenID),
+            ),
+        );
     }
 }

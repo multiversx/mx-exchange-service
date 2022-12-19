@@ -1,10 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FarmService } from '../../farm/services/farm.service';
 import { PairService } from '../../pair/services/pair.service';
 import { ProxyFarmGetterService } from '../../proxy/services/proxy-farm/proxy-farm.getter.service';
 import { ProxyPairGetterService } from '../../proxy/services/proxy-pair/proxy-pair.getter.service';
 import { ProxyService } from '../../proxy/services/proxy.service';
-import { UserService } from '../services/user.metaEsdt.service';
+import { UserMetaEsdtService } from '../services/user.metaEsdt.service';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { LockedAssetService } from '../../locked-asset-factory/services/locked-asset.service';
 import {
@@ -17,14 +16,13 @@ import { WrapService } from '../../wrapping/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
 import { UserFarmToken, UserToken } from '../models/user.model';
-import { FarmTokenAttributesModel } from '../../farm/models/farmTokenAttributes.model';
-import { UserComputeService } from '../services/metaEsdt.compute.service';
+import { FarmTokenAttributesModelV1_2 } from '../../farm/models/farmTokenAttributes.model';
+import { UserMetaEsdtComputeService } from '../services/metaEsdt.compute.service';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../../farm/services/farm.getter.service';
+import { FarmGetterService } from '../../farm/base-module/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../../farm/mocks/farm.getter.service.mock';
-import { FarmServiceMock } from '../../farm/mocks/farm.service.mock';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ProxyGetterServiceMock } from '../../proxy/mocks/proxy.getter.service.mock';
 import { LockedAssetServiceMock } from '../../locked-asset-factory/mocks/locked.asset.service.mock';
@@ -48,34 +46,73 @@ import { PriceDiscoveryGetterServiceProvider } from '../../price-discovery/mocks
 import { PriceDiscoveryServiceProvider } from '../../price-discovery/mocks/price.discovery.service.mock';
 import { SimpleLockService } from '../../simple-lock/services/simple.lock.service';
 import { SimpleLockGetterServiceProvider } from '../../simple-lock/mocks/simple.lock.getter.service.mock';
-import { AssetsModel, RolesModel } from '../../tokens/models/esdtToken.model';
 import { RemoteConfigGetterService } from '../../remote-config/remote-config.getter.service';
 import { RemoteConfigGetterServiceMock } from '../../remote-config/mocks/remote-config.getter.mock';
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
 import { UserEsdtService } from '../services/user.esdt.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { RouterGetterServiceMock } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { UserEsdtComputeService } from '../services/esdt.compute.service';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
+import { RolesModel } from 'src/modules/tokens/models/roles.model';
+import { AssetsModel } from 'src/modules/tokens/models/assets.model';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { FarmGetterServiceProviderV1_2 } from 'src/modules/farm/mocks/farm.v1.2.getter.service.mock';
+import { FarmGetterServiceProviderV1_3 } from 'src/modules/farm/mocks/farm.v1.3.getter.service.mock';
+import { FarmGetterServiceV2 } from 'src/modules/farm/v2/services/farm.v2.getter.service';
+import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
+import { FarmAbiServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.abi.service';
+import { AbiFarmServiceMock } from 'src/modules/farm/mocks/abi.farm.service.mock';
+import { FarmComputeServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.compute.service';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
+import { FarmServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.service';
+import { FarmServiceV2 } from 'src/modules/farm/v2/services/farm.v2.service';
+import { FarmAbiServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.abi.service';
+import { FarmComputeServiceV1_2 } from 'src/modules/farm/v1.2/services/farm.v1.2.compute.service';
+import { FarmComputeServiceV2 } from 'src/modules/farm/v2/services/farm.v2.compute.service';
+import { FarmAbiServiceV2 } from 'src/modules/farm/v2/services/farm.v2.abi.service';
+import { FarmServiceMock } from 'src/modules/farm/mocks/farm.service.mock';
+import { EnergyGetterServiceProvider } from 'src/modules/energy/mocks/energy.getter.service.mock';
+import {
+    WeeklyRewardsSplittingGetterServiceMock
+} from '../../../submodules/weekly-rewards-splitting/mocks/weekly-rewards-splitting.getter.service.mock';
+import {
+    WeeklyRewardsSplittingGetterService
+} from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
+import {
+    WeekTimekeepingGetterService
+} from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
+import {
+    WeekTimekeepingGetterServiceMock
+} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.getter.service.mock';
+import {
+    WeekTimekeepingComputeService
+} from '../../../submodules/week-timekeeping/services/week-timekeeping.compute.service';
+import {
+    WeekTimekeepingComputeServiceMock
+} from '../../../submodules/week-timekeeping/mocks/week-timekeeping.compute.service.mock';
+import { ProgressComputeService } from '../../../submodules/weekly-rewards-splitting/services/progress.compute.service';
+import {
+    ProgressComputeServiceMock
+} from '../../../submodules/weekly-rewards-splitting/mocks/progress.compute.service.mock';
+import {
+    LockedTokenWrapperGetterService
+} from '../../locked-token-wrapper/services/locked-token-wrapper.getter.service';
+import {
+    LockedTokenWrapperGetterServiceMock
+} from '../../locked-token-wrapper/mocks/locked-token-wrapper.getter.service.mock';
+import {
+    LockedTokenWrapperService
+} from '../../locked-token-wrapper/services/locked-token-wrapper.service';
 
 describe('UserService', () => {
-    let userMetaEsdts: UserService;
+    let userMetaEsdts: UserMetaEsdtService;
     let userEsdts: UserEsdtService;
 
     const ElrondApiServiceProvider = {
         provide: ElrondApiService,
         useClass: ElrondApiServiceMock,
-    };
-
-    const FarmServiceProvider = {
-        provide: FarmService,
-        useClass: FarmServiceMock,
-    };
-
-    const FarmGetterServiceProvider = {
-        provide: FarmGetterService,
-        useClass: FarmGetterServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -85,12 +122,12 @@ describe('UserService', () => {
 
     const RouterGetterServiceProvider = {
         provide: RouterGetterService,
-        useClass: RouterGetterServiceMock,
+        useClass: RouterGetterServiceStub,
     };
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const ProxyServiceProvider = {
@@ -163,6 +200,16 @@ describe('UserService', () => {
     ];
 
     beforeEach(async () => {
+
+        const getter = new LockedTokenWrapperGetterServiceMock({
+            getLockedTokenId(address: string): Promise<string> {
+                return Promise.resolve("ELKMEX-7e6873");
+            },
+            getWrappedTokenId(address: string): Promise<string> {
+                return Promise.resolve("WELKMEX-4b8419");
+            }
+        });
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 ElrondApiServiceProvider,
@@ -171,12 +218,70 @@ describe('UserService', () => {
                 PairService,
                 PairGetterServiceProvider,
                 PairComputeService,
+                FarmFactoryService,
+                FarmGetterFactory,
+                {
+                    provide: FarmServiceV1_2,
+                    useClass: FarmServiceMock,
+                },
+                {
+                    provide: WeeklyRewardsSplittingGetterService,
+                    useValue: new WeeklyRewardsSplittingGetterServiceMock({}),
+                },
+                {
+                    provide: WeekTimekeepingGetterService,
+                    useValue: new WeekTimekeepingGetterServiceMock({}),
+                },
+                {
+                    provide: WeekTimekeepingComputeService,
+                    useValue: new WeekTimekeepingComputeServiceMock({}),
+                },
+                {
+                    provide: ProgressComputeService,
+                    useValue: new ProgressComputeServiceMock({}),
+                },
+                FarmComputeServiceV1_2,
+                {
+                    provide: FarmAbiServiceV1_2,
+                    useClass: AbiFarmServiceMock,
+                },
+                FarmGetterServiceProviderV1_2,
+                {
+                    provide: FarmAbiServiceV1_3,
+                    useClass: AbiFarmServiceMock,
+                },
+                FarmComputeServiceV1_3,
+                FarmGetterServiceProviderV1_3,
+                {
+                    provide: FarmGetterService,
+                    useClass: FarmGetterServiceMock,
+                },
+                {
+                    provide: FarmGetterServiceV2,
+                    useClass: FarmGetterServiceMock,
+                },
+                FarmServiceV1_3,
+                {
+                    provide: FarmAbiServiceV1_3,
+                    useClass: AbiFarmServiceMock,
+                },
+                FarmComputeServiceV1_3,
+                FarmServiceV2,
+                FarmComputeServiceV2,
+                {
+                    provide: FarmAbiServiceV2,
+                    useClass: AbiFarmServiceMock,
+                },
                 ProxyServiceProvider,
                 ProxyGetterServiceProvider,
+                {
+                    provide: LockedTokenWrapperGetterService,
+                    useValue: getter,
+                },
+                UserMetaEsdtComputeService,
+                LockedTokenWrapperService,
                 ProxyPairGetterServiceProvider,
                 ProxyFarmGetterServiceProvider,
-                FarmServiceProvider,
-                FarmGetterServiceProvider,
                 LockedAssetProvider,
                 AbiLockedAssetServiceProvider,
                 LockedAssetGetterService,
@@ -189,12 +294,13 @@ describe('UserService', () => {
                 PriceDiscoveryGetterServiceProvider,
                 SimpleLockService,
                 SimpleLockGetterServiceProvider,
+                EnergyGetterServiceProvider,
                 TokenGetterServiceProvider,
                 TokenComputeService,
                 TokenService,
                 UserEsdtService,
-                UserService,
-                UserComputeService,
+                UserMetaEsdtService,
+                UserMetaEsdtComputeService,
                 UserEsdtComputeService,
                 RemoteConfigGetterServiceProvider,
             ],
@@ -207,7 +313,7 @@ describe('UserService', () => {
         }).compile();
 
         userEsdts = module.get<UserEsdtService>(UserEsdtService);
-        userMetaEsdts = module.get<UserService>(UserService);
+        userMetaEsdts = module.get<UserMetaEsdtService>(UserMetaEsdtService);
     });
 
     it('should be defined', () => {
@@ -283,7 +389,7 @@ describe('UserService', () => {
                 nonce: 1,
                 royalties: 0,
                 valueUSD: '80000200',
-                decodedAttributes: new FarmTokenAttributesModel({
+                decodedAttributes: new FarmTokenAttributesModelV1_2({
                     aprMultiplier: 1,
                     attributes: 'AAAABQeMCWDbAAAAAAAAAF8CAQ==',
                     originalEnteringEpoch: 1,

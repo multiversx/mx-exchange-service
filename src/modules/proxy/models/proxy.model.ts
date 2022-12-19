@@ -16,6 +16,9 @@ export class ProxyModel {
     @Field()
     address: string;
 
+    @Field(() => [NftCollection])
+    lockedAssetTokens: NftCollection[];
+
     @Field()
     wrappedLpToken: NftCollection;
 
@@ -25,14 +28,14 @@ export class ProxyModel {
     @Field()
     assetToken: EsdtToken;
 
-    @Field()
-    lockedAssetToken: NftCollection;
-
     @Field(() => [String])
     intermediatedPairs: string[];
 
     @Field(() => [String])
     intermediatedFarms: string[];
+
+    @Field()
+    version: string;
 
     constructor(init?: Partial<ProxyModel>) {
         Object.assign(this, init);

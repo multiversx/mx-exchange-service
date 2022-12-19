@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
-import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { TokenModule } from '../tokens/token.module';
 import { WrappingModule } from '../wrapping/wrap.module';
@@ -14,14 +13,18 @@ import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockSetterService } from './services/simple.lock.setter.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
 import { SimpleLockResolver } from './simple.lock.resolver';
+import { CommonAppModule } from 'src/common.app.module';
+import { TransactionResolver } from './transaction.resolver';
+import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
 
 @Module({
     imports: [
+        CommonAppModule,
         ElrondCommunicationModule,
         ContextModule,
         CachingModule,
         PairModule,
-        FarmModule,
+        FarmModuleV1_3,
         WrappingModule,
         TokenModule,
     ],
@@ -34,6 +37,7 @@ import { SimpleLockResolver } from './simple.lock.resolver';
         SimpleLockResolver,
         LockedLpTokenResolver,
         LockedFarmTokenResolver,
+        TransactionResolver,
     ],
     exports: [SimpleLockService, SimpleLockGetterService],
 })

@@ -11,17 +11,17 @@ import { TransactionsProxyPairService } from '../services/proxy-pair/proxy-pair-
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
-import { PairGetterServiceMock } from 'src/modules/pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from 'src/modules/pair/mocks/pair-getter-service-stub.service';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { ProxyGetterServiceMock } from '../mocks/proxy.getter.service.mock';
-import { ProxyPairGetterService } from '../services//proxy-pair/proxy-pair.getter.service';
+import { ProxyPairGetterService } from '../services/proxy-pair/proxy-pair.getter.service';
 import { ProxyPairGetterServiceMock } from '../mocks/proxy.pair.getter.service.mock';
 import { ProxyGetterService } from '../services/proxy.getter.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigService } from '@nestjs/config';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 
 describe('TransactionProxyPairService', () => {
     let service: TransactionsProxyPairService;
@@ -40,7 +40,7 @@ describe('TransactionProxyPairService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const WrapServiceProvider = {
@@ -105,6 +105,7 @@ describe('TransactionProxyPairService', () => {
         );
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
             {
                 pairAddress: Address.Zero().bech32(),
                 tokens: [
@@ -123,10 +124,8 @@ describe('TransactionProxyPairService', () => {
             },
         );
 
-        const [
-            wrapEgldTransaction,
-            addLiquidityProxy,
-        ] = liquidityBatchTransactions;
+        const [wrapEgldTransaction, addLiquidityProxy] =
+            liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(firstTokenAmount);
         expect(addLiquidityProxy.data).toEqual(
             'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAxZTJhMTQyOGRkMWUzYTUxNDZiMzk2MGQ5ZTBmNGE1MDM2OTkwNGVlNTQ4M0AwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDBhQDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDA5QDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOUAwOA==',
@@ -147,6 +146,7 @@ describe('TransactionProxyPairService', () => {
         );
         const liquidityBatchTransactions = await service.addLiquidityProxyBatch(
             'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu',
+            'erd1qqqqqqqqqqqqqpgqrc4pg2xarca9z34njcxeur622qmfjp8w2jps89fxnl',
             {
                 pairAddress: Address.Zero().bech32(),
                 tokens: [
@@ -165,10 +165,8 @@ describe('TransactionProxyPairService', () => {
             },
         );
 
-        const [
-            wrapEgldTransaction,
-            addLiquidityProxy,
-        ] = liquidityBatchTransactions;
+        const [wrapEgldTransaction, addLiquidityProxy] =
+            liquidityBatchTransactions;
         expect(wrapEgldTransaction.value).toEqual(secondTokenAmount);
         expect(addLiquidityProxy.data).toEqual(
             'TXVsdGlFU0RUTkZUVHJhbnNmZXJAMDAwMDAwMDAwMDAwMDAwMDA1MDAxZTJhMTQyOGRkMWUzYTUxNDZiMzk2MGQ5ZTBmNGE1MDM2OTkwNGVlNTQ4M0AwMkA1NDRmNGIzMTJkMzEzMTMxMzFAQDA5QDRjNGI0ZDQ1NTgyZDMxMzIzMzM0QDAxQDBhQDYxNjQ2NDRjNjk3MTc1Njk2NDY5NzQ3OTUwNzI2Zjc4NzlAMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMEAwOEAwOQ==',

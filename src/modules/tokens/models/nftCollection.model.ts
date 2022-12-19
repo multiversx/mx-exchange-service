@@ -1,5 +1,7 @@
-import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { ObjectType } from '@nestjs/graphql';
+import { AssetsModel } from './assets.model';
 import { INFTCollection } from './nft.interface';
+import { RolesModel } from './roles.model';
 
 @ObjectType({
     implements: () => [INFTCollection],
@@ -21,6 +23,8 @@ export class NftCollection implements INFTCollection {
     canAddSpecialRoles: boolean;
     canTransferNFTCreateRole: boolean;
     NFTCreateStopped: boolean;
+    assets?: AssetsModel;
+    roles?: RolesModel;
 
     constructor(init?: Partial<NftCollection>) {
         Object.assign(this, init);

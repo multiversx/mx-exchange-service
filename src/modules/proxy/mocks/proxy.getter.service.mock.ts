@@ -1,5 +1,5 @@
 export class ProxyGetterServiceMock {
-    async getLockedAssetTokenID(): Promise<string> {
+    async getLockedAssetTokenID(proxyAddress: string): Promise<string> {
         return 'LKMEX-1234';
     }
 }

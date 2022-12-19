@@ -3,7 +3,6 @@ import { AWSModule } from 'src/services/aws/aws.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
-import { FarmModule } from '../farm/farm.module';
 import { PairModule } from '../pair/pair.module';
 import { RouterModule } from '../router/router.module';
 import { AnalyticsResolver } from './analytics.resolver';
@@ -16,6 +15,13 @@ import { AnalyticsPairService } from './services/analytics.pair.service';
 import { PairDayDataResolver } from './analytics.pair.resolver';
 import { TokenModule } from '../tokens/token.module';
 import { AnalyticsAWSSetterService } from './services/analytics.aws.setter.service';
+import { FarmModule } from '../farm/farm.module';
+import { EnergyModule } from '../energy/energy.module';
+import { StakingModule } from '../staking/staking.module';
+import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-timekeeping.module';
+import { FeesCollectorAbiService } from '../fees-collector/services/fees-collector.abi.service';
+import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
+import { RemoteConfigModule } from '../remote-config/remote-config.module';
 
 @Module({
     imports: [
@@ -29,6 +35,11 @@ import { AnalyticsAWSSetterService } from './services/analytics.aws.setter.servi
         ProxyModule,
         LockedAssetModule,
         TokenModule,
+        EnergyModule,
+        StakingModule,
+        FeesCollectorModule,
+        RemoteConfigModule,
+        WeekTimekeepingModule.register(FeesCollectorAbiService),
     ],
     providers: [
         AnalyticsResolver,

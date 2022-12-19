@@ -127,28 +127,6 @@ export class StakingResolver {
     }
 
     @ResolveField()
-    async penaltyPercent(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingGetterService.getPenaltyPercent(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
-    async minimumFarmingEpochs(@Parent() parent: StakingModel) {
-        try {
-            return await this.stakingGetterService.getMinimumFarmingEpoch(
-                parent.address,
-            );
-        } catch (error) {
-            throw new ApolloError(error);
-        }
-    }
-
-    @ResolveField()
     async perBlockRewards(@Parent() parent: StakingModel) {
         try {
             return await this.stakingGetterService.getPerBlockRewardAmount(

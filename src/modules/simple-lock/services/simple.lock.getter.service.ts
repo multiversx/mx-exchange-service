@@ -6,17 +6,21 @@ import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { Logger } from 'winston';
+import { SimpleLockType } from '../models/simple.lock.model';
 import { SimpleLockAbiService } from './simple.lock.abi.service';
 
 @Injectable()
 export class SimpleLockGetterService extends GenericGetterService {
+    protected lockType: SimpleLockType;
+
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly abiService: SimpleLockAbiService,
-        private readonly tokenGetter: TokenGetterService,
+        protected readonly abiService: SimpleLockAbiService,
+        protected readonly tokenGetter: TokenGetterService,
     ) {
         super(cachingService, logger);
+        this.lockType = SimpleLockType.BASE_TYPE;
         this.baseKey = 'simpleLock';
     }
 
