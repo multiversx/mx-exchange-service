@@ -14,6 +14,7 @@ import { ProxyService } from '../../../proxy/services/proxy.service';
 import { StakingProxyService } from '../../../staking-proxy/services/staking.proxy.service';
 import { FarmVersion } from '../../../farm/models/farm.model';
 import { farmVersion } from '../../../../utils/farm.utils';
+import { BigNumber } from 'bignumber.js';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -162,6 +163,27 @@ export class UserEnergyComputeService {
     }
 
     isEnergyOutdated(currentUserEnergy: EnergyType, currentClaimProgress: ClaimProgress): boolean {
-        return currentClaimProgress.week > 0 && currentUserEnergy.amount !== currentClaimProgress.energy.amount
+        if (currentClaimProgress.week === 0) {
+            return false
+        }
+
+        if (currentUserEnergy.lastUpdateEpoch > currentClaimProgress.energy.lastUpdateEpoch) {
+            const epochsDiff = currentUserEnergy.lastUpdateEpoch - currentClaimProgress.energy.lastUpdateEpoch
+            currentUserEnergy.amount = new BigNumber(currentUserEnergy.amount)
+                .minus(new BigNumber(epochsDiff)
+                    .multipliedBy(currentUserEnergy.totalLockedTokens)
+                )
+                .toFixed()
+        }
+
+        if (currentClaimProgress.energy.lastUpdateEpoch > currentUserEnergy.lastUpdateEpoch) {
+            const epochsDiff = currentClaimProgress.energy.lastUpdateEpoch - currentUserEnergy.lastUpdateEpoch
+            currentClaimProgress.energy.amount = new BigNumber(currentClaimProgress.energy.amount)
+                .minus(new BigNumber(epochsDiff)
+                    .multipliedBy(currentClaimProgress.energy.totalLockedTokens)
+                )
+                .toFixed()
+        }
+        return currentUserEnergy.amount !== currentClaimProgress.energy.amount
     }
 }
