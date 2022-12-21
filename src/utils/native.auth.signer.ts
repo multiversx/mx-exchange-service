@@ -56,13 +56,19 @@ export class NativeAuthSigner {
             return this.userSigner;
         }
 
+        let pemContent: string;
         if (this.config.signerPrivateKey) {
-            return this.userSigner = UserSigner.fromPem(this.config.signerPrivateKey);
+            pemContent = this.config.signerPrivateKey;
         } else if (this.config.signerPrivateKeyPath) {
-            const pemFile = await promises.readFile(this.config.signerPrivateKeyPath);
-            const pemKey = pemFile.toString();
-            return this.userSigner = UserSigner.fromPem(pemKey);
+            pemContent = await promises.readFile(this.config.signerPrivateKeyPath).then(content=>content.toString());
         }
+        
+        if(!pemContent) {
+            throw new Error('Missing SignerPrivateKey in NativeAuthSigner.');
+        }
+
+        this.userSigner = UserSigner.fromPem(pemContent);
+        return this.userSigner;
     }
 
     private getSignableToken(): Promise<string> {
