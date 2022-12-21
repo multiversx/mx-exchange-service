@@ -550,5 +550,8 @@
             "MemoryStoreRetentionPeriodInHours": 768,
             "MagneticStoreRetentionPeriodInDays": 73000
         }
+    },
+    "dataApi": {
+        "tableName": "MAIAR_EXCHANGE_ANALYTICS"
     }
 }

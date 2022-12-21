@@ -32,12 +32,14 @@ import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSp
 import { UserModule } from '../user/user.module';
 import { TokenUnstakeModule } from '../token-unstake/token.unstake.module';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
+import { DataApiModule } from 'src/services/data-api/data-api.module';
 
 @Module({
     imports: [
         CommonAppModule,
         ElrondCommunicationModule,
         AWSModule,
+        DataApiModule,
         CachingModule,
         ContextModule,
         PairModule,

@@ -33,6 +33,7 @@ import { AWSQueryCacheWarmerService } from './crons/aws.query.cache.warmer.servi
 import { FarmModuleV1_2 } from 'src/modules/farm/v1.2/farm.v1.2.module';
 import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
+import { DataApiModule } from './data-api/data-api.module';
 
 @Module({
     imports: [
@@ -56,6 +57,7 @@ import { FarmModule } from 'src/modules/farm/farm.module';
         PriceDiscoveryModule,
         TokenModule,
         AWSModule,
+        DataApiModule,
         RemoteConfigModule,
     ],
     controllers: [],

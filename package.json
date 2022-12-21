@@ -33,6 +33,8 @@
         "@elrondnetwork/erdjs": "^11.1.0",
         "@elrondnetwork/erdjs-dex": "^0.2.12-alpha",
         "@elrondnetwork/erdjs-network-providers": "^1.1.1",
+        "@elrondnetwork/erdjs-walletcore": "^2.1.0",
+        "@elrondnetwork/native-auth-client": "^0.1.0",
         "@golevelup/nestjs-rabbitmq": "^2.4.0",
         "@nestjs/apollo": "^10.0.14",
         "@nestjs/axios": "^0.0.8",

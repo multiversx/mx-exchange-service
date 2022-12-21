@@ -54,6 +54,8 @@ import { EnergyHandler } from './handlers/energy.handler.service';
 import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
+import { DataApiWriteService } from 'src/services/data-api/data-api.write';
+
 @Injectable()
 export class RabbitMqConsumer {
     private filterAddresses: string[];
@@ -74,6 +76,7 @@ export class RabbitMqConsumer {
         private readonly weeklyRewardsSplittingHandler: WeeklyRewardsSplittingHandlerService,
         private readonly tokenUnstakeHandler: TokenUnstakeHandlerService,
         private readonly awsTimestreamWrite: AWSTimestreamWriteService,
+        private readonly dataApiWrite: DataApiWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -267,11 +270,17 @@ export class RabbitMqConsumer {
         }
 
         if (Object.keys(this.data).length > 0) {
-            await this.awsTimestreamWrite.ingest({
-                TableName: awsConfig.timestream.tableName,
-                data: this.data,
-                Time: timestamp,
-            });
+            await Promise.all([
+                this.awsTimestreamWrite.ingest({
+                    TableName: awsConfig.timestream.tableName,
+                    data: this.data,
+                    Time: timestamp,
+                }),
+                this.dataApiWrite.ingest({
+                    data: this.data,
+                    Time: timestamp,
+                }),
+            ]);
         }
     }
 
