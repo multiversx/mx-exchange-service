@@ -19,6 +19,7 @@ import { FeeDestination, LockedTokensInfo } from '../models/pair.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
 import { IPairGetterService } from '../interfaces';
+import { AsyncDDTrace } from 'src/utils/ddTrace';
 
 @Injectable()
 export class PairGetterService extends GenericGetterService implements IPairGetterService {
@@ -56,6 +57,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
         );
     }
 
+    @AsyncDDTrace()
     async getLpTokenID(pairAddress: string): Promise<string> {
         return this.getData(
             this.getCacheKey(pairAddress, 'lpTokenID'),
@@ -65,16 +67,19 @@ export class PairGetterService extends GenericGetterService implements IPairGett
         );
     }
 
+    @AsyncDDTrace()
     async getFirstToken(pairAddress: string): Promise<EsdtToken> {
         const firstTokenID = await this.getFirstTokenID(pairAddress);
         return this.tokenGetter.getTokenMetadata(firstTokenID);
     }
 
+    @AsyncDDTrace()
     async getSecondToken(pairAddress: string): Promise<EsdtToken> {
         const secondTokenID = await this.getSecondTokenID(pairAddress);
         return this.tokenGetter.getTokenMetadata(secondTokenID);
     }
 
+    @AsyncDDTrace()
     async getLpToken(pairAddress: string): Promise<EsdtToken> {
         const lpTokenID = await this.getLpTokenID(pairAddress);
         return lpTokenID === undefined
@@ -123,6 +128,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
         );
     }
 
+    @AsyncDDTrace()
     async getFirstTokenPriceUSD(pairAddress: string): Promise<string> {
         return await this.getData(
             this.getCacheKey(pairAddress, 'firstTokenPriceUSD'),
@@ -133,6 +139,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
         );
     }
 
+    @AsyncDDTrace()
     async getSecondTokenPriceUSD(pairAddress: string): Promise<string> {
         return await this.getData(
             this.getCacheKey(pairAddress, 'secondTokenPriceUSD'),
@@ -152,6 +159,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
         );
     }
 
+    @AsyncDDTrace()
     async getFirstTokenReserve(pairAddress: string): Promise<string> {
         const tokenID = await this.getFirstTokenID(pairAddress);
         return this.getData(
@@ -162,6 +170,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
         );
     }
 
+    @AsyncDDTrace()
     async getSecondTokenReserve(pairAddress: string): Promise<string> {
         const tokenID = await this.getSecondTokenID(pairAddress);
         return this.getData(
@@ -172,6 +181,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
         );
     }
 
+    @AsyncDDTrace()
     async getTotalSupply(pairAddress: string): Promise<string> {
         return this.getData(
             this.getCacheKey(pairAddress, 'totalSupply'),
@@ -289,6 +299,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
         );
     }
 
+    @AsyncDDTrace()
     async getPairInfoMetadata(pairAddress: string): Promise<PairInfoModel> {
         const [firstTokenReserve, secondTokenReserve, totalSupply] =
             await Promise.all([

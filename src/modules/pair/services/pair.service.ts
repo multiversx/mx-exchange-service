@@ -16,6 +16,7 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneHour } from 'src/helpers/helpers';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
+import { AsyncDDTrace } from 'src/utils/ddTrace';
 
 @Injectable()
 export class PairService {
@@ -28,7 +29,7 @@ export class PairService {
         private readonly wrapService: WrapService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     async getAmountOut(
         pairAddress: string,
@@ -150,6 +151,7 @@ export class PairService {
         }
     }
 
+    @AsyncDDTrace()
     async getLiquidityPosition(
         pairAddress: string,
         amount: string,
@@ -175,6 +177,7 @@ export class PairService {
         });
     }
 
+    @AsyncDDTrace()
     async getLiquidityPositionUSD(
         pairAddress: string,
         amount: string,
@@ -192,7 +195,6 @@ export class PairService {
             this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
             this.getLiquidityPosition(pairAddress, amount),
         ]);
-
         return computeValueUSD(
             liquidityPosition.firstTokenAmount,
             firstToken.decimals,
@@ -208,6 +210,7 @@ export class PairService {
             .toFixed();
     }
 
+    @AsyncDDTrace()
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
         const cachedValue: string = await this.cachingService.getCache(
             `${tokenID}.pairAddress`,
