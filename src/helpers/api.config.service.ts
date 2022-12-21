@@ -200,11 +200,11 @@ export class ApiConfigService {
         return admins.split(',');
     }
 
-    getNativeAuthKey(): string {
-        const nativeAuthPemKey = this.configService.get<string>('NATIVE_AUTH_PEM_KEY');
-        if (!nativeAuthPemKey) {
-            throw new Error('No NativeAuthPemKey present');
+    getNativeAuthKeyPath(): string {
+        const nativeAuthPemPath = this.configService.get<string>('NATIVE_AUTH_PEM_PATH');
+        if (!nativeAuthPemPath) {
+            throw new Error('No NATIVE_AUTH_PEM_PATH present');
         }
-        return nativeAuthPemKey;
+        return nativeAuthPemPath;
     }
 }
