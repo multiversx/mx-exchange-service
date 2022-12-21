@@ -128,26 +128,6 @@ export class AbiStakingService extends GenericAbiService {
         return response.firstValue.valueOf().toNumber();
     }
 
-    async getPenaltyPercent(stakeAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        const interaction: Interaction =
-            contract.methodsExplicit.getPenaltyPercent();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toNumber();
-    }
-
-    async getMinimumFarmingEpoch(stakeAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
-            stakeAddress,
-        );
-        const interaction: Interaction =
-            contract.methodsExplicit.getMinimumFarmingEpoch();
-        const response = await this.getGenericData(interaction);
-        return response.firstValue.valueOf().toNumber();
-    }
-
     async getPerBlockRewardAmount(stakeAddress: string): Promise<string> {
         const contract = await this.elrondProxy.getStakingSmartContract(
             stakeAddress,

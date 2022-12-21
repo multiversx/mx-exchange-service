@@ -20,6 +20,8 @@ import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-g
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
+import { Address } from '@elrondnetwork/erdjs/out';
+import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
 
 describe('StakingService', () => {
     let service: StakingService;
@@ -72,6 +74,7 @@ describe('StakingService', () => {
                 ElrondApiServiceProvider,
                 ElrondGatewayService,
                 ApiConfigService,
+                TokenGetterServiceProvider,
             ],
         }).compile();
 
@@ -96,6 +99,7 @@ describe('StakingService', () => {
             attributes:
                 'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
             vmQuery: false,
+            user: Address.Zero().bech32(),
         });
         expect(rewards).toEqual({
             decodedAttributes: {
@@ -122,6 +126,7 @@ describe('StakingService', () => {
                 attributes:
                     'AAAAAAAAAAAAAAQUAAAAAAAABBQAAAAMBP50cQa8hndHG4AAAAAAAAAAAAwE/nRxBryGd0cbgAA=',
                 vmQuery: false,
+                user: Address.Zero().bech32(),
             },
         ]);
         expect(batchRewards).toEqual([

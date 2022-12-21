@@ -1,18 +1,19 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
+import { tokenCollection } from 'src/utils/token.converters';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { LockedAssetAttributesModel } from '../locked-asset-factory/models/locked-asset.model';
 import { DecodeAttributesArgs } from './models/proxy.args';
 import { WrappedLpTokenAttributesModel } from './models/wrappedLpTokenAttributes.model';
-import { ProxyGetterService } from './services/proxy.getter.service';
 import { ProxyService } from './services/proxy.service';
+import { ProxyGetterServiceV1 } from './v1/services/proxy.v1.getter.service';
 
 @Resolver(() => WrappedLpTokenAttributesModel)
 export class WrappedLpTokenResolver {
     constructor(
         private readonly proxyService: ProxyService,
-        private readonly proxyGetter: ProxyGetterService,
+        private readonly proxyGetter: ProxyGetterServiceV1,
     ) {}
 
     @ResolveField()
@@ -20,9 +21,14 @@ export class WrappedLpTokenResolver {
         @Parent() parent: WrappedLpTokenAttributesModel,
     ): Promise<LockedAssetAttributesModel> {
         try {
-            const lockedAssetTokenCollection = await this.proxyGetter.getLockedAssetTokenID();
+            const proxyAddress = await this.proxyService.getProxyAddressByToken(
+                tokenCollection(parent.identifier),
+            );
+            const lockedAssetTokenCollection =
+                await this.proxyGetter.getLockedAssetTokenID(proxyAddress);
             return await this.proxyService.getLockedAssetsAttributes(
-                lockedAssetTokenCollection,
+                proxyAddress,
+                lockedAssetTokenCollection[0],
                 parent.lockedAssetsNonce,
             );
         } catch (error) {

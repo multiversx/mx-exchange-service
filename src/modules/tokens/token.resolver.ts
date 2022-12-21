@@ -1,29 +1,26 @@
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { constantsConfig } from 'src/config';
-import { AssetsModel, EsdtToken, RolesModel } from './models/esdtToken.model';
+import { AssetsModel } from './models/assets.model';
+import { EsdtToken } from './models/esdtToken.model';
+import { RolesModel } from './models/roles.model';
 import { TokensFiltersArgs } from './models/tokens.filter.args';
 import { TokenGetterService } from './services/token.getter.service';
 import { TokenService } from './services/token.service';
+import { GenericResolver } from '../../services/generics/generic.resolver';
 
 @Resolver(() => EsdtToken)
-export class TokensResolver {
+export class TokensResolver extends GenericResolver {
     constructor(
         private readonly tokenService: TokenService,
         private readonly tokenGetter: TokenGetterService,
-    ) {}
-
-    private async genericFieldResover(fieldResolver: () => any): Promise<any> {
-        try {
-            return await fieldResolver();
-        } catch (error) {
-            throw new ApolloError(error);
-        }
+    ) {
+        super();
     }
 
     @ResolveField(() => String)
     async derivedEGLD(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.tokenGetter.getDerivedEGLD(parent.identifier),
         );
     }
@@ -33,24 +30,24 @@ export class TokensResolver {
         if (constantsConfig.USDC_TOKEN_ID === parent.identifier) {
             return '1';
         }
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.tokenGetter.getDerivedUSD(parent.identifier),
         );
     }
 
     @ResolveField(() => String)
     async type(@Parent() parent: EsdtToken): Promise<string> {
-        return await this.genericFieldResover(() =>
+        return await this.genericFieldResolver(() =>
             this.tokenGetter.getEsdtTokenType(parent.identifier),
         );
     }
 
-    @ResolveField(() => AssetsModel)
+    @ResolveField(() => AssetsModel, { nullable: true })
     async assets(@Parent() parent: EsdtToken): Promise<AssetsModel> {
         return new AssetsModel(parent.assets);
     }
 
-    @ResolveField(() => RolesModel)
+    @ResolveField(() => RolesModel, { nullable: true })
     async roles(@Parent() parent: EsdtToken): Promise<RolesModel> {
         return new RolesModel(parent.roles);
     }

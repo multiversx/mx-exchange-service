@@ -67,15 +67,11 @@ export class StakingCacheWarmerService {
             const [
                 annualPercentageRewards,
                 minUnboundEpochs,
-                penaltyPercent,
-                minimumFarmingEpochs,
                 divisionSafetyConstant,
                 state,
             ] = await Promise.all([
                 this.abiStakeService.getAnnualPercentageRewards(address),
                 this.abiStakeService.getMinUnbondEpochs(address),
-                this.abiStakeService.getPenaltyPercent(address),
-                this.abiStakeService.getMinimumFarmingEpoch(address),
                 this.abiStakeService.getDivisionSafetyConstant(address),
                 this.abiStakeService.getState(address),
             ]);
@@ -88,14 +84,6 @@ export class StakingCacheWarmerService {
                 this.stakeSetterService.setMinUnbondEpochs(
                     address,
                     minUnboundEpochs,
-                ),
-                this.stakeSetterService.setPenaltyPercent(
-                    address,
-                    penaltyPercent,
-                ),
-                this.stakeSetterService.setMinimumFarmingEpoch(
-                    address,
-                    minimumFarmingEpochs,
                 ),
                 this.stakeSetterService.setDivisionSafetyConstant(
                     address,

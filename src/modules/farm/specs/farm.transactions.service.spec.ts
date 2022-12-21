@@ -1,33 +1,31 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
-import { FarmService } from '../services/farm.service';
-import { AbiFarmService } from '../services/abi-farm.service';
+import { AbiFarmService } from '../base-module/services/farm.abi.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { FarmGetterService } from '../services/farm.getter.service';
-import { FarmComputeService } from '../services/farm.compute.service';
+import { FarmGetterService } from '../base-module/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
-import { PairGetterServiceMock } from '../../pair/mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
 import { WrapService } from '../../wrapping/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
-import { TransactionsFarmService } from '../../farm/services/transactions-farm.service';
 import { ElrondProxyServiceMock } from '../../../services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
 import { encodeTransactionData } from '../../../helpers/helpers';
 import { elrondConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { TokenGetterServiceProvider } from 'src/modules/tokens/mocks/token.getter.service.mock';
+import { FarmTransactionServiceV1_2 } from '../v1.2/services/farm.v1.2.transaction.service';
 
 describe('FarmService', () => {
-    let service: TransactionsFarmService;
+    let transactionV1_2: FarmTransactionServiceV1_2;
 
     const AbiFarmServiceProvider = {
         provide: AbiFarmService,
@@ -46,7 +44,7 @@ describe('FarmService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const WrapServiceProvider = {
@@ -67,7 +65,6 @@ describe('FarmService', () => {
                 ApiConfigService,
                 ElrondApiService,
                 FarmGetterServiceProvider,
-                FarmComputeService,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,
@@ -77,27 +74,35 @@ describe('FarmService', () => {
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
                 ElrondProxyServiceProvider,
-                TransactionsFarmService,
-                FarmService,
+                FarmTransactionServiceV1_2,
             ],
         }).compile();
 
-        service = module.get<TransactionsFarmService>(TransactionsFarmService);
+        transactionV1_2 = module.get<FarmTransactionServiceV1_2>(
+            FarmTransactionServiceV1_2,
+        );
     });
 
     it('should be defined', () => {
-        expect(service).toBeDefined();
+        expect(transactionV1_2).toBeDefined();
     });
 
     it('should get enter farm transaction', async () => {
-        const transaction = await service.enterFarm(Address.Zero().bech32(), {
-            farmAddress:
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-            tokens: [
-                { tokenID: 'TOK1TOK4LP', nonce: 0, amount: '1000000000000' },
-            ],
-            lockRewards: true,
-        });
+        const transaction = await transactionV1_2.enterFarm(
+            Address.Zero().bech32(),
+            {
+                farmAddress:
+                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                tokens: [
+                    {
+                        tokenID: 'TOK1TOK4LP',
+                        nonce: 0,
+                        amount: '1000000000000',
+                    },
+                ],
+                lockRewards: true,
+            },
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
@@ -117,15 +122,18 @@ describe('FarmService', () => {
     });
 
     it('should get exit farm transaction', async () => {
-        const transaction = await service.exitFarm(Address.Zero().bech32(), {
-            farmAddress:
-                'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
-            farmTokenID: 'TOK1TOK4LPStaked',
-            farmTokenNonce: 1,
-            amount: '1000000000000',
-            withPenalty: false,
-            lockRewards: true,
-        });
+        const transaction = await transactionV1_2.exitFarm(
+            Address.Zero().bech32(),
+            {
+                farmAddress:
+                    'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
+                farmTokenID: 'TOK1TOK4LPStaked',
+                farmTokenNonce: 1,
+                amount: '1000000000000',
+                withPenalty: false,
+                lockRewards: true,
+            },
+        );
         expect(transaction).toEqual({
             nonce: 0,
             value: '0',
@@ -147,7 +155,7 @@ describe('FarmService', () => {
     });
 
     it('should get claim rewards transaction', async () => {
-        const transaction = await service.claimRewards(
+        const transaction = await transactionV1_2.claimRewards(
             Address.Zero().bech32(),
             {
                 farmAddress:
@@ -179,19 +187,16 @@ describe('FarmService', () => {
     });
 
     it('should get compound rewards transaction error', async () => {
-        let error;
+        let error: any;
         try {
-            const transaction = await service.compoundRewards(
-                Address.Zero().bech32(),
-                {
-                    farmAddress:
-                        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
-                    farmTokenID: 'farmTokenID',
-                    farmTokenNonce: 1,
-                    amount: '1000000000000',
-                    lockRewards: true,
-                },
-            );
+            await transactionV1_2.compoundRewards(Address.Zero().bech32(), {
+                farmAddress:
+                    'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
+                farmTokenID: 'farmTokenID',
+                farmTokenNonce: 1,
+                amount: '1000000000000',
+                lockRewards: true,
+            });
         } catch (err) {
             error = err;
         }
@@ -199,7 +204,7 @@ describe('FarmService', () => {
     });
 
     it('should get migrate to new farm transaction', async () => {
-        const transaction = await service.migrateToNewFarm(
+        const transaction = await transactionV1_2.migrateToNewFarm(
             Address.Zero().bech32(),
             {
                 farmAddress:
@@ -230,7 +235,7 @@ describe('FarmService', () => {
     });
 
     it('should get set farm migration config transaction', async () => {
-        const transaction = await service.setFarmMigrationConfig({
+        const transaction = await transactionV1_2.setFarmMigrationConfig({
             oldFarmAddress:
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             oldFarmTokenID: 'TOK1TOK4LPStaked',
@@ -256,7 +261,7 @@ describe('FarmService', () => {
     });
 
     it('should get stop rewards and migrate Rps transaction', async () => {
-        const transaction = await service.stopRewardsAndMigrateRps(
+        const transaction = await transactionV1_2.stopRewardsAndMigrateRps(
             'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
         );
         expect(transaction).toEqual({
@@ -278,7 +283,7 @@ describe('FarmService', () => {
     it('should get end produce rewards transaction', async () => {
         let error = null;
         try {
-            await service.endProduceRewards(
+            await transactionV1_2.endProduceRewards(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             );
         } catch (e) {
@@ -286,7 +291,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.endProduceRewards(
+        const transaction = await transactionV1_2.endProduceRewards(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
         );
         expect(transaction).toEqual({
@@ -308,7 +313,7 @@ describe('FarmService', () => {
     it('should get start produce rewards transaction', async () => {
         let error = null;
         try {
-            await service.startProduceRewards(
+            await transactionV1_2.startProduceRewards(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             );
         } catch (e) {
@@ -316,7 +321,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.startProduceRewards(
+        const transaction = await transactionV1_2.startProduceRewards(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
         );
         expect(transaction).toEqual({
@@ -338,7 +343,7 @@ describe('FarmService', () => {
     it('should get set per block reward amount transaction', async () => {
         let error = null;
         try {
-            await service.setPerBlockRewardAmount(
+            await transactionV1_2.setPerBlockRewardAmount(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 '1000000000000',
             );
@@ -347,7 +352,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.setPerBlockRewardAmount(
+        const transaction = await transactionV1_2.setPerBlockRewardAmount(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             '1000000000000',
         );
@@ -372,7 +377,7 @@ describe('FarmService', () => {
     it('should get set penalty percent transaction', async () => {
         let error = null;
         try {
-            await service.setPenaltyPercent(
+            await transactionV1_2.setPenaltyPercent(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 5,
             );
@@ -381,7 +386,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.setPenaltyPercent(
+        const transaction = await transactionV1_2.setPenaltyPercent(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             5,
         );
@@ -404,7 +409,7 @@ describe('FarmService', () => {
     it('should get set minimum farming epochs transaction', async () => {
         let error = null;
         try {
-            await service.setMinimumFarmingEpochs(
+            await transactionV1_2.setMinimumFarmingEpochs(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 10,
             );
@@ -413,7 +418,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.setMinimumFarmingEpochs(
+        const transaction = await transactionV1_2.setMinimumFarmingEpochs(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             10,
         );
@@ -436,7 +441,7 @@ describe('FarmService', () => {
     it('should get set transfer exec gas limit transaction', async () => {
         let error = null;
         try {
-            await service.setTransferExecGasLimit(
+            await transactionV1_2.setTransferExecGasLimit(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 100000000,
             );
@@ -445,7 +450,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.setTransferExecGasLimit(
+        const transaction = await transactionV1_2.setTransferExecGasLimit(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             100000000,
         );
@@ -470,7 +475,7 @@ describe('FarmService', () => {
     it('should get set burn gas limit transaction', async () => {
         let error = null;
         try {
-            await service.setBurnGasLimit(
+            await transactionV1_2.setBurnGasLimit(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 100000000,
             );
@@ -479,7 +484,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.setBurnGasLimit(
+        const transaction = await transactionV1_2.setBurnGasLimit(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             100000000,
         );
@@ -502,7 +507,7 @@ describe('FarmService', () => {
     it('should get pause transaction', async () => {
         let error = null;
         try {
-            await service.pause(
+            await transactionV1_2.pause(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             );
         } catch (e) {
@@ -510,7 +515,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.pause(
+        const transaction = await transactionV1_2.pause(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
         );
         expect(transaction).toEqual({
@@ -532,7 +537,7 @@ describe('FarmService', () => {
     it('should get resume transaction', async () => {
         let error = null;
         try {
-            await service.resume(
+            await transactionV1_2.resume(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             );
         } catch (e) {
@@ -540,7 +545,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.resume(
+        const transaction = await transactionV1_2.resume(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
         );
         expect(transaction).toEqual({
@@ -562,7 +567,7 @@ describe('FarmService', () => {
     it('should get register farm token transaction', async () => {
         let error = null;
         try {
-            await service.registerFarmToken(
+            await transactionV1_2.registerFarmToken(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 'FarmingToken12',
                 'T1T2-1234',
@@ -573,7 +578,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.registerFarmToken(
+        const transaction = await transactionV1_2.registerFarmToken(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             'FarmingToken12',
             'T1T2-1234',
@@ -600,7 +605,7 @@ describe('FarmService', () => {
     it('should get set local roles farm token transaction', async () => {
         let error = null;
         try {
-            await service.setLocalRolesFarmToken(
+            await transactionV1_2.setLocalRolesFarmToken(
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
             );
         } catch (e) {
@@ -608,7 +613,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.setLocalRolesFarmToken(
+        const transaction = await transactionV1_2.setLocalRolesFarmToken(
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
         );
         expect(transaction).toEqual({
@@ -630,7 +635,7 @@ describe('FarmService', () => {
     it('should get merge farm tokens transaction', async () => {
         let error = null;
         try {
-            await service.mergeFarmTokens(
+            await transactionV1_2.mergeFarmTokens(
                 Address.Zero().bech32(),
                 'erd18h5dulxp5zdp80qjndd2w25kufx0rm5yqd2h7ajrfucjhr82y8vqyq0hye',
                 [
@@ -651,7 +656,7 @@ describe('FarmService', () => {
         }
         expect(error).toBeDefined();
 
-        const transaction = await service.mergeFarmTokens(
+        const transaction = await transactionV1_2.mergeFarmTokens(
             Address.Zero().bech32(),
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u',
             [

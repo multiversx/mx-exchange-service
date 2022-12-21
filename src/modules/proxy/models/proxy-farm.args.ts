@@ -6,7 +6,7 @@ export class EnterFarmProxyArgs {
     @Field()
     farmAddress: string;
     @Field(() => [InputTokenModel])
-    tokens: Array<InputTokenModel>;
+    tokens: InputTokenModel[];
     @Field({ nullable: true })
     lockRewards: boolean;
 }
@@ -18,6 +18,8 @@ export class ExitFarmProxyArgs {
     @Field(() => Int)
     wrappedFarmTokenNonce: number;
     @Field() amount: string;
+    @Field({ nullable: true })
+    exitAmount: string;
     @Field(() => Boolean, { nullable: true })
     lockRewards = false;
     @Field(() => Boolean, { nullable: true })

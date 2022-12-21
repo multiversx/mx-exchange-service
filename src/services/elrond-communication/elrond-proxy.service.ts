@@ -13,6 +13,7 @@ import { ProxyNetworkProviderProfiler } from '../../helpers/proxy.network.provid
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { promises } from 'fs';
+import { proxyVersion } from 'src/utils/proxy.utils';
 
 @Injectable()
 export class ElrondProxyService {
@@ -79,9 +80,7 @@ export class ElrondProxyService {
         );
     }
 
-    async getFarmSmartContract(
-        farmAddress: string,
-    ): Promise<[SmartContract, string, string]> {
+    async getFarmSmartContract(farmAddress: string): Promise<SmartContract> {
         const version = farmVersion(farmAddress);
         const type = farmType(farmAddress);
 
@@ -89,12 +88,7 @@ export class ElrondProxyService {
             type === undefined
                 ? abiConfig.farm[version]
                 : abiConfig.farm[version][type];
-        const contract = await this.getSmartContract(
-            farmAddress,
-            abiPath,
-            'Farm',
-        );
-        return [contract, version, type];
+        return await this.getSmartContract(farmAddress, abiPath, 'Farm');
     }
 
     async getStakingSmartContract(
@@ -117,10 +111,13 @@ export class ElrondProxyService {
         );
     }
 
-    async getProxyDexSmartContract(): Promise<SmartContract> {
+    async getProxyDexSmartContract(
+        proxyAddress: string,
+    ): Promise<SmartContract> {
+        const version = proxyVersion(proxyAddress);
         return this.getSmartContract(
-            scAddress.proxyDexAddress,
-            abiConfig.proxy,
+            proxyAddress,
+            abiConfig.proxy[version],
             'ProxyDexImpl',
         );
     }
@@ -161,11 +158,53 @@ export class ElrondProxyService {
         );
     }
 
+    async getSimpleLockEnergySmartContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.simpleLockEnergy,
+            abiConfig.simpleLockEnergy,
+            'SimpleLockEnergy',
+        );
+    }
+
     async getMetabondingStakingSmartContract(): Promise<SmartContract> {
         return this.getSmartContract(
             scAddress.metabondingStakingAddress,
             abiConfig.metabondingStaking,
             'MetabondingStaking',
+        );
+    }
+
+    async getFeesCollectorContract(
+        contractAddress?: string,
+    ): Promise<SmartContract> {
+        return this.getSmartContract(
+            contractAddress ?? scAddress.feesCollector,
+            abiConfig.feesCollector,
+            'FeesCollector',
+        );
+    }
+
+    async getLockedTokenWrapperContract(address: string) {
+        return this.getSmartContract(
+            address,
+            abiConfig.lockedTokenWrapper,
+            'LockedTokenWrapper',
+        );
+    }
+
+    async getEnergyUpdateContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.energyUpdate,
+            abiConfig.energyUpdate,
+            'EnergyUpdate',
+        );
+    }
+
+    async getTokenUnstakeContract(): Promise<SmartContract> {
+        return this.getSmartContract(
+            scAddress.tokenUnstake,
+            abiConfig.tokenUnstake,
+            'TokenUnstakeModule',
         );
     }
 

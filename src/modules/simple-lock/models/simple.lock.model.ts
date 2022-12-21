@@ -4,7 +4,7 @@ import {
 } from '@elrondnetwork/erdjs/out/smartcontracts/typesystem/enum';
 import { Field, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
-import { FarmTokenAttributesModel } from 'src/modules/farm/models/farmTokenAttributes.model';
+import { FarmTokenAttributesModelV1_3 } from 'src/modules/farm/models/farmTokenAttributes.model';
 
 export enum FarmType {
     SIMPLE_FARM,
@@ -17,6 +17,11 @@ export const FarmTypeEnumType = new EnumType('FarmType', [
     new EnumVariantDefinition('SimpleFarm', 0),
     new EnumVariantDefinition('FarmWithLockedRewards', 1),
 ]);
+
+export enum SimpleLockType {
+    BASE_TYPE,
+    ENERGY_TYPE,
+}
 
 @ObjectType()
 export class LockedTokenAttributesModel {
@@ -32,6 +37,20 @@ export class LockedTokenAttributesModel {
     unlockEpoch: number;
 
     constructor(init?: Partial<LockedTokenAttributesModel>) {
+        Object.assign(this, init);
+    }
+}
+
+@ObjectType()
+export class WrappedLockedTokenAttributesModel {
+    @Field()
+    identifier: string;
+    @Field()
+    attributes: string;
+    @Field(() => Int)
+    lockedTokenNonce: number;
+
+    constructor(init?: Partial<WrappedLockedTokenAttributesModel>) {
         Object.assign(this, init);
     }
 }
@@ -80,8 +99,8 @@ export class FarmProxyTokenAttributesModel {
     farmingTokenLockedNonce: number;
     @Field(() => LpProxyTokenAttributesModel)
     farmingTokenAttributes: LpProxyTokenAttributesModel;
-    @Field(() => FarmTokenAttributesModel)
-    farmTokenAttributes: FarmTokenAttributesModel;
+    @Field(() => FarmTokenAttributesModelV1_3)
+    farmTokenAttributes: FarmTokenAttributesModelV1_3;
 
     constructor(init?: Partial<FarmProxyTokenAttributesModel>) {
         Object.assign(this, init);

@@ -21,6 +21,17 @@ import { LiquidityHandler } from './handlers/pair.liquidity.handler.service';
 import { SwapEventHandler } from './handlers/pair.swap.handler.service';
 import { AWSModule } from 'src/services/aws/aws.module';
 import { PairHandler } from './handlers/pair.handler.service';
+import { EnergyHandler } from './handlers/energy.handler.service';
+import { SimpleLockModule } from '../simple-lock/simple.lock.module';
+import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
+import { FarmModuleV1_2 } from '../farm/v1.2/farm.v1.2.module';
+import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
+import { EnergyModule } from '../energy/energy.module';
+import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
+import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
+import { UserModule } from '../user/user.module';
+import { TokenUnstakeModule } from '../token-unstake/token.unstake.module';
+import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
 import { DataApiModule } from 'src/services/data-api/data-api.module';
 
 @Module({
@@ -33,10 +44,17 @@ import { DataApiModule } from 'src/services/data-api/data-api.module';
         ContextModule,
         PairModule,
         FarmModule,
+        FarmModuleV1_2,
+        FarmModuleV1_3,
         RouterModule,
         MetabondingModule,
         PriceDiscoveryModule,
         TokenModule,
+        SimpleLockModule,
+        FeesCollectorModule,
+        EnergyModule,
+        TokenUnstakeModule,
+        UserModule,
     ],
     providers: [
         RabbitMqConsumer,
@@ -46,9 +64,13 @@ import { DataApiModule } from 'src/services/data-api/data-api.module';
         RabbitMQEsdtTokenHandlerService,
         RabbitMQMetabondingHandlerService,
         PriceDiscoveryEventHandler,
+        EnergyHandler,
         PairHandler,
         LiquidityHandler,
         SwapEventHandler,
+        FeesCollectorHandlerService,
+        TokenUnstakeHandlerService,
+        WeeklyRewardsSplittingHandlerService,
     ],
 })
 export class RabbitMqModule {

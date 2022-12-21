@@ -7,6 +7,7 @@ import {
 import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { CpuProfiler } from './cpu.profiler';
 import { MetricsCollector } from './metrics.collector';
 import { PerformanceProfiler } from './performance.profiler';
 
@@ -27,14 +28,23 @@ export class LoggingInterceptor implements NestInterceptor {
             }
 
             const profiler = new PerformanceProfiler();
+            const cpuProfiler = new CpuProfiler();
+            
             return next.handle().pipe(
                 tap(() => {
                     profiler.stop();
+                    const cpuTime = cpuProfiler.stop();
                     if (parentType === 'Query') {
                         MetricsCollector.setQueryDuration(
                             fieldName,
                             origin,
                             profiler.duration,
+                        );
+
+                        MetricsCollector.setQueryCpu(
+                            fieldName,
+                            origin,
+                            cpuTime,
                         );
                     }
                 }),

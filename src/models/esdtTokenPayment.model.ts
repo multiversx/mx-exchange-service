@@ -12,7 +12,7 @@ import { ObjectType, Field, Int, InputType } from '@nestjs/graphql';
 @ObjectType('EsdtTokenPayment')
 @InputType('EsdtTokenPaymentInput')
 export class EsdtTokenPayment {
-    @Field(() => Int)
+    @Field(() => Int, { nullable: true })
     tokenType: number;
     @Field()
     tokenID: string;

@@ -21,7 +21,7 @@ export class LockedAssetService {
 
         private readonly contextGetter: ContextGetterService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     async getLockedAssetInfo(): Promise<LockedAssetModel> {
         return new LockedAssetModel({ address: scAddress.lockedAssetAddress });
@@ -30,9 +30,9 @@ export class LockedAssetService {
     async decodeLockedAssetAttributes(
         args: DecodeAttributesArgs,
     ): Promise<LockedAssetAttributesModel[]> {
-        const decodedBatchAttributes = [];
         const extendedAttributesActivationNonce = await this.lockedAssetGetter.getExtendedAttributesActivationNonce();
-        for (const lockedAsset of args.batchAttributes) {
+
+        return Promise.all(args.batchAttributes.map(async lockedAsset => {
             const withActivationNonce =
                 tokenNonce(lockedAsset.identifier) >=
                 extendedAttributesActivationNonce;
@@ -45,41 +45,34 @@ export class LockedAssetService {
                 withActivationNonce,
             );
 
-            decodedBatchAttributes.push(
-                new LockedAssetAttributesModel({
-                    attributes: lockedAsset.attributes,
-                    identifier: lockedAsset.identifier,
-                    unlockSchedule,
-                    isMerged: lockedAssetAttributes.isMerged,
-                }),
-            );
-        }
-        return decodedBatchAttributes;
+
+            return new LockedAssetAttributesModel({
+                attributes: lockedAsset.attributes,
+                identifier: lockedAsset.identifier,
+                unlockSchedule,
+                isMerged: lockedAssetAttributes.isMerged,
+            });
+        }));
     }
 
     private async getUnlockMilestones(
         unlockSchedule: any,
         withActivationNonce: boolean,
     ): Promise<UnlockMileStoneModel[]> {
-        const unlockMilestones: UnlockMileStoneModel[] = [];
-        for (const unlockMilestone of unlockSchedule) {
+        return Promise.all(unlockSchedule.map(async unlockMilestone => {
             const unlockEpoch = unlockMilestone.epoch.toNumber();
             const unlockPercent: BigNumber = withActivationNonce
                 ? unlockMilestone.percent.div(
-                      constantsConfig.PRECISION_EX_INCREASE,
-                  )
+                    constantsConfig.PRECISION_EX_INCREASE,
+                )
                 : unlockMilestone.percent;
             const remainingEpochs = await this.getRemainingEpochs(unlockEpoch);
 
-            unlockMilestones.push(
-                new UnlockMileStoneModel({
-                    percent: unlockPercent.toNumber(),
-                    epochs: remainingEpochs > 0 ? remainingEpochs : 0,
-                }),
-            );
-        }
-
-        return unlockMilestones;
+            return new UnlockMileStoneModel({
+                percent: unlockPercent.toNumber(),
+                epochs: remainingEpochs > 0 ? remainingEpochs : 0,
+            });
+        }));
     }
 
     private async getRemainingEpochs(unlockEpoch: number): Promise<number> {

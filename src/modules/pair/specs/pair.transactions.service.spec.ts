@@ -12,7 +12,7 @@ import { PairService } from '../services/pair.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
-import { PairGetterServiceMock } from '../mocks/pair.getter.service.mock';
+import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
@@ -22,7 +22,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { encodeTransactionData } from 'src/helpers/helpers';
 import { elrondConfig, gasConfig } from 'src/config';
-import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.mock';
+import { RouterGetterServiceProvider } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CachingModule } from 'src/services/caching/cache.module';
 
 describe('TransactionPairService', () => {
@@ -40,7 +40,7 @@ describe('TransactionPairService', () => {
 
     const PairGetterServiceProvider = {
         provide: PairGetterService,
-        useClass: PairGetterServiceMock,
+        useClass: PairGetterServiceStub,
     };
 
     const WrapServiceProvider = {

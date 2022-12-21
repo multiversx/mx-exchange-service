@@ -14,7 +14,14 @@ import { TimestreamWrite } from 'aws-sdk';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { generateLogMessage } from 'src/utils/generate-log-message';
-import { EsdtLocalBurnEvent, ExitFarmEvent } from '@elrondnetwork/erdjs-dex';
+import {
+    BaseFarmEvent,
+    EsdtLocalBurnEvent,
+    ExitFarmEventV1_2,
+    ExitFarmEventV1_3,
+} from '@elrondnetwork/erdjs-dex';
+import { farmVersion } from 'src/utils/farm.utils';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { DataApiWriteService } from '../data-api/data-api.write';
 
 @Injectable()
@@ -41,10 +48,8 @@ export class LogsProcessorService {
         try {
             this.isProcessing = true;
 
-            const [
-                lastProcessedTimestamp,
-                currentTimestamp,
-            ] = await this.getProcessingInterval(oneMinute());
+            const [lastProcessedTimestamp, currentTimestamp] =
+                await this.getProcessingInterval(oneMinute());
             if (lastProcessedTimestamp === currentTimestamp) {
                 return;
             }
@@ -293,7 +298,7 @@ export class LogsProcessorService {
         events: any[],
         timestamp: number,
     ): Promise<void> {
-        let exitFarmEvent: ExitFarmEvent | undefined = undefined;
+        let exitFarmEvent: BaseFarmEvent | undefined = undefined;
         const esdtLocalBurnEvents: EsdtLocalBurnEvent[] = [];
 
         for (const event of events) {
@@ -302,7 +307,15 @@ export class LogsProcessorService {
                     if (event.data === '') {
                         break;
                     }
-                    exitFarmEvent = new ExitFarmEvent(event);
+                    const version = farmVersion(event.address);
+                    switch (version) {
+                        case FarmVersion.V1_2:
+                            exitFarmEvent = new ExitFarmEventV1_2(event);
+                            break;
+                        case FarmVersion.V1_3:
+                            exitFarmEvent = new ExitFarmEventV1_3(event);
+                            break;
+                    }
                     break;
                 case 'ESDTLocalBurn':
                     esdtLocalBurnEvents.push(new EsdtLocalBurnEvent(event));
@@ -337,11 +350,13 @@ export class LogsProcessorService {
     }
 
     private getBurnedPenalty(
-        exitFarmEvent: ExitFarmEvent,
+        exitFarmEvent: BaseFarmEvent,
         esdtLocalBurnEvents: EsdtLocalBurnEvent[],
     ): string {
-        const lockedRewards = exitFarmEvent.toJSON().farmAttributes
-            .lockedRewards;
+        const lockedRewards =
+            exitFarmEvent instanceof ExitFarmEventV1_2
+                ? exitFarmEvent.toJSON().farmAttributes.lockedRewards
+                : undefined;
 
         let penalty = new BigNumber(0);
 
@@ -356,8 +371,7 @@ export class LogsProcessorService {
 
             // Skip MEX to LKMEX rewards for V1_2 farms
             if (
-                burnedAmount ===
-                    exitFarmEvent.getRewardToken().amount.toFixed() &&
+                burnedAmount === exitFarmEvent.rewardToken.amount.toFixed() &&
                 lockedRewards
             ) {
                 continue;
@@ -365,9 +379,8 @@ export class LogsProcessorService {
 
             // Skip MEX to LKMEX farming tokens
             if (
-                burnedAmount ===
-                    exitFarmEvent.getFarmingToken().amount.toFixed() &&
-                burnedTokenID === exitFarmEvent.getFarmingToken().tokenID
+                burnedAmount === exitFarmEvent.farmingToken.amount.toFixed() &&
+                burnedTokenID === exitFarmEvent.farmingToken.tokenID
             ) {
                 continue;
             }

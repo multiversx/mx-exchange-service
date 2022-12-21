@@ -6,10 +6,12 @@ import { elrondConfig, gasConfig } from 'src/config';
 import { ruleOfThree } from 'src/helpers/helpers';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { FarmService } from 'src/modules/farm/services/farm.service';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { farmVersion } from 'src/utils/farm.utils';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
@@ -27,7 +29,7 @@ export class StakingProxyTransactionService {
         private readonly stakeProxyService: StakingProxyService,
         private readonly stakeProxyGetter: StakingProxyGetterService,
         private readonly pairService: PairService,
-        private readonly farmService: FarmService,
+        private readonly farmFactory: FarmFactoryService,
         private readonly elrondProxy: ElrondProxyService,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -61,7 +63,7 @@ export class StakingProxyTransactionService {
             args.payments.length > 1
                 ? gasConfig.stakeProxy.stakeFarmTokens.withTokenMerge
                 : gasConfig.stakeProxy.stakeFarmTokens.default;
-        const mappedPayments = args.payments.map(payment =>
+        const mappedPayments = args.payments.map((payment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
@@ -85,9 +87,10 @@ export class StakingProxyTransactionService {
         sender: string,
         args: ClaimDualYieldArgs,
     ): Promise<TransactionModel> {
-        const dualYieldTokenID = await this.stakeProxyGetter.getDualYieldTokenID(
-            args.proxyStakingAddress,
-        );
+        const dualYieldTokenID =
+            await this.stakeProxyGetter.getDualYieldTokenID(
+                args.proxyStakingAddress,
+            );
         for (const payment of args.payments) {
             if (payment.tokenID !== dualYieldTokenID) {
                 throw new Error('invalid dual yield token for claim');
@@ -97,7 +100,7 @@ export class StakingProxyTransactionService {
         const contract = await this.elrondProxy.getStakingProxySmartContract(
             args.proxyStakingAddress,
         );
-        const mappedPayments = args.payments.map(payment =>
+        const mappedPayments = args.payments.map((payment) =>
             TokenPayment.metaEsdtFromBigInteger(
                 payment.tokenID,
                 payment.nonce,
@@ -121,16 +124,15 @@ export class StakingProxyTransactionService {
         sender: string,
         args: UnstakeFarmTokensArgs,
     ): Promise<TransactionModel> {
-        const decodedAttributes = this.stakeProxyService.decodeDualYieldTokenAttributes(
-            {
+        const decodedAttributes =
+            this.stakeProxyService.decodeDualYieldTokenAttributes({
                 batchAttributes: [
                     {
                         identifier: args.payment.tokenID,
                         attributes: args.attributes,
                     },
                 ],
-            },
-        );
+            });
         const [farmTokenID, farmAddress] = await Promise.all([
             this.stakeProxyGetter.getLpFarmTokenID(args.proxyStakingAddress),
             this.stakeProxyGetter.getLpFarmAddress(args.proxyStakingAddress),
@@ -153,13 +155,16 @@ export class StakingProxyTransactionService {
             new BigNumber(decodedAttributes[0].lpFarmTokenAmount),
         );
 
-        const exitFarmPosition = await this.farmService.getTokensForExitFarm({
-            attributes: farmToken.attributes,
-            identifier: farmToken.identifier,
-            farmAddress: farmAddress,
-            liquidity: liquidityPositionAmount.toFixed(),
-            vmQuery: false,
-        });
+        const exitFarmPosition = await this.farmFactory
+            .useService(farmAddress)
+            .getTokensForExitFarm({
+                attributes: farmToken.attributes,
+                identifier: farmToken.identifier,
+                farmAddress: farmAddress,
+                user: sender,
+                liquidity: liquidityPositionAmount.toFixed(),
+                vmQuery: false,
+            });
 
         const liquidityPosition = await this.pairService.getLiquidityPosition(
             pairAddress,
@@ -180,6 +185,10 @@ export class StakingProxyTransactionService {
             new BigUIntValue(amount0Min),
             new BigUIntValue(amount1Min),
         ];
+
+        if (farmVersion(farmAddress) === FarmVersion.V2) {
+            endpointArgs.push(new BigUIntValue(liquidityPositionAmount));
+        }
 
         return contract.methodsExplicit
             .unstakeFarmTokens(endpointArgs)

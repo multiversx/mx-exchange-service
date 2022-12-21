@@ -1,8 +1,8 @@
-import { Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { Query, Args, Resolver } from '@nestjs/graphql';
-import { UserNftToken, UserToken } from './models/user.model';
+import { OutdatedContract, UserNftToken, UserToken } from './models/user.model';
 import { UserNftTokens } from './models/nfttokens.union';
-import { UserService } from './services/user.metaEsdt.service';
+import { UserMetaEsdtService } from './services/user.metaEsdt.service';
 import { PaginationArgs } from '../dex.model';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { User } from 'src/helpers/userDecorator';
@@ -11,12 +11,15 @@ import { ApolloError } from 'apollo-server-express';
 import { Address } from '@elrondnetwork/erdjs/out';
 import { NftTokenInput } from '../tokens/models/nftTokenInput.model';
 import { UserEsdtService } from './services/user.esdt.service';
+import { UserEnergyService } from './services/userEnergy/user.energy.service';
+import { TransactionModel } from '../../models/transaction.model';
 
 @Resolver()
 export class UserResolver {
     constructor(
         private readonly userEsdt: UserEsdtService,
-        private readonly userMetaEsdt: UserService,
+        private readonly userMetaEsdt: UserMetaEsdtService,
+        private readonly userEnergy: UserEnergyService,
     ) {}
 
     @UseGuards(GqlAuthGuard)
@@ -34,16 +37,32 @@ export class UserResolver {
         @Args() pagination: PaginationArgs,
         @User() user: any,
     ): Promise<Array<typeof UserNftTokens>> {
-        return await this.userMetaEsdt.getAllNftTokens(
+        const nfts = await this.userMetaEsdt.getAllNftTokens(
             user.publicKey,
             pagination,
         );
+        return nfts.filter((nft) => nft !== undefined);
     }
 
     @UseGuards(GqlAuthGuard)
-    @Query(() => Number)
-    async getUserWorth(@User() user: any): Promise<number> {
-        return this.userMetaEsdt.computeUserWorth(user.publicKey);
+    @Query(() => [OutdatedContract])
+    async userOutdatedContracts(
+        @User() user: any,
+    ): Promise<OutdatedContract[]> {
+        return await this.userEnergy.getUserOutdatedContracts(user.publicKey);
+    }
+
+    @UseGuards(GqlAuthGuard)
+    @Query(() => TransactionModel, { nullable: true })
+    async updateEnergy(
+        @User() user: any,
+        @Args('includeAllContracts', { nullable: true })
+        includeAllContracts: boolean,
+    ): Promise<TransactionModel | null> {
+        return await this.userEnergy.updateFarmsEnergyForUser(
+            user.publicKey,
+            includeAllContracts,
+        );
     }
 
     @Query(() => [UserToken])

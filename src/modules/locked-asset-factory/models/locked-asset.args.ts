@@ -1,7 +1,7 @@
 import { ArgsType, Field, Int } from '@nestjs/graphql';
 
 @ArgsType()
-export class UnlockAssetsArs {
+export class UnlockAssetsArgs {
     @Field()
     lockedTokenID: string;
     @Field(() => Int)

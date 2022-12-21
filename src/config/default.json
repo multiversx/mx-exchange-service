@@ -16,9 +16,10 @@
         "MEX-27f4cd": "erd1qqqqqqqqqqqqqpgqxv39e72dt57vcjdyfz6cztw86vuq7nx20n4srlnthr",
         "WEGLD_USDC": "erd1qqqqqqqqqqqqqpgqq67uv84ma3cekpa55l4l68ajzhq8qm3u0n4s20ecvx",
         "distributionAddress": "erd1qqqqqqqqqqqqqpgq29s98mhxwyknmxcpdtdx6nm0wkvnkvwe0n4sjpdhyq",
-        "proxyDexAddress": "erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z",
+        "proxyDexAddress": ["erd1qqqqqqqqqqqqqpgqs8avffeeyx5fg3q04fu4rjstuh7m06sl0n4szj2g8z"],
         "lockedAssetAddress": "erd1qqqqqqqqqqqqqpgqup60nzrkww5ukj7rxxud9txq9fakd36l0n4sthknw2",
         "metabondingStakingAddress": "erd1qqqqqqqqqqqqqpgq4jvy228nzlcxnwufqzm7hugnv6wl42xj0n4sz7ra7n",
+        "simpleLockEnergy": "erd1qqqqqqqqqqqqqpgq0agdv39w3s7cyn3cll3u93t3adektylz0n4sryxmaj",
         "simpleLockAddress": ["erd1qqqqqqqqqqqqqpgq0agdv39w3s7cyn3cll3u93t3adektylz0n4sryxmaj"],
         "wrappingAddress": {
             "shardID-0": "erd1qqqqqqqqqqqqqpgqd77fnev2sthnczp2lnfx0y5jdycynjfhzzgq6p3rax",
@@ -34,7 +35,8 @@
         "stakingProxy": [
             "erd1qqqqqqqqqqqqqpgqpgl505hxumyjdtqnjrhmds9wsf4tyydu0n4skwfkf0",
             "erd1qqqqqqqqqqqqqpgqkq58a23glv6dzyz8a8fsc30wzc59y6m60n4szjktz0"
-        ]
+        ],
+        "feesCollector": "erd1qqqqqqqqqqqqqpgqagq2v9exkrn3wnauq3lw4xcetwsmgmwjd8ssjt4k7s"
     },
     "tokenProviderUSD": "WEGLD-71e90a",
     "tokensSupply": ["MEX-27f4cd"],
@@ -70,7 +72,7 @@
             "createPair": 30000000,
             "issueToken": 100000000,
             "setLocalRoles": 100000000,
-            "multiPairSwapMultiplier": 30000000,
+            "multiPairSwapMultiplier": 35000000,
             "swapEnableByUser": 50000000,
             "admin": {
                 "setState": 200000000,
@@ -89,11 +91,11 @@
             "removeLiquidity": 8500000,
             "removeLiquidityAndBuyBackAndBurnToken": 200000000,
             "swapTokensFixedInput": {
-                "default": 11500000,
+                "default": 12000000,
                 "withFeeSwap": 25500000
             },
             "swapTokensFixedOutput": {
-                "default": 12000000,
+                "default": 13000000,
                 "withFeeSwap": 25500000
             },
             "swapNoFeeAndForward": 25500000,
@@ -168,7 +170,7 @@
                         "withPenalty": {
                             "localBurn": 9500000,
                             "pairBurn": 16000000,
-                            "buybackAndBurn": 32000000
+                            "buybackAndBurn": 35000000
                         }
                     },
                     "claimRewards": 10500000
@@ -176,6 +178,34 @@
                 "lockedRewards": {
                     "exitFarm": {
                         "default": 15300000,
+                        "withPenalty": {
+                            "localBurn": 16000000,
+                            "pairBurn": 23000000,
+                            "buybackAndBurn": 40000000
+                        }
+                    },
+                    "claimRewards": 17000000
+                }
+            },
+            "v2": {
+                "enterFarm": {
+                    "default": 13000000,
+                    "withTokenMerge": 15000000
+                },
+                "unlockedRewards": {
+                    "exitFarm": {
+                        "default": 9000000,
+                        "withPenalty": {
+                            "localBurn": 9500000,
+                            "pairBurn": 16000000,
+                            "buybackAndBurn": 32000000
+                        }
+                    },
+                    "claimRewards": 10500000
+                },
+                "lockedRewards": {
+                    "exitFarm": {
+                        "default": 20300000,
                         "withPenalty": {
                             "localBurn": 16000000,
                             "pairBurn": 23000000,
@@ -206,7 +236,7 @@
                     "default": 19500000,
                     "withTokenMerge": 40000000
                 },
-                "removeLiquidity": 21000000,
+                "removeLiquidity": 30000000,
                 "defaultMergeWLPT": 20000000
             },
             "farms": {
@@ -263,6 +293,46 @@
                             "withPenalty": {
                                 "localBurn": 26000000,
                                 "pairBurn": 32000000,
+                                "buybackAndBurn": 48000000
+                            }
+                        },
+                        "claimRewards": 27500000
+                    },
+                    "customRewards": {
+                        "exitFarm": {
+                            "default": 17000000,
+                            "withPenalty": {
+                                "localBurn": 17500000,
+                                "pairBurn": 25500000,
+                                "buybackAndBurn": 39000000
+                            }
+                        },
+                        "claimRewards": 20700000
+                    }
+                },
+                "v2": {
+                    "enterFarm": {
+                        "default": 25000000,
+                        "withTokenMerge": 55000000
+                    },
+                    "compoundRewards": 21600000,
+                    "unlockedRewards": {
+                        "exitFarm": {
+                            "default": 17500000,
+                            "withPenalty": {
+                                "localBurn": 19000000,
+                                "pairBurn": 25500000,
+                                "buybackAndBurn": 39000000
+                            }
+                        },
+                        "claimRewards": 21000000
+                    },
+                    "lockedRewards": {
+                        "exitFarm": {
+                            "default": 24000000,
+                            "withPenalty": {
+                                "localBurn": 26000000,
+                                "pairBurn": 45000000,
                                 "buybackAndBurn": 48000000
                             }
                         },
@@ -348,6 +418,40 @@
             "exitFarmLockedToken": 45000000,
             "claimRewardsFarmLockedToken": 30000000
         },
+        "simpleLockEnergy": {
+            "lockTokens": 10000000,
+            "unlockTokens": {
+                "unlockEarly": 25000000,
+                "reduceLockPeriod": 20000000,
+                "default": 10000000
+            },
+            "updateTokens": 10000000,
+            "defaultMergeTokens": 12000000,
+            "migrateOldTokens": 15000000,
+            "admin": {
+                "issueLockedToken": 60000000,
+                "updateLockOptions": 10000000,
+                "setPenaltyPercentage": 10000000,
+                "setFeesBurnPercentage": 10000000,
+                "setFeesCollectorAddress": 10000000,
+                "setOldLockedAssetFactoryAddress": 10000000
+            }
+        },
+        "feesCollector": {
+            "baseClaimRewards": 10000000,
+            "claimRewardsPerWeek": 10000000
+        },
+        "energyUpdate": {
+            "updateFarmsEnergyForUser": 15000000
+        },
+        "tokenUnstake": {
+            "claimUnlockedTokens": 15000000,
+            "cancelUnbond": 20000000
+        },
+        "lockedTokenWrapper": {
+            "wrapLockedToken": 15000000,
+            "unwrapLockedToken": 15000000
+        },
         "lockedAssetCreate": 5000000,
         "wrapeGLD": 4200000,
         "claimLockedAssets": 45500000
@@ -358,20 +462,32 @@
         "distribution": "./src/abis/distribution.abi.json",
         "lockedAssetFactory": "./src/abis/factory.abi.json",
         "metabondingStaking": "./src/abis/metabonding-staking.abi.json",
-        "proxy": "./src/abis/proxy-dex.abi.json",
+        "proxy": {
+            "v1": "./src/abis/proxy-dex.abi.json",
+            "v2": "./src/abis/proxy-dex-v2.abi.json"
+        },
         "wrap": "./src/abis/egld-esdt-swap.abi.json",
         "priceDiscovery": "./src/abis/price-discovery.abi.json",
         "simpleLock": "./src/abis/simple-lock.abi.json",
+        "simpleLockEnergy": "./src/abis/energy-factory.abi.json",
         "farm": {
-            "v1.2": "./src/abis/v1.2/farm.abi.json",
+            "v1.2": "./src/abis/farms/v1.2/farm.abi.json",
             "v1.3": {
-                "unlockedRewards": "./src/abis/v1.3/farm.abi.json",
-                "lockedRewards": "./src/abis/v1.3/farm_with_lock.abi.json",
-                "customRewards": "./src/abis/v1.3/farm_custom_rewards.abi.json"
+                "unlockedRewards": "./src/abis/farms/v1.3/farm.abi.json",
+                "lockedRewards": "./src/abis/farms/v1.3/farm_with_lock.abi.json",
+                "customRewards": "./src/abis/farms/v1.3/farm_custom_rewards.abi.json"
+            },
+            "v2": {
+                "unlockedRewards": "./src/abis/farms/v2/farm.abi.json",
+                "lockedRewards": "src/abis/farms/v2/farm-with-locked-rewards.abi.json"
             }
         },
         "staking": "./src/abis/farm-staking.abi.json",
-        "stakingProxy": "./src/abis/farm-staking-proxy.abi.json"
+        "stakingProxy": "./src/abis/farm-staking-proxy.abi.json",
+        "feesCollector": "./src/abis/fees-collector.abi.json",
+        "energyUpdate": "./src/abis/energy-update.abi.json",
+        "tokenUnstake": "./src/abis/token-unstake.abi.json",
+        "lockedTokenWrapper": "./src/abis/locked-token-wrapper.abi.json"
     },
     "cron": {
         "transactionCollectorMaxHyperblocks": 10,
@@ -390,8 +506,14 @@
         "MEX_TOKEN_ID": "MEX-27f4cd",
         "USDC_TOKEN_ID": "USDC-a63f36",
         "PRECISION_EX_INCREASE": 1000,
-        "UNBOND_EPOCHS": 3,
+        "UNBOND_EPOCHS": 0,
         "MAINTENANCE": false,
+        "EPOCHS_IN_WEEK": 7,
+        "EPOCHS_IN_MONTH": 30,
+        "BLOCKS_PER_WEEK": 100800,
+        "USER_MAX_CLAIM_WEEKS": 4,
+        "STAKING_UNBOND_ATTRIBUTES_LEN": 12,
+        "MAX_USER_NFTS": 10000,
         "endpoints": [
             "wrapEgld",
             "unwrapEgld",

@@ -9,9 +9,10 @@ import { RouterComputeService } from './router.compute.service';
 import { PairTokens } from 'src/modules/pair/models/pair.model';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { EnableSwapByUserConfig } from '../models/factory.model';
+import { IRouterGetterService } from '../interfaces';
 
 @Injectable()
-export class RouterGetterService extends GenericGetterService {
+export class RouterGetterService extends GenericGetterService implements IRouterGetterService {
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,

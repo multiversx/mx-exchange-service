@@ -1,4 +1,6 @@
 import { Field, Int, InterfaceType } from '@nestjs/graphql';
+import { IAssets } from './assets.interface';
+import { IRoles } from './roles.interface';
 
 @InterfaceType()
 export abstract class INFTCollection {
@@ -18,6 +20,8 @@ export abstract class INFTCollection {
     @Field() canAddSpecialRoles: boolean;
     @Field() canTransferNFTCreateRole: boolean;
     @Field() NFTCreateStopped: boolean;
+    @Field(() => IAssets, { nullable: true }) assets?: IAssets;
+    @Field(() => IRoles, { nullable: true }) roles?: IRoles;
 }
 
 @InterfaceType()
@@ -37,4 +41,5 @@ export abstract class INFTToken {
     @Field({ nullable: true }) url?: string;
     @Field(() => [String], { nullable: true }) tags?: string[];
     @Field() balance: string;
+    @Field(() => IAssets, { nullable: true }) assets?: IAssets;
 }

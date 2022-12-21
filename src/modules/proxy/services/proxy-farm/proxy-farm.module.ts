@@ -7,9 +7,9 @@ import { ProxyFarmGetterService } from './proxy-farm.getter.service';
 import { CachingModule } from '../../../../services/caching/cache.module';
 import { ProxyPairModule } from '../proxy-pair/proxy-pair.module';
 import { ProxyModule } from '../../proxy.module';
-import { FarmModule } from 'src/modules/farm/farm.module';
 import { PairModule } from 'src/modules/pair/pair.module';
 import { TokenModule } from 'src/modules/tokens/token.module';
+import { FarmModule } from 'src/modules/farm/farm.module';
 
 @Module({
     imports: [
