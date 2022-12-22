@@ -43,6 +43,25 @@ export class ElrondGatewayService {
         );
     }
 
+    async getSCStorageKeys(address: string, keys: any[]): Promise<any> {
+        let fullKey = "";
+        for (const key of keys) {
+            switch (typeof key) {
+                case 'number':
+                    fullKey = fullKey.concat(key.toString(16).padStart(8, '0'))
+                    break
+                case 'string':
+                    fullKey = fullKey.concat(Buffer.from(key).toString('hex'))
+                    break;
+            }
+        }
+        return await this.doGetGeneric(
+            this.getSCStorageKey.name,
+            `address/${address}/key/${fullKey}`,
+            response => response.data.value,
+        );
+    }
+
     /**
      * Get method that receives the resource url and on callback the method used to map the response.
      */
