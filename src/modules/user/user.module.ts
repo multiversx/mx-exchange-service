@@ -34,6 +34,7 @@ import {
 import {
     UserEnergySetterService
 } from './services/userEnergy/user.energy.setter.service';
+import { UserInfoByWeekResolver } from './user.info-by-week.resolver';
 
 @Module({
     imports: [
@@ -70,11 +71,13 @@ import {
         UserResolver,
         UserTokenResolver,
         UserNftsResolver,
+        UserInfoByWeekResolver,
     ],
     exports: [
         UserMetaEsdtService,
         UserEnergyGetterService,
-        UserEnergySetterService
+        UserEnergySetterService,
+        UserInfoByWeekResolver,
     ],
 })
 export class UserModule {}

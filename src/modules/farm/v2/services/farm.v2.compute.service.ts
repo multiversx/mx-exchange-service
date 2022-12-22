@@ -138,6 +138,16 @@ export class FarmComputeServiceV2 extends Mixin(
         const boostedYieldsFactors =
             await this.farmGetter.getBoostedYieldsFactors(scAddress);
 
+        if (energyAmount === undefined) {
+            const userEnergyModel =
+                await this.weeklyRewardsSplittingGetter.userEnergyForWeek(
+                    scAddress,
+                    userAddress,
+                    week,
+                );
+            energyAmount = userEnergyModel.amount;
+        }
+
         const userHasMinEnergy = new BigNumber(energyAmount).isGreaterThan(
             boostedYieldsFactors.minEnergyAmount,
         );
@@ -210,7 +220,7 @@ export class FarmComputeServiceV2 extends Mixin(
                     : userRewardsForWeek;
             if (paymentAmount.isPositive()) {
                 const payment = new EsdtTokenPayment();
-                payment.amount = paymentAmount.toFixed();
+                payment.amount = paymentAmount.integerValue().toFixed();
                 payment.nonce = 0;
                 payment.tokenID = weeklyRewards.tokenID;
                 payment.tokenType = weeklyRewards.tokenType;

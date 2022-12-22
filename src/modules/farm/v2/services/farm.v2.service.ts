@@ -72,7 +72,9 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
             if (week < 1) {
                 continue;
             }
-            modelsList.push(this.getUserInfoByWeek(positon.farmAddress, positon.user, week))
+            const model = this.getUserInfoByWeek(positon.farmAddress, positon.user, week)
+            model.positionAmount = positon.liquidity
+            modelsList.push(model)
         }
 
         const currentClaimProgress = await this.farmGetter.currentClaimProgress(
