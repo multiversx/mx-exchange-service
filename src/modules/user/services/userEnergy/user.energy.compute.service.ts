@@ -15,6 +15,7 @@ import { StakingProxyService } from '../../../staking-proxy/services/staking.pro
 import { FarmVersion } from '../../../farm/models/farm.model';
 import { farmVersion } from '../../../../utils/farm.utils';
 import { BigNumber } from 'bignumber.js';
+import { StakingProxyGetterService } from '../../../staking-proxy/services/staking.proxy.getter.service';
 
 @Injectable()
 export class UserEnergyComputeService {
@@ -25,6 +26,7 @@ export class UserEnergyComputeService {
         private readonly userMetaEsdtService: UserMetaEsdtService,
         private readonly proxyFarmGetter: ProxyFarmGetterService,
         private readonly stakeProxyService: StakingProxyService,
+        private readonly stakeProxyGetter: StakingProxyGetterService,
         private readonly proxyService: ProxyService,
     ) {
     }
@@ -124,7 +126,7 @@ export class UserEnergyComputeService {
             })
         const promisesDualYieldTokens = dualYieldTokens
             .map(token => {
-                return this.decodeAndGetFarmAddressDualYieldTokens(token);
+                return this.getFarmAddressForDualYieldToken(token);
             })
 
         userActiveFarmAddresses = userActiveFarmAddresses.concat(
@@ -148,18 +150,9 @@ export class UserEnergyComputeService {
         return this.farmGetter.getFarmAddressByFarmTokenID(decodedWFMTAttributes[0].farmToken.tokenIdentifier)
     }
 
-    decodeAndGetFarmAddressDualYieldTokens(token: UserDualYiledToken) {
-        const decodedAttributes =
-            this.stakeProxyService.decodeDualYieldTokenAttributes({
-                batchAttributes: [
-                    {
-                        identifier: token.identifier,
-                        attributes: token.attributes,
-                    },
-                ],
-            });
-
-        return this.farmGetter.getFarmAddressByFarmTokenID(decodedAttributes[0].identifier)
+    async getFarmAddressForDualYieldToken(token: UserDualYiledToken) {
+        const stakingProxyAddress = await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(token.collection);
+        return this.stakeProxyGetter.getLpFarmAddress(stakingProxyAddress)
     }
 
     isEnergyOutdated(currentUserEnergy: EnergyType, currentClaimProgress: ClaimProgress): boolean {
