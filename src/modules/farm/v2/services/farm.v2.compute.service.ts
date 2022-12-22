@@ -126,6 +126,96 @@ export class FarmComputeServiceV2 extends Mixin(
         return totalFarmRewards;
     }
 
+    async computeUserAccumulatedRewards(
+        scAddress: string,
+        week: number,
+        userAddress: string,
+        liquidity: string,
+    ): Promise<string> {
+        const boostedYieldsFactors =
+            await this.farmGetter.getBoostedYieldsFactors(scAddress);
+
+        const userEnergyModel =
+            await this.farmGetter.userEnergyForWeek(
+                scAddress,
+                userAddress,
+                week,
+            );
+        const energyAmount = userEnergyModel.amount;
+
+        const userHasMinEnergy = new BigNumber(energyAmount).isGreaterThan(
+            boostedYieldsFactors.minEnergyAmount,
+        );
+        if (!userHasMinEnergy) {
+            return "0";
+        }
+
+        const userMinFarmAmount = new BigNumber(liquidity).isGreaterThan(
+            boostedYieldsFactors.minFarmAmount,
+        );
+        if (!userMinFarmAmount) {
+            return "0";
+        }
+
+        const totalRewards =
+            await this.farmGetter.getAccumulatedRewardsForWeek(
+                scAddress,
+                week,
+            );
+        if (totalRewards.length === 0) {
+            return "0";
+        }
+
+        const [rewardsPerBlock, farmTokenSupply, totalEnergy, userEnergy] =
+            await Promise.all([
+                this.farmGetter.getRewardsPerBlock(scAddress),
+                this.farmGetter.getFarmTokenSupply(scAddress),
+                this.farmGetter.totalEnergyForWeek(
+                    scAddress,
+                    week,
+                ),
+                this.farmGetter.userEnergyForWeek(
+                    scAddress,
+                    userAddress,
+                    week,
+                ),
+            ]);
+
+        const userBaseRewardsPerBlock = new BigNumber(rewardsPerBlock)
+            .multipliedBy(liquidity)
+            .dividedBy(farmTokenSupply);
+        const userRewardsForWeek = new BigNumber(
+            boostedYieldsFactors.maxRewardsFactor,
+        )
+            .multipliedBy(userBaseRewardsPerBlock)
+            .multipliedBy(constantsConfig.BLOCKS_PER_WEEK);
+
+        const boostedRewardsByEnergy = new BigNumber(totalRewards)
+            .multipliedBy(boostedYieldsFactors.userRewardsEnergy)
+            .multipliedBy(userEnergy.amount)
+            .dividedBy(totalEnergy);
+
+        const boostedRewardsByTokens = new BigNumber(totalRewards)
+            .multipliedBy(boostedYieldsFactors.userRewardsFarm)
+            .multipliedBy(liquidity)
+            .dividedBy(farmTokenSupply);
+
+        const constantsBase = new BigNumber(
+            boostedYieldsFactors.userRewardsEnergy,
+        ).plus(boostedYieldsFactors.userRewardsFarm);
+
+        const boostedRewardAmount = boostedRewardsByEnergy
+            .plus(boostedRewardsByTokens)
+            .dividedBy(constantsBase);
+
+        const paymentAmount =
+            boostedRewardAmount.comparedTo(userRewardsForWeek) < 1
+                ? boostedRewardAmount
+                : userRewardsForWeek;
+
+        return paymentAmount.integerValue().toFixed();
+    }
+
     async computeUserRewardsForWeek(
         scAddress: string,
         week: number,
