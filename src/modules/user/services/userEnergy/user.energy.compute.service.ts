@@ -152,9 +152,7 @@ export class UserEnergyComputeService {
 
     async getFarmAddressForDualYieldToken(token: UserDualYiledToken) {
         const stakingProxyAddress = await this.stakeProxyService.getStakingProxyAddressByDualYieldTokenID(token.collection);
-        const lpToken = await this.stakeProxyGetter.getLpFarmToken(stakingProxyAddress)
-
-        return this.farmGetter.getFarmAddressByFarmTokenID(lpToken.collection)
+        return this.stakeProxyGetter.getLpFarmAddress(stakingProxyAddress)
     }
 
     isEnergyOutdated(currentUserEnergy: EnergyType, currentClaimProgress: ClaimProgress): boolean {
