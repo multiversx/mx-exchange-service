@@ -59,18 +59,15 @@ export class UserEsdtService {
         inputTokens?: IEsdtToken[],
     ): Promise<UserToken[]> {
 
-        let userTokens: IEsdtToken[];
-        if (inputTokens) {
-            userTokens = inputTokens;
-        } else {
-            userTokens = await this.apiService.getTokensForUser(
+        const [userTokens, uniquePairTokens] = await Promise.all([
+            inputTokens ? Promise.resolve(inputTokens) : this.apiService.getTokensForUser(
                 userAddress,
                 pagination.offset,
                 pagination.limit,
-            );
-        }
+            ),
+            this.getUniquePairTokens()
+        ]);
 
-        const uniquePairTokens = await this.getUniquePairTokens();
         const userPairEsdtTokens = userTokens.filter(token =>
             uniquePairTokens.includes(token.identifier),
         );
