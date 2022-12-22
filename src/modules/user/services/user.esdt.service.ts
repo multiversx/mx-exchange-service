@@ -12,7 +12,6 @@ import {
 import { TokenService } from 'src/modules/tokens/services/token.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
-import { AsyncDDTrace } from 'src/utils/ddTrace';
 import { UserToken } from '../models/user.model';
 import { UserEsdtComputeService } from './esdt.compute.service';
 
@@ -28,7 +27,6 @@ export class UserEsdtService {
         private readonly cachingService: CachingService,
     ) { }
 
-    @AsyncDDTrace()
     private async getUniquePairTokens(): Promise<string[]> {
         return await this.cachingService.getOrSet(
             'uniquePairTokens',
@@ -55,7 +53,6 @@ export class UserEsdtService {
         return uniquePairTokens;
     }
 
-    @AsyncDDTrace()
     async getAllEsdtTokens(
         userAddress: string,
         pagination: PaginationArgs,
@@ -84,7 +81,6 @@ export class UserEsdtService {
         return await Promise.all(promises);
     }
 
-    @AsyncDDTrace()
     private async getEsdtTokenDetails(token: EsdtToken): Promise<UserToken> {
         const pairAddress = await this.pairService.getPairAddressByLpTokenID(
             token.identifier,

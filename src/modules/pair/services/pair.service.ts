@@ -16,7 +16,6 @@ import { computeValueUSD } from 'src/utils/token.converters';
 import { CachingService } from 'src/services/caching/cache.service';
 import { oneHour } from 'src/helpers/helpers';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { AsyncDDTrace } from 'src/utils/ddTrace';
 
 @Injectable()
 export class PairService {
@@ -151,7 +150,6 @@ export class PairService {
         }
     }
 
-    @AsyncDDTrace()
     async getLiquidityPosition(
         pairAddress: string,
         amount: string,
@@ -177,7 +175,6 @@ export class PairService {
         });
     }
 
-    @AsyncDDTrace()
     async getLiquidityPositionUSD(
         pairAddress: string,
         amount: string,
@@ -210,7 +207,6 @@ export class PairService {
             .toFixed();
     }
 
-    @AsyncDDTrace()
     async getPairAddressByLpTokenID(tokenID: string): Promise<string | null> {
         const cachedValue: string = await this.cachingService.getCache(
             `${tokenID}.pairAddress`,
@@ -223,18 +219,20 @@ export class PairService {
             this.pairGetterService.getLpTokenID(pairAddress),
         );
         const lpTokenIDs = await Promise.all(promises);
+        let returnedData = null;
         for (let index = 0; index < lpTokenIDs.length; index++) {
             if (lpTokenIDs[index] === tokenID) {
-                await this.cachingService.setCache(
-                    `${tokenID}.pairAddress`,
-                    pairsAddress[index],
-                    oneHour(),
-                );
-                return pairsAddress[index];
+                returnedData = pairsAddress[index];
+                break;
             }
         }
 
-        return null;
+        await this.cachingService.setCache(
+            `${tokenID}.pairAddress`,
+            returnedData,
+            oneHour(),
+        );
+        return returnedData;
     }
 
     async isPairEsdtToken(tokenID: string): Promise<boolean> {
@@ -265,4 +263,4 @@ export class PairService {
         )
             throw new Error('You are not the owner.');
     }
-}
+};
