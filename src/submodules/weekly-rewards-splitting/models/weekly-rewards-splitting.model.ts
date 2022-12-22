@@ -56,6 +56,9 @@ export class UserInfoByWeekModel {
     @Field()
     apr: string;
 
+    @Field({ nullable: true })
+    positionAmount: string;
+
     @Field(() => EnergyModel)
     energyForWeek: EnergyModel;
 
