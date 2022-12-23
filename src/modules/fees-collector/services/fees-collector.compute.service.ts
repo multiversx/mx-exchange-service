@@ -18,27 +18,35 @@ export class FeesCollectorComputeService {
 
     async computeAccumulatedFeesUntilNow(scAddress: string, week: number): Promise<string> {
         const [
-            startEpochForCurrentWeek,
-            currentEpoch,
-            lockedTokensPerBlock
+            lockedTokensPerBlock,
+            blocksInWeek
         ] = await Promise.all([
-            this.weekTimekeepingGetter.getStartEpochForWeek(scAddress, week),
-            this.contextGetter.getCurrentEpoch(),
             this.feesCollectorGetter.getLockedTokensPerBlock(scAddress),
+            this.computeBlocksInWeek(scAddress, week),
         ]);
-        const promises = []
-        for (let epoch = startEpochForCurrentWeek; epoch <= currentEpoch; epoch++) {
-            promises.push(this.contextGetter.getBlocksCountInEpoch(epoch, 1));
-        }
-        const blocksInEpoch = await Promise.all(promises);
-
-        let blocksInWeek = 0;
-        for (const blocks of blocksInEpoch) {
-            blocksInWeek += blocks;
-        }
 
         return new BigNumber(lockedTokensPerBlock)
             .multipliedBy(blocksInWeek)
             .toFixed();
+    }
+
+    async computeBlocksInWeek(scAddress: string, week: number): Promise<number> {
+        const [
+            startEpochForCurrentWeek,
+            currentEpoch,
+        ] = await Promise.all([
+            this.weekTimekeepingGetter.getStartEpochForWeek(scAddress, week),
+            this.contextGetter.getCurrentEpoch(),
+        ]);
+
+        const promises = []
+        for (let epoch = startEpochForCurrentWeek; epoch <= currentEpoch; epoch++) {
+            promises.push(this.contextGetter.getBlocksCountInEpoch(epoch, 1));
+        }
+
+        const blocksInEpoch = await Promise.all(promises);
+        return blocksInEpoch.reduce((total, current) => {
+            return total + current;
+        })
     }
 }
