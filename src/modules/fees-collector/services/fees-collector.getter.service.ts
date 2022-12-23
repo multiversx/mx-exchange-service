@@ -28,6 +28,15 @@ export class FeesCollectorGetterService
         super(cachingService, logger, abiService, weeklyRewardsSplittingComputeService);
     }
 
+    async getUserApr(scAddress: string, userAddress: string, week: number): Promise<string> {
+        return this.getData(
+            this.getCacheKey(scAddress, 'userApr', userAddress, week),
+            () => this.weeklyRewardsSplittingComputeService.computeUserApr(scAddress, userAddress, week),
+            CacheTtlInfo.ContractState.remoteTtl,
+            CacheTtlInfo.ContractState.localTtl,
+        )
+    }
+
     async getAccumulatedFees(
         scAddress: string,
         week: number,
