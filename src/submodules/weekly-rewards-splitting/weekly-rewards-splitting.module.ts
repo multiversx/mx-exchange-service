@@ -10,7 +10,6 @@ import { WeekTimekeepingModule } from '../week-timekeeping/week-timekeeping.modu
 import { ProgressComputeService } from './services/progress.compute.service';
 import {
     GlobalInfoByWeekResolver,
-    UserInfoByWeekResolver,
 } from './weekly-rewards-splitting.resolver';
 import { RouterModule } from '../../modules/router/router.module';
 import { PairModule } from '../../modules/pair/pair.module';
@@ -53,12 +52,10 @@ export class WeeklyRewardsSplittingModule {
                         computeProvider ?? WeeklyRewardsSplittingComputeService,
                 },
                 GlobalInfoByWeekResolver,
-                UserInfoByWeekResolver,
             ],
             exports: [
                 ProgressComputeService,
                 GlobalInfoByWeekResolver,
-                UserInfoByWeekResolver,
                 WeeklyRewardsSplittingService,
                 WeeklyRewardsSplittingGetterService,
                 WeeklyRewardsSplittingSetterService,
