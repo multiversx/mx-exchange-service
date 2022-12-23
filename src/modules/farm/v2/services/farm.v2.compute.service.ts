@@ -161,10 +161,16 @@ export class FarmComputeServiceV2 extends Mixin(
             return payments;
         }
 
-        const [rewardsPerBlock, farmTokenSupply, totalEnergy, userEnergy] =
+        const [
+            rewardsPerBlock,
+            farmTokenSupply,
+            boostedYieldsRewardsPercenatage,
+            totalEnergy,
+            userEnergy] =
             await Promise.all([
                 this.farmGetter.getRewardsPerBlock(scAddress),
                 this.farmGetter.getFarmTokenSupply(scAddress),
+                this.farmGetter.getBoostedYieldsRewardsPercenatage(scAddress),
                 this.weeklyRewardsSplittingGetter.totalEnergyForWeek(
                     scAddress,
                     week,
@@ -177,11 +183,12 @@ export class FarmComputeServiceV2 extends Mixin(
             ]);
 
         const userBaseRewardsPerBlock = new BigNumber(rewardsPerBlock)
+            .multipliedBy(boostedYieldsRewardsPercenatage)
+            .dividedBy(constantsConfig.MAX_PERCENT)
             .multipliedBy(liquidity)
             .dividedBy(farmTokenSupply);
-        const userRewardsForWeek = new BigNumber(
-            boostedYieldsFactors.maxRewardsFactor,
-        )
+
+        const userRewardsForWeek = new BigNumber(boostedYieldsFactors.maxRewardsFactor)
             .multipliedBy(userBaseRewardsPerBlock)
             .multipliedBy(constantsConfig.BLOCKS_PER_WEEK);
 
