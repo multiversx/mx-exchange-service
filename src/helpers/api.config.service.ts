@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiConfigService {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(private readonly configService: ConfigService) { }
 
     getPublicAppPort(): number {
         const port = this.configService.get<number>('PORT');
@@ -206,5 +206,41 @@ export class ApiConfigService {
             throw new Error('No NATIVE_AUTH_PEM_PATH present');
         }
         return nativeAuthPemPath;
+    }
+
+    isAwsTimestreamWriteActive(): boolean {
+        const awsTimestreamWriteActive = this.configService.get<string>(
+            'ANALYTICS_AWS_TIMESTREAM_WRITE',
+        );
+        if (!awsTimestreamWriteActive) {
+            throw new Error('No ANALYTICS_AWS_TIMESTREAM_WRITE present');
+        }
+        return awsTimestreamWriteActive === 'true';
+    }
+
+    isDataApiWriteActive(): boolean {
+        const dataApiWriteActive = this.configService.get<string>(
+            'ANALYTICS_DATA_API_WRITE',
+        );
+        if (!dataApiWriteActive) {
+            throw new Error('No ANALYTICS_DATA_API_WRITE present');
+        }
+        return dataApiWriteActive === 'true';
+    }
+
+    getAnalyticsReadMode(): 'aws-timestream' | 'data-api' {
+        const analyticsReadMode = this.configService.get<string>(
+            'ANALYTICS_READ_MODE',
+        );
+        
+        if (!analyticsReadMode) {
+            throw new Error('No ANALYTICS_READ_MODE present');
+        }
+
+        if(analyticsReadMode === 'aws-timestream' || analyticsReadMode === 'data-api') {
+            return analyticsReadMode;
+        }
+        
+        throw new Error('Invalid value for ANALYTICS_READ_MODE present');
     }
 }

@@ -54,7 +54,7 @@ import { EnergyHandler } from './handlers/energy.handler.service';
 import { FeesCollectorHandlerService } from './handlers/feesCollector.handler.service';
 import { WeeklyRewardsSplittingHandlerService } from './handlers/weeklyRewardsSplitting.handler.service';
 import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.service';
-import { DataApiWriteService } from 'src/services/data-api/data-api.write';
+import { DataApiWriteService } from 'src/services/data-api/data-api.write.service';
 
 @Injectable()
 export class RabbitMqConsumer {

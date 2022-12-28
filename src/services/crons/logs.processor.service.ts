@@ -22,7 +22,7 @@ import {
 } from '@elrondnetwork/erdjs-dex';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
-import { DataApiWriteService } from '../data-api/data-api.write';
+import { DataApiWriteService } from '../data-api/data-api.write.service';
 
 @Injectable()
 export class LogsProcessorService {

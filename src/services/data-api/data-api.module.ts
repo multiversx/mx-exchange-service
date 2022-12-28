@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
-import { DataApiWriteService } from './data-api.write';
+import { DataApiQueryService } from './data-api.query.service';
+import { DataApiWriteService } from './data-api.write.service';
 
 @Module({
     imports: [CommonAppModule],
-    providers: [DataApiWriteService],
-    exports: [DataApiWriteService],
+    providers: [DataApiQueryService, DataApiWriteService],
+    exports: [DataApiQueryService, DataApiWriteService],
 })
 export class DataApiModule { }
