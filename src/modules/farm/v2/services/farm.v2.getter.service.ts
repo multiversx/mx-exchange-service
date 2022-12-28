@@ -51,8 +51,17 @@ export class FarmGetterServiceV2 extends Mixin(FarmGetterService, WeekTimekeepin
         return this.getData(
             this.getCacheKey(scAddress, 'accumulatedRewardsForWeek', week),
             () => this.abiService.accumulatedRewardsForWeek(scAddress, week),
-            CacheTtlInfo.ContractState.remoteTtl,
-            CacheTtlInfo.ContractState.localTtl,
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
+        )
+    }
+
+    async getUserAccumulatedRewardsForWeek(scAddress: string, week: number, userAddress: string, liquidity: string): Promise<string> {
+        return this.getData(
+            this.getCacheKey(scAddress, 'accumulatedRewardsForWeek', week),
+            () => this.computeService.computeUserAccumulatedRewards(scAddress, week, userAddress, liquidity),
+            CacheTtlInfo.ContractBalance.remoteTtl,
+            CacheTtlInfo.ContractBalance.localTtl,
         )
     }
 
