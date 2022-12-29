@@ -14,16 +14,30 @@ export class AnalyticsWriteService implements AnalyticsWriteInterface {
   ) { }
 
   public async ingest({ TableName, data, Time }): Promise<void> {
-    await Promise.all([
-      this.options.writeFlags.awsTimestream && this.awsWrite?.ingest({ TableName, data, Time }),
-      this.options.writeFlags.dataApi && this.dataApiWrite?.ingest({ data, Time }),
-    ]);
+    const promises = [];
+
+    if (this.options.writeFlags.awsTimestream && this.awsWrite) {
+      promises.push(this.awsWrite.ingest({ TableName, data, Time }));
+    }
+
+    if (this.options.writeFlags.dataApi && this.dataApiWrite) {
+      promises.push(this.dataApiWrite.ingest({ data, Time }));
+    };
+
+    await Promise.all(promises);
   }
 
   public async multiRecordsIngest(TableName: string, Records: TimestreamWrite.Records): Promise<void> {
-    await Promise.all([
-      this.options.writeFlags.awsTimestream && this.awsWrite?.multiRecordsIngest(TableName, Records),
-      this.options.writeFlags.dataApi && this.dataApiWrite?.multiRecordsIngest(TableName, Records),
-    ]);
+    const promises = [];
+
+    if (this.options.writeFlags.awsTimestream && this.awsWrite) {
+      promises.push(this.awsWrite.multiRecordsIngest(TableName, Records));
+    }
+
+    if (this.options.writeFlags.dataApi && this.dataApiWrite) {
+      promises.push(this.dataApiWrite.multiRecordsIngest(TableName, Records));
+    }
+
+    await Promise.all(promises);
   }
 }

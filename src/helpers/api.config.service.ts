@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AnalyticsQueryMode } from 'src/services/analytics/entities/analytics.query.mode';
 
 @Injectable()
 export class ApiConfigService {
@@ -224,13 +225,13 @@ export class ApiConfigService {
         return dataApiWriteActive === 'true';
     }
 
-    static getAnalyticsQueryMode(): 'aws-timestream' | 'data-api' {
+    static getAnalyticsQueryMode(): AnalyticsQueryMode {
         const analyticsQueryMode = process.env.ANALYTICS_QUERY_MODE;
         if (!analyticsQueryMode) {
             throw new Error('No ANALYTICS_QUERY_MODE present');
         }
-        if (analyticsQueryMode === 'aws-timestream' || analyticsQueryMode === 'data-api') {
-            return analyticsQueryMode;
+        if (analyticsQueryMode === AnalyticsQueryMode.AWS_TIMESTREAM || analyticsQueryMode === AnalyticsQueryMode.DATA_API) {
+            return analyticsQueryMode as AnalyticsQueryMode;
         }
         throw new Error('Invalid value for ANALYTICS_QUERY_MODE present');
     }
