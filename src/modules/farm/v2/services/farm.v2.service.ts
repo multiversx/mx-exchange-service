@@ -49,18 +49,15 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
     ): Promise<RewardsModel[]> {
         const boostedPositions = new Map<string, CalculateRewardsArgs>();
         positions.forEach((position) => {
-            const boostedPosition = boostedPositions.get(position.farmAddress);
-            if (!boostedPosition) {
-                boostedPositions.set(position.farmAddress, position);
-            } else {
-                if (
-                    new BigNumber(position.liquidity).isGreaterThan(
-                        boostedPosition.liquidity,
-                    )
-                ) {
-                    boostedPositions.set(position.farmAddress, position);
-                }
+            let boostedPosition = boostedPositions.get(position.farmAddress) ?? position;
+            if (
+                new BigNumber(position.liquidity).isGreaterThan(
+                    boostedPosition.liquidity,
+                )
+            ) {
+                boostedPosition = position;
             }
+            boostedPositions.set(position.farmAddress, boostedPosition);
         });
 
         const promises = positions.map(async (position) => {
