@@ -4,9 +4,9 @@ import { AWSModule } from "../aws/aws.module";
 import { AWSTimestreamQueryService } from "../aws/aws.timestream.query";
 import { DataApiModule } from "../data-api/data-api.module";
 import { DataApiQueryService } from "../data-api/data-api.query.service";
-import { AnalyticsQueryInterface } from "./analytics.query.interface";
-import { AnalyticsQueryService } from "./analytics.query.service";
-import { AnalyticsWriteService } from "./analytics.write.service";
+import { AnalyticsQueryInterface } from "./interfaces/analytics.query.interface";
+import { AnalyticsQueryService } from "./services/analytics.query.service";
+import { AnalyticsWriteService } from "./services/analytics.write.service";
 
 @Global()
 @Module({})

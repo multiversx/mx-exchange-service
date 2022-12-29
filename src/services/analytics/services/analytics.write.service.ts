@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AnalyticsWriteInterface } from './analytics.write.interface';
+import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
 
 @Injectable()
 export class AnalyticsWriteService  implements AnalyticsWriteInterface{
