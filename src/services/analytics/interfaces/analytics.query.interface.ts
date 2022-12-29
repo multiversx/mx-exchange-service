@@ -1,3 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface AnalyticsQueryInterface {
+  // TODO create interface for input
+  getAggregatedValue({ table, series, metric, time }): Promise<string>;
 }

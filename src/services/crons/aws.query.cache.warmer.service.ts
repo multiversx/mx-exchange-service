@@ -6,13 +6,13 @@ import { delay } from 'src/helpers/helpers';
 import { AnalyticsAWSSetterService } from 'src/modules/analytics/services/analytics.aws.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenService } from 'src/modules/tokens/services/token.service';
-import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
+import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 
 @Injectable()
 export class AWSQueryCacheWarmerService {
     constructor(
-        private readonly awsQuery: AWSTimestreamQueryService,
+        private readonly analyticsQuery: AnalyticsQueryService,
         private readonly tokenService: TokenService,
         private readonly routerGetter: RouterGetterService,
         private readonly analyticsAWSSetter: AnalyticsAWSSetterService,
@@ -23,40 +23,40 @@ export class AWSQueryCacheWarmerService {
     async updateHistoricTokensData(): Promise<void> {
         const tokens = await this.tokenService.getUniqueTokenIDs(false);
         for (const tokenID of tokens) {
-            const priceUSD24h = await this.awsQuery.getValues24h({
+            const priceUSD24h = await this.analyticsQuery.getValues24h({
                 table: awsConfig.timestream.tableName,
                 series: tokenID,
                 metric: 'priceUSD',
             });
             delay(1000);
             const priceUSDCompleteValues =
-                await this.awsQuery.getLatestCompleteValues({
+                await this.analyticsQuery.getLatestCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: tokenID,
                     metric: 'priceUSD',
                 });
             delay(1000);
-            const lockedValueUSD24h = await this.awsQuery.getValues24h({
+            const lockedValueUSD24h = await this.analyticsQuery.getValues24h({
                 table: awsConfig.timestream.tableName,
                 series: tokenID,
                 metric: 'lockedValueUSD',
             });
             delay(1000);
             const lockedValueUSDCompleteValues =
-                await this.awsQuery.getLatestCompleteValues({
+                await this.analyticsQuery.getLatestCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: tokenID,
                     metric: 'lockedValueUSD',
                 });
             delay(1000);
-            const volumeUSD24hSum = await this.awsQuery.getValues24hSum({
+            const volumeUSD24hSum = await this.analyticsQuery.getValues24hSum({
                 table: awsConfig.timestream.tableName,
                 series: tokenID,
                 metric: 'volumeUSD',
             });
             delay(1000);
             const volumeUSDCompleteValuesSum =
-                await this.awsQuery.getSumCompleteValues({
+                await this.analyticsQuery.getSumCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: tokenID,
                     metric: 'volumeUSD',
@@ -102,40 +102,40 @@ export class AWSQueryCacheWarmerService {
     async updateHistoricPairsData(): Promise<void> {
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
         for (const pairAddress of pairsAddresses) {
-            const lockedValueUSD24h = await this.awsQuery.getValues24h({
+            const lockedValueUSD24h = await this.analyticsQuery.getValues24h({
                 table: awsConfig.timestream.tableName,
                 series: pairAddress,
                 metric: 'lockedValueUSD',
             });
             delay(1000);
             const lockedValueUSDCompleteValues =
-                await this.awsQuery.getLatestCompleteValues({
+                await this.analyticsQuery.getLatestCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'lockedValueUSD',
                 });
             delay(1000);
-            const feesUSD = await this.awsQuery.getValues24hSum({
+            const feesUSD = await this.analyticsQuery.getValues24hSum({
                 table: awsConfig.timestream.tableName,
                 series: pairAddress,
                 metric: 'feesUSD',
             });
             delay(1000);
-            const volumeUSD24hSum = await this.awsQuery.getValues24hSum({
+            const volumeUSD24hSum = await this.analyticsQuery.getValues24hSum({
                 table: awsConfig.timestream.tableName,
                 series: pairAddress,
                 metric: 'volumeUSD',
             });
             delay(1000);
             const volumeUSDCompleteValuesSum =
-                await this.awsQuery.getSumCompleteValues({
+                await this.analyticsQuery.getSumCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'volumeUSD',
                 });
             delay(1000);
             const feesUSDCompleteValuesSum =
-                await this.awsQuery.getSumCompleteValues({
+                await this.analyticsQuery.getSumCompleteValues({
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
                     metric: 'feesUSD',

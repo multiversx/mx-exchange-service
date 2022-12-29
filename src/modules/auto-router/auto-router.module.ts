@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CommonAppModule } from 'src/common.app.module';
-import { AWSModule } from 'src/services/aws/aws.module';
+import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
@@ -22,7 +22,7 @@ import { TokenModule } from '../tokens/token.module';
         ElrondCommunicationModule,
         CachingModule,
         PairModule,
-        AWSModule,
+        AnalyticsServicesModule,
         WrappingModule,
         RouterModule,
         TokenModule,

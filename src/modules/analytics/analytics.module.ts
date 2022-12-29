@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AWSModule } from 'src/services/aws/aws.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ContextModule } from 'src/services/context/context.module';
 import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
@@ -22,11 +21,12 @@ import { WeekTimekeepingModule } from '../../submodules/week-timekeeping/week-ti
 import { FeesCollectorAbiService } from '../fees-collector/services/fees-collector.abi.service';
 import { FeesCollectorModule } from '../fees-collector/fees-collector.module';
 import { RemoteConfigModule } from '../remote-config/remote-config.module';
+import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 
 @Module({
     imports: [
         ElrondCommunicationModule,
-        AWSModule,
+        AnalyticsServicesModule,
         CachingModule,
         ContextModule,
         RouterModule,

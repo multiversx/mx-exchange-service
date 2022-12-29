@@ -7,6 +7,7 @@ export class MetricsCollector {
     private static redisDurationHistogram: Histogram<string>;
     private static externalCallsHistogram: Histogram<string>;
     private static awsQueryDurationHistogram: Histogram<string>;
+    private static dataApiQueryDurationHistogram: Histogram<string>;
     private static gasDifferenceHistogram: Histogram<string>;
     private static guestQueriesGauge: Gauge<string>;
     private static guestHitsGauge: Gauge<string>;
@@ -66,6 +67,15 @@ export class MetricsCollector {
             MetricsCollector.awsQueryDurationHistogram = new Histogram({
                 name: 'aws_query',
                 help: 'AWS Timestream Queries',
+                labelNames: ['query'],
+                buckets: [],
+            });
+        }
+
+        if (!MetricsCollector.dataApiQueryDurationHistogram) {
+            MetricsCollector.dataApiQueryDurationHistogram = new Histogram({
+                name: 'data_api_query',
+                help: 'Data API Queries',
                 labelNames: ['query'],
                 buckets: [],
             });
@@ -175,6 +185,14 @@ export class MetricsCollector {
     static setAWSQueryDuration(queryName: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
         MetricsCollector.awsQueryDurationHistogram
+            .labels(queryName)
+            .observe(duration);
+    }
+
+    // TODO use method
+    static setDataApiQueryDuration(queryName: string, duration: number) {
+        MetricsCollector.ensureIsInitialized();
+        MetricsCollector.dataApiQueryDurationHistogram
             .labels(queryName)
             .observe(duration);
     }

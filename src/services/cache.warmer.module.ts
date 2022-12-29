@@ -17,7 +17,6 @@ import { AnalyticsModule } from 'src/modules/analytics/analytics.module';
 import { TransactionProcessorService } from './crons/transaction.processor.service';
 import { LogsProcessorService } from './crons/logs.processor.service';
 import { ElasticService } from 'src/helpers/elastic.service';
-import { AWSModule } from './aws/aws.module';
 import { StakingModule } from 'src/modules/staking/staking.module';
 import { StakingCacheWarmerService } from './crons/staking.cache.warmer.service';
 import { StakingProxyCacheWarmerService } from './crons/staking.proxy.cache.warmer.service';
@@ -33,7 +32,7 @@ import { AWSQueryCacheWarmerService } from './crons/aws.query.cache.warmer.servi
 import { FarmModuleV1_2 } from 'src/modules/farm/v1.2/farm.v1.2.module';
 import { FarmModuleV1_3 } from 'src/modules/farm/v1.3/farm.v1.3.module';
 import { FarmModule } from 'src/modules/farm/farm.module';
-import { DataApiModule } from './data-api/data-api.module';
+import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analytics/analytics.module';
 
 @Module({
     imports: [
@@ -56,8 +55,7 @@ import { DataApiModule } from './data-api/data-api.module';
         AnalyticsModule,
         PriceDiscoveryModule,
         TokenModule,
-        AWSModule,
-        DataApiModule,
+        AnalyticsServicesModule,
         RemoteConfigModule,
     ],
     controllers: [],
@@ -78,4 +76,4 @@ import { DataApiModule } from './data-api/data-api.module';
         ElasticService,
     ],
 })
-export class CacheWarmerModule {}
+export class CacheWarmerModule { }

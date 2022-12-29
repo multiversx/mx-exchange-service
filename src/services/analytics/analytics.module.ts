@@ -1,9 +1,9 @@
 import { DynamicModule, Global, Module, Type } from "@nestjs/common";
 import { ApiConfigService } from "src/helpers/api.config.service";
-import { AWSModule } from "../aws/aws.module";
-import { AWSTimestreamQueryService } from "../aws/aws.timestream.query";
-import { DataApiModule } from "../data-api/data-api.module";
-import { DataApiQueryService } from "../data-api/data-api.query.service";
+import { AWSModule } from "./aws/aws.module";
+import { AWSTimestreamQueryService } from "./aws/aws.timestream.query";
+import { DataApiModule } from "./data-api/data-api.module";
+import { DataApiQueryService } from "./data-api/data-api.query.service";
 import { AnalyticsQueryInterface } from "./interfaces/analytics.query.interface";
 import { AnalyticsQueryService } from "./services/analytics.query.service";
 import { AnalyticsWriteService } from "./services/analytics.write.service";
@@ -12,26 +12,40 @@ import { AnalyticsWriteService } from "./services/analytics.write.service";
 @Module({})
 export class AnalyticsModule {
   static register(apiConfigService: ApiConfigService): DynamicModule {
+    let shouldImportAwsTimestreamModule = false;
+    let shouldImportDataApiModule = false;
+
     // Import write modules
-    const modules = [];
     if (apiConfigService.isAwsTimestreamWriteActive()) {
-      modules.push(AWSModule)
+      shouldImportAwsTimestreamModule = true;
     }
     if (apiConfigService.isDataApiWriteActive()) {
-      modules.push(DataApiModule)
+      shouldImportDataApiModule = true;
     }
 
-    // Set query modules
+    // Import query modules
     let analyticsQueryInterface: Type<AnalyticsQueryInterface> = AWSTimestreamQueryService;
-    
     const analyticsReadMode = apiConfigService.getAnalyticsReadMode();
     if (analyticsReadMode === 'data-api') {
       analyticsQueryInterface = DataApiQueryService;
+      shouldImportDataApiModule = true;
+    } else {
+      shouldImportAwsTimestreamModule = true;
+    }
+
+    const imports = [];
+    if (shouldImportAwsTimestreamModule) {
+      imports.push(AWSModule);
+    }
+    if (shouldImportDataApiModule) {
+      imports.push(DataApiModule);
     }
 
     return {
       module: AnalyticsModule,
-      imports: modules,
+      imports: [
+        ...imports
+      ],
       providers: [
         {
           provide: 'AnalyticsQueryInterface',
