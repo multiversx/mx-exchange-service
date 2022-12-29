@@ -140,14 +140,18 @@ export class StakingProxyService {
         );
 
         const [farmRewards, stakingRewards] = await Promise.all([
-            this.farmFactory.useService(farmAddress).getRewardsForPosition({
-                attributes: farmToken.attributes,
-                identifier: farmToken.identifier,
-                farmAddress,
-                user: position.user,
-                liquidity: lpFarmTokenAmount.toFixed(),
-                vmQuery: position.vmQuery,
-            }),
+            this.farmFactory
+                .useService(farmAddress)
+                .getBatchRewardsForPosition([
+                    {
+                        attributes: farmToken.attributes,
+                        identifier: farmToken.identifier,
+                        farmAddress,
+                        user: position.user,
+                        liquidity: lpFarmTokenAmount.toFixed(),
+                        vmQuery: position.vmQuery,
+                    },
+                ]),
             this.stakingService.getRewardsForPosition({
                 attributes: stakingToken.attributes,
                 identifier: stakingToken.identifier,
@@ -161,7 +165,7 @@ export class StakingProxyService {
         return new DualYieldRewardsModel({
             attributes: position.attributes,
             identifier: position.identifier,
-            farmRewards,
+            farmRewards: farmRewards[0],
             stakingRewards,
         });
     }
