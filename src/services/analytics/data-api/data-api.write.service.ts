@@ -70,7 +70,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         }
     }
 
-    async multiRecordsIngest(Records: TimestreamWrite.Records) {
+    async multiRecordsIngest(_tableName: string, Records: TimestreamWrite.Records) {
         try {
             const ingestRecords =
                 this.convertAWSRecordsToDataAPIRecords(Records);
