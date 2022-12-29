@@ -18,7 +18,8 @@ import { Mixin } from 'ts-mixer';
 import { FarmTokenAttributesV2 } from '@elrondnetwork/erdjs-dex';
 import BigNumber from 'bignumber.js';
 import {
-    UserInfoByWeekModel
+    ClaimProgress,
+    UserInfoByWeekModel,
 } from '../../../../submodules/weekly-rewards-splitting/models/weekly-rewards-splitting.model';
 import { constantsConfig } from '../../../../config';
 
@@ -43,8 +44,22 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
         );
     }
 
+    async getBatchRewardsForPosition(
+        positions: CalculateRewardsArgs[],
+    ): Promise<RewardsModel[]> {
+        const biggestPosition = positions.reduce(function(prev, current) {
+            return new BigNumber(prev.liquidity).comparedTo(current.liquidity) === 1 ? prev : current;
+        })
+        const boostedPosition = positions.indexOf(biggestPosition);
+        const promises = positions.map(async (position, index) => {
+            return await this.getRewardsForPosition(position, index === boostedPosition);
+        });
+        return await Promise.all(promises);
+    }
+
     async getRewardsForPosition(
         positon: CalculateRewardsArgs,
+        computeBoosted = false,
     ): Promise<RewardsModel> {
         const farmTokenAttributes = FarmTokenAttributesV2.fromAttributes(
             positon.attributes,
@@ -60,34 +75,40 @@ export class FarmServiceV2 extends Mixin(FarmServiceBase, WeekTimekeepingService
                 farmTokenAttributes.rewardPerShare,
             );
         }
-        const currentWeek = await this.farmGetter.getCurrentWeek(positon.farmAddress);
-        const modelsList: UserInfoByWeekModel[] = []
-        let lastActiveWeekUser = await this.farmGetter.lastActiveWeekForUser(positon.farmAddress, positon.user)
-        if (lastActiveWeekUser === 0) {
-            lastActiveWeekUser = currentWeek
-        }
-        const startWeek = Math.max(currentWeek-constantsConfig.USER_MAX_CLAIM_WEEKS, lastActiveWeekUser);
 
-        for (let week = startWeek; week <= currentWeek - 1; week++) {
-            if (week < 1) {
-                continue;
+        let modelsList: UserInfoByWeekModel[] = undefined;
+        let currentClaimProgress: ClaimProgress = undefined;
+        let userAccumulatedRewards: string = undefined;
+        if (computeBoosted) {
+            const currentWeek = await this.farmGetter.getCurrentWeek(positon.farmAddress);
+            modelsList = []
+            let lastActiveWeekUser = await this.farmGetter.lastActiveWeekForUser(positon.farmAddress, positon.user)
+            if (lastActiveWeekUser === 0) {
+                lastActiveWeekUser = currentWeek
             }
-            const model = this.getUserInfoByWeek(positon.farmAddress, positon.user, week)
-            model.positionAmount = positon.liquidity
-            modelsList.push(model)
+            const startWeek = Math.max(currentWeek-constantsConfig.USER_MAX_CLAIM_WEEKS, lastActiveWeekUser);
+
+            for (let week = startWeek; week <= currentWeek - 1; week++) {
+                if (week < 1) {
+                    continue;
+                }
+                const model = this.getUserInfoByWeek(positon.farmAddress, positon.user, week)
+                model.positionAmount = positon.liquidity
+                modelsList.push(model)
+            }
+
+            currentClaimProgress = await this.farmGetter.currentClaimProgress(
+                positon.farmAddress,
+                positon.user,
+            )
+
+            userAccumulatedRewards = await this.farmGetter.getUserAccumulatedRewardsForWeek(
+                positon.farmAddress,
+                currentWeek,
+                positon.user,
+                positon.liquidity
+            );
         }
-
-        const currentClaimProgress = await this.farmGetter.currentClaimProgress(
-            positon.farmAddress,
-            positon.user,
-        )
-
-        const userAccumulatedRewards = await this.farmGetter.getUserAccumulatedRewardsForWeek(
-            positon.farmAddress,
-            currentWeek,
-            positon.user,
-            positon.liquidity
-        );
 
         return new RewardsModel({
             identifier: positon.identifier,
