@@ -208,39 +208,30 @@ export class ApiConfigService {
         return nativeAuthPemPath;
     }
 
-    isAwsTimestreamWriteActive(): boolean {
-        const awsTimestreamWriteActive = this.configService.get<string>(
-            'ANALYTICS_AWS_TIMESTREAM_WRITE',
-        );
+    static isAwsTimestreamWriteActive(): boolean {
+        const awsTimestreamWriteActive = process.env.ANALYTICS_AWS_TIMESTREAM_WRITE;
         if (!awsTimestreamWriteActive) {
             throw new Error('No ANALYTICS_AWS_TIMESTREAM_WRITE present');
         }
         return awsTimestreamWriteActive === 'true';
     }
 
-    isDataApiWriteActive(): boolean {
-        const dataApiWriteActive = this.configService.get<string>(
-            'ANALYTICS_DATA_API_WRITE',
-        );
+    static isDataApiWriteActive(): boolean {
+        const dataApiWriteActive = process.env.ANALYTICS_DATA_API_WRITE;
         if (!dataApiWriteActive) {
             throw new Error('No ANALYTICS_DATA_API_WRITE present');
         }
         return dataApiWriteActive === 'true';
     }
 
-    getAnalyticsReadMode(): 'aws-timestream' | 'data-api' {
-        const analyticsReadMode = this.configService.get<string>(
-            'ANALYTICS_READ_MODE',
-        );
-        
-        if (!analyticsReadMode) {
-            throw new Error('No ANALYTICS_READ_MODE present');
+    static getAnalyticsQueryMode(): 'aws-timestream' | 'data-api' {
+        const analyticsQueryMode = process.env.ANALYTICS_QUERY_MODE;
+        if (!analyticsQueryMode) {
+            throw new Error('No ANALYTICS_QUERY_MODE present');
         }
-
-        if(analyticsReadMode === 'aws-timestream' || analyticsReadMode === 'data-api') {
-            return analyticsReadMode;
+        if (analyticsQueryMode === 'aws-timestream' || analyticsQueryMode === 'data-api') {
+            return analyticsQueryMode;
         }
-        
-        throw new Error('Invalid value for ANALYTICS_READ_MODE present');
+        throw new Error('Invalid value for ANALYTICS_QUERY_MODE present');
     }
 }

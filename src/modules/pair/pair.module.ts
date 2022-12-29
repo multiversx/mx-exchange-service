@@ -22,7 +22,7 @@ import { CommonAppModule } from 'src/common.app.module';
         ContextModule,
         WrappingModule,
         CachingModule,
-        AnalyticsServicesModule,
+        AnalyticsServicesModule.getModule(),
         DatabaseModule,
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),

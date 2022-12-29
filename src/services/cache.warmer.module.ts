@@ -55,7 +55,7 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
         AnalyticsModule,
         PriceDiscoveryModule,
         TokenModule,
-        AnalyticsServicesModule,
+        AnalyticsServicesModule.getModule(),
         RemoteConfigModule,
     ],
     controllers: [],

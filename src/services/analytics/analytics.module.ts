@@ -1,4 +1,5 @@
 import { DynamicModule, Global, Module, Type } from "@nestjs/common";
+import { CommonAppModule } from "src/common.app.module";
 import { ApiConfigService } from "src/helpers/api.config.service";
 import { AWSModule } from "./aws/aws.module";
 import { AWSTimestreamQueryService } from "./aws/aws.timestream.query";
@@ -8,25 +9,33 @@ import { AnalyticsQueryInterface } from "./interfaces/analytics.query.interface"
 import { AnalyticsQueryService } from "./services/analytics.query.service";
 import { AnalyticsWriteService } from "./services/analytics.write.service";
 
+export interface AnalyticsModuleOptions {
+  writeFlags: {
+    awsTimestream: boolean;
+    dataApi: boolean;
+  };
+  queryMode: 'aws-timestream' | 'data-api';
+}
+
 @Global()
 @Module({})
 export class AnalyticsModule {
-  static register(apiConfigService: ApiConfigService): DynamicModule {
-    let shouldImportAwsTimestreamModule = false;
-    let shouldImportDataApiModule = false;
+  static getModule(): DynamicModule {
+    return AnalyticsModule.forRoot({
+      writeFlags: {
+        awsTimestream: ApiConfigService.isAwsTimestreamWriteActive(),
+        dataApi: ApiConfigService.isDataApiWriteActive(),
+      },
+      queryMode: ApiConfigService.getAnalyticsQueryMode(),
+    });
+  }
 
-    // Import write modules
-    if (apiConfigService.isAwsTimestreamWriteActive()) {
-      shouldImportAwsTimestreamModule = true;
-    }
-    if (apiConfigService.isDataApiWriteActive()) {
-      shouldImportDataApiModule = true;
-    }
+  static forRoot(options: AnalyticsModuleOptions): DynamicModule {
+    let shouldImportAwsTimestreamModule = options.writeFlags.awsTimestream;
+    let shouldImportDataApiModule = options.writeFlags.dataApi;
 
-    // Import query modules
     let analyticsQueryInterface: Type<AnalyticsQueryInterface> = AWSTimestreamQueryService;
-    const analyticsReadMode = apiConfigService.getAnalyticsReadMode();
-    if (analyticsReadMode === 'data-api') {
+    if (options.queryMode === 'data-api') {
       analyticsQueryInterface = DataApiQueryService;
       shouldImportDataApiModule = true;
     } else {
@@ -44,6 +53,7 @@ export class AnalyticsModule {
     return {
       module: AnalyticsModule,
       imports: [
+        CommonAppModule,
         ...imports
       ],
       providers: [

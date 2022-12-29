@@ -26,7 +26,7 @@ import { AnalyticsModule as AnalyticsServicesModule } from 'src/services/analyti
 @Module({
     imports: [
         ElrondCommunicationModule,
-        AnalyticsServicesModule,
+        AnalyticsServicesModule.getModule(),
         CachingModule,
         ContextModule,
         RouterModule,
