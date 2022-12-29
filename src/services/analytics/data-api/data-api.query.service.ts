@@ -8,6 +8,7 @@ import { elrondConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { Logger } from 'winston';
+import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 
 @Injectable()
@@ -33,11 +34,11 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     });
   }
 
-  async getAggregatedValue(args: { table: any; series: any; metric: any; time: string | number; }): Promise<string> {
+  async getAggregatedValue({ series, metric, time }: AnalyticsQueryArgs): Promise<string> {
     const query = DataApiQueryBuilder
       .createXExchangeAnalyticsQuery()
-      .metric(args.series, args.metric)
-      .betweenDates(moment().utc().subtract(args.time).toDate(), new Date())
+      .metric(series, metric)
+      .betweenDates(moment().utc().subtract(time).toDate(), new Date())
       .getAggregate(AggregateValue.sum);
 
     const value = await this.dataApiClient.executeAggregateQuery(query);
@@ -45,32 +46,32 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getLatestCompleteValues(args: { table: any; series: any; metric: any; }): Promise<HistoricDataModel[]> {
+  async getLatestCompleteValues(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     throw new Error('Method not implemented.');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getSumCompleteValues(args: { table: any; series: any; metric: any; }): Promise<HistoricDataModel[]> {
+  async getSumCompleteValues(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     throw new Error('Method not implemented.');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getValues24h(args: { table: any; series: any; metric: any; }): Promise<HistoricDataModel[]> {
+  async getValues24h(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     throw new Error('Method not implemented.');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getValues24hSum(args: { table: any; series: any; metric: any; }): Promise<HistoricDataModel[]> {
+  async getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     throw new Error('Method not implemented.');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getLatestHistoricData(args: { table: any; time: any; series: any; metric: any; start: any; }): Promise<HistoricDataModel[]> {
+  async getLatestHistoricData(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     throw new Error('Method not implemented.');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getLatestBinnedHistoricData(args: { table: any; time: any; series: any; metric: any; bin: any; start: any; }): Promise<HistoricDataModel[]> {
+  async getLatestBinnedHistoricData(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     throw new Error('Method not implemented.');
   }
 }

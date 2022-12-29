@@ -1,17 +1,18 @@
 import { HistoricDataModel } from "src/modules/analytics/models/analytics.model";
+import { AnalyticsQueryArgs } from "../entities/analytics.query.args";
 
 export interface AnalyticsQueryInterface {
-  getAggregatedValue({ table, series, metric, time }): Promise<string>;
+  getAggregatedValue(args: AnalyticsQueryArgs): Promise<string>;
 
-  getLatestCompleteValues({ table, series, metric }): Promise<HistoricDataModel[]>;
+  getLatestCompleteValues(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 
-  getSumCompleteValues({ table, series, metric }): Promise<HistoricDataModel[]>;
+  getSumCompleteValues(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 
-  getValues24h({ table, series, metric }): Promise<HistoricDataModel[]>;
+  getValues24h(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 
-  getValues24hSum({ table, series, metric }): Promise<HistoricDataModel[]>;
+  getValues24hSum(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 
-  getLatestHistoricData({ table, time, series, metric, start }): Promise<HistoricDataModel[]>;
+  getLatestHistoricData(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 
-  getLatestBinnedHistoricData({ table, time, series, metric, bin, start }): Promise<HistoricDataModel[]>;
+  getLatestBinnedHistoricData(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]>;
 }
