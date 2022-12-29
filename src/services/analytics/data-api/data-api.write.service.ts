@@ -15,15 +15,12 @@ import fs from 'fs';
 
 @Injectable()
 export class DataApiWriteService implements AnalyticsWriteInterface {
-    private readonly TableName: string;
     private readonly dataApiClient: DataApiClient;
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        this.TableName = dataApiConfig.tableName;
-
         this.dataApiClient = new DataApiClient({
             host: 'dex-service',
             dataApiUrl: process.env.ELRONDDATAAPI_URL,
@@ -131,7 +128,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         const query = `
             mutation ingest($records: [GenericIngestInput!]!) {
                 ingestData(
-                    table: ${this.TableName}
+                    table: ${dataApiConfig.tableName}
                     input: $records
                 )
             }`;

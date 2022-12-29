@@ -1,12 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { AggregateValue, DataApiClient, DataApiQueryBuilder } from '@elrondnetwork/erdjs-data-api-client';
+import { Inject, Injectable } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
+import fs from 'fs';
+import moment from 'moment';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { elrondConfig } from 'src/config';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
+import { Logger } from 'winston';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
 
 @Injectable()
 export class DataApiQueryService implements AnalyticsQueryInterface {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getAggregatedValue(args: { table: any; series: any; metric: any; time: any; }): Promise<string> {
-    throw new Error('Method not implemented.');
+  private readonly dataApiClient: DataApiClient;
+
+  constructor(
+    private readonly apiConfigService: ApiConfigService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {
+    this.dataApiClient = new DataApiClient({
+      host: 'dex-service',
+      dataApiUrl: process.env.ELRONDDATAAPI_URL,
+      multiversXApiUrl: this.apiConfigService.getApiUrl(),
+      proxyTimeout: elrondConfig.proxyTimeout,
+      keepAlive: {
+        maxSockets: elrondConfig.keepAliveMaxSockets,
+        maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+        timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
+        freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+      },
+      signerPrivateKey: fs.readFileSync(this.apiConfigService.getNativeAuthKeyPath()).toString(),
+    });
+  }
+
+  async getAggregatedValue(args: { table: any; series: any; metric: any; time: string | number; }): Promise<string> {
+    const query = DataApiQueryBuilder
+      .createXExchangeAnalyticsQuery()
+      .metric(args.series, args.metric)
+      .betweenDates(moment().utc().subtract(args.time).toDate(), new Date())
+      .getAggregate(AggregateValue.sum);
+
+    const value = await this.dataApiClient.executeAggregateQuery(query);
+    return new BigNumber(value?.sum ?? '0').toFixed();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
