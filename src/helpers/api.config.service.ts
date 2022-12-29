@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AnalyticsQueryMode } from 'src/services/analytics/entities/analytics.query.mode';
 
 @Injectable()
 export class ApiConfigService {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(private readonly configService: ConfigService) { }
 
     getPublicAppPort(): number {
         const port = this.configService.get<number>('PORT');
@@ -206,5 +207,32 @@ export class ApiConfigService {
             throw new Error('No NATIVE_AUTH_PEM_PATH present');
         }
         return nativeAuthPemPath;
+    }
+
+    static isAwsTimestreamWriteActive(): boolean {
+        const awsTimestreamWriteActive = process.env.ANALYTICS_AWS_TIMESTREAM_WRITE;
+        if (!awsTimestreamWriteActive) {
+            throw new Error('No ANALYTICS_AWS_TIMESTREAM_WRITE present');
+        }
+        return awsTimestreamWriteActive === 'true';
+    }
+
+    static isDataApiWriteActive(): boolean {
+        const dataApiWriteActive = process.env.ANALYTICS_DATA_API_WRITE;
+        if (!dataApiWriteActive) {
+            throw new Error('No ANALYTICS_DATA_API_WRITE present');
+        }
+        return dataApiWriteActive === 'true';
+    }
+
+    static getAnalyticsQueryMode(): AnalyticsQueryMode {
+        const analyticsQueryMode = process.env.ANALYTICS_QUERY_MODE;
+        if (!analyticsQueryMode) {
+            throw new Error('No ANALYTICS_QUERY_MODE present');
+        }
+        if (analyticsQueryMode === AnalyticsQueryMode.AWS_TIMESTREAM || analyticsQueryMode === AnalyticsQueryMode.DATA_API) {
+            return analyticsQueryMode as AnalyticsQueryMode;
+        }
+        throw new Error('Invalid value for ANALYTICS_QUERY_MODE present');
     }
 }

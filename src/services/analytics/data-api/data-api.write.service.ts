@@ -12,9 +12,10 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { NativeAuthSigner } from 'src/utils/native.auth.signer';
+import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
 
 @Injectable()
-export class DataApiWriteService {
+export class DataApiWriteService implements AnalyticsWriteInterface {
     private readonly TableName: string;
     private url: string;
     private config: AxiosRequestConfig;
@@ -69,7 +70,7 @@ export class DataApiWriteService {
         }
     }
 
-    async multiRecordsIngest(Records: TimestreamWrite.Records) {
+    async multiRecordsIngest(_tableName: string, Records: TimestreamWrite.Records) {
         try {
             const ingestRecords =
                 this.convertAWSRecordsToDataAPIRecords(Records);

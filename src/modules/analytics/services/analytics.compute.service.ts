@@ -1,17 +1,14 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { awsConfig, constantsConfig, scAddress } from 'src/config';
 import { FarmRewardType, FarmVersion } from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
-import { AWSTimestreamQueryService } from 'src/services/aws/aws.timestream.query';
 import { farmsAddresses, farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmComputeFactory } from 'src/modules/farm/farm.compute.factory';
 import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
-import { EnergyGetterService } from '../../energy/services/energy.getter.service';
 import { StakingGetterService } from '../../staking/services/staking.getter.service';
 import { TokenGetterService } from '../../tokens/services/token.getter.service';
-import { AnalyticsGetterService } from './analytics.getter.service';
 import { FeesCollectorGetterService } from '../../fees-collector/services/fees-collector.getter.service';
 import {
     WeekTimekeepingGetterService
@@ -19,6 +16,8 @@ import {
 import {
     RemoteConfigGetterService
 } from '../../remote-config/remote-config.getter.service';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+
 @Injectable()
 export class AnalyticsComputeService {
     constructor(
@@ -26,15 +25,12 @@ export class AnalyticsComputeService {
         private readonly farmGetter: FarmGetterFactory,
         private readonly farmCompute: FarmComputeFactory,
         private readonly pairGetter: PairGetterService,
-        private readonly energyGetter: EnergyGetterService,
         private readonly stakingGetter: StakingGetterService,
         private readonly tokenGetter: TokenGetterService,
-        @Inject(forwardRef(() => AnalyticsGetterService))
-        private readonly analyticsGetter: AnalyticsGetterService,
         private readonly feesCollectorGetter: FeesCollectorGetterService,
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
-        private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly analyticsQuery: AnalyticsQueryService,
     ) { }
 
     async computeLockedValueUSDFarms(): Promise<string> {
@@ -168,7 +164,7 @@ export class AnalyticsComputeService {
         time: string,
         metric: string,
     ): Promise<string> {
-        return await this.awsTimestreamQuery.getAggregatedValue({
+        return await this.analyticsQuery.getAggregatedValue({
             table: awsConfig.timestream.tableName,
             series: tokenID,
             metric,
