@@ -6,20 +6,17 @@ import { TimestreamWrite } from 'aws-sdk';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { IngestRecord } from './entities/ingest.record';
 import moment from 'moment';
-import Agent, { HttpsAgent } from 'agentkeepalive';
 import { ApiConfigService } from 'src/helpers/api.config.service';
-import axios, { AxiosRequestConfig } from 'axios';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
-import { NativeAuthSigner } from 'src/utils/native.auth.signer';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
+import { DataApiClient } from '@elrondnetwork/erdjs-data-api-client';
+import fs from 'fs';
 
 @Injectable()
 export class DataApiWriteService implements AnalyticsWriteInterface {
     private readonly TableName: string;
-    private url: string;
-    private config: AxiosRequestConfig;
-    private nativeAuthSigner: NativeAuthSigner;
+    private readonly dataApiClient: DataApiClient;
 
     constructor(
         private readonly apiConfigService: ApiConfigService,
@@ -27,27 +24,18 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
     ) {
         this.TableName = dataApiConfig.tableName;
 
-        const keepAliveOptions = {
-            maxSockets: elrondConfig.keepAliveMaxSockets,
-            maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
-            timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
-            freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
-            keepAlive: true,
-        };
-        const httpAgent = new Agent(keepAliveOptions);
-        const httpsAgent = new HttpsAgent(keepAliveOptions);
-        this.url = process.env.ELRONDDATAAPI_URL;
-
-        this.config = {
-            timeout: elrondConfig.proxyTimeout,
-            httpAgent: elrondConfig.keepAlive ? httpAgent : null,
-            httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
-        };
-
-        this.nativeAuthSigner = new NativeAuthSigner({
-            host: 'MaiarExchangeService',
-            apiUrl: this.apiConfigService.getApiUrl(),
-            signerPrivateKeyPath: this.apiConfigService.getNativeAuthKeyPath(),
+        this.dataApiClient = new DataApiClient({
+            host: 'dex-service',
+            dataApiUrl: process.env.ELRONDDATAAPI_URL,
+            multiversXApiUrl: this.apiConfigService.getApiUrl(),
+            proxyTimeout: elrondConfig.proxyTimeout,
+            keepAlive: {
+                maxSockets: elrondConfig.keepAliveMaxSockets,
+                maxFreeSockets: elrondConfig.keepAliveMaxFreeSockets,
+                timeout: this.apiConfigService.getKeepAliveTimeoutDownstream(),
+                freeSocketTimeout: elrondConfig.keepAliveFreeSocketTimeout,
+            },
+            signerPrivateKey: fs.readFileSync(this.apiConfigService.getNativeAuthKeyPath()).toString(),
         });
     }
 
@@ -72,9 +60,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
 
     async multiRecordsIngest(_tableName: string, Records: TimestreamWrite.Records) {
         try {
-            const ingestRecords =
-                this.convertAWSRecordsToDataAPIRecords(Records);
-            this.logger.error(`multiRecordsIngest: ${JSON.stringify(Records)}`);
+            const ingestRecords = this.convertAWSRecordsToDataAPIRecords(Records);
             await this.writeRecords(ingestRecords);
         } catch (error) {
             const logMessage = generateLogMessage(
@@ -92,9 +78,11 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
     }
 
     private async writeRecords(records: IngestRecord[]): Promise<void> {
+        const profiler = new PerformanceProfiler('ingestData');
+
         try {
             const mutation = this.generateIngestMutation(records);
-            await this.doPost('ingestData', mutation);
+            await this.dataApiClient.executeRawQuery(mutation)
         } catch (error) {
             const logMessage = generateLogMessage(
                 DataApiWriteService.name,
@@ -107,23 +95,12 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
                 },
             );
             this.logger.error(logMessage);
-        }
-    }
-
-    private async doPost(name: string, data: any): Promise<any> {
-        const profiler = new PerformanceProfiler(name);
-        try {
-            const config = await this.getConfig();
-            const response = await axios.post(this.url, data, config);
-            return response.data;
-        } catch (error) {
-            throw error;
         } finally {
             profiler.stop();
 
             MetricsCollector.setExternalCall(
                 DataApiWriteService.name,
-                name,
+                'ingestData',
                 profiler.duration,
             );
         }
@@ -177,16 +154,5 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
             });
         });
         return ingestRecords;
-    }
-
-    private async getConfig(): Promise<AxiosRequestConfig> {
-        const accessTokenInfo = await this.nativeAuthSigner.getToken();
-        return {
-            ...this.config,
-            headers: {
-                Authorization: `Bearer ${accessTokenInfo.token}`,
-                authorization: `Bearer ${accessTokenInfo.token}`,
-            },
-        };
     }
 }
