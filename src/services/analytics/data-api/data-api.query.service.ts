@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import fs from 'fs';
 import moment from 'moment';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { elrondConfig } from 'src/config';
+import { dataApiConfig, elrondConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { Logger } from 'winston';
@@ -116,26 +116,32 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
   }
 
   async getLatestHistoricData({ time, series, metric, start }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    const formattedStart = moment.unix(start).utc().toDate();
-    const query = DataApiQueryBuilder
-      .createXExchangeAnalyticsQuery()
-      .values(series, metric)
-      .betweenDates(formattedStart, new Date())
-      .getValues();
-    //   const query = `query generic_query {
-    //     ${elrondData.timescale.table} {
-    //      values(
-    //        series: "${series}"
-    //        key: "${key}"
-    //        filter: {sort: ASC, start_date: "${startDate}", end_date: "${endDate}"}
-    //      ) {
-    //        value
-    //        time
-    //      }
-    //    }
-    //  }`;
-    const rows = await this.dataApiClient.executeValuesQuery(query);
+    const startDate = moment.unix(parseInt(start)).utc().format('yyyy-MM-DD HH:mm:ss');
+    const endDate = moment.unix(parseInt(time)).utc().format('yyyy-MM-DD HH:mm:ss');
 
+    const query = `query getLatestHistoricData(series: String!, metric: String!, startDate: String!, endDate: String!) {
+      ${dataApiConfig.tableName} {
+        values(
+          series: $series
+          key: $metric
+          filter: { sort: ASC, start_date: $startDate, end_date: $endDate }
+        ) {
+          value
+          time
+        }
+      }
+    }`;
+
+    const variables = {
+      series,
+      metric,
+      startDate,
+      endDate
+    }
+
+    const rows = await this.dataApiClient.executeRawQuery({ query, variables });
+
+    // TODO format
     const data = rows.map((row) => new HistoricDataModel({
       timestamp: row.timestamp.toString(),
       value: new BigNumber(row.value ?? '0').toFixed(),
