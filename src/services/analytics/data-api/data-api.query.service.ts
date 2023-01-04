@@ -1,4 +1,4 @@
-import { AggregateValue, DataApiClient, DataApiQueryBuilder } from '@elrondnetwork/erdjs-data-api-client';
+import { AggregateValue, DataApiClient, DataApiQueryBuilder, HistoricalValue, TimeResolution } from '@elrondnetwork/erdjs-data-api-client';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import fs from 'fs';
@@ -35,6 +35,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
   }
 
   async getAggregatedValue({ series, metric, time }: AnalyticsQueryArgs): Promise<string> {
+    // TODO test 24h 
     const query = DataApiQueryBuilder
       .createXExchangeAnalyticsQuery()
       .metric(series, metric)
@@ -51,27 +52,76 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getSumCompleteValues(args: { table: any; series: any; metric: any; }): Promise<HistoricDataModel[]> {
+  async getSumCompleteValues({ table, series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     throw new Error('Method not implemented.');
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getValues24h(args: { table: any; series: any; metric: any; }): Promise<HistoricDataModel[]> {
-    throw new Error('Method not implemented.');
+  async getValues24h({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    const query = DataApiQueryBuilder
+      .createXExchangeAnalyticsQuery()
+      .metric(series, metric)
+      .betweenDates(moment().utc().subtract(1, 'days').toDate(), new Date())
+      .withTimeResolution(TimeResolution.INTERVAL_HOUR)
+      .getHistorical(HistoricalValue.max, HistoricalValue.time);
+
+    const values = await this.dataApiClient.executeHistoricalQuery(query);
+
+    const data = values.map((value) => new HistoricDataModel({
+      timestamp: value.timestamp.toString(),
+      value: new BigNumber(value.max ?? '0').toFixed(),
+    }));
+    return data;
+  }
+
+  async getValues24hSum({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    const query = DataApiQueryBuilder
+      .createXExchangeAnalyticsQuery()
+      .metric(series, metric)
+      .betweenDates(moment().utc().subtract(1, 'days').toDate(), new Date())
+      .withTimeResolution(TimeResolution.INTERVAL_HOUR)
+      .fillDataGaps()
+      .getHistorical(HistoricalValue.sum, HistoricalValue.time);
+
+    const values = await this.dataApiClient.executeHistoricalQuery(query);
+
+    const data = values.map((value) => new HistoricDataModel({
+      timestamp: value.timestamp.toString(),
+      value: new BigNumber(value.max ?? '0').toFixed(),
+    }));
+    return data;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getValues24hSum(args: { table: any; series: any; metric: any; }): Promise<HistoricDataModel[]> {
+  async getLatestHistoricData({ table: any; time: any; series: any; metric: any; start: any; }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     throw new Error('Method not implemented.');
+    const query = `query generic_query {
+      ${elrondData.timescale.table} {
+       values(
+         series: "${series}"
+         key: "${key}"
+         filter: {sort: ASC, start_date: "${startDate}", end_date: "${endDate}"}
+       ) {
+         value
+         time
+       }
+     }
+   }`;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getLatestHistoricData(args: { table: any; time: any; series: any; metric: any; start: any; }): Promise<HistoricDataModel[]> {
+  async getLatestBinnedHistoricData({ table: any; time: any; series: any; metric: any; bin: any; start: any; }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     throw new Error('Method not implemented.');
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getLatestBinnedHistoricData(args: { table: any; time: any; series: any; metric: any; bin: any; start: any; }): Promise<HistoricDataModel[]> {
-    throw new Error('Method not implemented.');
+    const query = `query generic_query {
+      ${elrondData.timescale.table} {
+       metric(
+         series: "${series}"
+         key: "${key}"
+         query: {start_date: "${startDate}", end_date: "${endDate}", resolution: ${resolution}}
+       ) {
+         avg
+         time
+       }
+     }
+   }`;
   }
 }
