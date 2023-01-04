@@ -1,4 +1,4 @@
-import { AggregateValue, DataApiClient, DataApiQueryBuilder, HistoricalValue, TimeResolution } from '@elrondnetwork/erdjs-data-api-client';
+import { AggregateValue, DataApiClient, DataApiQueryBuilder, HistoricalValue, TimeRange, TimeResolution } from '@elrondnetwork/erdjs-data-api-client';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import fs from 'fs';
@@ -46,14 +46,38 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     return new BigNumber(value?.sum ?? '0').toFixed();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getLatestCompleteValues(args: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    throw new Error('Method not implemented.');
+  async getLatestCompleteValues({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    const query = DataApiQueryBuilder
+      .createXExchangeAnalyticsQuery()
+      .metric(series, metric)
+      .withTimeRange(TimeRange.ALL)
+      .withTimeResolution(TimeResolution.INTERVAL_DAY)
+      .getHistorical(HistoricalValue.last, HistoricalValue.time);
+
+    const rows = await this.dataApiClient.executeHistoricalQuery(query);
+
+    const data = rows.map((row) => new HistoricDataModel({
+      timestamp: row.timestamp.toString(),
+      value: new BigNumber(row.last ?? '0').toFixed(),
+    }));
+    return data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getSumCompleteValues({ table, series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    throw new Error('Method not implemented.');
+  async getSumCompleteValues({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    const query = DataApiQueryBuilder
+      .createXExchangeAnalyticsQuery()
+      .metric(series, metric)
+      .withTimeRange(TimeRange.ALL)
+      .withTimeResolution(TimeResolution.INTERVAL_DAY)
+      .getHistorical(HistoricalValue.sum, HistoricalValue.time);
+
+    const rows = await this.dataApiClient.executeHistoricalQuery(query);
+
+    const data = rows.map((row) => new HistoricDataModel({
+      timestamp: row.timestamp.toString(),
+      value: new BigNumber(row.sum ?? '0').toFixed(),
+    }));
+    return data;
   }
 
   async getValues24h({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
@@ -64,11 +88,11 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
       .withTimeResolution(TimeResolution.INTERVAL_HOUR)
       .getHistorical(HistoricalValue.max, HistoricalValue.time);
 
-    const values = await this.dataApiClient.executeHistoricalQuery(query);
+    const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = values.map((value) => new HistoricDataModel({
-      timestamp: value.timestamp.toString(),
-      value: new BigNumber(value.max ?? '0').toFixed(),
+    const data = rows.map((row) => new HistoricDataModel({
+      timestamp: row.timestamp.toString(),
+      value: new BigNumber(row.max ?? '0').toFixed(),
     }));
     return data;
   }
@@ -82,46 +106,60 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
       .fillDataGaps()
       .getHistorical(HistoricalValue.sum, HistoricalValue.time);
 
-    const values = await this.dataApiClient.executeHistoricalQuery(query);
+    const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = values.map((value) => new HistoricDataModel({
-      timestamp: value.timestamp.toString(),
-      value: new BigNumber(value.max ?? '0').toFixed(),
+    const data = rows.map((row) => new HistoricDataModel({
+      timestamp: row.timestamp.toString(),
+      value: new BigNumber(row.max ?? '0').toFixed(),
     }));
     return data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getLatestHistoricData({ table: any; time: any; series: any; metric: any; start: any; }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    throw new Error('Method not implemented.');
-    const query = `query generic_query {
-      ${elrondData.timescale.table} {
-       values(
-         series: "${series}"
-         key: "${key}"
-         filter: {sort: ASC, start_date: "${startDate}", end_date: "${endDate}"}
-       ) {
-         value
-         time
-       }
-     }
-   }`;
+  async getLatestHistoricData({ time, series, metric, start }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    const formattedStart = moment.unix(start).utc().toDate();
+    const query = DataApiQueryBuilder
+      .createXExchangeAnalyticsQuery()
+      .values(series, metric)
+      .betweenDates(formattedStart, new Date())
+      .getValues();
+    //   const query = `query generic_query {
+    //     ${elrondData.timescale.table} {
+    //      values(
+    //        series: "${series}"
+    //        key: "${key}"
+    //        filter: {sort: ASC, start_date: "${startDate}", end_date: "${endDate}"}
+    //      ) {
+    //        value
+    //        time
+    //      }
+    //    }
+    //  }`;
+    const rows = await this.dataApiClient.executeValuesQuery(query);
+
+    const data = rows.map((row) => new HistoricDataModel({
+      timestamp: row.timestamp.toString(),
+      value: new BigNumber(row.value ?? '0').toFixed(),
+    }));
+    return data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async getLatestBinnedHistoricData({ table: any; time: any; series: any; metric: any; bin: any; start: any; }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    throw new Error('Method not implemented.');
-    const query = `query generic_query {
-      ${elrondData.timescale.table} {
-       metric(
-         series: "${series}"
-         key: "${key}"
-         query: {start_date: "${startDate}", end_date: "${endDate}", resolution: ${resolution}}
-       ) {
-         avg
-         time
-       }
-     }
-   }`;
+  async getLatestBinnedHistoricData({ time, series, metric, start }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    // TODO handle bin as time resolution
+
+    const query = DataApiQueryBuilder
+      .createXExchangeAnalyticsQuery()
+      .metric(series, metric)
+      .betweenDates(moment.unix(parseInt(start)).utc().toDate(), moment().utc().subtract(time).toDate())
+      .withTimeResolution(TimeResolution.INTERVAL_10_MINUTES)
+      .fillDataGaps()
+      .getHistorical(HistoricalValue.avg, HistoricalValue.time);
+
+    const rows = await this.dataApiClient.executeHistoricalQuery(query);
+
+    const data = rows.map((row) => new HistoricDataModel({
+      timestamp: row.timestamp.toString(),
+      value: new BigNumber(row.max ?? '0').toFixed(),
+    }));
+    return data;
   }
 }
