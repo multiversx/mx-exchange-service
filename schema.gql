@@ -120,7 +120,18 @@ type FarmProxyTokenAttributesModel {
   farmingTokenID: String!
   farmingTokenLockedNonce: Int!
   farmingTokenAttributes: LpProxyTokenAttributesModel!
-  farmTokenAttributes: FarmTokenAttributesModelV1_3!
+  farmTokenAttributes: FarmTokenAttributes!
+}
+
+union FarmTokenAttributes = FarmTokenAttributesModelV1_2 | FarmTokenAttributesModelV1_3 | FarmTokenAttributesModelV2
+
+type FarmTokenAttributesModelV2 {
+  identifier: String
+  attributes: String
+  rewardPerShare: String!
+  enteringEpoch: Int!
+  compoundedReward: String!
+  currentFarmAmount: String!
 }
 
 type SimpleLockModel {
@@ -346,6 +357,7 @@ type UserInfoByWeekModel {
   userAddress: String!
   week: Float!
   apr: String!
+  positionAmount: String
   energyForWeek: EnergyModel!
   rewardsForWeek: [EsdtTokenPayment!]!
   rewardsDistributionForWeek: [TokenDistributionModel!]!
@@ -362,6 +374,7 @@ type RewardsModel {
   remainingFarmingEpochs: Int
   boostedRewardsWeeklyInfo: [UserInfoByWeekModel!]
   claimProgress: ClaimProgress
+  accumulatedRewards: String
 }
 
 type ExitFarmTokensModel {
@@ -582,17 +595,6 @@ type WrappedFarmTokenAttributesModel {
   farmingTokenAmount: String!
   lockedAssetsAttributes: LockedAssetAttributesModel
   lockedLpProxyTokenAttributes: WrappedLpTokenAttributesModel
-}
-
-union FarmTokenAttributes = FarmTokenAttributesModelV1_2 | FarmTokenAttributesModelV1_3 | FarmTokenAttributesModelV2
-
-type FarmTokenAttributesModelV2 {
-  identifier: String
-  attributes: String
-  rewardPerShare: String!
-  enteringEpoch: Int!
-  compoundedReward: String!
-  currentFarmAmount: String!
 }
 
 type WrappedFarmTokenAttributesModelV2 {
@@ -1409,9 +1411,8 @@ type Query {
   addLiquidityLockedTokenBatch(inputTokens: [InputTokenModel!]!, pairAddress: String!, tolerance: Float!): [TransactionModel!]!
   removeLiquidityLockedToken(inputTokens: InputTokenModel!, attributes: String!, tolerance: Float!): [TransactionModel!]!
   enterFarmLockedToken(inputTokens: [InputTokenModel!]!, farmAddress: String!): TransactionModel!
-  exitFarmLockedToken(inputTokens: InputTokenModel!): TransactionModel!
+  exitFarmLockedToken(inputTokens: InputTokenModel!, exitAmount: String): TransactionModel!
   claimRewardsFarmLockedToken(inputTokens: InputTokenModel!): TransactionModel!
-  swap(tokenInID: String!, tokenOutID: String!, amountIn: String, amountOut: String, tolerance: Float!): AutoRouteModel!
   farms: [FarmVersions!]!
   farmTokenAttributes(farmAddress: String!, identifier: String!, attributes: String!): FarmTokenAttributes!
   getRewardsForPosition(farmsPositions: BatchFarmRewardsComputeArgs!): [RewardsModel!]!
@@ -1446,6 +1447,7 @@ type Query {
   setOldLockedAssetFactoryAddress(oldLockedAssetFactoryAddress: String!): TransactionModel!
   weeklyTimekeeping(scAddress: String!): WeekTimekeepingModel!
   weekForEpoch(scAddress: String!, epoch: Float!): WeekForEpochModel!
+  swap(tokenInID: String!, tokenOutID: String!, amountIn: String, amountOut: String, tolerance: Float!): AutoRouteModel!
   stakingTokenAttributes(args: DecodeAttributesArgs!): [StakingTokenAttributesModel!]!
   unboundTokenAttributes(args: DecodeAttributesArgs!): [UnbondTokenAttributesModel!]!
   getStakingRewardsForPosition(stakingPositions: BatchFarmRewardsComputeArgs!): [StakingRewardsModel!]!

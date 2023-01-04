@@ -1,6 +1,7 @@
 import {
     Address,
     BigUIntValue,
+    ContractFunction,
     EnumValue,
     Interaction,
     TokenPayment,
@@ -12,7 +13,10 @@ import BigNumber from 'bignumber.js';
 import { elrondConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { FarmRewardType } from 'src/modules/farm/models/farm.model';
+import {
+    FarmRewardType,
+    FarmVersion,
+} from 'src/modules/farm/models/farm.model';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
@@ -20,7 +24,7 @@ import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { farmType } from 'src/utils/farm.utils';
+import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTypeEnumType, SimpleLockType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
 import { SimpleLockService } from './simple.lock.service';
@@ -293,14 +297,20 @@ export class SimpleLockTransactionService {
         farmAddress: string,
     ): Promise<TransactionModel> {
         let farmTypeDiscriminant: number;
-        switch (farmType(farmAddress)) {
-            case FarmRewardType.UNLOCKED_REWARDS:
-                farmTypeDiscriminant = 0;
-                break;
-            case FarmRewardType.LOCKED_REWARDS:
-                farmTypeDiscriminant = 1;
-                break;
+        const version = farmVersion(farmAddress);
+        if (version === FarmVersion.V2) {
+            farmTypeDiscriminant = 2;
+        } else {
+            switch (farmType(farmAddress)) {
+                case FarmRewardType.UNLOCKED_REWARDS:
+                    farmTypeDiscriminant = 0;
+                    break;
+                case FarmRewardType.LOCKED_REWARDS:
+                    farmTypeDiscriminant = 1;
+                    break;
+            }
         }
+
         await this.validateInputEnterFarmProxyToken(
             inputTokens,
             FarmTypeEnumType.getVariantByDiscriminant(farmTypeDiscriminant)
@@ -345,6 +355,7 @@ export class SimpleLockTransactionService {
         inputTokens: InputTokenModel,
         endpointName: string,
         gasLimit: number,
+        exitAmount?: string,
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
@@ -355,14 +366,19 @@ export class SimpleLockTransactionService {
         let interaction: Interaction;
         switch (endpointName) {
             case 'exitFarmLockedToken':
-                interaction = contract.methodsExplicit.exitFarmLockedToken();
+                if (!exitAmount) {
+                    throw new Error('Invalid exit amount!');
+                }
+                interaction = contract.methodsExplicit.exitFarmLockedToken([
+                    new BigUIntValue(new BigNumber(exitAmount)),
+                ]);
                 break;
             case 'farmClaimRewardsLockedToken':
                 interaction =
                     contract.methodsExplicit.farmClaimRewardsLockedToken();
                 break;
             default:
-                break;
+                throw new Error('Invalid endpoint name!');
         }
 
         return interaction
@@ -375,6 +391,36 @@ export class SimpleLockTransactionService {
                 Address.fromString(sender),
             )
             .withGasLimit(gasLimit)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async exitFarmOldToken(
+        simpleLockAddress: string,
+        sender: string,
+        inputTokens: InputTokenModel,
+    ): Promise<TransactionModel> {
+        await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
+
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
+
+        return new Interaction(
+            contract,
+            new ContractFunction('exitFarmOldToken'),
+            [],
+        )
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();

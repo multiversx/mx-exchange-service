@@ -36,6 +36,8 @@ export class RewardsModel {
     boostedRewardsWeeklyInfo: UserInfoByWeekModel[]
     @Field(() => ClaimProgress, { nullable: true })
     claimProgress: ClaimProgress;
+    @Field({ nullable: true })
+    accumulatedRewards: string
     constructor(init?: Partial<RewardsModel>) {
         Object.assign(this, init);
     }
