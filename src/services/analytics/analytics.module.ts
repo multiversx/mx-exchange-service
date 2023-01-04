@@ -6,6 +6,7 @@ import { AWSTimestreamQueryService } from "./aws/aws.timestream.query";
 import { DataApiModule } from "./data-api/data-api.module";
 import { DataApiQueryService } from "./data-api/data-api.query.service";
 import { AnalyticsModuleOptions } from "./entities/analytics.module.options";
+import { AnalyticsQueryMode } from "./entities/analytics.query.mode";
 import { AnalyticsQueryInterface } from "./interfaces/analytics.query.interface";
 import { AnalyticsQueryService } from "./services/analytics.query.service";
 import { AnalyticsWriteService } from "./services/analytics.write.service";
@@ -28,7 +29,7 @@ export class AnalyticsModule {
     let shouldImportDataApiModule = options.writeFlags.dataApi;
 
     let analyticsQueryInterface: Type<AnalyticsQueryInterface> = AWSTimestreamQueryService;
-    if (options.queryMode === 'data-api') {
+    if (options.queryMode === AnalyticsQueryMode.DATA_API) {
       analyticsQueryInterface = DataApiQueryService;
       shouldImportDataApiModule = true;
     } else {
