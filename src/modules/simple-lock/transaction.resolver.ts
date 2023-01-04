@@ -1,3 +1,4 @@
+import { LockedFarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
@@ -153,6 +154,7 @@ export class TransactionResolver extends GenericResolver {
     async exitFarmLockedToken(
         @Args('inputTokens', FarmProxyTokensValidationPipe)
         inputTokens: InputTokenModel,
+        @Args('exitAmount', { nullable: true }) exitAmount: string,
         @User() user: any,
     ): Promise<TransactionModel> {
         try {
@@ -160,13 +162,25 @@ export class TransactionResolver extends GenericResolver {
                 await this.simpleLockService.getSimpleLockAddressFromInputTokens(
                     [inputTokens],
                 );
-            return await this.simpleLockTransactions.farmProxyTokenInteraction(
-                simpleLockAddress,
-                user.publicKey,
-                inputTokens,
-                this.exitFarmLockedToken.name,
-                gasConfig.simpleLock.exitFarmLockedToken,
+            const decodedAttributes = LockedFarmTokenAttributes.fromAttributes(
+                inputTokens.attributes,
             );
+            if (decodedAttributes.farmType === 'FarmWithBoostedRewards') {
+                return await this.simpleLockTransactions.farmProxyTokenInteraction(
+                    simpleLockAddress,
+                    user.publicKey,
+                    inputTokens,
+                    this.exitFarmLockedToken.name,
+                    gasConfig.simpleLock.exitFarmLockedToken,
+                    exitAmount,
+                );
+            } else {
+                return await this.simpleLockTransactions.exitFarmOldToken(
+                    simpleLockAddress,
+                    user.publicKey,
+                    inputTokens,
+                );
+            }
         } catch (error) {
             throw new ApolloError(error);
         }
