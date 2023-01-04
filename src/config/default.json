@@ -412,11 +412,11 @@
             "addLiquidityLockedToken": 20000000,
             "removeLiquidityLockedToken": 15000000,
             "enterFarmLockedToken": {
-                "default": 15000000,
-                "withTokenMerge": 20000000
+                "default": 25000000,
+                "withTokenMerge": 30000000
             },
-            "exitFarmLockedToken": 45000000,
-            "claimRewardsFarmLockedToken": 30000000
+            "exitFarmLockedToken": 50000000,
+            "claimRewardsFarmLockedToken": 35000000
         },
         "simpleLockEnergy": {
             "lockTokens": 10000000,
