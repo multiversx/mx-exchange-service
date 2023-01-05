@@ -15,7 +15,7 @@ import { SimpleLockTransactionService } from './services/simple.lock.transaction
 import { SimpleLockResolver } from './simple.lock.resolver';
 import { CommonAppModule } from 'src/common.app.module';
 import { TransactionResolver } from './transaction.resolver';
-import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
+import { FarmModule } from '../farm/farm.module';
 
 @Module({
     imports: [
@@ -24,7 +24,7 @@ import { FarmModuleV1_3 } from '../farm/v1.3/farm.v1.3.module';
         ContextModule,
         CachingModule,
         PairModule,
-        FarmModuleV1_3,
+        FarmModule,
         WrappingModule,
         TokenModule,
     ],
