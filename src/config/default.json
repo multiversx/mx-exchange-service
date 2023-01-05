@@ -5,6 +5,7 @@
         "version": 1,
         "proxyTimeout": 60000,
         "timeoutLimit": 10000,
+        "localCacheMaxItems": 10000,
         "keepAlive": true,
         "keepAliveTimeout": 50000,
         "keepAliveFreeSocketTimeout": 30000,
