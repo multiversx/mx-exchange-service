@@ -1,6 +1,6 @@
 name: Bug Report
 description: File a bug report
-title: "[Bug]: "
+title: '[Bug]: '
 labels: [bug, triage]
 assignees:
   - members
@@ -29,7 +29,7 @@ body:
     id: steps-to-reproduce
     attributes:
       label: Steps to reproduce
-      description:  A minimum list of steps for validating the behavior of the bug
+      description: A minimum list of steps for validating the behavior of the bug
     validations:
       required: false
   - type: dropdown
@@ -53,7 +53,7 @@ body:
     id: terms
     attributes:
       label: Code of Conduct
-      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/ElrondNetwork/api.elrond.com/blob/main/.github/CODE_OF_CONDUCT.md)
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/ElrondNetwork/dex-service-graphql/blob/main/.github/CODE_OF_CONDUCT.md)
       options:
         - label: I agree to follow this project's Code of Conduct
           required: true
