@@ -8,7 +8,6 @@ import {
     UserInfoByWeekModel,
     UserInfoByWeekSubModel,
 } from './models/weekly-rewards-splitting.model';
-import { EnergyModel } from '../../modules/energy/models/energy.model';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
 import { WeeklyRewardsSplittingComputeService } from './services/weekly-rewards-splitting.compute.service';
 import {
@@ -78,66 +77,6 @@ export class GlobalInfoByWeekResolver extends GenericResolver {
         return await this.genericFieldResolver(() =>
             this.weeklyRewardsSplittingCompute.computeApr(
                 parent.scAddress,
-                parent.week,
-            ),
-        );
-    }
-}
-
-@Resolver(() => UserInfoByWeekModel)
-export class UserInfoByWeekResolver extends GenericResolver {
-    constructor(
-        protected readonly weeklyRewardsSplittingGetter: WeeklyRewardsSplittingGetterService,
-        protected readonly weeklyRewardsSplittingCompute: WeeklyRewardsSplittingComputeService,
-    ) {
-        super();
-    }
-
-    @ResolveField(() => EnergyModel)
-    async energyForWeek(
-        @Parent() parent: UserInfoByWeekModel,
-    ): Promise<EnergyModel> {
-        return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.userEnergyForWeek(
-                parent.scAddress,
-                parent.userAddress,
-                parent.week,
-            ),
-        );
-    }
-
-    @ResolveField()
-    async apr(@Parent() parent: UserInfoByWeekModel): Promise<string> {
-        return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingCompute.computeUserApr(
-                parent.scAddress,
-                parent.userAddress,
-                parent.week,
-            ),
-        );
-    }
-
-    @ResolveField(() => [EsdtTokenPayment])
-    async rewardsForWeek(
-        @Parent() parent: UserInfoByWeekModel,
-    ): Promise<EsdtTokenPayment[]> {
-        return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.userRewardsForWeek(
-                parent.scAddress,
-                parent.userAddress,
-                parent.week,
-            ),
-        );
-    }
-
-    @ResolveField(() => [String])
-    async rewardsDistributionForWeek(
-        @Parent() parent: UserInfoByWeekModel,
-    ): Promise<string[]> {
-        return await this.genericFieldResolver(() =>
-            this.weeklyRewardsSplittingGetter.userRewardsDistributionForWeek(
-                parent.scAddress,
-                parent.userAddress,
                 parent.week,
             ),
         );

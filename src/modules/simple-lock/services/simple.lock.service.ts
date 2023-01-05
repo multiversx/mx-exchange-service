@@ -8,7 +8,11 @@ import { UserInputError } from 'apollo-server-express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { scAddress } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
-import { FarmTokenAttributesModelV1_3 } from 'src/modules/farm/models/farmTokenAttributes.model';
+import {
+    FarmTokenAttributesModelV1_3,
+    FarmTokenAttributesModelV2,
+    FarmTokenAttributesUnion,
+} from 'src/modules/farm/models/farmTokenAttributes.model';
 import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
@@ -23,15 +27,19 @@ import {
     SimpleLockModel,
 } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
-import { FarmServiceV1_3 } from 'src/modules/farm/v1.3/services/farm.v1.3.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
+import { FarmFactoryService } from 'src/modules/farm/farm.factory';
+import { FarmGetterFactory } from 'src/modules/farm/farm.getter.factory';
+import { farmVersion } from 'src/utils/farm.utils';
+import { FarmVersion } from 'src/modules/farm/models/farm.model';
 
 @Injectable()
 export class SimpleLockService {
     constructor(
         private readonly simpleLockGetter: SimpleLockGetterService,
-        private readonly farmServiceV1_3: FarmServiceV1_3,
+        private readonly farmFactory: FarmFactoryService,
+        private readonly farmGetterFactory: FarmGetterFactory,
         private readonly apiService: ElrondApiService,
         private readonly cacheService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
@@ -186,7 +194,12 @@ export class SimpleLockService {
         farmTokenID: string,
         farmTokenNonce: number,
         simpleLockAddress: string,
-    ): Promise<FarmTokenAttributesModelV1_3> {
+    ): Promise<typeof FarmTokenAttributesUnion> {
+        const farmAddress =
+            await this.farmGetterFactory.getFarmAddressByFarmTokenID(
+                farmTokenID,
+            );
+        const version = farmVersion(farmAddress);
         const farmTokenIdentifier = tokenIdentifier(
             farmTokenID,
             farmTokenNonce,
@@ -195,7 +208,9 @@ export class SimpleLockService {
             `${farmTokenIdentifier}.decodedAttributes`,
         );
         if (cachedValue && cachedValue !== undefined) {
-            return new FarmTokenAttributesModelV1_3(cachedValue);
+            return version === FarmVersion.V1_3
+                ? new FarmTokenAttributesModelV1_3(cachedValue)
+                : new FarmTokenAttributesModelV2(cachedValue);
         }
 
         const farmTokenAttributes =
@@ -204,8 +219,9 @@ export class SimpleLockService {
                 farmTokenIdentifier,
             );
 
-        const decodedAttributes =
-            this.farmServiceV1_3.decodeFarmTokenAttributes(
+        const decodedAttributes = this.farmFactory
+            .useService(farmAddress)
+            .decodeFarmTokenAttributes(
                 farmTokenIdentifier,
                 farmTokenAttributes,
             );
