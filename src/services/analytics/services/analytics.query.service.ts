@@ -22,30 +22,51 @@ export class AnalyticsQueryService implements AnalyticsQueryInterface {
   }
 
   async getAggregatedValue(args: { table: any; series: any; metric: any; time: any; }): Promise<string> {
-    return await this.execute('getAggregatedValue', this.queryInterface.getAggregatedValue(args));
+    return await this.execute(
+      this.getAggregatedValue.name,
+      this.queryInterface.getAggregatedValue(args)
+    );
   }
 
   async getLatestCompleteValues(args: { table: any, series: any, metric: any }): Promise<HistoricDataModel[]> {
-    return await this.execute('getLatestCompleteValues', this.queryInterface.getLatestCompleteValues(args));
+    return await this.execute(
+      this.getLatestCompleteValues.name,
+      this.queryInterface.getLatestCompleteValues(args)
+    );
   }
 
   async getSumCompleteValues(args: { table: any, series: any, metric: any }): Promise<HistoricDataModel[]> {
-    return await this.execute('getSumCompleteValues', this.queryInterface.getSumCompleteValues(args));
+    return await this.execute(
+      this.getSumCompleteValues.name,
+      this.queryInterface.getSumCompleteValues(args)
+    );
   }
 
   async getValues24h(args: { table: any, series: any, metric: any }): Promise<HistoricDataModel[]> {
-    return await this.execute('getValues24h', this.queryInterface.getValues24h(args));
+    return await this.execute(
+      this.getValues24h.name,
+      this.queryInterface.getValues24h(args)
+    );
   }
 
   async getValues24hSum(args: { table: any, series: any, metric: any }): Promise<HistoricDataModel[]> {
-    return await this.execute('getValues24hSum', this.queryInterface.getValues24hSum(args));
+    return await this.execute(
+      this.getValues24hSum.name,
+      this.queryInterface.getValues24hSum(args)
+    );
   }
 
   async getLatestHistoricData(args: { table: any, time: any, series: any, metric: any, start: any }): Promise<HistoricDataModel[]> {
-    return await this.execute('getLatestHistoricData', this.queryInterface.getLatestHistoricData(args));
+    return await this.execute(
+      this.getLatestHistoricData.name,
+      this.queryInterface.getLatestHistoricData(args)
+    );
   }
 
   async getLatestBinnedHistoricData(args: { table: any, time: any, series: any, metric: any, bin: any, start: any }): Promise<HistoricDataModel[]> {
-    return await this.execute('getLatestBinnedHistoricData', this.queryInterface.getLatestBinnedHistoricData(args));
+    return await this.execute(
+      this.getLatestBinnedHistoricData.name,
+      this.queryInterface.getLatestBinnedHistoricData(args)
+    );
   }
 }
