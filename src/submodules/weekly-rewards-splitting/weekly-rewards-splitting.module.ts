@@ -8,10 +8,7 @@ import { ApiConfigService } from '../../helpers/api.config.service';
 import { WeeklyRewardsSplittingComputeService } from './services/weekly-rewards-splitting.compute.service';
 import { WeekTimekeepingModule } from '../week-timekeeping/week-timekeeping.module';
 import { ProgressComputeService } from './services/progress.compute.service';
-import {
-    GlobalInfoByWeekResolver,
-    UserInfoByWeekResolver,
-} from './weekly-rewards-splitting.resolver';
+import { GlobalInfoByWeekResolver } from './weekly-rewards-splitting.resolver';
 import { RouterModule } from '../../modules/router/router.module';
 import { PairModule } from '../../modules/pair/pair.module';
 import { TokenModule } from '../../modules/tokens/token.module';
@@ -25,7 +22,7 @@ import { WeeklyRewardsSplittingSetterService } from './services/weekly-rewards-s
         ElrondCommunicationModule,
         CachingModule,
         EnergyModule,
-        RouterModule,
+        forwardRef(() => RouterModule),
         PairModule,
         TokenModule,
         forwardRef(() => FarmModuleV2),
@@ -53,12 +50,10 @@ export class WeeklyRewardsSplittingModule {
                         computeProvider ?? WeeklyRewardsSplittingComputeService,
                 },
                 GlobalInfoByWeekResolver,
-                UserInfoByWeekResolver,
             ],
             exports: [
                 ProgressComputeService,
                 GlobalInfoByWeekResolver,
-                UserInfoByWeekResolver,
                 WeeklyRewardsSplittingService,
                 WeeklyRewardsSplittingGetterService,
                 WeeklyRewardsSplittingSetterService,
