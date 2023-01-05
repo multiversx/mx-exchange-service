@@ -42,10 +42,10 @@ export class WeeklyRewardsSplittingGetterService extends GenericGetterService im
         )
     }
 
-    async userRewardsForWeek(scAddress: string, userAddress: string, week: number): Promise<EsdtTokenPayment[]> {
+    async userRewardsForWeek(scAddress: string, userAddress: string, week: number, energy?: string, positionAmount?: string): Promise<EsdtTokenPayment[]> {
         return this.getData(
             this.getWeeklyRewardsCacheKey(scAddress, 'userRewardsForWeek', userAddress, week),
-            () => this.weeklyRewardsSplittingCompute.computeUserRewardsForWeek(scAddress, week, userAddress),
+            () => this.weeklyRewardsSplittingCompute.computeUserRewardsForWeek(scAddress, week, userAddress, energy, positionAmount),
             CacheTtlInfo.ContractBalance.remoteTtl,
             CacheTtlInfo.ContractBalance.localTtl,
         )
