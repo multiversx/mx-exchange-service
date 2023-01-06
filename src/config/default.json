@@ -385,7 +385,7 @@
                 "default": 23000000,
                 "withTokenMerge": 33000000
             },
-            "claimDualYield": 40000000,
+            "claimDualYield": 50000000,
             "unstakeFarmTokens": 62000000
         },
         "metabonding": {
