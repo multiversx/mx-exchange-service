@@ -9,7 +9,7 @@ import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
-import { AWSModule } from 'src/services/aws/aws.module';
+import { AWSModule } from 'src/services/analytics/aws/aws.module';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
