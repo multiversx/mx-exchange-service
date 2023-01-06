@@ -50,6 +50,7 @@ export interface IWeeklyRewardsSplittingComputeService {
         week: number,
         userAddress: string,
         energyAmount?: string,
+        positionAmount?: string,
     ): Promise<EsdtTokenPayment[]>;
 }
 

@@ -438,14 +438,14 @@
             }
         },
         "feesCollector": {
-            "baseClaimRewards": 10000000,
+            "baseClaimRewards": 20000000,
             "claimRewardsPerWeek": 10000000
         },
         "energyUpdate": {
             "updateFarmsEnergyForUser": 15000000
         },
         "tokenUnstake": {
-            "claimUnlockedTokens": 15000000,
+            "claimUnlockedTokens": 30000000,
             "cancelUnbond": 20000000
         },
         "lockedTokenWrapper": {
