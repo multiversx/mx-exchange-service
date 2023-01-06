@@ -33,7 +33,7 @@ export class StakingProxyTransactionService {
         private readonly elrondProxy: ElrondProxyService,
         private readonly apiService: ElrondApiService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) { }
+    ) {}
 
     async stakeFarmTokens(
         sender: string,
@@ -187,9 +187,7 @@ export class StakingProxyTransactionService {
         ];
 
         if (farmVersion(farmAddress) === FarmVersion.V2) {
-            endpointArgs.push(
-                new BigUIntValue(new BigNumber(exitFarmPosition.farmingTokens)),
-            );
+            endpointArgs.push(new BigUIntValue(liquidityPositionAmount));
         }
 
         return contract.methodsExplicit
