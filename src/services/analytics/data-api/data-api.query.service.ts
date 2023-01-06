@@ -7,7 +7,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { dataApiConfig, elrondConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { decodeTime } from 'src/utils/analytics.utils';
+import { computeTimeInterval, convertBinToTimeResolution } from 'src/utils/analytics.utils';
 import { Logger } from 'winston';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -36,14 +36,12 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
   }
 
   async getAggregatedValue({ series, metric, time }: AnalyticsQueryArgs): Promise<string> {
-    const [timeAmount, timeUnit] = decodeTime(time);
-    const startTime = moment().utc().subtract(timeAmount, timeUnit).toDate();
-    const endTime = moment().utc().toDate();
+    const [startDate, endDate] = computeTimeInterval(time);
 
     const query = DataApiQueryBuilder
       .createXExchangeAnalyticsQuery()
       .metric(series, metric)
-      .betweenDates(startTime, endTime)
+      .betweenDates(startDate, endDate)
       .getAggregate(AggregateValue.sum);
 
     const value = await this.dataApiClient.executeAggregateQuery(query);
@@ -60,10 +58,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = rows.map((row) => new HistoricDataModel({
-      timestamp: row.timestamp.toString(),
-      value: new BigNumber(row.last ?? '0').toFixed(),
-    }));
+    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.last));
     return data;
   }
 
@@ -77,10 +72,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = rows.map((row) => new HistoricDataModel({
-      timestamp: row.timestamp.toString(),
-      value: new BigNumber(row.sum ?? '0').toFixed(),
-    }));
+    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.sum));
     return data;
   }
 
@@ -94,10 +86,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = rows.map((row) => new HistoricDataModel({
-      timestamp: row.timestamp.toString(),
-      value: new BigNumber(row.max ?? '0').toFixed(),
-    }));
+    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.max));
     return data;
   }
 
@@ -112,17 +101,12 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = rows.map((row) => new HistoricDataModel({
-      timestamp: row.timestamp.toString(),
-      value: new BigNumber(row.max ?? '0').toFixed(),
-    }));
+    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.sum));
     return data;
   }
 
   async getLatestHistoricData({ time, series, metric, start }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    // TODO use time
-    const startDate = moment.unix(parseInt(start)).utc().format('YYYY-MM-DD HH:mm:ss');
-    const endDate = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+    const [startDate, endDate] = computeTimeInterval(time, start);
 
     const query = `query getLatestHistoricData($series: String!, $metric: String!, $startDate: DateTime!, $endDate: DateTime!) {
       ${dataApiConfig.tableName} {
@@ -140,8 +124,8 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     const variables = {
       series,
       metric,
-      startDate,
-      endDate
+      startDate: moment.utc(startDate).format('YYYY-MM-DD HH:mm:ss'),
+      endDate: moment.utc(endDate).format('YYYY-MM-DD HH:mm:ss'),
     }
 
     const response = await this.dataApiClient.executeRawQuery({ query, variables });
@@ -154,26 +138,21 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     return data;
   }
 
-  async getLatestBinnedHistoricData({ time, series, metric, start }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
-    // TODO handle bin as time resolution
-    // fe bin =30s
-    // TODO time
+  async getLatestBinnedHistoricData({ time, series, metric, start, bin }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
+    const [startDate, endDate] = computeTimeInterval(time, start);
+    const timeResolution = convertBinToTimeResolution(bin);
 
-    const startDate = moment.unix(parseInt(start)).utc().toDate();
     const query = DataApiQueryBuilder
       .createXExchangeAnalyticsQuery()
       .metric(series, metric)
-      .betweenDates(startDate, moment().utc().subtract(time).toDate())
-      .withTimeResolution(TimeResolution.INTERVAL_10_MINUTES)
+      .betweenDates(startDate, endDate)
+      .withTimeResolution(timeResolution)
       .fillDataGaps()
       .getHistorical(HistoricalValue.avg, HistoricalValue.time);
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = rows.map((row) => new HistoricDataModel({
-      timestamp: row.timestamp.toString(),
-      value: new BigNumber(row.max ?? '0').toFixed(),
-    }));
+    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.max));
     return data;
   }
 }
