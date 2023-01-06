@@ -11,13 +11,13 @@ import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { setClient } from 'src/utils/redisClient';
 import Redis, { RedisOptions } from 'ioredis';
+import localCache from '../../utils/local.cache';
 
 @Injectable()
 export class CachingService {
     private readonly UNDEFINED_CACHE_VALUE = 'undefined';
 
     private remoteGetExecutor: PendingExecutor<string, string>;
-    private localGetExecutor: PendingExecutor<string, any>;
     private remoteDelExecutor: PendingExecutor<string, number>;
     private localDelExecutor: PendingExecutor<string, void>;
 
@@ -47,9 +47,7 @@ export class CachingService {
         this.remoteGetExecutor = new PendingExecutor(
             async (key: string) => await this.client.get(key),
         );
-        this.localGetExecutor = new PendingExecutor(
-            async (key: string) => await CachingService.cache.get<any>(key),
-        );
+
         this.remoteDelExecutor = new PendingExecutor(
             async (key: string) => await this.client.del(key),
         );
@@ -113,23 +111,25 @@ export class CachingService {
         ttl: number = cacheConfig.default,
     ): Promise<T> {
         if (value === undefined) {
-            await CachingService.cache.set<string>(
+            localCache.set(
                 key,
                 this.UNDEFINED_CACHE_VALUE,
-                oneMinute(),
+                {
+                    ttl: oneMinute() * 1000,
+                }
             );
             return value;
         }
-        await CachingService.cache.set<T>(key, value, { ttl });
+        await localCache.set(key, value, { ttl: ttl * 1000 });
         return value;
     }
 
-    async getCacheLocal<T>(key: string): Promise<T | undefined> {
-        return await this.localGetExecutor.execute(key);
+    getCacheLocal<T>(key: string): T | undefined {
+        return localCache.get(key) as T;
     }
 
     public async getCache<T>(key: string): Promise<T | undefined> {
-        const value = await this.getCacheLocal<T>(key);
+        const value = this.getCacheLocal<T>(key);
         if (value) {
             return value;
         }
@@ -163,7 +163,7 @@ export class CachingService {
 
         const profiler = new PerformanceProfiler(`vmQuery:${key}`);
 
-        let cachedValue = await this.getCacheLocal<T>(key);
+        let cachedValue = this.getCacheLocal<T>(key);
         if (cachedValue !== undefined) {
             profiler.stop(`Local Cache hit for key ${key}`);
             return cachedValue === this.UNDEFINED_CACHE_VALUE
