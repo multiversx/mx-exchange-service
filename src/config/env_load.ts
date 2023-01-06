@@ -7,7 +7,7 @@ const nodeEnv: string = process.env.NODE_ENV
 export const envload = () => {
     switch (nodeEnv) {
         case 'test':
-            dotenv.config({ path: `.env.test` });
+            dotenv.config({ path: `.env.example` });
             break;
         default:
             dotenv.config({ path: `.env` });
