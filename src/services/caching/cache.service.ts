@@ -56,7 +56,6 @@ export class CachingService {
         );
     }
 
-
     private async setCacheRemote<T>(
         key: string,
         value: T,
@@ -95,10 +94,7 @@ export class CachingService {
         return JSON.parse(response);
     }
 
-    async executeRemoteRaw<T>(
-        method,
-        ...args
-    ): Promise<T> {
+    async executeRemoteRaw<T>(method, ...args): Promise<T> {
         if (!this.client[method])
             throw new Error(`Redis client method ${method} not defined`);
 
@@ -111,21 +107,36 @@ export class CachingService {
         ttl: number = cacheConfig.default,
     ): Promise<T> {
         if (value === undefined) {
-            localCache.set(
-                key,
-                this.UNDEFINED_CACHE_VALUE,
-                {
-                    ttl: oneMinute() * 1000,
-                }
-            );
+            localCache.set(key, this.UNDEFINED_CACHE_VALUE, {
+                ttl: oneMinute() * 1000,
+            });
             return value;
         }
-        await localCache.set(key, value, { ttl: ttl * 1000 });
+
+        const writeValue =
+            typeof value === 'object'
+                ? {
+                      serialized: true,
+                      value: JSON.stringify(value),
+                  }
+                : {
+                      serialized: false,
+                      value,
+                  };
+        localCache.set(key, writeValue, { ttl: ttl * 1000 });
         return value;
     }
 
     getCacheLocal<T>(key: string): T | undefined {
-        return localCache.get(key) as T;
+        const cachedValue: any = localCache.get(key) as T;
+
+        if (!cachedValue) {
+            return undefined;
+        }
+
+        return cachedValue.serialized === true
+            ? JSON.parse(cachedValue.value)
+            : cachedValue.value;
     }
 
     public async getCache<T>(key: string): Promise<T | undefined> {
