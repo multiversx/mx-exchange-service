@@ -23,16 +23,18 @@ import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { CacheKeysArgs } from './args/cacheKeys.args';
 import { CachingService } from 'src/services/caching/cache.service';
+import { AnalyticsRepositoryService } from 'src/services/database/repositories/analytics.repository';
 
 @Controller('remote-config')
 export class RemoteConfigController {
     constructor(
         private readonly flagRepositoryService: FlagRepositoryService,
         private readonly scAddressRepositoryService: SCAddressRepositoryService,
+        private readonly analyticsRepositoryService: AnalyticsRepositoryService,
         private readonly remoteConfigSetterService: RemoteConfigSetterService,
         private readonly cacheService: CachingService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
-    ) {}
+    ) { }
 
     @UseGuards(JwtAdminGuard)
     @Post('/flags')
@@ -214,6 +216,8 @@ export class RemoteConfigController {
 
         return false;
     }
+
+    // TODO analytics
 
     @UseGuards(JwtAdminGuard)
     @Post('/cache/delete-keys')

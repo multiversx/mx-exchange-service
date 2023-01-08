@@ -22,7 +22,7 @@ import { CommonAppModule } from 'src/common.app.module';
         ContextModule,
         WrappingModule,
         CachingModule,
-        AnalyticsServicesModule.getModule(),
+        AnalyticsServicesModule,
         DatabaseModule,
         forwardRef(() => RouterModule),
         forwardRef(() => TokenModule),
@@ -44,4 +44,4 @@ import { CommonAppModule } from 'src/common.app.module';
         PairAbiService,
     ],
 })
-export class PairModule {}
+export class PairModule { }

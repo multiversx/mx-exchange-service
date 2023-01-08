@@ -37,7 +37,7 @@ import { TokenUnstakeHandlerService } from './handlers/token.unstake.handler.ser
     imports: [
         CommonAppModule,
         ElrondCommunicationModule,
-        AnalyticsServicesModule.getModule(),
+        AnalyticsServicesModule,
         CachingModule,
         ContextModule,
         PairModule,

@@ -22,7 +22,7 @@ import { TokenModule } from '../tokens/token.module';
         ElrondCommunicationModule,
         CachingModule,
         PairModule,
-        AnalyticsServicesModule.getModule(),
+        AnalyticsServicesModule,
         WrappingModule,
         RouterModule,
         TokenModule,
@@ -37,4 +37,4 @@ import { TokenModule } from '../tokens/token.module';
     ],
     exports: [],
 })
-export class AutoRouterModule {}
+export class AutoRouterModule { }
