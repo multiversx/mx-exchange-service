@@ -249,7 +249,7 @@ export class RemoteConfigController {
             return res
                 .status(500)
                 .send(
-                    'Flag name & value not found or not in application/json format.',
+                    'Analytics name & value not found or not in application/json format.',
                 );
         } catch (error) {
             return res.status(500).send(error.message);
