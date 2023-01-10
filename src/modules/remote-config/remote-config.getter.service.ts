@@ -120,7 +120,7 @@ export class RemoteConfigGetterService extends GenericGetterService {
                     })
                     .then((res) => {
                         if (!res?.value) {
-                            return true; // default true
+                            return false; // default value
                         }
                         return res.value === 'true';
                     }),
