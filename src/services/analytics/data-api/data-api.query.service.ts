@@ -129,7 +129,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     }
 
     const response = await this.dataApiClient.executeRawQuery({ query, variables });
-    const rows = response.maiar_exchange_analytics.values
+    const rows = response.xExchangeAnalytics.values
 
     const data = rows.map((row: any) => new HistoricDataModel({
       timestamp: moment.utc(row.time).unix().toString(),

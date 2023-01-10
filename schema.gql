@@ -396,6 +396,23 @@ type WrapModel {
   wrappedToken: EsdtToken!
 }
 
+type HistoricDataModel {
+  timestamp: String!
+  value: String!
+}
+
+type PairDayDataModel {
+  timestamp: String!
+  address: String!
+  firstToken: EsdtToken!
+  secondToken: EsdtToken!
+  lockedValueUSD: String!
+  firstTokenPriceUSD: String!
+  secondTokenPriceUSD: String!
+  volumeUSD24h: String!
+  feesUSD24h: String!
+}
+
 type TransactionModel {
   nonce: Float!
   value: String!
@@ -447,23 +464,6 @@ interface INFTToken {
   tags: [String!]
   balance: String!
   assets: IAssets
-}
-
-type HistoricDataModel {
-  timestamp: String!
-  value: String!
-}
-
-type PairDayDataModel {
-  timestamp: String!
-  address: String!
-  firstToken: EsdtToken!
-  secondToken: EsdtToken!
-  lockedValueUSD: String!
-  firstTokenPriceUSD: String!
-  secondTokenPriceUSD: String!
-  volumeUSD24h: String!
-  feesUSD24h: String!
 }
 
 type WeekTimekeepingModel {

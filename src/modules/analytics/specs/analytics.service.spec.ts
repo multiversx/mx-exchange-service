@@ -65,6 +65,9 @@ import { FeesCollectorGetterService } from '../../fees-collector/services/fees-c
 import {
     RemoteConfigGetterServiceProvider
 } from '../../remote-config/mocks/remote-config.getter.mock';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
+import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -110,7 +113,6 @@ describe('AnalyticsService', () => {
             imports: [
                 CommonAppModule,
                 CachingModule,
-                AnalyticsModule.getModule()
             ],
             providers: [
                 ContextGetterServiceProvider,
@@ -166,6 +168,9 @@ describe('AnalyticsService', () => {
                     useValue: feesCollectorGetter,
                 },
                 RemoteConfigGetterServiceProvider,
+                AnalyticsQueryService,
+                AWSTimestreamQueryService,
+                DataApiQueryServiceProvider
             ],
         }).compile();
 
