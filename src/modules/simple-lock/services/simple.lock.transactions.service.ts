@@ -349,12 +349,11 @@ export class SimpleLockTransactionService {
             .toPlainObject();
     }
 
-    async farmProxyTokenInteraction(
+    async exitFarmLockedToken(
         simpleLockAddress: string,
         sender: string,
         inputTokens: InputTokenModel,
-        endpointName: string,
-        gasLimit: number,
+        farmVersion: FarmVersion,
         exitAmount?: string,
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
@@ -362,26 +361,16 @@ export class SimpleLockTransactionService {
         const contract = await this.elrondProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
-
-        let interaction: Interaction;
-        switch (endpointName) {
-            case 'exitFarmLockedToken':
-                if (!exitAmount) {
-                    throw new Error('Invalid exit amount!');
-                }
-                interaction = contract.methodsExplicit.exitFarmLockedToken([
-                    new BigUIntValue(new BigNumber(exitAmount)),
-                ]);
-                break;
-            case 'farmClaimRewardsLockedToken':
-                interaction =
-                    contract.methodsExplicit.farmClaimRewardsLockedToken();
-                break;
-            default:
-                throw new Error('Invalid endpoint name!');
+        if (!exitAmount && farmVersion === FarmVersion.V2) {
+            throw new Error('Invalid exit amount!');
         }
+        const endpointArgs =
+            farmVersion === FarmVersion.V2
+                ? [new BigUIntValue(new BigNumber(exitAmount))]
+                : [];
 
-        return interaction
+        return contract.methodsExplicit
+            .exitFarmLockedToken(endpointArgs)
             .withSingleESDTNFTTransfer(
                 TokenPayment.metaEsdtFromBigInteger(
                     inputTokens.tokenID,
@@ -390,7 +379,34 @@ export class SimpleLockTransactionService {
                 ),
                 Address.fromString(sender),
             )
-            .withGasLimit(gasLimit)
+            .withGasLimit(gasConfig.simpleLock.exitFarmLockedToken)
+            .withChainID(elrondConfig.chainID)
+            .buildTransaction()
+            .toPlainObject();
+    }
+
+    async farmClaimRewardsLockedToken(
+        simpleLockAddress: string,
+        sender: string,
+        inputTokens: InputTokenModel,
+    ): Promise<TransactionModel> {
+        await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
+
+        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+            simpleLockAddress,
+        );
+
+        return contract.methodsExplicit
+            .farmClaimRewardsLockedToken()
+            .withSingleESDTNFTTransfer(
+                TokenPayment.metaEsdtFromBigInteger(
+                    inputTokens.tokenID,
+                    inputTokens.nonce,
+                    new BigNumber(inputTokens.amount),
+                ),
+                Address.fromString(sender),
+            )
+            .withGasLimit(gasConfig.simpleLock.claimRewardsFarmLockedToken)
             .withChainID(elrondConfig.chainID)
             .buildTransaction()
             .toPlainObject();

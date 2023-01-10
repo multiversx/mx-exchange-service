@@ -2,6 +2,7 @@
     "elrond": {
         "chainID": "T",
         "EGLDIdentifier": "EGLD",
+        "EGLDDecimals": 18,
         "version": 1,
         "proxyTimeout": 60000,
         "timeoutLimit": 10000,
@@ -440,7 +441,7 @@
         },
         "feesCollector": {
             "baseClaimRewards": 20000000,
-            "claimRewardsPerWeek": 10000000
+            "claimRewardsPerWeek": 20000000
         },
         "energyUpdate": {
             "updateFarmsEnergyForUser": 15000000
