@@ -189,7 +189,6 @@ export class MetricsCollector {
             .observe(duration);
     }
 
-    // TODO use method
     static setDataApiQueryDuration(queryName: string, duration: number) {
         MetricsCollector.ensureIsInitialized();
         MetricsCollector.dataApiQueryDurationHistogram

@@ -1,4 +1,7 @@
+import { HistoricalValue } from '@elrondnetwork/erdjs-data-api-client';
+import { DataApiHistoricalResponse } from '@elrondnetwork/erdjs-data-api-client/lib/src/responses';
 import { Field, ObjectType } from '@nestjs/graphql';
+import BigNumber from 'bignumber.js';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 
 @ObjectType()
@@ -10,6 +13,13 @@ export class HistoricDataModel {
 
     constructor(init?: Partial<HistoricDataModel>) {
         Object.assign(this, init);
+    }
+
+    static fromDataApiResponse(row: DataApiHistoricalResponse, aggregate: HistoricalValue) {
+        return new HistoricDataModel({
+            timestamp: row.timestamp.toString(),
+            value: new BigNumber(row[aggregate] ?? '0').toFixed(),
+        });
     }
 }
 
