@@ -1,3 +1,4 @@
+import { appendFile } from 'fs';
 import {
     Injectable,
     NestInterceptor,
@@ -27,9 +28,14 @@ export class LoggingInterceptor implements NestInterceptor {
                 origin = req?.headers?.['origin'] ?? 'Unknown';
             }
 
+            const { url, originalUrl, headers, method, body } = req;
+
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            appendFile('httpLogs.txt', `${JSON.stringify({ url, originalUrl, headers, method, body })}\n`, () => { });
+
             const profiler = new PerformanceProfiler();
             const cpuProfiler = new CpuProfiler();
-            
+
             return next.handle().pipe(
                 tap(() => {
                     profiler.stop();
