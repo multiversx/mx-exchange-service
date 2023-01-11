@@ -2,9 +2,11 @@
     "elrond": {
         "chainID": "T",
         "EGLDIdentifier": "EGLD",
+        "EGLDDecimals": 18,
         "version": 1,
         "proxyTimeout": 60000,
         "timeoutLimit": 10000,
+        "localCacheMaxItems": 50000,
         "keepAlive": true,
         "keepAliveTimeout": 50000,
         "keepAliveFreeSocketTimeout": 30000,
@@ -385,7 +387,7 @@
                 "default": 23000000,
                 "withTokenMerge": 33000000
             },
-            "claimDualYield": 40000000,
+            "claimDualYield": 50000000,
             "unstakeFarmTokens": 62000000
         },
         "metabonding": {
@@ -439,7 +441,7 @@
         },
         "feesCollector": {
             "baseClaimRewards": 20000000,
-            "claimRewardsPerWeek": 10000000
+            "claimRewardsPerWeek": 20000000
         },
         "energyUpdate": {
             "updateFarmsEnergyForUser": 15000000
