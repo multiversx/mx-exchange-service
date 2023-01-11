@@ -1,4 +1,4 @@
-import { AggregateValue, DataApiClient, DataApiQueryBuilder, HistoricalValue, TimeRange, TimeResolution } from '@elrondnetwork/erdjs-data-api-client';
+import { AggregateValue, DataApiClient, DataApiQueryBuilder, HistoricalValue, TimeRange, TimeResolution } from '@multiversx/sdk-data-api-client';
 import { Inject, Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import fs from 'fs';
