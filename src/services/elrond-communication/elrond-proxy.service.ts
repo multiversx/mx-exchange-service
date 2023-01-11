@@ -35,7 +35,7 @@ export class ElrondProxyService {
         const httpsAgent = new HttpsAgent(keepAliveOptions);
 
         this.proxy = new ProxyNetworkProviderProfiler(
-            process.env.ELRONDAPI_URL,
+            this.apiConfigService.getApiUrl(),
             {
                 timeout: elrondConfig.proxyTimeout,
                 httpAgent: elrondConfig.keepAlive ? httpAgent : null,

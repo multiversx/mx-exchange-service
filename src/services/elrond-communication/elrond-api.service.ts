@@ -39,14 +39,17 @@ export class ElrondApiService {
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
 
-        this.apiProvider = new ApiNetworkProvider(process.env.ELRONDAPI_URL, {
-            timeout: elrondConfig.proxyTimeout,
-            httpAgent: elrondConfig.keepAlive ? httpAgent : null,
-            httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
-            headers: {
-                origin: 'MaiarExchangeService',
+        this.apiProvider = new ApiNetworkProvider(
+            this.apiConfigService.getApiUrl(),
+            {
+                timeout: elrondConfig.proxyTimeout,
+                httpAgent: elrondConfig.keepAlive ? httpAgent : null,
+                httpsAgent: elrondConfig.keepAlive ? httpsAgent : null,
+                headers: {
+                    origin: 'xExchangeService',
+                },
             },
-        });
+        );
         this.genericGetExecutor = new PendingExecutor(
             async (getGenericArgs: GenericGetArgs) =>
                 await this.doGetGeneric(
@@ -105,7 +108,10 @@ export class ElrondApiService {
         return new Stats(stats);
     }
 
-    async getShardBlockCountInEpoch(epoch: number, shardId: number): Promise<Stats> {
+    async getShardBlockCountInEpoch(
+        epoch: number,
+        shardId: number,
+    ): Promise<Stats> {
         return await this.doGetGeneric<Stats>(
             this.getStats.name,
             `blocks/count?epoch=${epoch}&shard=${shardId}`,
