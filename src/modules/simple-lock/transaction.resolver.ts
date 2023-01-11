@@ -2,12 +2,14 @@ import { LockedFarmTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { gasConfig } from 'src/config';
 import { User } from 'src/helpers/userDecorator';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
+import { farmVersion } from 'src/utils/farm.utils';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { FarmGetterFactory } from '../farm/farm.getter.factory';
+import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
 import { SimpleLockTransactionService } from './services/simple.lock.transactions.service';
 import { EmterFarmProxyTokensValidationPipe } from './validators/enter.farm.tokens.validator';
@@ -20,6 +22,8 @@ import { UnlockTokensValidationPipe } from './validators/unlock.tokens.validator
 export class TransactionResolver extends GenericResolver {
     constructor(
         private readonly simpleLockService: SimpleLockService,
+        private readonly simpleLockGetter: SimpleLockGetterService,
+        private readonly farmGetterFactory: FarmGetterFactory,
         private readonly simpleLockTransactions: SimpleLockTransactionService,
     ) {
         super();
@@ -165,13 +169,22 @@ export class TransactionResolver extends GenericResolver {
             const decodedAttributes = LockedFarmTokenAttributes.fromAttributes(
                 inputTokens.attributes,
             );
-            if (decodedAttributes.farmType === 'FarmWithBoostedRewards') {
-                return await this.simpleLockTransactions.farmProxyTokenInteraction(
+            const [lockedTokenID, farmAddress] = await Promise.all([
+                this.simpleLockGetter.getLockedTokenID(simpleLockAddress),
+                this.farmGetterFactory.getFarmAddressByFarmTokenID(
+                    decodedAttributes.farmTokenID,
+                ),
+            ]);
+            const version = farmVersion(farmAddress);
+            if (
+                decodedAttributes.farmType === 'FarmWithBoostedRewards' ||
+                lockedTokenID.includes('LKESDT')
+            ) {
+                return await this.simpleLockTransactions.exitFarmLockedToken(
                     simpleLockAddress,
                     user.publicKey,
                     inputTokens,
-                    this.exitFarmLockedToken.name,
-                    gasConfig.simpleLock.exitFarmLockedToken,
+                    version,
                     exitAmount,
                 );
             } else {
@@ -198,13 +211,14 @@ export class TransactionResolver extends GenericResolver {
                 await this.simpleLockService.getSimpleLockAddressFromInputTokens(
                     [inputTokens],
                 );
-            return await this.simpleLockTransactions.farmProxyTokenInteraction(
+
+            return await this.simpleLockTransactions.farmClaimRewardsLockedToken(
                 simpleLockAddress,
                 user.publicKey,
                 inputTokens,
-                'farmClaimRewardsLockedToken',
-                gasConfig.simpleLock.claimRewardsFarmLockedToken,
             );
-        } catch (error) {}
+        } catch (error) {
+            throw new ApolloError(error);
+        }
     }
 }
