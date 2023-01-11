@@ -31,7 +31,7 @@ export class LoggingInterceptor implements NestInterceptor {
             const { url, originalUrl, headers, method, body } = req;
 
             // eslint-disable-next-line @typescript-eslint/no-empty-function
-            appendFile('/app/dist/logs/httpLogs.txt', `${JSON.stringify({ url, originalUrl, headers, method, body })}\n`, () => { });
+            appendFile(process.env.LOG_FILE, `${JSON.stringify({ url, originalUrl, headers, method, body })}\n`, () => { });
 
             const profiler = new PerformanceProfiler();
             const cpuProfiler = new CpuProfiler();
