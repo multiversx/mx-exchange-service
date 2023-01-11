@@ -92,6 +92,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
                 },
             );
             this.logger.error(logMessage);
+            this.logger.error(`writeRecords - error: ${JSON.stringify(error)}`);
         } finally {
             profiler.stop();
 
@@ -118,6 +119,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
                 );
             });
         });
+        this.logger.info(`createRecords - data: ${JSON.stringify(data)}; Time: ${Time}; records: ${records}`);
         return records;
     }
 
@@ -150,6 +152,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
                 value: record.MeasureValue,
             });
         });
+        this.logger.info(`convertAWSRecordsToDataAPIRecords - Records: ${JSON.stringify(Records)}; ingestRecords: ${ingestRecords}`);
         return ingestRecords;
     }
 }
