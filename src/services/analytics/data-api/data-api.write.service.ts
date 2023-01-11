@@ -80,19 +80,18 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
         try {
             const mutation = this.generateIngestMutation(records);
             await this.dataApiClient.executeRawQuery(mutation)
-        } catch (error) {
+        } catch (errors) {
             const logMessage = generateLogMessage(
                 DataApiWriteService.name,
                 this.writeRecords.name,
                 '',
                 {
-                    message: error.message,
-                    response: error.response?.data,
-                    status: error.response?.status,
+                    message: 'Internal Server Error',
+                    status: 500,
+                    response: errors,
                 },
             );
             this.logger.error(logMessage);
-            this.logger.error(`writeRecords - error: ${JSON.stringify(error)}`);
         } finally {
             profiler.stop();
 
