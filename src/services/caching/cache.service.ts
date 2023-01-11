@@ -11,13 +11,13 @@ import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { setClient } from 'src/utils/redisClient';
 import Redis, { RedisOptions } from 'ioredis';
+import localCache from '../../utils/local.cache';
 
 @Injectable()
 export class CachingService {
     private readonly UNDEFINED_CACHE_VALUE = 'undefined';
 
     private remoteGetExecutor: PendingExecutor<string, string>;
-    private localGetExecutor: PendingExecutor<string, any>;
     private remoteDelExecutor: PendingExecutor<string, number>;
     private localDelExecutor: PendingExecutor<string, void>;
 
@@ -47,9 +47,7 @@ export class CachingService {
         this.remoteGetExecutor = new PendingExecutor(
             async (key: string) => await this.client.get(key),
         );
-        this.localGetExecutor = new PendingExecutor(
-            async (key: string) => await CachingService.cache.get<any>(key),
-        );
+
         this.remoteDelExecutor = new PendingExecutor(
             async (key: string) => await this.client.del(key),
         );
@@ -57,7 +55,6 @@ export class CachingService {
             async (key: string) => await CachingService.cache.del(key),
         );
     }
-
 
     private async setCacheRemote<T>(
         key: string,
@@ -97,10 +94,7 @@ export class CachingService {
         return JSON.parse(response);
     }
 
-    async executeRemoteRaw<T>(
-        method,
-        ...args
-    ): Promise<T> {
+    async executeRemoteRaw<T>(method, ...args): Promise<T> {
         if (!this.client[method])
             throw new Error(`Redis client method ${method} not defined`);
 
@@ -113,23 +107,40 @@ export class CachingService {
         ttl: number = cacheConfig.default,
     ): Promise<T> {
         if (value === undefined) {
-            await CachingService.cache.set<string>(
-                key,
-                this.UNDEFINED_CACHE_VALUE,
-                oneMinute(),
-            );
+            localCache.set(key, this.UNDEFINED_CACHE_VALUE, {
+                ttl: oneMinute() * 1000,
+            });
             return value;
         }
-        await CachingService.cache.set<T>(key, value, { ttl });
+
+        const writeValue =
+            typeof value === 'object'
+                ? {
+                      serialized: true,
+                      value: JSON.stringify(value),
+                  }
+                : {
+                      serialized: false,
+                      value,
+                  };
+        localCache.set(key, writeValue, { ttl: ttl * 1000 });
         return value;
     }
 
-    async getCacheLocal<T>(key: string): Promise<T | undefined> {
-        return await this.localGetExecutor.execute(key);
+    getCacheLocal<T>(key: string): T | undefined {
+        const cachedValue: any = localCache.get(key) as T;
+
+        if (!cachedValue) {
+            return undefined;
+        }
+
+        return cachedValue.serialized === true
+            ? JSON.parse(cachedValue.value)
+            : cachedValue.value;
     }
 
     public async getCache<T>(key: string): Promise<T | undefined> {
-        const value = await this.getCacheLocal<T>(key);
+        const value = this.getCacheLocal<T>(key);
         if (value) {
             return value;
         }
@@ -163,7 +174,7 @@ export class CachingService {
 
         const profiler = new PerformanceProfiler(`vmQuery:${key}`);
 
-        let cachedValue = await this.getCacheLocal<T>(key);
+        let cachedValue = this.getCacheLocal<T>(key);
         if (cachedValue !== undefined) {
             profiler.stop(`Local Cache hit for key ${key}`);
             return cachedValue === this.UNDEFINED_CACHE_VALUE

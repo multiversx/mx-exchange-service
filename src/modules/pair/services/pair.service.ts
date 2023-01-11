@@ -28,7 +28,7 @@ export class PairService {
         private readonly wrapService: WrapService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     async getAmountOut(
         pairAddress: string,
@@ -192,7 +192,6 @@ export class PairService {
             this.pairGetterService.getSecondTokenPriceUSD(pairAddress),
             this.getLiquidityPosition(pairAddress, amount),
         ]);
-
         return computeValueUSD(
             liquidityPosition.firstTokenAmount,
             firstToken.decimals,
@@ -220,18 +219,20 @@ export class PairService {
             this.pairGetterService.getLpTokenID(pairAddress),
         );
         const lpTokenIDs = await Promise.all(promises);
+        let returnedData = null;
         for (let index = 0; index < lpTokenIDs.length; index++) {
             if (lpTokenIDs[index] === tokenID) {
-                await this.cachingService.setCache(
-                    `${tokenID}.pairAddress`,
-                    pairsAddress[index],
-                    oneHour(),
-                );
-                return pairsAddress[index];
+                returnedData = pairsAddress[index];
+                break;
             }
         }
 
-        return null;
+        await this.cachingService.setCache(
+            `${tokenID}.pairAddress`,
+            returnedData,
+            oneHour(),
+        );
+        return returnedData;
     }
 
     async isPairEsdtToken(tokenID: string): Promise<boolean> {
@@ -262,4 +263,4 @@ export class PairService {
         )
             throw new Error('You are not the owner.');
     }
-}
+};
