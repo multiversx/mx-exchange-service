@@ -119,7 +119,6 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
                 );
             });
         });
-        this.logger.info(`createRecords - data: ${JSON.stringify(data)}; Time: ${Time}; records: ${records}`);
         return records;
     }
 
@@ -146,13 +145,12 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
     ): IngestRecord[] {
         const ingestRecords = Records.map((record) => {
             return new IngestRecord({
-                timestamp: moment(parseInt(record.Time)).unix(),
+                timestamp: moment(parseInt(record.Time) * 1000).unix(),
                 series: record.Dimensions[0].Value,
                 key: record.MeasureName,
                 value: record.MeasureValue,
             });
         });
-        this.logger.info(`convertAWSRecordsToDataAPIRecords - Records: ${JSON.stringify(Records)}; ingestRecords: ${ingestRecords}`);
         return ingestRecords;
     }
 }
