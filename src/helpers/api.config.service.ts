@@ -115,7 +115,7 @@ export class ApiConfigService {
     }
 
     getApiUrl(): string {
-        const apiUrl = this.configService.get<string>('ELRONDAPI_URL');
+        const apiUrl = this.configService.get<string>('MX_API_URL');
         if (!apiUrl) {
             throw new Error('No apiUrl present');
         }

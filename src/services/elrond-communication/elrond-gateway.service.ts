@@ -26,7 +26,7 @@ export class ElrondGatewayService {
         };
         const httpAgent = new Agent(keepAliveOptions);
         const httpsAgent = new HttpsAgent(keepAliveOptions);
-        this.url = process.env.ELRONDGATEWAY_URL;
+        this.url = process.env.MX_GATEWAY_URL;
 
         this.config = {
             timeout: elrondConfig.proxyTimeout,
@@ -39,26 +39,26 @@ export class ElrondGatewayService {
         return await this.doGetGeneric(
             this.getSCStorageKey.name,
             `address/${address}/key/${Buffer.from(key).toString('hex')}`,
-            response => response.data.value,
+            (response) => response.data.value,
         );
     }
 
     async getSCStorageKeys(address: string, keys: any[]): Promise<any> {
-        let fullKey = "";
+        let fullKey = '';
         for (const key of keys) {
             switch (typeof key) {
                 case 'number':
-                    fullKey = fullKey.concat(key.toString(16).padStart(8, '0'))
-                    break
+                    fullKey = fullKey.concat(key.toString(16).padStart(8, '0'));
+                    break;
                 case 'string':
-                    fullKey = fullKey.concat(Buffer.from(key).toString('hex'))
+                    fullKey = fullKey.concat(Buffer.from(key).toString('hex'));
                     break;
             }
         }
         return await this.doGetGeneric(
             this.getSCStorageKey.name,
             `address/${address}/key/${fullKey}`,
-            response => response.data.value,
+            (response) => response.data.value,
         );
     }
 
