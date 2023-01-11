@@ -1,4 +1,4 @@
-import { TimeResolution } from "@elrondnetwork/erdjs-data-api-client";
+import { TimeResolution } from "@multiversx/sdk-data-api-client";
 import moment from "moment";
 
 export const decodeTime = (time: string): [string, moment.unitOfTime.Base] => {

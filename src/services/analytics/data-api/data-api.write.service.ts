@@ -10,7 +10,7 @@ import { ApiConfigService } from 'src/helpers/api.config.service';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { AnalyticsWriteInterface } from '../interfaces/analytics.write.interface';
-import { DataApiClient } from '@elrondnetwork/erdjs-data-api-client';
+import { DataApiClient } from '@multiversx/sdk-data-api-client';
 import fs from 'fs';
 
 @Injectable()
