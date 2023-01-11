@@ -92,6 +92,7 @@ export class DataApiWriteService implements AnalyticsWriteInterface {
                 },
             );
             this.logger.error(logMessage);
+            this.logger.error(`writeRecords - error: ${JSON.stringify(error)}`);
         } finally {
             profiler.stop();
 
