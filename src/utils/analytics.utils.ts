@@ -10,9 +10,11 @@ export const computeTimeInterval = (time: string, start?: string): [Date, Date] 
     const [timeAmount, timeUnit] = decodeTime(time);
 
     const startDate1 = moment().utc().subtract(timeAmount, timeUnit);
-    const startDate2 = moment.unix(parseInt(start)).utc();
+    const startDate2 = start ? moment.unix(parseInt(start)).utc() : undefined;
 
-    const startDate = moment.max(startDate1, startDate2).toDate();
+    const startDate = startDate2
+        ? moment.max(startDate1, startDate2).toDate()
+        : startDate1.toDate();
     const endDate = moment().utc().toDate();
 
     return [startDate, endDate];
@@ -38,3 +40,19 @@ export const convertBinToTimeResolution = (bin: string): TimeResolution => {
 
     throw new Error('Invalid bin');
 };
+
+export function FormatDataApiErrors() {
+    return (_target: object, _key: string | symbol, descriptor: PropertyDescriptor) => {
+        const childMethod = descriptor.value;
+
+        descriptor.value = async function (...args: any[]) {
+            try {
+                return await childMethod.apply(this, args);
+            } catch (errors) {
+                const errorIds: string[] = errors?.map(error => error?.extensions?.id);
+                throw new Error(`Data API Internal Error. Error IDs: ${errorIds.join()}`);
+            }
+        };
+        return descriptor;
+    };
+}
