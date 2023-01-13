@@ -1,5 +1,7 @@
 import { TimeResolution } from "@multiversx/sdk-data-api-client";
 import moment from "moment";
+import { MetricsCollector } from "./metrics.collector";
+import { PerformanceProfiler } from "./performance.profiler";
 
 export const decodeTime = (time: string): [string, moment.unitOfTime.Base] => {
     const [timeAmount, timeUnit] = time.match(/[a-zA-Z]+|[0-9]+/g);
@@ -41,16 +43,21 @@ export const convertBinToTimeResolution = (bin: string): TimeResolution => {
     throw new Error('Invalid bin');
 };
 
-export function FormatDataApiErrors() {
+export function DataApiQuery() {
     return (_target: object, _key: string | symbol, descriptor: PropertyDescriptor) => {
         const childMethod = descriptor.value;
 
         descriptor.value = async function (...args: any[]) {
+            const profiler = new PerformanceProfiler();
+
             try {
                 return await childMethod.apply(this, args);
             } catch (errors) {
                 const errorIds: string[] = errors?.map(error => error?.extensions?.id);
                 throw new Error(`Data API Internal Error. Error IDs: ${errorIds.join()}`);
+            } finally {
+                profiler.stop();
+                MetricsCollector.setDataApiQueryDuration(childMethod.name, profiler.duration);
             }
         };
         return descriptor;
