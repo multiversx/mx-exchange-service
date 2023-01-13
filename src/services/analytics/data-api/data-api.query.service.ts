@@ -7,7 +7,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { dataApiConfig, elrondConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
-import { computeTimeInterval, convertBinToTimeResolution, FormatDataApiErrors } from 'src/utils/analytics.utils';
+import { computeTimeInterval, convertBinToTimeResolution, DataApiQuery } from 'src/utils/analytics.utils';
 import { Logger } from 'winston';
 import { AnalyticsQueryArgs } from '../entities/analytics.query.args';
 import { AnalyticsQueryInterface } from '../interfaces/analytics.query.interface';
@@ -35,7 +35,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     });
   }
 
-  @FormatDataApiErrors()
+  @DataApiQuery()
   async getAggregatedValue({ series, metric, time }: AnalyticsQueryArgs): Promise<string> {
     const [startDate, endDate] = computeTimeInterval(time);
 
@@ -51,7 +51,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     return value;
   }
 
-  @FormatDataApiErrors()
+  @DataApiQuery()
   async getLatestCompleteValues({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     const query = DataApiQueryBuilder
       .createXExchangeAnalyticsQuery()
@@ -66,7 +66,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     return data;
   }
 
-  @FormatDataApiErrors()
+  @DataApiQuery()
   async getSumCompleteValues({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     const query = DataApiQueryBuilder
       .createXExchangeAnalyticsQuery()
@@ -81,7 +81,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     return data;
   }
 
-  @FormatDataApiErrors()
+  @DataApiQuery()
   async getValues24h({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     const query = DataApiQueryBuilder
       .createXExchangeAnalyticsQuery()
@@ -96,7 +96,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     return data;
   }
 
-  @FormatDataApiErrors()
+  @DataApiQuery()
   async getValues24hSum({ series, metric }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     const query = DataApiQueryBuilder
       .createXExchangeAnalyticsQuery()
@@ -112,7 +112,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     return data;
   }
 
-  @FormatDataApiErrors()
+  @DataApiQuery()
   async getLatestHistoricData({ time, series, metric, start }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     const [startDate, endDate] = computeTimeInterval(time, start);
 
@@ -146,7 +146,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
     return data;
   }
 
-  @FormatDataApiErrors()
+  @DataApiQuery()
   async getLatestBinnedHistoricData({ time, series, metric, start, bin }: AnalyticsQueryArgs): Promise<HistoricDataModel[]> {
     const [startDate, endDate] = computeTimeInterval(time, start);
     const timeResolution = convertBinToTimeResolution(bin);
