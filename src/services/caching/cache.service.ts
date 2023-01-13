@@ -32,7 +32,7 @@ export class CachingService {
             const delay = Math.min(times * 50, 5000);
             return delay;
         },
-        enableAutoPipelining: true,
+        enableAutoPipelining: false,
     };
 
     constructor(
@@ -45,7 +45,13 @@ export class CachingService {
         this.client = setClient(this.options);
 
         this.remoteGetExecutor = new PendingExecutor(
-            async (key: string) => await this.client.get(key),
+            async (key: string) => {
+                const profiler = new PerformanceProfiler();
+                const redisResponse = await this.client.get(key);
+                profiler.stop();
+                MetricsCollector.setRedisDuration('GET', profiler.duration);
+                return redisResponse;
+            }
         );
 
         this.remoteDelExecutor = new PendingExecutor(
@@ -80,12 +86,7 @@ export class CachingService {
     }
 
     private async getCacheRemote<T>(key: string): Promise<T | undefined> {
-        const profiler = new PerformanceProfiler();
-
         const response = await this.remoteGetExecutor.execute(key);
-
-        profiler.stop();
-        MetricsCollector.setRedisDuration('GET', profiler.duration);
 
         if (response === undefined || response === this.UNDEFINED_CACHE_VALUE) {
             return undefined;
@@ -116,13 +117,13 @@ export class CachingService {
         const writeValue =
             typeof value === 'object'
                 ? {
-                      serialized: true,
-                      value: JSON.stringify(value),
-                  }
+                    serialized: true,
+                    value: JSON.stringify(value),
+                }
                 : {
-                      serialized: false,
-                      value,
-                  };
+                    serialized: false,
+                    value,
+                };
         localCache.set(key, writeValue, { ttl: ttl * 1000 });
         return value;
     }
