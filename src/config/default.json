@@ -554,6 +554,6 @@
         }
     },
     "dataApi": {
-        "tableName": "MAIAR_EXCHANGE_ANALYTICS"
+        "tableName": "XEXCHANGE_ANALYTICS"
     }
 }
