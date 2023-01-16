@@ -32,7 +32,7 @@ export class CachingService {
             const delay = Math.min(times * 50, 5000);
             return delay;
         },
-        enableAutoPipelining: false,
+        enableAutoPipelining: true,
     };
 
     constructor(
@@ -49,6 +49,7 @@ export class CachingService {
                 const profiler = new PerformanceProfiler();
                 const redisResponse = await this.client.get(key);
                 profiler.stop();
+                console.log(key, profiler.duration, redisResponse);
                 MetricsCollector.setRedisDuration('GET', profiler.duration);
                 return redisResponse;
             }
@@ -124,13 +125,13 @@ export class CachingService {
                     serialized: false,
                     value,
                 };
+
         localCache.set(key, writeValue, { ttl: ttl * 1000 });
         return value;
     }
 
     getCacheLocal<T>(key: string): T | undefined {
         const cachedValue: any = localCache.get(key) as T;
-
         if (!cachedValue) {
             return undefined;
         }
@@ -176,6 +177,7 @@ export class CachingService {
         const profiler = new PerformanceProfiler(`vmQuery:${key}`);
 
         let cachedValue = this.getCacheLocal<T>(key);
+
         if (cachedValue !== undefined) {
             profiler.stop(`Local Cache hit for key ${key}`);
             return cachedValue === this.UNDEFINED_CACHE_VALUE
@@ -196,7 +198,6 @@ export class CachingService {
             const value = await promise();
 
             profiler.stop(`Cache miss for key ${key}`);
-
             if (localTtl > 0) {
                 await this.setCacheLocal<T>(key, value, localTtl);
             }
