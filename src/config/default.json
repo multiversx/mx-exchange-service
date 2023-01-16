@@ -447,7 +447,7 @@
             "updateFarmsEnergyForUser": 15000000
         },
         "tokenUnstake": {
-            "claimUnlockedTokens": 30000000,
+            "claimUnlockedTokens": 60000000,
             "cancelUnbond": 20000000
         },
         "lockedTokenWrapper": {
@@ -554,6 +554,6 @@
         }
     },
     "dataApi": {
-        "tableName": "MAIAR_EXCHANGE_ANALYTICS"
+        "tableName": "XEXCHANGE_ANALYTICS"
     }
 }
