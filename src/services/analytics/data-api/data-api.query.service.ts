@@ -73,6 +73,7 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
       .metric(series, metric)
       .withTimeRange(TimeRange.ALL)
       .withTimeResolution(TimeResolution.INTERVAL_DAY)
+      .fillDataGaps({ skipFirstNullValues: true })
       .getHistorical(HistoricalValue.sum, HistoricalValue.time);
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
@@ -88,11 +89,11 @@ export class DataApiQueryService implements AnalyticsQueryInterface {
       .metric(series, metric)
       .withTimeRange(TimeRange.DAY)
       .withTimeResolution(TimeResolution.INTERVAL_HOUR)
-      .getHistorical(HistoricalValue.max, HistoricalValue.time);
+      .getHistorical(HistoricalValue.last, HistoricalValue.time);
 
     const rows = await this.dataApiClient.executeHistoricalQuery(query);
 
-    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.max));
+    const data = rows.map((row) => HistoricDataModel.fromDataApiResponse(row, HistoricalValue.last));
     return data;
   }
 
