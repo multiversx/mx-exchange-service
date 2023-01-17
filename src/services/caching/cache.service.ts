@@ -217,7 +217,7 @@ export class CachingService {
     }
 
     async deleteInCacheLocal(key: string) {
-        await this.localDelExecutor.execute(key);
+        localCache.delete(key);
     }
 
     async deleteInCacheRemote(key: string) {
@@ -235,10 +235,7 @@ export class CachingService {
             await Promise.all(promises);
             return allKeys;
         } else {
-            await Promise.all([
-                CachingService.cache.del(key),
-                this.client.del(key),
-            ]);
+            await Promise.all([localCache.delete(key), this.client.del(key)]);
             return [key];
         }
     }

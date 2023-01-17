@@ -9,7 +9,7 @@ import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
-import { AWSModule } from 'src/services/aws/aws.module';
+import { AnalyticsModule } from 'src/services/analytics/analytics.module';
 import { AnalyticsComputeService } from '../services/analytics.compute.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
@@ -65,6 +65,9 @@ import { FeesCollectorGetterService } from '../../fees-collector/services/fees-c
 import {
     RemoteConfigGetterServiceProvider
 } from '../../remote-config/mocks/remote-config.getter.mock';
+import { AnalyticsQueryService } from 'src/services/analytics/services/analytics.query.service';
+import { AWSTimestreamQueryService } from 'src/services/analytics/aws/aws.timestream.query';
+import { DataApiQueryServiceProvider } from '../mocks/data.api.query.service.mock';
 
 describe('AnalyticsService', () => {
     let service: AnalyticsComputeService;
@@ -107,7 +110,10 @@ describe('AnalyticsService', () => {
     beforeEach(async () => {
         const feesCollectorGetter = new FeesCollectorGetterServiceMock({});
         const module: TestingModule = await Test.createTestingModule({
-            imports: [CommonAppModule, CachingModule, AWSModule],
+            imports: [
+                CommonAppModule,
+                CachingModule,
+            ],
             providers: [
                 ContextGetterServiceProvider,
                 ElrondProxyServiceProvider,
@@ -162,6 +168,9 @@ describe('AnalyticsService', () => {
                     useValue: feesCollectorGetter,
                 },
                 RemoteConfigGetterServiceProvider,
+                AnalyticsQueryService,
+                AWSTimestreamQueryService,
+                DataApiQueryServiceProvider
             ],
         }).compile();
 

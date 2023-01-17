@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ApiConfigService {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(private readonly configService: ConfigService) { }
 
     getPublicAppPort(): number {
         const port = this.configService.get<number>('PORT');
@@ -202,5 +202,13 @@ export class ApiConfigService {
         }
 
         return admins.split(',');
+    }
+
+    getNativeAuthKeyPath(): string {
+        const nativeAuthPemPath = this.configService.get<string>('NATIVE_AUTH_PEM_PATH');
+        if (!nativeAuthPemPath) {
+            throw new Error('No NATIVE_AUTH_PEM_PATH present');
+        }
+        return nativeAuthPemPath;
     }
 }

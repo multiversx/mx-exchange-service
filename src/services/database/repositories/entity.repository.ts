@@ -1,7 +1,7 @@
 import { Document, FilterQuery, Model, UpdateQuery } from 'mongoose';
 
 export abstract class EntityRepository<T extends Document> {
-    constructor(protected readonly entityModel: Model<T>) {}
+    constructor(protected readonly entityModel: Model<T>) { }
 
     async create(createEntityData: any): Promise<T> {
         const entity = new this.entityModel(createEntityData);
@@ -36,12 +36,14 @@ export abstract class EntityRepository<T extends Document> {
         entityFilterQuery: FilterQuery<T>,
         updateEntityData: UpdateQuery<any>,
         projection?: Record<string, unknown>,
+        upsert?: boolean,
     ): Promise<T | null> {
         return this.entityModel.findOneAndUpdate(
             entityFilterQuery,
             updateEntityData,
             {
                 new: true,
+                upsert,
                 projection: {
                     _id: 0,
                     __v: 0,

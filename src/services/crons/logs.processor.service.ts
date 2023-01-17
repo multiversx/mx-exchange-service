@@ -9,7 +9,6 @@ import { QueryType } from 'src/helpers/entities/elastic/query.type';
 import { ElasticSortOrder } from 'src/helpers/entities/elastic/elastic.sort.order';
 import { ElasticService } from 'src/helpers/elastic.service';
 import { oneMinute } from 'src/helpers/helpers';
-import { AWSTimestreamWriteService } from '../aws/aws.timestream.write';
 import { TimestreamWrite } from 'aws-sdk';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -22,6 +21,7 @@ import {
 } from '@elrondnetwork/erdjs-dex';
 import { farmVersion } from 'src/utils/farm.utils';
 import { FarmVersion } from 'src/modules/farm/models/farm.model';
+import { AnalyticsWriteService } from '../analytics/services/analytics.write.service';
 
 @Injectable()
 export class LogsProcessorService {
@@ -33,9 +33,9 @@ export class LogsProcessorService {
         private readonly cachingService: CachingService,
         private readonly apiService: ElrondApiService,
         private readonly elasticService: ElasticService,
-        private readonly awsWrite: AWSTimestreamWriteService,
+        private readonly analyticsWrite: AnalyticsWriteService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
-    ) {}
+    ) { }
 
     @Cron(CronExpression.EVERY_MINUTE)
     async handleNewLogs() {
@@ -229,7 +229,7 @@ export class LogsProcessorService {
         Records: TimestreamWrite.Records,
     ): Promise<number> {
         try {
-            await this.awsWrite.multiRecordsIngest('tradingInfo', Records);
+            await this.analyticsWrite.multiRecordsIngest('tradingInfo', Records);
             return Records.length;
         } catch (error) {
             const logMessage = generateLogMessage(

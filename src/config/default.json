@@ -555,5 +555,8 @@
             "MemoryStoreRetentionPeriodInHours": 768,
             "MagneticStoreRetentionPeriodInDays": 73000
         }
+    },
+    "dataApi": {
+        "tableName": "XEXCHANGE_ANALYTICS"
     }
 }

@@ -8,9 +8,9 @@ import { PUB_SUB } from '../redis.pubSub.module';
 import { PairSetterService } from 'src/modules/pair/services/pair.setter.service';
 import { RouterGetterService } from 'src/modules/router/services/router.getter.service';
 import { TokenSetterService } from 'src/modules/tokens/services/token.setter.service';
-import { AWSTimestreamQueryService } from '../aws/aws.timestream.query';
 import { awsConfig } from 'src/config';
 import { delay } from 'src/helpers/helpers';
+import { AnalyticsQueryService } from '../analytics/services/analytics.query.service';
 
 @Injectable()
 export class PairCacheWarmerService {
@@ -21,7 +21,7 @@ export class PairCacheWarmerService {
         private readonly routerGetter: RouterGetterService,
         private readonly apiService: ElrondApiService,
         private readonly tokenSetter: TokenSetterService,
-        private readonly awsQuery: AWSTimestreamQueryService,
+        private readonly analyticsQuery: AnalyticsQueryService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
     ) {}
 
@@ -82,14 +82,14 @@ export class PairCacheWarmerService {
         const pairsAddresses = await this.routerGetter.getAllPairsAddress();
         const time = '24h';
         for (const pairAddress of pairsAddresses) {
-            const firstTokenVolume24h = await this.awsQuery.getAggregatedValue({
+            const firstTokenVolume24h = await this.analyticsQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: pairAddress,
                 metric: 'firstTokenVolume',
                 time,
             });
             delay(1000);
-            const secondTokenVolume24h = await this.awsQuery.getAggregatedValue(
+            const secondTokenVolume24h = await this.analyticsQuery.getAggregatedValue(
                 {
                     table: awsConfig.timestream.tableName,
                     series: pairAddress,
@@ -98,14 +98,14 @@ export class PairCacheWarmerService {
                 },
             );
             delay(1000);
-            const volumeUSD24h = await this.awsQuery.getAggregatedValue({
+            const volumeUSD24h = await this.analyticsQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: pairAddress,
                 metric: 'volumeUSD',
                 time,
             });
             delay(1000);
-            const feesUSD24h = await this.awsQuery.getAggregatedValue({
+            const feesUSD24h = await this.analyticsQuery.getAggregatedValue({
                 table: awsConfig.timestream.tableName,
                 series: pairAddress,
                 metric: 'feesUSD',
