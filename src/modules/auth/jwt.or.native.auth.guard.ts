@@ -19,7 +19,10 @@ export class JwtOrNativeAuthGuard implements CanActivate {
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const jwtGuard = new GqlAuthGuard(this.apiConfigService, this.logger);
-        const nativeAuthGuard = new NativeAuthGuard(this.apiConfigService);
+        const nativeAuthGuard = new NativeAuthGuard(
+            this.apiConfigService,
+            this.logger,
+        );
 
         const guards = [jwtGuard, nativeAuthGuard];
 

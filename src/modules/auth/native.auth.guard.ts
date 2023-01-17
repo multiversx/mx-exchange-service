@@ -3,20 +3,23 @@ import {
     Injectable,
     CanActivate,
     ExecutionContext,
-    Logger,
     UnauthorizedException,
+    Inject,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ApiConfigService } from 'src/helpers/api.config.service';
+import { Logger } from 'winston';
 
 @Injectable()
 export class NativeAuthGuard implements CanActivate {
-    private readonly logger: Logger;
     private readonly authServer: NativeAuthServer;
     private impersonateAddress: string;
 
-    constructor(apiConfigService: ApiConfigService) {
-        this.logger = new Logger(NativeAuthGuard.name);
+    constructor(
+        apiConfigService: ApiConfigService,
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+    ) {
         this.authServer = new NativeAuthServer({
             apiUrl: apiConfigService.getApiUrl(),
         });
