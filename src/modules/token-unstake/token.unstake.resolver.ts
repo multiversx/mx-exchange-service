@@ -75,9 +75,9 @@ export class TokenUnstakeResolver extends GenericResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async claimUnlockedTokens(): Promise<TransactionModel> {
+    async claimUnlockedTokens(@User() user: any): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.tokenUnstakeTransactions.claimUnlockedTokens(),
+            this.tokenUnstakeTransactions.claimUnlockedTokens(user.publicKey),
         );
     }
 
