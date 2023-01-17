@@ -48,9 +48,8 @@ export class ApiConfigService {
     }
 
     isPublicApiActive(): boolean {
-        const publicApiActive = this.configService.get<string>(
-            'ENABLE_PUBLIC_API',
-        );
+        const publicApiActive =
+            this.configService.get<string>('ENABLE_PUBLIC_API');
         if (!publicApiActive) {
             throw new Error('No public api flag present');
         }
@@ -68,9 +67,8 @@ export class ApiConfigService {
     }
 
     isPrivateAppActive(): boolean {
-        const privateAppActive = this.configService.get<string>(
-            'ENABLE_PRIVATE_API',
-        );
+        const privateAppActive =
+            this.configService.get<string>('ENABLE_PRIVATE_API');
         if (!privateAppActive) {
             throw new Error('No private api flag present');
         }
@@ -162,9 +160,8 @@ export class ApiConfigService {
     }
 
     getMongoDBDatabase(): string {
-        const mongoDBDatabase = this.configService.get<string>(
-            'MONGODB_DATABASE',
-        );
+        const mongoDBDatabase =
+            this.configService.get<string>('MONGODB_DATABASE');
         if (!mongoDBDatabase) {
             throw new Error('No MongoDB Database present');
         }
@@ -172,9 +169,8 @@ export class ApiConfigService {
     }
 
     getMongoDBUsername(): string {
-        const mongoDBUsername = this.configService.get<string>(
-            'MONGODB_USERNAME',
-        );
+        const mongoDBUsername =
+            this.configService.get<string>('MONGODB_USERNAME');
         if (!mongoDBUsername) {
             throw new Error('No MongoDB username present');
         }
@@ -182,13 +178,21 @@ export class ApiConfigService {
     }
 
     getMongoDBPassword(): string {
-        const mongoDBPassword = this.configService.get<string>(
-            'MONGODB_PASSWORD',
-        );
+        const mongoDBPassword =
+            this.configService.get<string>('MONGODB_PASSWORD');
         if (!mongoDBPassword) {
             throw new Error('No MongoDB password present');
         }
         return mongoDBPassword;
+    }
+
+    getJwtSecret(): string {
+        const secret = this.configService.get<string>('JWT_SECRET');
+        if (!secret) {
+            throw new Error('No jwt secret present');
+        }
+
+        return secret;
     }
 
     getSecurityAdmins(): string[] {
