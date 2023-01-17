@@ -3,7 +3,7 @@ import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { PaginationArgs } from '../dex.model';
 import {
     UserDualYiledToken,
@@ -211,7 +211,7 @@ export class UserNftsResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => UserNftsModel)
     async userNfts(
         @Args() pagination: PaginationArgs,

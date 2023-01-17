@@ -3,7 +3,7 @@ import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
 import { tokenCollection, tokenIdentifier } from 'src/utils/token.converters';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { FarmTokenAttributesUnion } from '../farm/models/farmTokenAttributes.model';
 import { LockedAssetAttributesModel } from '../locked-asset-factory/models/locked-asset.model';
 import { DecodeAttributesArgs } from './models/proxy.args';
@@ -93,7 +93,7 @@ export class WrappedFarmTokenResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [WrappedFarmTokenAttributesModel])
     async wrappedFarmTokenAttributes(
         @Args('args')

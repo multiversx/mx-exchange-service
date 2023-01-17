@@ -1,6 +1,6 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
-import { GqlAuthGuard } from 'src/modules/auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { FarmFactoryService } from './farm.factory';
 import {
@@ -22,7 +22,7 @@ export class FarmQueryResolver extends GenericResolver {
         return this.farmFactory.getFarms();
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => FarmTokenAttributesUnion)
     async farmTokenAttributes(
         @Args('farmAddress') farmAddress: string,
@@ -34,7 +34,7 @@ export class FarmQueryResolver extends GenericResolver {
             .decodeFarmTokenAttributes(identifier, attributes);
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [RewardsModel])
     async getRewardsForPosition(
         @Args('farmsPositions') args: BatchFarmRewardsComputeArgs,
@@ -49,7 +49,7 @@ export class FarmQueryResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => ExitFarmTokensModel)
     async getExitFarmTokens(
         @Args('args') args: CalculateRewardsArgs,

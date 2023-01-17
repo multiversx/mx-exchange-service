@@ -5,7 +5,7 @@ import { GenericResolver } from '../../services/generics/generic.resolver';
 import { scAddress } from '../../config';
 import { LockedTokenWrapperGetterService } from './services/locked-token-wrapper.getter.service';
 import { UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { TransactionModel } from '../../models/transaction.model';
 import { InputTokenModel } from '../../models/inputToken.model';
 import { AuthUser } from '../auth/auth.user';
@@ -59,7 +59,7 @@ export class LockedTokenWrapperResolver extends GenericResolver {
         return this.lockedTokenWrapperService.lockedTokenWrapper(address);
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unwrapLockedToken(
         @Args('inputTokens') inputTokens: InputTokenModel,
@@ -76,7 +76,7 @@ export class LockedTokenWrapperResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async wrapLockedToken(
         @Args('inputTokens') inputTokens: InputTokenModel,

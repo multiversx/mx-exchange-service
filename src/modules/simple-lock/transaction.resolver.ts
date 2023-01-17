@@ -8,7 +8,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { farmVersion } from 'src/utils/farm.utils';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { FarmGetterFactory } from '../farm/farm.getter.factory';
 import { SimpleLockGetterService } from './services/simple.lock.getter.service';
 import { SimpleLockService } from './services/simple.lock.service';
@@ -30,7 +30,7 @@ export class TransactionResolver extends GenericResolver {
         super();
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async lockTokens(
         @Args('inputTokens') inputTokens: InputTokenModel,
@@ -48,7 +48,7 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unlockTokens(
         @Args('inputTokens', UnlockTokensValidationPipe)
@@ -70,7 +70,7 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async addLiquidityLockedTokenBatch(
         @Args(
@@ -100,7 +100,7 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async removeLiquidityLockedToken(
         @Args('inputTokens', LpProxyTokensValidationPipe)
@@ -126,7 +126,7 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async enterFarmLockedToken(
         @Args(
@@ -154,7 +154,7 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async exitFarmLockedToken(
         @Args('inputTokens', FarmProxyTokensValidationPipe)
@@ -200,7 +200,7 @@ export class TransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimRewardsFarmLockedToken(
         @Args('inputTokens', FarmProxyTokensValidationPipe)

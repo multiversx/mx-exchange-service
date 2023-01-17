@@ -6,7 +6,7 @@ import { UserAuthResult } from '../auth/user.auth.result';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import {
     BatchFarmRewardsComputeArgs,
     CalculateRewardsArgs,
@@ -116,7 +116,7 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [DualYieldTokenAttributesModel])
     dualYieldTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
@@ -139,7 +139,7 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async stakeFarmTokens(
         @Args() args: ProxyStakeFarmArgs,
@@ -155,7 +155,7 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimDualYield(
         @Args() args: ClaimDualYieldArgs,
@@ -171,7 +171,7 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unstakeFarmTokens(
         @Args() args: UnstakeFarmTokensArgs,
@@ -187,7 +187,7 @@ export class StakingProxyResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [DualYieldRewardsModel])
     async getDualYieldRewardsForPosition(
         @Args('proxyStakingPositions') args: BatchFarmRewardsComputeArgs,

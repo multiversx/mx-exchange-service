@@ -2,7 +2,7 @@ import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { tokenCollection } from 'src/utils/token.converters';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import {
     LockedTokenAttributesModel,
@@ -48,7 +48,7 @@ export class LockedLpTokenResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [LpProxyTokenAttributesModel])
     async lpProxyTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,

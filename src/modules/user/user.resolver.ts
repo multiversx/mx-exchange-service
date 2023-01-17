@@ -4,7 +4,7 @@ import { OutdatedContract, UserNftToken, UserToken } from './models/user.model';
 import { UserNftTokens } from './models/nfttokens.union';
 import { UserMetaEsdtService } from './services/user.metaEsdt.service';
 import { PaginationArgs } from '../dex.model';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { EsdtTokenInput } from '../tokens/models/esdtTokenInput.model';
@@ -23,7 +23,7 @@ export class UserResolver {
         private readonly userEnergy: UserEnergyService,
     ) {}
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [UserToken])
     async userTokens(
         @AuthUser() user: UserAuthResult,
@@ -32,7 +32,7 @@ export class UserResolver {
         return await this.userEsdt.getAllEsdtTokens(user.address, pagination);
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [UserNftTokens])
     async nfts(
         @Args() pagination: PaginationArgs,
@@ -45,7 +45,7 @@ export class UserResolver {
         return nfts.filter((nft) => nft !== undefined);
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [OutdatedContract])
     async userOutdatedContracts(
         @AuthUser() user: UserAuthResult,
@@ -53,7 +53,7 @@ export class UserResolver {
         return await this.userEnergy.getUserOutdatedContracts(user.address);
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel, { nullable: true })
     async updateEnergy(
         @AuthUser() user: UserAuthResult,

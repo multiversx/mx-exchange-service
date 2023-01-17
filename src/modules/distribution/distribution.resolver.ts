@@ -10,7 +10,7 @@ import { TransactionsDistributionService } from './services/transaction-distribu
 import { ApolloError } from 'apollo-server-express';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { DistributionGetterService } from './services/distribution.getter.service';
 
 @Resolver(() => DistributionModel)
@@ -39,7 +39,7 @@ export class DistributionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimLockedAssets(): Promise<TransactionModel> {
         try {
@@ -49,7 +49,7 @@ export class DistributionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => String)
     async distributedLockedAssets(
         @AuthUser() user: UserAuthResult,

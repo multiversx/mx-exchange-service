@@ -15,7 +15,7 @@ import { TransactionRouterService } from './services/transactions.router.service
 import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
@@ -223,7 +223,7 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async createPair(
         @Args('firstTokenID') firstTokenID: string,
@@ -253,7 +253,7 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async issueLPToken(
         @Args('address') address: string,
@@ -267,7 +267,7 @@ export class RouterResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async setLocalRoles(
         @Args('address') address: string,
@@ -411,7 +411,7 @@ export class RouterResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async setSwapEnabledByUser(
         @Args('inputTokens') inputTokens: InputTokenModel,

@@ -5,7 +5,7 @@ import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import {
     TokenUnstakeModel,
     UnstakePairModel,
@@ -64,7 +64,7 @@ export class TokenUnstakeResolver extends GenericResolver {
         });
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [UnstakePairModel])
     async getUnlockedTokensForUser(
         @AuthUser() user: UserAuthResult,
@@ -74,7 +74,7 @@ export class TokenUnstakeResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimUnlockedTokens(
         @AuthUser() user: UserAuthResult,
@@ -84,7 +84,7 @@ export class TokenUnstakeResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async cancelUnbond(): Promise<TransactionModel> {
         return await this.genericQuery(() =>

@@ -12,7 +12,7 @@ import { TransactionsLockedAssetService } from './services/transaction-locked-as
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { ApolloError } from 'apollo-server-express';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -68,7 +68,7 @@ export class LockedAssetResolver {
         return await this.lockedAssetService.getLockedAssetInfo();
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async lockAssets(
         @Args('inputToken') inputToken: InputTokenModel,
@@ -76,7 +76,7 @@ export class LockedAssetResolver {
         return await this.transactionsService.lockAssets(inputToken);
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unlockAssets(
         @Args() args: UnlockAssetsArgs,
@@ -85,7 +85,7 @@ export class LockedAssetResolver {
         return await this.transactionsService.unlockAssets(user.address, args);
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async mergeLockedAssetTokens(
         @Args('tokens', { type: () => [InputTokenModel] })
@@ -102,7 +102,7 @@ export class LockedAssetResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [LockedAssetAttributesModel])
     async decodeLockedAssetAttributes(
         @Args('args') args: DecodeAttributesArgs,

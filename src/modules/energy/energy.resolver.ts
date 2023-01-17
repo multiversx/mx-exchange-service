@@ -8,7 +8,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { EsdtToken } from '../tokens/models/esdtToken.model';
 import { NftCollection } from '../tokens/models/nftCollection.model';
 import { EnergyModel, UnlockType } from './models/energy.model';
@@ -80,7 +80,7 @@ export class EnergyResolver extends GenericResolver {
         });
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => EnergyModel)
     async userEnergy(
         @AuthUser() user: UserAuthResult,
@@ -106,7 +106,7 @@ export class EnergyResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async lockTokensEnergy(
         @Args('inputTokens') inputTokens: InputTokenModel,
@@ -124,7 +124,7 @@ export class EnergyResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async updateLockedTokensEnergy(
         @Args('inputToken', LockedEnergyTokensValidationPipe)
@@ -143,7 +143,7 @@ export class EnergyResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async mergeTokensEnergy(
         @Args(
@@ -159,7 +159,7 @@ export class EnergyResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async migrateOldTokens(
         @Args('tokens', { type: () => [InputTokenModel] })

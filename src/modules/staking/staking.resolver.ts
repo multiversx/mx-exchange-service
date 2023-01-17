@@ -5,7 +5,7 @@ import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { BatchFarmRewardsComputeArgs } from '../farm/models/farm.args';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import {
@@ -237,7 +237,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [StakingTokenAttributesModel])
     async stakingTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
@@ -249,7 +249,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [UnbondTokenAttributesModel])
     async unboundTokenAttributes(
         @Args('args') args: DecodeAttributesArgs,
@@ -261,7 +261,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [StakingRewardsModel])
     async getStakingRewardsForPosition(
         @Args('stakingPositions') args: BatchFarmRewardsComputeArgs,
@@ -284,7 +284,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async stakeFarm(
         @Args() args: StakeFarmArgs,
@@ -301,7 +301,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unstakeFarm(
         @Args() args: GenericStakeFarmArgs,
@@ -633,7 +633,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unbondFarm(
         @Args() args: GenericStakeFarmArgs,
@@ -650,7 +650,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimStakingRewards(
         @Args() args: GenericStakeFarmArgs,
@@ -667,7 +667,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimStakingRewardsWithNewValue(
         @Args() args: ClaimRewardsWithNewValueArgs,
@@ -685,7 +685,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async compoundStakingRewards(
         @Args() args: GenericStakeFarmArgs,
@@ -722,7 +722,7 @@ export class StakingResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async mergeStakeFarmTokens(
         @Args() args: StakeFarmArgs,

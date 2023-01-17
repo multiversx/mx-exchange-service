@@ -8,7 +8,7 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { Logger } from 'winston';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import {
     MetabondingStakingModel,
     UserEntryModel,
@@ -48,7 +48,7 @@ export class MetabondingResolver extends GenericResolver {
         return this.metabondingService.getMetabondingStaking();
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => UserEntryModel)
     async metabondingStakedPosition(
         @AuthUser() user: UserAuthResult,
@@ -60,7 +60,7 @@ export class MetabondingResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async stakeLockedAssetMetabonding(
         @Args('inputTokens') inputTokens: InputTokenModel,
@@ -76,7 +76,7 @@ export class MetabondingResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unstakeMetabonding(
         @Args('unstakeAmount') unstakeAmount: string,
@@ -88,7 +88,7 @@ export class MetabondingResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async unbondMetabonding(
         @AuthUser() user: UserAuthResult,

@@ -8,7 +8,7 @@ import { FeesCollectorService } from './services/fees-collector.service';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { GenericResolver } from '../../services/generics/generic.resolver';
 import { scAddress } from '../../config';
 import { EsdtTokenPayment } from '../../models/esdtTokenPayment.model';
@@ -121,7 +121,7 @@ export class UserEntryFeesCollectorResolver extends Mixin(
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => UserEntryFeesCollectorModel)
     async userFeesCollector(
         @AuthUser() user: UserAuthResult,
@@ -134,7 +134,7 @@ export class UserEntryFeesCollectorResolver extends Mixin(
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => FeesCollectorTransactionModel)
     async claimFeesRewards(
         @AuthUser() user: UserAuthResult,
@@ -147,7 +147,7 @@ export class UserEntryFeesCollectorResolver extends Mixin(
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async updateEnergyForUser(
         @AuthUser() user: UserAuthResult,

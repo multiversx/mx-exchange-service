@@ -19,7 +19,7 @@ import {
 import { PairTransactionService } from './services/pair.transactions.service';
 import { ApolloError } from 'apollo-server-express';
 import { PairGetterService } from './services/pair.getter.service';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { PairInfoModel } from './models/pair-info.model';
@@ -452,7 +452,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async addInitialLiquidityBatch(
         @Args() args: AddLiquidityArgs,
@@ -468,7 +468,7 @@ export class PairResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async addLiquidityBatch(
         @Args() args: AddLiquidityArgs,
@@ -495,7 +495,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async addLiquidity(
         @Args() args: AddLiquidityArgs,
@@ -511,7 +511,7 @@ export class PairResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async removeLiquidity(
         @Args() args: RemoveLiquidityArgs,
@@ -523,7 +523,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async swapTokensFixedInput(
         @Args() args: SwapTokensFixedInputArgs,
@@ -535,7 +535,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async swapTokensFixedOutput(
         @Args() args: SwapTokensFixedOutputArgs,
@@ -547,7 +547,7 @@ export class PairResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => String)
     async getNumSwapsByAddress(
         @Args('pairAddress') pairAddress: string,
@@ -563,7 +563,7 @@ export class PairResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => String)
     async getNumAddsByAddress(
         @Args('pairAddress') pairAddress: string,

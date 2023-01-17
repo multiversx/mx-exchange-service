@@ -5,7 +5,7 @@ import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAdminGuard } from 'src/modules/auth/gql.admin.guard';
-import { GqlAuthGuard } from 'src/modules/auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import {
     ClaimRewardsArgs,
@@ -31,7 +31,7 @@ export class FarmTransactionResolver extends GenericResolver {
         super();
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async mergeFarmTokens(
         @Args() args: MergeFarmTokensArgs,
@@ -253,7 +253,7 @@ export class FarmTransactionResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async enterFarm(
         @Args() args: EnterFarmArgs,
@@ -266,7 +266,7 @@ export class FarmTransactionResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async exitFarm(
         @Args() args: ExitFarmArgs,
@@ -279,7 +279,7 @@ export class FarmTransactionResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimRewards(
         @Args() args: ClaimRewardsArgs,
@@ -292,7 +292,7 @@ export class FarmTransactionResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async compoundRewards(
         @Args() args: CompoundRewardsArgs,
@@ -305,7 +305,7 @@ export class FarmTransactionResolver extends GenericResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async migrateToNewFarm(
         @Args() args: ExitFarmArgs,

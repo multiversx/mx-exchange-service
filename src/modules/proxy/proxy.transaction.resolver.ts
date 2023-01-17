@@ -17,7 +17,7 @@ import { EnterFarmProxyValidationPipe } from './validators/enter.farm.proxy.valo
 import { WrappedFarmValidationPipe } from './validators/wrapped.farm.token.validator';
 import { UseGuards } from '@nestjs/common';
 import { TransactionModel } from '../../models/transaction.model';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import { AuthUser } from '../auth/auth.user';
 import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -34,7 +34,7 @@ export class ProxyTransactionResolver {
         private readonly transactionsProxyFarmService: TransactionsProxyFarmService,
     ) {}
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async addLiquidityProxyBatch(
         @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
@@ -51,7 +51,7 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async addLiquidityProxy(
         @Args(LiquidityTokensValidationPipe) args: AddLiquidityProxyArgs,
@@ -68,7 +68,7 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async removeLiquidityProxy(
         @Args(WrappedLpValidationPipe) args: RemoveLiquidityProxyArgs,
@@ -84,7 +84,7 @@ export class ProxyTransactionResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async enterFarmProxy(
         @Args(EnterFarmProxyValidationPipe) args: EnterFarmProxyArgs,
@@ -101,7 +101,7 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async exitFarmProxy(
         @Args(WrappedFarmValidationPipe) args: ExitFarmProxyArgs,
@@ -117,7 +117,7 @@ export class ProxyTransactionResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async claimFarmRewardsProxy(
         @Args(WrappedFarmValidationPipe) args: ClaimFarmRewardsProxyArgs,
@@ -133,7 +133,7 @@ export class ProxyTransactionResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async mergeWrappedLpTokens(
         @Args(
@@ -158,7 +158,7 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async mergeWrappedFarmTokens(
         @Args('farmAddress') farmAddress: string,
@@ -185,7 +185,7 @@ export class ProxyTransactionResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async compoundRewardsProxy(
         @Args(WrappedFarmValidationPipe) args: CompoundRewardsProxyArgs,
@@ -201,7 +201,7 @@ export class ProxyTransactionResolver {
         );
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async migrateToNewFarmProxy(
         @Args(WrappedFarmValidationPipe) args: ExitFarmProxyArgs,
