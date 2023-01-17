@@ -447,7 +447,10 @@
             "updateFarmsEnergyForUser": 15000000
         },
         "tokenUnstake": {
-            "claimUnlockedTokens": 60000000,
+            "claimUnlockedTokens": {
+                "default": 8500000,
+                "additionalTokens": 5000000
+            },
             "cancelUnbond": 20000000
         },
         "lockedTokenWrapper": {
