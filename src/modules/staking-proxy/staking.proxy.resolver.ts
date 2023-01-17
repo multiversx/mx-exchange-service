@@ -1,7 +1,8 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -142,11 +143,11 @@ export class StakingProxyResolver {
     @Query(() => TransactionModel)
     async stakeFarmTokens(
         @Args() args: ProxyStakeFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingProxyTransaction.stakeFarmTokens(
-                user.publicKey,
+                user.address,
                 args,
             );
         } catch (error) {
@@ -158,11 +159,11 @@ export class StakingProxyResolver {
     @Query(() => TransactionModel)
     async claimDualYield(
         @Args() args: ClaimDualYieldArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingProxyTransaction.claimDualYield(
-                user.publicKey,
+                user.address,
                 args,
             );
         } catch (error) {
@@ -174,11 +175,11 @@ export class StakingProxyResolver {
     @Query(() => TransactionModel)
     async unstakeFarmTokens(
         @Args() args: UnstakeFarmTokensArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.stakingProxyTransaction.unstakeFarmTokens(
-                user.publicKey,
+                user.address,
                 args,
             );
         } catch (error) {

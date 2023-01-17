@@ -1,7 +1,8 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Query, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GqlAdminGuard } from 'src/modules/auth/gql.admin.guard';
 import { GqlAuthGuard } from 'src/modules/auth/gql.auth.guard';
@@ -34,23 +35,23 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async mergeFarmTokens(
         @Args() args: MergeFarmTokensArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.transactionFactory
             .useTransaction(args.farmAddress)
-            .mergeFarmTokens(user.publicKey, args.farmAddress, args.payments);
+            .mergeFarmTokens(user.address, args.farmAddress, args.payments);
     }
 
     @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async endProduceRewards(
         @Args('farmAddress') farmAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .endProduceRewards(farmAddress);
@@ -64,12 +65,12 @@ export class FarmTransactionResolver extends GenericResolver {
     async setPerBlockRewardAmount(
         @Args('farmAddress') farmAddress: string,
         @Args('amount') amount: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .setPerBlockRewardAmount(farmAddress, amount);
@@ -82,12 +83,12 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async startProduceRewards(
         @Args('farmAddress') farmAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .startProduceRewards(farmAddress);
@@ -101,12 +102,12 @@ export class FarmTransactionResolver extends GenericResolver {
     async setPenaltyPercent(
         @Args('farmAddress') farmAddress: string,
         @Args('percent') percent: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .setPenaltyPercent(farmAddress, percent);
@@ -120,12 +121,12 @@ export class FarmTransactionResolver extends GenericResolver {
     async setMinimumFarmingEpochs(
         @Args('farmAddress') farmAddress: string,
         @Args('epochs') epochs: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .setMinimumFarmingEpochs(farmAddress, epochs);
@@ -139,12 +140,12 @@ export class FarmTransactionResolver extends GenericResolver {
     async setTransferExecGasLimit(
         @Args('farmAddress') farmAddress: string,
         @Args('gasLimit') gasLimit: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .setTransferExecGasLimit(farmAddress, gasLimit);
@@ -158,12 +159,12 @@ export class FarmTransactionResolver extends GenericResolver {
     async setBurnGasLimit(
         @Args('farmAddress') farmAddress: string,
         @Args('gasLimit') gasLimit: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .setBurnGasLimit(farmAddress, gasLimit);
@@ -176,12 +177,12 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async pause(
         @Args('farmAddress') farmAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .pause(farmAddress);
@@ -194,12 +195,12 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async resume(
         @Args('farmAddress') farmAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .resume(farmAddress);
@@ -215,12 +216,12 @@ export class FarmTransactionResolver extends GenericResolver {
         @Args('tokenDisplayName') tokenDisplayName: string,
         @Args('tokenTicker') tokenTicker: string,
         @Args('decimals') decimals: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .registerFarmToken(
@@ -238,12 +239,12 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async setLocalRolesFarmToken(
         @Args('farmAddress') farmAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return await this.transactionFactory
                 .useTransaction(farmAddress)
                 .setLocalRolesFarmToken(farmAddress);
@@ -256,12 +257,12 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async enterFarm(
         @Args() args: EnterFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
             this.transactionFactory
                 .useTransaction(args.farmAddress)
-                .enterFarm(user.publicKey, args),
+                .enterFarm(user.address, args),
         );
     }
 
@@ -269,12 +270,12 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async exitFarm(
         @Args() args: ExitFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
             this.transactionFactory
                 .useTransaction(args.farmAddress)
-                .exitFarm(user.publicKey, args),
+                .exitFarm(user.address, args),
         );
     }
 
@@ -282,12 +283,12 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async claimRewards(
         @Args() args: ClaimRewardsArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
             this.transactionFactory
                 .useTransaction(args.farmAddress)
-                .claimRewards(user.publicKey, args),
+                .claimRewards(user.address, args),
         );
     }
 
@@ -295,12 +296,12 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async compoundRewards(
         @Args() args: CompoundRewardsArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
             this.transactionFactory
                 .useTransaction(args.farmAddress)
-                .compoundRewards(user.publicKey, args),
+                .compoundRewards(user.address, args),
         );
     }
 
@@ -308,13 +309,13 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async migrateToNewFarm(
         @Args() args: ExitFarmArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         if (farmVersion(args.farmAddress) !== FarmVersion.V1_2) {
             throw new ApolloError('invalid farm version');
         }
         return await this.genericQuery(() =>
-            this.farmTransactionV1_2.migrateToNewFarm(user.publicKey, args),
+            this.farmTransactionV1_2.migrateToNewFarm(user.address, args),
         );
     }
 
@@ -322,7 +323,7 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async setFarmMigrationConfig(
         @Args() args: FarmMigrationConfigArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         if (farmVersion(args.oldFarmAddress) !== FarmVersion.V1_2) {
             throw new ApolloError('invalid farm version');
@@ -330,7 +331,7 @@ export class FarmTransactionResolver extends GenericResolver {
         try {
             await this.farmFactory
                 .useService(args.oldFarmAddress)
-                .requireOwner(args.oldFarmAddress, user.publicKey);
+                .requireOwner(args.oldFarmAddress, user.address);
             return await this.farmTransactionV1_2.setFarmMigrationConfig(args);
         } catch (error) {
             throw new ApolloError(error);
@@ -341,7 +342,7 @@ export class FarmTransactionResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async stopRewardsAndMigrateRps(
         @Args('farmAddress') farmAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         if (farmVersion(farmAddress) !== FarmVersion.V1_2) {
             throw new ApolloError('invalid farm version');
@@ -349,7 +350,7 @@ export class FarmTransactionResolver extends GenericResolver {
         try {
             await this.farmFactory
                 .useService(farmAddress)
-                .requireOwner(farmAddress, user.publicKey);
+                .requireOwner(farmAddress, user.address);
             return this.farmTransactionV1_2.stopRewardsAndMigrateRps(
                 farmAddress,
             );

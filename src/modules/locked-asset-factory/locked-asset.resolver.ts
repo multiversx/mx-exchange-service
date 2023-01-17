@@ -13,7 +13,8 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { DecodeAttributesArgs } from '../proxy/models/proxy.args';
 import { ApolloError } from 'apollo-server-express';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { LockedAssetGetterService } from './services/locked.asset.getter.service';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
@@ -79,12 +80,9 @@ export class LockedAssetResolver {
     @Query(() => TransactionModel)
     async unlockAssets(
         @Args() args: UnlockAssetsArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        return await this.transactionsService.unlockAssets(
-            user.publicKey,
-            args,
-        );
+        return await this.transactionsService.unlockAssets(user.address, args);
     }
 
     @UseGuards(GqlAuthGuard)
@@ -92,11 +90,11 @@ export class LockedAssetResolver {
     async mergeLockedAssetTokens(
         @Args('tokens', { type: () => [InputTokenModel] })
         tokens: InputTokenModel[],
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.transactionsService.mergeLockedAssetTokens(
-                user.publicKey,
+                user.address,
                 tokens,
             );
         } catch (error) {

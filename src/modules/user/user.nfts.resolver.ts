@@ -1,6 +1,7 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 import { PaginationArgs } from '../dex.model';
@@ -214,8 +215,8 @@ export class UserNftsResolver extends GenericResolver {
     @Query(() => UserNftsModel)
     async userNfts(
         @Args() pagination: PaginationArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<UserNftsModel> {
-        return new UserNftsModel(user.publicKey, pagination);
+        return new UserNftsModel(user.address, pagination);
     }
 }

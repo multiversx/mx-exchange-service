@@ -2,7 +2,8 @@ import { Inject, UseGuards } from '@nestjs/common';
 import { ResolveField, Resolver, Query, Args } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
@@ -50,10 +51,10 @@ export class MetabondingResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => UserEntryModel)
     async metabondingStakedPosition(
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<UserEntryModel> {
         try {
-            return await this.metabondingGetter.getUserEntry(user.publicKey);
+            return await this.metabondingGetter.getUserEntry(user.address);
         } catch (error) {
             throw new ApolloError(error);
         }
@@ -63,11 +64,11 @@ export class MetabondingResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async stakeLockedAssetMetabonding(
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.metabondingTransactions.stakeLockedAsset(
-                user.publicKey,
+                user.address,
                 inputTokens,
             );
         } catch (error) {
@@ -89,9 +90,11 @@ export class MetabondingResolver extends GenericResolver {
 
     @UseGuards(GqlAuthGuard)
     @Query(() => TransactionModel)
-    async unbondMetabonding(@User() user: any): Promise<TransactionModel> {
+    async unbondMetabonding(
+        @AuthUser() user: UserAuthResult,
+    ): Promise<TransactionModel> {
         try {
-            return await this.metabondingTransactions.unbond(user.publicKey);
+            return await this.metabondingTransactions.unbond(user.address);
         } catch (error) {
             throw new ApolloError(error);
         }

@@ -2,7 +2,8 @@ import { UseGuards } from '@nestjs/common';
 import { Args, Int, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
 import { scAddress } from 'src/config';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { GenericResolver } from 'src/services/generics/generic.resolver';
@@ -82,11 +83,11 @@ export class EnergyResolver extends GenericResolver {
     @UseGuards(GqlAuthGuard)
     @Query(() => EnergyModel)
     async userEnergy(
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
         @Args('vmQuery', { nullable: true }) vmQuery: boolean,
     ): Promise<EnergyModel> {
         return await this.genericQuery(() =>
-            this.energyService.getUserEnergy(user.publicKey, vmQuery),
+            this.energyService.getUserEnergy(user.address, vmQuery),
         );
     }
 
@@ -110,11 +111,11 @@ export class EnergyResolver extends GenericResolver {
     async lockTokensEnergy(
         @Args('inputTokens') inputTokens: InputTokenModel,
         @Args('lockEpochs', { type: () => Int }) lockEpochs: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.energyTransaction.lockTokens(
-                user.publicKey,
+                user.address,
                 inputTokens,
                 lockEpochs,
             );
@@ -130,11 +131,11 @@ export class EnergyResolver extends GenericResolver {
         inputToken: InputTokenModel,
         @Args('unlockType', { type: () => UnlockType }) unlockType: UnlockType,
         @Args('newLockPeriod', { nullable: true }) newLockPeriod: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
             this.energyTransaction.unlockTokens(
-                user.publicKey,
+                user.address,
                 inputToken,
                 unlockType,
                 newLockPeriod,
@@ -151,10 +152,10 @@ export class EnergyResolver extends GenericResolver {
             LockedEnergyTokensValidationPipe,
         )
         inputTokens: InputTokenModel[],
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.genericQuery(() =>
-            this.energyTransaction.mergeTokens(user.publicKey, inputTokens),
+            this.energyTransaction.mergeTokens(user.address, inputTokens),
         );
     }
 
@@ -163,10 +164,10 @@ export class EnergyResolver extends GenericResolver {
     async migrateOldTokens(
         @Args('tokens', { type: () => [InputTokenModel] })
         args: InputTokenModel[],
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return await this.energyTransaction.migrateOldTokens(
-            user.publicKey,
+            user.address,
             args,
         );
     }
@@ -176,10 +177,10 @@ export class EnergyResolver extends GenericResolver {
     async updateLockOptions(
         @Args('lockOptions', { type: () => [Int] }) lockOptions: number[],
         @Args('remove', { nullable: true }) remove: boolean,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const owner = await this.energyGetter.getOwnerAddress();
-        if (user.publicKey !== owner) {
+        if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
 
@@ -193,10 +194,10 @@ export class EnergyResolver extends GenericResolver {
     async setPenaltyPercentage(
         @Args('minPenaltyPercentage') minPenaltyPercentage: number,
         @Args('maxPenaltyPercentage') maxPenaltyPercentage: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const owner = await this.energyGetter.getOwnerAddress();
-        if (user.publicKey !== owner) {
+        if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
 
@@ -212,10 +213,10 @@ export class EnergyResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async setFeesBurnPercentage(
         @Args('percentage') percentage: number,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const owner = await this.energyGetter.getOwnerAddress();
-        if (user.publicKey !== owner) {
+        if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
 
@@ -228,10 +229,10 @@ export class EnergyResolver extends GenericResolver {
     @Query(() => TransactionModel)
     async setFeesCollectorAddress(
         @Args('collectorAddress') collectorAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const owner = await this.energyGetter.getOwnerAddress();
-        if (user.publicKey !== owner) {
+        if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
 
@@ -245,10 +246,10 @@ export class EnergyResolver extends GenericResolver {
     async setOldLockedAssetFactoryAddress(
         @Args('oldLockedAssetFactoryAddress')
         oldLockedAssetFactoryAddress: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         const owner = await this.energyGetter.getOwnerAddress();
-        if (user.publicKey !== owner) {
+        if (user.address !== owner) {
             throw new ApolloError('Invalid owner address');
         }
 

@@ -5,7 +5,8 @@ import { AutoRouterArgs } from '../auto-router/models/auto-router.args';
 import { AutoRouteModel } from './models/auto-route.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { UseGuards } from '@nestjs/common';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
 
 @Resolver(() => AutoRouteModel)
@@ -41,10 +42,13 @@ export class AutoRouterResolver {
 
     @UseGuards(GqlAuthGuard)
     @ResolveField(() => [TransactionModel])
-    async transactions(@Parent() parent: AutoRouteModel, @User() user: any) {
+    async transactions(
+        @Parent() parent: AutoRouteModel,
+        @AuthUser() user: UserAuthResult,
+    ) {
         try {
             return await this.autoRouterService.getTransactions(
-                user.publicKey,
+                user.address,
                 parent,
             );
         } catch (error) {

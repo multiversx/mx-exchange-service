@@ -16,7 +16,8 @@ import { ApolloError } from 'apollo-server-express';
 import { RouterGetterService } from './services/router.getter.service';
 import { constantsConfig } from 'src/config';
 import { GqlAuthGuard } from '../auth/gql.auth.guard';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { RemoteConfigGetterService } from '../remote-config/remote-config.getter.service';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { GqlAdminGuard } from '../auth/gql.admin.guard';
@@ -227,10 +228,10 @@ export class RouterResolver {
     async createPair(
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         return this.transactionService.createPair(
-            user.publicKey,
+            user.address,
             firstTokenID,
             secondTokenID,
         );
@@ -242,9 +243,9 @@ export class RouterResolver {
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
         @Args('fees', { type: () => [Float] }) fees: number[],
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
-        await this.routerService.requireOwner(user.publicKey);
+        await this.routerService.requireOwner(user.address);
         return this.transactionService.upgradePair(
             firstTokenID,
             secondTokenID,
@@ -279,10 +280,10 @@ export class RouterResolver {
     async setState(
         @Args('address') address: string,
         @Args('enable') enable: boolean,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
-            await this.routerService.requireOwner(user.publicKey);
+            await this.routerService.requireOwner(user.address);
             return this.transactionService.setState(address, enable);
         } catch (error) {
             throw new ApolloError(error);
@@ -296,10 +297,10 @@ export class RouterResolver {
         @Args('feeToAddress') feeToAddress: string,
         @Args('feeTokenID') feeTokenID: string,
         @Args('enable') enable: boolean,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
-            await this.routerService.requireOwner(user.publicKey);
+            await this.routerService.requireOwner(user.address);
             return this.transactionService.setFee(
                 pairAddress,
                 feeToAddress,
@@ -315,10 +316,10 @@ export class RouterResolver {
     @Query(() => TransactionModel)
     async setPairCreationEnabled(
         @Args('enabled') enabled: boolean,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
-            await this.routerService.requireOwner(user.publicKey);
+            await this.routerService.requireOwner(user.address);
             return this.transactionService.setPairCreationEnabled(enabled);
         } catch (error) {
             throw new ApolloError(error);
@@ -337,10 +338,10 @@ export class RouterResolver {
     @UseGuards(GqlAdminGuard)
     @Query(() => TransactionModel)
     async clearPairTemporaryOwnerStorage(
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
-            await this.routerService.requireOwner(user.publicKey);
+            await this.routerService.requireOwner(user.address);
             return this.transactionService.clearPairTemporaryOwnerStorage();
         } catch (error) {
             throw new ApolloError(error);
@@ -351,10 +352,10 @@ export class RouterResolver {
     @Query(() => TransactionModel)
     async setTemporaryOwnerPeriod(
         @Args('periodBlocks') periodBlocks: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
-            await this.routerService.requireOwner(user.publicKey);
+            await this.routerService.requireOwner(user.address);
             return this.transactionService.setTemporaryOwnerPeriod(
                 periodBlocks,
             );
@@ -367,10 +368,10 @@ export class RouterResolver {
     @Query(() => TransactionModel)
     async setPairTemplateAddress(
         @Args('address') address: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
-            await this.routerService.requireOwner(user.publicKey);
+            await this.routerService.requireOwner(user.address);
             return this.transactionService.setPairTemplateAddress(address);
         } catch (error) {
             throw new ApolloError(error);
@@ -382,10 +383,10 @@ export class RouterResolver {
     async setLocalRolesOwner(
         @Args({ name: 'args', type: () => SetLocalRoleOwnerArgs })
         args: SetLocalRoleOwnerArgs,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
-            await this.routerService.requireOwner(user.publicKey);
+            await this.routerService.requireOwner(user.address);
             return this.transactionService.setLocalRolesOwner(args);
         } catch (error) {
             throw new ApolloError(error);
@@ -397,10 +398,10 @@ export class RouterResolver {
     async removePair(
         @Args('firstTokenID') firstTokenID: string,
         @Args('secondTokenID') secondTokenID: string,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
-            await this.routerService.requireOwner(user.publicKey);
+            await this.routerService.requireOwner(user.address);
             return this.transactionService.removePair(
                 firstTokenID,
                 secondTokenID,
@@ -414,11 +415,11 @@ export class RouterResolver {
     @Query(() => TransactionModel)
     async setSwapEnabledByUser(
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.transactionService.setSwapEnabledByUser(
-                user.publicKey,
+                user.address,
                 inputTokens,
             );
         } catch (error) {
