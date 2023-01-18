@@ -53,9 +53,12 @@ export function DataApiQuery() {
             try {
                 return await childMethod.apply(this, args);
             } catch (errors) {
-                console.log(errors);
-                const errorIds: string[] = errors?.map(error => error?.extensions?.id);
-                throw new Error(`Data API Internal Error. Error IDs: ${errorIds.join()}`);
+                if (Array.isArray(errors)) {
+                    const errorIds: string[] = errors?.map(error => error?.extensions?.id);
+                    throw new Error(`Data API Internal Error. Error IDs: ${errorIds.join()}`);
+                } else {
+                    throw new Error(`Data API Internal Error. Error: ${errors.message}`);
+                }
             } finally {
                 profiler.stop();
                 MetricsCollector.setDataApiQueryDuration(childMethod.name, profiler.duration);
