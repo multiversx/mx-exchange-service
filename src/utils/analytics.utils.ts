@@ -53,6 +53,7 @@ export function DataApiQuery() {
             try {
                 return await childMethod.apply(this, args);
             } catch (errors) {
+                console.log(errors);
                 const errorIds: string[] = errors?.map(error => error?.extensions?.id);
                 throw new Error(`Data API Internal Error. Error IDs: ${errorIds.join()}`);
             } finally {
