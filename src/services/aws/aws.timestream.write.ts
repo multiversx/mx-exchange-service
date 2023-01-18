@@ -3,7 +3,6 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import AWS, { TimestreamWrite } from 'aws-sdk';
 import { HttpsAgent } from 'agentkeepalive';
-import { awsConfig } from 'src/config';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
@@ -15,7 +14,7 @@ export class AWSTimestreamWriteService {
         private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        AWS.config.update({ region: awsConfig.region });
+        AWS.config.update({ region: this.apiConfig.getAWSRegion() });
         const httpsAgent = new HttpsAgent({
             maxSockets: 5000,
         });

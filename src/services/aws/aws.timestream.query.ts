@@ -3,7 +3,6 @@ import { HttpsAgent } from 'agentkeepalive';
 import AWS, { AWSError, TimestreamQuery } from 'aws-sdk';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { awsConfig } from 'src/config';
 import { HistoricDataModel } from 'src/modules/analytics/models/analytics.model';
 import { Logger } from 'winston';
 import moment from 'moment';
@@ -30,7 +29,7 @@ export class AWSTimestreamQueryService {
         private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
-        AWS.config.update({ region: awsConfig.region });
+        AWS.config.update({ region: this.apiConfig.getAWSRegion() });
         const httpsAgent = new HttpsAgent({
             maxSockets: 5000,
         });
