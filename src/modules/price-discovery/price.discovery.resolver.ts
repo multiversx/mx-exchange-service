@@ -1,12 +1,13 @@
 import { UseGuards } from '@nestjs/common';
 import { Args, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { ApolloError } from 'apollo-server-express';
-import { User } from 'src/helpers/userDecorator';
+import { AuthUser } from '../auth/auth.user';
+import { UserAuthResult } from '../auth/user.auth.result';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { EsdtToken } from 'src/modules/tokens/models/esdtToken.model';
 import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { GqlAuthGuard } from '../auth/gql.auth.guard';
+import { JwtOrNativeAuthGuard } from '../auth/jwt.or.native.auth.guard';
 import {
     PhaseModel,
     PriceDiscoveryModel,
@@ -252,17 +253,17 @@ export class PriceDiscoveryResolver extends GenericResolver {
         return this.priceDiscoveryService.getPriceDiscoveryContracts();
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async depositBatchOnPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
         try {
             return await this.priceDiscoveryTransactions.depositBatch(
                 priceDiscoveryAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
             );
         } catch (error) {
@@ -270,7 +271,7 @@ export class PriceDiscoveryResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async depositOnPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
@@ -286,17 +287,17 @@ export class PriceDiscoveryResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async withdrawBatchFromPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
         try {
             return await this.priceDiscoveryTransactions.genericBatchRedeemInteraction(
                 priceDiscoveryAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
                 'withdraw',
             );
@@ -305,17 +306,17 @@ export class PriceDiscoveryResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async withdrawFromPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.priceDiscoveryTransactions.genericRedeemInteraction(
                 priceDiscoveryAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
                 'withdraw',
             );
@@ -324,17 +325,17 @@ export class PriceDiscoveryResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => [TransactionModel])
     async redeemTokensBatchFromPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel[]> {
         try {
             return await this.priceDiscoveryTransactions.genericBatchRedeemInteraction(
                 priceDiscoveryAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
                 'redeem',
             );
@@ -343,17 +344,17 @@ export class PriceDiscoveryResolver extends GenericResolver {
         }
     }
 
-    @UseGuards(GqlAuthGuard)
+    @UseGuards(JwtOrNativeAuthGuard)
     @Query(() => TransactionModel)
     async redeemTokensFromPriceDiscovery(
         @Args('priceDiscoveryAddress') priceDiscoveryAddress: string,
         @Args('inputTokens') inputTokens: InputTokenModel,
-        @User() user: any,
+        @AuthUser() user: UserAuthResult,
     ): Promise<TransactionModel> {
         try {
             return await this.priceDiscoveryTransactions.genericRedeemInteraction(
                 priceDiscoveryAddress,
-                user.publicKey,
+                user.address,
                 inputTokens,
                 'redeem',
             );
