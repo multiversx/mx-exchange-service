@@ -4,6 +4,7 @@ import { Logger } from 'winston';
 import AWS, { TimestreamWrite } from 'aws-sdk';
 import { HttpsAgent } from 'agentkeepalive';
 import { awsConfig } from 'src/config';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class AWSTimestreamWriteService {
@@ -11,6 +12,7 @@ export class AWSTimestreamWriteService {
     private readonly DatabaseName: string;
 
     constructor(
+        private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         AWS.config.update({ region: awsConfig.region });
@@ -24,7 +26,7 @@ export class AWSTimestreamWriteService {
                 agent: httpsAgent,
             },
         });
-        this.DatabaseName = awsConfig.timestream.databaseName;
+        this.DatabaseName = this.apiConfig.getAWSDatabaseName();
     }
 
     async describeTable({ TableName }): Promise<TimestreamWrite.Table> {
@@ -51,9 +53,9 @@ export class AWSTimestreamWriteService {
                 TableName,
                 RetentionProperties: {
                     MemoryStoreRetentionPeriodInHours:
-                        awsConfig.timestream.MemoryStoreRetentionPeriodInHours,
+                        this.apiConfig.getAWSMemoryStoreRetention(),
                     MagneticStoreRetentionPeriodInDays:
-                        awsConfig.timestream.MagneticStoreRetentionPeriodInDays,
+                        this.apiConfig.getAWSMagneticStoreRetention(),
                 },
             };
             await this.writeClient.createTable(params).promise();
@@ -66,10 +68,10 @@ export class AWSTimestreamWriteService {
     createRecords({ data, Time }): TimestreamWrite.Records {
         const MeasureValueType = 'DOUBLE';
         const Records: TimestreamWrite.Records = [];
-        Object.keys(data).forEach(series => {
+        Object.keys(data).forEach((series) => {
             const Dimensions = [{ Name: 'series', Value: series }];
 
-            Object.keys(data[series]).forEach(MeasureName => {
+            Object.keys(data[series]).forEach((MeasureName) => {
                 const MeasureValue = data[series][MeasureName].toString();
                 Records.push({
                     Dimensions,

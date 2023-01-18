@@ -12,6 +12,7 @@ import { PromiseResult } from 'aws-sdk/lib/request';
 import { QueryResponse } from 'aws-sdk/clients/timestreamquery';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 import { PerformanceProfiler } from 'src/utils/performance.profiler';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
 export class AWSTimestreamQueryService {
@@ -26,6 +27,7 @@ export class AWSTimestreamQueryService {
     private readonly DatabaseName: string;
 
     constructor(
+        private readonly apiConfig: ApiConfigService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {
         AWS.config.update({ region: awsConfig.region });
@@ -39,7 +41,7 @@ export class AWSTimestreamQueryService {
                 agent: httpsAgent,
             },
         });
-        this.DatabaseName = awsConfig.timestream.databaseName;
+        this.DatabaseName = this.apiConfig.getAWSDatabaseName();
 
         this.queryExecutor = new PendingExecutor(
             async (value: {

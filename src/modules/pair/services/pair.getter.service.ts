@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { awsConfig, constantsConfig } from 'src/config';
+import { constantsConfig } from 'src/config';
 import { oneHour } from 'src/helpers/helpers';
 import { EsdtTokenPayment } from 'src/models/esdtTokenPayment.model';
 import { SimpleLockModel } from 'src/modules/simple-lock/models/simple.lock.model';
@@ -19,9 +19,13 @@ import { FeeDestination, LockedTokensInfo } from '../models/pair.model';
 import { PairAbiService } from './pair.abi.service';
 import { PairComputeService } from './pair.compute.service';
 import { IPairGetterService } from '../interfaces';
+import { ApiConfigService } from 'src/helpers/api.config.service';
 
 @Injectable()
-export class PairGetterService extends GenericGetterService implements IPairGetterService {
+export class PairGetterService
+    extends GenericGetterService
+    implements IPairGetterService
+{
     constructor(
         protected readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
@@ -33,6 +37,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
         @Inject(forwardRef(() => TokenComputeService))
         private readonly tokenCompute: TokenComputeService,
         private readonly awsTimestreamQuery: AWSTimestreamQueryService,
+        private readonly apiConfig: ApiConfigService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'pair';
@@ -222,7 +227,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
             this.getCacheKey(pairAddress, `firstTokenVolume.${time}`),
             () =>
                 this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
+                    table: this.apiConfig.getAWSTableName(),
                     series: pairAddress,
                     metric: 'firstTokenVolume',
                     time,
@@ -240,7 +245,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
             this.getCacheKey(pairAddress, `secondTokenVolume.${time}`),
             () =>
                 this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
+                    table: this.apiConfig.getAWSTableName(),
                     series: pairAddress,
                     metric: 'secondTokenVolume',
                     time,
@@ -255,7 +260,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
             this.getCacheKey(pairAddress, `volumeUSD.${time}`),
             () =>
                 this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
+                    table: this.apiConfig.getAWSTableName(),
                     series: pairAddress,
                     metric: 'volumeUSD',
                     time,
@@ -270,7 +275,7 @@ export class PairGetterService extends GenericGetterService implements IPairGett
             this.getCacheKey(pairAddress, `feesUSD.${time}`),
             () =>
                 this.awsTimestreamQuery.getAggregatedValue({
-                    table: awsConfig.timestream.tableName,
+                    table: this.apiConfig.getAWSTableName(),
                     series: pairAddress,
                     metric: 'feesUSD',
                     time,
