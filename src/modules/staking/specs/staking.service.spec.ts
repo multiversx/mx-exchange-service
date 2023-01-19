@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import winston from 'winston';
@@ -15,10 +15,10 @@ import { AbiStakingService } from '../services/staking.abi.service';
 import { StakingGetterService } from '../services/staking.getter.service';
 import { StakingGetterServiceMock } from '../mocks/staking.getter.service.mock';
 import { StakingComputeService } from '../services/staking.compute.service';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
-import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
-import { ElrondApiServiceMock } from 'src/services/elrond-communication/elrond.api.service.mock';
+import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
+import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
+import { MXApiServiceMock } from 'src/services/multiversx-communication/mx.api.service.mock';
 import { RemoteConfigGetterServiceProvider } from 'src/modules/remote-config/mocks/remote-config.getter.mock';
 import { Address } from '@multiversx/sdk-core';
 import { TokenGetterServiceProvider } from '../../tokens/mocks/token.getter.service.mock';
@@ -31,9 +31,9 @@ describe('StakingService', () => {
         useClass: StakingGetterServiceMock,
     };
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -50,9 +50,9 @@ describe('StakingService', () => {
         }),
     ];
 
-    const ElrondApiServiceProvider = {
-        provide: ElrondApiService,
-        useClass: ElrondApiServiceMock,
+    const MXApiServiceProvider = {
+        provide: MXApiService,
+        useClass: MXApiServiceMock,
     };
 
     beforeEach(async () => {
@@ -70,9 +70,9 @@ describe('StakingService', () => {
                 StakingComputeService,
                 ContextGetterServiceProvider,
                 RemoteConfigGetterServiceProvider,
-                ElrondProxyServiceProvider,
-                ElrondApiServiceProvider,
-                ElrondGatewayService,
+                MXProxyServiceProvider,
+                MXApiServiceProvider,
+                MXGatewayService,
                 ApiConfigService,
                 TokenGetterServiceProvider,
             ],

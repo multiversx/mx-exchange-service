@@ -6,7 +6,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PUB_SUB } from 'src/services/redis.pubSub.module';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
@@ -16,7 +16,7 @@ import { MetabondingGetterService } from './metabonding.getter.service';
 export class MetabondingTransactionService {
     constructor(
         private readonly metabondingGetter: MetabondingGetterService,
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
@@ -39,7 +39,7 @@ export class MetabondingTransactionService {
         }
 
         const [contract, userEntry] = await Promise.all([
-            this.elrondProxy.getMetabondingStakingSmartContract(),
+            this.mxProxy.getMetabondingStakingSmartContract(),
             this.metabondingGetter.getUserEntry(sender),
         ]);
 
@@ -66,7 +66,7 @@ export class MetabondingTransactionService {
 
     async unstake(unstakeAmount: string): Promise<TransactionModel> {
         const contract =
-            await this.elrondProxy.getMetabondingStakingSmartContract();
+            await this.mxProxy.getMetabondingStakingSmartContract();
         return contract.methodsExplicit
             .unstake([new BigUIntValue(new BigNumber(unstakeAmount))])
             .withGasLimit(gasConfig.metabonding.unstake)
@@ -77,7 +77,7 @@ export class MetabondingTransactionService {
 
     async unbond(sender: string): Promise<TransactionModel> {
         const contract =
-            await this.elrondProxy.getMetabondingStakingSmartContract();
+            await this.mxProxy.getMetabondingStakingSmartContract();
         await this.pubSub.publish('deleteCacheKeys', [`${sender}.userEntry`]);
         return contract.methodsExplicit
             .unbond([])

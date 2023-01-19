@@ -19,8 +19,8 @@ import { RouterGetterService } from 'src/modules/router/services/router.getter.s
 import { RouterGetterServiceStub } from 'src/modules/router/mocks/router.getter.service.stub';
 import { CommonAppModule } from 'src/common.app.module';
 import { CachingModule } from 'src/services/caching/cache.module';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
+import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { PairService } from 'src/modules/pair/services/pair.service';
 import { TransactionRouterService } from 'src/modules/router/services/transactions.router.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
@@ -59,9 +59,9 @@ describe('AutoRouterService', () => {
         useClass: WrapServiceMock,
     };
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     const RemoteConfigGetterServiceProvider = {
@@ -91,7 +91,7 @@ describe('AutoRouterService', () => {
                 RouterService,
                 RouterGetterServiceProvider,
                 ContextGetterServiceProvider,
-                ElrondProxyServiceProvider,
+                MXProxyServiceProvider,
                 TokenGetterServiceProvider,
                 PairGetterServiceProvider,
                 PairService,

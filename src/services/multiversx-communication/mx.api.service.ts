@@ -21,7 +21,7 @@ type GenericGetArgs = {
 };
 
 @Injectable()
-export class ElrondApiService {
+export class MXApiService {
     private readonly apiProvider: ApiNetworkProvider;
     private genericGetExecutor: PendingExecutor<GenericGetArgs, any>;
 
@@ -86,14 +86,14 @@ export class ElrondApiService {
                 return await this.doGetGeneric(name, resourceUrl, retries + 1);
             }
             this.logger.error(`${error.message} after ${retries} retries`, {
-                path: `${ElrondApiService.name}.${name}`,
+                path: `${MXApiService.name}.${name}`,
             });
             throw new Error(error);
         } finally {
             profiler.stop();
 
             MetricsCollector.setExternalCall(
-                ElrondApiService.name,
+                MXApiService.name,
                 name,
                 profiler.duration,
             );

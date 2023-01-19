@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { UnlockMileStoneModel } from '../models/locked-asset.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
@@ -9,15 +9,15 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 @Injectable()
 export class AbiLockedAssetService extends GenericAbiService {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
-        super(elrondProxy, logger);
+        super(mxProxy, logger);
     }
 
     async getAssetTokenID(): Promise<string> {
         const contract =
-            await this.elrondProxy.getLockedAssetFactorySmartContract();
+            await this.mxProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAssetTokenId();
         const response = await this.getGenericData(interaction);
@@ -26,7 +26,7 @@ export class AbiLockedAssetService extends GenericAbiService {
 
     async getLockedTokenID(): Promise<string> {
         const contract =
-            await this.elrondProxy.getLockedAssetFactorySmartContract();
+            await this.mxProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLockedAssetTokenId();
         const response = await this.getGenericData(interaction);
@@ -35,7 +35,7 @@ export class AbiLockedAssetService extends GenericAbiService {
 
     async getDefaultUnlockPeriod(): Promise<UnlockMileStoneModel[]> {
         const contract =
-            await this.elrondProxy.getLockedAssetFactorySmartContract();
+            await this.mxProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getDefaultUnlockPeriod();
         const response = await this.getGenericData(interaction);
@@ -51,7 +51,7 @@ export class AbiLockedAssetService extends GenericAbiService {
 
     async getInitEpoch(): Promise<number> {
         const contract =
-            await this.elrondProxy.getLockedAssetFactorySmartContract();
+            await this.mxProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getInitEpoch();
         const response = await this.getGenericData(interaction);
@@ -60,7 +60,7 @@ export class AbiLockedAssetService extends GenericAbiService {
 
     async getExtendedAttributesActivationNonce(): Promise<number> {
         const contract =
-            await this.elrondProxy.getLockedAssetFactorySmartContract();
+            await this.mxProxy.getLockedAssetFactorySmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getExtendedAttributesActivationNonce();
         const response = await this.getGenericData(interaction);

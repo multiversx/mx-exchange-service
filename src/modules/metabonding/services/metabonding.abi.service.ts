@@ -1,7 +1,7 @@
 import { Address, AddressValue, Interaction } from '@multiversx/sdk-core';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
 import { UserEntryModel } from '../models/metabonding.model';
@@ -9,15 +9,15 @@ import { UserEntryModel } from '../models/metabonding.model';
 @Injectable()
 export class MetabondingAbiService extends GenericAbiService {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
-        super(elrondProxy, logger);
+        super(mxProxy, logger);
     }
 
     async getLockedAssetTokenID(): Promise<string> {
         const contract =
-            await this.elrondProxy.getMetabondingStakingSmartContract();
+            await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLockedAssetTokenId();
 
@@ -27,7 +27,7 @@ export class MetabondingAbiService extends GenericAbiService {
 
     async getTotalLockedAssetSupply(): Promise<string> {
         const contract =
-            await this.elrondProxy.getMetabondingStakingSmartContract();
+            await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getTotalLockedAssetSupply();
 
@@ -37,7 +37,7 @@ export class MetabondingAbiService extends GenericAbiService {
 
     async getStakedAmountForUser(userAddress: string): Promise<string> {
         const contract =
-            await this.elrondProxy.getMetabondingStakingSmartContract();
+            await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getStakedAmountForUser([
                 new AddressValue(Address.fromString(userAddress)),
@@ -49,7 +49,7 @@ export class MetabondingAbiService extends GenericAbiService {
 
     async getUserEntry(userAddress: string): Promise<UserEntryModel> {
         const contract =
-            await this.elrondProxy.getMetabondingStakingSmartContract();
+            await this.mxProxy.getMetabondingStakingSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getUserEntry([
             new AddressValue(Address.fromString(userAddress)),
         ]);

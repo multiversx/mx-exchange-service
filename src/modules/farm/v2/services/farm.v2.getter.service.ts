@@ -3,7 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { Logger } from 'winston';
 import { FarmGetterService } from '../../base-module/services/farm.getter.service';
 import { BoostedYieldsFactors } from '../../models/farm.v2.model';
@@ -27,7 +27,7 @@ export class FarmGetterServiceV2
         protected readonly abiService: FarmAbiServiceV2,
         protected readonly computeService: FarmComputeServiceV2,
         protected readonly tokenGetter: TokenGetterService,
-        protected readonly apiService: ElrondApiService,
+        protected readonly apiService: MXApiService,
     ) {
         super(
             cachingService,

@@ -17,7 +17,7 @@ import { TransactionModel } from '../../../models/transaction.model';
 import { WeekTimekeepingGetterService } from '../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 import { WeeklyRewardsSplittingGetterService } from '../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.getter.service';
 import { constantsConfig, mxConfig, gasConfig } from '../../../config';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { Address, AddressValue } from '@multiversx/sdk-core';
 import BigNumber from 'bignumber.js';
 
@@ -25,7 +25,7 @@ import BigNumber from 'bignumber.js';
 export class FeesCollectorService {
     constructor(
         private readonly feesCollectorGetterService: FeesCollectorGetterService,
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly weekTimekeepingService: WeekTimekeepingService,
         private readonly weeklyRewardsSplittingService: WeeklyRewardsSplittingService,
         private readonly weekTimekeepingGetter: WeekTimekeepingGetterService,
@@ -68,7 +68,7 @@ export class FeesCollectorService {
         sender: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFeesCollectorContract();
+        const contract = await this.mxProxy.getFeesCollectorContract();
         return contract.methodsExplicit
             .claimRewards()
             .withGasLimit(gasLimit)
@@ -226,7 +226,7 @@ export class FeesCollectorService {
     }
 
     async updateEnergyForUser(userAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFeesCollectorContract();
+        const contract = await this.mxProxy.getFeesCollectorContract();
         return contract.methodsExplicit
             .updateEnergyForUser([
                 new AddressValue(Address.fromString(userAddress)),

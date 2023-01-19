@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Interaction } from '@multiversx/sdk-core/out/smartcontracts/interaction';
 import { U64Value } from '@multiversx/sdk-core';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PhaseModel } from '../models/price.discovery.model';
@@ -12,14 +12,14 @@ import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 @Injectable()
 export class PriceDiscoveryAbiService extends GenericAbiService {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
-        super(elrondProxy, logger);
+        super(mxProxy, logger);
     }
 
     async getLaunchedTokenID(priceDiscoveryAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -30,7 +30,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     }
 
     async getAcceptedTokenID(priceDiscoveryAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -41,7 +41,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     }
 
     async getRedeemTokenID(priceDiscoveryAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -54,7 +54,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getLaunchedTokenBalance(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -67,7 +67,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getAcceptedTokenBalance(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -80,7 +80,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getLaunchedTokenRedeemBalance(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -95,7 +95,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getAcceptedTokenRedeemBalance(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -108,7 +108,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     }
 
     async getStartBlock(priceDiscoveryAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -119,7 +119,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     }
 
     async getEndBlock(priceDiscoveryAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction = contract.methodsExplicit.getEndBlock();
@@ -129,7 +129,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     }
 
     async getCurrentPhase(priceDiscoveryAddress: string): Promise<PhaseModel> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -154,7 +154,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getMinLaunchedTokenPrice(
         priceDiscoveryAddress: string,
     ): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -167,7 +167,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getNoLimitPhaseDurationBlocks(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -179,7 +179,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getLinearPenaltyPhaseDurationBlocks(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -191,7 +191,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getFixedPenaltyPhaseDurationBlocks(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -201,7 +201,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     }
 
     async getLockingScAddress(priceDiscoveryAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -211,7 +211,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     }
 
     async getUnlockEpoch(priceDiscoveryAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -223,7 +223,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getPenaltyMinPercentage(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -238,7 +238,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getPenaltyMaxPercentage(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =
@@ -253,7 +253,7 @@ export class PriceDiscoveryAbiService extends GenericAbiService {
     async getFixedPenaltyPercentage(
         priceDiscoveryAddress: string,
     ): Promise<number> {
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
         const interaction: Interaction =

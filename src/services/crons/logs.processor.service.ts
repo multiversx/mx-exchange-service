@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { constantsConfig } from 'src/config';
 import BigNumber from 'bignumber.js';
 import { ElasticQuery } from 'src/helpers/entities/elastic/elastic.query';
@@ -32,7 +32,7 @@ export class LogsProcessorService {
 
     constructor(
         private readonly cachingService: CachingService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly elasticService: ElasticService,
         private readonly awsWrite: AWSTimestreamWriteService,
         private readonly apiConfig: ApiConfigService,

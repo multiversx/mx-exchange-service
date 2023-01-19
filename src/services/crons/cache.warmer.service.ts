@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { CachingService } from '../caching/cache.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
-import { ElrondApiService } from '../elrond-communication/elrond-api.service';
+import { MXApiService } from '../multiversx-communication/mx.api.service';
 import { PUB_SUB } from '../redis.pubSub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { oneMinute, oneSecond } from 'src/helpers/helpers';
@@ -17,7 +17,7 @@ import { PerformanceProfiler } from 'src/utils/performance.profiler';
 @Injectable()
 export class CacheWarmerService {
     constructor(
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly cachingService: CachingService,
         private readonly routerService: RouterService,
         @Inject(PUB_SUB) private pubSub: RedisPubSub,

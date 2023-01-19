@@ -24,10 +24,10 @@ import { BoostedYieldsFactors } from '../../models/farm.v2.model';
 import { Mixin } from 'ts-mixer';
 import { WeeklyRewardsSplittingAbiService } from '../../../../submodules/weekly-rewards-splitting/services/weekly-rewards-splitting.abi.service';
 import { WeekTimekeepingAbiService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.abi.service';
-import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ElrondGatewayService } from '../../../../services/elrond-communication/elrond-gateway.service';
+import { MXGatewayService } from '../../../../services/multiversx-communication/mx.gateway.service';
 import { tokenNonce } from '../../../../utils/token.converters';
 import { WeekTimekeepingGetterService } from '../../../../submodules/week-timekeeping/services/week-timekeeping.getter.service';
 
@@ -38,28 +38,24 @@ export class FarmAbiServiceV2 extends Mixin(
     WeekTimekeepingAbiService,
 ) {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        protected readonly gatewayService: ElrondGatewayService,
+        protected readonly gatewayService: MXGatewayService,
         protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
-        super(elrondProxy, logger, gatewayService);
+        super(mxProxy, logger, gatewayService);
         this.getContractHandler = this.getContract;
     }
 
     async getContract(farmAddress: string): Promise<SmartContract> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
         return contract;
     }
 
     async getBoostedYieldsRewardsPercenatage(
         farmAddress: string,
     ): Promise<number> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getBoostedYieldsRewardsPercenatage();
@@ -85,9 +81,7 @@ export class FarmAbiServiceV2 extends Mixin(
             return undefined;
         }
 
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getLockEpochs();
@@ -109,9 +103,7 @@ export class FarmAbiServiceV2 extends Mixin(
     }
 
     async getUndistributedBoostedRewards(farmAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
-            farmAddress,
-        );
+        const contract = await this.mxProxy.getFarmSmartContract(farmAddress);
 
         const interaction: Interaction =
             contract.methodsExplicit.getUndistributedBoostedRewards();

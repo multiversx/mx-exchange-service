@@ -17,7 +17,7 @@ import {
     WhitelistArgs,
 } from '../models/pair.args';
 import BigNumber from 'bignumber.js';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { PairGetterService } from './pair.getter.service';
@@ -31,7 +31,7 @@ import { BPConfig } from '../models/pair.model';
 @Injectable()
 export class PairTransactionService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
         private readonly wrapService: WrapService,
@@ -132,7 +132,7 @@ export class PairTransactionService {
             throw error;
         }
 
-        const contract = await this.elrondProxy.getPairSmartContract(
+        const contract = await this.mxProxy.getPairSmartContract(
             args.pairAddress,
         );
 
@@ -188,7 +188,7 @@ export class PairTransactionService {
             .multipliedBy(1 - args.tolerance)
             .integerValue();
 
-        const contract = await this.elrondProxy.getPairSmartContract(
+        const contract = await this.mxProxy.getPairSmartContract(
             args.pairAddress,
         );
 
@@ -237,7 +237,7 @@ export class PairTransactionService {
                 args.pairAddress,
                 args.liquidity,
             ),
-            this.elrondProxy.getPairSmartContract(args.pairAddress),
+            this.mxProxy.getPairSmartContract(args.pairAddress),
         ]);
 
         const amount0Min = new BigNumber(liquidityPosition.firstTokenAmount)
@@ -305,7 +305,7 @@ export class PairTransactionService {
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
-            this.elrondProxy.getPairSmartContract(args.pairAddress),
+            this.mxProxy.getPairSmartContract(args.pairAddress),
             this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
         ]);
 
@@ -415,7 +415,7 @@ export class PairTransactionService {
         let endpointArgs: TypedValue[];
         const [wrappedTokenID, contract, trustedSwapPairs] = await Promise.all([
             this.wrapService.getWrappedEgldTokenID(),
-            this.elrondProxy.getPairSmartContract(args.pairAddress),
+            this.mxProxy.getPairSmartContract(args.pairAddress),
             this.pairGetterService.getTrustedSwapPairs(args.pairAddress),
         ]);
 
@@ -603,7 +603,7 @@ export class PairTransactionService {
     }
 
     async whitelist(args: WhitelistArgs): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
+        const contract = await this.mxProxy.getPairSmartContract(
             args.pairAddress,
         );
         const transactionArgs: TypedValue[] = [
@@ -618,7 +618,7 @@ export class PairTransactionService {
     }
 
     async removeWhitelist(args: WhitelistArgs): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
+        const contract = await this.mxProxy.getPairSmartContract(
             args.pairAddress,
         );
         const transactionArgs: TypedValue[] = [
@@ -638,9 +638,7 @@ export class PairTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(swapPairAddress).hex()),
             BytesValue.fromUTF8(firstTokenID),
@@ -659,9 +657,7 @@ export class PairTransactionService {
         firstTokenID: string,
         secondTokenID: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
@@ -678,9 +674,7 @@ export class PairTransactionService {
         pairAddress: string,
         gasLimit: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             new U64Value(new BigNumber(gasLimit)),
         ];
@@ -696,9 +690,7 @@ export class PairTransactionService {
         pairAddress: string,
         gasLimit: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             new U64Value(new BigNumber(gasLimit)),
         ];
@@ -711,9 +703,7 @@ export class PairTransactionService {
     }
 
     async pause(pairAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         return contract.methodsExplicit
             .pause()
             .withGasLimit(gasConfig.pairs.admin.pause)
@@ -723,9 +713,7 @@ export class PairTransactionService {
     }
 
     async resume(pairAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         return contract.methodsExplicit
             .resume()
             .withGasLimit(gasConfig.pairs.admin.resume)
@@ -737,9 +725,7 @@ export class PairTransactionService {
     async setStateActiveNoSwaps(
         pairAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         return contract.methodsExplicit
             .setStateActiveNoSwaps()
             .withGasLimit(gasConfig.pairs.admin.setStateActiveNoSwaps)
@@ -753,9 +739,7 @@ export class PairTransactionService {
         totalFeePercent: number,
         specialFeePercent: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(totalFeePercent)),
             new BigUIntValue(new BigNumber(specialFeePercent)),
@@ -772,9 +756,7 @@ export class PairTransactionService {
         pairAddress: string,
         maxObservationsPerRecord: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(maxObservationsPerRecord)),
         ];
@@ -790,9 +772,7 @@ export class PairTransactionService {
         pairAddress: string,
         config: BPConfig,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(config.protectStopBlock)),
             new BigUIntValue(new BigNumber(config.volumePercent)),
@@ -810,9 +790,7 @@ export class PairTransactionService {
         pairAddress: string,
         config: BPConfig,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(config.protectStopBlock)),
             new BigUIntValue(new BigNumber(config.volumePercent)),
@@ -830,9 +808,7 @@ export class PairTransactionService {
         pairAddress: string,
         config: BPConfig,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(config.protectStopBlock)),
             new BigUIntValue(new BigNumber(config.volumePercent)),
@@ -850,9 +826,7 @@ export class PairTransactionService {
         pairAddress: string,
         newDeadline: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(newDeadline)),
         ];
@@ -868,9 +842,7 @@ export class PairTransactionService {
         pairAddress: string,
         newEpoch: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             new BigUIntValue(new BigNumber(newEpoch)),
         ];
@@ -886,9 +858,7 @@ export class PairTransactionService {
         pairAddress: string,
         newAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getPairSmartContract(
-            pairAddress,
-        );
+        const contract = await this.mxProxy.getPairSmartContract(pairAddress);
         const transactionArgs: TypedValue[] = [
             BytesValue.fromHex(new Address(newAddress).hex()),
         ];

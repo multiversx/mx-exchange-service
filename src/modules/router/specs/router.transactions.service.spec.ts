@@ -4,7 +4,7 @@ import { PairGetterService } from 'src/modules/pair/services/pair.getter.service
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { TransactionRouterService } from '../services/transactions.router.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import { RouterGetterService } from '../services/router.getter.service';
@@ -75,7 +75,7 @@ describe('RouterService', () => {
                 WrapServiceProvider,
                 TransactionsWrapService,
                 ApiConfigService,
-                ElrondProxyService,
+                MXProxyService,
                 TransactionRouterService,
                 RouterService,
             ],

@@ -13,7 +13,7 @@ import {
     AddLiquidityProxyArgs,
     RemoveLiquidityProxyArgs,
 } from '../../models/proxy-pair.args';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -26,7 +26,7 @@ import { ProxyGetterService } from '../proxy.getter.service';
 @Injectable()
 export class TransactionsProxyPairService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly proxyGetter: ProxyGetterService,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
@@ -95,7 +95,7 @@ export class TransactionsProxyPairService {
             this.logger.error(logMessage);
             throw error;
         }
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
         const amount0 = new BigNumber(liquidityTokens[0].amount);
@@ -159,7 +159,7 @@ export class TransactionsProxyPairService {
                 args.pairAddress,
                 args.liquidity,
             ),
-            this.elrondProxy.getProxyDexSmartContract(proxyAddress),
+            this.mxProxy.getProxyDexSmartContract(proxyAddress),
         ]);
         const amount0Min = new BigNumber(
             liquidityPosition.firstTokenAmount.toString(),
@@ -228,7 +228,7 @@ export class TransactionsProxyPairService {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
         }
 
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
         const gasLimit = gasConfig.proxy.pairs.defaultMergeWLPT * tokens.length;

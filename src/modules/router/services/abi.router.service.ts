@@ -5,21 +5,21 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PairTokens } from 'src/modules/pair/models/pair.model';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { EnableSwapByUserConfig } from '../models/factory.model';
 import { PairMetadata } from '../models/pair.metadata.model';
 
 @Injectable()
 export class AbiRouterService extends GenericAbiService {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
-        super(elrondProxy, logger);
+        super(mxProxy, logger);
     }
 
     async getAllPairsAddress(): Promise<string[]> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairsManagedAddresses();
 
@@ -30,7 +30,7 @@ export class AbiRouterService extends GenericAbiService {
     }
 
     async getPairsMetadata(): Promise<PairMetadata[]> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairContractMetadata();
 
@@ -45,7 +45,7 @@ export class AbiRouterService extends GenericAbiService {
     }
 
     async getPairCreationEnabled(): Promise<boolean> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getPairCreationEnabled();
         const response = await this.getGenericData(interaction);
@@ -53,7 +53,7 @@ export class AbiRouterService extends GenericAbiService {
     }
 
     async getLastErrorMessage(): Promise<string> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getLastErrorMessage();
         const response = await this.getGenericData(interaction);
@@ -61,21 +61,21 @@ export class AbiRouterService extends GenericAbiService {
     }
 
     async getState(): Promise<boolean> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getState();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf();
     }
 
     async getOwner(): Promise<string> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction = contract.methodsExplicit.getOwner();
         const response = await this.getGenericData(interaction);
         return response.firstValue.valueOf().bech32();
     }
 
     async getAllPairsManagedAddresses(): Promise<string[]> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairsManagedAddresses();
         const response = await this.getGenericData(interaction);
@@ -83,7 +83,7 @@ export class AbiRouterService extends GenericAbiService {
     }
 
     async getAllPairTokens(): Promise<PairTokens[]> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getAllPairTokens();
         const response = await this.getGenericData(interaction);
@@ -96,7 +96,7 @@ export class AbiRouterService extends GenericAbiService {
     }
 
     async getPairTemplateAddress(): Promise<string> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getPairTemplateAddress();
         const response = await this.getGenericData(interaction);
@@ -104,7 +104,7 @@ export class AbiRouterService extends GenericAbiService {
     }
 
     async getTemporaryOwnerPeriod(): Promise<string> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getTemporaryOwnerPeriod();
         const response = await this.getGenericData(interaction);
@@ -112,7 +112,7 @@ export class AbiRouterService extends GenericAbiService {
     }
 
     async getEnableSwapByUserConfig(): Promise<EnableSwapByUserConfig> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getEnableSwapByUserConfig();
 
@@ -130,7 +130,7 @@ export class AbiRouterService extends GenericAbiService {
     }
 
     async getCommonTokensForUserPairs(): Promise<string[]> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const interaction: Interaction =
             contract.methodsExplicit.getCommonTokensForUserPairs();
 

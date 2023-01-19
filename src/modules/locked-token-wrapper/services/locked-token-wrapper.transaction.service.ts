@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { TransactionModel } from '../../../models/transaction.model';
 import { Address, TokenPayment } from '@multiversx/sdk-core';
 import { mxConfig, gasConfig } from '../../../config';
@@ -8,14 +8,14 @@ import { InputTokenModel } from '../../../models/inputToken.model';
 
 @Injectable()
 export class LockedTokenWrapperTransactionService {
-    constructor(private readonly elrondProxy: ElrondProxyService) {}
+    constructor(private readonly mxProxy: MXProxyService) {}
 
     async unwrapLockedToken(
         scAddress: string,
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getLockedTokenWrapperContract(
+        const contract = await this.mxProxy.getLockedTokenWrapperContract(
             scAddress,
         );
         return contract.methodsExplicit
@@ -39,7 +39,7 @@ export class LockedTokenWrapperTransactionService {
         sender: string,
         inputToken: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getLockedTokenWrapperContract(
+        const contract = await this.mxProxy.getLockedTokenWrapperContract(
             scAddress,
         );
         return contract.methodsExplicit

@@ -17,7 +17,7 @@ import {
     DecodeAttributesArgs,
     DecodeAttributesModel,
 } from 'src/modules/proxy/models/proxy.args';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import {
@@ -40,7 +40,7 @@ export class SimpleLockService {
         private readonly simpleLockGetter: SimpleLockGetterService,
         private readonly farmFactory: FarmFactoryService,
         private readonly farmGetterFactory: FarmGetterFactory,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly cacheService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}

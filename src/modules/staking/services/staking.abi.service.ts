@@ -9,24 +9,24 @@ import {
 import { Inject, Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
-import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { GenericAbiService } from 'src/services/generics/generic.abi.service';
 import { Logger } from 'winston';
 
 @Injectable()
 export class AbiStakingService extends GenericAbiService {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
-        private readonly gatewayService: ElrondGatewayService,
+        private readonly gatewayService: MXGatewayService,
     ) {
-        super(elrondProxy, logger);
+        super(mxProxy, logger);
     }
 
     async getPairContractManagedAddress(stakeAddress: string): Promise<string> {
         try {
-            const contract = await this.elrondProxy.getStakingSmartContract(
+            const contract = await this.mxProxy.getStakingSmartContract(
                 stakeAddress,
             );
             const interaction: Interaction =
@@ -39,7 +39,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getFarmTokenID(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -49,7 +49,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getFarmingTokenID(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -59,7 +59,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getRewardTokenID(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -69,7 +69,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getFarmTokenSupply(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -79,7 +79,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getRewardPerShare(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -89,7 +89,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getAccumulatedRewards(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -99,7 +99,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getRewardCapacity(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -109,7 +109,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getAnnualPercentageRewards(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -119,7 +119,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getMinUnbondEpochs(stakeAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -129,7 +129,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getPerBlockRewardAmount(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -139,7 +139,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getLastRewardBlockNonce(stakeAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -149,7 +149,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getDivisionSafetyConstant(stakeAddress: string): Promise<number> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -167,7 +167,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getBurnGasLimit(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -177,7 +177,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getTransferExecGasLimit(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -187,7 +187,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getState(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction = contract.methodsExplicit.getState([]);
@@ -200,7 +200,7 @@ export class AbiStakingService extends GenericAbiService {
         amount: string,
         attributes: string,
     ): Promise<BigNumber> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =
@@ -218,7 +218,7 @@ export class AbiStakingService extends GenericAbiService {
         stakeAddress: string,
     ): Promise<string> {
         try {
-            const contract = await this.elrondProxy.getStakingSmartContract(
+            const contract = await this.mxProxy.getStakingSmartContract(
                 stakeAddress,
             );
             const interaction: Interaction =
@@ -234,7 +234,7 @@ export class AbiStakingService extends GenericAbiService {
         stakeAddress: string,
         scAddress: string,
     ): Promise<boolean> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const transactionArgs: TypedValue[] = [
@@ -248,7 +248,7 @@ export class AbiStakingService extends GenericAbiService {
     }
 
     async getLastErrorMessage(stakeAddress: string): Promise<string> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const interaction: Interaction =

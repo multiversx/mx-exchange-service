@@ -6,14 +6,14 @@ import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { PriceDiscoveryGetterService } from './price.discovery.getter.service';
 
 @Injectable()
 export class PriceDiscoveryTransactionService {
     constructor(
         private readonly priceDiscoveryGetter: PriceDiscoveryGetterService,
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly wrappingService: WrapService,
         private readonly wrappingTransactions: TransactionsWrapService,
     ) {}
@@ -60,7 +60,7 @@ export class PriceDiscoveryTransactionService {
             inputToken,
         );
 
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
 
@@ -132,7 +132,7 @@ export class PriceDiscoveryTransactionService {
     ): Promise<TransactionModel> {
         await this.validateRedeemInputTokens(priceDiscoveryAddress, inputToken);
 
-        const contract = await this.elrondProxy.getPriceDiscoverySmartContract(
+        const contract = await this.mxProxy.getPriceDiscoverySmartContract(
             priceDiscoveryAddress,
         );
 

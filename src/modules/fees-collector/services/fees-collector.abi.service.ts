@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { GenericAbiService } from '../../../services/generics/generic.abi.service';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import {
@@ -22,18 +22,16 @@ export class FeesCollectorAbiService extends Mixin(
     WeekTimekeepingAbiService,
 ) {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
-        super(elrondProxy, logger);
+        super(mxProxy, logger);
         this.getContractHandler = this.getContract;
     }
 
     async getContract(scAddress: string): Promise<SmartContract> {
-        const contract = await this.elrondProxy.getFeesCollectorContract(
-            scAddress,
-        );
+        const contract = await this.mxProxy.getFeesCollectorContract(scAddress);
         return contract;
     }
 

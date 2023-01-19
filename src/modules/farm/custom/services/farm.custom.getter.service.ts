@@ -3,7 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { oneHour } from 'src/helpers/helpers';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { Logger } from 'winston';
 import { FarmGetterService } from '../../base-module/services/farm.getter.service';
 import { FarmCustomAbiService } from './farm.custom.abi.service';
@@ -17,7 +17,7 @@ export class FarmCustomGetterService extends FarmGetterService {
         protected readonly abiService: FarmCustomAbiService,
         protected readonly computeService: FarmCustomComputeService,
         protected readonly tokenGetter: TokenGetterService,
-        protected readonly apiService: ElrondApiService,
+        protected readonly apiService: MXApiService,
     ) {
         super(
             cachingService,

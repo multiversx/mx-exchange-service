@@ -9,7 +9,7 @@ import { DecodeAttributesArgs } from 'src/modules/proxy/models/proxy.args';
 import { RemoteConfigGetterService } from 'src/modules/remote-config/remote-config.getter.service';
 import { StakingService } from 'src/modules/staking/services/staking.service';
 import { CachingService } from 'src/services/caching/cache.service';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { tokenIdentifier } from 'src/utils/token.converters';
 import { Logger } from 'winston';
 import { DualYieldTokenAttributesModel } from '../models/dualYieldTokenAttributes.model';
@@ -28,7 +28,7 @@ export class StakingProxyService {
         private readonly stakingService: StakingService,
         private readonly farmFactory: FarmFactoryService,
         private readonly pairService: PairService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly remoteConfigGetterService: RemoteConfigGetterService,
         private readonly cachingService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,

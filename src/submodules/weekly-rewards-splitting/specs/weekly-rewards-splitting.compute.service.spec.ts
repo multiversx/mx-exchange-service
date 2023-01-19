@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CachingModule } from '../../../services/caching/cache.module';
-import { ElrondCommunicationModule } from '../../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../../services/multiversx-communication/mx.communication.module';
 import { ApiConfigService } from '../../../helpers/api.config.service';
 import {
     WeekTimekeepingComputeHandlers,
@@ -988,7 +988,7 @@ async function createService(handlers: {
     const tokenCompute = new TokenComputeServiceMock(handlers.tokenCompute);
 
     const module: TestingModule = await Test.createTestingModule({
-        imports: [ElrondCommunicationModule, CachingModule],
+        imports: [MXCommunicationModule, CachingModule],
         providers: [
             PairComputeService,
             PairService,

@@ -20,7 +20,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         sender: string,
         args: EnterFarmArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );
 
@@ -69,7 +69,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
         if (!args.exitAmount && !new BigNumber(args.exitAmount).isPositive()) {
             throw new Error('Invalid exit amount');
         }
-        const contract = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );
         const gasLimit = await this.getExitFarmGasLimit(
@@ -107,7 +107,7 @@ export class FarmTransactionServiceV2 extends TransactionsFarmService {
             gasConfig.farms[FarmVersion.V2][type].claimRewards +
             lockedAssetCreateGas;
 
-        const contract = await this.elrondProxy.getFarmSmartContract(
+        const contract = await this.mxProxy.getFarmSmartContract(
             args.farmAddress,
         );
 

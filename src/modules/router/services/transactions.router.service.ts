@@ -22,14 +22,14 @@ import { generateGetLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { constantsConfig, mxConfig, gasConfig } from '../../../config';
 import { TransactionModel } from '../../../models/transaction.model';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SetLocalRoleOwnerArgs } from '../models/router.args';
 import { RouterGetterService } from './router.getter.service';
 
 @Injectable()
 export class TransactionRouterService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly routerGetterService: RouterGetterService,
         private readonly pairGetterService: PairGetterService,
         private readonly pairService: PairService,
@@ -52,7 +52,7 @@ export class TransactionRouterService {
             throw new Error('Pair already exists');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
 
         return contract.methodsExplicit
             .createPair([
@@ -80,7 +80,7 @@ export class TransactionRouterService {
             throw new Error('Pair does not exist');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
@@ -111,7 +111,7 @@ export class TransactionRouterService {
             throw new Error('Pair does not exist');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(firstTokenID),
             BytesValue.fromUTF8(secondTokenID),
@@ -134,7 +134,7 @@ export class TransactionRouterService {
             throw new Error('LP Token already issued');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .issueLpToken([
                 new AddressValue(Address.fromString(pairAddress)),
@@ -149,7 +149,7 @@ export class TransactionRouterService {
     }
 
     async setLocalRoles(pairAddress: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setLocalRoles([BytesValue.fromHex(new Address(pairAddress).hex())])
             .withGasLimit(gasConfig.router.setLocalRoles)
@@ -161,7 +161,7 @@ export class TransactionRouterService {
     async setLocalRolesOwner(
         args: SetLocalRoleOwnerArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const endpointArgs: TypedValue[] = [
             BytesValue.fromUTF8(args.tokenID),
             new AddressValue(Address.fromString(args.address)),
@@ -181,7 +181,7 @@ export class TransactionRouterService {
         address: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const args = [new AddressValue(Address.fromString(address))];
 
         const interaction = enable
@@ -196,7 +196,7 @@ export class TransactionRouterService {
     }
 
     async setPairCreationEnabled(enable: boolean): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setPairCreationEnabled([new BooleanValue(enable)])
             .withGasLimit(gasConfig.router.admin.setPairCreationEnabled)
@@ -211,7 +211,7 @@ export class TransactionRouterService {
         feeTokenID: string,
         enable: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         const args: TypedValue[] = [
             new AddressValue(Address.fromString(pairAddress)),
             new AddressValue(Address.fromString(feeToAddress)),
@@ -253,7 +253,7 @@ export class TransactionRouterService {
             throw new Error('Invalid sender address');
         }
 
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setSwapEnabledByUser([
                 new AddressValue(Address.fromString(pairAddress)),
@@ -273,7 +273,7 @@ export class TransactionRouterService {
     }
 
     async clearPairTemporaryOwnerStorage(): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .clearPairTemporaryOwnerStorage()
             .withGasLimit(gasConfig.router.admin.clearPairTemporaryOwnerStorage)
@@ -285,7 +285,7 @@ export class TransactionRouterService {
     async setTemporaryOwnerPeriod(
         periodBlocks: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setTemporaryOwnerPeriod([
                 new BigUIntValue(new BigNumber(periodBlocks)),
@@ -297,7 +297,7 @@ export class TransactionRouterService {
     }
 
     async setPairTemplateAddress(address: string): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
         return contract.methodsExplicit
             .setPairTemplateAddress([
                 new AddressValue(Address.fromString(address)),
@@ -313,7 +313,7 @@ export class TransactionRouterService {
         args: MultiSwapTokensArgs,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const contract = await this.elrondProxy.getRouterSmartContract();
+        const contract = await this.mxProxy.getRouterSmartContract();
 
         const wrapTransaction = await this.wrapIfNeeded(
             sender,

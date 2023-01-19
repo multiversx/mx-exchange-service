@@ -15,7 +15,7 @@ import {
 } from '../models/proxy.args';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import {
     FarmTokenAttributesV1_2,
     FarmTokenAttributesV1_3,
@@ -54,7 +54,7 @@ export class ProxyService {
         private readonly proxyPairGetter: ProxyPairGetterService,
         private readonly proxyFarmGetter: ProxyFarmGetterService,
         private readonly farmGetter: FarmGetterFactory,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
         private readonly lockedAssetService: LockedAssetService,
         private readonly cacheService: CachingService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,

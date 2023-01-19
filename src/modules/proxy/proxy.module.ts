@@ -1,6 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { ContextModule } from '../../services/context/context.module';
-import { ElrondCommunicationModule } from '../../services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from '../../services/multiversx-communication/mx.communication.module';
 import { AbiProxyService } from './services/proxy-abi.service';
 import { ProxyFarmModule } from './services/proxy-farm/proxy-farm.module';
 import { ProxyPairModule } from './services/proxy-pair/proxy-pair.module';
@@ -22,7 +22,7 @@ import { WrappedFarmTokenResolverV2 } from './wrappedFarm.token.v2.resolver';
 
 @Module({
     imports: [
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         ContextModule,
         LockedAssetModule,

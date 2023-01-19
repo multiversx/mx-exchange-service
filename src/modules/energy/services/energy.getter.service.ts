@@ -8,7 +8,7 @@ import { NftCollection } from 'src/modules/tokens/models/nftCollection.model';
 import { TokenGetterService } from 'src/modules/tokens/services/token.getter.service';
 import { CachingService } from 'src/services/caching/cache.service';
 import { CacheTtlInfo } from 'src/services/caching/cache.ttl.info';
-import { ElrondApiService } from 'src/services/elrond-communication/elrond-api.service';
+import { MXApiService } from 'src/services/multiversx-communication/mx.api.service';
 import { GenericGetterService } from 'src/services/generics/generic.getter.service';
 import { generateCacheKeyFromParams } from 'src/utils/generate-cache-key';
 import { Logger } from 'winston';
@@ -26,7 +26,7 @@ export class EnergyGetterService
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly tokenGetter: TokenGetterService,
         protected readonly abiService: EnergyAbiService,
-        private readonly apiService: ElrondApiService,
+        private readonly apiService: MXApiService,
     ) {
         super(cachingService, logger);
         this.baseKey = 'energy';

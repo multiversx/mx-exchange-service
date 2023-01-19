@@ -16,7 +16,7 @@ import {
 } from '../../../utils/errors.constants';
 import { Energy, EnergyType } from '@multiversx/sdk-exchange';
 import { ReturnCode } from '@multiversx/sdk-core/out/smartcontracts/returnCode';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { WeekTimekeepingGetterService } from '../../week-timekeeping/services/week-timekeeping.getter.service';
@@ -24,11 +24,11 @@ import { WeekTimekeepingGetterService } from '../../week-timekeeping/services/we
 @Injectable()
 export class WeeklyRewardsSplittingAbiService extends GenericAbiService {
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
         protected readonly timekeepingGetter: WeekTimekeepingGetterService,
     ) {
-        super(elrondProxy, logger);
+        super(mxProxy, logger);
     }
     async currentClaimProgress(
         scAddress: string,

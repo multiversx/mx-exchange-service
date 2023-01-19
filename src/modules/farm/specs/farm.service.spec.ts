@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PairService } from '../../pair/services/pair.service';
 import { AbiFarmServiceMock } from '../mocks/abi.farm.service.mock';
-import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
-import { ElrondApiServiceMock } from '../../../services/elrond-communication/elrond.api.service.mock';
+import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
+import { MXApiServiceMock } from '../../../services/multiversx-communication/mx.api.service.mock';
 import { CommonAppModule } from '../../../common.app.module';
 import { CachingModule } from '../../../services/caching/cache.module';
 import { PairGetterService } from 'src/modules/pair/services/pair.getter.service';
@@ -71,9 +71,9 @@ describe('FarmService', () => {
         useClass: FarmGetterServiceMockV1_3,
     };
 
-    const ElrondApiServiceProvider = {
-        provide: ElrondApiService,
-        useClass: ElrondApiServiceMock,
+    const MXApiServiceProvider = {
+        provide: MXApiService,
+        useClass: MXApiServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -116,7 +116,7 @@ describe('FarmService', () => {
                     useClass: FarmGetterServiceMock,
                 },
                 FarmComputeServiceV2,
-                ElrondApiServiceProvider,
+                MXApiServiceProvider,
                 ContextGetterServiceProvider,
                 RouterGetterServiceProvider,
                 TokenGetterServiceProvider,

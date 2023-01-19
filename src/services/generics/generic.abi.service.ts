@@ -10,19 +10,19 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { generateRunQueryLogMessage } from 'src/utils/generate-log-message';
 import { PendingExecutor } from 'src/utils/pending.executor';
 import { Logger } from 'winston';
-import { ElrondProxyService } from '../elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../multiversx-communication/mx.proxy.service';
 
 @Injectable()
 export class GenericAbiService {
     private queryExecutor: PendingExecutor<Query, ContractQueryResponse>;
 
     constructor(
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) protected readonly logger: Logger,
     ) {
         this.queryExecutor = new PendingExecutor(
             async (query: Query) =>
-                await this.elrondProxy.getService().queryContract(query),
+                await this.mxProxy.getService().queryContract(query),
         );
     }
 

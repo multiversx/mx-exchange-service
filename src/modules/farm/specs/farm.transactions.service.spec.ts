@@ -7,7 +7,7 @@ import { FarmGetterService } from '../base-module/services/farm.getter.service';
 import { FarmGetterServiceMock } from '../mocks/farm.getter.service.mock';
 import { Address } from '@multiversx/sdk-core';
 import { ApiConfigService } from '../../../helpers/api.config.service';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { PairComputeService } from '../../pair/services/pair.compute.service';
 import { PairGetterService } from '../../pair/services/pair.getter.service';
 import { PairGetterServiceStub } from '../../pair/mocks/pair-getter-service-stub.service';
@@ -15,8 +15,8 @@ import { WrapService } from '../../wrapping/wrap.service';
 import { WrapServiceMock } from '../../wrapping/wrap.test-mocks';
 import { ContextGetterService } from '../../../services/context/context.getter.service';
 import { ContextGetterServiceMock } from '../../../services/context/mocks/context.getter.service.mock';
-import { ElrondProxyServiceMock } from '../../../services/elrond-communication/elrond.proxy.service.mock';
-import { ElrondApiService } from '../../../services/elrond-communication/elrond-api.service';
+import { MXProxyServiceMock } from '../../../services/multiversx-communication/mx.proxy.service.mock';
+import { MXApiService } from '../../../services/multiversx-communication/mx.api.service';
 import { encodeTransactionData } from '../../../helpers/helpers';
 import { mxConfig, gasConfig } from '../../../config';
 import { TokenComputeService } from 'src/modules/tokens/services/token.compute.service';
@@ -52,9 +52,9 @@ describe('FarmService', () => {
         useClass: WrapServiceMock,
     };
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     beforeEach(async () => {
@@ -63,7 +63,7 @@ describe('FarmService', () => {
             providers: [
                 AbiFarmServiceProvider,
                 ApiConfigService,
-                ElrondApiService,
+                MXApiService,
                 FarmGetterServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
@@ -73,7 +73,7 @@ describe('FarmService', () => {
                 TokenGetterServiceProvider,
                 RouterGetterServiceProvider,
                 WrapServiceProvider,
-                ElrondProxyServiceProvider,
+                MXProxyServiceProvider,
                 FarmTransactionServiceV1_2,
             ],
         }).compile();

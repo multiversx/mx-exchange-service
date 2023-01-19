@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { mxConfig, gasConfig, scAddress } from '../../../../config';
 import { TransactionModel } from '../../../../models/transaction.model';
-import { ElrondProxyService } from '../../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../../services/multiversx-communication/mx.proxy.service';
 import { Address, AddressValue, TypedValue } from '@multiversx/sdk-core';
 import { UserEnergyGetterService } from './user.energy.getter.service';
 import { OutdatedContract } from '../../models/user.model';
@@ -9,7 +9,7 @@ import { OutdatedContract } from '../../models/user.model';
 @Injectable()
 export class UserEnergyService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly userEnergyGetter: UserEnergyGetterService,
     ) {}
 
@@ -44,7 +44,7 @@ export class UserEnergyService {
                 );
             }
         }
-        const contract = await this.elrondProxy.getEnergyUpdateContract();
+        const contract = await this.mxProxy.getEnergyUpdateContract();
         return contract.methodsExplicit
             .updateFarmsEnergyForUser(endpointArgs)
             .withGasLimit(

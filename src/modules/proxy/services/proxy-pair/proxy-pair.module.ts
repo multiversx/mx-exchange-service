@@ -3,7 +3,7 @@ import { PairModule } from 'src/modules/pair/pair.module';
 import { AbiProxyPairService } from './proxy-pair-abi.service';
 import { TransactionsProxyPairService } from './proxy-pair-transactions.service';
 import { ProxyPairGetterService } from './proxy-pair.getter.service';
-import { ElrondCommunicationModule } from 'src/services/elrond-communication/elrond-communication.module';
+import { MXCommunicationModule } from 'src/services/multiversx-communication/mx.communication.module';
 import { WrappingModule } from 'src/modules/wrapping/wrap.module';
 import { CachingModule } from 'src/services/caching/cache.module';
 import { ProxyModule } from '../../proxy.module';
@@ -13,7 +13,7 @@ import { ProxyModuleV2 } from '../../v2/proxy.v2.module';
 
 @Module({
     imports: [
-        ElrondCommunicationModule,
+        MXCommunicationModule,
         CachingModule,
         PairModule,
         WrappingModule,

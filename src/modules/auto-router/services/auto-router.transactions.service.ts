@@ -11,13 +11,13 @@ import { mxConfig, gasConfig } from 'src/config';
 import { MultiSwapTokensArgs } from 'src/modules/auto-router/models/multi-swap-tokens.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { TransactionModel } from '../../../models/transaction.model';
-import { ElrondProxyService } from '../../../services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from '../../../services/multiversx-communication/mx.proxy.service';
 import { SWAP_TYPE } from '../models/auto-route.model';
 
 @Injectable()
 export class AutoRouterTransactionService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly transactionsWrapService: TransactionsWrapService,
     ) {}
 
@@ -28,7 +28,7 @@ export class AutoRouterTransactionService {
         const transactions = [];
         const [contract, wrapTransaction, unwrapTransaction] =
             await Promise.all([
-                this.elrondProxy.getRouterSmartContract(),
+                this.mxProxy.getRouterSmartContract(),
                 this.wrapIfNeeded(
                     sender,
                     args.tokenInID,

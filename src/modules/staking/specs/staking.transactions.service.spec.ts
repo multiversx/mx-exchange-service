@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { ApiConfigService } from 'src/helpers/api.config.service';
 import { ConfigModule } from '@nestjs/config';
 import winston from 'winston';
@@ -12,8 +12,8 @@ import {
 import * as Transport from 'winston-transport';
 import { StakingGetterService } from '../services/staking.getter.service';
 import { StakingGetterServiceMock } from '../mocks/staking.getter.service.mock';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
-import { ElrondGatewayService } from 'src/services/elrond-communication/elrond-gateway.service';
+import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
+import { MXGatewayService } from 'src/services/multiversx-communication/mx.gateway.service';
 import { StakingTransactionService } from '../services/staking.transactions.service';
 
 import { Address } from '@multiversx/sdk-core';
@@ -34,9 +34,9 @@ describe('StakingTransactionService', () => {
         useClass: ContextGetterServiceMock,
     };
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     const logTransports: Transport[] = [
@@ -60,8 +60,8 @@ describe('StakingTransactionService', () => {
                 StakingTransactionService,
                 StakingGetterServiceProvider,
                 ContextGetterServiceProvider,
-                ElrondProxyServiceProvider,
-                ElrondGatewayService,
+                MXProxyServiceProvider,
+                MXGatewayService,
                 ApiConfigService,
             ],
         }).compile();

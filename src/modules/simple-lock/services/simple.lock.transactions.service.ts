@@ -23,7 +23,7 @@ import { DecodeAttributesModel } from 'src/modules/proxy/models/proxy.args';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { farmType, farmVersion } from 'src/utils/farm.utils';
 import { FarmTypeEnumType, SimpleLockType } from '../models/simple.lock.model';
 import { SimpleLockGetterService } from './simple.lock.getter.service';
@@ -41,7 +41,7 @@ export class SimpleLockTransactionService {
         protected readonly wrapService: WrapService,
         protected readonly wrapTransaction: TransactionsWrapService,
         protected readonly contextGetter: ContextGetterService,
-        protected readonly elrondProxy: ElrondProxyService,
+        protected readonly mxProxy: MXProxyService,
     ) {
         this.lockType = SimpleLockType.BASE_TYPE;
     }
@@ -52,7 +52,7 @@ export class SimpleLockTransactionService {
         simpleLockAddress: string,
     ): Promise<TransactionModel> {
         const [contract, currentEpoch] = await Promise.all([
-            this.elrondProxy.getSimpleLockSmartContract(simpleLockAddress),
+            this.mxProxy.getSimpleLockSmartContract(simpleLockAddress),
             this.contextGetter.getCurrentEpoch(),
         ]);
 
@@ -77,7 +77,7 @@ export class SimpleLockTransactionService {
         sender: string,
         inputTokens: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -160,7 +160,7 @@ export class SimpleLockTransactionService {
             await Promise.all([
                 this.pairGetterService.getFirstTokenID(pairAddress),
                 this.pairGetterService.getSecondTokenID(pairAddress),
-                this.elrondProxy.getSimpleLockSmartContract(simpleLockAddress),
+                this.mxProxy.getSimpleLockSmartContract(simpleLockAddress),
             ]);
 
         let [firstTokenID, secondTokenID] = [
@@ -236,7 +236,7 @@ export class SimpleLockTransactionService {
         tolerance: number,
     ): Promise<TransactionModel[]> {
         const transactions = [];
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -317,7 +317,7 @@ export class SimpleLockTransactionService {
                 .name,
         );
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -358,7 +358,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
         if (!exitAmount && farmVersion === FarmVersion.V2) {
@@ -392,7 +392,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 
@@ -419,7 +419,7 @@ export class SimpleLockTransactionService {
     ): Promise<TransactionModel> {
         await this.validateInputFarmProxyToken(inputTokens, simpleLockAddress);
 
-        const contract = await this.elrondProxy.getSimpleLockSmartContract(
+        const contract = await this.mxProxy.getSimpleLockSmartContract(
             simpleLockAddress,
         );
 

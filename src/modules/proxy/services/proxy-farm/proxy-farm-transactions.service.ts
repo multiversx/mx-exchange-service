@@ -15,7 +15,7 @@ import {
     EnterFarmProxyArgs,
     ExitFarmProxyArgs,
 } from '../../models/proxy-farm.args';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { InputTokenModel } from 'src/models/inputToken.model';
@@ -32,7 +32,7 @@ import { proxyVersion } from 'src/utils/proxy.utils';
 @Injectable()
 export class TransactionsProxyFarmService {
     constructor(
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         private readonly farmGetter: FarmGetterFactory,
         private readonly pairService: PairService,
         private readonly pairGetterService: PairGetterService,
@@ -44,7 +44,7 @@ export class TransactionsProxyFarmService {
         proxyAddress: string,
         args: EnterFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
         const version = farmVersion(args.farmAddress);
@@ -96,7 +96,7 @@ export class TransactionsProxyFarmService {
         ) {
             throw new Error('Invalid exit amount');
         }
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
 
@@ -130,7 +130,7 @@ export class TransactionsProxyFarmService {
         proxyAddress: string,
         args: ClaimFarmRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
 
@@ -174,7 +174,7 @@ export class TransactionsProxyFarmService {
         proxyAddress: string,
         args: CompoundRewardsProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
 
@@ -205,7 +205,7 @@ export class TransactionsProxyFarmService {
         proxyAddress: string,
         args: ExitFarmProxyArgs,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
 
@@ -243,7 +243,7 @@ export class TransactionsProxyFarmService {
             throw new Error('Number of merge tokens exeeds maximum gas limit!');
         }
 
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
 

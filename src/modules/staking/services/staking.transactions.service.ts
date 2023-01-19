@@ -13,7 +13,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { mxConfig, gasConfig } from 'src/config';
 import { InputTokenModel } from 'src/models/inputToken.model';
 import { TransactionModel } from 'src/models/transaction.model';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { generateLogMessage } from 'src/utils/generate-log-message';
 import { Logger } from 'winston';
 import { StakingGetterService } from './staking.getter.service';
@@ -22,7 +22,7 @@ import { StakingGetterService } from './staking.getter.service';
 export class StakingTransactionService {
     constructor(
         private readonly stakeGetterService: StakingGetterService,
-        private readonly elrondProxy: ElrondProxyService,
+        private readonly mxProxy: MXProxyService,
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
     ) {}
 
@@ -44,7 +44,7 @@ export class StakingTransactionService {
             throw error;
         }
 
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
 
@@ -77,7 +77,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -101,7 +101,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -125,7 +125,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -150,7 +150,7 @@ export class StakingTransactionService {
         payment: InputTokenModel,
         newValue: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -176,7 +176,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -199,7 +199,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payment: InputTokenModel,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -221,7 +221,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         payments: InputTokenModel[],
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const mappedPayments = payments.map((payment) =>
@@ -247,7 +247,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         percent: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -262,7 +262,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         epochs: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -279,7 +279,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -294,7 +294,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         gasLimit: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -312,7 +312,7 @@ export class StakingTransactionService {
         address: string,
         whitelist: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
 
@@ -340,7 +340,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         state: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
 
@@ -363,7 +363,7 @@ export class StakingTransactionService {
     async setLocalRolesFarmToken(
         stakeAddress: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -380,7 +380,7 @@ export class StakingTransactionService {
         tokenTicker: string,
         decimals: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         const transactionArgs: TypedValue[] = [
@@ -400,7 +400,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         perBlockAmount: string,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -417,7 +417,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         maxApr: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -432,7 +432,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         minUnboundEpoch: number,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
         return contract.methodsExplicit
@@ -447,7 +447,7 @@ export class StakingTransactionService {
         stakeAddress: string,
         rewards: boolean,
     ): Promise<TransactionModel> {
-        const contract = await this.elrondProxy.getStakingSmartContract(
+        const contract = await this.mxProxy.getStakingSmartContract(
             stakeAddress,
         );
 

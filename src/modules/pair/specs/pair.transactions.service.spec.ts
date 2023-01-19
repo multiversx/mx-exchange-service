@@ -5,7 +5,7 @@ import {
     WinstonModule,
 } from 'nest-winston';
 import * as Transport from 'winston-transport';
-import { ElrondProxyService } from 'src/services/elrond-communication/elrond-proxy.service';
+import { MXProxyService } from 'src/services/multiversx-communication/mx.proxy.service';
 import { TransactionsWrapService } from 'src/modules/wrapping/transactions-wrap.service';
 import { PairTransactionService } from '../services/pair.transactions.service';
 import { PairService } from '../services/pair.service';
@@ -13,7 +13,7 @@ import { WrapService } from 'src/modules/wrapping/wrap.service';
 import { WrapServiceMock } from 'src/modules/wrapping/wrap.test-mocks';
 import { PairGetterService } from '../services/pair.getter.service';
 import { PairGetterServiceStub } from '../mocks/pair-getter-service-stub.service';
-import { ElrondProxyServiceMock } from 'src/services/elrond-communication/elrond.proxy.service.mock';
+import { MXProxyServiceMock } from 'src/services/multiversx-communication/mx.proxy.service.mock';
 import { ContextGetterService } from 'src/services/context/context.getter.service';
 import { ContextGetterServiceMock } from 'src/services/context/mocks/context.getter.service.mock';
 import { ApiConfigService } from 'src/helpers/api.config.service';
@@ -28,9 +28,9 @@ import { CachingModule } from 'src/services/caching/cache.module';
 describe('TransactionPairService', () => {
     let service: PairTransactionService;
 
-    const ElrondProxyServiceProvider = {
-        provide: ElrondProxyService,
-        useClass: ElrondProxyServiceMock,
+    const MXProxyServiceProvider = {
+        provide: MXProxyService,
+        useClass: MXProxyServiceMock,
     };
 
     const ContextGetterServiceProvider = {
@@ -68,7 +68,7 @@ describe('TransactionPairService', () => {
             providers: [
                 ConfigService,
                 ApiConfigService,
-                ElrondProxyServiceProvider,
+                MXProxyServiceProvider,
                 ContextGetterServiceProvider,
                 PairService,
                 PairGetterServiceProvider,

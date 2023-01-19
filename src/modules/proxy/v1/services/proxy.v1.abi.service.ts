@@ -5,7 +5,7 @@ import { AbiProxyService } from '../../services/proxy-abi.service';
 @Injectable()
 export class ProxyAbiServiceV1 extends AbiProxyService {
     async getLockedAssetTokenID(proxyAddress: string): Promise<string[]> {
-        const contract = await this.elrondProxy.getProxyDexSmartContract(
+        const contract = await this.mxProxy.getProxyDexSmartContract(
             proxyAddress,
         );
         const interaction: Interaction =

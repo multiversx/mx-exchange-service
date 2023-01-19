@@ -9,7 +9,7 @@ import { PerformanceProfiler } from 'src/utils/performance.profiler';
 import { MetricsCollector } from 'src/utils/metrics.collector';
 
 @Injectable()
-export class ElrondGatewayService {
+export class MXGatewayService {
     private url: string;
     private config: AxiosRequestConfig;
 
@@ -86,7 +86,7 @@ export class ElrondGatewayService {
             profiler.stop();
 
             MetricsCollector.setExternalCall(
-                ElrondGatewayService.name,
+                MXGatewayService.name,
                 name,
                 profiler.duration,
             );
